@@ -147,6 +147,9 @@ namespace AZ
             struct PropertyLayout
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyLayout, "{AE53CF3F-5C3B-44F5-B2FB-306F0EB06393}");
+                
+                //! This field is unused, and has been replaced by MaterialTypeSourceData::m_version below. It is kept for legacy file compatibility to suppress warnings and errors.
+                uint32_t m_versionOld = 0;
 
                 //! List of groups that will contain the available properties
                 AZStd::vector<GroupDefinition> m_groups;

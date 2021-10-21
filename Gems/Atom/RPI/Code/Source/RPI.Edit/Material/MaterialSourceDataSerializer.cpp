@@ -46,8 +46,8 @@ namespace AZ
             }
 
             result.Combine(ContinueLoadingFromJsonObjectField(&materialSourceData->m_description, azrtti_typeid<AZStd::string>(), inputValue, "description", context));
-            result.Combine(ContinueLoadingFromJsonObjectField(&materialSourceData->m_materialType, azrtti_typeid<AZStd::string>(), inputValue, "materialType", context));
             result.Combine(ContinueLoadingFromJsonObjectField(&materialSourceData->m_parentMaterial, azrtti_typeid<AZStd::string>(), inputValue, "parentMaterial", context));
+            result.Combine(ContinueLoadingFromJsonObjectField(&materialSourceData->m_materialType, azrtti_typeid<AZStd::string>(), inputValue, "materialType", context));
             result.Combine(ContinueLoadingFromJsonObjectField(&materialSourceData->m_materialTypeVersion, azrtti_typeid<uint32_t>(), inputValue, "materialTypeVersion", context));
 
             if (materialSourceData->m_materialType.empty())
@@ -151,8 +151,8 @@ namespace AZ
 
             JSR::ResultCode resultCode(JSR::Tasks::ReadField);
             resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "description",  &materialSourceData->m_description, nullptr, azrtti_typeid<AZStd::string>(), context));
-            resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "materialType", &materialSourceData->m_materialType, nullptr, azrtti_typeid<AZStd::string>(), context));
             resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "parentMaterial", &materialSourceData->m_parentMaterial, nullptr, azrtti_typeid<AZStd::string>(), context));
+            resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "materialType", &materialSourceData->m_materialType, nullptr, azrtti_typeid<AZStd::string>(), context));
             resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "materialTypeVersion", &materialSourceData->m_materialTypeVersion, nullptr, azrtti_typeid<uint32_t>(), context));
             resultCode.Combine(ContinueStoringToJsonObjectField(outputValue, "properties", &materialSourceData->m_properties, nullptr, azrtti_typeid<MaterialSourceData::PropertyGroupMap>(), context));
 

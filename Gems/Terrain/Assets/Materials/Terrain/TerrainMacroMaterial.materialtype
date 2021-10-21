@@ -1,7 +1,7 @@
 {
     "description": "A material for providing terrain with low-fidelity color and normals.  This material will get blended with surface detail materials.",
+    "version": 1,
     "propertyLayout": {
-        "version": 1,
         "groups": [
             {
                 "name": "baseColor",

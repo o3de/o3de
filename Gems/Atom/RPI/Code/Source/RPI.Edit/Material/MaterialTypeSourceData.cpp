@@ -86,6 +86,7 @@ namespace AZ
 
                 serializeContext->Class<PropertyLayout>()
                     ->Version(2) // Material Version Update
+                    ->Field("version", &PropertyLayout::m_versionOld)
                     ->Field("groups", &PropertyLayout::m_groups)
                     ->Field("properties", &PropertyLayout::m_properties)
                     ;
@@ -350,6 +351,15 @@ namespace AZ
             MaterialTypeAssetCreator materialTypeAssetCreator;
             materialTypeAssetCreator.SetElevateWarnings(elevateWarnings);
             materialTypeAssetCreator.Begin(assetId);
+
+            if (m_propertyLayout.m_versionOld != 0)
+            {
+                materialTypeAssetCreator.ReportError(
+                    "The field '/propertyLayout/version' is deprecated and moved to '/version'. "
+                    "Please edit this material type source file and move the '\"version\": %u' setting up one level.",
+                    m_propertyLayout.m_versionOld);
+                return Failure();
+            }
 
             // Set materialtype version and add each version update object into MaterialTypeAsset.
             materialTypeAssetCreator.SetVersion(m_version);

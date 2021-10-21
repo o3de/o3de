@@ -1,7 +1,7 @@
 {
     "description": "Material Type with properties used to define Standard PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
+    "version": 3,
     "propertyLayout": {
-        "version": 3,
         "groups": [
             {
                 "name": "baseColor",
@@ -152,7 +152,7 @@
             ],
             "baseColor": [
                 {
-                    "name": "color",
+                    "name": "colorX",
                     "displayName": "Color",
                     "description": "Color is displayed as sRGB but the values are stored as linear color.",
                     "type": "Color",
