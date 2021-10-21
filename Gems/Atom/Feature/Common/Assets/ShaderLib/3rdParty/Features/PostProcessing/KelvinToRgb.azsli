@@ -16,6 +16,13 @@
 // licensed and released under Creative Commons 3.0 Attribution
 // https://creativecommons.org/licenses/by/3.0/
 
+float Luminance(float3 color)
+{
+    float fmin = min(min(color.r, color.g), color.b);
+	float fmax = max(max(color.r, color.g), color.b);
+	return (fmax + fmin) / 2.0;
+}
+
 float3 HueToRgb(float hue)
 {
     return saturate(float3(abs(hue * 6.0f - 3.0f) - 1.0f,

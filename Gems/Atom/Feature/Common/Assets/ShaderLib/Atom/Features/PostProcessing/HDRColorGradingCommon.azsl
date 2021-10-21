@@ -66,12 +66,17 @@ float3 ColorGradeSaturation (float3 frameColor, float control)
     return (frameColor - vLuminance) * control + vLuminance;
 }
 
-float3 ColorGradeKelvinColorTemp(float3 frameColor, float kelvin)
+float3 ColorGradeWhiteBalance(float3 frameColor, float kelvin, float tint, float luminancePreservation)
 {
     const float3 kColor = TransformColor(KelvinToRgb(kelvin), ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
-    const float luminance = CalculateLuminance(frameColor, ColorSpaceId::ACEScg);
-    const float3 resHsl = RgbToHsl(frameColor.rgb * kColor.rgb);    // Apply Kelvin color and convert to HSL
-    return HslToRgb(float3(resHsl.xy, luminance));                  // Preserve luminance
+    const float luminance = Luminance(frameColor);
+
+    float3 adjustedColor = frameColor.rgb * kColor.rgb;             // Apply Kelvin color
+    adjustedColor.g += tint * 0.001;                                // Apply tint
+
+    const float3 resHsl = RgbToHsl(adjustedColor);               
+    const float3 resRgb = HslToRgb(float3(resHsl.xy, luminance));   // Preserve luminance
+    return lerp(adjustedColor, resRgb, luminancePreservation);
 }
 
 // pow(f, e) won't work if f is negative, or may cause inf/NAN.
@@ -132,7 +137,11 @@ float3 ColorGradeShadowsMidtonesHighlights (float3 frameColor, float shadowsStar
 float3 ColorGrade(float3 frameColor)
 {
     frameColor = lerp(frameColor, ColorGradePostExposure(frameColor, PassSrg::m_colorGradingExposure), PassSrg::m_colorAdjustmentWeight);
-    frameColor = lerp(frameColor, ColorGradeKelvinColorTemp(frameColor, PassSrg::m_whiteBalanceKelvin), PassSrg::m_whiteBalanceWeight);
+    frameColor = lerp(frameColor, ColorGradeWhiteBalance(
+            frameColor, PassSrg::m_whiteBalanceKelvin, 
+            PassSrg::m_whiteBalanceTint, 
+            PassSrg::m_whiteBalanceLuminancePreservation), 
+        PassSrg::m_whiteBalanceWeight);
     frameColor = lerp(frameColor, ColorGradingContrast(frameColor, AcesCcMidGrey, PassSrg::m_colorGradingContrast), PassSrg::m_colorAdjustmentWeight);
     frameColor = lerp(frameColor, ColorGradeColorFilter(frameColor, PassSrg::m_colorFilterSwatch.rgb,
                                          PassSrg::m_colorFilterMultiply, PassSrg::m_colorFilterIntensity), PassSrg::m_colorAdjustmentWeight);
