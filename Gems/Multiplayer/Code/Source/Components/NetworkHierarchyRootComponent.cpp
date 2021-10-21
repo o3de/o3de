@@ -333,8 +333,9 @@ namespace Multiplayer
 
                 const NetEntityId netRootId = GetNetworkEntityManager()->GetNetEntityIdById(m_rootEntity->GetId());
                 controller->SetHierarchyRoot(netRootId);
-                GetNetBindComponent()->SetOwningConnectionId(m_rootEntity->FindComponent<NetBindComponent>()->GetOwningConnectionId());
             }
+
+            GetNetBindComponent()->SetOwningConnectionId(m_rootEntity->FindComponent<NetBindComponent>()->GetOwningConnectionId());
         }
         else
         {
@@ -347,8 +348,9 @@ namespace Multiplayer
                     NetworkHierarchyChildComponentController* controller = static_cast<NetworkHierarchyChildComponentController*>(GetController());
 
                     controller->SetHierarchyRoot(InvalidNetEntityId);
-                    GetNetBindComponent()->SetOwningConnectionId(m_previousOwningConnectionId);
                 }
+
+                GetNetBindComponent()->SetOwningConnectionId(m_previousOwningConnectionId);
 
                 // We lost the parent hierarchical entity, so as a root we need to re-build our own hierarchy.
                 RebuildHierarchy();
