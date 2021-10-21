@@ -59,7 +59,7 @@ echo     O3DE_PYTHON_INSTALL = %O3DE_PYTHON_INSTALL%
 
 :: location for O3DE python 3.7 location 
 :: Note, many DCC tools (like Maya) include thier own python interpretter
-:: Some apps may not operate correctly if O3DE_PYTHONHOME is set (this is definitely the case with Maya)
+:: Some DCC apps may not operate correctly if PYTHONHOME is set (this is definitely the case with Maya)
 :: Be aware the python.cmd below does set PYTHONHOME
 set DCCSI_PY_BASE=%O3DE_PYTHON_INSTALL%\python.cmd
 echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
@@ -71,7 +71,7 @@ IF "%DCCSI_PY_IDE%"=="" (set DCCSI_PY_IDE=%O3DE_PYTHONHOME%\python.exe)
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 
 :: add to the PATH
-SET PATH=%O3DE_PYTHON_INSTALL%;%PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
+SET PATH=%O3DE_PYTHON_INSTALL%;%O3DE_PYTHONHOME%;%DCCSI_PY_IDE%;%PATH%
 
 :: add all python related paths to PYTHONPATH for package imports
 set PYTHONPATH=%DCCSIG_PATH%;%DCCSI_PYTHON_LIB_PATH%;%O3DE_BUILD_PATH%;%PYTHONPATH%

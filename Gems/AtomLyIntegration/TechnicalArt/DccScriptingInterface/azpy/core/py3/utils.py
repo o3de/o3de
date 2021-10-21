@@ -37,6 +37,8 @@ def get_datadir() -> pathlib.Path:
         return home / ".local/share"
     elif sys.platform == "darwin":
         return home / "Library/Application Support"
+    else: # unknown
+        return None
 # -------------------------------------------------------------------------
 
 

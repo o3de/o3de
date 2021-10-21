@@ -44,6 +44,8 @@ def get_datadir():
     elif sys.platform == "darwin":
         datadir = pathlib.Path(home, "Library/Application Support")
         return datadir
+    else: # unknown
+        return None
 # -------------------------------------------------------------------------
 
 

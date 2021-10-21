@@ -168,7 +168,8 @@ def get_o3de_engine_root(check_stub='engine.json'):
     else:
         # execute if no exception
         # allow for external ENVAR override
-        _O3DE_DEV = Path(os.getenv('O3DE_DEV', azlmbr.paths.engroot))
+        from azpy.constants import ENVAR_O3DE_DEV
+        _O3DE_DEV = Path(os.getenv(ENVAR_O3DE_DEV, azlmbr.paths.engroot))
     finally:
         # note: can't use fstrings as this module gets called with py2.7 in maya
         _LOGGER.info('O3DE engine root: {}'.format(_O3DE_DEV.resolve()))
@@ -256,7 +257,7 @@ def get_check_global_project():
 
 
 # -------------------------------------------------------------------------
-def get_project_path():
+def get_o3de_project_path():
     """figures out the o3de project path
     if not found defaults to the engine folder"""
     _O3DE_PROJECT_PATH = None
@@ -264,16 +265,20 @@ def get_project_path():
         import azlmbr  # this file will fail outside of O3DE
     except ImportError as e:
         # (fallback 1) this checks if a global project is set
-        _O3DE_PROJECT_PATH = azpy.config_utils.get_check_global_project()
+        # This check user home for .o3de data
+        _O3DE_PROJECT_PATH = get_check_global_project()
     else:
-        # execute if no exception
-        # check
-        _O3DE_PROJECT_PATH = Path(os.getenv('O3DE_DEV', azlmbr.paths.projectroot))
+        # execute if no exception, this would indicate we are in O3DE land
+        # allow for external ENVAR override
+        from azpy.constants import ENVAR_O3DE_PROJECT_PATH
+        _O3DE_PROJECT_PATH = Path(os.getenv(ENVAR_O3DE_PROJECT_PATH, azlmbr.paths.projectroot))
     finally:
+        # (fallback 2) if None, fallback to engine folder
+        if not _O3DE_PROJECT_PATH:
+            _O3DE_PROJECT_PATH = get_o3de_engine_root()
         # note: can't use fstrings as this module gets called with py2.7 in maya
-        _LOGGER.info('O3DE engine root: {}'.format(_O3DE_DEV.resolve()))
-    return _O3DE_DEV
-    
+        _LOGGER.info('O3DE project root: {}'.format(_O3DE_PROJECT_PATH.resolve()))
+    return _O3DE_PROJECT_PATH
 # -------------------------------------------------------------------------
 
 
@@ -282,13 +287,14 @@ def bootstrap_dccsi_py_libs(dccsi_dirpath=return_stub_dir()):
     """Builds and adds local site dir libs based on py version"""
 
     from azpy.constants import STR_DCCSI_PYTHON_LIB_PATH  # a path string constructor
-    _DCCSI_PYTHON_LIB_PATH = STR_DCCSI_PYTHON_LIB_PATH.format(dccsi_dirpath,
-                                                              sys.version_info[0],
-                                                              sys.version_info[1])
+    _DCCSI_PYTHON_LIB_PATH = Path(STR_DCCSI_PYTHON_LIB_PATH.format(dccsi_dirpath,
+                                                                   sys.version_info[0],
+                                                                   sys.version_info[1]))
 
-    if os.path.exists(_DCCSI_PYTHON_LIB_PATH):
-        _LOGGER.debug('Performed site.addsitedir({})'.format(_DCCSI_PYTHON_LIB_PATH))
-        site.addsitedir(_DCCSI_PYTHON_LIB_PATH)  # PYTHONPATH
+    if _DCCSI_PYTHON_LIB_PATH.exists():
+        site.addsitedir(_DCCSI_PYTHON_LIB_PATH.resolve())  # PYTHONPATH
+        _LOGGER.debug('Performed site.addsitedir({})'
+                      ''.format(_DCCSI_PYTHON_LIB_PATH.resolve()))
         return _DCCSI_PYTHON_LIB_PATH
     else:
         message = "Doesn't exist: {}".format(_DCCSI_PYTHON_LIB_PATH)

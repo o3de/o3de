@@ -15,7 +15,8 @@ DccScriptingInterface (DCCsi) is a framework for O3DE extensions, for example:
 The DccScriptingInterface\config.py, procedurally provides a synthetic env context.
 This env is a data-driven approach to configuring layered and managed env settings.
 
-This env provides the hooks for DDC apps and/or standalone tools, to configure acess to O3DE code (for boostrapping), safely retreive known paths, set/get developer flags, etc.
+This env provides the hooks for DDC apps and/or standalone tools,
+to configure acess to O3DE code (for boostrapping), safely retreive known paths, set/get developer flags, etc.
 
 DccScriptingInterface\Tools\Dev\Windows\
 
@@ -51,10 +52,27 @@ Launch_env_Cmd.bat 	: Starts a cmd with entire managed env context
                         : ^ allows use to validate env
                         : ^ display all default ENVAR plugs
                         : ^ allows user to test O3DE python + scripts from cmd
-Launch_PyMin_Cmd.bat 	: Starts minimal cmd with O3DE pthon access only
+Launch_PyMin_Cmd.bat 	: Starts minimal cmd with O3DE python access only
                         : ^ for instance, test Dccsi\config.py like this:
                         : {DCCsi prommpt}>python config.py
 Launch_Maya_2020.bat 	: Starts Maya2020 within managed env context
 Launch_WindIDE-7-1.bat 	: Starts WingIDE  within managed env context
 
+---------------------
+Instructions: How to test the synthetic environment and settings externally
 
+1. Run the cmd:   Launch_PyMin_Cmd.bat
+
+        C:\Depot\o3de-engine\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface>
+
+2. Run command:>python config.py -dm=True -py=True -qt=True
+
+What this does?
+- runs the O3DE python exe
+- starts the config.py which begins to procedurally create synthetic/dynamic environment (hooks)
+- ^ this starts with DCCsi hooks
+- enters 'dev mode'(-dm) and attempts to attach debugger (Wing IDE only for now, others planned)
+- enables additional O3DE python hooks and code access
+- ^ great for standalone tools, but you don't want that functionality to interfer with other DCC tools python environments (like Maya!)
+- enables access to O3DE Qt .dlls and PySide2 python package support(-qt)
+- ^ great for standalone PySide2 which can operate outside of the O3DE editor

@@ -383,7 +383,7 @@ def stash_env(_SYNTH_ENV_DICT = OrderedDict()):
     _SYNTH_ENV_DICT[ENVAR_O3DE_PROJECT] = _O3DE_PROJECT
     
     _O3DE_BUILD_DIR_NAME = os.getenv(ENVAR_O3DE_BUILD_DIR_NAME,
-                                   TAG_DIR_O3DE_BUILD)
+                                   TAG_DIR_O3DE_BUILD_FOLDER)
     _SYNTH_ENV_DICT[ENVAR_O3DE_BUILD_DIR_NAME] = _O3DE_BUILD_DIR_NAME
 
     #  pattern for the above is (and will be repeated)

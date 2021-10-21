@@ -1,4 +1,5 @@
 {
+    "LOAD_DOTENV": true,
     "COMPANY": "Amazon",
     "DCCSI_GDEBUG": "False",
     "DCCSI_DEV_MODE": "False",
@@ -8,6 +9,5 @@
         "settings.py",
         "settings.json",
         ".secrets.json"
-    ],
-    "LOAD_DOTENV": true,
+    ]
 }

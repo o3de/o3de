@@ -65,17 +65,14 @@ IF "%O3DE_REL_PATH%"=="" (set O3DE_REL_PATH=..\..\..\..)
 echo     O3DE_REL_PATH = %O3DE_REL_PATH%
 
 :: You can define the project name
-IF "%O3DE_PROJECT_NAME%"=="" (
-    for %%a in (%CD%..\..\..\..) do set O3DE_PROJECT_NAME=%%~na
+IF "%O3DE_PROJECT%"=="" (
+    for %%a in (%CD%..\..\..\..) do set O3DE_PROJECT=%%~na
         )
-echo     O3DE_PROJECT_NAME = %O3DE_PROJECT_NAME%
+echo     O3DE_PROJECT = %O3DE_PROJECT%
 
 :: set up the default project path (dccsi)
 :: if not set we also use the DCCsi path as stand-in
 CD /D ..\..\..\
-:: if not defined we just use the DCCsi path as stand-in
-IF "%O3DE_PROJECT%"=="" (set O3DE_PROJECT=%CD%)
-echo     O3DE_PROJECT = %O3DE_PROJECT%
 :: To Do: remove one of these 
 IF "%O3DE_PROJECT_PATH%"=="" (set O3DE_PROJECT_PATH=%CD%)
 echo     O3DE_PROJECT_PATH = %O3DE_PROJECT_PATH%
@@ -106,18 +103,21 @@ set DCCSI_TOOLS_PATH=%DCCSIG_PATH%\Tools
 echo     DCCSI_TOOLS_PATH = %DCCSI_TOOLS_PATH%
 
 :: temp log location specific to this gem
-set DCCSI_LOG_PATH=%DCCSIG_PATH%\.temp\logs
+set DCCSI_LOG_PATH=%O3DE_PROJECT_PATH%\.temp\logs
 echo     DCCSI_LOG_PATH = %DCCSI_LOG_PATH%
 
 :: O3DE build path
-IF "%TAG_O3DE_BUILD_FOLDER%"=="" (set TAG_O3DE_BUILD_FOLDER=build)
-echo     TAG_O3DE_BUILD_FOLDER = %TAG_O3DE_BUILD_FOLDER%
+IF "%O3DE_BUILD_FOLDER%"=="" (set O3DE_BUILD_FOLDER=build)
+echo     O3DE_BUILD_FOLDER = %O3DE_BUILD_FOLDER%
 
-IF "%O3DE_BUILD_PATH%"=="" (set O3DE_BUILD_PATH=%O3DE_DEV%\%TAG_O3DE_BUILD_FOLDER%\bin\profile)
+IF "%O3DE_BUILD_PATH%"=="" (set O3DE_BUILD_PATH=%O3DE_DEV%\%O3DE_BUILD_FOLDER%)
 echo     O3DE_BUILD_PATH = %O3DE_BUILD_PATH%
 
+IF "%O3DE_BIN_PATH%"=="" (set O3DE_BIN_PATH=%O3DE_BUILD_PATH%\bin\profile)
+echo     O3DE_BIN_PATH = %O3DE_BIN_PATH%
+
 :: add to the PATH
-SET PATH=%O3DE_BUILD_PATH%;%DCCSIG_PATH%;%DCCSI_AZPY_PATH%;%PATH%
+SET PATH=%O3DE_BIN_PATH%;%DCCSIG_PATH%;%PATH%
 
 ::ENDLOCAL
 

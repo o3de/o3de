@@ -93,15 +93,17 @@ STR_CROSSBAR_NL = str('{0}\n'.format(STR_CROSSBAR))
 # some common str tags
 TAG_DEFAULT_COMPANY = str('Amazon.O3DE')
 TAG_DEFAULT_PROJECT = str('DccScriptingInterface')
+TAG_DCCSI_NICKNAME = str('DCCsi')
 TAG_MOCK_PROJECT = str('MockProject')
 TAG_DIR_O3DE_DEV = str('dev')
 TAG_DIR_DCCSI_AZPY = str('azpy')
 TAG_DIR_DCCSI_TOOLS = str('Tools')
-TAG_DIR_O3DE_BUILD = str('build')
+TAG_DIR_O3DE_BUILD_FOLDER = str('build')
 TAG_QT_PLUGIN_PATH = str('QT_PLUGIN_PATH')
 
 TAG_O3DE_FOLDER = str('.o3de')
 TAG_O3DE_BOOTSTRAP = str('bootstrap.setreg')
+TAG_DCCSI_CONFIG = str('dccsiconfiguration.setreg')
 
 # filesystem markers, stub file names.
 STUB_O3DE_DEV = str('engine.json')
@@ -209,19 +211,19 @@ PATH_DCCSI_AZPY_PATH = str(return_stub_dir(STUB_O3DE_DCCSI_AZPY))
 PATH_DCCSI_TOOLS_PATH = str('{0}\\{1}'.format(PATH_DCCSIG_PATH, TAG_DIR_DCCSI_TOOLS))
 
 # logging into the cache
-PATH_DCCSI_LOG_PATH = str('{O3DE_DEV}\\Cache\\{O3DE_PROJECT}\\pc\\user\\log\\logs')
+PATH_DCCSI_LOG_PATH = str('{O3DE_PROJECT_PATH}\\user\\log\{TAG_DCCSI_NICKNAME}')
 
 # dev \ <build> \
 STR_CONSTRUCT_O3DE_BUILD_PATH = str('{0}\\{1}')
 PATH_O3DE_BUILD_PATH = str(STR_CONSTRUCT_O3DE_BUILD_PATH.format(PATH_O3DE_DEV,
-                                                            TAG_DIR_O3DE_BUILD))
+                                                            TAG_DIR_O3DE_BUILD_FOLDER))
 
 # ENVAR_QT_PLUGIN_PATH = TAG_QT_PLUGIN_PATH
 STR_QTPLUGIN_DIR = str('{0}\\bin\\profile\\EditorPlugins')
 STR_QTFORPYTHON_PATH = str('{0}\\Gems\\QtForPython\\3rdParty\\pyside2\\windows\\release')
 STR_O3DE_BIN_PATH = str('{0}\\bin\\profile')
 
-PATH_O3DE_BUILD_PATH = str('{0}\\{1}'.format(PATH_O3DE_DEV, TAG_DIR_O3DE_BUILD))
+PATH_O3DE_BUILD_PATH = str('{0}\\{1}'.format(PATH_O3DE_DEV, TAG_DIR_O3DE_BUILD_FOLDER))
 PATH_QTFORPYTHON_PATH = str(STR_QTFORPYTHON_PATH.format(PATH_O3DE_DEV))
 PATH_QT_PLUGIN_PATH = str(STR_QTPLUGIN_DIR).format(PATH_O3DE_BUILD_PATH)
 PATH_O3DE_BIN_PATH = str(STR_O3DE_BIN_PATH).format(PATH_O3DE_BUILD_PATH)
@@ -249,8 +251,9 @@ STR_USER_O3DE_PATH = str('{home}\\{o3de}')
 PATH_USER_O3DE = str(STR_USER_O3DE_PATH).format(home=PATH_USER_HOME,
                                               o3de=TAG_O3DE_FOLDER)
 
-STR_USER_O3DE_REGISTRY_PATH = str('{0}\\Registry')
-PATH_USER_O3DE_REGISTRY = str(STR_USER_O3DE_REGISTRY_PATH).format(PATH_USER_O3DE)
+TAG_DIR_REGISTRY = str('Registry')
+STR_USER_O3DE_REGISTRY_PATH = str('{0}\\{1}')
+PATH_USER_O3DE_REGISTRY = str(STR_USER_O3DE_REGISTRY_PATH).format(PATH_USER_O3DE, TAG_DIR_REGISTRY)
 
 STR_USER_O3DE_BOOTSTRAP_PATH = str('{reg}\\{file}')
 PATH_USER_O3DE_BOOTSTRAP = str(STR_USER_O3DE_BOOTSTRAP_PATH).format(reg=PATH_USER_O3DE_REGISTRY,
