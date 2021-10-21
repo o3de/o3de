@@ -19,7 +19,10 @@ namespace AzToolsFramework
     {
         AZStd::string PropertySymbol::ToString() const
         {
-            return AZStd::string::format("%s [%s/%s]", m_name.c_str(), m_canRead ? "R" : "_", m_canWrite ? "W" : "_");
+            return AZStd::string::format("%s [%s/%s]",
+                                         m_name.c_str(),
+                                         m_canRead ? "R" : "_",
+                                         m_canWrite ? "W" : "_");
         }
 
         void PropertySymbol::Reflect(AZ::ReflectContext* context)
@@ -115,8 +118,9 @@ namespace AzToolsFramework
 
         AZStd::string EBusSymbol::ToString() const
         {
+            auto boolToStr = +[](bool val) { return val ? "true" : "false"; };
             return AZStd::string::format("%s: canBroadcast(%s), canQueue(%s), hasHandler(%s)", m_name.c_str(),
-                m_canBroadcast ? "true" : "false", m_canQueue ? "true" : "false", m_hasHandler ? "true" : "false");
+                boolToStr(m_canBroadcast), boolToStr(m_canQueue), boolToStr(m_hasHandler));
         }
 
         void EBusSymbol::Reflect(AZ::ReflectContext* context)
@@ -145,11 +149,11 @@ namespace AzToolsFramework
         class IntrusiveHelper
         {
         public:
-            static AZStd::vector<ClassSymbol>& GetClassSymbols(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_classSymbols; }
+            static AZStd::vector<ClassSymbol>& GetClassSymbols(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_cachedClassSymbols; }
             static AZStd::unordered_map<AZ::Uuid, size_t>& GetClassUuidToIndexMap(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_classUuidToIndexMap; }
-            static AZStd::vector<PropertySymbol>& GetGlobalPropertySymbols(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_globalPropertySymbols; }
-            static AZStd::vector<MethodSymbol>& GetGlobalFunctionSymbols(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_globalFunctionSymbols; }
-            static AZStd::vector<EBusSymbol>& GetEBusSymbols(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_ebusSymbols; }
+            static AZStd::vector<PropertySymbol>& GetGlobalPropertySymbols(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_cachedGlobalPropertySymbols; }
+            static AZStd::vector<MethodSymbol>& GetGlobalFunctionSymbols(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_cachedGlobalFunctionSymbols; }
+            static AZStd::vector<EBusSymbol>& GetEBusSymbols(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_cachedEbusSymbols; }
             static AZStd::unordered_map<AZStd::string, size_t>& GetEBusNameToIndexMap(SymbolsReporterSystemComponent& symbolsReporter) { return symbolsReporter.m_ebusNameToIndexMap; }
         };
 
@@ -202,12 +206,12 @@ namespace AzToolsFramework
 
         void SymbolsReporterSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-
+            required.push_back(AZ_CRC_CE("ScriptService"));
         }
 
         void SymbolsReporterSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-
+            // No dependent services.
         }
 
         void SymbolsReporterSystemComponent::Activate()
@@ -238,6 +242,7 @@ namespace AzToolsFramework
             auto scriptContext = InitScriptContext();
             if (!scriptContext)
             {
+                AZ_Error(LogName, false, "Invalid scriptContext");
                 return;
             }
 
@@ -246,10 +251,11 @@ namespace AzToolsFramework
             auto debugContext = scriptContext->GetDebugContext();
             if (!debugContext)
             {
+                AZ_Error(LogName, false, "Invalid debugContext from scriptContext");
                 return;
             }
 
-            auto enumMethodFunc = +[]([[maybe_unused]] const AZ::Uuid* classTypeId, [[maybe_unused]] const char* methodName, [[maybe_unused]] const char* debugArgumentInfo, [[maybe_unused]] void* userData) -> bool
+            auto enumMethodFunc = +[]([[maybe_unused]] const AZ::Uuid* classTypeId, const char* methodName, const char* debugArgumentInfo, void* userData) -> bool
             {
                 auto& mySelf = *reinterpret_cast<SymbolsReporterSystemComponent*>(userData);
                 auto& methodSymbols = IntrusiveHelper::GetGlobalFunctionSymbols(mySelf);
@@ -263,7 +269,7 @@ namespace AzToolsFramework
                 return true;
             };
 
-            auto enumPropertyFunc = +[]([[maybe_unused]] const AZ::Uuid* classTypeId, [[maybe_unused]] const char* propertyName, [[maybe_unused]] bool canRead, [[maybe_unused]] bool canWrite, [[maybe_unused]] void* userData) -> bool
+            auto enumPropertyFunc = +[]([[maybe_unused]] const AZ::Uuid* classTypeId, const char* propertyName, bool canRead, bool canWrite, void* userData) -> bool
             {
                 auto& mySelf = *reinterpret_cast<SymbolsReporterSystemComponent*>(userData);
                 auto& propertySymbols = IntrusiveHelper::GetGlobalPropertySymbols(mySelf);
@@ -285,15 +291,15 @@ namespace AzToolsFramework
         /// SymbolsReporterRequestBus::Handler
         const AZStd::vector<ClassSymbol>& SymbolsReporterSystemComponent::GetListOfClasses()
         {
-            if (!m_classSymbols.empty())
+            if (!m_cachedClassSymbols.empty())
             {
-                return m_classSymbols;
+                return m_cachedClassSymbols;
             }
 
             auto scriptContext = InitScriptContext();
             if (!scriptContext)
             {
-                return m_classSymbols;
+                return m_cachedClassSymbols;
             }
 
             scriptContext->EnableDebug();
@@ -301,10 +307,10 @@ namespace AzToolsFramework
             auto debugContext = scriptContext->GetDebugContext();
             if (!debugContext)
             {
-                return m_classSymbols;
+                return m_cachedClassSymbols;
             }
 
-            auto enumClassFunc = +[](const char* className, [[maybe_unused]]const AZ::Uuid& classTypeId, void* userData) -> bool
+            auto enumClassFunc = +[](const char* className, const AZ::Uuid& classTypeId, void* userData) -> bool
             {
                 auto& mySelf = *reinterpret_cast<SymbolsReporterSystemComponent*>(userData);
 
@@ -320,7 +326,7 @@ namespace AzToolsFramework
                 return true;
             };
 
-            auto enumMethodFunc = +[]([[maybe_unused]] const AZ::Uuid* classTypeId, [[maybe_unused]] const char* methodName, [[maybe_unused]] const char* debugArgumentInfo, [[maybe_unused]] void* userData) -> bool
+            auto enumMethodFunc = +[](const AZ::Uuid* classTypeId, const char* methodName, const char* debugArgumentInfo, void* userData) -> bool
             {
                 auto& mySelf = *reinterpret_cast<SymbolsReporterSystemComponent*>(userData);
                 auto& classUuidToIndexMap = IntrusiveHelper::GetClassUuidToIndexMap(mySelf);
@@ -344,7 +350,7 @@ namespace AzToolsFramework
                 return true;
             };
 
-            auto enumPropertyFunc = +[]([[maybe_unused]] const AZ::Uuid* classTypeId, [[maybe_unused]] const char* propertyName, [[maybe_unused]] bool canRead, [[maybe_unused]] bool canWrite, [[maybe_unused]] void* userData) -> bool
+            auto enumPropertyFunc = +[](const AZ::Uuid* classTypeId, const char* propertyName, bool canRead, bool canWrite, void* userData) -> bool
             {
                 auto& mySelf = *reinterpret_cast<SymbolsReporterSystemComponent*>(userData);
                 auto& classUuidToIndexMap = IntrusiveHelper::GetClassUuidToIndexMap(mySelf);
@@ -371,44 +377,44 @@ namespace AzToolsFramework
 
             scriptContext->DisableDebug();
 
-            return m_classSymbols;
+            return m_cachedClassSymbols;
         }
 
         const AZStd::vector<PropertySymbol>& SymbolsReporterSystemComponent::GetListOfGlobalProperties()
         {
-            if (!m_globalPropertySymbols.empty())
+            if (!m_cachedGlobalPropertySymbols.empty())
             {
-                return m_globalPropertySymbols;
+                return m_cachedGlobalPropertySymbols;
             }
 
             LoadGlobalSymbols();
 
-            return m_globalPropertySymbols;
+            return m_cachedGlobalPropertySymbols;
         }
 
         const AZStd::vector<MethodSymbol>& SymbolsReporterSystemComponent::GetListOfGlobalFunctions()
         {
-            if (!m_globalFunctionSymbols.empty())
+            if (!m_cachedGlobalFunctionSymbols.empty())
             {
-                return m_globalFunctionSymbols;
+                return m_cachedGlobalFunctionSymbols;
             }
 
             LoadGlobalSymbols();
 
-            return m_globalFunctionSymbols;
+            return m_cachedGlobalFunctionSymbols;
         }
 
         const AZStd::vector<EBusSymbol>& SymbolsReporterSystemComponent::GetListOfEBuses()
         {
-            if (!m_ebusSymbols.empty())
+            if (!m_cachedEbusSymbols.empty())
             {
-                return m_ebusSymbols;
+                return m_cachedEbusSymbols;
             }
 
             auto scriptContext = InitScriptContext();
             if (!scriptContext)
             {
-                return m_ebusSymbols;
+                return m_cachedEbusSymbols;
             }
 
             scriptContext->EnableDebug();
@@ -416,7 +422,7 @@ namespace AzToolsFramework
             auto debugContext = scriptContext->GetDebugContext();
             if (!debugContext)
             {
-                return m_ebusSymbols;
+                return m_cachedEbusSymbols;
             }
 
             auto enumEBusFunc = +[](const AZStd::string& ebusName, bool canBroadcast, bool canQueue, bool hasHandler, void* userData) -> bool
@@ -464,7 +470,7 @@ namespace AzToolsFramework
 
             scriptContext->DisableDebug();
 
-            return m_ebusSymbols;
+            return m_cachedEbusSymbols;
         }
         ///////////////////////////////////////////////////////////////////////////
 

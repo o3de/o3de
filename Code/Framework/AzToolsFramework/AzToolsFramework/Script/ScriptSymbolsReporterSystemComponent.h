@@ -56,14 +56,14 @@ namespace AzToolsFramework
 
             AZ::ScriptContext* m_scriptContext = nullptr;
 
-            AZStd::vector<ClassSymbol> m_classSymbols;
+            AZStd::vector<ClassSymbol> m_cachedClassSymbols;
             // The key is a class uuid, the value is the index in @m_classSymbols
             AZStd::unordered_map<AZ::Uuid, size_t> m_classUuidToIndexMap;
 
-            AZStd::vector<PropertySymbol> m_globalPropertySymbols;
-            AZStd::vector<MethodSymbol> m_globalFunctionSymbols;
+            AZStd::vector<PropertySymbol> m_cachedGlobalPropertySymbols;
+            AZStd::vector<MethodSymbol> m_cachedGlobalFunctionSymbols;
 
-            AZStd::vector<EBusSymbol> m_ebusSymbols;
+            AZStd::vector<EBusSymbol> m_cachedEbusSymbols;
             // The key is the ebus name, the value is the index in @m_ebusSymbols
             AZStd::unordered_map<AZStd::string, size_t> m_ebusNameToIndexMap;
             
