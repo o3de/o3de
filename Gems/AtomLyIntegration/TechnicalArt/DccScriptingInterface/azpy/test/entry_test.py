@@ -46,10 +46,11 @@ _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
 # -------------------------------------------------------------------------
 def main(verbose=_DCCSI_GDEBUG, connect_debugger=True):
-    _LOGGER.info('{}'.format('-' * 74))
-    _LOGGER.info('entry_test.main()')
-    _LOGGER.info('Root test import successful:')
-    _LOGGER.info('~   {}'.format(__file__))
+    if verbose:
+        _LOGGER.info('{}'.format('-' * 74))
+        _LOGGER.info('entry_test.main()')
+        _LOGGER.info('Root test import successful:')
+        _LOGGER.info('~   {}'.format(__file__))
 
     if connect_debugger:
         status = connect_wing()
@@ -66,7 +67,7 @@ def connect_wing():
         _WINGHOME = os.environ['WINGHOME']  # test
         _LOGGER.info('~   WINGHOME: {0}'.format(_WINGHOME))
     except Exception as e:
-        _LOGGER.warning(e)
+        _LOGGER.info(e)
         from azpy.constants import PATH_DEFAULT_WINGHOME
         _WINGHOME = PATH_DEFAULT_WINGHOME
         os.environ['WINGHOME'] = PATH_DEFAULT_WINGHOME

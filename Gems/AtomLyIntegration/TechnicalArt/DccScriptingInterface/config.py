@@ -29,6 +29,16 @@ import logging as _logging
 
 
 # -------------------------------------------------------------------------
+_O3DE_RUNNING=None    
+try:
+    import azlmbr
+    _O3DE_RUNNING=True
+except:
+    _O3DE_RUNNING=False
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 def attach_debugger():
     _DCCSI_GDEBUG = True
     os.environ["DYNACONF_DCCSI_GDEBUG"] = str(_DCCSI_GDEBUG)
@@ -37,7 +47,9 @@ def attach_debugger():
     os.environ["DYNACONF_DCCSI_DEV_MODE"] = str(_DCCSI_DEV_MODE)
     
     from azpy.test.entry_test import connect_wing
-    return connect_wing()
+    _debugger = connect_wing()
+    
+    return _debugger
 # -------------------------------------------------------------------------
 
 
@@ -47,7 +59,7 @@ _MODULENAME = __name__
 if _MODULENAME is '__main__':
     _MODULENAME = 'DCCsi.config'
 
-os.environ['PYTHONINSPECT'] = 'True'
+#os.environ['PYTHONINSPECT'] = 'True'
 _MODULE_PATH = os.path.abspath(__file__)
 
 # we don't have access yet to the DCCsi Lib\site-packages
@@ -64,7 +76,6 @@ from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
 from azpy.constants import ENVAR_DCCSI_LOGLEVEL
-from azpy.constants import FRMT_LOG_LONG
 
 # set up global space, logging etc.
 # set these true if you want them set globally for debugging
@@ -84,8 +95,10 @@ if _DCCSI_DEV_MODE:
 # set up module logging
 for handler in _logging.root.handlers[:]:
     _logging.root.removeHandler(handler)
-_LOGGER = _logging.getLogger(_MODULENAME)
-_logging.basicConfig(format=FRMT_LOG_LONG, level=_DCCSI_LOGLEVEL)
+    
+_LOGGER = azpy.initialize_logger(_MODULENAME,
+                                 log_to_file=_DCCSI_GDEBUG,
+                                 default_log_level=_DCCSI_LOGLEVEL)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
 _LOGGER.info('site.addsitedir({})'.format(_DCCSI_PATH))
@@ -235,8 +248,11 @@ def init_o3de_pyside2(dccsi_path=_DCCSI_PATH,
     _O3DE_DCCSI_PATH = os.environ['PATH']
     os.environ["DYNACONF_PATH"] = _O3DE_DCCSI_PATH
     
-    _DCCSI_PYTHONPATH = os.environ['PYTHONPATH']
-    os.environ["DYNACONF_PYTHONPATH"] = _DCCSI_PYTHONPATH
+    try: 
+        _DCCSI_PYTHONPATH = os.environ['PYTHONPATH']
+        os.environ["DYNACONF_PYTHONPATH"] = _DCCSI_PYTHONPATH
+    except:
+        pass
 
     from dynaconf import settings    
     
@@ -257,7 +273,7 @@ def test_pyside2():
     try:
         from PySide2.QtWidgets import QApplication, QPushButton
         app = QApplication(sys.argv)
-        hello = QPushButton("Hello world!")
+        hello = QPushButton("O3DE DCCsi PySide2 Test!")
         hello.resize(200, 60)
         hello.show()
     except Exception as e:
@@ -415,8 +431,11 @@ def init_o3de_python(engine_path=_O3DE_DEV,
     _O3DE_DCCSI_PATH = os.environ['PATH']
     os.environ["DYNACONF_PATH"] = _O3DE_DCCSI_PATH
     
-    _DCCSI_PYTHONPATH = os.environ['PYTHONPATH']
-    os.environ["DYNACONF_PYTHONPATH"] = _DCCSI_PYTHONPATH
+    try: 
+        _DCCSI_PYTHONPATH = os.environ['PYTHONPATH']
+        os.environ["DYNACONF_PYTHONPATH"] = _DCCSI_PYTHONPATH
+    except:
+        pass
 
     from dynaconf import settings    
     
@@ -579,11 +598,11 @@ if __name__ == '__main__':
 
     # now standalone we can validate the config. env, settings.
     settings = get_config_settings(engine_path=args.engine_path,
-                              build_folder=args.build_folder,
-                              project_name=args.project_name,
-                              project_path=args.project_path,
-                              enable_o3de_python=args.enable_python,
-                              enable_o3de_pyside2=args.enable_qt)
+                                   build_folder=args.build_folder,
+                                   project_name=args.project_name,
+                                   project_path=args.project_path,
+                                   enable_o3de_python=args.enable_python,
+                                   enable_o3de_pyside2=args.enable_qt)
 
     ## CORE
     _LOGGER.info(STR_CROSSBAR)
@@ -675,6 +694,7 @@ if __name__ == '__main__':
 
     # return
     sys.exit()
+# --- END -----------------------------------------------------------------    
 
 
 
