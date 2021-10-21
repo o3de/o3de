@@ -949,7 +949,7 @@ namespace AzToolsFramework
                 path = instance->get().GetTemplateSourcePath();
             }
 
-            return AZStd::move(path);
+            return path;
         }
 
         PrefabRequestResult PrefabPublicHandler::HasUnsavedChanges(AZ::IO::Path prefabFilePath) const

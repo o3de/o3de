@@ -19,7 +19,7 @@ def PrefabBasicWorkflow_InstantiatePrefab():
 
     prefab_test_utils.open_base_tests_level()
 
-    # Asserts if prefab instantiation doesn't succeeds
+    # Instantiates a new car prefab instance
     test_prefab = Prefab.get_prefab(EXISTING_TEST_PREFAB_FILE_NAME)
     test_instance = test_prefab.instantiate( 
         prefab_position=INSTANTIATED_TEST_PREFAB_POSITION)

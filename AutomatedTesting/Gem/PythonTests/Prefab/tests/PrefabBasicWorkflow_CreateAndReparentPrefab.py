@@ -22,25 +22,23 @@ def PrefabBasicWorkflow_CreateAndReparentPrefab():
 
         prefab_test_utils.open_base_tests_level()
 
-        # Creates a new Entity at the root level
-        # Asserts if creation didn't succeed
+        # Creates a new car entity at the root level
         car_entity = EditorEntity.create_editor_entity()
         car_prefab_entities = [car_entity]
 
-        # Asserts if prefab creation doesn't succeeds 
+        # Creates a prefab from the car entity
         _, car = Prefab.create_prefab(
             car_prefab_entities, CAR_PREFAB_FILE_NAME)
 
-        # Creates another new Entity at the root level
-        # Asserts if creation didn't succeed
+        # Creates another new wheel entity at the root level
         wheel_entity = EditorEntity.create_editor_entity()
         wheel_prefab_entities = [wheel_entity]
 
-        # Asserts if prefab creation doesn't succeeds
+        # Creates another prefab from the wheel entity
         _, wheel = Prefab.create_prefab(
             wheel_prefab_entities, WHEEL_PREFAB_FILE_NAME)
 
-        # Asserts if prefab reparenting doesn't succeeds
+        # Reparents the wheel prefab instance to the container entity of the car prefab instance
         await wheel.ui_reparent_prefab_instance(car.container_entity.id)
 
     run_test()
