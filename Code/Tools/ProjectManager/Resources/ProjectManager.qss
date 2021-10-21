@@ -65,7 +65,7 @@ QTabBar::tab:focus {
     background-color: black;
     border-radius: 20px;
     border:1px solid #dddddd;
-    qproperty-minimumSize: 100px 60px;
+    qproperty-minimumSize: 100px 50px;
 }
 
 #ToastNotification #icon_frame {
