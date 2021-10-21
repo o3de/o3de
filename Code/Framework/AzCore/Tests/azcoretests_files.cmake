@@ -121,6 +121,7 @@ set(FILES
     Serialization/Json/TestCases_Classes.cpp
     Serialization/Json/TestCases_Compare.cpp
     Serialization/Json/TestCases_Enum.cpp
+    Serialization/Json/TestCases_Importing.cpp
     Serialization/Json/TestCases_Patching.cpp
     Serialization/Json/TestCases_Pointers.h
     Serialization/Json/TestCases_Pointers.cpp
