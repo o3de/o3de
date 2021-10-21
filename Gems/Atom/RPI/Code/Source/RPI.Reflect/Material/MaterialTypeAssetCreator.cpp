@@ -43,6 +43,7 @@ namespace AZ
                 return false; 
             }
 
+            m_asset->PostLoadInit();
             m_asset->SetReady();
 
             m_materialShaderResourceGroupLayout = nullptr;
