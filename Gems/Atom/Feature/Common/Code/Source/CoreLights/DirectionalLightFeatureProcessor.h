@@ -72,12 +72,6 @@ namespace AZ
         // [GFX TODO][ATOM-15172] Look into compacting struct DirectionalLightShadowData
         struct DirectionalLightShadowData
         {
-            AZStd::array<Matrix4x4, Shadow::MaxNumberOfCascades> m_depthBiasMatrices =
-            { {
-                    Matrix4x4::CreateIdentity(),
-                    Matrix4x4::CreateIdentity(),
-                    Matrix4x4::CreateIdentity(),
-                    Matrix4x4::CreateIdentity() } };
             AZStd::array<Matrix4x4, Shadow::MaxNumberOfCascades> m_lightViewToShadowmapMatrices =
             { {
                     Matrix4x4::CreateIdentity(),
@@ -97,11 +91,14 @@ namespace AZ
             float m_boundaryScale = 0.f;
             uint32_t m_shadowmapSize = 1; // width and height of shadowmap
             uint32_t m_cascadeCount = 1;
+            // Reduce acne by applying a small amount of bias to apply along shadow-space z.
+            float m_shadowBias = 0.0f; 
             uint32_t m_predictionSampleCount = 0;
             uint32_t m_filteringSampleCount = 0;
             uint32_t m_debugFlags = 0;
             uint32_t m_shadowFilterMethod = 0; 
             float m_far_minus_near = 0;
+            float m_padding[3];
         };
 
         class DirectionalLightFeatureProcessor final
@@ -217,8 +214,8 @@ namespace AZ
             void SetDebugFlags(LightHandle handle, DebugDrawFlags flags) override;
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
-            void SetShadowBoundaryWidth(LightHandle handle, float boundaryWidth) override;
             void SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable) override;
+            void SetShadowBias(LightHandle handle, float bias) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const;
             uint32_t GetLightCount() const;
@@ -278,10 +275,8 @@ namespace AZ
 
             //! This updates the parameter of Gaussian filter used in ESM.
             void UpdateFilterParameters(LightHandle handle);
-            //! This updates standard deviations for each cascade.
-            void UpdateStandardDeviations(LightHandle handle, const RPI::View* cameraView);
-            //! This updates filter offset and size for each cascade.
-            void UpdateFilterOffsetsCounts(LightHandle handle, const RPI::View* cameraView);
+            //! This updates if the filter is enabled.
+            void UpdateFilterEnabled(LightHandle handle, const RPI::View* cameraView);
             //! This updates shadowmap position(origin and size) in the atlas for each cascade.
             void UpdateShadowmapPositionInAtlas(LightHandle handle, const RPI::View* cameraView);
             //! This set filter parameters to passes which execute filtering.

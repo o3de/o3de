@@ -178,12 +178,6 @@ namespace AzToolsFramework
 
         AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
 
-        // We hide the root instance container entity from the Outliner, so avoid drawing its full container on children
-        if (m_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
-        {
-            return;
-        }
-
         const QTreeView* outlinerTreeView(qobject_cast<const QTreeView*>(option.widget));
         const int ancestorLeft = outlinerTreeView->visualRect(index).left() + (m_prefabBorderThickness / 2) - 1;
         const int curveRectSize = m_prefabCapsuleRadius * 2;
@@ -322,14 +316,7 @@ namespace AzToolsFramework
 
     void PrefabUiHandler::OnDoubleClick(AZ::EntityId entityId) const
     {
-        bool prefabWipFeaturesEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-        if (prefabWipFeaturesEnabled)
-        {
-            // Focus on this prefab
-            m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
-        }
+        // Focus on this prefab
+        m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
     }
 }

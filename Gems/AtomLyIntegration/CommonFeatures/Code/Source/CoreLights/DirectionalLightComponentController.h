@@ -76,12 +76,12 @@ namespace AZ
             void SetDebugColoringEnabled(bool enabled) override;
             ShadowFilterMethod GetShadowFilterMethod() const override;
             void SetShadowFilterMethod(ShadowFilterMethod method) override;
-            float GetSofteningBoundaryWidth() const override;
-            void SetSofteningBoundaryWidth(float width) override;
             uint32_t GetFilteringSampleCount() const override;
             void SetFilteringSampleCount(uint32_t count) override;
             bool GetShadowReceiverPlaneBiasEnabled() const override;
             void SetShadowReceiverPlaneBiasEnabled(bool enable) override;
+            float GetShadowBias() const override;
+            void SetShadowBias(float width) override;
 
         private:
             friend class EditorDirectionalLightComponent;

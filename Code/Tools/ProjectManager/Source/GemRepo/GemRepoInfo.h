@@ -36,7 +36,7 @@ namespace O3DE::ProjectManager
         QString m_summary = "No summary provided.";
         QString m_additionalInfo = "";
         QString m_directoryLink = "";
-        QString m_repoLink = "";
+        QString m_repoUri = "";
         QStringList m_includedGemPaths = {};
         QDateTime m_lastUpdated;
     };

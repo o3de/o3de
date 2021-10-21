@@ -33,6 +33,11 @@ namespace AWSGameLift
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
+            behaviorContext->Class<AzFramework::AcceptMatchRequest>("AcceptMatchRequest")
+                ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
+                // Expose base type to BehaviorContext, but hide it to be used directly
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All);
+
             behaviorContext->Class<AWSGameLiftAcceptMatchRequest>("AWSGameLiftAcceptMatchRequest")
                 ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)
                 ->Property("AcceptMatch", BehaviorValueProperty(&AWSGameLiftAcceptMatchRequest::m_acceptMatch))
