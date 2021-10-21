@@ -32,7 +32,7 @@ namespace AzFramework
             rlimit newLimit;
             newLimit.rlim_cur = g_minimumOpenFileHandles; // Soft Limit
             newLimit.rlim_max = g_minimumOpenFileHandles; // Hard Limit
-            [[maybe_unused]] int set_limit_result = setrlimit(RLIMIT_NOFILE,&newLimit);
+            [[maybe_unused]] int set_limit_result = setrlimit(RLIMIT_NOFILE, &newLimit);
             AZ_Assert(set_limit_result == 0, "Unable to update open file limits");
         }
         
