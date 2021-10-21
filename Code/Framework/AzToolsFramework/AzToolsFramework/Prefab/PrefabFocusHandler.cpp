@@ -324,8 +324,6 @@ namespace AzToolsFramework::Prefab
         size_t index = 0;
         size_t maxIndex = m_instanceFocusHierarchy.size() - 1;
 
-        AZ_TracePrintf("maxIndex", "%d", maxIndex);
-
         for (const InstanceOptionalReference& instance : m_instanceFocusHierarchy)
         {
             AZStd::string prefabName;
