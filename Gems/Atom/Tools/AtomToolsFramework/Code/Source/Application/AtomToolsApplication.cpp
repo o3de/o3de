@@ -216,7 +216,11 @@ namespace AtomToolsFramework
         AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
         AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
 
+#if AZ_TRAIT_ATOMTOOLSFRAMEWORK_SKIP_APP_DESTROY
+        _exit(0);
+#else
         Base::Destroy();
+#endif
     }
 
     AZStd::vector<AZStd::string> AtomToolsApplication::GetCriticalAssetFilters() const

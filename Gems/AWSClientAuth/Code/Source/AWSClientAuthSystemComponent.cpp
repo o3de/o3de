@@ -33,7 +33,7 @@ namespace AWSClientAuth
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {
-            serialize->Class<AWSClientAuthSystemComponent, AZ::Component>()->Version(1);
+            serialize->Class<AWSClientAuthSystemComponent, AZ::Component>()->Version(2);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
@@ -105,12 +105,22 @@ namespace AWSClientAuth
             behaviorContext->EBus<AWSCognitoUserManagementRequestBus>("AWSCognitoUserManagementRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, SerializeComponentName)
                 ->Event("Initialize", &AWSCognitoUserManagementRequestBus::Events::Initialize)
-                ->Event("EmailSignUpAsync", &AWSCognitoUserManagementRequestBus::Events::EmailSignUpAsync)
-                ->Event("PhoneSignUpAsync", &AWSCognitoUserManagementRequestBus::Events::PhoneSignUpAsync)
-                ->Event("ConfirmSignUpAsync", &AWSCognitoUserManagementRequestBus::Events::ConfirmSignUpAsync)
-                ->Event("ForgotPasswordAsync", &AWSCognitoUserManagementRequestBus::Events::ForgotPasswordAsync)
-                ->Event("ConfirmForgotPasswordAsync", &AWSCognitoUserManagementRequestBus::Events::ConfirmForgotPasswordAsync)
-                ->Event("EnableMFAAsync", &AWSCognitoUserManagementRequestBus::Events::EnableMFAAsync);
+                ->Event(
+                    "EmailSignUpAsync", &AWSCognitoUserManagementRequestBus::Events::EmailSignUpAsync,
+                    { { { "Username", "The client's username" }, { "Password", "The client's password" }, { "Email", "The email address used to sign up" } } })
+                ->Event(
+                    "PhoneSignUpAsync", &AWSCognitoUserManagementRequestBus::Events::PhoneSignUpAsync,
+                    { { { "Username", "The client's username" }, { "Password", "The client's password" }, { "Phone number", "The phone number used to sign up" } } })
+                ->Event(
+                    "ConfirmSignUpAsync", &AWSCognitoUserManagementRequestBus::Events::ConfirmSignUpAsync,
+                    { { { "Username", "The client's username" }, { "Confirmation code", "The client's confirmation code" } } })
+                ->Event(
+                    "ForgotPasswordAsync", &AWSCognitoUserManagementRequestBus::Events::ForgotPasswordAsync,
+                    { { { "Username", "The client's username" } } })
+                ->Event(
+                    "ConfirmForgotPasswordAsync", &AWSCognitoUserManagementRequestBus::Events::ConfirmForgotPasswordAsync,
+                    { { { "Username", "The client's username" }, { "Confirmation code", "The client's confirmation code" }, { "New password", "The new password for the client" } } })
+                ->Event("EnableMFAAsync", &AWSCognitoUserManagementRequestBus::Events::EnableMFAAsync, { { { "Access token", "The MFA access token" } } });
 
 
             behaviorContext->EBus<AuthenticationProviderNotificationBus>("AuthenticationProviderNotificationBus")

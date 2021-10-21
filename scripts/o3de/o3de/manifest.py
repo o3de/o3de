@@ -41,6 +41,11 @@ def get_o3de_folder() -> pathlib.Path:
     o3de_folder.mkdir(parents=True, exist_ok=True)
     return o3de_folder
 
+def get_o3de_user_folder() -> pathlib.Path:
+    o3de_user_folder = get_home_folder() / 'O3DE'
+    o3de_user_folder.mkdir(parents=True, exist_ok=True)
+    return o3de_user_folder
+
 
 def get_o3de_registry_folder() -> pathlib.Path:
     registry_folder = get_o3de_folder() / 'Registry'
@@ -67,19 +72,19 @@ def get_o3de_engines_folder() -> pathlib.Path:
 
 
 def get_o3de_projects_folder() -> pathlib.Path:
-    projects_folder = get_o3de_folder() / 'Projects'
+    projects_folder = get_o3de_user_folder() / 'Projects'
     projects_folder.mkdir(parents=True, exist_ok=True)
     return projects_folder
 
 
 def get_o3de_gems_folder() -> pathlib.Path:
-    gems_folder = get_o3de_folder() / 'Gems'
+    gems_folder = get_o3de_user_folder() / 'Gems'
     gems_folder.mkdir(parents=True, exist_ok=True)
     return gems_folder
 
 
 def get_o3de_templates_folder() -> pathlib.Path:
-    templates_folder = get_o3de_folder() / 'Templates'
+    templates_folder = get_o3de_user_folder() / 'Templates'
     templates_folder.mkdir(parents=True, exist_ok=True)
     return templates_folder
 
@@ -536,7 +541,8 @@ def get_repo_path(repo_uri: str, cache_folder: str = None) -> pathlib.Path:
     if not cache_folder:
         cache_folder = get_o3de_cache_folder()
 
-    repo_sha256 = hashlib.sha256(repo_uri.encode())
+    repo_manifest = f'{repo_uri}/repo.json'
+    repo_sha256 = hashlib.sha256(repo_manifest.encode())
     return cache_folder / str(repo_sha256.hexdigest() + '.json')
 
 def get_registered(engine_name: str = None,

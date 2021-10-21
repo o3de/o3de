@@ -9,6 +9,7 @@
 #include <Source/ReplicationWindows/ServerToClientReplicationWindow.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/ILogger.h>
@@ -174,11 +175,11 @@ namespace Multiplayer
         // Note: Do not add any Client entities after this point, otherwise you stomp over the Autonomous mode
         m_replicationSet[m_controlledEntity] = { NetEntityRole::Autonomous, 1.0f };  // Always replicate autonomous entities
 
-        //auto hierarchyController = FindController<EntityHierarchyComponent::Authority>(m_ControlledEntity);
-        //if (hierarchyController != nullptr)
-        //{
-        //    CollectControlledEntitiesRecursive(m_replicationSet, *hierarchyController);
-        //}
+        auto* hierarchyComponent = m_controlledEntity.FindComponent<NetworkHierarchyRootComponent>();
+        if (hierarchyComponent != nullptr)
+        {
+            UpdateHierarchyReplicationSet(m_replicationSet, *hierarchyComponent);
+        }
     }
 
     AzNetworking::PacketId ServerToClientReplicationWindow::SendEntityUpdateMessages(NetworkEntityUpdateVector& entityUpdateVector)
@@ -326,18 +327,20 @@ namespace Multiplayer
         }
     }
 
-    //void ServerToClientReplicationWindow::CollectControlledEntitiesRecursive(ReplicationSet& replicationSet, EntityHierarchyComponent::Authority& hierarchyController)
-    //{
-    //    auto controlledEnts = hierarchyController.GetChildrenRelatedEntities();
-    //    for (auto& controlledEnt : controlledEnts)
-    //    {
-    //        AZ_Assert(controlledEnt != nullptr, "We have lost a controlled entity unexpectedly");
-    //        replicationSet[controlledEnt.GetConstEntity()] = EntityReplicationData(EntityNetworkRoleT::e_Autonomous, EntityPrioritySystem::k_MaxPriority); // Always replicate controlled entities
-    //        auto hierarchyController = controlledEnt.FindController<EntityHierarchyComponent::Authority>();
-    //        if (hierarchyController != nullptr)
-    //        {
-    //            CollectControlledEntitiesRecursive(replicationSet, *hierarchyController);
-    //        }
-    //    }
-    //}
+    void ServerToClientReplicationWindow::UpdateHierarchyReplicationSet(ReplicationSet& replicationSet, NetworkHierarchyRootComponent& hierarchyComponent)
+    {
+        INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get();
+        AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
+
+        for (const AZ::Entity* controlledEntity : hierarchyComponent.m_hierarchicalEntities)
+        {
+            NetEntityId controlledNetEntitydId = networkEntityManager->GetNetEntityIdById(controlledEntity->GetId());
+            AZ_Assert(controlledNetEntitydId != InvalidNetEntityId, "Unable to find the hierarchy entity in Network Entity Manager");
+
+            ConstNetworkEntityHandle controlledEntityHandle = networkEntityManager->GetEntity(controlledNetEntitydId);
+            AZ_Assert(controlledEntityHandle != nullptr, "We have lost a controlled entity unexpectedly");
+            
+            replicationSet[controlledEntityHandle] = { NetEntityRole::Autonomous, 1.0f };
+        }
+    }
 }

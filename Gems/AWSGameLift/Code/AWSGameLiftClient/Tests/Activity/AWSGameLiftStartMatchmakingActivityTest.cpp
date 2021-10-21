@@ -8,6 +8,7 @@
 
 #include <Activity/AWSGameLiftStartMatchmakingActivity.h>
 #include <AWSGameLiftClientFixture.h>
+#include <AWSGameLiftPlayer.h>
 
 #include <aws/gamelift/model/StartMatchmakingRequest.h>
 
@@ -21,7 +22,7 @@ TEST_F(AWSGameLiftStartMatchmakingActivityTest, BuildAWSGameLiftStartMatchmaking
     request.m_configurationName = "dummyConfiguration";
     request.m_ticketId = "dummyTicketId";
 
-    AWSGameLiftPlayerInformation player;
+    AWSGameLiftPlayer player;
     player.m_playerAttributes["dummy"] = "{\"S\": \"test\"}";
     player.m_playerId = "dummyPlayerId";
     player.m_team = "dummyTeam";
@@ -58,7 +59,7 @@ TEST_F(AWSGameLiftStartMatchmakingActivityTest, ValidateStartMatchmakingRequest_
     AWSGameLiftStartMatchmakingRequest request;
     request.m_ticketId = "dummyTicketId";
 
-    AWSGameLiftPlayerInformation player;
+    AWSGameLiftPlayer player;
     player.m_playerAttributes["dummy"] = "{\"S\": \"test\"}";
     player.m_playerId = "dummyPlayerId";
     player.m_team = "dummyTeam";
@@ -89,7 +90,7 @@ TEST_F(AWSGameLiftStartMatchmakingActivityTest, ValidateStartMatchmakingRequest_
     request.m_configurationName = "dummyConfiguration";
     request.m_ticketId = "dummyTicketId";
 
-    AWSGameLiftPlayerInformation player;
+    AWSGameLiftPlayer player;
     player.m_playerAttributes["dummy"] = "{\"S\": \"test\"}";
     player.m_team = "dummyTeam";
     player.m_latencyInMs["us-east-1"] = 10;
@@ -107,7 +108,7 @@ TEST_F(AWSGameLiftStartMatchmakingActivityTest, ValidateStartMatchmakingRequest_
     request.m_configurationName = "dummyConfiguration";
     request.m_ticketId = "dummyTicketId";
 
-    AWSGameLiftPlayerInformation player;
+    AWSGameLiftPlayer player;
     player.m_playerAttributes["dummy"] = "{\"A\": \"test\"}";
     player.m_playerId = "dummyPlayerId";
     player.m_team = "dummyTeam";
@@ -125,7 +126,7 @@ TEST_F(AWSGameLiftStartMatchmakingActivityTest, ValidateStartMatchmakingRequest_
     AWSGameLiftStartMatchmakingRequest request;
     request.m_configurationName = "dummyConfiguration";
 
-    AWSGameLiftPlayerInformation player;
+    AWSGameLiftPlayer player;
     player.m_playerAttributes["dummy"] = "{\"S\": \"test\"}";
     player.m_playerId = "dummyPlayerId";
     player.m_team = "dummyTeam";
@@ -142,7 +143,7 @@ TEST_F(AWSGameLiftStartMatchmakingActivityTest, ValidateStartMatchmakingRequest_
     request.m_ticketId = "dummyTicketId";
     request.m_configurationName = "dummyConfiguration";
 
-    AWSGameLiftPlayerInformation player;
+    AWSGameLiftPlayer player;
     player.m_playerAttributes["dummy"] = "{\"S\": \"test\"}";
     player.m_playerId = "dummyPlayerId";
     player.m_team = "dummyTeam";

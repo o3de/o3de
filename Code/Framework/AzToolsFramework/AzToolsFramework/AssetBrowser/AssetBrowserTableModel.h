@@ -53,7 +53,7 @@ namespace AzToolsFramework
         private slots:
             void SourceDataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight);
         private:
-            int m_numberOfItemsDisplayed = 50;
+            AZ::u64 m_numberOfItemsDisplayed = 0;
             int m_displayedItemsCounter = 0;
             QPointer<AssetBrowserFilterModel> m_filterModel;
             QMap<int, QModelIndex> m_indexMap;

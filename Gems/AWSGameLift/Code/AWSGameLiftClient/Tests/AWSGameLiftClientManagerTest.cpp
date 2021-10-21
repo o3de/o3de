@@ -208,6 +208,7 @@ protected:
         sessionConfig.m_terminationTime = 0;
         sessionConfig.m_creatorId = "dummyCreatorId";
         sessionConfig.m_sessionProperties["dummyKey"] = "dummyValue";
+        sessionConfig.m_matchmakingData = "dummyMatchmakingData";
         sessionConfig.m_sessionId = "dummyGameSessionId";
         sessionConfig.m_sessionName = "dummyGameSessionName";
         sessionConfig.m_ipAddress = "dummyIpAddress";
@@ -232,7 +233,7 @@ protected:
         request.m_configurationName = "dummyConfiguration";
         request.m_ticketId = DummyMatchmakingTicketId;
 
-        AWSGameLiftPlayerInformation player;
+        AWSGameLiftPlayer player;
         player.m_playerAttributes["dummy"] = "{\"N\": \"1\"}";
         player.m_playerId = DummyPlayerId;
         player.m_latencyInMs["us-east-1"] = 10;
@@ -265,6 +266,8 @@ const char* const AWSGameLiftClientManagerTest::DummyPlayerId = "dummyPlayerId";
 
 TEST_F(AWSGameLiftClientManagerTest, ConfigureGameLiftClient_CallWithoutRegion_GetFalseAsResult)
 {
+    AWSCoreRequestsHandlerMock coreHandlerMock;
+    EXPECT_CALL(coreHandlerMock, GetDefaultConfig()).Times(1).WillOnce(nullptr);
     AZ_TEST_START_TRACE_SUPPRESSION;
     auto result = m_gameliftClientManager->ConfigureGameLiftClient("");
     AZ_TEST_STOP_TRACE_SUPPRESSION(1); // capture 1 error message
@@ -273,6 +276,8 @@ TEST_F(AWSGameLiftClientManagerTest, ConfigureGameLiftClient_CallWithoutRegion_G
 
 TEST_F(AWSGameLiftClientManagerTest, ConfigureGameLiftClient_CallWithoutCredential_GetFalseAsResult)
 {
+    AWSCoreRequestsHandlerMock coreHandlerMock;
+    EXPECT_CALL(coreHandlerMock, GetDefaultConfig()).Times(1).WillOnce(nullptr);
     AWSResourceMappingRequestsHandlerMock handlerMock;
     EXPECT_CALL(handlerMock, GetDefaultRegion()).Times(1).WillOnce(::testing::Return("us-west-2"));
     AZ_TEST_START_TRACE_SUPPRESSION;
@@ -283,6 +288,8 @@ TEST_F(AWSGameLiftClientManagerTest, ConfigureGameLiftClient_CallWithoutCredenti
 
 TEST_F(AWSGameLiftClientManagerTest, ConfigureGameLiftClient_CallWithRegionAndCredential_GetTrueAsResult)
 {
+    AWSCoreRequestsHandlerMock coreHandlerMock;
+    EXPECT_CALL(coreHandlerMock, GetDefaultConfig()).Times(1).WillOnce(nullptr);
     AWSCredentialRequestsHandlerMock handlerMock;
     EXPECT_CALL(handlerMock, GetCredentialsProvider())
         .Times(1)
@@ -813,7 +820,7 @@ TEST_F(AWSGameLiftClientManagerTest, StartMatchmaking_CallWithInvalidRequest_Get
 {
     AWSGameLiftStartMatchmakingRequest request;
     request.m_configurationName = "dummyConfiguration";
-    AWSGameLiftPlayerInformation player;
+    AWSGameLiftPlayer player;
     player.m_playerAttributes["dummy"] = "{\"A\": \"1\"}";
     request.m_players.emplace_back(player);
 
@@ -855,7 +862,7 @@ TEST_F(AWSGameLiftClientManagerTest, StartMatchmakingAsync_CallWithInvalidReques
 {
     AWSGameLiftStartMatchmakingRequest request;
     request.m_configurationName = "dummyConfiguration";
-    AWSGameLiftPlayerInformation player;
+    AWSGameLiftPlayer player;
     player.m_playerAttributes["dummy"] = "{\"A\": \"1\"}";
     request.m_players.emplace_back(player);
 

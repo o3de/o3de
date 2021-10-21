@@ -53,13 +53,15 @@ namespace PhysX
 
             if (auto editContext = serializeContext->GetEditContext())
             {
-                editContext->Class<EditorProxyAssetShapeConfig>("EditorProxyShapeConfig", "PhysX Base shape collider")
+                editContext->Class<EditorProxyAssetShapeConfig>("EditorProxyShapeConfig", "PhysX Base collider.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyAssetShapeConfig::m_pxAsset, "PhysX Mesh", "PhysX mesh collider asset")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyAssetShapeConfig::m_pxAsset, "PhysX Mesh",
+                        "Specifies the PhysX mesh collider asset for this PhysX collider component.")
                         ->Attribute(AZ_CRC_CE("EditButton"), "")
                         ->Attribute(AZ_CRC_CE("EditDescription"), "Open in Scene Settings")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyAssetShapeConfig::m_configuration, "Configuration", "Configuration of asset shape")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyAssetShapeConfig::m_configuration, "Configuration",
+                        "PhysX mesh asset collider configuration.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
             }
         }
@@ -86,7 +88,7 @@ namespace PhysX
             {
                 editContext->Class<EditorProxyShapeConfig>(
                     "EditorProxyShapeConfig", "PhysX Base shape collider")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorProxyShapeConfig::m_shapeType, "Shape", "The shape of the collider")
+                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorProxyShapeConfig::m_shapeType, "Shape", "The shape of the collider.")
                         ->EnumAttribute(Physics::ShapeType::Sphere, "Sphere")
                         ->EnumAttribute(Physics::ShapeType::Box, "Box")
                         ->EnumAttribute(Physics::ShapeType::Capsule, "Capsule")
@@ -96,20 +98,20 @@ namespace PhysX
                         // potentially be different ComponentModes for different shape types)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzToolsFramework::ComponentModeFramework::InComponentMode)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_sphere, "Sphere", "Configuration of sphere shape")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_sphere, "Sphere", "Configuration of sphere shape.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsSphereConfig)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_box, "Box", "Configuration of box shape")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_box, "Box", "Configuration of box shape.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsBoxConfig)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_capsule, "Capsule", "Configuration of capsule shape")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_capsule, "Capsule", "Configuration of capsule shape.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsCapsuleConfig)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_physicsAsset, "Asset", "Configuration of asset shape")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_physicsAsset, "Asset", "Configuration of asset shape.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::IsAssetConfig)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnConfigurationChanged)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorProxyShapeConfig::m_subdivisionLevel, "Subdivision level",
-                        "The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling")
+                        "The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.")
                         ->Attribute(AZ::Edit::Attributes::Min, Utils::MinCapsuleSubdivisionLevel)
                         ->Attribute(AZ::Edit::Attributes::Max, Utils::MaxCapsuleSubdivisionLevel)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &EditorProxyShapeConfig::ShowingSubdivisionLevel)
@@ -200,7 +202,7 @@ namespace PhysX
             if (auto editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorColliderComponent>(
-                    "PhysX Collider", "PhysX shape collider")
+                    "PhysX Collider", "Creates geometry in the PhysX simulation, using either a primitive shape or geometry from an asset.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
@@ -208,17 +210,17 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/collider/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_configuration, "Collider Configuration", "Configuration of the collider")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_configuration, "Collider Configuration", "Configuration of the collider.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorColliderComponent::OnConfigurationChanged)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_shapeConfiguration, "Shape Configuration", "Configuration of the shape")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_shapeConfiguration, "Shape Configuration", "Configuration of the shape.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorColliderComponent::OnConfigurationChanged)
                     ->Attribute(AZ::Edit::Attributes::RemoveNotify, &EditorColliderComponent::ValidateRigidBodyMeshGeometryType)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_componentModeDelegate, "Component Mode", "Collider Component Mode")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_componentModeDelegate, "Component Mode", "Collider Component Mode.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_colliderDebugDraw,
-                        "Debug draw settings", "Debug draw settings")
+                        "Debug draw settings", "Debug draw settings.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }

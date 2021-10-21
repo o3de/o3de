@@ -89,7 +89,7 @@ class TestAllComponentsIndepthTests(object):
 
         level_creation_expected_lines = [
             "Viewport is set to the expected size: True",
-            "Basic level created"
+            "Exited game mode"
         ]
         unexpected_lines = [
             "Trace::Assert",
@@ -148,7 +148,7 @@ class TestAllComponentsIndepthTests(object):
             golden_image_path = os.path.join(golden_images_directory(), golden_image)
             golden_images.append(golden_image_path)
 
-        expected_lines = ["Light component tests completed."]
+        expected_lines = ["spot_light Controller|Configuration|Shadows|Shadowmap size: SUCCESS"]
         unexpected_lines = [
             "Trace::Assert",
             "Trace::Error",
@@ -189,8 +189,8 @@ class TestPerformanceBenchmarkSuite(object):
             "Benchmark metadata captured.",
             "Pass timestamps captured.",
             "CPU frame time captured.",
-            "Capturing complete.",
-            "Captured data successfully."
+            "Captured data successfully.",
+            "Exited game mode"
         ]
 
         unexpected_lines = [

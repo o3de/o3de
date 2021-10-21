@@ -15,10 +15,11 @@ ly_add_target(
         awsgamelift_client_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
+            ../AWSGameLiftCommon/Include
             Include
         PRIVATE
-            Source
             ../AWSGameLiftCommon/Source
+            Source
     COMPILE_DEFINITIONS
         PRIVATE
             ${awsgameliftclient_compile_definition}
@@ -78,10 +79,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             awsgamelift_client_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
+                ../AWSGameLiftCommon/Include
+                ../AWSGameLiftCommon/Source
                 Include
                 Tests
                 Source
-                ../AWSGameLiftCommon/Source
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
