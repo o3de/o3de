@@ -7,7 +7,7 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-# -- This line is 75 characters -------------------------------------------
+# -------------------------------------------------------------------------
 """This module is for use in boostrapping the DccScriptingInterface Gem
 with O3DE. Note: this boostrap is only designed fo be py3 compatible.
 If you need DCCsi access in py27 (Autodesk Maya for instance) you may need
