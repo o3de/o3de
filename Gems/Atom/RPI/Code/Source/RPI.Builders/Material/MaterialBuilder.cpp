@@ -287,7 +287,7 @@ namespace AZ
                 return {};
             }
 
-            if (!material.GetValue().ApplyVersionUpdates())
+            if (MaterialSourceData::ApplyVersionUpdatesResult::Failed == material.GetValue().ApplyVersionUpdates(materialSourceFilePath))
             {
                 return {};
             }

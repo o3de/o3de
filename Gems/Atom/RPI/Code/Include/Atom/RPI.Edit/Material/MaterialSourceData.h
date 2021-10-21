@@ -64,10 +64,16 @@ namespace AZ
 
             PropertyGroupMap m_properties;
 
+            enum class ApplyVersionUpdatesResult
+            {
+                Failed,
+                NoUpdates,
+                UpdatesApplied
+            };
+
             //! Checks the material type version and potentially applies a series of property changes (most common are simple property renames)
             //! based on the MaterialTypeAsset's version update procedure.
-            //! @return true if any changes were applied
-            bool ApplyVersionUpdates();
+            ApplyVersionUpdatesResult ApplyVersionUpdates(AZStd::string_view materialSourceFilePath);
 
             //! Creates a MaterialAsset from the MaterialSourceData content.
             //! @param assetId ID for the MaterialAsset

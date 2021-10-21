@@ -73,19 +73,20 @@ namespace AZ
             }
         }
         
-        bool MaterialSourceData::ApplyVersionUpdates()
+        MaterialSourceData::ApplyVersionUpdatesResult MaterialSourceData::ApplyVersionUpdates(AZStd::string_view materialSourceFilePath)
         {
-            auto materialTypeSourceDataOutcome = MaterialUtils::LoadMaterialTypeSourceData(m_materialType);
+            AZStd::string materialTypeFullPath = AssetUtils::ResolvePathReference(materialSourceFilePath, m_materialType);
+            auto materialTypeSourceDataOutcome = MaterialUtils::LoadMaterialTypeSourceData(materialTypeFullPath);
             if (!materialTypeSourceDataOutcome.IsSuccess())
             {
-                return false;
+                return ApplyVersionUpdatesResult::Failed;
             }
             
             MaterialTypeSourceData materialTypeSourceData = materialTypeSourceDataOutcome.TakeValue();
 
             if (m_materialTypeVersion == materialTypeSourceData.m_version)
             {
-                return false;
+                return ApplyVersionUpdatesResult::NoUpdates;
             }
 
             bool changesWereApplied = false;
@@ -125,7 +126,7 @@ namespace AZ
 
             m_materialTypeVersion = materialTypeSourceData.m_version;
             
-            return true;
+            return changesWereApplied ? ApplyVersionUpdatesResult::UpdatesApplied : ApplyVersionUpdatesResult::NoUpdates;
         }
 
         Outcome<Data::Asset<MaterialAsset> > MaterialSourceData::CreateMaterialAsset(Data::AssetId assetId, AZStd::string_view materialSourceFilePath, bool elevateWarnings, bool includeMaterialPropertyNames) const
