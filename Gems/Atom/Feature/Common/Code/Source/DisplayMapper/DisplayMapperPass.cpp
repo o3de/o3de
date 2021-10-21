@@ -67,17 +67,12 @@ namespace AZ
         {
             // Need to invalidate the CopyToSwapChain pass so that it updates the pipeline state in the event that 
             // the swapchain format changed (for example, moving from LDR to HDR display)
-            const Name fullscreenCopyTemplateName("FullscreenCopyTemplate");
-            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(fullscreenCopyTemplateName, GetRenderPipeline());
+            const Name copyToSwapChainPassName("CopyToSwapChain");
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(copyToSwapChainPassName, GetRenderPipeline());
             RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
-                    RPI::FullscreenTrianglePass* fullscreenTrianglePass = azrtti_cast<RPI::FullscreenTrianglePass*>(pass);
-                    const Name& passName = fullscreenTrianglePass->GetName();
-                    if (passName.GetStringView() == "CopyToSwapChain")
-                    {
-                        fullscreenTrianglePass->QueueForInitialization();
-                    }
-                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                    pass->QueueForInitialization();
+                    return RPI::PassFilterExecutionFlow::StopVisitingPasses;
                 });
 
             ConfigureDisplayParameters();

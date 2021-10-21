@@ -29,11 +29,9 @@ namespace AZ
         void ReflectionCopyFrameBufferPass::BuildInternal()
         {
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("ReflectionScreenSpaceBlurPass"), GetRenderPipeline());
-
             RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     Render::ReflectionScreenSpaceBlurPass* blurPass = azrtti_cast<ReflectionScreenSpaceBlurPass*>(pass);
-                
                     Data::Instance<RPI::AttachmentImage>& frameBufferAttachment = blurPass->GetFrameBufferImageAttachment();
 
                     RPI::PassAttachmentBinding& outputBinding = GetOutputBinding(0);

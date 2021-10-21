@@ -331,8 +331,7 @@ namespace AZ::Render
         RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, LightTypeName](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
             {
                 EsmShadowmapsPass* esmPass = static_cast<EsmShadowmapsPass*>(pass);
-                if (esmPass->GetRenderPipeline() &&
-                    esmPass->GetLightTypeName() == LightTypeName)
+                if (esmPass->GetLightTypeName() == LightTypeName)
                 {
                     m_esmShadowmapsPasses.emplace_back(esmPass);
                 }
