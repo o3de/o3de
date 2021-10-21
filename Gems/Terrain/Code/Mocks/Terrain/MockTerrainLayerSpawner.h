@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <AzCore\Component\Component.h>
+#include <AzCore/Component/Component.h>
 
 namespace UnitTest
 {

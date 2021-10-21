@@ -336,6 +336,8 @@ namespace Physics
         , m_numColumns(other.m_numColumns)
         , m_numRows(other.m_numRows)
         , m_samples(other.m_samples)
+        , m_minHeightBounds(other.m_minHeightBounds)
+        , m_maxHeightBounds(other.m_maxHeightBounds)
         , m_cachedNativeHeightfield(nullptr)
     {
     }
@@ -351,6 +353,8 @@ namespace Physics
         m_numColumns = other.m_numColumns;
         m_numRows = other.m_numRows;
         m_samples = other.m_samples;
+        m_minHeightBounds = other.m_minHeightBounds;
+        m_maxHeightBounds = other.m_maxHeightBounds;
 
         // Prevent raw pointer from being copied
         m_cachedNativeHeightfield = nullptr;

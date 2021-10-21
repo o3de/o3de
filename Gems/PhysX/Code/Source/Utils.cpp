@@ -209,7 +209,7 @@ namespace PhysX
                     // multiply them by 2^(15 - N), which is what our scaleFactor is.
                     //       a max height of 1 gives N=0, so the scaleFactor is 2^(15-0), or 32768.
                     //       a max height of 50 gives N=6, so the scaleFactor is 2^(15-6), or 512.
-                    //       a max height of 1/5 gives N=-2, so the scaleFactor is 2^(15 - -2), or 131072.
+                    //       a max height of 1/4 gives N=-2, so the scaleFactor is 2^(15 - -2), or 131072.
                     // Note that the scaleFactor choice here affects overall precision.  For each bit that the integer part of our max
                     // height uses, that's one less bit for the fractional part.
                     const float scaleFactor = pow(2.0f, 15.0f - ceil(log2(halfBounds)));
