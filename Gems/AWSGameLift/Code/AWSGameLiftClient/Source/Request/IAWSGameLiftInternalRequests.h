@@ -20,7 +20,7 @@ namespace Aws
 
 namespace AWSGameLift
 {
-    //! IAWSGameLiftRequests
+    //! IAWSGameLiftInternalRequests
     //! GameLift Gem internal interface which is used to fetch gem global GameLift client
     class IAWSGameLiftInternalRequests
     {

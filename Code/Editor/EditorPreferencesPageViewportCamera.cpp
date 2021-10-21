@@ -75,7 +75,10 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
         ->Field("CaptureCursorLook", &CameraMovementSettings::m_captureCursorLook)
         ->Field("OrbitYawRotationInverted", &CameraMovementSettings::m_orbitYawRotationInverted)
         ->Field("PanInvertedX", &CameraMovementSettings::m_panInvertedX)
-        ->Field("PanInvertedY", &CameraMovementSettings::m_panInvertedY);
+        ->Field("PanInvertedY", &CameraMovementSettings::m_panInvertedY)
+        ->Field("DefaultPositionX", &CameraMovementSettings::m_defaultCameraPositionX)
+        ->Field("DefaultPositionY", &CameraMovementSettings::m_defaultCameraPositionY)
+        ->Field("DefaultPositionZ", &CameraMovementSettings::m_defaultCameraPositionZ);
 
     serialize.Class<CameraInputSettings>()
         ->Version(2)
@@ -154,7 +157,16 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
                 "Invert direction of pan in local Y axis")
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &CameraMovementSettings::m_captureCursorLook, "Camera Capture Look Cursor",
-                "Should the cursor be captured (hidden) while performing free look");
+                "Should the cursor be captured (hidden) while performing free look")
+            ->DataElement(
+                AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_defaultCameraPositionX, "Default X Camera Position",
+                "Default X Camera Position when a level is opened")
+            ->DataElement(
+                AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_defaultCameraPositionY, "Default Y Camera Position",
+                "Default Y Camera Position when a level is opened")
+            ->DataElement(
+                AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_defaultCameraPositionZ, "Default Z Camera Position",
+                "Default Z Camera Position when a level is opened");
 
         editContext->Class<CameraInputSettings>("Camera Input Settings", "")
             ->DataElement(
@@ -271,6 +283,12 @@ void CEditorPreferencesPage_ViewportCamera::OnApply()
     SandboxEditor::SetCameraOrbitYawRotationInverted(m_cameraMovementSettings.m_orbitYawRotationInverted);
     SandboxEditor::SetCameraPanInvertedX(m_cameraMovementSettings.m_panInvertedX);
     SandboxEditor::SetCameraPanInvertedY(m_cameraMovementSettings.m_panInvertedY);
+    SandboxEditor::SetDefaultCameraEditorPosition(
+        AZ::Vector3(
+            m_cameraMovementSettings.m_defaultCameraPositionX,
+            m_cameraMovementSettings.m_defaultCameraPositionY,
+            m_cameraMovementSettings.m_defaultCameraPositionZ
+        ));
 
     SandboxEditor::SetCameraTranslateForwardChannelId(m_cameraInputSettings.m_translateForwardChannelId);
     SandboxEditor::SetCameraTranslateBackwardChannelId(m_cameraInputSettings.m_translateBackwardChannelId);
@@ -307,6 +325,11 @@ void CEditorPreferencesPage_ViewportCamera::InitializeSettings()
     m_cameraMovementSettings.m_orbitYawRotationInverted = SandboxEditor::CameraOrbitYawRotationInverted();
     m_cameraMovementSettings.m_panInvertedX = SandboxEditor::CameraPanInvertedX();
     m_cameraMovementSettings.m_panInvertedY = SandboxEditor::CameraPanInvertedY();
+
+    AZ::Vector3 defaultCameraPosition = SandboxEditor::DefaultEditorCameraPosition();
+    m_cameraMovementSettings.m_defaultCameraPositionX = defaultCameraPosition.GetX();
+    m_cameraMovementSettings.m_defaultCameraPositionY = defaultCameraPosition.GetY();
+    m_cameraMovementSettings.m_defaultCameraPositionZ = defaultCameraPosition.GetZ();
 
     m_cameraInputSettings.m_translateForwardChannelId = SandboxEditor::CameraTranslateForwardChannelId().GetName();
     m_cameraInputSettings.m_translateBackwardChannelId = SandboxEditor::CameraTranslateBackwardChannelId().GetName();
