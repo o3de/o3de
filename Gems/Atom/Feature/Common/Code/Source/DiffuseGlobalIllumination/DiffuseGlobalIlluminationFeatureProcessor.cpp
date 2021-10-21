@@ -83,7 +83,7 @@ namespace AZ
             {
                 AZStd::vector<Name> downsamplePassHierarchy = { Name("DiffuseGlobalIlluminationPass"), Name("DiffuseProbeGridDownsamplePass") };
                 RPI::PassFilter downsamplePassFilter = RPI::PassFilter::CreateWithPassHierarchy(downsamplePassHierarchy);
-                //downsamplePassFilter.SetOwenrScene(GetParentScene()); // only handles passes for this scene
+                downsamplePassFilter.SetOwenrScene(GetParentScene()); // only handles passes for this scene
                 RPI::PassSystemInterface::Get()->ForEachPass(
                     downsamplePassFilter,
                     [sizeMultiplier](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
@@ -112,7 +112,7 @@ namespace AZ
             {
                 AZStd::vector<Name> compositePassHierarchy = { Name("DiffuseGlobalIlluminationPass"), Name("DiffuseCompositePass") };
                 RPI::PassFilter compositePassFilter = RPI::PassFilter::CreateWithPassHierarchy(compositePassHierarchy);
-                //compositePassFilter.SetOwenrScene(GetParentScene());  // only handles passes for this scene
+                compositePassFilter.SetOwenrScene(GetParentScene());  // only handles passes for this scene
                 RPI::PassSystemInterface::Get()->ForEachPass(compositePassFilter, [sizeMultiplier](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                     {
                         RPI::FullscreenTrianglePass* compositePass = static_cast<RPI::FullscreenTrianglePass*>(pass);

@@ -376,7 +376,7 @@ namespace AZ
             AZ::RPI::ImageAttachmentPreviewPass* previewPass = azrtti_cast<AZ::RPI::ImageAttachmentPreviewPass*>(RPI::PassSystemInterface::Get()->FindFirstPass(passFilter));
             if (!previewPass)
             {
-                AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find a ImageAttachmentPreviewPass");
+                AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find an ImageAttachmentPreviewPass");
                 return false;
             }
 
