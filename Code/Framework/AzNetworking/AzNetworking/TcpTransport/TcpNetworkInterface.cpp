@@ -79,6 +79,8 @@ namespace AzNetworking
 
     ConnectionId TcpNetworkInterface::Connect(const IpAddress& remoteAddress)
     {
+        AZLOG_INFO("Attemping TcpNetworkInterface::Connect")
+
         const ConnectionId connectionId = m_connectionSet.GetNextConnectionId();
         AZStd::unique_ptr<TcpConnection> connection = AZStd::make_unique<TcpConnection>(connectionId, remoteAddress, *this, m_trustZone, net_TcpUseEncryption);
         AZ_Assert(connection->GetConnectionRole() == ConnectionRole::Connector, "Invalid role for connection");
@@ -87,6 +89,9 @@ namespace AzNetworking
         TcpSocket* tcpSocket = connection->GetTcpSocket();
         if (tcpSocket == nullptr)
         {
+            AZLOG_ERROR(
+                "TcpNetworkInterface::Connect tcpSocket is null! How can this be? Returning InvalidConnectionId")
+
             return InvalidConnectionId;
         }
 
