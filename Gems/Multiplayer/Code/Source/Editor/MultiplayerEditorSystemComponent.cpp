@@ -255,6 +255,15 @@ namespace Multiplayer
             if (editorsv_launch && LocalHost == remoteAddress)
             {
                 m_serverProcess = LaunchEditorServer();
+
+                AZ_Warning(
+                    "MultiplayerEditor", false,
+                    "Just launched LaunchEditorServer. About to sleep!");
+
+                AZStd::this_thread::sleep_for(AZStd::chrono::seconds(5.0));
+
+                AZ_Warning("MultiplayerEditor", false, "Just launched LaunchEditorServer. Done sleeping!");
+
             }
 
             // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
