@@ -148,11 +148,6 @@ namespace AZ
 
             RecreateSwapchain();
 
-            // Do not recycle the semaphore because they may not ever get signaled and since
-            // we can't recycle Vulkan semaphores we just delete them.
-            m_currentFrameContext.m_imageAvailableSemaphore->SetRecycleValue(false);
-            m_currentFrameContext.m_presentableSemaphore->SetRecycleValue(false);
-
             if (nativeDimensions)
             {
                 *nativeDimensions = m_dimensions;
@@ -492,6 +487,17 @@ namespace AZ
 
             RHI::ResultCode result = BuildNativeSwapChain(m_dimensions);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
+
+            // Do not recycle the semaphore because they may not ever get signaled and since
+            // we can't recycle Vulkan semaphores we just delete them.
+            if (m_currentFrameContext.m_imageAvailableSemaphore)
+            {
+                m_currentFrameContext.m_imageAvailableSemaphore->SetRecycleValue(false);
+            }
+            if (m_currentFrameContext.m_presentableSemaphore)
+            {
+                m_currentFrameContext.m_presentableSemaphore->SetRecycleValue(false);
+            }
 
             m_dimensions.m_imageCount = 0;
             VkResult vkResult = vkGetSwapchainImagesKHR(device.GetNativeDevice(), m_nativeSwapChain, &m_dimensions.m_imageCount, nullptr);

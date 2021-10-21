@@ -125,7 +125,6 @@ namespace AtomToolsFramework
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         // QWidget overrides ...
-        void resizeEvent(QResizeEvent* event) override;
         bool event(QEvent* event) override;
         void enterEvent(QEvent* event) override;
         void leaveEvent(QEvent* event) override;
