@@ -48,6 +48,7 @@ set(ENABLED_GEMS
     LmbrCentral
     LyShine
     HttpRequestor
+    LuaScript
     Atom
     AWSCore
     AWSClientAuth

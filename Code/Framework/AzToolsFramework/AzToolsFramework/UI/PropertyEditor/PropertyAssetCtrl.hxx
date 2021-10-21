@@ -226,10 +226,7 @@ namespace AzToolsFramework
         bool GetShowThumbnailDropDownButton() const;
         void SetThumbnailCallback(EditCallbackType* editNotifyCallback);
 
-        // If enabled, replaces the thumbnail widget content with a custom pixmap
-        void SetCustomThumbnailEnabled(bool enabled);
-        void SetCustomThumbnailPixmap(const QPixmap& pixmap);
-
+        void UpdateProperty(const AZ::Data::AssetId& newID);
         void SetSelectedAssetID(const AZ::Data::AssetId& newID);
         void SetCurrentAssetType(const AZ::Data::AssetType& newType);
         void SetSelectedAssetID(const AZ::Data::AssetId& newID, const AZ::Data::AssetType& newType);

@@ -557,7 +557,7 @@ namespace AzToolsFramework
 
         // Connect pressed to opening the error dialog
         // Must capture this for call to QObject::connect
-        connect(m_errorButton, &QPushButton::pressed, this, [errorLog]() {
+        connect(m_errorButton, &QPushButton::pressed, this, [this, errorLog]() {
             // Create the dialog for the log panel, and set the layout
             QDialog* logDialog = new QDialog();
             logDialog->setMinimumSize(1024, 400);
@@ -653,6 +653,7 @@ namespace AzToolsFramework
         if (GetCurrentAssetID() == assetId)
         {
             UpdateAssetDisplay();
+            UpdateProperty(AZ::Data::AssetId());
         }
     }
 
@@ -875,6 +876,13 @@ namespace AzToolsFramework
         emit OnAssetIDChanged(newID);
     }
 
+    void PropertyAssetCtrl::UpdateProperty(const AZ::Data::AssetId& newID)
+    {
+        m_incompleteFilename = false;
+        m_selectedAssetID = newID;
+        emit OnAssetIDChanged(newID);
+    }
+
     void PropertyAssetCtrl::SetCurrentAssetType(const AZ::Data::AssetType& newType)
     {
         if (m_currentAssetType == newType)
@@ -981,8 +989,11 @@ namespace AzToolsFramework
         {
             const AZ::Data::AssetId assetID = GetCurrentAssetID();
 
-            AZ::Outcome<AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
-            AssetSystemJobRequestBus::BroadcastResult(jobOutcome, &AssetSystemJobRequestBus::Events::GetAssetJobsInfoByAssetID, assetID, false, false);
+            if (!m_unnamedType)
+            {
+                AZ::Outcome<AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
+                AssetSystemJobRequestBus::BroadcastResult(
+                    jobOutcome, &AssetSystemJobRequestBus::Events::GetAssetJobsInfoByAssetID, assetID, false, false);
 
             if (jobOutcome.IsSuccess())
             {
@@ -1009,15 +1020,16 @@ namespace AzToolsFramework
                             {
                                 assetStatus = AssetSystem::JobStatus::Failed;
 
-                                AZ::Outcome<AZStd::string> logOutcome = AZ::Failure();
-                                AssetSystemJobRequestBus::BroadcastResult(logOutcome, &AssetSystemJobRequestBus::Events::GetJobLog, jobInfo.m_jobRunKey);
-                                if (logOutcome.IsSuccess())
-                                {
-                                    errorLog += logOutcome.TakeValue();
-                                    errorLog += '\n';
+                                    AZ::Outcome<AZStd::string> logOutcome = AZ::Failure();
+                                    AssetSystemJobRequestBus::BroadcastResult(
+                                        logOutcome, &AssetSystemJobRequestBus::Events::GetJobLog, jobInfo.m_jobRunKey);
+                                    if (logOutcome.IsSuccess())
+                                    {
+                                        errorLog += logOutcome.TakeValue();
+                                        errorLog += '\n';
+                                    }
                                 }
-                            }
-                            break;
+                                break;
 
                             // If the job is in progress, mark the asset as in progress
                             case AssetSystem::JobStatus::InProgress:
@@ -1050,16 +1062,18 @@ namespace AzToolsFramework
                     }
                 }
 
-                // This can be turned on with an attribute in EditContext
-                if (m_showProductAssetName)
-                {
-                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetID);
-                }
+                    // This can be turned on with an attribute in EditContext
+                    if (m_showProductAssetName)
+                    {
+                        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                            assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetID);
+                    }
 
-                // Only change the asset name if the asset not found or there's no last known good name for it
-                if (!assetPath.empty() && (assetStatus != AssetSystem::JobStatus::Completed || m_currentAssetHint != assetPath))
-                {
-                    m_currentAssetHint = assetPath;
+                    // Only change the asset name if the asset not found or there's no last known good name for it
+                    if (!assetPath.empty() && (assetStatus != AssetSystem::JobStatus::Completed || m_currentAssetHint != assetPath))
+                    {
+                        m_currentAssetHint = assetPath;
+                    }
                 }
             }
             else
