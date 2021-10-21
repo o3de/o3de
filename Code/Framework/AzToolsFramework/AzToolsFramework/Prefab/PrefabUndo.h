@@ -45,7 +45,7 @@ namespace AzToolsFramework
             : public PrefabUndoBase
         {
         public:
-            explicit PrefabUndoInstance(const AZStd::string& undoOperationName, const bool useImmediatePropagation = true);
+            explicit PrefabUndoInstance(const AZStd::string& undoOperationName, bool useImmediatePropagation = true);
 
             void Capture(
                 const PrefabDom& initialState,

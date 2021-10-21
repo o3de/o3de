@@ -40,7 +40,8 @@
 //!  that can change between passes due to the application of skinning, simulation 
 //!  and physics affect and is then read by the rendering shaders.  
 ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback 
-{   //! This shared buffer needs to match the SharedBuffer structure  
+{   
+    //! This shared buffer needs to match the SharedBuffer structure  
     //! shared between all draw calls / dispatches for the hair skinning
     StructuredBuffer<int>           m_skinnedHairSharedBuffer;
 
@@ -101,39 +102,8 @@ ShaderResourceGroup HairDynamicDataSrg : SRG_PerObject // space 1 - per instance
 #define g_GuideHairVertexTangents   HairDynamicDataSrg::m_hairVertexTangents
 
 //==============================================================================
-#include <HairStrands.azsli>
+#include <HairStrands.azsli>        // VS resides here
 //==============================================================================
-//! Hair input structure to Pixel shaders
-struct PS_INPUT_HAIR
-{
-    float4 Position    : SV_POSITION;
-    float4 Tangent     : Tangent;
-    float4 p0p1        : TEXCOORD0;
-    float4 StrandColor : TEXCOORD1;
-};
-
-//! Hair Render VS 
-PS_INPUT_HAIR RenderHairVS(uint vertexId : SV_VertexID)
-{
-//    uint2  scrSize;
-//    PassSrg::m_linearDepth.GetDimensions(scrSize.x, scrSize.y);
-//    TressFXVertex tressfxVert = GetExpandedTressFXVert(vertexId, g_vEye.xyz, float2(scrSize), g_mVP);
-
-    // [To Do] Hair: the above code should replace the existing but requires modifications to 
-    // the function GetExpandedTressFXVert. 
-    // Note that in Atom g_vViewport is aspect ratio and NOT size.
-    TressFXVertex tressfxVert = GetExpandedTressFXVert(vertexId, g_vEye.xyz, g_vViewport.zw, g_mVP);
-
-
-    PS_INPUT_HAIR Output;
-
-    Output.Position = tressfxVert.Position;
-    Output.Tangent = tressfxVert.Tangent;
-    Output.p0p1 = tressfxVert.p0p1;
-    Output.StrandColor = tressfxVert.StrandColor;
-
-    return Output;
-}
 
 // Allocate a new fragment location in fragment color, depth, and link buffers
 int AllocateFragment(int2 vScreenAddress)
@@ -202,9 +172,9 @@ void PPLLFillPS(PS_INPUT_HAIR input)
 
     //////////////////////////////////////////////////////////////////////
     // [To Do] Hair: anti aliasing via coverage requires work and is disabled for now
-    float3 vNDC = ScreenPosToNDC(PassSrg::m_linearDepth, input.Position.xy, input.Position.z);
-    uint2  dimensions;
-    PassSrg::m_linearDepth.GetDimensions(dimensions.x, dimensions.y);
+//    float3 vNDC = ScreenPosToNDC(PassSrg::m_linearDepth, input.Position.xy, input.Position.z);
+//    uint2  dimensions;
+//    PassSrg::m_linearDepth.GetDimensions(dimensions.x, dimensions.y);
 //    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, float2(dimensions.x, dimensions.y));
     float coverage = 1.0;  
     /////////////////////////////////////////////////////////////////////
