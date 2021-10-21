@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/Json/JsonImporter.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
 
 namespace AZ
 {

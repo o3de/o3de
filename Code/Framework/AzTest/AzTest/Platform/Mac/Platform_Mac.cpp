@@ -7,6 +7,7 @@
  */
 #include <dlfcn.h>
 #include <iostream>
+#include <AzCore/IO/Path/Path.h>
 #include <AzTest/Platform.h>
 
 #include <sys/types.h>

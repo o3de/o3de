@@ -11,9 +11,11 @@
 #include<AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/JSON/pointer.h>
-#include <AzCore/Serialization/Json/JsonDeserializer.h>
-#include <AzCore/Serialization/Json/JsonSerializer.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
+#include <AzCore/Serialization/Json/StackedString.h>
 
 namespace AZ
 {
