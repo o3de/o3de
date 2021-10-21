@@ -29,7 +29,7 @@ namespace O3DE::ProjectManager
         QString GetTabText() override;
         bool IsTab() override;
         bool ContainsScreen(ProjectManagerScreen screen) override;
-        void GotoScreen(ProjectManagerScreen screen) override;
+        void GoToScreen(ProjectManagerScreen screen) override;
 
         QTabWidget* m_tabWidget = nullptr;
         EngineSettingsScreen* m_engineSettingsScreen = nullptr;

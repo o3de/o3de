@@ -71,7 +71,7 @@ namespace O3DE::ProjectManager
         return false;
     }
 
-    void EngineScreenCtrl::GotoScreen(ProjectManagerScreen screen)
+    void EngineScreenCtrl::GoToScreen(ProjectManagerScreen screen)
     {
         if (screen == m_engineSettingsScreen->GetScreenEnum())
         {

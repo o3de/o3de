@@ -51,7 +51,7 @@ namespace O3DE::ProjectManager
         {
             return false;
         }
-        virtual void GotoScreen([[maybe_unused]] ProjectManagerScreen screen)
+        virtual void GoToScreen([[maybe_unused]] ProjectManagerScreen screen)
         {
         }
 
@@ -63,7 +63,7 @@ namespace O3DE::ProjectManager
 
     signals:
         void ChangeScreenRequest(ProjectManagerScreen screen);
-        void GotoPreviousScreenRequest();
+        void GoToPreviousScreenRequest();
         void ResetScreenRequest(ProjectManagerScreen screen);
         void NotifyCurrentProject(const QString& projectPath);
         void NotifyBuildProject(const ProjectInfo& projectInfo);

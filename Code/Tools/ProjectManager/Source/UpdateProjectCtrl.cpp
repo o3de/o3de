@@ -122,7 +122,7 @@ namespace O3DE::ProjectManager
         {
             if (UpdateProjectSettings(true))
             {
-                emit GotoPreviousScreenRequest();
+                emit GoToPreviousScreenRequest();
             }
         }
     }

@@ -128,7 +128,7 @@ namespace O3DE::ProjectManager
 
                 if (iterator == m_screenMap.end())
                 {
-                    newScreen->GotoScreen(screen);
+                    newScreen->GoToScreen(screen);
                 }
 
                 return true;
@@ -138,7 +138,7 @@ namespace O3DE::ProjectManager
         return false;
     }
 
-    bool ScreensCtrl::GotoPreviousScreen()
+    bool ScreensCtrl::GoToPreviousScreen()
     {
         if (!m_screenVisitOrder.isEmpty())
         {
@@ -193,7 +193,7 @@ namespace O3DE::ProjectManager
         m_screenMap.insert(screen, newScreen);
 
         connect(newScreen, &ScreenWidget::ChangeScreenRequest, this, &ScreensCtrl::ChangeToScreen);
-        connect(newScreen, &ScreenWidget::GotoPreviousScreenRequest, this, &ScreensCtrl::GotoPreviousScreen);
+        connect(newScreen, &ScreenWidget::GoToPreviousScreenRequest, this, &ScreensCtrl::GoToPreviousScreen);
         connect(newScreen, &ScreenWidget::ResetScreenRequest, this, &ScreensCtrl::ResetScreen);
         connect(newScreen, &ScreenWidget::NotifyCurrentProject, this, &ScreensCtrl::NotifyCurrentProject);
         connect(newScreen, &ScreenWidget::NotifyBuildProject, this, &ScreensCtrl::NotifyBuildProject);

@@ -309,7 +309,7 @@ namespace O3DE::ProjectManager
         hLayout->addSpacing(16);
 
         QMenu* gemMenu = new QMenu(this);
-        m_openGemReposAction = gemMenu->addAction("Show Gem Repos");
+        m_openGemReposAction = gemMenu->addAction(tr("Show Gem Repos"));
 
         connect(m_openGemReposAction, &QAction::triggered, this,[this](){ emit OpenGemsRepo(); });
 
