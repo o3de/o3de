@@ -43,7 +43,9 @@ namespace AZ
             uint32_t GetVersion() const;
             void SetVersion(uint32_t toVersion);
 
-            void ApplyVersionUpdates(MaterialAsset& materialAsset) const;
+            //! Apply version updates to the given material asset.
+            //! @return true if any changes were made
+            bool ApplyVersionUpdates(MaterialAsset& materialAsset) const;
 
             using Actions = AZStd::vector<RenamePropertyAction>;
             const Actions& GetActions() const;

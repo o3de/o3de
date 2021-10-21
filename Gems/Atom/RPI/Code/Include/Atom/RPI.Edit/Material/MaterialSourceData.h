@@ -66,6 +66,7 @@ namespace AZ
 
             //! Checks the material type version and potentially applies a series of property changes (most common are simple property renames)
             //! based on the MaterialTypeAsset's version update procedure.
+            //! @return true if any changes were applied
             bool ApplyVersionUpdates();
 
             //! Creates a MaterialAsset from the MaterialSourceData content.

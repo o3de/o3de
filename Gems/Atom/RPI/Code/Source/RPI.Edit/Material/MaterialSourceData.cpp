@@ -80,8 +80,15 @@ namespace AZ
             {
                 return false;
             }
-
+            
             MaterialTypeSourceData materialTypeSourceData = materialTypeSourceDataOutcome.TakeValue();
+
+            if (m_materialTypeVersion == materialTypeSourceData.m_version)
+            {
+                return false;
+            }
+
+            bool changesWereApplied = false;
 
             // Note that the only kind of property update currently supported is rename...
 
@@ -97,6 +104,7 @@ namespace AZ
                     if (materialTypeSourceData.ApplyPropertyRenames(propertyId, m_materialTypeVersion))
                     {
                         newPropertyMap[propertyId.GetPropertyName().GetStringView()] = propertyPair.second;
+                        changesWereApplied = true;
                     }
                     else
                     {
@@ -107,8 +115,16 @@ namespace AZ
                 propertyMap = newPropertyMap;
             }
 
-            m_materialTypeVersion = materialTypeSourceData.m_version;
+            if (changesWereApplied)
+            {
+                AZ_Warning("MaterialSourceData", false,
+                    "This material is based on version %u of '%s', but the material type is now at version %u. "
+                    "Automatic updates are available. Consider updating the .material source file.",
+                    m_materialTypeVersion, m_materialType.c_str(), materialTypeSourceData.m_version);
+            }
 
+            m_materialTypeVersion = materialTypeSourceData.m_version;
+            
             return true;
         }
 

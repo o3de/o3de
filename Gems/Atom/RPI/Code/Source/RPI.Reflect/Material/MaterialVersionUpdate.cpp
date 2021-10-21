@@ -51,8 +51,10 @@ namespace AZ
             m_toVersion = toVersion;
         }
 
-        void MaterialVersionUpdate::ApplyVersionUpdates(MaterialAsset& materialAsset) const
+        bool MaterialVersionUpdate::ApplyVersionUpdates(MaterialAsset& materialAsset) const
         {
+            bool changesWereApplied = false;
+
             for (auto& propertyName : materialAsset.m_propertyNames)
             {
                 for (const auto& action : m_actions)
@@ -60,9 +62,12 @@ namespace AZ
                     if (propertyName == action.m_fromPropertyId)
                     {
                         propertyName = action.m_toPropertyId;
+                        changesWereApplied = true;
                     }
                 }
             }
+
+            return changesWereApplied;
         }
 
         const AZ::RPI::MaterialVersionUpdate::Actions& MaterialVersionUpdate::GetActions() const

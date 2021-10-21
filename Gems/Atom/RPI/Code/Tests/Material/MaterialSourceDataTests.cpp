@@ -10,6 +10,7 @@
 #include <Common/RPITestFixture.h>
 #include <Common/JsonTestUtils.h>
 #include <Common/ShaderAssetTestUtils.h>
+#include <Common/ErrorMessageFinder.h>
 #include <Material/MaterialAssetTestUtils.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
@@ -725,7 +726,10 @@ namespace UnitTest
         EXPECT_EQ(1, material.m_materialTypeVersion);
 
         // Then we force the material data to update to the latest material type version specification
+        ErrorMessageFinder warningFinder; // Note this finds errors and warnings, and we're looking for a warning.
+        warningFinder.AddExpectedErrorMessage("Automatic updates are available. Consider updating the .material source file");
         material.ApplyVersionUpdates();
+        warningFinder.CheckExpectedErrorsFound();
 
         // Now the material data should match the latest material type.
         // Look for the property under the latest name in the material type, not the name used in the .material file.
@@ -739,6 +743,10 @@ namespace UnitTest
         EXPECT_TRUE(AZ::Color(0.1f, 0.2f, 0.3f, 1.0f).IsClose(testColor, 0.01));
 
         EXPECT_EQ(10, material.m_materialTypeVersion);
+
+        // Calling ApplyVersionUpdates() again should not report the warning again, since the material has already been updated.
+        warningFinder.Reset();
+        material.ApplyVersionUpdates();
     }
     
     TEST_F(MaterialSourceDataTests, Load_MaterialTypeVersionPartialUpdate)

@@ -105,11 +105,18 @@ namespace AZ
 
         AZStd::array_view<MaterialPropertyValue> MaterialAsset::GetPropertyValues() const
         {
+            // If property names are included, they are used to re-arrange the property value list to align with the
+            // MaterialPropertiesLayout. This realignment would be necessary if the material type is updated with
+            // a new property layout, and a corresponding material is not reprocessed by the AP and continues using the
+            // old property layout.
             if (!m_propertyNames.empty())
             {
                 const uint32_t materialTypeVersion = m_materialTypeAsset->GetVersion();
                 if (m_materialTypeVersion < materialTypeVersion)
                 {
+                    // It is possible that the material type has had some properties renamed. If that's the case, and this material
+                    // is still referencing the old property layout, we need to apply any auto updates to rename those properties
+                    // before using them to realign the property values.
                     const_cast<MaterialAsset*>(this)->ApplyVersionUpdates();
                 }
 
@@ -196,11 +203,29 @@ namespace AZ
 
         void MaterialAsset::ApplyVersionUpdates()
         {
+            if (m_materialTypeVersion == m_materialTypeAsset->GetVersion())
+            {
+                return;
+            }
+
+            bool changesWereApplied = false;
+
             for (int i = 0; i < aznumeric_cast<int>(m_materialTypeAsset->GetVersion() - m_materialTypeVersion); ++i)
             {
                 const auto& versionUpdate = m_materialTypeAsset->GetMaterialVersionUpdate(m_materialTypeVersion + i + 1);
 
-                versionUpdate.ApplyVersionUpdates(*this);
+                if (versionUpdate.ApplyVersionUpdates(*this))
+                {
+                    changesWereApplied = true;
+                }
+            }
+            
+            if (changesWereApplied)
+            {
+                AZ_Warning("MaterialAsset", false,
+                    "This material is based on version %u of '%s', but the material type is now at version %u. "
+                    "Automatic updates are available. Consider updating the .material source file.",
+                    m_materialTypeVersion, m_materialTypeAsset.ToString<AZStd::string>().c_str(), m_materialTypeAsset->GetVersion());
             }
 
             m_materialTypeVersion = m_materialTypeAsset->GetVersion();
