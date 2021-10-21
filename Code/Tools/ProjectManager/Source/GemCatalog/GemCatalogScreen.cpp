@@ -113,19 +113,19 @@ namespace O3DE::ProjectManager
                 notification = GemModel::GetDisplayName(modelIndex);
                 if (numChangedDependencies > 0)
                 {
-                    notification += " and ";
+                    notification += " " + tr("and") + " ";
                 }
             }
 
             if (numChangedDependencies == 1 )
             {
-                notification += "1 Gem dependency";
+                notification += "1 Gem " + tr("dependency");
             }
             else if (numChangedDependencies > 1)
             {
-                notification += QString("%d Gem dependencies").arg(numChangedDependencies);
+                notification += QString("%d Gem ").arg(numChangedDependencies) + tr("dependencies");
             }
-            notification += added ? " activated." : " deactivated.";
+            notification += " " + (added ? tr("activated") : tr("deactivated"));
 
             AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
             toastConfiguration.m_customIconImage = ":/gem.svg";
