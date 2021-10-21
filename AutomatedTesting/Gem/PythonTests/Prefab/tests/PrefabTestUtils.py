@@ -18,20 +18,6 @@ import azlmbr.components as components
 import azlmbr.entity as entity
 import azlmbr.legacy.general as general
 
-def get_prefab_file_name(prefab_name):
-    return prefab_name + ".prefab"
-
-def get_prefab_file_path(prefab_name):
-    return os.path.join(os.path.dirname(os.path.abspath(__file__)), get_prefab_file_name(prefab_name))
-
-def find_entities_by_name(entity_name):
-    searchFilter = entity.SearchFilter()
-    searchFilter.names = [entity_name]
-    return entity.SearchBus(bus.Broadcast, 'SearchEntities', searchFilter)
-
-def get_all_entities():
-    return entity.SearchBus(bus.Broadcast, 'SearchEntities', entity.SearchFilter())
-
 def check_entity_at_position(entity_id, expected_entity_position):
     entity_at_expected_position_result = (
         "entity is at expected position",
@@ -73,9 +59,6 @@ def get_children_ids_by_name(entity_id, entity_name):
             result.append(child_entity_id)
 
     return result
-
-def wait_for_propagation():
-    general.idle_wait_frames(1)
 
 def open_base_tests_level():
     helper.init_idle()

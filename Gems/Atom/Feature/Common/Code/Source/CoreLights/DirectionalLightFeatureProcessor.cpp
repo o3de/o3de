@@ -589,6 +589,15 @@ namespace AZ
             m_shadowProperties.GetData(handle.GetIndex()).m_isReceiverPlaneBiasEnabled = enable;
         }
 
+        void DirectionalLightFeatureProcessor::SetShadowBias(LightHandle handle, float bias) 
+       {
+            for (auto& it : m_shadowData) 
+            {
+                it.second.GetData(handle.GetIndex()).m_shadowBias = bias;               
+            }
+            m_shadowBufferNeedsUpdate = true;
+        }
+
         void DirectionalLightFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
             PrepareForChangingRenderPipelineAndCameraView();
@@ -1522,10 +1531,6 @@ namespace AZ
 
                 for (uint16_t cascadeIndex = 0; cascadeIndex < GetCascadeCount(handle); ++cascadeIndex)
                 {
-                    const Matrix4x4& worldToLightClipMatrix = property.m_segments.at(cameraView)[cascadeIndex].m_view->GetWorldToClipMatrix();
-                    const Matrix4x4 depthBiasMatrix = Shadow::GetClipToShadowmapTextureMatrix() * worldToLightClipMatrix;
-                    shadowData.m_depthBiasMatrices[cascadeIndex] = depthBiasMatrix;
-
                     const Matrix4x4& lightViewToLightClipMatrix = property.m_segments.at(cameraView)[cascadeIndex].m_view->GetViewToClipMatrix();
                     const Matrix4x4 lightViewToShadowmapMatrix = Shadow::GetClipToShadowmapTextureMatrix() * lightViewToLightClipMatrix;
                     shadowData.m_lightViewToShadowmapMatrices[cascadeIndex] = lightViewToShadowmapMatrix;

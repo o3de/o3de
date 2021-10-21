@@ -8,6 +8,7 @@
 
 #include <QButtonGroup>
 
+#include <AzQtComponents/Components/ToastNotification.h>
 #include <GraphCanvas/Components/Connections/ConnectionBus.h>
 #include <GraphCanvas/Components/GridBus.h>
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
@@ -1434,31 +1435,28 @@ namespace ScriptCanvasEditor
         GraphCanvas::ViewId viewId;
         GraphCanvas::SceneRequestBus::EventResult(viewId, m_graphCanvasId, &GraphCanvas::SceneRequests::GetViewId);
 
-        GraphCanvas::ToastType toastType;
+        AzQtComponents::ToastType toastType;
         AZStd::string titleLabel = "Validation Issue";
         AZStd::string description = "";
 
         if (m_model->GetValidationResults().HasErrors())
         {
-            toastType = GraphCanvas::ToastType::Error;
+            toastType = AzQtComponents::ToastType::Error;
             description = AZStd::string::format("%i validation error(s) were found.", m_model->GetValidationResults().ErrorCount());
         }
         else
         {
-            toastType = GraphCanvas::ToastType::Warning;
+            toastType = AzQtComponents::ToastType::Warning;
             description = AZStd::string::format("%i validation warning(s) were found.", m_model->GetValidationResults().WarningCount());
         }
 
-        GraphCanvas::ToastConfiguration toastConfiguration(toastType, titleLabel, description);
+        AzQtComponents::ToastConfiguration toastConfiguration(toastType, titleLabel.c_str(), description.c_str());
 
-        toastConfiguration.SetCloseOnClick(true);
-        toastConfiguration.SetDuration(AZStd::chrono::milliseconds(5000));
-
-        GraphCanvas::ToastId validationToastId;
+        AzToolsFramework::ToastId validationToastId;
 
         GraphCanvas::ViewRequestBus::EventResult(validationToastId, viewId, &GraphCanvas::ViewRequests::ShowToastNotification, toastConfiguration);
 
-        GraphCanvas::ToastNotificationBus::MultiHandler::BusConnect(validationToastId);
+        AzToolsFramework::ToastNotificationBus::MultiHandler::BusConnect(validationToastId);
 
     }
 
@@ -1469,11 +1467,11 @@ namespace ScriptCanvasEditor
 
     void ValidationData::OnToastDismissed()
     {
-        const GraphCanvas::ToastId* toastId = GraphCanvas::ToastNotificationBus::GetCurrentBusId();
+        const AzToolsFramework::ToastId* toastId = AzToolsFramework::ToastNotificationBus::GetCurrentBusId();
 
         if (toastId)
         {
-            GraphCanvas::ToastNotificationBus::MultiHandler::BusDisconnect((*toastId));
+            AzToolsFramework::ToastNotificationBus::MultiHandler::BusDisconnect((*toastId));
         }
     }
 
