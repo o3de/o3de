@@ -8,8 +8,13 @@
 
 #include <DownloadController.h>
 #include <DownloadWorker.h>
+#include <PythonBindings.h>
+
+#include <AzCore/std/algorithm.h>
 
 #include <QMessageBox>
+
+
 
 
 namespace O3DE::ProjectManager
@@ -46,6 +51,24 @@ namespace O3DE::ProjectManager
         }
     }
 
+    void DownloadController::CancelGemDownload(const QString& gemName)
+    {
+        auto findResult = AZStd::find(m_gemNames.begin(), m_gemNames.end(), gemName);
+
+        if (findResult != m_gemNames.end())
+        {
+            if (findResult == m_gemNames.begin())
+            {
+                // HandleResults will remove the gem upon cancelling
+                PythonBindingsInterface::Get()->CancelDownload();
+            }
+            else
+            {
+                m_gemNames.erase(findResult);
+            }
+        }
+    }
+
     void DownloadController::UpdateUIProgress(int progress)
     {
         m_lastProgress = progress;
@@ -74,11 +97,5 @@ namespace O3DE::ProjectManager
             m_workerThread.quit();
             m_workerThread.wait();
         }
-    }
-
-    void DownloadController::HandleCancel()
-    {
-        m_workerThread.quit();
-        emit Done(false);
     }
 } // namespace O3DE::ProjectManager

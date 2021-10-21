@@ -154,6 +154,11 @@ namespace O3DE::ProjectManager
         update();
     }
 
+    void CartOverlayWidget::OnCancelDownloadActivated(const QString& gemName)
+    {
+        m_downloadController->CancelGemDownload(gemName);
+    }
+
     void CartOverlayWidget::CreateDownloadSection()
     {
         QWidget* widget = new QWidget();
@@ -187,6 +192,8 @@ namespace O3DE::ProjectManager
         QVBoxLayout* downloadingItemLayout = new QVBoxLayout();
         downloadingItemLayout->setAlignment(Qt::AlignTop);
         downloadingItemWidget->setLayout(downloadingItemLayout);
+
+        m_downloadController->AddGemDownload("TestGem");
 
         auto update = [=](int downloadProgress)
         {
@@ -234,7 +241,9 @@ namespace O3DE::ProjectManager
                     nameProgressLayout->addWidget(progress);
                     QSpacerItem* spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
                     nameProgressLayout->addSpacerItem(spacer);
-                    QLabel* cancelText = new QLabel(tr("Cancel"));
+                    QLabel* cancelText = new QLabel(QString("<a href=\"%1\">Cancel</a>").arg(downloadQueue[downloadingGemNumber]));
+                    cancelText->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+                    connect(cancelText, &QLabel::linkActivated, this, &CartOverlayWidget::OnCancelDownloadActivated);
                     nameProgressLayout->addWidget(cancelText);
                     downloadingItemLayout->addLayout(nameProgressLayout);
                     QProgressBar* downloadProgessBar = new QProgressBar();

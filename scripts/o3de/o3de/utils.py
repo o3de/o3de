@@ -10,14 +10,43 @@ This file contains utility functions
 """
 import sys
 import uuid
+import os
 import pathlib
 import shutil
 import urllib.request
 import logging
 import zipfile
+try:
+    import o3de_projectmanager
+except ImportError:
+    pass
 
 logger = logging.getLogger()
 logging.basicConfig()
+
+COPY_BUFSIZE = 64 * 1024
+
+def copyfileobj(fsrc, fdst, callback, length=0):
+    # This is functionally the same as the python shutil copyfileobj but
+    # allows for a callback to return the download progress in blocks and allows
+    # to early out to cancel the copy.
+    if not length:
+        length = COPY_BUFSIZE
+
+    fsrc_read = fsrc.read
+    fdst_write = fdst.write
+
+    copied = 0
+    while True:
+        if o3de_projectmanager and o3de_projectmanager.request_cancel_download():
+            return 1
+        buf = fsrc_read(length)
+        if not buf:
+            break
+        fdst_write(buf)
+        copied += len(buf)
+        callback(copied)
+    return 0
 
 def validate_identifier(identifier: str) -> bool:
     """
@@ -93,7 +122,6 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
-
 def download_file(parsed_uri, download_path: pathlib.Path) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
@@ -103,8 +131,18 @@ def download_file(parsed_uri, download_path: pathlib.Path) -> int:
         logger.warn(f'File already downloaded to {download_path}.')
     elif parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
         with urllib.request.urlopen(parsed_uri.geturl()) as s:
+            download_file_size = 0
+            try:
+                download_file_size = s.headers['content-length']
+            except KeyError:
+                pass
+            def download_progress(blocks):
+                if o3de_projectmanager and download_file_size:
+                    o3de_projectmanager.download_progress(int(blocks/int(download_file_size) * 100))
             with download_path.open('wb') as f:
-                shutil.copyfileobj(s, f)
+                download_cancelled = copyfileobj(s, f, download_progress)
+                if download_cancelled:
+                    return 1
     else:
         origin_file = pathlib.Path(parsed_uri.geturl()).resolve()
         if not origin_file.is_file():
