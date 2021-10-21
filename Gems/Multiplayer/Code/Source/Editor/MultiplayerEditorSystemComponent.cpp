@@ -256,13 +256,13 @@ namespace Multiplayer
             {
                 m_serverProcess = LaunchEditorServer();
 
-                AZ_Warning(
-                    "MultiplayerEditor", false,
-                    "Just launched LaunchEditorServer. About to sleep!");
+                //AZ_Warning(
+                //    "MultiplayerEditor", false,
+                //    "Just launched LaunchEditorServer. About to sleep!")
 
-                AZStd::this_thread::sleep_for(AZStd::chrono::seconds(10));
+                //AZStd::this_thread::sleep_for(AZStd::chrono::seconds(10));
 
-                AZ_Warning("MultiplayerEditor", false, "Just launched LaunchEditorServer. Done sleeping!");
+                //AZ_Warning("MultiplayerEditor", false, "Just launched LaunchEditorServer. Done sleeping!")
 
             }
 
