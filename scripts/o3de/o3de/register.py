@@ -467,7 +467,7 @@ def register_restricted_path(json_data: dict,
 
 
 def register_repo(json_data: dict,
-                  repo_uri: str or pathlib.Path,
+                  repo_uri: str,
                   remove: bool = False) -> int:
     if not repo_uri:
         logger.error(f'Repo URI cannot be empty.')
@@ -566,7 +566,7 @@ def register(engine_path: pathlib.Path = None,
              external_subdir_path: pathlib.Path = None,
              template_path: pathlib.Path = None,
              restricted_path: pathlib.Path = None,
-             repo_uri: str or pathlib.Path = None,
+             repo_uri: str = None,
              default_engines_folder: pathlib.Path = None,
              default_projects_folder: pathlib.Path = None,
              default_gems_folder: pathlib.Path = None,
@@ -641,7 +641,7 @@ def register(engine_path: pathlib.Path = None,
             return 1
         result = result or register_restricted_path(json_data, restricted_path, remove, project_path, engine_path)
 
-    if isinstance(repo_uri, str) or isinstance(repo_uri, pathlib.PurePath):
+    if isinstance(repo_uri, str):
         if not repo_uri:
             logger.error(f'Repo URI cannot be empty.')
             return 1
