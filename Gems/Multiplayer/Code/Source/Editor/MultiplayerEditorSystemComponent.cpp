@@ -260,7 +260,7 @@ namespace Multiplayer
                     "MultiplayerEditor", false,
                     "Just launched LaunchEditorServer. About to sleep!");
 
-                AZStd::this_thread::sleep_for(AZStd::chrono::seconds(5.0));
+                AZStd::this_thread::sleep_for(AZStd::chrono::seconds(10));
 
                 AZ_Warning("MultiplayerEditor", false, "Just launched LaunchEditorServer. Done sleeping!");
 
