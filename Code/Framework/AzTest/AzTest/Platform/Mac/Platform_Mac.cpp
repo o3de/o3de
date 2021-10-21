@@ -20,15 +20,16 @@ public:
     explicit ModuleHandle(const std::string& lib)
         : m_libHandle(nullptr)
     {
-        std::string libext = lib;
-        if (!AZ::Test::StartsWith(libext, AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX))
+        AZ::IO::FixedMaxPath libext = AZStd::string_view{ lib.c_str(), lib.size() };
+        if (!libext.Stem().Native().starts_with(AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX))
         {
-            libext = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX + libext;
+           libext = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX + libext.Native();
         }
-        if (!AZ::Test::EndsWith(libext, AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION))
+        if (libext.Extension() != AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION)
         {
-            libext += AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
+            libext.Native() += AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
         }
+
         m_libHandle = dlopen(libext.c_str(), RTLD_NOW);
         const char* error = dlerror();
         if (error)

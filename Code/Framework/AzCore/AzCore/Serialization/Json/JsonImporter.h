@@ -24,8 +24,8 @@ namespace AZ
     public:
         AZ_RTTI(BaseJsonImporter, "{7B225807-7B43-430F-8B11-C794DCF5ACA5}");
 
-        typedef AZStd::vector<AZStd::pair<rapidjson::Pointer, AZStd::string>> ImportDirectivesList;
-        typedef AZStd::unordered_set<AZStd::string> ImportedFilesList;
+        using ImportDirectivesList = AZStd::vector<AZStd::pair<rapidjson::Pointer, AZStd::string>>;
+        using ImportedFilesList = AZStd::unordered_set<AZStd::string>;
 
         virtual JsonSerializationResult::ResultCode ResolveImport(rapidjson::Value* importPtr,
             rapidjson::Value& patch, const rapidjson::Value& importDirective,
@@ -69,7 +69,7 @@ namespace AZ
     {
     public:
 
-        typedef AZStd::vector<AZ::IO::FixedMaxPath> ImportPathStack;
+        using ImportPathStack = AZStd::vector<AZ::IO::FixedMaxPath>;
 
         JsonImportResolver() = delete;
         JsonImportResolver& operator=(const JsonImportResolver& rhs) = delete;
