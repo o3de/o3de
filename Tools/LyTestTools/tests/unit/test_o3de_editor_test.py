@@ -486,7 +486,7 @@ class TestUtils(unittest.TestCase):
         mock_test.__name__ = 'mock_test_name'
         mock_test_list = [mock_test]
         mock_output = 'JSON_START(' \
-                      '{"name": "mock_module_name", "output": "mock_std_out", "failed": "mock_fail_data"}' \
+                      '{"name": "mock_module_name", "output": "mock_std_out", "failed": "mock_fail_data", "success": ""}' \
                       ')JSON_END'
         mock_fail = mock.MagicMock()
         mock_create.return_value = mock_fail
@@ -534,10 +534,10 @@ class TestUtils(unittest.TestCase):
                       '{"name": "mock_module_name_pass", "output": "mock_std_out", "success": "mock_success_data"}' \
                       ')JSON_END' \
                       'JSON_START(' \
-                      '{"name": "mock_module_name_fail", "output": "mock_std_out", "failed": "mock_fail_data"}' \
+                      '{"name": "mock_module_name_fail", "output": "mock_std_out", "failed": "mock_fail_data", "success": ""}' \
                       ')JSON_END' \
                       'JSON_START(' \
-                      '{"name": "mock_module_name_unknown", "output": "mock_std_out", "failed": "mock_fail_data"}' \
+                      '{"name": "mock_module_name_unknown", "output": "mock_std_out", "failed": "mock_fail_data", "success": ""}' \
                       ')JSON_END'
         mock_editor_log = 'JSON_START(' \
                           '{"name": "mock_module_name_pass"}' \
