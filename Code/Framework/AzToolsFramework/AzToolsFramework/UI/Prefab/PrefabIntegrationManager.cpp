@@ -803,11 +803,12 @@ namespace AzToolsFramework
                 AZ::IO::FixedMaxPath lexicallyNormalPath = AZ::IO::PathView(prefabPath.toUtf8().constData()).LexicallyNormal();
 
                 bool isPathSafeForAssets = false;
-                for (AZ::IO::Path assetSafeFolder : assetSafeFolders)
+                for (const AZStd::string& assetSafeFolder : assetSafeFolders)
                 {
+                    AZ::IO::PathView assetSafeFolderView(assetSafeFolder);
                     // Check if the prefabPath is relative to the safe asset directory.
                     // The Path classes are being used to make this check case insensitive.
-                    if (lexicallyNormalPath.IsRelativeTo(assetSafeFolder))
+                    if (lexicallyNormalPath.IsRelativeTo(assetSafeFolderView))
                     {
                         isPathSafeForAssets = true;
                         break;
