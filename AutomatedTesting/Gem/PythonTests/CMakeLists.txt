@@ -58,3 +58,6 @@ add_subdirectory(smoke)
 
 ## AWS ##
 add_subdirectory(AWS)
+
+## Integration tests for editor testing framework ##
+add_subdirectory(editor_test_testing)

@@ -29,13 +29,13 @@
 // THE SOFTWARE.
 //
 //------------------------------------------------------------------------------
-// File: HairSRGs.azsli
+// File: HairSimulationComputeSrgs.azsli
 //
 // Declarations of SRGs used by the hair shaders.
 //------------------------------------------------------------------------------
 #pragma once
 
-#include <HairSrgs.azsli>
+#include <HairComputeSrgs.azsli>
 
 //!-----------------------------------------------------------------------------
 //! 

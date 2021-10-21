@@ -73,6 +73,8 @@ namespace AzToolsFramework
     void EntityOutlinerTreeView::leaveEvent([[maybe_unused]] QEvent* event)
     {
         m_mousePosition = QPoint();
+        m_currentHoveredIndex = QModelIndex();
+        update();
     }
 
     void EntityOutlinerTreeView::mousePressEvent(QMouseEvent* event)
@@ -129,6 +131,11 @@ namespace AzToolsFramework
         }
 
         m_mousePosition = event->pos();
+        if (QModelIndex hoveredIndex = indexAt(m_mousePosition); m_currentHoveredIndex != indexAt(m_mousePosition))
+        {
+            m_currentHoveredIndex = hoveredIndex;
+            update();
+        }
 
         //process mouse movement as normal, potentially triggering drag and drop
         QTreeView::mouseMoveEvent(event);

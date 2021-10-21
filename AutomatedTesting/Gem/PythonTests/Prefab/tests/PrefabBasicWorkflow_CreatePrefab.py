@@ -17,12 +17,11 @@ def PrefabBasicWorkflow_CreatePrefab():
 
     prefab_test_utils.open_base_tests_level()
 
-    # Creates a new Entity at the root level
-    # Asserts if creation didn't succeed
+    # Creates a new entity at the root level
     car_entity = EditorEntity.create_editor_entity()
     car_prefab_entities = [car_entity]
 
-    # Checks for prefab creation passed or not
+    # Creates a prefab from the new entity
     Prefab.create_prefab(car_prefab_entities, CAR_PREFAB_FILE_NAME)
 
 if __name__ == "__main__":

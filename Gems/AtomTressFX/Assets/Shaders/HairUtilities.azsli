@@ -34,9 +34,6 @@
 
 #pragma once
 
-#include <viewsrg.srgi>
-
-
 #define SHORTCUT_MIN_ALPHA 0.02
 
 #define TRESSFX_FLOAT_EPSILON 1e-7
@@ -50,40 +47,6 @@
 float4 MatrixMult(float4x4 m, float4 v)
 {
     return mul(m, v);
-}
-
-// Given the depth buffer depth of the current pixel and the fragment XY position, 
-// reconstruct the NDC.
-// screenCoords - from 0.. dimension of the screen of the current pixel
-// screenTexture - screen buffer texture representing the same resolution we work in
-// sDepth - the depth buffer depth at the fragment location
-// NDC - Normalized Device Coordinates = warped screen space ( -1.1, -1..1, 0..1 )
-float3 ScreenPosToNDC( Texture2D<float> screenTexture, float2 screenCoords, float depth )
-{ 
-    uint2 dimensions;
-    screenTexture.GetDimensions(dimensions.x, dimensions.y);
-    float2 UV = saturate(screenCoords / dimensions.xy);
-
-    float x = UV.x * 2.0f - 1.0f;
-    float y = (1.0f - UV.y) * 2.0f - 1.0f;
-    float3 NDC = float3(x, y, depth);
-
-    return NDC;
-}
-
-// Given the depth buffer depth of the current pixel and the fragment XY position, 
-// reconstruct the world space position
-float3 ScreenPosToWorldPos( 
-    Texture2D<float> screenTexture, float2 screenCoords, float depth, 
-    inout float3 screenPosNDC )
-{ 
-    screenPosNDC = ScreenPosToNDC(PassSrg::m_linearDepth, screenCoords, depth);
-    float4 projectedPos = float4(screenPosNDC, 1.0f);    // warped projected space [0..1]
-    float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
-    positionVS /= positionVS.w; // notice the normalization factor - crucial! 
-    float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
-
-    return positionWS.xyz;
 }
 
 // Pack a float4 into an uint
