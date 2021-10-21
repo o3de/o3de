@@ -47,11 +47,11 @@ namespace AZ
 
             HairFeatureProcessor::HairFeatureProcessor()
             {
+                m_usePPLLRenderTechnique = false;   // Use the ShortCut rendering technique
+
                 HairParentPassName = Name{ "HairParentPass" };
 
-                HairPPLLRasterPassName = Name{ "HairPPLLRasterPass" };
-                HairPPLLResolvePassName = Name{ "HairPPLLResolvePass" };
-
+                // Hair Skinning and Simulation Compute passes
                 GlobalShapeConstraintsPassName = Name{ "HairGlobalShapeConstraintsComputePass" };
                 CalculateStrandDataPassName = Name{ "HairCalculateStrandLevelDataComputePass" };
                 VelocityShockPropagationPassName = Name{ "HairVelocityShockPropagationComputePass" };
@@ -59,12 +59,21 @@ namespace AZ
                 LengthConstriantsWindAndCollisionPassName = Name{ "HairLengthConstraintsWindAndCollisionComputePass" };
                 UpdateFollowHairPassName = Name{ "HairUpdateFollowHairComputePass" };
 
+                // PPLL render technique pases
+                HairPPLLRasterPassName = Name{ "HairPPLLRasterPass" };
+                HairPPLLResolvePassName = Name{ "HairPPLLResolvePass" };
+
+                // ShortCut render technique pases
+                HairShortCutGeometryDepthAlphaPassName = Name{ "HairShortCutGeometryDepthAlphaPass" };
+                HairShortCutResolveDepthPassName = Name{ "HairShortCutResolveDepthPass" };
+                HairShortCutGeometryShadingPassName = Name{ "HairShortCutGeometryShadingPass" };
+                HairShortCutResolveColorPassName = Name{ "HairShortCutResolveColorPass" };
+
                 ++s_instanceCount;
 
                 if (!CreatePerPassResources())
                 {   // this might not be an error - if the pass system is still empty / minimal
-                    //  and these passes are not part of the minimal pipeline, they will not
-                    //  be created.
+                    //  and these passes are not part of the minimal pipeline, they will not be created.
                     AZ_Error("Hair Gem", false, "Failed to create the hair shared buffer resource");
                 }
             }
@@ -127,25 +136,33 @@ namespace AZ
 
                 m_hairRenderObjects.push_back(renderObject);
 
+                // Adding the object will schedule Srgs binding and the DrawItem build for the geometry passes.
                 BuildDispatchAndDrawItems(renderObject);
 
                 EnablePasses(true);
             }
 
-            void HairFeatureProcessor::EnablePasses(bool enable)
+            void HairFeatureProcessor::EnablePasses([[maybe_unused]] bool enable)
             {
+                return;
+
+                // [To Do] - This part should be enabled (remove the return) to reduce overhead
+                // when Hair is disabled / doesn't exist in the scene.
+                // Currently it might break features such as fog that depend on the output and for some
+                // reason doesn't quite work for ShortCut.
+                // The current overhead is minimal (< 0.1 msec) and this Gem is disabled by default.
+/*
                 if (!m_initialized)
                 {
                     return;
                 }
 
-                for (auto& [passName, pass] : m_computePasses)
+                RPI::Ptr<RPI::Pass> desiredPass = m_renderPipeline->GetRootPass()->FindPassByNameRecursive(HairParentPassName);
+                if (desiredPass)
                 {
-                    pass->SetEnabled(enable);
+                    desiredPass->SetEnabled(enable);
                 }
-
-                m_hairPPLLRasterPass->SetEnabled(enable);
-                m_hairPPLLResolvePass->SetEnabled(enable);
+*/
             }
 
             bool HairFeatureProcessor::RemoveHairRenderObject(Data::Instance<HairRenderObject> renderObject)
@@ -214,7 +231,8 @@ namespace AZ
                 }
 
                 if (m_forceRebuildRenderData)
-                {
+                {   // In the case of a force build, schedule Srgs binding and the DrawItem build for
+                    // the geometry passes of all existing hair objects.
                     for (auto& hairRenderObject : m_hairRenderObjects)
                     {
                         BuildDispatchAndDrawItems(hairRenderObject);
@@ -276,16 +294,31 @@ namespace AZ
                     pass->AddDispatchItems(m_hairRenderObjects);
                 }
 
-                // Add all hair objects to the Render / Raster Pass
-                m_hairPPLLRasterPass->AddDrawPackets(m_hairRenderObjects);
+                if (m_usePPLLRenderTechnique)
+                {
+                    // Add all hair objects to the Render / Raster Pass
+                    m_hairPPLLRasterPass->AddDrawPackets(m_hairRenderObjects);
+                }
+                else
+                {
+                    m_hairShortCutGeometryDepthAlphaPass->AddDrawPackets(m_hairRenderObjects);
+                    m_hairShortCutGeometryShadingPass->AddDrawPackets(m_hairRenderObjects);
+                }
             }
 
             void HairFeatureProcessor::ClearPasses()
             {
                 m_initialized = false;      // Avoid simulation or render
                 m_computePasses.clear();
+
+                // PPLL geometry and resolve full screen passes
                 m_hairPPLLRasterPass = nullptr;
                 m_hairPPLLResolvePass = nullptr;
+
+                // ShortCut passes - Special handling of geometry passes only, and using the regular
+                // full screen pass for the resolve
+                m_hairShortCutGeometryDepthAlphaPass = nullptr;
+                m_hairShortCutGeometryShadingPass = nullptr;
 
                 // Mark for all passes to evacuate their render data and recreate it.
                 m_forceRebuildRenderData = true;
@@ -338,6 +371,12 @@ namespace AZ
 
                 ClearPasses();
 
+                if (!m_renderPipeline)
+                {
+                    AZ_Error("Hair Gem", false, "HairFeatureProcessor does NOT have render pipeline set yet");
+                    return false;
+                }
+
                 // Compute Passes - populate the passes map
                 bool resultSuccess = InitComputePass(GlobalShapeConstraintsPassName);
                 resultSuccess &= InitComputePass(CalculateStrandDataPassName);
@@ -347,8 +386,15 @@ namespace AZ
                 resultSuccess &= InitComputePass(UpdateFollowHairPassName);
 
                 // Rendering Passes
-                resultSuccess &= InitPPLLFillPass();
-                resultSuccess &= InitPPLLResolvePass();
+                if (m_usePPLLRenderTechnique)
+                {
+                    resultSuccess &= InitPPLLFillPass();
+                    resultSuccess &= InitPPLLResolvePass();
+                }
+                else
+                {
+                    resultSuccess &= InitShortCutRenderPasses();
+                }
 
                 m_initialized = resultSuccess;
 
@@ -388,7 +434,8 @@ namespace AZ
                     }
                 }
 
-                // PPLL nodes buffer
+                // PPLL nodes buffer - created only if the PPLL technique is used
+                if (m_usePPLLRenderTechnique)
                 {
                     descriptor = SrgBufferDescriptor(
                         RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,
@@ -425,11 +472,6 @@ namespace AZ
             bool HairFeatureProcessor::InitComputePass(const Name& passName, bool allowIterations)
             {
                 m_computePasses[passName] = nullptr;
-                if (!m_renderPipeline)
-                {
-                    AZ_Error("Hair Gem", false, "%s does NOT have render pipeline set yet", passName.GetCStr());
-                    return false;
-                }
 
                 RPI::Ptr<RPI::Pass> desiredPass = m_renderPipeline->GetRootPass()->FindPassByNameRecursive(passName);
                 if (desiredPass)
@@ -452,11 +494,6 @@ namespace AZ
             bool HairFeatureProcessor::InitPPLLFillPass()
             {
                 m_hairPPLLRasterPass = nullptr;   // reset it to null, just in case it fails to load the assets properly
-                if (!m_renderPipeline)
-                {
-                    AZ_Error("Hair Gem", false, "Hair Fill Pass does NOT have render pipeline set yet");
-                    return false;
-                }
 
                 RPI::Ptr<RPI::Pass> desiredPass = m_renderPipeline->GetRootPass()->FindPassByNameRecursive(HairPPLLRasterPassName);
                 if (desiredPass)
@@ -466,7 +503,7 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Error("Hair Gem", false, "HairPPLLRasterPass does not have any valid passes. Check your game project's .pass assets.");
+                    AZ_Error("Hair Gem", false, "HairPPLLRasterPass cannot be found. Check your game project's .pass assets.");
                     return false;
                 }
                 return true;
@@ -475,11 +512,6 @@ namespace AZ
             bool HairFeatureProcessor::InitPPLLResolvePass()
             {
                 m_hairPPLLResolvePass = nullptr;   // reset it to null, just in case it fails to load the assets properly
-                if (!m_renderPipeline)
-                {
-                    AZ_Error("Hair Gem", false, "Hair Fill Pass does NOT have render pipeline set yet");
-                    return false;
-                }
 
                 RPI::Ptr<RPI::Pass> desiredPass = m_renderPipeline->GetRootPass()->FindPassByNameRecursive(HairPPLLResolvePassName);
                 if (desiredPass)
@@ -489,9 +521,43 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Error("Hair Gem", false, "HairPPLLResolvePassTemplate does not have valid passes. Check your game project's .pass assets.");
+                    AZ_Error("Hair Gem", false, "HairPPLLResolvePass cannot be found. Check your game project's .pass assets.");
                     return false;
                 }
+                return true;
+            }
+
+            //! Set the two short cut geometry pases and assign them the FP. The other two full screen passes
+            //! are generic full screen passes and don't need any interaction with the FP.
+            bool HairFeatureProcessor::InitShortCutRenderPasses()
+            {
+                m_hairShortCutGeometryDepthAlphaPass = nullptr;
+                m_hairShortCutGeometryShadingPass = nullptr;
+
+                m_hairShortCutGeometryDepthAlphaPass = static_cast<HairShortCutGeometryDepthAlphaPass*>(
+                    m_renderPipeline->GetRootPass()->FindPassByNameRecursive(HairShortCutGeometryDepthAlphaPassName).get());
+                if (m_hairShortCutGeometryDepthAlphaPass)
+                {
+                    m_hairShortCutGeometryDepthAlphaPass->SetFeatureProcessor(this);
+                }
+                else
+                {
+                    AZ_Error("Hair Gem", false, "HairShortCutResolveDepthPass cannot be found. Check your game project's .pass assets.");
+                    return false;
+                }
+
+                m_hairShortCutGeometryShadingPass = static_cast<HairShortCutGeometryShadingPass*>(
+                    m_renderPipeline->GetRootPass()->FindPassByNameRecursive(HairShortCutGeometryShadingPassName).get());
+                if (m_hairShortCutGeometryShadingPass)
+                {
+                    m_hairShortCutGeometryShadingPass->SetFeatureProcessor(this);
+                }
+                else
+                {
+                    AZ_Error("Hair Gem", false, "HairShortCutGeometryShadingPass cannot be found. Check your game project's .pass assets.");
+                    return false;
+                }
+
                 return true;
             }
 
@@ -513,9 +579,18 @@ namespace AZ
                 m_computePasses[UpdateFollowHairPassName]->BuildDispatchItem(
                     renderObjectPtr, DispatchLevel::DISPATCHLEVEL_VERTEX);
 
-                // Render / Raster pass - adding the object will schedule Srgs binding
-                // and DrawItem build.
-                m_hairPPLLRasterPass->SchedulePacketBuild(renderObjectPtr);
+                // Schedule Srgs binding and the DrawItem build.
+                // Since this does not bind the PerPass srg but prepare the rest of the Srgs
+                // such as the dynamic srg, it should only be done once per object per frame.
+                if (m_usePPLLRenderTechnique)
+                {
+                    m_hairPPLLRasterPass->SchedulePacketBuild(renderObjectPtr);
+                }
+                else
+                {  
+                    m_hairShortCutGeometryDepthAlphaPass->SchedulePacketBuild(renderObjectPtr);
+                    m_hairShortCutGeometryShadingPass->SchedulePacketBuild(renderObjectPtr);
+                }
             }
 
             Data::Instance<HairSkinningComputePass> HairFeatureProcessor::GetHairSkinningComputegPass()
@@ -527,14 +602,28 @@ namespace AZ
                 return m_computePasses[GlobalShapeConstraintsPassName];
             }
 
-            Data::Instance<HairPPLLRasterPass> HairFeatureProcessor::GetHairPPLLRasterPass()
+            Data::Instance<RPI::Shader> HairFeatureProcessor::GetGeometryRasterShader()
             {
-                if (!m_hairPPLLRasterPass)
+                if (m_usePPLLRenderTechnique)
                 {
-                    Init(m_renderPipeline);
+                    if (!m_hairPPLLRasterPass && !Init(m_renderPipeline))
+                    {
+                        AZ_Error("Hair Gem", false,
+                            "GetGeometryRasterShader - m_hairPPLLRasterPass was not created");
+                        return nullptr;
+                    }
+                    return m_hairPPLLRasterPass->GetShader();
                 }
-                return m_hairPPLLRasterPass;
+
+                if (!m_hairShortCutGeometryDepthAlphaPass && !Init(m_renderPipeline))
+                {
+                    AZ_Error("Hair Gem", false,
+                        "GetGeometryRasterShader - m_hairShortCutGeometryDepthAlphaPass was not created");
+                    return nullptr;
+                }
+                return m_hairShortCutGeometryDepthAlphaPass->GetShader();
             }
+
         } // namespace Hair
     } // namespace Render
 } // namespace AZ
