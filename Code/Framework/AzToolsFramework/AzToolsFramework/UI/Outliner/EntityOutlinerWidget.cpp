@@ -902,6 +902,7 @@ namespace AzToolsFramework
 
             EditorPickModeRequestBus::Broadcast(
                 &EditorPickModeRequests::StopEntityPickMode);
+            return;
         }
 
         switch (index.column())
@@ -918,18 +919,30 @@ namespace AzToolsFramework
     {
         if (AZ::EntityId entityId = GetEntityIdFromIndex(index); auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId))
         {
-            entityUiHandler->OnDoubleClick(entityId);
+            entityUiHandler->OnEntityDoubleClick(entityId);
         }
     }
 
     void EntityOutlinerWidget::OnTreeItemExpanded(const QModelIndex& index)
     {
-        m_listModel->OnEntityExpanded(GetEntityIdFromIndex(index));
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
+        if (auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId))
+        {
+            entityUiHandler->OnOutlinerItemExpand(index);
+        }
+
+        m_listModel->OnEntityExpanded(entityId);
     }
 
     void EntityOutlinerWidget::OnTreeItemCollapsed(const QModelIndex& index)
     {
-        m_listModel->OnEntityCollapsed(GetEntityIdFromIndex(index));
+        AZ::EntityId entityId = GetEntityIdFromIndex(index);
+        if (auto entityUiHandler = m_editorEntityUiInterface->GetHandler(entityId))
+        {
+            entityUiHandler->OnOutlinerItemCollapse(index);
+        }
+
+        m_listModel->OnEntityCollapsed(entityId);
     }
 
     void EntityOutlinerWidget::OnExpandEntity(const AZ::EntityId& entityId, bool expand)
@@ -1163,7 +1176,7 @@ namespace AzToolsFramework
     {
         QTimer::singleShot(1, this, [this]() {
             m_gui->m_objectTree->setUpdatesEnabled(true);
-            m_gui->m_objectTree->expandToDepth(0);
+            m_gui->m_objectTree->expand(m_proxyModel->index(0,0));
         });
     }
 
