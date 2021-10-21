@@ -513,8 +513,8 @@
                 "Path": "Passes/HDRColorGrading.pass"
             },
             {
-                "Name": "DesaturationTemplate",
-                "Path": "Passes/Desaturation.pass"
+                "Name": "EditorModeFeedbackTemplate",
+                "Path": "Passes/EditorModeFeedback.pass"
             }
         ]
     }

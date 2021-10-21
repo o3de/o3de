@@ -4,7 +4,7 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "DesaturationTemplate",
+            "Name": "EditorModeFeedbackTemplate",
             "PassClass": "FullScreenTriangle",
             "Slots": [
                 {
@@ -24,7 +24,7 @@
             ],
             "ImageAttachments": [
                 {
-                    "Name": "DesaturationOutput",
+                    "Name": "EditorModeFeedbackOutput",
                     "SizeSource": {
                         "Source": {
                             "Pass": "This",
@@ -42,7 +42,7 @@
                     "LocalSlot": "Output",
                     "AttachmentRef": {
                         "Pass": "This",
-                        "Attachment": "DesaturationOutput"
+                        "Attachment": "EditorModeFeedbackOutput"
                     }
                 }
             ],
@@ -55,7 +55,7 @@
             "PassData": {
                 "$type": "FullscreenTrianglePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/PostProcessing/Desaturation.shader"
+                    "FilePath": "Shaders/PostProcessing/EditorModeFeedback.shader"
                 }
             }
         }
