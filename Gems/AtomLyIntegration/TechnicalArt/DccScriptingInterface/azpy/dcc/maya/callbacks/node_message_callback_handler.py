@@ -85,7 +85,7 @@ _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
 if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.maya.callbacks.event_callback_handler'
+    _PACKAGENAME = 'azpy.dcc.maya.callbacks.event_callback_handler'
 
 _LOGGER = azpy.initialize_logger(_PACKAGENAME, default_log_level=int(20))
 _LOGGER.debug('Invoking:: {0}.'.format({_PACKAGENAME}))

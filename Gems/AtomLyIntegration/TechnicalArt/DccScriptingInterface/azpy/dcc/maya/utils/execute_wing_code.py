@@ -43,7 +43,7 @@ def get_stub_check_path(in_path=__file__, check_stub='engineroot.txt'):
 
 # -------------------------------------------------------------------------
 # -- Global Definitions --
-_MODULENAME = 'azpy.maya.utils.execute_wing_code'
+_MODULENAME = 'azpy.dcc.maya.utils.execute_wing_code'
 _LOGGER = _logging.getLogger(_MODULENAME)
 
 _O3DE_DEV = get_stub_check_path()

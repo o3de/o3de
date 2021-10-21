@@ -8,7 +8,7 @@
 #
 #
 # --------------------------------------------------------------------------
-"""azpy.maya.toolbits.__init__"""
+"""azpy.dcc.maya.toolbits.__init__"""
 
 import logging as _logging
 
@@ -22,7 +22,7 @@ _DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
 if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.maya.toolbits'
+    _PACKAGENAME = 'azpy.dcc.maya.toolbits'
 
 # set up module logging
 for handler in _logging.root.handlers[:]:

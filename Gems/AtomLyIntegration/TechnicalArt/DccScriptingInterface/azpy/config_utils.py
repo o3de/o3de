@@ -37,10 +37,10 @@ if _MODULENAME is '__main__':
     _MODULENAME = 'azpy.config_utils'
     
 # set up module logging
-for handler in _logging.root.handlers[:]:
-    _logging.root.removeHandler(handler)
+#for handler in _logging.root.handlers[:]:
+    #_logging.root.removeHandler(handler)
 _LOGGER = _logging.getLogger(_MODULENAME)
-_logging.basicConfig(format=FRMT_LOG_LONG, level=_DCCSI_LOGLEVEL)
+#_logging.basicConfig(format=FRMT_LOG_LONG, level=_DCCSI_LOGLEVEL)
 _LOGGER.propagate = False
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 

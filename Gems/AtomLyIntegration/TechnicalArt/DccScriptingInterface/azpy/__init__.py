@@ -71,34 +71,36 @@ if _DCCSI_GDEBUG:
 
 # -------------------------------------------------------------------------
 # set up module logging
-for handler in _logging.root.handlers[:]:
-    _logging.root.removeHandler(handler)
-_LOGGER = _logging.getLogger(_PACKAGENAME)
+#for handler in _logging.root.handlers[:]:
+    #_logging.root.removeHandler(handler)
 _logging.basicConfig(format=constants.FRMT_LOG_LONG, level=_DCCSI_LOGLEVEL)
+_LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
 # get/set the project name
-_O3DE_DEV = os.getenv(constants.ENVAR_O3DE_DEV,
+_O3DE_DEV = Path(os.getenv(constants.ENVAR_O3DE_DEV,
                     config_utils.get_stub_check_path(in_path=os.getcwd(),
-                                                     check_stub='engine.json'))
+                                                     check_stub='engine.json')))
+_LOGGER.debug('_O3DE_DEV" {}'.format(_O3DE_DEV.resolve()))
 
-_O3DE_PROJECT_PATH = os.getenv(constants.ENVAR_O3DE_PROJECT_PATH,
-                               config_utils.get_o3de_project_path())
+_O3DE_PROJECT_PATH = Path(os.getenv(constants.ENVAR_O3DE_PROJECT_PATH,
+                               config_utils.get_o3de_project_path()))
+_LOGGER.debug('_O3DE_PROJECT_PATH" {}'.format(_O3DE_PROJECT_PATH.resolve()))
 
 # get/set the project name
 if _O3DE_PROJECT_PATH:
-    _O3DE_PROJECT = os.getenv(constants.ENVAR_O3DE_PROJECT,
-                                   _O3DE_PROJECT_PATH.name)
+    _O3DE_PROJECT = str(os.getenv(constants.ENVAR_O3DE_PROJECT,
+                                   _O3DE_PROJECT_PATH.name))
 else:
     _O3DE_PROJECT='o3de'
 
 # project cache log dir path
 from azpy.constants import TAG_DCCSI_NICKNAME
 from azpy.constants import PATH_DCCSI_LOG_PATH
-_DCCSI_LOG_PATH = Path(PATH_DCCSI_LOG_PATH.format(O3DE_PROJECT_PATH=_O3DE_PROJECT_PATH,
+_DCCSI_LOG_PATH = Path(PATH_DCCSI_LOG_PATH.format(O3DE_PROJECT_PATH=_O3DE_PROJECT_PATH.resolve(),
                                                   TAG_DCCSI_NICKNAME=TAG_DCCSI_NICKNAME))
 # -------------------------------------------------------------------------
 

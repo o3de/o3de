@@ -10,7 +10,7 @@
 # -- This line is 75 characters -------------------------------------------
 # The __init__.py files help guide import statements without automatically
 # importing all of the modules
-"""azpy.maya.helpers.__init__"""
+"""azpy.dcc.maya.helpers.__init__"""
 
 import logging as _logging
 
@@ -24,7 +24,7 @@ _DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
 if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.maya.callbacks'
+    _PACKAGENAME = 'azpy.dcc.maya.callbacks'
 
 # set up module logging
 for handler in _logging.root.handlers[:]:

@@ -26,12 +26,12 @@ import maya.cmds as mc
 import maya.api.OpenMaya as om
 # -- DCCsi Extension Modules
 from azpy.constants import *
-import azpy.maya
-azpy.maya.init()  # <-- should have already run?
-import azpy.maya.callbacks.event_callback_handler as azEvCbH
-import azpy.maya.callbacks.node_message_callback_handler as azNdMsH
+import azpy.dcc.maya
+azpy.dcc.maya.init()  # <-- should have already run?
+import azpy.dcc.maya.callbacks.event_callback_handler as azEvCbH
+import azpy.dcc.maya.callbacks.node_message_callback_handler as azNdMsH
 # Node Message Callback Setup
-import azpy.maya.callbacks.on_shader_rename as oSR
+import azpy.dcc.maya.callbacks.on_shader_rename as oSR
 from set_defaults import set_defaults
 # -------------------------------------------------------------------------
 

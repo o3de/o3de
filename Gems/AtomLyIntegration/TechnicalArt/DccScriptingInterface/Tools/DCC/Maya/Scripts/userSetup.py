@@ -42,10 +42,12 @@ import logging as _logging
 # -- DCCsi Extension Modules
 import azpy
 from azpy.constants import *
-from azpy.env_base import _BASE_ENVVAR_DICT
 from azpy.env_bool import env_bool
 from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
+
+# To Do: needs to be updated to use dynaconf and config.py
+from azpy.env_base import _BASE_ENVVAR_DICT
 
 # -- maya imports
 import maya.cmds as cmds
@@ -58,7 +60,7 @@ import maya.mel as mel
 #  global space
 _DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-#_DCCSI_DEV_MODE = True  # force true for debugger testing
+_DCCSI_DEV_MODE = True  # force true for debugger testing
 
 _ORG_TAG = r'Amazon::Lumberyard'
 _APP_TAG = r'DCCsi'
@@ -170,6 +172,7 @@ _LOGGER.info('_MODULENAME: {}'.format(_MODULENAME))
 # check some env var tags (fail if no, likely means no proper code access)
 _STR_ERROR_ENVAR = "Envar 'key' does not exist in base_env: {0}"
 _DCCSI_TOOLS_PATH = None
+# To Do: needs to be updated to use dynaconf and config.py
 try:
     _DCCSI_TOOLS_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_TOOLS_PATH]
 except Exception as e:
@@ -241,8 +244,8 @@ def post_startup():
 
     # Lumberyard DCCsi environment ready or error out.
     try:
-        import azpy.maya
-        _LOGGER.info('Python module imported: azpy.maya')
+        import azpy.dcc.maya
+        _LOGGER.info('Python module imported: azpy.dcc.maya')
     except Exception as e:
         _LOGGER.error(e)
         _LOGGER.error(traceback.print_exc())
@@ -250,8 +253,8 @@ def post_startup():
 
     # Dccsi azpy maya ready or error out.
     try:
-        azpy.maya.init()
-        _LOGGER.info('SUCCESS, azpy.maya.init(), code accessible.')
+        azpy.dcc.maya.init()
+        _LOGGER.info('SUCCESS, azpy.dcc.maya.init(), code accessible.')
     except Exception as e:
         _LOGGER.error(e)
         _LOGGER.error(traceback.print_exc())

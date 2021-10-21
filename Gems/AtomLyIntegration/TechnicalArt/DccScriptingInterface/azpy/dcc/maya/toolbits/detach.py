@@ -49,7 +49,7 @@ _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
 if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.maya.toolbits.detatch'
+    _PACKAGENAME = 'azpy.dcc.maya.toolbits.detatch'
 
 import azpy
 _LOGGER = azpy.initialize_logger(_PACKAGENAME)
@@ -65,13 +65,13 @@ def clean_detach(detachType=0, args=None, name=None,
     or duplicating those faces without harming the orignal
     '''
     
-    sel = azpy.maya.helpers.utils.Selection()
+    sel = azpy.dcc.maya.helpers.utils.Selection()
     
     for obj in sel.selection.keys():
         print("~ cleanDetach:: Working on: {0}".format(obj))
         
         # set up / open the maya undo context
-        with azpy.maya.helpers.UndoContext():
+        with azpy.dcc.maya.helpers.UndoContext():
             
             if deletHistoyIn:
                 mc.delete( obj, constructionHistory = True)

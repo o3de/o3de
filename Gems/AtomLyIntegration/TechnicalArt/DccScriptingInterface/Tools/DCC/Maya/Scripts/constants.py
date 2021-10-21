@@ -11,7 +11,7 @@
 
 """
 Module Documentation:
-    DccScriptingInterface:: SDK//maya//scripts//constants.py
+    DccScriptingInterface:: Tools//maya//scripts//constants.py
 
 This module is mainly a bunch of commony used constants, and default strings
 So we can make an update here once that is used elsewhere
@@ -28,5 +28,5 @@ So we can make an update here once that is used elsewhere
 # -- maya imports
 # none
 # -------------------------------------------------------------------------
-OBJ_DCCSI_MAINMENU = 'LyDCCsiMainMenu'
-TAG_DCCSI_MAINMENU = 'DCCsi (LY:Atom)'
+OBJ_DCCSI_MAINMENU = 'O3deDCCsiMainMenu'
+TAG_DCCSI_MAINMENU = 'DCCsi (O3DE:Atom)'

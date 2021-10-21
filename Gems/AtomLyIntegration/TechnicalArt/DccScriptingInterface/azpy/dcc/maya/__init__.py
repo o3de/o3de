@@ -10,7 +10,7 @@
 # -- This line is 75 characters -------------------------------------------
 # The __init__.py files help guide import statements without automatically
 # importing all of the modules
-"""azpy.maya.__init__"""
+"""azpy.dcc.maya.__init__"""
 
 import logging as _logging
 

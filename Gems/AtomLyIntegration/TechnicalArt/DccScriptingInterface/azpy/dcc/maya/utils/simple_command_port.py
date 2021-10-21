@@ -24,7 +24,7 @@ import logging as _logging
 
 # --------------------------------------------------------------------------
 # -- Global Definitions --
-_MODULENAME = 'azpy.maya.utils.simple_command_port'
+_MODULENAME = 'azpy.dcc.maya.utils.simple_command_port'
 _LOGGER = _logging.getLogger(_MODULENAME)
 
 _LOCAL_HOST = socket.gethostbyname(socket.gethostname())

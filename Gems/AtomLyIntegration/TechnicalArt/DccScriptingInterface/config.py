@@ -100,7 +100,6 @@ _LOGGER = azpy.initialize_logger(_MODULENAME,
                                  log_to_file=_DCCSI_GDEBUG,
                                  default_log_level=_DCCSI_LOGLEVEL)
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
-
 _LOGGER.info('site.addsitedir({})'.format(_DCCSI_PATH))
 _LOGGER.debug('_DCCSI_GDEBUG: {}'.format(_DCCSI_GDEBUG))
 _LOGGER.debug('_DCCSI_DEV_MODE: {}'.format(_DCCSI_DEV_MODE))
@@ -374,7 +373,7 @@ def init_o3de_core(engine_path=_O3DE_DEV,
     
     from dynaconf import settings    
     
-    _LOGGER.info('config.init_o3de_core() ... DONE')
+    _LOGGER.info('~   config.init_o3de_core() ... DONE')
     
     return settings
 # -------------------------------------------------------------------------
@@ -613,6 +612,7 @@ if __name__ == '__main__':
     _LOGGER.info('DCCSI_OS_FOLDER: {}'.format(settings.DCCSI_OS_FOLDER))
     
     _LOGGER.info('O3DE_DEV: {}'.format(settings.O3DE_DEV))
+    _LOGGER.info('O3DE_O3DE_BUILD_FOLDER: {}'.format(settings.O3DE_BUILD_PATH))
     _LOGGER.info('O3DE_BUILD_PATH: {}'.format(settings.O3DE_BUILD_PATH))
     _LOGGER.info('O3DE_BIN_PATH: {}'.format(settings.O3DE_BIN_PATH))
     
@@ -622,6 +622,10 @@ if __name__ == '__main__':
     _LOGGER.info('DCCSI_PATH: {}'.format(settings.DCCSI_PATH))
     _LOGGER.info('DCCSI_LOG_PATH: {}'.format(settings.DCCSI_LOG_PATH))
     _LOGGER.info('DCCSI_CONFIG_PATH: {}'.format(settings.DCCSI_CONFIG_PATH))
+    
+    if settings.O3DE_DCCSI_ENV_TEST:
+        _LOGGER.info('O3DE_DCCSI_ENV_TEST: {}'.format(settings.O3DE_DCCSI_ENV_TEST))
+    
     _LOGGER.info(STR_CROSSBAR)
     _LOGGER.info('')
     
