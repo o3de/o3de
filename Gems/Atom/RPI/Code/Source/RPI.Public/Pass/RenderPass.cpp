@@ -298,6 +298,7 @@ namespace AZ
                         imageDimensions.SetZ(1.0f / float(size.m_width));
                         imageDimensions.SetW(1.0f / float(size.m_height));
 
+                        [[maybe_unused]]
                         bool success = m_shaderResourceGroup->SetConstant(binding.m_shaderImageDimensionsNameIndex, imageDimensions);
                         AZ_Assert(success, "Pass [%s] Could not find float4 constant [%s] in Shader Resource Group [%s]",
                             GetPathName().GetCStr(),
