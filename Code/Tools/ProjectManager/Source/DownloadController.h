@@ -47,7 +47,8 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                return QString();
+                static const QString emptyString;
+                return emptyString;
             }
         }
     public slots:
