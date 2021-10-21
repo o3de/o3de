@@ -240,19 +240,14 @@ namespace AZ
 #endif
         }
 
-        void SkinnedMeshFeatureProcessor::OnRenderPipelineAdded([[maybe_unused]] RPI::RenderPipelinePtr pipeline)
+        void SkinnedMeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
-            InitSkinningAndMorphPass();
-        }
-        
-        void SkinnedMeshFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
-        {
-            InitSkinningAndMorphPass();
+            InitSkinningAndMorphPass(pipeline.get());
         }
 
-        void SkinnedMeshFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
+        void SkinnedMeshFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
         {
-            InitSkinningAndMorphPass();
+            InitSkinningAndMorphPass(renderPipeline);
         }
 
         void SkinnedMeshFeatureProcessor::OnBeginPrepareRender()
@@ -295,43 +290,43 @@ namespace AZ
             return false;
         }
 
-        void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass()
+        void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass(RPI::RenderPipeline* renderPipeline)
         {
-            RPI::PassFilter skinPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "SkinningPass" }, GetParentScene());
-            RPI::PassSystemInterface::Get()->ForEachPass(skinPassFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+            RPI::PassFilter skinPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "SkinningPass" }, renderPipeline);
+            RPI::Ptr<RPI::Pass> skinningPass = RPI::PassSystemInterface::Get()->FindFirstPass(skinPassFilter);
+            if (skinningPass)
+            {
+                SkinnedMeshComputePass* skinnedMeshComputePass = azdynamic_cast<SkinnedMeshComputePass*>(skinningPass.get());
+                skinnedMeshComputePass->SetFeatureProcessor(this);
+
+                // There may be multiple skinning passes in the scene due to multiple pipelines, but there is only one skinning shader
+                m_skinningShader = skinnedMeshComputePass->GetShader();
+
+                if (!m_skinningShader)
                 {
-                    SkinnedMeshComputePass* skinnedMeshComputePass = azdynamic_cast<SkinnedMeshComputePass*>(pass);
-                    skinnedMeshComputePass->SetFeatureProcessor(this);
-
-                    // There may be multiple skinning passes in the scene due to multiple pipelines, but there is only one skinning shader
-                    m_skinningShader = skinnedMeshComputePass->GetShader();
-
-                    if (!m_skinningShader)
-                    {
-                        AZ_Error(s_featureProcessorName, false, "Failed to get skinning pass shader. It may need to finish processing.");
-                    }
-                    else
-                    {
-                        m_cachedSkinningShaderOptions.SetShader(m_skinningShader);
-                    }
-                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
-                });
-            
-            RPI::PassFilter morphPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "MorphTargetPass" }, GetParentScene());
-            RPI::PassSystemInterface::Get()->ForEachPass(morphPassFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                    AZ_Error(s_featureProcessorName, false, "Failed to get skinning pass shader. It may need to finish processing.");
+                }
+                else
                 {
-                    MorphTargetComputePass* morphTargetComputePass = azdynamic_cast<MorphTargetComputePass*>(pass);
-                    morphTargetComputePass->SetFeatureProcessor(this);
+                    m_cachedSkinningShaderOptions.SetShader(m_skinningShader);
+                }
+            }
 
-                    // There may be multiple morph target passes in the scene due to multiple pipelines, but there is only one morph target shader
-                    m_morphTargetShader = morphTargetComputePass->GetShader();
+            RPI::PassFilter morphPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "MorphTargetPass" }, renderPipeline);
+            RPI::Ptr<RPI::Pass> morphTargetPass = RPI::PassSystemInterface::Get()->FindFirstPass(morphPassFilter);
+            if (morphTargetPass)
+            {
+                MorphTargetComputePass* morphTargetComputePass = azdynamic_cast<MorphTargetComputePass*>(morphTargetPass.get());
+                morphTargetComputePass->SetFeatureProcessor(this);
 
-                    if (!m_morphTargetShader)
-                    {
-                        AZ_Error(s_featureProcessorName, false, "Failed to get morph target pass shader. It may need to finish processing.");
-                    }
-                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
-                });
+                // There may be multiple morph target passes in the scene due to multiple pipelines, but there is only one morph target shader
+                m_morphTargetShader = morphTargetComputePass->GetShader();
+
+                if (!m_morphTargetShader)
+                {
+                    AZ_Error(s_featureProcessorName, false, "Failed to get morph target pass shader. It may need to finish processing.");
+                }
+            }
         }
 
         RPI::ShaderOptionGroup SkinnedMeshFeatureProcessor::CreateSkinningShaderOptionGroup(const SkinnedMeshShaderOptions shaderOptions, SkinnedMeshShaderOptionNotificationBus::Handler& shaderReinitializedHandler)

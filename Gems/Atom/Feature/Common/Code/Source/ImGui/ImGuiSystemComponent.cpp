@@ -171,6 +171,12 @@ namespace AZ
 
         bool ImGuiSystemComponent::PushActiveContextFromPass(const AZStd::vector<AZStd::string>& passHierarchyFilter)
         {
+            if (passHierarchyFilter.size() == 0)
+            {
+                AZ_Warning("ImGuiSystemComponent", false, "passHierarchyFilter is empty");
+                return false;
+            }
+
             AZStd::vector<ImGuiPass*> foundImGuiPasses;
 
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassHierarchy(passHierarchyFilter);

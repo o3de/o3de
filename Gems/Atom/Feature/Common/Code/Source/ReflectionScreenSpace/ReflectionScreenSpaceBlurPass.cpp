@@ -150,7 +150,7 @@ namespace AZ
                 auto transientImageDesc = RHI::ImageDescriptor::Create2D(imageBindFlags, mipSize.m_width, mipSize.m_height, RHI::Format::R16G16B16A16_FLOAT);
 
                 RPI::PassAttachment* transientPassAttachment = aznew RPI::PassAttachment();
-                AZStd::string transientAttachmentName = AZStd::string::format("ReflectionScreenSpace_BlurImage%d", mip);
+                AZStd::string transientAttachmentName = AZStd::string::format("%s.ReflectionScreenSpace_BlurImage%d", GetPathName().GetCStr(), mip);
                 transientPassAttachment->m_name = transientAttachmentName;
                 transientPassAttachment->m_path = transientAttachmentName;
                 transientPassAttachment->m_lifetime = RHI::AttachmentLifetimeType::Transient;

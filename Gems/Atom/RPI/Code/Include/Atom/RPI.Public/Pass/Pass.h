@@ -141,7 +141,7 @@ namespace AZ
 
             //! Returns the pass template which was used for create this pass.
             //! It may return nullptr if the pass wasn't create from a template
-            PassTemplate* GetPassTemplate() const;
+            const PassTemplate* GetPassTemplate() const;
 
             //! Enable/disable this pass
             //! If the pass is disabled, it (and any children if it's a ParentPass) won't be rendered.  

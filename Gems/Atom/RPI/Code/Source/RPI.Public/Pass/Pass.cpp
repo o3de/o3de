@@ -238,7 +238,7 @@ namespace AZ
             return m_attachmentBindings[bindingIndex];
         }
 
-        PassTemplate* Pass::GetPassTemplate() const
+        const PassTemplate* Pass::GetPassTemplate() const
         {
             return m_template.get();
         }

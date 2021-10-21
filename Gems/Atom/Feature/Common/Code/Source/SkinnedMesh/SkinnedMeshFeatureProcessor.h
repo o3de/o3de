@@ -51,7 +51,6 @@ namespace AZ
             // RPI::SceneNotificationBus overrides ...
             void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
             void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
-            void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
             void OnBeginPrepareRender() override;
 
             SkinnedMeshRenderProxyHandle AcquireRenderProxy(const SkinnedMeshRenderProxyDesc& desc);
@@ -67,7 +66,7 @@ namespace AZ
         private:
             AZ_DISABLE_COPY_MOVE(SkinnedMeshFeatureProcessor);
 
-            void InitSkinningAndMorphPass();
+            void InitSkinningAndMorphPass(RPI::RenderPipeline* renderPipeline);
 
             SkinnedMeshRenderProxyInterfaceHandle AcquireRenderProxyInterface(const SkinnedMeshRenderProxyDesc& desc) override;
             bool ReleaseRenderProxyInterface(SkinnedMeshRenderProxyInterfaceHandle& handle) override;

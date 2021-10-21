@@ -372,28 +372,25 @@ namespace AZ
             }
             m_latestCaptureInfo.clear();
 
-            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("ImageAttachmentsPreviewPass"), (RPI::RenderPipeline*)nullptr);
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassClass<RPI::ImageAttachmentPreviewPass>();
+            AZ::RPI::ImageAttachmentPreviewPass* previewPass = azrtti_cast<AZ::RPI::ImageAttachmentPreviewPass*>(RPI::PassSystemInterface::Get()->FindFirstPass(passFilter));
+            if (!previewPass)
+            {
+                AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find a ImageAttachmentPreviewPass");
+                return false;
+            }
 
-            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
-                {
-                    AZ::RPI::ImageAttachmentPreviewPass* previewPass = azrtti_cast<AZ::RPI::ImageAttachmentPreviewPass*>(pass);
-                    bool result = previewPass->ReadbackOutput(m_readback);
-                    if (result)
-                    {
-                        m_state = State::Pending;
-                        m_result = FrameCaptureResult::None;
-                        SystemTickBus::Handler::BusConnect();
-                    }
-                    else
-                    {
-                        AZ_Warning("FrameCaptureSystemComponent", false, "CaptureScreenshotWithPreview. Failed to readback output from the ImageAttachmentPreviewPass");;
-                    }
+            bool result = previewPass->ReadbackOutput(m_readback);
+            if (result)
+            {
+                m_state = State::Pending;
+                m_result = FrameCaptureResult::None;
+                SystemTickBus::Handler::BusConnect();
+                return true;
+            }
 
-                     return RPI::PassFilterExecutionFlow::StopVisitingPasses;
-                });
-
-            // return true if the capture is started (state is pending)
-            return m_state == State::Pending;
+            AZ_Warning("FrameCaptureSystemComponent", false, "CaptureScreenshotWithPreview. Failed to readback output from the ImageAttachmentPreviewPass");
+            return false;
         }
 
         bool FrameCaptureSystemComponent::CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slot,
@@ -401,6 +398,12 @@ namespace AZ
         {
             if (!CanCapture())
             {
+                return false;
+            }
+
+            if (passHierarchy.size() == 0)
+            {                
+                AZ_Warning("FrameCaptureSystemComponent", false, "Empty data in passHierarchy");
                 return false;
             }
 
@@ -426,22 +429,24 @@ namespace AZ
             m_latestCaptureInfo.clear();
 
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassHierarchy(passHierarchy);
-             RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, slot, option](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
-                {
-                    if (pass->ReadbackAttachment(m_readback, Name(slot), option))
-                    {
-                        m_state = State::Pending;
-                        m_result = FrameCaptureResult::None;
-                        SystemTickBus::Handler::BusConnect();
-                    }
-                    else
-                    {
-                        AZ_Warning("FrameCaptureSystemComponent", false, "Failed to readback the attachment bound to pass [%s] slot [%s]", pass->GetName().GetCStr(), slot.c_str());
-                    }
-                    return RPI::PassFilterExecutionFlow::StopVisitingPasses;
-                });
+            RPI::Pass* pass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
 
-             return m_state == State::Pending;
+            if (!pass)
+            {
+                AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find pass from %s", passHierarchy[0].c_str());
+                return false;
+            }
+
+            if (pass->ReadbackAttachment(m_readback, Name(slot), option))
+            {
+                m_state = State::Pending;
+                m_result = FrameCaptureResult::None;
+                SystemTickBus::Handler::BusConnect();
+                return true;
+            }
+
+            AZ_Warning("FrameCaptureSystemComponent", false, "Failed to readback the attachment bound to pass [%s] slot [%s]", pass->GetName().GetCStr(), slot.c_str());
+            return false;
         }
 
         bool FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName

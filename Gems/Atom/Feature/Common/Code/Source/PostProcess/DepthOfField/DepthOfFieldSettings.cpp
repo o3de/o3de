@@ -262,14 +262,12 @@ namespace AZ
         void DepthOfFieldSettings::UpdateAutoFocusDepth(bool enabled)
         {            
             const Name TemplateNameReadBackFocusDepth = Name("DepthOfFieldReadBackFocusDepthTemplate");
+            // [GFX TODO][ATOM-4908] multiple camera should be distingushed.
             RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(TemplateNameReadBackFocusDepth, GetParentScene());
             RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, enabled](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
-                   auto* dofPass = azrtti_cast<AZ::Render::DepthOfFieldReadBackFocusDepthPass*>(pass);
-                    // Check this pass belongs to a render pipeline of the scene.
-                    // [GFX TODO][ATOM-4908] multiple camera should be distingushed.
-                    const RPI::RenderPipelineId pipelineId = dofPass->GetRenderPipeline()->GetId();
-                    if (enabled && GetParentScene()->GetRenderPipeline(pipelineId))
+                    auto* dofPass = azrtti_cast<AZ::Render::DepthOfFieldReadBackFocusDepthPass*>(pass);
+                    if (enabled)
                     {
                         m_normalizedFocusDistanceForAutoFocus = dofPass->GetNormalizedFocusDistanceForAutoFocus();
                     }
