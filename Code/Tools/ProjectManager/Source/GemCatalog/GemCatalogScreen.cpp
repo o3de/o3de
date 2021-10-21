@@ -63,6 +63,7 @@ namespace O3DE::ProjectManager
         hLayout->addWidget(m_gemInspector);
 
         m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC("GemCatalogNotificationsView"));
+        m_notificationsView->SetOffset(QPoint(10, 70));
     }
 
     void GemCatalogScreen::ReinitForProject(const QString& projectPath)
@@ -83,34 +84,64 @@ namespace O3DE::ProjectManager
         m_headerWidget->ReinitForProject();
 
         connect(m_gemModel, &GemModel::dataChanged, m_filterWidget, &GemFilterWidget::ResetGemStatusFilter);
-        connect(
-            m_gemModel, &GemModel::gemStatusChanged,
-            [&](const QString& gemName, uint32_t numDependencies, bool added)
-            {
-                QString notification = gemName;
-                if (numDependencies == 1 )
-                {
-                    notification += " and 1 Gem dependency";
-                }
-                else if (numDependencies > 1)
-                {
-                    notification += QString(" and %d Gem dependencies").arg(numDependencies);
-                }
-
-                notification += numDependencies > 0 ? " have been " : " has been ";
-                notification += added ? "activated." : "deactivated.";
-
-                AzQtComponents::ToastConfiguration toastConfiguration =
-                    AzQtComponents::ToastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
-                toastConfiguration.m_customIconImage = ":/gem.svg";
-                m_notificationsView->ShowToastNotification(toastConfiguration);
-            });
+        connect(m_gemModel, &GemModel::gemStatusChanged, this, &GemCatalogScreen::OnGemStatusChanged);
 
         // Select the first entry after everything got correctly sized
         QTimer::singleShot(200, [=]{
             QModelIndex firstModelIndex = m_gemListView->model()->index(0,0);
             m_gemListView->selectionModel()->select(firstModelIndex, QItemSelectionModel::ClearAndSelect);
             });
+    }
+
+    void GemCatalogScreen::OnGemStatusChanged(const QModelIndex& modelIndex, uint32_t numChangedDependencies) 
+    {
+        if (m_notificationsEnabled)
+        {
+            QString notification;
+            bool added = GemModel::IsAdded(modelIndex);
+            bool dependency = GemModel::IsAddedDependency(modelIndex);
+
+            bool gemStateChanged = (added && !dependency) || (!added && !dependency);
+
+            if (!gemStateChanged && !numChangedDependencies)
+            {
+                // no actual changes made
+                return;
+            }
+
+            if (gemStateChanged)
+            {
+                notification = GemModel::GetDisplayName(modelIndex);
+                if (numChangedDependencies == 1 )
+                {
+                    notification += " and 1 Gem dependency";
+                }
+                else if (numChangedDependencies > 1)
+                {
+                    notification += QString(" and %d Gem dependencies").arg(numChangedDependencies);
+                }
+            }
+            else
+            {
+                if (numChangedDependencies == 1 )
+                {
+                    notification = " 1 Gem dependency";
+                }
+                else if (numChangedDependencies > 1)
+                {
+                    notification = QString("%d Gem dependencies").arg(numChangedDependencies);
+                }
+            }
+
+            notification += added ? " activated." : " deactivated.";
+
+            AzQtComponents::ToastConfiguration toastConfiguration =
+                AzQtComponents::ToastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
+            toastConfiguration.m_customIconImage = ":/gem.svg";
+            toastConfiguration.m_borderRadius = 4;
+            toastConfiguration.m_duration = AZStd::chrono::milliseconds(3000);
+            m_notificationsView->ShowToastNotification(toastConfiguration);
+        }
     }
 
     void GemCatalogScreen::hideEvent(QHideEvent* event)
@@ -150,7 +181,7 @@ namespace O3DE::ProjectManager
             }
 
             m_gemModel->UpdateGemDependencies();
-            m_gemModel->SetNotificationsEnabled(false);
+            m_notificationsEnabled = false;
 
             // Gather enabled gems for the given project.
             auto enabledGemNamesResult = PythonBindingsInterface::Get()->GetEnabledGemNames(projectPath);
@@ -178,7 +209,7 @@ namespace O3DE::ProjectManager
                 QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve enabled gems for project %1.\n\nError:\n%2").arg(projectPath, enabledGemNamesResult.GetError().c_str()));
             }
 
-            m_gemModel->SetNotificationsEnabled(true);
+            m_notificationsEnabled = true;
         }
         else
         {

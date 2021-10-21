@@ -42,6 +42,9 @@ namespace O3DE::ProjectManager
 
         GemModel* GetGemModel() const { return m_gemModel; }
 
+    public slots:
+        void OnGemStatusChanged(const QModelIndex& modelIndex, uint32_t numChangedDependencies);
+
     protected:
         void hideEvent(QHideEvent* event) override;
         void showEvent(QShowEvent* event) override;
@@ -60,5 +63,6 @@ namespace O3DE::ProjectManager
         GemSortFilterProxyModel* m_proxModel = nullptr;
         QVBoxLayout* m_filterWidgetLayout = nullptr;
         GemFilterWidget* m_filterWidget = nullptr;
+        bool m_notificationsEnabled = true;
     };
 } // namespace O3DE::ProjectManager

@@ -309,7 +309,12 @@ namespace O3DE::ProjectManager
                 if (!IsAddedDependency(dependency))
                 {
                     SetIsAddedDependency(*gemModel, dependency, true);
-                    numChangedDependencies++;
+
+                    // if the gem was already added then the state didn't really change
+                    if (!IsAdded(dependency))
+                    {
+                        numChangedDependencies++;
+                    }
                 }
             }
         }
@@ -320,7 +325,6 @@ namespace O3DE::ProjectManager
             if (IsAddedDependency(modelIndex) != hasDependentGems)
             {
                 SetIsAddedDependency(model, modelIndex, hasDependentGems);
-                numChangedDependencies++;
             }
 
             for (const QModelIndex& dependency : dependencies)
@@ -329,29 +333,17 @@ namespace O3DE::ProjectManager
                 if (IsAddedDependency(dependency) != hasDependentGems)
                 {
                     SetIsAddedDependency(*gemModel, dependency, hasDependentGems);
-                    numChangedDependencies++;
+
+                    // if the gem was already added then the state didn't really change
+                    if (!IsAdded(dependency))
+                    {
+                        numChangedDependencies++;
+                    }
                 }
             }
         }
 
-        if (gemModel->NotificationsEnabled())
-        {
-            //QString notification = GemModel::GetDisplayName(modelIndex);
-            //if (numChangedDependencies == 1 )
-            //{
-            //    notification += " and 1 Gem dependency ";
-            //}
-            //else if (numChangedDependencies > 1)
-            //{
-            //    notification += QString(" and %d Gem dependencies ").arg(numChangedDependencies);
-            //}
-
-            //notification += numChangedDependencies > 0 ? "have been " : "has been ";
-            //notification += IsAdded(modelIndex) ? "activated." : "deactivated.";
-
-            gemModel->emit gemStatusChanged(GemModel::GetDisplayName(modelIndex), numChangedDependencies, IsAdded(modelIndex));
-            //AzToolsFramework::ToastRequestBus::Event(AZ_CRC("GemCatalog"));
-        }
+        gemModel->emit gemStatusChanged(modelIndex, numChangedDependencies);
     }
 
     void GemModel::SetIsAddedDependency(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)
@@ -524,15 +516,4 @@ namespace O3DE::ProjectManager
         }
         return result;
     }
-
-    bool GemModel::NotificationsEnabled() const
-    {
-        return m_notificationsEnabled;
-    }
-
-    void GemModel::SetNotificationsEnabled(bool enabled)
-    {
-        m_notificationsEnabled = enabled;
-    }
-
 } // namespace O3DE::ProjectManager
