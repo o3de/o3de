@@ -234,7 +234,7 @@ namespace AZ
 
     void BaseJsonImporter::AddImportDirective(const rapidjson::Pointer& jsonPtr, AZStd::string importFile)
     {
-        m_importDirectives.emplace_back(AZStd::make_pair(jsonPtr, AZStd::move(importFile)));
+        m_importDirectives.emplace_back(jsonPtr, AZStd::move(importFile));
     }
 
     void BaseJsonImporter::AddImportedFile(AZStd::string importedFile)

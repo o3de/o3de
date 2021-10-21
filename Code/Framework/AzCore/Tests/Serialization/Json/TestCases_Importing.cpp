@@ -48,7 +48,7 @@ namespace JsonSerializationTests
             BaseJsonSerializerFixture::TearDown();
         }
 
-        void GetTestDocument(const AZStd::string& docName, rapidjson::Document& out, rapidjson::Document::AllocatorType& allocator)
+        void GetTestDocument(const AZStd::string& docName, rapidjson::Document& out)
         {
             const char *objectJson = R"({
                 "field_1" : "value_1",
@@ -194,7 +194,7 @@ namespace JsonSerializationTests
         AZ::JsonSerializationResult::ResultCode resultCode(AZ::JsonSerializationResult::Tasks::Import);
         
         rapidjson::Document importedDoc;
-        testClass->GetTestDocument(importedFilePath.String(), importedDoc, allocator);
+        testClass->GetTestDocument(importedFilePath.String(), importedDoc);
 
         if (importDirective.IsObject())
         {
