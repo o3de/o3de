@@ -11,10 +11,12 @@
 #include <QApplication>
 #include <QBitmap>
 #include <QCheckBox>
+#include <QEvent>
 #include <QFontMetrics>
 #include <QGuiApplication>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
 #include <QStyle>
@@ -2287,7 +2289,14 @@ namespace AzToolsFramework
         // Now we setup a Text Document so it can draw the rich text
         QTextDocument textDoc;
         textDoc.setDefaultFont(optionV4.font);
-        textDoc.setDefaultStyleSheet("body {color: white}");
+        if (option.state & QStyle::State_Enabled)
+        {
+            textDoc.setDefaultStyleSheet("body {color: white}");
+        }
+        else
+        {
+            textDoc.setDefaultStyleSheet("body {color: #7C7C7C}");
+        }
         textDoc.setHtml("<body>" + entityNameRichText + "</body>");
         painter->translate(textRect.topLeft());
         textDoc.setTextWidth(textRect.width());
@@ -2324,6 +2333,23 @@ namespace AzToolsFramework
             // Do not propagate click to TreeView if the user clicks the visibility or lock toggles
             // This prevents selection from changing if a toggle is clicked
             return true;
+        }
+
+        if (event->type() == QEvent::MouseButtonPress)
+        {
+            AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+
+            if (auto editorEntityUiInterface = AZ::Interface<EditorEntityUiInterface>::Get(); editorEntityUiInterface != nullptr)
+            {
+                auto mouseEvent = static_cast<QMouseEvent*>(event);
+
+                auto entityUiHandler = editorEntityUiInterface->GetHandler(entityId);
+
+                if (entityUiHandler && entityUiHandler->OnOutlinerItemClick(mouseEvent->pos(), option, index))
+                {                
+                    return true;
+                }
+            }
         }
 
         return QStyledItemDelegate::editorEvent(event, model, option, index);

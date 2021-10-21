@@ -973,7 +973,7 @@ namespace AzToolsFramework
             return DeleteFromInstance(entityIds, true);
         }
 
-        PrefabOperationResult PrefabPublicHandler::DuplicateEntitiesInInstance(const EntityIdList& entityIds)
+        DuplicatePrefabResult PrefabPublicHandler::DuplicateEntitiesInInstance(const EntityIdList& entityIds)
         {
             if (entityIds.empty())
             {
@@ -1020,6 +1020,7 @@ namespace AzToolsFramework
 
             ScopedUndoBatch undoBatch("Duplicate Entities");
 
+            EntityIdList duplicatedEntityAndInstanceIds;
             {
                 AZ_PROFILE_SCOPE(AzToolsFramework, "DuplicateEntitiesInInstance::UndoCaptureAndDuplicateEntities");
 
@@ -1032,7 +1033,7 @@ namespace AzToolsFramework
 
                 if (!retrieveEntitiesAndInstancesOutcome.IsSuccess())
                 {
-                    return AZStd::move(retrieveEntitiesAndInstancesOutcome);
+                    return AZ::Failure(retrieveEntitiesAndInstancesOutcome.TakeError());
                 }
 
                 // Take a snapshot of the instance DOM before we manipulate it
@@ -1042,8 +1043,6 @@ namespace AzToolsFramework
                 // Make a copy of our before instance DOM where we will add our duplicated entities and/or instances
                 PrefabDom instanceDomAfter;
                 instanceDomAfter.CopyFrom(instanceDomBefore, instanceDomAfter.GetAllocator());
-
-                EntityIdList duplicatedEntityAndInstanceIds;
 
                 // Duplicate any nested entities and instances as requested
                 AZStd::unordered_map<InstanceAlias, Instance*> newInstanceAliasToOldInstanceMap;
@@ -1113,7 +1112,7 @@ namespace AzToolsFramework
                 ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, duplicatedEntityAndInstanceIds);
             }
 
-            return AZ::Success();
+            return AZ::Success(AZStd::move(duplicatedEntityAndInstanceIds));
         }
 
         PrefabOperationResult PrefabPublicHandler::DeleteFromInstance(const EntityIdList& entityIds, bool deleteDescendants)
