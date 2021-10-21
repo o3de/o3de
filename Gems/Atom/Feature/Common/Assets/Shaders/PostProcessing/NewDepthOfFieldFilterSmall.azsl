@@ -31,6 +31,16 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         AddressV = Clamp;
         AddressW = Clamp;
     };
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
 }
 
 float2 GetOffsetUV(uint index, float2 offsetMultiplier)
@@ -44,7 +54,7 @@ PSOutput MainPS(VSOutput IN)
     float2 pixelUV = IN.m_texCoord.xy;
 
     // Sample pixel being shaded
-    float4 centerSample = PassSrg::m_colorAndCoc.Sample(PassSrg::LinearSampler, pixelUV).rgba;
+    float4 centerSample = PassSrg::m_colorAndCoc.Sample(PassSrg::PointSampler, pixelUV).rgba;
     float centerCoc = centerSample.a;
 
     // Aspect ratio = texture.x / texture.y = dimensions.x * dimensions.w
@@ -65,7 +75,7 @@ PSOutput MainPS(VSOutput IN)
         float2 offsetUV = GetOffsetUV(i, offsetMultiplier);
 
         // Get sample
-        float4 sampleColorCoc = PassSrg::m_colorAndCoc.Sample(PassSrg::LinearSampler, pixelUV + offsetUV).rgba;
+        float4 sampleColorCoc = PassSrg::m_colorAndCoc.Sample(PassSrg::PointSampler, pixelUV + offsetUV).rgba;
 
         // Calculate weight
         float cocDiff = sampleColorCoc.a - centerCoc;
@@ -85,4 +95,3 @@ PSOutput MainPS(VSOutput IN)
     OUT.m_color.a = centerCoc;
     return OUT;
 }
-

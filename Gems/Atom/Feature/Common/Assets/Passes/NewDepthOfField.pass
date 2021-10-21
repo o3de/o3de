@@ -19,6 +19,19 @@
             ],
             "PassRequests": [
                 {
+                    "Name": "AutoFocus",
+                    "TemplateName": "DepthOfFieldReadBackFocusDepthTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "Downsample",
                     "TemplateName": "NewDepthOfFieldDownsampleTemplate",
 

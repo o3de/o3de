@@ -85,6 +85,24 @@ PSOutput MainPS(VSOutput IN)
 
     float4 backgroundColor = float4(0, 0, 0, 0);
     
+    if(minCoc >= 0)
+    {
+        for(uint i = 0; i < SAMPLES_LOOP_TOTAL; ++i)
+        {
+            // Calculate sample offset
+            float3 offset = GetOffsetUV(i, offsetMultiplier);
+            
+            // Get sample
+            float4 sampleColorCoc = PassSrg::m_colorAndCoc.Sample(PassSrg::LinearSampler, pixelUV + offset.xy).rgba;
+
+            // Calculate weight for sample
+            float weight = CaclulateWeight(offset.z, cocRadius, sampleColorCoc.a, centerCoc);
+
+            // Accumulate
+            color += weight * sampleColorCoc;
+        }
+    }
+    else
     {
         float backgroundMin = min(0, centerCoc);
         color.rgb /= abs(color.a);
@@ -112,17 +130,15 @@ PSOutput MainPS(VSOutput IN)
             backgroundColor += isBackground * sampleColorCoc;
             color += !isBackground * sampleColorCoc;
         }
+
+        backgroundColor.rgb /= max(backgroundColor.a, COC_EPSILON);
     }
     
-    float backgroundRatio = backgroundColor.a / float(SAMPLES_LOOP_TOTAL);
+    float backgroundRatio = saturate( backgroundColor.a / float(SAMPLES_LOOP_TOTAL) );
     float alpha = backgroundRatio > abs(centerCoc) ? -backgroundRatio : centerCoc;
 
     color.rgb /= max(color.a, COC_EPSILON);
-    backgroundColor.rgb /= max(backgroundColor.a, COC_EPSILON);
-    
-    color = color * saturate(1 - backgroundRatio) + backgroundColor * backgroundRatio;
-    //color.rgb += backgroundColor.rgb;
-
+    color = lerp(color, backgroundColor, backgroundRatio);
 
 
     PSOutput OUT = (PSOutput)0;

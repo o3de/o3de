@@ -149,6 +149,14 @@ namespace AZ
                 float radius = (loop + 1.0f) / float(NewDepthOfFieldConstants::numberOfLoops);
                 float loopCount = NewDepthOfFieldConstants::loopCounts[loop];
 
+                float angleOffset = 0;
+
+                // Every other loop slightly rotate sample ring so they don't line up
+                if (loop & 1)
+                {
+                    angleOffset = Constants::TwoPi * 0.5f / loopCount;
+                }
+
                 for (float i = 0.0f; i < loopCount; ++i)
                 {
                     float angle = Constants::TwoPi * i / loopCount;
