@@ -68,13 +68,30 @@ namespace AzNetworking
     {
         Close();
 
-        if (!SocketCreateInternal()
-         || !BindSocketForConnectInternal(address)
-         || !(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
+        if (!SocketCreateInternal())
         {
+            AZ_Warning("TcpSocket", false, "Tcp::Connect failed. SocketCreateInternal is false");
+
             Close();
             return false;
         }
+
+        if (!BindSocketForConnectInternal(address))
+        {
+            AZ_Warning("TcpSocket", false, "Tcp::Connect failed. BindSocketForConnectInternal is false");
+
+            Close();
+            return false;
+        }
+
+        if (!(SetSocketNonBlocking(m_socketFd) && SetSocketNoDelay(m_socketFd)))
+        {
+            AZ_Warning("TcpSocket", false, "Tcp::Connect failed. SetSocketNonBlocking and SetSocketNoDelay is false");
+
+            Close();
+            return false;
+        }
+        
 
         return true;
     }
