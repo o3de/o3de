@@ -30,7 +30,7 @@
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Task/TaskGraphSystemComponent.h>
-
+#include <AzCore/Script/ScriptAdapterComponent.h>
 #include <AzFramework/Asset/SimpleAsset.h>
 #include <AzFramework/Asset/AssetBundleManifest.h>
 #include <AzFramework/Asset/AssetCatalogComponent.h>
@@ -283,6 +283,7 @@ namespace AzFramework
 
 #if !defined(AZCORE_EXCLUDE_LUA)
             azrtti_typeid<AZ::ScriptSystemComponent>(),
+            azrtti_typeid<AZ::ScriptAdapterComponent>(),
             azrtti_typeid<AzFramework::ScriptComponent>(),
 #endif // #if !defined(AZCORE_EXCLUDE_LUA)
         };
@@ -333,6 +334,7 @@ namespace AzFramework
             azrtti_typeid<AZ::AssetManagerComponent>(),
             azrtti_typeid<AZ::UserSettingsComponent>(),
             azrtti_typeid<AZ::ScriptSystemComponent>(),
+            azrtti_typeid<AZ::ScriptAdapterComponent>(),
             azrtti_typeid<AZ::JobManagerComponent>(),
             azrtti_typeid<AZ::SliceSystemComponent>(),
             azrtti_typeid<AZ::TaskGraphSystemComponent>(),

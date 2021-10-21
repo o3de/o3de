@@ -520,7 +520,7 @@ void AzAssetBrowserRequestHandler::AddSourceFileOpeners(const char* fullSourceFi
         openers.push_back(
             {
                 "O3DE_LUA_Editor",
-                "Open in Open 3D Engine LUA Editor...",
+                "Open in Open 3D Engine Lua Editor",
                 QIcon(),
                 [](const char* fullSourceFileNameInCallback, const AZ::Uuid& /*sourceUUID*/)
                 {
@@ -570,7 +570,7 @@ void AzAssetBrowserRequestHandler::AddSourceFileOpeners(const char* fullSourceFi
             openers.push_back(
             {
                 "Open_In_Asset_Editor",
-                "Open in Asset Editor...",
+                "Open in Asset Editor",
                 QIcon(),
                 [assetId, assetType](const char* /*fullSourceFileNameInCallback*/, const AZ::Uuid& /*sourceUUID*/)
             {
