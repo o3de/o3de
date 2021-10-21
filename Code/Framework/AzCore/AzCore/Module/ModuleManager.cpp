@@ -224,8 +224,8 @@ namespace AZ
         for (auto componentIt = m_systemComponents.rbegin(); componentIt != m_systemComponents.rend(); ++componentIt)
         {
             ModuleEntity::DeactivateComponent(**componentIt);
-            comma = ", ";
             componentNamesArray += AZStd::string::format(R"(%s"%s")", comma, (*componentIt)->RTTI_GetTypeName());
+            comma = ", ";
         }
         componentNamesArray += R"(]})";
 

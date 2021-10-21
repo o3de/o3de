@@ -25,7 +25,6 @@ namespace AZ::ComponentApplicationLifecycle
     {
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
         using Format = AZ::SettingsRegistryInterface::Format;
-        using Type = AZ::SettingsRegistryInterface::Type;
 
         if (!ValidateEvent(settingsRegistry, eventName))
         {
