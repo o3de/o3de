@@ -62,25 +62,25 @@ class PrefabInstance:
     def __hash__(self):
         return hash(self.container_entity.id)
 
-    """
-    See if this instance is valid to be used with other prefab operations. 
-    :return: Whether the target instance is valid or not.
-    """
     def is_valid(self) -> bool:
+        """
+        See if this instance is valid to be used with other prefab operations. 
+        :return: Whether the target instance is valid or not.
+        """
         return self.container_entity.id.IsValid() and self.prefab_file_name in Prefab.existing_prefabs
 
-    """
-    Check if the instance's container entity contains EditorPrefabComponent. 
-    :return: Whether the container entity of target instance has EditorPrefabComponent in it or not.
-    """
     def has_editor_prefab_component(self) -> bool:
+        """
+        Check if the instance's container entity contains EditorPrefabComponent. 
+        :return: Whether the container entity of target instance has EditorPrefabComponent in it or not.
+        """
         return editor.EditorComponentAPIBus(bus.Broadcast, "HasComponentOfType", self.container_entity.id, azlmbr.globals.property.EditorPrefabComponentTypeId)
 
-    """
-    Check if the instance's container entity is at expected position given. 
-    :return: Whether the container entity of target instance is at expected position or not.
-    """
     def is_at_position(self, expected_position):
+        """
+        Check if the instance's container entity is at expected position given. 
+        :return: Whether the container entity of target instance is at expected position or not.
+        """
         actual_position = components.TransformBus(bus.Event, "GetWorldTranslation", self.container_entity.id)
         is_at_position = actual_position.IsClose(expected_position)
 
@@ -89,12 +89,12 @@ class PrefabInstance:
         
         return is_at_position
 
-    """
-    Reparent this instance to target parent entity. 
-    The function will also check pop up dialog ui in editor to see if there's prefab cyclical dependency error while reparenting prefabs.
-    :param parent_entity_id: The id of the entity this instance should be a child of in the transform hierarchy next.
-    """
     async def ui_reparent_prefab_instance(self, parent_entity_id: EntityId):
+        """
+        Reparent this instance to target parent entity. 
+        The function will also check pop up dialog ui in editor to see if there's prefab cyclical dependency error while reparenting prefabs.
+        :param parent_entity_id: The id of the entity this instance should be a child of in the transform hierarchy next.
+        """
         container_entity_id_before_reparent = self.container_entity.id
 
         original_parent = EditorEntity(self.container_entity.get_parent_id())
@@ -147,31 +147,32 @@ class Prefab:
         self.file_path: str = get_prefab_file_path(file_path)
         self.instances: set[PrefabInstance] = set()
 
-    """
-    Check if a prefab is ready to be used to generate its instances.
-    :param file_path: A unique file path of the target prefab.
-    :return: Whether the target prefab is loaded or not.
-    """
     @classmethod
     def is_prefab_loaded(cls, file_path: str) -> bool:
+        """
+        Check if a prefab is ready to be used to generate its instances.
+        :param file_path: A unique file path of the target prefab.
+        :return: Whether the target prefab is loaded or not.
+        """
         return file_path in Prefab.existing_prefabs
 
-    """
-    Check if a prefab exists in the directory for files of prefab tests.
-    :param file_name: A unique file name of the target prefab.
-    :return: Whether the target prefab exists or not.
-    """
+    
     @classmethod
     def prefab_exists(cls, file_path: str) -> bool:
+        """
+        Check if a prefab exists in the directory for files of prefab tests.
+        :param file_name: A unique file name of the target prefab.
+        :return: Whether the target prefab exists or not.
+        """
         return path.exists(get_prefab_file_path(file_path))
 
-    """
-    Return a prefab which can be used immediately.
-    :param file_name: A unique file name of the target prefab.
-    :return: The prefab with given file name.
-    """
     @classmethod
     def get_prefab(cls, file_name: str) -> Prefab:
+        """
+        Return a prefab which can be used immediately.
+        :param file_name: A unique file name of the target prefab.
+        :return: The prefab with given file name.
+        """
         assert file_name, "Received an empty file_name"
         if Prefab.is_prefab_loaded(file_name):
             return Prefab.existing_prefabs[file_name]
@@ -181,15 +182,15 @@ class Prefab:
             Prefab.existing_prefabs[file_name] = Prefab(file_name)
             return new_prefab
 
-    """
-    Create a prefab in memory and return it. The very first instance of this prefab will also be created.
-    :param entities: The entities that should form the new prefab (along with their descendants).
-    :param file_name: A unique file name of new prefab.
-    :param prefab_instance_name: A name for the very first instance generated while prefab creation. The default instance name is the same as file_name.
-    :return: Created Prefab object and the very first PrefabInstance object owned by the prefab.
-    """
     @classmethod
     def create_prefab(cls, entities: list[EditorEntity], file_name: str, prefab_instance_name: str=None) -> tuple(Prefab, PrefabInstance):
+        """
+        Create a prefab in memory and return it. The very first instance of this prefab will also be created.
+        :param entities: The entities that should form the new prefab (along with their descendants).
+        :param file_name: A unique file name of new prefab.
+        :param prefab_instance_name: A name for the very first instance generated while prefab creation. The default instance name is the same as file_name.
+        :return: Created Prefab object and the very first PrefabInstance object owned by the prefab.
+        """
         assert not Prefab.is_prefab_loaded(file_name), f"Can't create Prefab '{file_name}' since the prefab already exists"
 
         new_prefab = Prefab(file_name)
@@ -213,12 +214,12 @@ class Prefab:
         Prefab.existing_prefabs[file_name] = new_prefab
         return new_prefab, new_prefab_instance
 
-    """
-    Remove target prefab instances.
-    :param prefab_instances: Instances to be removed.
-    """
     @classmethod
     def remove_prefabs(cls, prefab_instances: list[PrefabInstance]):
+        """
+        Remove target prefab instances.
+        :param prefab_instances: Instances to be removed.
+        """
         entity_ids_to_remove = []
         entity_id_queue = [prefab_instance.container_entity for prefab_instance in prefab_instances]
         while entity_id_queue:
@@ -246,13 +247,13 @@ class Prefab:
             instance_deleted_prefab.instances.remove(instance)
             instance = PrefabInstance()
 
-    """
-    Duplicate target prefab instances.
-    :param prefab_instances: Instances to be duplicated.
-    :return: PrefabInstance objects of given prefab instances' duplicates.
-    """
     @classmethod
     def duplicate_prefabs(cls, prefab_instances: list[PrefabInstance]):
+        """
+        Duplicate target prefab instances.
+        :param prefab_instances: Instances to be duplicated.
+        :return: PrefabInstance objects of given prefab instances' duplicates.
+        """
         assert prefab_instances, "Input list of prefab instances should *not* be empty."
 
         common_parent = EditorEntity(prefab_instances[0].container_entity.get_parent_id())
@@ -290,12 +291,12 @@ class Prefab:
 
         return duplicate_instances
 
-    """
-    Detach target prefab instance.
-    :param prefab_instances: Instance to be detached.
-    """
     @classmethod
     def detach_prefab(cls, prefab_instance: PrefabInstance):
+        """
+        Detach target prefab instance.
+        :param prefab_instances: Instance to be detached.
+        """
         parent = EditorEntity(prefab_instance.container_entity.get_parent_id())
         parent_children_ids_before_detach = set([child_id.ToString() for child_id in parent.get_children_ids()])
 
@@ -320,14 +321,14 @@ class Prefab:
         instance_owner_prefab.instances.remove(prefab_instance)
         prefab_instance = PrefabInstance()
 
-    """
-    Instantiate an instance of this prefab.
-    :param parent_entity: The entity the prefab should be a child of in the transform hierarchy.
-    :param name: A name for newly instantiated prefab instance. The default instance name is the same as this prefab's file name.
-    :param prefab_position: The position in world space the prefab should be instantiated in.
-    :return: Instantiated PrefabInstance object owned by this prefab.
-    """
     def instantiate(self, parent_entity: EditorEntity=None, name: str=None, prefab_position: Vector3=Vector3()) -> PrefabInstance:
+        """
+        Instantiate an instance of this prefab.
+        :param parent_entity: The entity the prefab should be a child of in the transform hierarchy.
+        :param name: A name for newly instantiated prefab instance. The default instance name is the same as this prefab's file name.
+        :param prefab_position: The position in world space the prefab should be instantiated in.
+        :return: Instantiated PrefabInstance object owned by this prefab.
+        """
         parent_entity_id = parent_entity.id if parent_entity is not None else EntityId()
 
         instantiate_prefab_result = prefab.PrefabPublicRequestBus(
