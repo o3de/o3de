@@ -716,7 +716,7 @@ namespace MaterialEditor
         // we can create the asset dynamically from the source data.
         // Long term, the material document should not be concerned with assets at all. The viewport window should be the
         // only thing concerned with assets or instances.
-        auto createResult = m_materialSourceData.CreateMaterialAsset(Uuid::CreateRandom(), m_absolutePath, true);
+        auto createResult = m_materialSourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom(), m_absolutePath, true);
         if (!createResult)
         {
             AZ_Error("MaterialDocument", false, "Material asset could not be created from source data: '%s'.", m_absolutePath.c_str());
