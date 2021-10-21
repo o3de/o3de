@@ -112,30 +112,6 @@ endif()
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     # We globally support tests, see if we support tests on this platform for ${Name}.Static
-    if(PAL_TRAIT_${NameUpper}_TEST_SUPPORTED)
-        # We support ${Name}.Tests on this platform, add ${Name}.Tests target which depends on ${Name}.Static
-        ly_add_target(
-            NAME ${Name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-            NAMESPACE Gem
-            FILES_CMAKE
-                ${NameLower}_files.cmake
-                ${NameLower}_tests_files.cmake
-            INCLUDE_DIRECTORIES
-                PRIVATE
-                    Tests
-                    Source
-            BUILD_DEPENDENCIES
-                PRIVATE
-                    AZ::AzTest
-                    AZ::AzFramework
-                    Gem::${Name}.Static
-        )
-
-        # Add ${Name}.Tests to googletest
-        ly_add_googletest(
-            NAME Gem::${Name}.Tests
-        )
-    endif()
 
     # If we are a host platform we want to add tools test like editor tests here
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
