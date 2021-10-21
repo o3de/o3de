@@ -5,7 +5,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 # -------------------------------------------------------------------------
-"""Generated from O3DE PythonGem Template"""
+"""${SanitizedCppName}\\editor\\scripts\\boostrap.py
+Generated from O3DE PythonGem Template"""
 
 import azlmbr
 
@@ -33,7 +34,7 @@ class SampleUI(QtWidgets.QDialog):
 # -------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    print("Generated from O3DE PythonGem Template")
+    print("${SanitizedCppName}.boostrap, Generated from O3DE PythonGem Template")
     
     # ---------------------------------------------------------------------
     # validate pyside before continuing
@@ -71,20 +72,20 @@ if __name__ == "__main__":
 
     # ---------------------------------------------------------------------
     @Slot() 
-    def clicked_generic_dialog():
+    def clicked_${SanitizedCppName}_dialog():
         while 1:  # simple PySide2 test, set to 0 to disable
             try:
                 import az_qt_helpers
-                from custom_dialog import GenericDialog
-                az_qt_helpers.register_view_pane('Generic Popup', GenericDialog)
+                from ${SanitizedCppName}_dialog import ${SanitizedCppName}Dialog
+                az_qt_helpers.register_view_pane('${SanitizedCppName} Popup', ${SanitizedCppName}Dialog)
             except:
-                print('Skipping register our GenericDialog with the Editor.')
-            custom_dialog = GenericDialog(parent=editor_main_window)
-            custom_dialog.show()
+                print('Skipping register our ${SanitizedCppName}Dialog with the Editor.')
+            ${SanitizedCppName}_dialog = ${SanitizedCppName}Dialog(parent=editor_main_window)
+            ${SanitizedCppName}_dialog.show()
         break
     return
     # Add click event to menu bar
-    action_launch_generic_dialog.triggered.connect(clicked_generic_dialog)
+    action_launch_${SanitizedCppName}_dialog.triggered.connect(clicked_${SanitizedCppName}_dialog)
     # ---------------------------------------------------------------------
 
     # end

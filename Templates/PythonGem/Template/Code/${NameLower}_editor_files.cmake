@@ -7,6 +7,8 @@
 # {END_LICENSE}
 
 set(FILES
+    Include/${Name}/${Name}Bus.h
+    Source/${Name}ModuleInterface.h
     Source/${Name}EditorSystemComponent.cpp
     Source/${Name}EditorSystemComponent.h
 )

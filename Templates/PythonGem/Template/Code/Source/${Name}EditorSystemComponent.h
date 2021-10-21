@@ -10,7 +10,8 @@
 
 #pragma once
 
-#include <${Name}SystemComponent.h>
+#include <AzCore/Component/Component.h>
+#include <${Name}/${Name}Bus.h>
 
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
@@ -18,12 +19,11 @@ namespace ${SanitizedCppName}
 {
     /// System component for ${SanitizedCppName} editor
     class ${SanitizedCppName}EditorSystemComponent
-        : public ${SanitizedCppName}SystemComponent
+        : public ${SanitizedCppName}RequestBus::Handler
         , private AzToolsFramework::EditorEvents::Bus::Handler
     {
-        using BaseSystemComponent = ${SanitizedCppName}SystemComponent;
     public:
-        AZ_COMPONENT(${SanitizedCppName}EditorSystemComponent, "${EditorSysCompClassId}", BaseSystemComponent);
+        AZ_COMPONENT(${SanitizedCppName}EditorSystemComponent, "${EditorSysCompClassId}");
         static void Reflect(AZ::ReflectContext* context);
 
         ${SanitizedCppName}EditorSystemComponent();

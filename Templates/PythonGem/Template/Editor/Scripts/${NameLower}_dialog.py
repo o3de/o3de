@@ -5,7 +5,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 # -------------------------------------------------------------------------
-"""Generated from O3DE PythonGem Template"""
+"""${SanitizedCppName}\\editor\\scripts\\${SanitizedCppName}_dialog.py
+Generated from O3DE PythonGem Template"""
 
 import azlmbr
 from shiboken2 import wrapInstance, getCppPointer
@@ -13,9 +14,9 @@ from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtCore import QEvent, Qt
 from PySide2.QtWidgets import QAction, QDialog, QHeaderView, QLabel, QLineEdit, QPushButton, QSplitter, QTreeWidget, QTreeWidgetItem, QWidget, QAbstractButton
 
-# Once PySide2 has been bootstrapped, register our GenericDialog with the Editor
+# Once PySide2 has been bootstrapped, register our ${SanitizedCppName}Dialog with the Editor
 
-class GenericDialog(QDialog):
+class ${SanitizedCppName}Dialog(QDialog):
     def __init__(self, parent=None):
-        super(GenericDialog, self).__init__(parent)
-        self.setWindowTitle("Custom Dialog")
+        super(${SanitizedCppName}Dialog, self).__init__(parent)
+        self.setWindowTitle("${SanitizedCppName} Dialog")
