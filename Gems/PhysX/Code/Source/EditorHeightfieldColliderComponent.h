@@ -87,7 +87,7 @@ namespace PhysX
         void InitStaticRigidBody();
         void RefreshHeightfield();
 
-        DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider based on global and local
+        DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider
         AzPhysics::SceneInterface* m_sceneInterface{ nullptr };
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physXConfigChangedHandler;

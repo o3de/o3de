@@ -135,8 +135,6 @@ namespace PhysX
 
     void EditorHeightfieldColliderComponent::Deactivate()
     {
-        ClearHeightfield();
-
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         PhysX::ColliderShapeRequestBus::Handler::BusDisconnect();
         Physics::HeightfieldProviderNotificationBus::Handler::BusDisconnect();
@@ -144,12 +142,14 @@ namespace PhysX
         m_colliderDebugDraw.Disconnect();
         AzToolsFramework::EntitySelectionEvents::Bus::Handler::BusDisconnect();
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
+
+        ClearHeightfield();
     }
 
     void EditorHeightfieldColliderComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        auto* shapeColliderComponent = gameEntity->CreateComponent<HeightfieldColliderComponent>();
-        shapeColliderComponent->SetShapeConfiguration(
+        auto* heightfieldColliderComponent = gameEntity->CreateComponent<HeightfieldColliderComponent>();
+        heightfieldColliderComponent->SetShapeConfiguration(
             { AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), m_shapeConfig });
     }
 
@@ -176,13 +176,6 @@ namespace PhysX
 
     void EditorHeightfieldColliderComponent::InitStaticRigidBody()
     {
-        // Don't create static rigid body in the editor if current entity components
-        // don't allow creation of runtime static rigid body component
-        if (!StaticRigidBodyUtils::CanCreateRuntimeComponent(*GetEntity()))
-        {
-            return;
-        }
-
         // Get the transform from the HeightfieldProvider.  Because rotation and scale can indirectly affect how the heightfield itself
         // is computed and the size of the heightfield, it's possible that the HeightfieldProvider will provide a different transform
         // back to us than the one that's directly on that entity.
@@ -197,7 +190,6 @@ namespace PhysX
         configuration.m_debugName = GetEntity()->GetName();
 
         AzPhysics::ShapeColliderPairList colliderShapePairs;
-        colliderShapePairs.reserve(1);
         colliderShapePairs.emplace_back(AZStd::make_shared<Physics::ColliderConfiguration>(m_colliderConfig), m_shapeConfig);
         configuration.m_colliderAndShapeData = colliderShapePairs;
 
@@ -211,7 +203,7 @@ namespace PhysX
     {
         Physics::HeightfieldShapeConfiguration& configuration = static_cast<Physics::HeightfieldShapeConfiguration&>(*m_shapeConfig);
 
-        configuration = Physics::HeightfieldShapeConfiguration(GetEntityId());
+        configuration = Physics::HeightfieldShapeConfiguration();
 
         AZ::Vector2 gridSpacing(1.0f);
         Physics::HeightfieldProviderRequestsBus::EventResult(
@@ -250,13 +242,11 @@ namespace PhysX
         Physics::ColliderComponentEventBus::Event(GetEntityId(), &Physics::ColliderComponentEvents::OnColliderChanged);
     }
 
-
     AZ::u32 EditorHeightfieldColliderComponent::OnConfigurationChanged()
     {
         RefreshHeightfield();
         return AZ::Edit::PropertyRefreshLevels::None;
     }
-
 
     // AzToolsFramework::EntitySelectionEvents
     void EditorHeightfieldColliderComponent::OnSelected()

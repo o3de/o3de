@@ -255,40 +255,6 @@ TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderGetHeightsRetu
     m_entity.reset();
 }
 
-TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderUpdateHeightsReturnsHeightsInRegion)
-{
-    // Check that the TerrainPhysicsCollider returns a heightfield of the correct size when asked for a subregion.
-    CreateEntity();
-
-    AddTerrainPhysicsColliderAndShapeComponentToEntity();
-
-    m_entity->Activate();
-
-    const float boundsMin = 0.0f;
-    const float boundsMax = 1024.0f;
-
-    NiceMock<UnitTest::MockShapeComponentRequests> boxShape(m_entity->GetId());
-    const AZ::Aabb bounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(boundsMax));
-    ON_CALL(boxShape, GetEncompassingAabb).WillByDefault(Return(bounds));
-
-    AZ::Vector2 mockHeightResolution = AZ::Vector2(1.0f);
-    NiceMock<UnitTest::MockTerrainDataRequests> terrainListener;
-    ON_CALL(terrainListener, GetTerrainHeightQueryResolution).WillByDefault(Return(mockHeightResolution));
-
-    const float regionMax = 512.0f;
-    const AZ::Aabb dirtyRegion = AZ::Aabb::CreateFromMinMax(AZ::Vector3(boundsMin), AZ::Vector3(regionMax));
-
-    AZStd::vector<float> heights;
-    Physics::HeightfieldProviderRequestsBus::EventResult(
-        heights, m_entity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::UpdateHeights, dirtyRegion);
-
-    // For now, UpdateHeights will return the full set of heights, regardless of the passed-in region size.
-    // This API needs to get revisited once we implement incremental updating of an existing heightfield in our physics components.
-    EXPECT_EQ(heights.size(), boundsMax * boundsMax);
-
-    m_entity.reset();
-}
-
 TEST_F(TerrainPhysicsColliderComponentTest, TerrainPhysicsColliderReturnsRelativeHeightsCorrectly)
 {
     // Check that the values stored in the heightfield returned by the TerrainPhysicsCollider are correct.

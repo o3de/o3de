@@ -65,8 +65,6 @@ namespace Terrain
         AZStd::vector<Physics::MaterialId> GetMaterialList() const override;
         AZStd::vector<float> GetHeights() const override;
         AZStd::vector<Physics::HeightMaterialPoint> GetHeightsAndMaterials() const override;
-        AZStd::vector<float> UpdateHeights(const AZ::Aabb& dirtyRegion) const override;
-        AZStd::vector<Physics::HeightMaterialPoint> UpdateHeightsAndMaterials(const AZ::Aabb& dirtyRegion) const override;
 
     protected:
         //////////////////////////////////////////////////////////////////////////

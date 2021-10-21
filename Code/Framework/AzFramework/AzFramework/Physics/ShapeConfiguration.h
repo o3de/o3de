@@ -207,7 +207,7 @@ namespace Physics
         AZ_CLASS_ALLOCATOR(HeightfieldShapeConfiguration, AZ::SystemAllocator, 0);
         AZ_RTTI(HeightfieldShapeConfiguration, "{8DF47C83-D2A9-4E7C-8620-5E173E43C0B3}", ShapeConfiguration);
         static void Reflect(AZ::ReflectContext* context);
-        explicit HeightfieldShapeConfiguration(AZ::EntityId entityId = AZ::EntityId());
+        HeightfieldShapeConfiguration() = default;
         HeightfieldShapeConfiguration(const HeightfieldShapeConfiguration&);
         HeightfieldShapeConfiguration& operator=(const HeightfieldShapeConfiguration&);
         ~HeightfieldShapeConfiguration();
@@ -233,8 +233,6 @@ namespace Physics
         void SetMaxHeightBounds(float maxBounds);
 
     private:
-        //! The entity that contains the HeightfieldProvider associated with this shape.
-        AZ::EntityId m_heightProvider;
         //! The number of meters between each heightfield sample.
         AZ::Vector2 m_gridResolution{ 1.0f };
         //! The number of columns in the heightfield sample grid.

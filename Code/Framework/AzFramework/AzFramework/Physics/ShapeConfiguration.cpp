@@ -319,11 +319,6 @@ namespace Physics
         }
     }
 
-    HeightfieldShapeConfiguration::HeightfieldShapeConfiguration(AZ::EntityId entityId)
-        : m_heightProvider(entityId)
-    {
-    }
-
     HeightfieldShapeConfiguration::~HeightfieldShapeConfiguration()
     {
         SetCachedNativeHeightfield(nullptr);
@@ -331,7 +326,6 @@ namespace Physics
 
     HeightfieldShapeConfiguration::HeightfieldShapeConfiguration(const HeightfieldShapeConfiguration& other)
         : ShapeConfiguration(other)
-        , m_heightProvider(other.m_heightProvider)
         , m_gridResolution(other.m_gridResolution)
         , m_numColumns(other.m_numColumns)
         , m_numRows(other.m_numRows)
@@ -345,9 +339,6 @@ namespace Physics
     HeightfieldShapeConfiguration& HeightfieldShapeConfiguration::operator=(const HeightfieldShapeConfiguration& other)
     {
         ShapeConfiguration::operator=(other);
-
-        // The EntityID is all we need to get the heightfield information.
-        m_heightProvider = other.m_heightProvider;
 
         m_gridResolution = other.m_gridResolution;
         m_numColumns = other.m_numColumns;

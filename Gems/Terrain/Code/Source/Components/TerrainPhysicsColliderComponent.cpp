@@ -320,21 +320,4 @@ namespace Terrain
 
         return heightMaterials;
     }
-
-    AZStd::vector<float> TerrainPhysicsColliderComponent::UpdateHeights([[maybe_unused]] const AZ::Aabb& dirtyRegion) const
-    {
-        AZStd::vector<float> heights;
-        GenerateHeightsInBounds(heights);
-
-        return heights;
-    }
-
-    AZStd::vector<Physics::HeightMaterialPoint> TerrainPhysicsColliderComponent::UpdateHeightsAndMaterials([[maybe_unused]] const AZ::Aabb& dirtyRegion) const
-    {
-        AZStd::vector<Physics::HeightMaterialPoint> heightMaterials;
-        GenerateHeightsAndMaterialsInBounds(heightMaterials);
-
-        return heightMaterials;
-    }
-
 }

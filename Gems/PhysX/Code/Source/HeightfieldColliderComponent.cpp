@@ -139,7 +139,7 @@ namespace PhysX
     {
         Physics::HeightfieldShapeConfiguration& configuration = static_cast<Physics::HeightfieldShapeConfiguration&>(*m_shapeConfig.second);
 
-        configuration = Physics::HeightfieldShapeConfiguration(GetEntityId());
+        configuration = Physics::HeightfieldShapeConfiguration();
 
         AZ::Vector2 gridSpacing(1.0f);
         Physics::HeightfieldProviderRequestsBus::EventResult(

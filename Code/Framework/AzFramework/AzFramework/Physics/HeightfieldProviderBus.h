@@ -56,9 +56,9 @@ namespace Physics
         //! @return AABB of the heightfield.
         virtual AZ::Aabb GetHeightfieldAabb() const = 0;
 
-        //! Returns the Transform for the heightfield.
+        //! Returns the world transform for the heightfield.
         //! This is provided separately from the entity transform because the heightfield might want to clear out the rotation or scale.
-        //! @return transform that should be used with the heightfield data.
+        //! @return world transform that should be used with the heightfield data.
         virtual AZ::Transform GetHeightfieldTransform() const = 0;
 
         //! Returns the list of materials used by the height field.
@@ -72,16 +72,6 @@ namespace Physics
         //! Returns the list of heights and materials used by the height field.
         //! @return the rows*columns vector of the heights and materials.
         virtual AZStd::vector<Physics::HeightMaterialPoint> GetHeightsAndMaterials() const = 0;
-
-        //! Updates values in the height field.
-        //! @param dirtyRegion contains the axis aligned bounding box that will be updated.
-        //! @return all the new heights for the height field.
-        virtual AZStd::vector<float> UpdateHeights(const AZ::Aabb& dirtyRegion) const = 0;
-
-        //! Updates values in the height field.
-        //! @param dirtyRegion contains the axis aligned bounding box that will be updated.
-        //! @param heights contains all the new heights and materials for the height field.
-        virtual AZStd::vector<HeightMaterialPoint> UpdateHeightsAndMaterials(const AZ::Aabb& dirtyRegion) const = 0;
     };
 
     using HeightfieldProviderRequestsBus = AZ::EBus<HeightfieldProviderRequests>;
