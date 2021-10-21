@@ -45,9 +45,9 @@ def create_dedicated_launcher(workspace, launcher_platform=ly_test_tools.HOST_OS
     :param args: List of arguments to pass to the launcher's 'args' argument during construction
     :return: Launcher instance
     """
-    launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform, ly_test_tools.HOST_OS_DEDICATED_SERVER)
+    launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform)
     if not launcher_class:
-        log.warning(f"Using default dedicated launcher for '{ly_test_tools.HOST_OS_PLATFORM}' "
+        log.warning(f"Using default dedicated launcher for '{ly_test_tools.HOST_OS_DEDICATED_SERVER}' "
                     f"as no option is available for '{launcher_platform}'")
         launcher_class = ly_test_tools.LAUNCHERS.get(ly_test_tools.HOST_OS_DEDICATED_SERVER)
     return launcher_class(workspace, args)
@@ -64,9 +64,9 @@ def create_editor(workspace, launcher_platform=ly_test_tools.HOST_OS_EDITOR, arg
     :param args: List of arguments to pass to the launcher's 'args' argument during construction
     :return: Editor instance
     """
-    launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform, ly_test_tools.HOST_OS_EDITOR)
+    launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform)
     if not launcher_class:
-        log.warning(f"Using default editor launcher for '{ly_test_tools.HOST_OS_PLATFORM}' "
+        log.warning(f"Using default editor launcher for '{ly_test_tools.HOST_OS_EDITOR}' "
                     f"as no option is available for '{launcher_platform}'")
         launcher_class = ly_test_tools.LAUNCHERS.get(ly_test_tools.HOST_OS_EDITOR)
     return launcher_class(workspace, args)
@@ -84,9 +84,9 @@ def create_generic_launcher(workspace, launcher_platform, exe_file_name, args=No
     :param args: List of arguments to pass to the launcher's 'args' argument during construction
     :return: Launcher instance.
     """
-    launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform, ly_test_tools.HOST_OS_GENERIC_EXECUTABLE)
+    launcher_class = ly_test_tools.LAUNCHERS.get(launcher_platform)
     if not launcher_class:
-        log.warning(f"Using default generic executable launcher for '{ly_test_tools.HOST_OS_PLATFORM}' "
+        log.warning(f"Using default generic executable launcher for '{ly_test_tools.HOST_OS_GENERIC_EXECUTABLE}' "
                     f"as no option is available for '{launcher_platform}'")
         launcher_class = ly_test_tools.LAUNCHERS.get(ly_test_tools.HOST_OS_GENERIC_EXECUTABLE)
     return launcher_class(workspace, exe_file_name, args)
