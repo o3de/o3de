@@ -276,9 +276,6 @@ namespace Multiplayer
             m_child->m_entity->FindComponent<NetworkHierarchyChildComponent>()->GetHierarchicalRoot(),
             nullptr
         );
-        AZStd::size_t test;
-        AZStd::vector<int> test2;
-        test2.erase
     }
 
     TEST_F(ClientSimpleHierarchyTests, Client_Sends_NetworkHierarchy_Updated_Event_On_Child_Detached_On_Server)
