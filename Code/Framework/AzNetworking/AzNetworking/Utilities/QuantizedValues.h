@@ -11,6 +11,8 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzNetworking/Serialization/ISerializer.h>
 #include <AzNetworking/Utilities/NetworkCommon.h>
 
@@ -74,6 +76,8 @@ namespace AzNetworking
         using SimdTypef = typename QuantizedValuesHelper<NUM_ELEMENTS>::SimdType::FloatType;
         using SimdTypei = typename QuantizedValuesHelper<NUM_ELEMENTS>::SimdType::Int32Type;
         using ValueType = typename QuantizedValuesHelper<NUM_ELEMENTS>::ValueType;
+
+        static void Reflect(AZ::ReflectContext* context);
 
         //! Default constructor.
         QuantizedValues();
@@ -193,6 +197,30 @@ namespace AzNetworking
         template <AZStd::size_t NUM_ELEMENTS2, AZStd::size_t NUM_BYTES2, int32_t MIN_VALUE2, int32_t MAX_VALUE2>
         friend struct QuantizedValuesConversionHelper;
     };
+
+    template <AZStd::size_t NUM_ELEMENTS, AZStd::size_t NUM_BYTES, int32_t MIN_VALUE, int32_t MAX_VALUE>
+    void QuantizedValues<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<QuantizedValues<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>>()->Version(1);
+        }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<QuantizedValues<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>>()
+                ->Attribute(AZ::Script::Attributes::Category, "multiplayer")
+                ->Attribute(AZ::Script::Attributes::Module, "Multiplayer")
+                ->Method("Set", [](QuantizedValues<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>& self, const ValueType value) { self = value; })
+                ->Method("Get", [](QuantizedValues<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>& self) { return (ValueType)self; })
+                ;
+        }
+    }
+}
+
+namespace AZ
+{
+    AZ_TYPE_INFO_TEMPLATE_WITH_NAME(AzNetworking::QuantizedValues, "QuantizedValues", "{9C60D8BA-9B88-41BE-B4FE-51F617565A82}", AZ_TYPE_INFO_AUTO, AZ_TYPE_INFO_AUTO, AZ_TYPE_INFO_AUTO, AZ_TYPE_INFO_AUTO);
 }
 
 #include <AzNetworking/Utilities/QuantizedValues.inl>

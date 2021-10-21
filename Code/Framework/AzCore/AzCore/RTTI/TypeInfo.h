@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/typetraits/static_storage.h>
 #include <AzCore/std/typetraits/is_pointer.h>
 #include <AzCore/std/typetraits/is_const.h>
@@ -326,22 +327,10 @@ namespace AZ
             return AZ::AzTypeInfo<T>::Name();
         }
 
-        template<int N, bool Recursion = false>
-        struct NameBufferSize
-        {
-            static constexpr int Size = 1 + NameBufferSize<N / 10, true>::Size;
-        };
-        template<> struct NameBufferSize<0, false> { static constexpr const int Size = 2; };
-        template<> struct NameBufferSize<0, true> { static constexpr const int Size = 1; };
-
         template<AZStd::size_t N>
         const char* GetTypeName()
         {
-            static char buffer[NameBufferSize<N>::Size] = { 0 };
-            if (buffer[0] == 0)
-            {
-                azsnprintf(buffer, AZ_ARRAY_SIZE(buffer), "%zu", N);
-            }
+            static const char* buffer = AZStd::fixed_string<32>::format("%zu", N).c_str();
             return buffer;
         }
 
@@ -690,7 +679,7 @@ namespace AZ
 #define AZ_TYPE_INFO_INTERNAL_CLASS_VARARGS__NAME(A) AZ::Internal::AggregateTypes< A... >::TypeName(typeName, AZ_ARRAY_SIZE(typeName));
 
 // Once C++17 has been introduced size_t can be replaced with auto for all integer non-type arguments
-#define AZ_TYPE_INFO_INTERNAL_AUTO__TYPE AZStd::size_t
+#define AZ_TYPE_INFO_INTERNAL_AUTO__TYPE auto
 #define AZ_TYPE_INFO_INTERNAL_AUTO__ARG(A) A
 #define AZ_TYPE_INFO_INTERNAL_AUTO__UUID(Tag, A) AZ::Internal::GetTypeId< A , Tag >()
 #define AZ_TYPE_INFO_INTERNAL_AUTO__NAME(A) AZ::Internal::AzTypeInfoSafeCat(typeName, AZ_ARRAY_SIZE(typeName), AZ::Internal::GetTypeName< A >())
