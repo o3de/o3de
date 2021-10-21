@@ -129,34 +129,52 @@ namespace Multiplayer
         handler.Connect(m_networkHierarchyLeaveEvent);
     }
 
-    void NetworkHierarchyChildComponent::SetTopLevelHierarchyRootEntity(AZ::Entity* hierarchyRoot)
+    void NetworkHierarchyChildComponent::SetTopLevelHierarchyRootEntity(AZ::Entity* previousHierarchyRoot, AZ::Entity* newHierarchyRoot)
     {
-        if (m_rootEntity != hierarchyRoot)
+        if (newHierarchyRoot)
         {
-            m_rootEntity = hierarchyRoot;
-
-            if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
+            if (m_rootEntity != newHierarchyRoot)
             {
-                NetworkHierarchyChildComponentController* controller = static_cast<NetworkHierarchyChildComponentController*>(GetController());
-                if (m_rootEntity)
+                m_rootEntity = newHierarchyRoot;
+
+                if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
                 {
+                    NetworkHierarchyChildComponentController* controller = static_cast<NetworkHierarchyChildComponentController*>(GetController());
                     const NetEntityId netRootId = GetNetworkEntityManager()->GetNetEntityIdById(m_rootEntity->GetId());
                     controller->SetHierarchyRoot(netRootId);
-
-                    m_networkHierarchyChangedEvent.Signal(m_rootEntity->GetId());
                 }
-                else
-                {
-                    controller->SetHierarchyRoot(InvalidNetEntityId);
 
-                    m_networkHierarchyLeaveEvent.Signal();
-                }
+                GetNetBindComponent()->SetOwningConnectionId(m_rootEntity->FindComponent<NetBindComponent>()->GetOwningConnectionId());
+                m_networkHierarchyChangedEvent.Signal(m_rootEntity->GetId());
             }
-
-            if (m_rootEntity == nullptr)
+        }
+        else
+        {
+            if (m_rootEntity == previousHierarchyRoot || !previousHierarchyRoot)
             {
+                m_rootEntity = nullptr;
+
+                if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
+                {
+                    NetworkHierarchyChildComponentController* controller = static_cast<NetworkHierarchyChildComponentController*>(GetController());
+                    controller->SetHierarchyRoot(InvalidNetEntityId);
+                }
+
+                GetNetBindComponent()->SetOwningConnectionId(m_previousOwningConnectionId);
+                m_networkHierarchyLeaveEvent.Signal();
+
                 NotifyChildrenHierarchyDisbanded();
             }
+        }
+
+    }
+
+    void NetworkHierarchyChildComponent::SetOwningConnectionId(AzNetworking::ConnectionId connectionId)
+    {
+        NetworkHierarchyChildComponentBase::SetOwningConnectionId(connectionId);
+        if (IsHierarchicalChild() == false)
+        {
+            m_previousOwningConnectionId = connectionId;
         }
     }
 
@@ -180,14 +198,18 @@ namespace Multiplayer
             if (m_rootEntity != newRoot)
             {
                 m_rootEntity = newRoot;
+
+                m_previousOwningConnectionId = GetNetBindComponent()->GetOwningConnectionId();
+                GetNetBindComponent()->SetOwningConnectionId(m_rootEntity->FindComponent<NetBindComponent>()->GetOwningConnectionId());
+
                 m_networkHierarchyChangedEvent.Signal(m_rootEntity->GetId());
             }
         }
         else
         {
+            GetNetBindComponent()->SetOwningConnectionId(m_previousOwningConnectionId);
             m_isHierarchyEnabled = false;
             m_rootEntity = nullptr;
-            m_networkHierarchyLeaveEvent.Signal();
         }
     }
 
@@ -203,11 +225,11 @@ namespace Multiplayer
             {
                 if (auto* hierarchyChildComponent = childEntity->FindComponent<NetworkHierarchyChildComponent>())
                 {
-                    hierarchyChildComponent->SetTopLevelHierarchyRootEntity(nullptr);
+                    hierarchyChildComponent->SetTopLevelHierarchyRootEntity(nullptr, nullptr);
                 }
                 else if (auto* hierarchyRootComponent = childEntity->FindComponent<NetworkHierarchyRootComponent>())
                 {
-                    hierarchyRootComponent->SetTopLevelHierarchyRootEntity(nullptr);
+                    hierarchyRootComponent->SetTopLevelHierarchyRootEntity(nullptr, nullptr);
                 }
             }
         }

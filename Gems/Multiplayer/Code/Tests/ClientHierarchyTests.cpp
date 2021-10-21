@@ -303,6 +303,36 @@ namespace Multiplayer
         SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(m_child->m_entity, InvalidNetEntityId);
     }
 
+    TEST_F(ClientSimpleHierarchyTests, ChildHasOwningConnectionIdOfParent)
+    {
+        // disconnect and assign new connection ids
+        SetParentIdOnNetworkTransform(m_child->m_entity, InvalidNetEntityId);
+        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(m_child->m_entity, InvalidNetEntityId);
+
+        m_root->m_entity->FindComponent<NetBindComponent>()->SetOwningConnectionId(ConnectionId{ 1 });
+        m_child->m_entity->FindComponent<NetBindComponent>()->SetOwningConnectionId(ConnectionId{ 2 });
+
+        const ConnectionId previousConnectionId = m_child->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId();
+
+        // re-attach, child's owning connection id should then be root's connection id
+        SetParentIdOnNetworkTransform(m_child->m_entity, RootNetEntityId);
+        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(m_child->m_entity, RootNetEntityId);
+
+        EXPECT_EQ(
+            m_child->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId(),
+            m_root->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId()
+        );
+
+        // detach, the child should roll back to his previous owning connection id
+        SetParentIdOnNetworkTransform(m_child->m_entity, InvalidNetEntityId);
+        SetHierarchyRootFieldOnNetworkHierarchyChildOnClient(m_child->m_entity, InvalidNetEntityId);
+
+        EXPECT_EQ(
+            m_child->m_entity->FindComponent<NetBindComponent>()->GetOwningConnectionId(),
+            previousConnectionId
+        );
+    }
+
     /*
      * Parent -> Child -> ChildOfChild
      */
@@ -397,7 +427,7 @@ namespace Multiplayer
         using MultiplayerTest::TestMultiplayerComponentNetworkInput;
 
         auto* rootNetBind = m_root->m_entity->FindComponent<NetBindComponent>();
-        
+
         NetworkInputArray inputArray(rootNetBind->GetEntityHandle());
         NetworkInput& input = inputArray[0];
 
