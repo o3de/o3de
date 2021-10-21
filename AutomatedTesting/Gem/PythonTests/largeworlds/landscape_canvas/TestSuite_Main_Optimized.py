@@ -80,7 +80,8 @@ class TestAutomation(EditorTestSuite):
     class test_LandscapeCanvas_GradientNodes_EntityRemovedOnNodeDelete(EditorSharedTest):
         from .EditorScripts import GradientNodes_EntityRemovedOnNodeDelete as test_module
 
-    @pytest.mark.skipif("debug" == os.path.basename(internal_plugin.build_directory), reason="LY-122684")
+    @pytest.mark.skipif("debug" == os.path.basename(internal_plugin.build_directory),
+                        reason="https://github.com/o3de/o3de/issues/4872")
     class test_LandscapeCanvas_GraphUpdates_UpdateComponents(EditorSharedTest):
         from .EditorScripts import GraphUpdates_UpdateComponents as test_module
 
