@@ -41,7 +41,14 @@ namespace O3DE::ProjectManager
 
         const QString& GetCurrentDownloadingGem() const
         {
-            return m_gemNames[0];
+            if (!m_gemNames.empty())
+            {
+                return m_gemNames[0];
+            }
+            else
+            {
+                return QString();
+            }
         }
     public slots:
         void Start();

@@ -10,10 +10,6 @@
 #include <DownloadWorker.h>
 #include <PythonBindings.h>
 
-#include <QMessageBox>
-#include <QDesktopServices>
-#include <QUrl>
-
 
 namespace O3DE::ProjectManager
 {

@@ -8,11 +8,8 @@
 
 #include <DownloadController.h>
 #include <DownloadWorker.h>
-#include <ProjectButtonWidget.h>
 
 #include <QMessageBox>
-#include <QDesktopServices>
-#include <QUrl>
 
 
 namespace O3DE::ProjectManager

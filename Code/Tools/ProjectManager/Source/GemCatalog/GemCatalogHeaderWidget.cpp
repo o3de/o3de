@@ -164,11 +164,11 @@ namespace O3DE::ProjectManager
         layout->setAlignment(Qt::AlignTop);
         widget->setLayout(layout);
 
-        QLabel* label = new QLabel();
-        label->setObjectName("GemCatalogCartOverlaySectionLabel");
-        layout->addWidget(label);
+        QLabel* titleLabel = new QLabel();
+        titleLabel->setObjectName("GemCatalogCartOverlaySectionLabel");
+        layout->addWidget(titleLabel);
 
-        label->setText(tr("Gems to be installed"));
+        titleLabel->setText(tr("Gems to be installed"));
 
         // Create header section
         QWidget* downloadingGemsWidget = new QWidget();

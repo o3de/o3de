@@ -17,8 +17,6 @@ namespace O3DE::ProjectManager
 {
     class DownloadWorker : public QObject
     {
-        // QProcess::waitForFinished uses -1 to indicate that the process should not timeout
-        static constexpr int MaxBuildTimeMSecs = -1;
         // Download was cancelled
         inline static const QString DownloadCancelled = QObject::tr("Download Cancelled.");
 
@@ -37,9 +35,6 @@ namespace O3DE::ProjectManager
         void Done(QString result = "");
 
     private:
-
-        QProcess* m_configProjectProcess = nullptr;
-        QProcess* m_buildProjectProcess = nullptr;
 
         QString m_gemName;
         int m_downloadProgress;
