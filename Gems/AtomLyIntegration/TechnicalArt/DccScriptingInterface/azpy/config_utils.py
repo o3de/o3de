@@ -41,6 +41,7 @@ for handler in _logging.root.handlers[:]:
     _logging.root.removeHandler(handler)
 _LOGGER = _logging.getLogger(_MODULENAME)
 _logging.basicConfig(format=FRMT_LOG_LONG, level=_DCCSI_LOGLEVEL)
+_LOGGER.propagate = False
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
 __all__ = ['get_os', 'return_stub', 'get_stub_check_path',
@@ -236,17 +237,18 @@ def get_check_global_project():
     from azpy.core import get_datadir
     
     bootstrap_box = None
-
-    try:
-        bootstrap_box = Box.from_json(filename=str(Path(PATH_USER_O3DE_BOOTSTRAP).resolve()),
-                                     encoding="utf-8",
-                                     errors="strict",
-                                     object_pairs_hook=OrderedDict)
-    except Exception as e:
-        # this file runs in py2.7 for Maya 2020, FileExistsError is not defined
-        _LOGGER.error('FileExistsError: {}'.format(PATH_USER_O3DE_BOOTSTRAP))
-        _LOGGER.error('exception is: {}'.format(e))
-
+    json_file_path = Path(PATH_USER_O3DE_BOOTSTRAP)
+    if json_file_path.exists():
+        try:
+            bootstrap_box = Box.from_json(filename=str(json_file_path.resolve()),
+                                          encoding="utf-8",
+                                          errors="strict",
+                                          object_pairs_hook=OrderedDict)
+        except IOError as e:
+            # this file runs in py2.7 for Maya 2020, FileExistsError is not defined
+            _LOGGER.error('Bad file interaction: {}'.format(json_file_path.resolve()))
+            _LOGGER.error('Exception is: {}'.format(e))
+            pass
     if bootstrap_box:
         # this seems fairly hard coded - what if the data changes?
         project_path=Path(bootstrap_box.Amazon.AzCore.Bootstrap.project_path)

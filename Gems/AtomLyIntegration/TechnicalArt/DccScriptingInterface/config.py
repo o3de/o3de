@@ -195,28 +195,28 @@ def init_o3de_pyside2(dccsi_path=_DCCSI_PATH,
 
     # add Qt binaries to the Windows path to handle findings DLL file dependencies
     if sys.platform.startswith('win'):
-        _LOGGER.info('Qt/PySide2 bootstrapped PATH for Windows.')
+        _LOGGER.info('~   Qt/PySide2 bootstrapped PATH for Windows.')
     else:
-        _LOGGER.warning('Not tested on Non-Windows platforms.')
+        _LOGGER.warning('~   Not tested on Non-Windows platforms.')
         # To Do: figure out how to test and/or modify to work
 
     try:
         import PySide2
-        _LOGGER.info('SUCCESS: import PySide2')
+        _LOGGER.info('~   SUCCESS: import PySide2')
         _LOGGER.debug(PySide2)
         status = True
     except ImportError as e:
-        _LOGGER.error('FAILURE: import PySide2')
+        _LOGGER.error('~   FAILURE: import PySide2')
         status = False
         raise(e)
 
     try:
         import shiboken2
-        _LOGGER.info('SUCCESS: import shiboken2')
+        _LOGGER.info('~   SUCCESS: import shiboken2')
         _LOGGER.debug(shiboken2)
         status = True
     except ImportError as e:
-        _LOGGER.error('FAILURE: import shiboken2')
+        _LOGGER.error('~   FAILURE: import shiboken2')
         status = False
         raise(e)
 
@@ -232,18 +232,18 @@ def init_o3de_pyside2(dccsi_path=_DCCSI_PATH,
     
         site.addsitedir(_DCCSI_PYSIDE2_TOOLS)
         _O3DE_PYTHONPATH.append(_DCCSI_PYSIDE2_TOOLS.resolve())
-        _LOGGER.info('PySide2-Tools bootstrapped PATH for Windows.')
+        _LOGGER.info('~   PySide2-Tools bootstrapped PATH for Windows.')
         try:
             import pyside2uic
-            _LOGGER.info('SUCCESS: import pyside2uic')
+            _LOGGER.info('~   SUCCESS: import pyside2uic')
             _LOGGER.debug(shiboken2)
             status = True
         except ImportError as e:
-            _LOGGER.error('FAILURE: import pyside2uic')
+            _LOGGER.error('~   FAILURE: import pyside2uic')
             status = False
             raise(e)
     else:
-        _LOGGER.warning('No PySide2 Tools: {}'.format(_DCCSI_PYSIDE2_TOOLS.resolve))
+        _LOGGER.warning('~   No PySide2 Tools: {}'.format(_DCCSI_PYSIDE2_TOOLS.resolve))
     
     _O3DE_DCCSI_PATH = os.environ['PATH']
     os.environ["DYNACONF_PATH"] = _O3DE_DCCSI_PATH
@@ -256,7 +256,7 @@ def init_o3de_pyside2(dccsi_path=_DCCSI_PATH,
 
     from dynaconf import settings    
     
-    _LOGGER.info('config.init_o3de_pyside() ... DONE')
+    _LOGGER.info('~   config.init_o3de_pyside() ... DONE')
 
     if status:
         return settings
@@ -269,19 +269,19 @@ def init_o3de_pyside2(dccsi_path=_DCCSI_PATH,
 def test_pyside2():
     """Convenience method to test Qt / PySide2 access"""
     # now test
-    _LOGGER.info('Testing Qt / PySide2')
+    _LOGGER.info('~   Testing Qt / PySide2')
     try:
         from PySide2.QtWidgets import QApplication, QPushButton
         app = QApplication(sys.argv)
-        hello = QPushButton("O3DE DCCsi PySide2 Test!")
+        hello = QPushButton("~   O3DE DCCsi PySide2 Test!")
         hello.resize(200, 60)
         hello.show()
     except Exception as e:
-        _LOGGER.error('FAILURE: Qt / PySide2')
+        _LOGGER.error('~   FAILURE: Qt / PySide2')
         status = False
         raise(e)
 
-    _LOGGER.info('SUCCESS: .test_pyside2()')
+    _LOGGER.info('~   SUCCESS: .test_pyside2()')
     sys.exit(app.exec_())
 # -------------------------------------------------------------------------
 
@@ -322,9 +322,9 @@ def init_o3de_core(engine_path=_O3DE_DEV,
             _O3DE_PROJECT_PATH = _project_path
             os.environ["DYNACONF_O3DE_PROJECT_PATH"] = str(_O3DE_PROJECT_PATH.resolve())
         except FileExistsError as e:
-            _LOGGER.error('The project path specified does not appear to exist!')
-            _LOGGER.warning('project_path: {}'.format(project_path))
-            _LOGGER.warning('fallback to engine root: {}'.format())
+            _LOGGER.error('~   The project path specified does not appear to exist!')
+            _LOGGER.warning('~   project_path: {}'.format(project_path))
+            _LOGGER.warning('~   fallback to engine root: {}'.format())
             project_path = _O3DE_DEV
             os.environ["DYNACONF_O3DE_PROJECT_PATH"] = str(_O3DE_DEV.resolve())
 
@@ -410,7 +410,7 @@ def init_o3de_python(engine_path=_O3DE_DEV,
     _O3DE_PYTHONHOME = Path(_O3DE_PY_EXE.parents[0])
     os.environ["DYNACONF_O3DE_PYTHONHOME"] = str(_O3DE_PYTHONHOME.resolve())
     os.environ['PATH'] = _O3DE_PYTHONHOME.as_posix() + os.pathsep + os.environ['PATH']
-    _LOGGER.info('O3DE_PYTHONHOME - is now the folder containing O3DE python executable')
+    _LOGGER.info('~   O3DE_PYTHONHOME - is now the folder containing O3DE python executable')
     
     _O3DE_PYTHON_INSTALL = Path(_O3DE_DEV, 'python')
     os.environ["DYNACONF_O3DE_PYTHON_INSTALL"] = str(_O3DE_PYTHON_INSTALL.resolve())
@@ -439,7 +439,7 @@ def init_o3de_python(engine_path=_O3DE_DEV,
 
     from dynaconf import settings    
     
-    _LOGGER.info('config.init_o3de_python() ... DONE')
+    _LOGGER.info('~   config.init_o3de_python() ... DONE')
     
     return settings
 # -------------------------------------------------------------------------

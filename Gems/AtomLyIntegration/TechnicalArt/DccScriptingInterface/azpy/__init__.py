@@ -85,16 +85,21 @@ _O3DE_DEV = os.getenv(constants.ENVAR_O3DE_DEV,
                     config_utils.get_stub_check_path(in_path=os.getcwd(),
                                                      check_stub='engine.json'))
 
+_O3DE_PROJECT_PATH = os.getenv(constants.ENVAR_O3DE_PROJECT_PATH,
+                               config_utils.get_o3de_project_path())
+
 # get/set the project name
-_O3DE_PROJECT_NAME = os.getenv(constants.ENVAR_O3DE_PROJECT,
-                            config_utils.get_check_global_project().name)
+if _O3DE_PROJECT_PATH:
+    _O3DE_PROJECT = os.getenv(constants.ENVAR_O3DE_PROJECT,
+                                   _O3DE_PROJECT_PATH.name)
+else:
+    _O3DE_PROJECT='o3de'
 
 # project cache log dir path
-_DCCSI_LOG_PATH = Path(os.getenv(constants.ENVAR_DCCSI_LOG_PATH,
-                                 Path(_O3DE_DEV,
-                                      _O3DE_PROJECT_NAME,
-                                      'Cache',
-                                     'pc', 'user', 'log', 'logs')))
+from azpy.constants import TAG_DCCSI_NICKNAME
+from azpy.constants import PATH_DCCSI_LOG_PATH
+_DCCSI_LOG_PATH = Path(PATH_DCCSI_LOG_PATH.format(O3DE_PROJECT_PATH=_O3DE_PROJECT_PATH,
+                                                  TAG_DCCSI_NICKNAME=TAG_DCCSI_NICKNAME))
 # -------------------------------------------------------------------------
 
 
@@ -140,7 +145,7 @@ if sys.version_info.major < 3:
 def initialize_logger(name,
                       log_to_file=False,
                       default_log_level=_logging.NOTSET,
-                      propogate=True):
+                      propogate=False):
     """Start a azpy logger"""
     _logger = _logging.getLogger(name)
     _logger.propagate = propogate
@@ -208,7 +213,7 @@ if _DCCSI_GDEBUG:
 _LOGGER.debug('MODULE_PATH: {}'.format(_MODULE_PATH))
 _LOGGER.debug('O3DE_DEV_PATH: {}'.format(_O3DE_DEV))
 _LOGGER.debug('DCCSI_PATH: {}'.format(_DCCSIG_PATH))
-_LOGGER.debug('O3DE_PROJECT_TAG: {}'.format(_O3DE_PROJECT_NAME))
+_LOGGER.debug('O3DE_PROJECT_TAG: {}'.format(_O3DE_PROJECT))
 _LOGGER.debug('DCCSI_LOG_PATH: {}'.format(_DCCSI_LOG_PATH))
 # -------------------------------------------------------------------------
 
