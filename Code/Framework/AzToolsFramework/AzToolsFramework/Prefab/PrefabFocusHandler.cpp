@@ -80,7 +80,7 @@ namespace AzToolsFramework::Prefab
             auto editUndo = aznew PrefabFocusUndo("Edit Prefab");
             editUndo->Capture(entityId);
             editUndo->SetParent(undoBatch.GetUndoBatch());
-            ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::RunRedoSeparately, editUndo);
+            FocusOnPrefabInstanceOwningEntityId(entityId);
         }
 
         return AZ::Success();
@@ -95,9 +95,7 @@ namespace AzToolsFramework::Prefab
 
         InstanceOptionalReference focusedInstance = m_instanceFocusHierarchy[index];
 
-        FocusOnOwningPrefab(focusedInstance->get().GetContainerEntityId());
-
-        return AZ::Success();
+        return FocusOnOwningPrefab(focusedInstance->get().GetContainerEntityId());
     }
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId)
@@ -295,27 +293,34 @@ namespace AzToolsFramework::Prefab
 
         m_instanceFocusPath.clear();
 
+        size_t index = 0;
+        size_t maxIndex = m_instanceFocusHierarchy.size() - 1;
+
+        AZ_TracePrintf("maxIndex", "%d", maxIndex);
+
         for (const InstanceOptionalReference& instance : m_instanceFocusHierarchy)
         {
-            if (prefabSystemComponentInterface->IsTemplateDirty(instance->get().GetTemplateId()))
+            AZStd::string prefabName;
+
+            if (index < maxIndex)
             {
-                AZStd::string filename = instance->get().GetTemplateSourcePath().Stem().Native().data();
-                filename += "*";
-                m_instanceFocusPath.Append(filename);
+                // Get the filename without the extension (stem).
+                prefabName = AZStd::string::format("%.*s", AZ_STRING_ARG(instance->get().GetTemplateSourcePath().Stem().Native()));
             }
             else
             {
-                m_instanceFocusPath.Append(instance->get().GetTemplateSourcePath().Stem());
+                // Get the full filename.
+                prefabName = AZStd::string::format("%.*s", AZ_STRING_ARG(instance->get().GetTemplateSourcePath().Filename().Native()));
             }
-        }
 
-        if (prefabSystemComponentInterface->IsTemplateDirty(m_focusedTemplateId))
-        {
-            m_instanceFocusPath.ReplaceExtension("prefab*");
-        }
-        else
-        {
-            m_instanceFocusPath.ReplaceExtension("prefab");
+            if (prefabSystemComponentInterface->IsTemplateDirty(instance->get().GetTemplateId()))
+            {
+                prefabName += "*";
+            }
+
+            m_instanceFocusPath.Append(prefabName);
+
+            ++index;
         }
     }
 
