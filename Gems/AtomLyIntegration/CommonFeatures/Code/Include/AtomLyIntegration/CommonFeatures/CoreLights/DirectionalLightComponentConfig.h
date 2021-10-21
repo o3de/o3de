@@ -109,6 +109,9 @@ namespace AZ
             //! This uses partial derivatives to reduce shadow acne when using large pcf kernels.
             bool m_receiverPlaneBiasEnabled = true;
 
+            //! Reduces shadow acne by applying a small amount of offset along shadow-space z.
+            float m_shadowBias = 0.0f;
+
             bool IsSplitManual() const;
             bool IsSplitAutomatic() const;
             bool IsCascadeCorrectionDisabled() const;

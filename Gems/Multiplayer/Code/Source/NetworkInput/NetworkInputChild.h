@@ -12,10 +12,7 @@
 
 namespace Multiplayer
 {
-    //! Max number of entities that can be children of our netbound player entity.
-    static constexpr uint32_t MaxEntityHierarchyChildren = 16;
-
-    //! Used by the EntityHierarchyComponent.  This component allows the gameplay programmer to specify inputs for dependent entities.
+    //! Used by the NetworkHierarchyRootComponent.  This component allows the gameplay programmer to specify inputs for dependent entities.
     //! Since it is possible to for the Client/Server to disagree about the state of related entities,
     //! this network input encodes the entity that is associated with it.
     class NetworkInputChild
@@ -37,4 +34,6 @@ namespace Multiplayer
         ConstNetworkEntityHandle m_owner;
         NetworkInput m_networkInput;
     };
+
+    using NetworkInputChildList = AZStd::vector<NetworkInputChild>;
 }

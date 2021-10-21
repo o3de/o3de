@@ -174,7 +174,7 @@ namespace AZ::SceneAPI::Behaviors
         const auto bytesWritten = fileStream.Write(sb.GetSize(), sb.GetString());
         if (bytesWritten > 1)
         {
-            AZ::u32 subId = AZ::Crc32(filePath.c_str());
+            AZ::u32 subId = AZ::Crc32(assetPath.c_str());
             context.GetProductList().AddProduct(
                 filePath,
                 context.GetScene().GetSourceGuid(),
