@@ -210,13 +210,15 @@ namespace AZ
 
             bool changesWereApplied = false;
 
-            for (int i = 0; i < aznumeric_cast<int>(m_materialTypeAsset->GetVersion() - m_materialTypeVersion); ++i)
+            for (const MaterialVersionUpdate& versionUpdate : m_materialTypeAsset->GetMaterialVersionUpdateList())
             {
-                const auto& versionUpdate = m_materialTypeAsset->GetMaterialVersionUpdate(m_materialTypeVersion + i + 1);
-
-                if (versionUpdate.ApplyVersionUpdates(*this))
+                if (m_materialTypeVersion < versionUpdate.GetVersion())
                 {
-                    changesWereApplied = true;
+                    if (versionUpdate.ApplyVersionUpdates(*this))
+                    {
+                        changesWereApplied = true;
+                        m_materialTypeVersion = versionUpdate.GetVersion();
+                    }
                 }
             }
             

@@ -47,7 +47,7 @@ namespace AZ
                 serializeContext->Class<MaterialTypeAsset, AZ::Data::AssetData>()
                     ->Version(5) // Material version update
                     ->Field("Version", &MaterialTypeAsset::m_version)
-                    ->Field("VersionUpdates", &MaterialTypeAsset::m_materialVersionUpdateMap)
+                    ->Field("VersionUpdates", &MaterialTypeAsset::m_materialVersionUpdates)
                     ->Field("ShaderCollection", &MaterialTypeAsset::m_shaderCollection)
                     ->Field("MaterialFunctors", &MaterialTypeAsset::m_materialFunctors)
                     ->Field("MaterialSrgShaderIndex", &MaterialTypeAsset::m_materialSrgShaderIndex)
@@ -167,12 +167,6 @@ namespace AZ
         uint32_t MaterialTypeAsset::GetVersion() const
         {
             return m_version;
-        }
-
-        MaterialVersionUpdate MaterialTypeAsset::GetMaterialVersionUpdate(uint32_t toVersion) const
-        {
-            const auto it = m_materialVersionUpdateMap.find(toVersion);
-            return it != m_materialVersionUpdateMap.end() ? it->second : MaterialVersionUpdate(toVersion);
         }
 
         void MaterialTypeAsset::SetReady()

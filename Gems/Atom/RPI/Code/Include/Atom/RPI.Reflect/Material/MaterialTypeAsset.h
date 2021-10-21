@@ -126,10 +126,8 @@ namespace AZ
 
             //! Returns the version of the MaterialTypeAsset.
             uint32_t GetVersion() const;
-            //! Returns the toVersion update containing the actions to perform. If a toVersion
-            //! is not defined in m_materialVersionUpdatesMap, a material toVersion with the specified
-            //! version but empty actions will be returned. 
-            MaterialVersionUpdate GetMaterialVersionUpdate(uint32_t toVersion) const;
+ 
+            const AZStd::vector<MaterialVersionUpdate>& GetMaterialVersionUpdateList() const { return m_materialVersionUpdates; }
 
         private:
             bool PostLoadInit() override;
@@ -175,7 +173,7 @@ namespace AZ
             uint32_t m_version = 1;
 
             //! Contains actions to perform for each material update version.  
-            MaterialVersionUpdateMap m_materialVersionUpdateMap;
+            AZStd::vector<MaterialVersionUpdate> m_materialVersionUpdates;
         };
 
         class MaterialTypeAssetHandler : public AssetHandler<MaterialTypeAsset>

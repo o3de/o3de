@@ -250,7 +250,7 @@ namespace UnitTest
         Data::Asset<MaterialTypeAsset> testMaterialTypeAssetV2;
         materialTypeCreator.Begin(Uuid::CreateRandom());
         materialTypeCreator.SetVersion(versionUpdate.GetVersion());
-        materialTypeCreator.AddVersionUpdate(versionUpdate.GetVersion(), versionUpdate);
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
         materialTypeCreator.AddShader(shaderAsset);
         // Now we add the properties in a different order from before, and use the new name for MyInt.
         AddMaterialPropertyForSrg(materialTypeCreator, Name{ "MyUInt" }, MaterialPropertyDataType::UInt, Name{ "m_uint" });

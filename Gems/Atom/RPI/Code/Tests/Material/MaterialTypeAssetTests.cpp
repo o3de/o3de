@@ -162,7 +162,7 @@ namespace UnitTest
                     Name{ "EnableSpecialPass" }
                 }));
             materialTypeCreator.SetVersion(versionUpdate.GetVersion());
-            materialTypeCreator.AddVersionUpdate(versionUpdate.GetVersion(), versionUpdate);
+            materialTypeCreator.AddVersionUpdate(versionUpdate);
 
             // Built-in shader
 
@@ -501,7 +501,7 @@ namespace UnitTest
         });
     }
 
-    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate)
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_WrongName)
     {
         Data::Asset<MaterialTypeAsset> materialTypeAsset;
 
@@ -518,7 +518,7 @@ namespace UnitTest
                 Name{ "InvalidPropertyName" }
             }));
         materialTypeCreator.SetVersion(versionUpdate.GetVersion());
-        materialTypeCreator.AddVersionUpdate(versionUpdate.GetVersion(), versionUpdate);
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
         materialTypeCreator.AddShader(m_testShaderAsset);
 
         materialTypeCreator.BeginMaterialProperty(Name{ "EnableSpecialPass" }, MaterialPropertyDataType::Bool);
@@ -527,6 +527,78 @@ namespace UnitTest
         AZ_TEST_START_ASSERTTEST;
         EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
         AZ_TEST_STOP_ASSERTTEST(1);
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+    
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_WrongOrder)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+        
+        materialTypeCreator.SetVersion(4);
+        materialTypeCreator.AddShader(m_testShaderAsset);
+        materialTypeCreator.BeginMaterialProperty(Name{ "d" }, MaterialPropertyDataType::Bool);
+        materialTypeCreator.EndMaterialProperty();
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("Version updates are not sequential. See version update '3'");
+
+        {
+            MaterialVersionUpdate versionUpdate(2);
+            versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction({Name{ "a" },Name{ "b" }}));
+            materialTypeCreator.AddVersionUpdate(versionUpdate);
+        }
+        
+        {
+            MaterialVersionUpdate versionUpdate(4);
+            versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction({Name{ "b" },Name{ "c" }}));
+            materialTypeCreator.AddVersionUpdate(versionUpdate);
+        }
+        
+        {
+            MaterialVersionUpdate versionUpdate(3);
+            versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction({Name{ "c" },Name{ "d" }}));
+            materialTypeCreator.AddVersionUpdate(versionUpdate);
+        }
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
+    }
+    
+    TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_GoesTooFar)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+        
+        materialTypeCreator.SetVersion(3);
+        materialTypeCreator.AddShader(m_testShaderAsset);
+        materialTypeCreator.BeginMaterialProperty(Name{ "d" }, MaterialPropertyDataType::Bool);
+        materialTypeCreator.EndMaterialProperty();
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("Version updates go beyond the current material type version. See version update '4'");
+
+        {
+            MaterialVersionUpdate versionUpdate(2);
+            versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction({Name{ "a" },Name{ "b" }}));
+            materialTypeCreator.AddVersionUpdate(versionUpdate);
+        }
+        
+        {
+            MaterialVersionUpdate versionUpdate(4);
+            versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction({Name{ "b" },Name{ "c" }}));
+            materialTypeCreator.AddVersionUpdate(versionUpdate);
+        }
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+        EXPECT_FALSE(materialTypeCreator.End(materialTypeAsset));
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+
         EXPECT_EQ(1, materialTypeCreator.GetErrorCount());
     }
 

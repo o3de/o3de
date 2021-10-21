@@ -56,6 +56,5 @@ namespace AZ
             Actions m_actions;
         };
 
-        using MaterialVersionUpdateMap = AZStd::map<uint32_t, MaterialVersionUpdate>;
     } // namespace RPI
 } // namespace AZ

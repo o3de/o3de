@@ -358,7 +358,7 @@ namespace AZ
 
                 for (const auto& versionUpdate : m_versionUpdates)
                 {
-                    MaterialVersionUpdate materialVersionUpdate;
+                    MaterialVersionUpdate materialVersionUpdate{versionUpdate.m_toVersion};
                     for (const auto& action : versionUpdate.m_actions)
                     {
                         if (action.m_operation == rename.GetStringView())
@@ -373,7 +373,7 @@ namespace AZ
                             materialTypeAssetCreator.ReportWarning("Unsupported material version update operation '%s'", action.m_operation.c_str());
                         }
                     }
-                    materialTypeAssetCreator.AddVersionUpdate(versionUpdate.m_toVersion, materialVersionUpdate);
+                    materialTypeAssetCreator.AddVersionUpdate(materialVersionUpdate);
                 }
             }
 

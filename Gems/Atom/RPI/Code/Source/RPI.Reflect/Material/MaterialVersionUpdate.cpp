@@ -31,8 +31,6 @@ namespace AZ
                     ->Field("ToVersion", &MaterialVersionUpdate::m_toVersion)
                     ->Field("Actions", &MaterialVersionUpdate::m_actions)
                     ;
-
-                serializeContext->RegisterGenericType<MaterialVersionUpdateMap>();
             }
         }
 
