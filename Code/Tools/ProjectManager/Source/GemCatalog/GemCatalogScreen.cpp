@@ -97,46 +97,37 @@ namespace O3DE::ProjectManager
     {
         if (m_notificationsEnabled)
         {
-            QString notification;
             bool added = GemModel::IsAdded(modelIndex);
             bool dependency = GemModel::IsAddedDependency(modelIndex);
 
             bool gemStateChanged = (added && !dependency) || (!added && !dependency);
-
             if (!gemStateChanged && !numChangedDependencies)
             {
                 // no actual changes made
                 return;
             }
 
+            QString notification;
             if (gemStateChanged)
             {
                 notification = GemModel::GetDisplayName(modelIndex);
-                if (numChangedDependencies == 1 )
+                if (numChangedDependencies > 0)
                 {
-                    notification += " and 1 Gem dependency";
-                }
-                else if (numChangedDependencies > 1)
-                {
-                    notification += QString(" and %d Gem dependencies").arg(numChangedDependencies);
-                }
-            }
-            else
-            {
-                if (numChangedDependencies == 1 )
-                {
-                    notification = " 1 Gem dependency";
-                }
-                else if (numChangedDependencies > 1)
-                {
-                    notification = QString("%d Gem dependencies").arg(numChangedDependencies);
+                    notification += " and ";
                 }
             }
 
+            if (numChangedDependencies == 1 )
+            {
+                notification += "1 Gem dependency";
+            }
+            else if (numChangedDependencies > 1)
+            {
+                notification += QString("%d Gem dependencies").arg(numChangedDependencies);
+            }
             notification += added ? " activated." : " deactivated.";
 
-            AzQtComponents::ToastConfiguration toastConfiguration =
-                AzQtComponents::ToastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
+            AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
             toastConfiguration.m_customIconImage = ":/gem.svg";
             toastConfiguration.m_borderRadius = 4;
             toastConfiguration.m_duration = AZStd::chrono::milliseconds(3000);
