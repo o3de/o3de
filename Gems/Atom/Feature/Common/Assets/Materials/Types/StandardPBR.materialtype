@@ -152,7 +152,7 @@
             ],
             "baseColor": [
                 {
-                    "name": "colorX",
+                    "name": "color",
                     "displayName": "Color",
                     "description": "Color is displayed as sRGB but the values are stored as linear color.",
                     "type": "Color",
