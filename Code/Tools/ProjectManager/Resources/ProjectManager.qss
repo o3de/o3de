@@ -61,6 +61,24 @@ QTabBar::tab:focus {
     color: #4082eb;
 }
 
+#ToastNotification {
+    background-color: black;
+    border-radius: 20px;
+    border:1px solid #dddddd;
+    qproperty-minimumSize: 100px 60px;
+}
+
+#ToastNotification #icon_frame {
+    border-radius: 4px;
+    qproperty-minimumSize: 44px 20px;
+}
+
+#ToastNotification #iconLabel {
+    qproperty-minimumSize: 30px 20px;
+    qproperty-maximumSize: 30px 20px;
+    margin-left: 6px;
+}
+
 /************** General (Forms) **************/
 
 #formLineEditWidget,
