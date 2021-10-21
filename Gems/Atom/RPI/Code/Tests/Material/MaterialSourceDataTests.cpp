@@ -728,6 +728,8 @@ namespace UnitTest
         // Then we force the material data to update to the latest material type version specification
         ErrorMessageFinder warningFinder; // Note this finds errors and warnings, and we're looking for a warning.
         warningFinder.AddExpectedErrorMessage("Automatic updates are available. Consider updating the .material source file");
+        warningFinder.AddExpectedErrorMessage("This material is based on version '1'");
+        warningFinder.AddExpectedErrorMessage("material type is now at version '10'");
         material.ApplyVersionUpdates();
         warningFinder.CheckExpectedErrorsFound();
 

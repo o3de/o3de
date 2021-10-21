@@ -119,7 +119,7 @@ namespace AZ
             if (changesWereApplied)
             {
                 AZ_Warning("MaterialSourceData", false,
-                    "This material is based on version %u of '%s', but the material type is now at version %u. "
+                    "This material is based on version '%u' of '%s', but the material type is now at version '%u'. "
                     "Automatic updates are available. Consider updating the .material source file.",
                     m_materialTypeVersion, m_materialType.c_str(), materialTypeSourceData.m_version);
             }

@@ -264,6 +264,8 @@ namespace UnitTest
         // This can find errors and warnings, we are looking for a warning when the version update is applied
         ErrorMessageFinder warningFinder; 
         warningFinder.AddExpectedErrorMessage("Automatic updates are available. Consider updating the .material source file");
+        warningFinder.AddExpectedErrorMessage("This material is based on version '1'");
+        warningFinder.AddExpectedErrorMessage("material type is now at version '2'");
 
         // Even though this material was created using the old version of the material type, it's property values should get automatically
         // updated to align with the new property layout in the latest MaterialTypeAsset.
