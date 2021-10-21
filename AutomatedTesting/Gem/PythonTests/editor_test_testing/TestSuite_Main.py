@@ -31,7 +31,13 @@ if ly_test_tools.WINDOWS:
 else:
     pytestmark = pytest.mark.skipif(not ly_test_tools.WINDOWS, reason="Only runs on Windows")
 
-@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+def get_editor_launcher_platform():
+    if ly_test_tools.WINDOWS:
+        return "windows_editor"
+    else:
+        return "linux_editor"
+
+@pytest.mark.parametrize("launcher_platform", [get_editor_launcher_platform()])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestEditorTest:
     
@@ -73,7 +79,7 @@ class TestEditorTest:
             from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorTestSuite
 
             @pytest.mark.SUITE_main
-            @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+            @pytest.mark.parametrize("launcher_platform", [{get_editor_launcher_platform()}])
             @pytest.mark.parametrize("project", ["AutomatedTesting"])
             class TestAutomation(EditorTestSuite):
                 class test_single(EditorSingleTest):
@@ -127,7 +133,7 @@ class TestEditorTest:
             from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorTestSuite
 
             @pytest.mark.SUITE_main
-            @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+            @pytest.mark.parametrize("launcher_platform", [{get_editor_launcher_platform()}])
             @pytest.mark.parametrize("project", ["AutomatedTesting"])
             class TestAutomation(EditorTestSuite):
             {module_class_code}
