@@ -36,7 +36,6 @@ namespace AZ
                     ->Field("Shadow Bias", &AreaLightComponentConfig::m_bias)
                     ->Field("Shadowmap Max Size", &AreaLightComponentConfig::m_shadowmapMaxSize)
                     ->Field("Shadow Filter Method", &AreaLightComponentConfig::m_shadowFilterMethod)
-                    ->Field("Softening Boundary Width", &AreaLightComponentConfig::m_boundaryWidthInDegrees)
                     ->Field("Filtering Sample Count", &AreaLightComponentConfig::m_filteringSampleCount)
                     ->Field("Esm Exponent", &AreaLightComponentConfig::m_esmExponent)
                     ;

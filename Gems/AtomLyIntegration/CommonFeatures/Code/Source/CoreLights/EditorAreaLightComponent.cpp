@@ -154,15 +154,6 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_boundaryWidthInDegrees, "Softening boundary width",
-                            "Width of the boundary between shadowed area and lit one. "
-                            "Units are in degrees. "
-                            "If this is 0, softening edge is disabled.")
-                            ->Attribute(Edit::Attributes::Min, 0.f)
-                            ->Attribute(Edit::Attributes::Max, 1.f)
-                            ->Attribute(Edit::Attributes::Suffix, " deg")
-                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
-                            ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsEsmDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_filteringSampleCount, "Filtering sample count",
                             "This is only used when the pixel is predicted to be on the boundary. Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)

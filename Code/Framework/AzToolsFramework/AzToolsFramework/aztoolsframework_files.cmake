@@ -553,6 +553,8 @@ set(FILES
     ViewportSelection/EditorTransformComponentSelectionRequestBus.cpp
     ViewportSelection/EditorVisibleEntityDataCache.h
     ViewportSelection/EditorVisibleEntityDataCache.cpp
+    ViewportSelection/InvalidClicks.h
+    ViewportSelection/InvalidClicks.cpp
     ViewportSelection/ViewportEditorModeTracker.cpp
     ViewportSelection/ViewportEditorModeTracker.h
     ToolsFileUtils/ToolsFileUtils.h
@@ -757,6 +759,9 @@ set(FILES
     UI/Prefab/PrefabUiHandler.cpp
     UI/Prefab/PrefabViewportFocusPathHandler.h
     UI/Prefab/PrefabViewportFocusPathHandler.cpp
+    UI/Notifications/ToastNotificationsView.cpp
+    UI/Notifications/ToastNotificationsView.h
+    UI/Notifications/ToastBus.h
     PythonTerminal/ScriptHelpDialog.cpp
     PythonTerminal/ScriptHelpDialog.h
     PythonTerminal/ScriptHelpDialog.ui

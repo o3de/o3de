@@ -69,8 +69,11 @@ namespace Multiplayer
         //! @{
         bool OnSessionHealthCheck() override;
         bool OnCreateSessionBegin(const AzFramework::SessionConfig& sessionConfig) override;
+        void OnCreateSessionEnd() override;
         bool OnDestroySessionBegin() override;
+        void OnDestroySessionEnd() override;
         void OnUpdateSessionBegin(const AzFramework::SessionConfig& sessionConfig, const AZStd::string& updateReason) override;
+        void OnUpdateSessionEnd() override;
         //! @}
 
         //! AZ::TickBus::Handler overrides.
@@ -147,7 +150,8 @@ namespace Multiplayer
         void OnAutonomousEntityReplicatorCreated();
         void ExecuteConsoleCommandList(AzNetworking::IConnection* connection, const AZStd::fixed_vector<Multiplayer::LongNetworkString, 32>& commands);
         NetworkEntityHandle SpawnDefaultPlayerPrefab(uint64_t temporaryUserIdentifier);
-        
+        void EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId connectionId);
+
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
 
         AzNetworking::INetworkInterface* m_networkInterface = nullptr;

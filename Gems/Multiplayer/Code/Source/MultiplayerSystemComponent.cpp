@@ -8,6 +8,7 @@
 
 #include <Multiplayer/MultiplayerConstants.h>
 #include <Multiplayer/Components/MultiplayerComponent.h>
+#include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <MultiplayerSystemComponent.h>
 #include <ConnectionData/ClientToServerConnectionData.h>
 #include <ConnectionData/ServerToClientConnectionData.h>
@@ -305,6 +306,10 @@ namespace Multiplayer
         return m_networkInterface->Listen(sessionConfig.m_port);
     }
 
+    void MultiplayerSystemComponent::OnCreateSessionEnd()
+    {
+    }
+
     bool MultiplayerSystemComponent::OnDestroySessionBegin()
     {
         // This can be triggered external from Multiplayer so only run if we are in an Initialized state
@@ -325,10 +330,18 @@ namespace Multiplayer
         return true;
     }
 
+    void MultiplayerSystemComponent::OnDestroySessionEnd()
+    {
+    }
+
     void MultiplayerSystemComponent::OnUpdateSessionBegin(const AzFramework::SessionConfig& sessionConfig, const AZStd::string& updateReason)
     {
         AZ_UNUSED(sessionConfig);
         AZ_UNUSED(updateReason);
+    }
+
+    void MultiplayerSystemComponent::OnUpdateSessionEnd()
+    {
     }
 
     void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
@@ -500,17 +513,9 @@ namespace Multiplayer
         if (GetAgentType() == MultiplayerAgentType::ClientServer
          || GetAgentType() == MultiplayerAgentType::DedicatedServer)
         {
-            // We use a temporary userId so we can maintain client lookups even in the event of wifi handoff
+            // We use a temporary userId over the clients address so we can maintain client lookups even in the event of wifi handoff
             NetworkEntityHandle controlledEntity = SpawnDefaultPlayerPrefab(packet.GetTemporaryUserId());
-            if (controlledEntity.Exists())
-            {
-                controlledEntity.GetNetBindComponent()->SetOwningConnectionId(connection->GetConnectionId());
-            }
-            // Activate the entity if necessary
-            if (controlledEntity.GetEntity()->GetState() == AZ::Entity::State::Init)
-            {
-                controlledEntity.Activate();
-            }
+            EnableAutonomousControl(controlledEntity, connection->GetConnectionId());
 
             ServerToClientConnectionData* connectionData = reinterpret_cast<ServerToClientConnectionData*>(connection->GetUserData());
             AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
@@ -846,11 +851,7 @@ namespace Multiplayer
         if (m_agentType == MultiplayerAgentType::ClientServer)
         {
             NetworkEntityHandle controlledEntity = SpawnDefaultPlayerPrefab(0);
-            if (NetBindComponent* controlledEntityNetBindComponent = controlledEntity.GetNetBindComponent())
-            {
-                controlledEntityNetBindComponent->SetAllowAutonomy(true);
-            }
-            controlledEntity.Activate();
+            EnableAutonomousControl(controlledEntity, AzNetworking::InvalidConnectionId);
         }
         
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
@@ -1132,12 +1133,48 @@ namespace Multiplayer
         PrefabEntityId playerPrefabEntityId(AZ::Name(static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str()));
         INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity(), Multiplayer::AutoActivate::DoNotActivate);
 
+        for (NetworkEntityHandle subEntity : entityList)
+        {
+            subEntity.Activate();
+        }
+
         NetworkEntityHandle controlledEntity;
         if (!entityList.empty())
         {
             controlledEntity = entityList[0];
         }
         return controlledEntity;
+    }
+
+    void MultiplayerSystemComponent::EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId connectionId)
+    {
+        INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get();
+        AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
+
+        entityHandle.GetNetBindComponent()->SetOwningConnectionId(connectionId);
+        if (connectionId == InvalidConnectionId)
+        {
+            entityHandle.GetNetBindComponent()->SetAllowAutonomy(true);
+        }
+
+        auto* hierarchyComponent = entityHandle.FindComponent<NetworkHierarchyRootComponent>();
+        if (hierarchyComponent != nullptr)
+        {
+            for (AZ::Entity* subEntity : hierarchyComponent->GetHierarchicalEntities())
+            {
+                NetworkEntityHandle subEntityHandle = NetworkEntityHandle(subEntity);
+                NetBindComponent* subEntityNetBindComponent = subEntityHandle.GetNetBindComponent();
+
+                if (subEntityNetBindComponent != nullptr)
+                {
+                    subEntityNetBindComponent->SetOwningConnectionId(connectionId);
+                    if (connectionId == InvalidConnectionId)
+                    {
+                        subEntityNetBindComponent->SetAllowAutonomy(true);
+                    }
+                }
+            }
+        }
     }
 
     void host([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)

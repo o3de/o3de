@@ -9,6 +9,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
     <ComponentRelation Constraint="Weak" HasController="true" Name="NetworkTransformComponent" Namespace="Multiplayer" Include="Multiplayer/Components/NetworkTransformComponent.h" />
+    <ComponentRelation Constraint="Weak" HasController="true" Name="NetworkHierarchyRootComponent" Namespace="Multiplayer" Include="Multiplayer/Components/NetworkHierarchyRootComponent.h" />
 
     <Include File="Multiplayer/MultiplayerTypes.h"/>
     <Include File="Multiplayer/NetworkInput/NetworkInput.h"/>

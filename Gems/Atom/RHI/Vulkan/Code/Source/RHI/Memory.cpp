@@ -7,6 +7,7 @@
  */
 #include <AzCore/std/parallel/lock.h>
 #include <Atom/RHI.Reflect/Bits.h>
+#include <Atom/RHI.Reflect/BufferDescriptor.h>
 #include <RHI/Memory.h>
 #include <RHI/Conversion.h>
 #include <RHI/Device.h>
@@ -31,6 +32,15 @@ namespace AZ
             allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
             allocInfo.allocationSize = descriptor.m_sizeInBytes;
             allocInfo.memoryTypeIndex = descriptor.m_memoryTypeIndex;
+
+            VkMemoryAllocateFlagsInfo memAllocInfo{};
+            if (ShouldApplyDeviceAddressBit(descriptor.m_bufferBindFlags))
+            {
+                memAllocInfo.flags |= VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT;
+            }
+            memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO;
+            
+            allocInfo.pNext = &memAllocInfo;
             VkDeviceMemory deviceMemory;
             VkResult vkResult = vkAllocateMemory(device.GetNativeDevice(), &allocInfo, nullptr, &deviceMemory);
             AZ_Error(
