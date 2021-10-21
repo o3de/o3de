@@ -10,6 +10,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonDeserializer.h>
+#include <AzCore/Serialization/Json/JsonImporter.h>
 #include <AzCore/Serialization/Json/JsonMerger.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializer.h>
@@ -19,11 +20,6 @@
 
 namespace AZ
 {
-    const char* JsonSerialization::TypeIdFieldIdentifier = "$type";
-    const char* JsonSerialization::DefaultStringIdentifier = "{}";
-    const char* JsonSerialization::KeyFieldIdentifier = "Key";
-    const char* JsonSerialization::ValueFieldIdentifier = "Value";
-
     namespace JsonSerializationInternal
     {
         template<typename T>
@@ -392,6 +388,60 @@ namespace AZ
         {
             return lhs.GetType() < rhs.GetType() ? JsonSerializerCompareResult::Less : JsonSerializerCompareResult::Greater;
         }
+    }
+
+    JsonSerializationResult::ResultCode JsonSerialization::ResolveImports(
+        rapidjson::Value& jsonDoc, rapidjson::Document::AllocatorType& allocator, JsonImportSettings& settings)
+    {
+        using namespace JsonSerializationResult;
+
+        if (settings.m_importer == nullptr)
+        {
+            AZ_Assert(false, "Importer object needs to be provided");
+            return ResultCode(Tasks::Import, Outcomes::Catastrophic);
+        }
+
+        AZStd::string scratchBuffer;
+        auto issueReportingCallback = [&scratchBuffer](AZStd::string_view message, ResultCode result, AZStd::string_view target) -> ResultCode
+        {
+            return JsonSerialization::DefaultIssueReporter(scratchBuffer, message, result, target);
+        };
+        if (!settings.m_reporting)
+        {
+            settings.m_reporting = issueReportingCallback;
+        }
+
+        JsonImportResolver::ImportPathStack importPathStack;
+        importPathStack.push_back(settings.m_loadedJsonPath);
+        StackedString element(StackedString::Format::JsonPointer);
+
+        return JsonImportResolver::ResolveImports(jsonDoc, allocator, importPathStack, settings, element);
+    }
+
+    JsonSerializationResult::ResultCode JsonSerialization::RestoreImports(
+        rapidjson::Value& jsonDoc, rapidjson::Document::AllocatorType& allocator, JsonImportSettings& settings)
+    {
+        using namespace JsonSerializationResult;
+
+        if (settings.m_importer == nullptr)
+        {
+            AZ_Assert(false, "Importer object needs to be provided");
+            return ResultCode(Tasks::Import, Outcomes::Catastrophic);
+        }
+
+        AZStd::string scratchBuffer;
+        auto issueReportingCallback = [&scratchBuffer](AZStd::string_view message, ResultCode result, AZStd::string_view target) -> ResultCode
+        {
+            return JsonSerialization::DefaultIssueReporter(scratchBuffer, message, result, target);
+        };
+        if (!settings.m_reporting)
+        {
+            settings.m_reporting = issueReportingCallback;
+        }
+
+        settings.m_resolveFlags = ImportTracking::None;
+
+        return JsonImportResolver::RestoreImports(jsonDoc, allocator, settings);
     }
 
     JsonSerializationResult::ResultCode JsonSerialization::DefaultIssueReporter(AZStd::string& scratchBuffer,
