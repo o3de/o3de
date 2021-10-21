@@ -64,10 +64,8 @@ namespace Multiplayer
 
     private:
         AZ::ChildChangedEvent::Handler m_childChangedHandler;
-        AZ::ParentChangedEvent::Handler m_parentChangedHandler;
 
         void OnChildChanged(AZ::ChildChangeType type, AZ::EntityId child);
-        void OnParentChanged(AZ::EntityId oldParent, AZ::EntityId parent);
 
         //! Points to the top level root.
         AZ::Entity* m_rootEntity = nullptr;

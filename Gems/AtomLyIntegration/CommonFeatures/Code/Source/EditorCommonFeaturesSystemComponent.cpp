@@ -216,11 +216,17 @@ namespace AZ
             using namespace LyIntegration;
 
             ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(SharedThumbnailCache),
-                ThumbnailContext::DefaultContext);
+                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(SharedThumbnailCache), ThumbnailContext::DefaultContext);
 
-            m_renderer = AZStd::make_unique<AZ::LyIntegration::SharedThumbnailRenderer>();
-            m_previewerFactory = AZStd::make_unique<LyIntegration::SharedPreviewerFactory>();
+            if (!m_thumbnailRenderer)
+            {
+                m_thumbnailRenderer = AZStd::make_unique<AZ::LyIntegration::SharedThumbnailRenderer>();
+            }
+
+            if (!m_previewerFactory)
+            {
+                m_previewerFactory = AZStd::make_unique<LyIntegration::SharedPreviewerFactory>();
+            }
         }
 
         void EditorCommonFeaturesSystemComponent::TeardownThumbnails()
@@ -232,7 +238,7 @@ namespace AZ
                 &ThumbnailerRequests::UnregisterThumbnailProvider, SharedThumbnailCache::ProviderName,
                 ThumbnailContext::DefaultContext);
 
-            m_renderer.reset();
+            m_thumbnailRenderer.reset();
             m_previewerFactory.reset();
         }
     } // namespace Render
