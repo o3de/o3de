@@ -32,7 +32,6 @@ namespace AZ
                                                             // W is unused
         };
 
-
         // --- Depth of Field Parent Pass ---
 
         RPI::Ptr<NewDepthOfFieldParentPass> NewDepthOfFieldParentPass::Create(const RPI::PassDescriptor& descriptor)
@@ -103,8 +102,8 @@ namespace AZ
         NewDepthOfFieldTileReducePass::NewDepthOfFieldTileReducePass(const RPI::PassDescriptor& descriptor)
             : RPI::ComputePass(descriptor)
         {
-            // Though this is a fullscreen pass, the algorithm used makes each thread output 3 blurred pixels, so
-            // it's not a 1-to-1 ratio and requires custom calculation of target thread counts
+            // Though this is a fullscreen pass, the shader computes 16x16 tiles with groups of 8x8 threads,
+            // each thread outputting to a single pixel in the tiled min/max texture
             m_isFullscreenPass = false;
         }
 
@@ -124,8 +123,6 @@ namespace AZ
             RPI::ComputePass::FrameBeginInternal(params);
         }
 
-
-
         // --- Filter Pass ---
 
         RPI::Ptr<NewDepthOfFieldFilterPass> NewDepthOfFieldFilterPass::Create(const RPI::PassDescriptor& descriptor)
@@ -144,22 +141,19 @@ namespace AZ
 
             uint32_t sampleIndex = 0;
 
+            // Calculate all the offset positions
             for (uint32_t loop = 0; loop < NewDepthOfFieldConstants::numberOfLoops; ++loop)
             {
                 float radius = (loop + 1.0f) / float(NewDepthOfFieldConstants::numberOfLoops);
                 float loopCount = NewDepthOfFieldConstants::loopCounts[loop];
 
-                float angleOffset = 0;
+                float angleStep = Constants::TwoPi / loopCount;
 
                 // Every other loop slightly rotate sample ring so they don't line up
-                if (loop & 1)
-                {
-                    angleOffset = Constants::TwoPi * 0.5f / loopCount;
-                }
+                float angle = (loop & 1) ? (angleStep * 0.5f) : 0;
 
                 for (float i = 0.0f; i < loopCount; ++i)
                 {
-                    float angle = Constants::TwoPi * i / loopCount;
                     Vector2 pos = Vector2::CreateFromAngle(angle);
                     pos = pos * radius;
 
@@ -167,38 +161,16 @@ namespace AZ
                     dofConstants.m_samplePositions[sampleIndex][1] = pos.GetY();
                     dofConstants.m_samplePositions[sampleIndex][2] = radius;
                     dofConstants.m_samplePositions[sampleIndex][3] = 0.0f;
-                    ++sampleIndex;
-                }
 
+                    ++sampleIndex;
+                    angle += angleStep;
+                }
             }
 
             m_shaderResourceGroup->SetConstant(m_constantsIndex, dofConstants);
 
-            // TODO HERE
             RPI::FullscreenTrianglePass::FrameBeginInternal(params);
         }
-
-
-
-        // --- Composite Pass ---
-
-        RPI::Ptr<NewDepthOfFieldCompositePass> NewDepthOfFieldCompositePass::Create(const RPI::PassDescriptor& descriptor)
-        {
-            RPI::Ptr<NewDepthOfFieldCompositePass> pass = aznew NewDepthOfFieldCompositePass(descriptor);
-            return AZStd::move(pass);
-        }
-
-        NewDepthOfFieldCompositePass::NewDepthOfFieldCompositePass(const RPI::PassDescriptor& descriptor)
-            : RPI::ComputePass(descriptor)
-        { }
-
-        void NewDepthOfFieldCompositePass::FrameBeginInternal(FramePrepareParams params)
-        {
-            // TODO HERE
-            RPI::ComputePass::FrameBeginInternal(params);
-        }
-
-
 
     }   // namespace Render
 }   // namespace AZ

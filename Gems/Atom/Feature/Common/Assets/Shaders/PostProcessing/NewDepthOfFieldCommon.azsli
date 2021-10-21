@@ -23,9 +23,5 @@ struct NewDepthOfFieldConstants
     float4 samplePositions[60];     // XY are sample positions (normalized so max lenght is 1)
                                     // Z is the length of XY (0 - 1)
                                     // W is unused
-
-
 };
-
-
 

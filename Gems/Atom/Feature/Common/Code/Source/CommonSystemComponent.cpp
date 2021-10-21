@@ -252,10 +252,6 @@ namespace AZ
             passSystem->AddPassCreator(Name("NewDepthOfFieldParentPass"), &NewDepthOfFieldParentPass::Create);
             passSystem->AddPassCreator(Name("NewDepthOfFieldTileReducePass"), &NewDepthOfFieldTileReducePass::Create);
             passSystem->AddPassCreator(Name("NewDepthOfFieldFilterPass"), &NewDepthOfFieldFilterPass::Create);
-            passSystem->AddPassCreator(Name("NewDepthOfFieldCompositePass"), &NewDepthOfFieldCompositePass::Create);
-
-
-
 
             // Add FastDepthAwareBlur passes
             passSystem->AddPassCreator(Name("FastDepthAwareBlurHorPass"), &FastDepthAwareBlurHorPass::Create);

@@ -17,7 +17,9 @@ namespace AZ
 {
     namespace Render
     {
-        //! 
+        //! Parent pass for the new depth of field technique
+        //! Main updates the view srg via the depth of field settings
+        //! And enables/disables all depth of field passes based on component activation
         class NewDepthOfFieldParentPass final
             : public RPI::ParentPass
         {
@@ -41,8 +43,7 @@ namespace AZ
         };
 
 
-
-        //! 
+        //! Need a class for the tile reduce pass because it dispatches a non-trivial number of threads
         class NewDepthOfFieldTileReducePass final
             : public RPI::ComputePass
         {
@@ -64,8 +65,9 @@ namespace AZ
         };
 
 
-
-        //! 
+        //! Filter pass used to render the bokeh blur effect on downsampled image buffer
+        //! This class is used for both the large filter and the small filter
+        //! It's main purpose is calculating the sample positions and setting srg constants
         class NewDepthOfFieldFilterPass final
             : public RPI::FullscreenTrianglePass
         {
@@ -87,29 +89,6 @@ namespace AZ
 
             // SRG binding indices...
             AZ::RHI::ShaderInputNameIndex m_constantsIndex = "m_dofConstants";
-        };
-
-
-
-        //! 
-        class NewDepthOfFieldCompositePass final
-            : public RPI::ComputePass
-        {
-            AZ_RPI_PASS(NewDepthOfFieldCompositePass);
-
-        public:
-            AZ_RTTI(AZ::Render::NewDepthOfFieldCompositePass, "{63270A3A-EAE5-4C0C-98AA-43CA55279613}", AZ::RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(NewDepthOfFieldCompositePass, SystemAllocator, 0);
-            virtual ~NewDepthOfFieldCompositePass() = default;
-
-            static RPI::Ptr<NewDepthOfFieldCompositePass> Create(const RPI::PassDescriptor& descriptor);
-
-        protected:
-            // Behavior functions override...
-            void FrameBeginInternal(FramePrepareParams params) override;
-
-        private:
-            NewDepthOfFieldCompositePass(const RPI::PassDescriptor& descriptor);
         };
 
 

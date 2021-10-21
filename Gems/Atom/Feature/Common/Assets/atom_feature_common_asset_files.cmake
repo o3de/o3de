@@ -443,6 +443,7 @@ set(FILES
     Shaders/PostProcessing/MSAAResolveCustom.shader
     Shaders/PostProcessing/MSAAResolveDepth.azsl
     Shaders/PostProcessing/MSAAResolveDepth.shader
+    Shaders/PostProcessing/NewDepthOfFieldCommon.azsli
     Shaders/PostProcessing/NewDepthOfFieldComposite.azsl
     Shaders/PostProcessing/NewDepthOfFieldComposite.shader
     Shaders/PostProcessing/NewDepthOfFieldDownsample.azsl

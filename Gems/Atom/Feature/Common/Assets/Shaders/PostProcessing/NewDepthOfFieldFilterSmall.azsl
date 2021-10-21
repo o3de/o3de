@@ -18,6 +18,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2D<float4> m_colorAndCoc;
     Texture2D<float2> m_minMaxCocTile;
 
+    // Texture dimensions. XY channels are width and height and ZW channels are 1 / width and 1 / height 
     float4 m_textureDimensions;
 
     NewDepthOfFieldConstants m_dofConstants;
@@ -43,55 +44,77 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     };
 }
 
-float2 GetOffsetUV(uint index, float2 offsetMultiplier)
+float3 GetOffset(uint index, float2 offsetUVMultiplier)
 {
-    return PassSrg::m_dofConstants.samplePositions[index].xy * offsetMultiplier;
+    float3 offset = PassSrg::m_dofConstants.samplePositions[index].xyz;
+    offset.xy *= offsetUVMultiplier;
+    return offset;
 }
 
+float CaclulateWeight(float offsetRadius, float samplingRadius, float sampleCoc, float centerCoc)
+{
+    // The maximum distance for which samples are valid is the min of the sample CoC and the center CoC
+    float maxRadius = abs(min(sampleCoc, centerCoc));
+    
+    // Easy human readable calculations: 
+    // radius = samplingRadius * offsetRadius;
+    // falloff = maxRadius - radius;
+    // weight = 1 + (4 * falloff)
+    //
+    // The same thing in mad form:
+    float falloff = mad(-samplingRadius, offsetRadius, maxRadius);
+    return saturate(mad(4, falloff, 1));
+}
+
+// This shader attempts to fill the gaps left by the large filter by sampling 8 pixels around the center pixel
+// See http://advances.realtimerendering.com/s2013/Sousa_Graphics_Gems_CryENGINE3.pptx
+// for a detailed overview of the technique
 PSOutput MainPS(VSOutput IN)
 {
-    // UV of pixel being shaded
+    // Get center sample
     float2 pixelUV = IN.m_texCoord.xy;
+    float4 color = PassSrg::m_colorAndCoc.Sample(PassSrg::PointSampler, pixelUV).rgba;
+    float centerCoc = color.a;
 
-    // Sample pixel being shaded
-    float4 centerSample = PassSrg::m_colorAndCoc.Sample(PassSrg::PointSampler, pixelUV).rgba;
-    float centerCoc = centerSample.a;
+    // Get tile min CoC
+    int2 tile = int2(IN.m_position.xy) / 16;
+    float minCoc = PassSrg::m_minMaxCocTile[tile].x;
 
+    // Aspect ratio is needed because sample offsets are calculated in a perfect circle, but
+    // UV space is stretched due to normalized device coordinates. Correct this with aspect ratio
     // Aspect ratio = texture.x / texture.y = dimensions.x * dimensions.w
     float aspectRatio = PassSrg::m_textureDimensions.x * PassSrg::m_textureDimensions.w;
 
     // Sampling radius
-    float cocRadius = abs(centerCoc) * ViewSrg::m_dof.m_cocToScreenRatio * 0.5f;
-    cocRadius *= 0.5f; // This is the small filter, half the sampling radius
-    float2 offsetMultiplier = float2(cocRadius / aspectRatio, cocRadius);
+    float cocRadius = max( abs(centerCoc), -minCoc) * 0.5f; // Small filter pass so half the radius
+    float screenRadius = cocRadius * ViewSrg::m_dof.m_cocToScreenRatio * 0.5f;
+    float2 offsetMultiplier = float2(screenRadius / aspectRatio, screenRadius);
 
-    // Color and weight accumulation
-    float3 color = centerSample.rgb;
+    // Weight accumulation. Start with 1 for center pixel.
     float totalWeight = 1;
 
-    for(uint i = 0; i < 8; ++i)
+    for(uint i = 0; i < SAMPLES_LOOP_1; ++i)
     {
         // Calculate sample offset
-        float2 offsetUV = GetOffsetUV(i, offsetMultiplier);
+        float3 offset = GetOffset(i, offsetMultiplier);
 
         // Get sample
-        float4 sampleColorCoc = PassSrg::m_colorAndCoc.Sample(PassSrg::PointSampler, pixelUV + offsetUV).rgba;
+        float4 sampleColorCoc = PassSrg::m_colorAndCoc.Sample(PassSrg::PointSampler, pixelUV + offset.xy).rgba;
 
         // Calculate weight
-        float cocDiff = sampleColorCoc.a - centerCoc;
-        float weight = saturate( 2 - (20 * cocDiff));
+        float weight = CaclulateWeight(offset.z, cocRadius, sampleColorCoc.a, centerCoc);
 
         // Accumulate sample and weight
-        color += sampleColorCoc.rgb * weight;
+        color.rgb += sampleColorCoc.rgb * weight;
         totalWeight += weight;
     }
 
-    // Normalize accumulated sample
-    color /= totalWeight;
 
-    // Output
+    // Normalize accumulated sample
+    color.rgb /= totalWeight;
+
     PSOutput OUT;
-    OUT.m_color.rgb = color;
+    OUT.m_color.rgb = color.rgb;
     OUT.m_color.a = centerCoc;
     return OUT;
 }

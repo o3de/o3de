@@ -36,6 +36,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 groupshared uint LDS_MIN_COC[8];
 groupshared uint LDS_MAX_COC[8];
 
+// Calculates the min and max CoC (Circle of Confusion) for 16x16 pixel tiles
 [numthreads(8, 8, 1)]
 void MainCS(uint3 group_thread_id : SV_GroupThreadID, uint3 group_id : SV_GroupID, uint3 dispatch_id: SV_DispatchThreadID, uint linear_id : SV_GroupIndex)
 {
@@ -68,9 +69,11 @@ void MainCS(uint3 group_thread_id : SV_GroupThreadID, uint3 group_id : SV_GroupI
         return;
     }
 
+    // Min the mins and max the maxs
     InterlockedMin( LDS_MIN_COC[0], LDS_MIN_COC[group_thread_id.x] );
     InterlockedMax( LDS_MAX_COC[0], LDS_MAX_COC[group_thread_id.x] );
 
+    // Each group write to just one pixel. If we're the last thread in the group, write out
     if(group_thread_id.x == 0)
     {
         // Unpack uints

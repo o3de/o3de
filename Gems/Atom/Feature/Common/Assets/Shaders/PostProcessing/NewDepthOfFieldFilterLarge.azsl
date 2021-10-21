@@ -18,6 +18,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2D<float4> m_colorAndCoc;
     Texture2D<float2> m_minMaxCocTile;
 
+    // Texture dimensions. XY channels are width and height and ZW channels are 1 / width and 1 / height 
     float4 m_textureDimensions;
 
     NewDepthOfFieldConstants m_dofConstants;
@@ -43,10 +44,10 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     };
 }
 
-float3 GetOffsetUV(uint index, float2 offsetMultiplier)
+float3 GetOffset(uint index, float2 offsetUVMultiplier)
 {
     float3 offset = PassSrg::m_dofConstants.samplePositions[index].xyz;
-    offset.xy *= offsetMultiplier;
+    offset.xy *= offsetUVMultiplier;
     return offset;
 }
 
@@ -55,14 +56,19 @@ float CaclulateWeight(float offsetRadius, float samplingRadius, float sampleCoc,
     // The maximum distance for which samples are valid is the min of the sample CoC and the center CoC
     float maxRadius = abs(min(sampleCoc, centerCoc));
     
+    // Easy human readable calculations: 
     // radius = samplingRadius * offsetRadius;
     // falloff = maxRadius - radius;
-    // weight = 1 + (4 * falloff) 
+    // weight = 1 + (4 * falloff)
+    //
+    // The same thing in mad form:
     float falloff = mad(-samplingRadius, offsetRadius, maxRadius);
-    float weight = saturate(mad(4, falloff, 1));
-    return weight;
+    return saturate(mad(4, falloff, 1));
 }
 
+// This shader blurs by sampling 48 pixels in a circle around the center pixel
+// See http://advances.realtimerendering.com/s2013/Sousa_Graphics_Gems_CryENGINE3.pptx
+// for a detailed explanation.
 PSOutput MainPS(VSOutput IN)
 {
     // Get center sample
@@ -70,10 +76,12 @@ PSOutput MainPS(VSOutput IN)
     float4 color = PassSrg::m_colorAndCoc.Sample(PassSrg::LinearSampler, pixelUV).rgba;
     float centerCoc = color.a;
 
-    // Get tile min and max
+    // Get tile min CoC
     int2 tile = int2(IN.m_position.xy) / 16;
     float minCoc = PassSrg::m_minMaxCocTile[tile].x;
 
+    // Aspect ratio is needed because sample offsets are calculated in a perfect circle, but
+    // UV space is stretched due to normalized device coordinates. Correct this with aspect ratio
     // Aspect ratio = texture.x / texture.y = dimensions.x * dimensions.w
     float aspectRatio = PassSrg::m_textureDimensions.x * PassSrg::m_textureDimensions.w;
 
@@ -82,15 +90,20 @@ PSOutput MainPS(VSOutput IN)
     float screenRadius = cocRadius * ViewSrg::m_dof.m_cocToScreenRatio * 0.5f;
     float2 offsetMultiplier = float2(screenRadius / aspectRatio, screenRadius);
 
-
+    // Background samples are samples behind the current pixel. Because of how depth of field works,
+    // these pixels can contribute to the center pixel even if they are out of range of the center pixel's CoC
+    // We accumulate them seperately and calculate a new estimated alpha value based on the ratio of samples
+    // that were background pixels.
     float4 backgroundColor = float4(0, 0, 0, 0);
     
+    // If there are only positive CoCs in our region, we don't need to consider background blur
+    // Do the faster and nicer approach
     if(minCoc >= 0)
     {
         for(uint i = 0; i < SAMPLES_LOOP_TOTAL; ++i)
         {
             // Calculate sample offset
-            float3 offset = GetOffsetUV(i, offsetMultiplier);
+            float3 offset = GetOffset(i, offsetMultiplier);
             
             // Get sample
             float4 sampleColorCoc = PassSrg::m_colorAndCoc.Sample(PassSrg::LinearSampler, pixelUV + offset.xy).rgba;
@@ -102,18 +115,22 @@ PSOutput MainPS(VSOutput IN)
             color += weight * sampleColorCoc;
         }
     }
-    else
+    else    // Some CoCs in the region are negative, need to consider possible background bokeh contribution
     {
+        // Distance behind which samples are considered background samples
         float backgroundMin = min(0, centerCoc);
+
+        // Linear sampling colors pre-multiplied with CoC yields artefacts when combined with this background technique
+        // We therefore do point sampling and unpack the original color value per sample
         color.rgb /= abs(color.a);
         color.a = 1;
         
         for(uint i = 0; i < SAMPLES_LOOP_TOTAL; ++i)
         {
             // Calculate sample offset
-            float3 offset = GetOffsetUV(i, offsetMultiplier);
+            float3 offset = GetOffset(i, offsetMultiplier);
             
-            // Get sample
+            // Get sample + unpack
             float4 sampleColorCoc = PassSrg::m_colorAndCoc.Sample(PassSrg::PointSampler, pixelUV + offset.xy).rgba;
             sampleColorCoc.rgb /= abs(sampleColorCoc.a);
             
@@ -131,15 +148,18 @@ PSOutput MainPS(VSOutput IN)
             color += !isBackground * sampleColorCoc;
         }
 
+        // Average background samples
         backgroundColor.rgb /= max(backgroundColor.a, COC_EPSILON);
     }
     
+    // Calculate background ratio. If greater than the current CoC, replace the current CoC with
+    // background ratio. This is so background bokeh effects will still render on in-focus objects
     float backgroundRatio = saturate( backgroundColor.a / float(SAMPLES_LOOP_TOTAL) );
     float alpha = backgroundRatio > abs(centerCoc) ? -backgroundRatio : centerCoc;
 
+    // Average accumulated color samples and combine with background samples
     color.rgb /= max(color.a, COC_EPSILON);
     color = lerp(color, backgroundColor, backgroundRatio);
-
 
     PSOutput OUT = (PSOutput)0;
     OUT.m_color.rgb = color.rgb;
