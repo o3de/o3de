@@ -193,8 +193,6 @@ namespace O3DE::ProjectManager
         downloadingItemLayout->setAlignment(Qt::AlignTop);
         downloadingItemWidget->setLayout(downloadingItemLayout);
 
-        m_downloadController->AddGemDownload("TestGem");
-
         auto update = [=](int downloadProgress)
         {
             if (m_downloadController->IsDownloadQueueEmpty())

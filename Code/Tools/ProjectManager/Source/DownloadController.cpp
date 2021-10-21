@@ -14,9 +14,6 @@
 
 #include <QMessageBox>
 
-
-
-
 namespace O3DE::ProjectManager
 {
     DownloadController::DownloadController(QWidget* parent)
