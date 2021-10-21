@@ -233,7 +233,7 @@ namespace AzToolsFramework
 
                         // Last item and the above entry is a source entry
                         // or indexBelow is a source entry and the index above is not
-                        if ((index.row() == viewModel->rowCount() - 1))
+                        if (viewModel->rowCount() > 0 && index.row() == viewModel->rowCount() - 1)
                         {
                             if (aboveSourceEntry)
                             {
