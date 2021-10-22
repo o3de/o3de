@@ -196,27 +196,17 @@ namespace PhysX
                     AZ_Assert(AZ::IsClose(-halfBounds, minHeightBounds) && AZ::IsClose(halfBounds, maxHeightBounds),
                         "Min/Max height bounds aren't centered around 0, the height conversions below will be incorrect.");
 
-                    // To prevent a possible error in log2 below, we need to check maxHeightBounds is greater thanminHeightBounds.
-                    AZ_Assert(maxHeightBounds > minHeightBounds,
-                        "Max height bounds is less than or equal to minHeightBounds, the height conversions below will be incorrect.");
+                    AZ_Assert(maxHeightBounds >= minHeightBounds,
+                        "Max height bounds is less than min height bounds, the height conversions below will be incorrect.");
 
                     // To convert our floating-point heights to fixed-point representation inside of an int16, we need a scale factor
                     // for the conversion.  The scale factor is used to map the most important bits of our floating-point height to the
-                    // full 16-bit range.  To do this as safely as possible without introducing unnecessary rounding error, we will use
-                    // a power of 2 as our scale factor.  
-                    // To calculate the power of 2, we first need the smallest power of 2 that contains our max height.
-                    //    N = ceil(log2(halfBounds) gives us that number.
-                    //       a max height of 1 gives us 0 (i.e. 2^0 = 1)
-                    //       a max height of 50 gives us 6 (i.e. 2^6 = 64)
-                    //       a max height of 1/4 gives us -2 (i.e. 2^(-2) = 1/4)
-                    // An int16 holds up to 2^15 positive numbers, so to move our floats into the highest integer range, we'll want to
-                    // multiply them by 2^(15 - N), which is what our scaleFactor is.
-                    //       a max height of 1 gives N=0, so the scaleFactor is 2^(15-0), or 32768.
-                    //       a max height of 50 gives N=6, so the scaleFactor is 2^(15-6), or 512.
-                    //       a max height of 1/4 gives N=-2, so the scaleFactor is 2^(15 - -2), or 131072.
+                    // full 16-bit range.  
                     // Note that the scaleFactor choice here affects overall precision.  For each bit that the integer part of our max
                     // height uses, that's one less bit for the fractional part.
-                    const float scaleFactor = pow(2.0f, 15.0f - ceil(log2(halfBounds)));
+                    const float scaleFactor = (maxHeightBounds <= minHeightBounds)
+                        ? 1.0f
+                        : AZStd::numeric_limits<int16_t>::max() / halfBounds;
                     const float heightScale{ 1.0f / scaleFactor };
 
                     const uint8_t physxMaximumMaterialIndex = 0x7f;
