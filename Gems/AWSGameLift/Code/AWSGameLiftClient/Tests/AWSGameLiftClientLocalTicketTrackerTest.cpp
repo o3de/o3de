@@ -82,27 +82,12 @@ protected:
         m_gameliftClientMockPtr.reset();
     }
 
-    void WaitForProcessFinish(uint64_t expectedNum)
+    void WaitForProcessFinish(AZStd::function<bool()> processFinishCondition)
     {
         int processingTime = 0;
         while (processingTime < TEST_WAIT_MAXIMUM_TIME_MS)
         {
-            if (::UnitTest::TestRunner::Instance().m_numAssertsFailed == expectedNum)
-            {
-                AZ_TEST_STOP_TRACE_SUPPRESSION(expectedNum);
-                return;
-            }
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(TEST_WAIT_BUFFER_TIME_MS));
-            processingTime += TEST_WAIT_BUFFER_TIME_MS;
-        }
-    }
-
-    void WaitForProcessFinish()
-    {
-        int processingTime = 0;
-        while (processingTime < TEST_WAIT_MAXIMUM_TIME_MS)
-        {
-            if (m_gameliftClientTicketTracker->IsTrackerIdle())
+            if (processFinishCondition())
             {
                 return;
             }
@@ -119,19 +104,27 @@ public:
 TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallWithoutClientSetup_GetExpectedErrors)
 {
     AZ::Interface<IAWSGameLiftInternalRequests>::Get()->SetGameLiftClient(nullptr);
+
+    MatchmakingNotificationsHandlerMock matchmakingHandlerMock;
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish(1);
+    WaitForProcessFinish([](){ return ::UnitTest::TestRunner::Instance().m_numAssertsFailed == 1; });
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    ASSERT_TRUE(matchmakingHandlerMock.m_numMatchError == 1);
     ASSERT_FALSE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
 TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_MultipleCallsWithoutClientSetup_GetExpectedErrors)
 {
     AZ::Interface<IAWSGameLiftInternalRequests>::Get()->SetGameLiftClient(nullptr);
+
+    MatchmakingNotificationsHandlerMock matchmakingHandlerMock;
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish(1);
+    WaitForProcessFinish([](){ return ::UnitTest::TestRunner::Instance().m_numAssertsFailed == 1; });
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    ASSERT_TRUE(matchmakingHandlerMock.m_numMatchError == 1);
     ASSERT_FALSE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -144,9 +137,12 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallButWithFailedOu
         .Times(1)
         .WillOnce(::testing::Return(outcome));
 
+    MatchmakingNotificationsHandlerMock matchmakingHandlerMock;
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish(1);
+    WaitForProcessFinish([](){ return ::UnitTest::TestRunner::Instance().m_numAssertsFailed == 1; });
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    ASSERT_TRUE(matchmakingHandlerMock.m_numMatchError == 1);
     ASSERT_FALSE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -161,9 +157,12 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallWithMoreThanOne
         .Times(1)
         .WillOnce(::testing::Return(outcome));
 
+    MatchmakingNotificationsHandlerMock matchmakingHandlerMock;
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish(1);
+    WaitForProcessFinish([](){ return ::UnitTest::TestRunner::Instance().m_numAssertsFailed == 1; });
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    ASSERT_TRUE(matchmakingHandlerMock.m_numMatchError == 1);
     ASSERT_FALSE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -189,13 +188,15 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallWithCompleteSta
         .Times(1)
         .WillOnce(::testing::Return(outcome));
 
-    SessionHandlingClientRequestsMock handlerMock;
-    EXPECT_CALL(handlerMock, RequestPlayerJoinSession(::testing::_))
+    SessionHandlingClientRequestsMock sessionHandlerMock;
+    EXPECT_CALL(sessionHandlerMock, RequestPlayerJoinSession(::testing::_))
         .Times(1)
         .WillOnce(::testing::Return(true));
 
+    MatchmakingNotificationsHandlerMock matchmakingHandlerMock;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish();
+    WaitForProcessFinish([this](){ return m_gameliftClientTicketTracker->IsTrackerIdle(); });
+    ASSERT_TRUE(matchmakingHandlerMock.m_numMatchComplete == 1);
     ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -217,9 +218,12 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallButNoPlayerSess
         .Times(1)
         .WillOnce(::testing::Return(outcome));
 
+    MatchmakingNotificationsHandlerMock matchmakingHandlerMock;
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish(1);
+    WaitForProcessFinish([this](){ return m_gameliftClientTicketTracker->IsTrackerIdle(); });
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    ASSERT_TRUE(matchmakingHandlerMock.m_numMatchComplete == 1);
     ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -245,14 +249,17 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallButFailedToJoin
         .Times(1)
         .WillOnce(::testing::Return(outcome));
 
-    SessionHandlingClientRequestsMock handlerMock;
-    EXPECT_CALL(handlerMock, RequestPlayerJoinSession(::testing::_))
+    SessionHandlingClientRequestsMock sessionHandlerMock;
+    EXPECT_CALL(sessionHandlerMock, RequestPlayerJoinSession(::testing::_))
         .Times(1)
         .WillOnce(::testing::Return(false));
 
+    MatchmakingNotificationsHandlerMock matchmakingHandlerMock;
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish(1);
+    WaitForProcessFinish([this](){ return m_gameliftClientTicketTracker->IsTrackerIdle(); });
+    AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    ASSERT_TRUE(matchmakingHandlerMock.m_numMatchComplete == 1);
     ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -269,9 +276,10 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallButTicketTimeOu
         .Times(1)
         .WillOnce(::testing::Return(outcome));
 
-    AZ_TEST_START_TRACE_SUPPRESSION;
+    MatchmakingNotificationsHandlerMock matchmakingHandlerMock;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish(1);
+    WaitForProcessFinish([this](){ return m_gameliftClientTicketTracker->IsTrackerIdle(); });
+    ASSERT_TRUE(matchmakingHandlerMock.m_numMatchFailure == 1);
     ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -288,9 +296,10 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallButTicketFailed
         .Times(1)
         .WillOnce(::testing::Return(outcome));
 
-    AZ_TEST_START_TRACE_SUPPRESSION;
+    MatchmakingNotificationsHandlerMock matchmakingHandlerMock;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish(1);
+    WaitForProcessFinish([this](){ return m_gameliftClientTicketTracker->IsTrackerIdle(); });
+    ASSERT_TRUE(matchmakingHandlerMock.m_numMatchFailure == 1);
     ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -307,9 +316,10 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallButTicketCancel
         .Times(1)
         .WillOnce(::testing::Return(outcome));
 
-    AZ_TEST_START_TRACE_SUPPRESSION;
+    MatchmakingNotificationsHandlerMock matchmakingHandlerMock;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish(1);
+    WaitForProcessFinish([this](){ return m_gameliftClientTicketTracker->IsTrackerIdle(); });
+    ASSERT_TRUE(matchmakingHandlerMock.m_numMatchFailure == 1);
     ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -342,13 +352,15 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallAndTicketComple
         .WillOnce(::testing::Return(outcome1))
         .WillOnce(::testing::Return(outcome2));
 
-    SessionHandlingClientRequestsMock handlerMock;
-    EXPECT_CALL(handlerMock, RequestPlayerJoinSession(::testing::_))
+    SessionHandlingClientRequestsMock sessionHandlerMock;
+    EXPECT_CALL(sessionHandlerMock, RequestPlayerJoinSession(::testing::_))
         .Times(1)
         .WillOnce(::testing::Return(true));
 
+    MatchmakingNotificationsHandlerMock matchmakingHandlerMock;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish();
+    WaitForProcessFinish([this](){ return m_gameliftClientTicketTracker->IsTrackerIdle(); });
+    ASSERT_TRUE(matchmakingHandlerMock.m_numMatchComplete == 1);
     ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }
 
@@ -365,7 +377,9 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_RequiresAcceptanceA
     connectionInfo.SetIpAddress("DummyIpAddress");
     connectionInfo.SetPort(123);
     connectionInfo.AddMatchedPlayerSessions(
-        Aws::GameLift::Model::MatchedPlayerSession().WithPlayerId("player1").WithPlayerSessionId("playersession1"));
+        Aws::GameLift::Model::MatchedPlayerSession()
+        .WithPlayerId("player1")
+        .WithPlayerSessionId("playersession1"));
 
     Aws::GameLift::Model::MatchmakingTicket ticket2;
     ticket2.SetStatus(Aws::GameLift::Model::MatchmakingConfigurationStatus::COMPLETED);
@@ -379,13 +393,15 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_RequiresAcceptanceA
         .WillOnce(::testing::Return(outcome1))
         .WillOnce(::testing::Return(outcome2));
 
-    MatchAcceptanceNotificationsHandlerMock handlerMock1;
-    EXPECT_CALL(handlerMock1, OnMatchAcceptance()).Times(1);
+    SessionHandlingClientRequestsMock sessionHandlerMock;
+    EXPECT_CALL(sessionHandlerMock, RequestPlayerJoinSession(::testing::_))
+        .Times(1)
+        .WillOnce(::testing::Return(true));
 
-    SessionHandlingClientRequestsMock handlerMock2;
-    EXPECT_CALL(handlerMock2, RequestPlayerJoinSession(::testing::_)).Times(1).WillOnce(::testing::Return(true));
-
+    MatchmakingNotificationsHandlerMock matchmakingHandlerMock;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish();
+    WaitForProcessFinish([this](){ return m_gameliftClientTicketTracker->IsTrackerIdle(); });
+    ASSERT_TRUE(matchmakingHandlerMock.m_numMatchAcceptance == 1);
+    ASSERT_TRUE(matchmakingHandlerMock.m_numMatchComplete == 1);
     ASSERT_TRUE(m_gameliftClientTicketTracker->IsTrackerIdle());
 }

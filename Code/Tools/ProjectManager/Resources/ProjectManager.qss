@@ -499,6 +499,18 @@ QProgressBar::chunk {
     font-weight: 600;
 }
 
+#GemCatalogCartOverlayGemDownloadHeader {
+    margin:0;
+    padding: 0px;
+    background-color: #333333;
+}
+
+#GemCatalogCartOverlayGemDownloadBG {
+    margin:0;
+    padding: 0px;
+    background-color: #444444;
+}
+
 #GemCatalogHeaderLabel {
     font-size: 12px;
     color: #FFFFFF;

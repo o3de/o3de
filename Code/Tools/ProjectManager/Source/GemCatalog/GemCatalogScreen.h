@@ -41,6 +41,7 @@ namespace O3DE::ProjectManager
         EnableDisableGemsResult EnableDisableGemsForProject(const QString& projectPath);
 
         GemModel* GetGemModel() const { return m_gemModel; }
+        DownloadController* GetDownloadController() const { return m_downloadController; }
 
     public slots:
         void OnGemStatusChanged(const QModelIndex& modelIndex, uint32_t numChangedDependencies);
@@ -63,6 +64,7 @@ namespace O3DE::ProjectManager
         GemSortFilterProxyModel* m_proxModel = nullptr;
         QVBoxLayout* m_filterWidgetLayout = nullptr;
         GemFilterWidget* m_filterWidget = nullptr;
+        DownloadController* m_downloadController = nullptr;
         bool m_notificationsEnabled = true;
     };
 } // namespace O3DE::ProjectManager

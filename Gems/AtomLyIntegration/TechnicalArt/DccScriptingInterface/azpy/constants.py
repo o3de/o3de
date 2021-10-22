@@ -25,7 +25,16 @@ import sys
 import site
 from os.path import expanduser
 import logging as _logging
+# -------------------------------------------------------------------------
 
+
+# -------------------------------------------------------------------------
+# global scope
+_MODULENAME = __name__
+if _MODULENAME is '__main__':
+    _MODULENAME = 'azpy.constants'
+
+os.environ['PYTHONINSPECT'] = 'True'
 # for this module to perform standalone
 # we need to set up basic access to the DCCsi
 _MODULE_PATH = os.path.realpath(__file__)  # To Do: what if frozen?
@@ -33,10 +42,10 @@ _DCCSIG_PATH = os.path.normpath(os.path.join(_MODULE_PATH, '../..'))
 _DCCSIG_PATH = os.getenv('DCCSIG_PATH', _DCCSIG_PATH)
 site.addsitedir(_DCCSIG_PATH)
 
-#  azpy module
-#import azpy.constants as cnst
+# now we have azpy api access
+import azpy
+from azpy.env_bool import env_bool
 from azpy.config_utils import return_stub_dir
-import azpy.env_bool as env_bool
 # -------------------------------------------------------------------------
 
 
@@ -49,24 +58,26 @@ ENVAR_DCCSI_LOGLEVEL = str('DCCSI_LOGLEVEL')
 # Log formating
 FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
 FRMT_LOG_SHRT = "[%(asctime)s][%(name)s][%(levelname)s] >> %(message)s"
+# -------------------------------------------------------------------------
 
-#  global space
-_G_DEBUG = env_bool.env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool.env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
+# -------------------------------------------------------------------------
+# global debug stuff
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+_DCCSI_LOGLEVEL = int(env_bool(ENVAR_DCCSI_LOGLEVEL, int(20)))
+if _DCCSI_GDEBUG:
+    _DCCSI_LOGLEVEL = int(10)
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# set up module logging
 for handler in _logging.root.handlers[:]:
     _logging.root.removeHandler(handler)
-
-_PACKAGENAME = 'azpy.constants'
-
-_LOG_LEVEL = int(20)
-if _G_DEBUG:
-    _LOG_LEVEL = int(10)
-_logging.basicConfig(level=_LOG_LEVEL,
-                     format=FRMT_LOG_LONG,
-                     datefmt='%m-%d %H:%M')
-_LOGGER = _logging.getLogger(_PACKAGENAME)
-_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
+_LOGGER = _logging.getLogger(_MODULENAME)
+_logging.basicConfig(format=FRMT_LOG_LONG, level=_DCCSI_LOGLEVEL)
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 
 
@@ -80,24 +91,25 @@ STR_CROSSBAR_RL = str('{0}\r'.format(STR_CROSSBAR))
 STR_CROSSBAR_NL = str('{0}\n'.format(STR_CROSSBAR))
 
 # some common str tags
-TAG_DEFAULT_COMPANY = str('Amazon.Lumberyard')
+TAG_DEFAULT_COMPANY = str('Amazon.O3DE')
 TAG_DEFAULT_PROJECT = str('DccScriptingInterface')
+TAG_DCCSI_NICKNAME = str('DCCsi')
 TAG_MOCK_PROJECT = str('MockProject')
-TAG_DIR_LY_DEV = str('dev')
+TAG_DIR_O3DE_DEV = str('dev')
 TAG_DIR_DCCSI_AZPY = str('azpy')
-TAG_DIR_DCCSI_SDK = str('SDK')
-TAG_DIR_LY_BUILD = str('build')
+TAG_DIR_DCCSI_TOOLS = str('Tools')
+TAG_DIR_O3DE_BUILD_FOLDER = str('build')
 TAG_QT_PLUGIN_PATH = str('QT_PLUGIN_PATH')
 
 TAG_O3DE_FOLDER = str('.o3de')
 TAG_O3DE_BOOTSTRAP = str('bootstrap.setreg')
+TAG_DCCSI_CONFIG = str('dccsiconfiguration.setreg')
 
 # filesystem markers, stub file names.
-STUB_LY_DEV = str('engine.json')
-STUB_LY_ROOT_PROJECT = str('ly_project_stub')
-STUB_LY_ROOT_DCCSI = str('dccsi_stub')
-STUB_LY_DCCSI_AZPY = str('dccsi_azpy_stub')
-STUB_LY_DCCSI_SDK = str('dccsi_sdk_stub')
+STUB_O3DE_DEV = str('engine.json')
+STUB_O3DE_ROOT_DCCSI = str('dccsi_stub')
+STUB_O3DE_DCCSI_AZPY = str('dccsi_azpy_stub')
+STUB_O3DE_DCCSI_TOOLS = str('dccsi_tools_stub')
 
 # config string consts, Meta Qualifiers
 QUALIFIER_COMMENT = str('_meta_COMMENT')
@@ -135,18 +147,18 @@ PATH_PROGRAMFILES_X64 = str(os.environ['PROGRAMFILES'])
 
 #  base env var key as str
 ENVAR_COMPANY = str('COMPANY')
-ENVAR_LY_PROJECT = str('LY_PROJECT')
-ENVAR_LY_PROJECT_PATH = str('LY_PROJECT_PATH')
-ENVAR_LY_DEV = str('LY_DEV')
+ENVAR_O3DE_PROJECT = str('O3DE_PROJECT')
+ENVAR_O3DE_PROJECT_PATH = str('O3DE_PROJECT_PATH')
+ENVAR_O3DE_DEV = str('O3DE_DEV')
 ENVAR_DCCSIG_PATH = str('DCCSIG_PATH')
 ENVAR_DCCSI_AZPY_PATH = str('DCCSI_AZPY_PATH')
-ENVAR_DCCSI_SDK_PATH = str('DCCSI_SDK_PATH')
-ENVAR_LY_BUILD_DIR_NAME = str('LY_BUILD_DIR_NAME')
+ENVAR_DCCSI_TOOLS_PATH = str('DCCSI_TOOLS_PATH')
+ENVAR_O3DE_BUILD_DIR_NAME = str('O3DE_BUILD_DIR_NAME')
 
-ENVAR_LY_BUILD_PATH = str('LY_BUILD_PATH')
+ENVAR_O3DE_BUILD_PATH = str('O3DE_BUILD_PATH')
 ENVAR_QT_PLUGIN_PATH = TAG_QT_PLUGIN_PATH
 ENVAR_QTFORPYTHON_PATH = str('QTFORPYTHON_PATH')
-ENVAR_LY_BIN_PATH = str('LY_BIN_PATH')
+ENVAR_O3DE_BIN_PATH = str('O3DE_BIN_PATH')
 
 ENVAR_DCCSI_LOG_PATH = str('DCCSI_LOG_PATH')
 ENVAR_DCCSI_LAUNCHERS_PATH = str('DCCSI_LAUNCHERS_PATH')
@@ -155,7 +167,7 @@ ENVAR_DCCSI_PY_VERSION_MAJOR = str('DCCSI_PY_VERSION_MAJOR')
 ENVAR_DCCSI_PY_VERSION_MINOR = str('DCCSI_PY_VERSION_MINOR')
 ENVAR_DCCSI_PYTHON_PATH = str('DCCSI_PYTHON_PATH')
 ENVAR_DCCSI_PYTHON_LIB_PATH = str('DCCSI_PYTHON_LIB_PATH')
-ENVAR_DCCSI_PYTHON_INSTALL = str('DCCSI_PYTHON_INSTALL')
+ENVAR_O3DE_PYTHON_INSTALL = str('O3DE_PYTHON_INSTALL')
 
 ENVAR_WINGHOME = str('WINGHOME')
 ENVAR_DCCSI_WING_VERSION_MAJOR = str('DCCSI_WING_VERSION_MAJOR')
@@ -169,7 +181,7 @@ ENVAR_DCCSI_PY_DEFAULT = str('DCCSI_PY_DEFAULT')
 ENVAR_DCCSI_MAYA_VERSION = str('DCCSI_MAYA_VERSION')
 ENVAR_MAYA_LOCATION = str('MAYA_LOCATION')
 
-ENVAR_DCCSI_SDK_MAYA_PATH = str('DCCSI_SDK_MAYA_PATH')
+ENVAR_DCCSI_TOOLS_MAYA_PATH = str('DCCSI_TOOLS_MAYA_PATH')
 ENVAR_MAYA_MODULE_PATH = str('MAYA_MODULE_PATH')
 ENVAR_MAYA_BIN_PATH = str('MAYA_BIN_PATH')
 
@@ -188,33 +200,33 @@ ENVAR_MAYA_SCRIPT_PATH = str('MAYA_SCRIPT_PATH')
 
 ENVAR_DCCSI_MAYA_SET_CALLBACKS = str('DCCSI_MAYA_SET_CALLBACKS')
 
-TAG_LY_DCC_MAYA_MEL = 'dccsi_setup.mel'
+TAG_O3DE_DCC_MAYA_MEL = 'dccsi_setup.mel'
 TAG_MAYA_WORKSPACE = 'workspace.mel'
 
 
 # dcc scripting interface common and default paths
-PATH_LY_DEV = str(return_stub_dir(STUB_LY_DEV))
-PATH_DCCSIG_PATH = str(return_stub_dir(STUB_LY_ROOT_DCCSI))
-PATH_DCCSI_AZPY_PATH = str(return_stub_dir(STUB_LY_DCCSI_AZPY))
-PATH_DCCSI_SDK_PATH = str('{0}\\{1}'.format(PATH_DCCSIG_PATH, TAG_DIR_DCCSI_SDK))
+PATH_O3DE_DEV = str(return_stub_dir(STUB_O3DE_DEV))
+PATH_DCCSIG_PATH = str(return_stub_dir(STUB_O3DE_ROOT_DCCSI))
+PATH_DCCSI_AZPY_PATH = str(return_stub_dir(STUB_O3DE_DCCSI_AZPY))
+PATH_DCCSI_TOOLS_PATH = str('{0}\\{1}'.format(PATH_DCCSIG_PATH, TAG_DIR_DCCSI_TOOLS))
 
 # logging into the cache
-PATH_DCCSI_LOG_PATH = str('{LY_DEV}\\Cache\\{LY_PROJECT}\\pc\\user\\log\\logs')
+PATH_DCCSI_LOG_PATH = str('{O3DE_PROJECT_PATH}\\user\\log\{TAG_DCCSI_NICKNAME}')
 
 # dev \ <build> \
-STR_CONSTRUCT_LY_BUILD_PATH = str('{0}\\{1}')
-PATH_LY_BUILD_PATH = str(STR_CONSTRUCT_LY_BUILD_PATH.format(PATH_LY_DEV,
-                                                            TAG_DIR_LY_BUILD))
+STR_CONSTRUCT_O3DE_BUILD_PATH = str('{0}\\{1}')
+PATH_O3DE_BUILD_PATH = str(STR_CONSTRUCT_O3DE_BUILD_PATH.format(PATH_O3DE_DEV,
+                                                            TAG_DIR_O3DE_BUILD_FOLDER))
 
 # ENVAR_QT_PLUGIN_PATH = TAG_QT_PLUGIN_PATH
 STR_QTPLUGIN_DIR = str('{0}\\bin\\profile\\EditorPlugins')
 STR_QTFORPYTHON_PATH = str('{0}\\Gems\\QtForPython\\3rdParty\\pyside2\\windows\\release')
-STR_LY_BIN_PATH = str('{0}\\bin\\profile')
+STR_O3DE_BIN_PATH = str('{0}\\bin\\profile')
 
-PATH_LY_BUILD_PATH = str('{0}\\{1}'.format(PATH_LY_DEV, TAG_DIR_LY_BUILD))
-PATH_QTFORPYTHON_PATH = str(STR_QTFORPYTHON_PATH.format(PATH_LY_DEV))
-PATH_QT_PLUGIN_PATH = str(STR_QTPLUGIN_DIR).format(PATH_LY_BUILD_PATH)
-PATH_LY_BIN_PATH = str(STR_LY_BIN_PATH).format(PATH_LY_BUILD_PATH)
+PATH_O3DE_BUILD_PATH = str('{0}\\{1}'.format(PATH_O3DE_DEV, TAG_DIR_O3DE_BUILD_FOLDER))
+PATH_QTFORPYTHON_PATH = str(STR_QTFORPYTHON_PATH.format(PATH_O3DE_DEV))
+PATH_QT_PLUGIN_PATH = str(STR_QTPLUGIN_DIR).format(PATH_O3DE_BUILD_PATH)
+PATH_O3DE_BIN_PATH = str(STR_O3DE_BIN_PATH).format(PATH_O3DE_BUILD_PATH)
 
 # py path string, parts, etc.
 TAG_DEFAULT_PY = str('Launch_pyBASE.bat')
@@ -233,12 +245,19 @@ parts = os.path.split(PATH_USER_HOME)
 if str(parts[1].lower()) == 'documents':
     PATH_USER_HOME = parts[0]
     _LOGGER.debug('user home CORRECTED: {}'.format(PATH_USER_HOME))
+    
+STR_USER_O3DE_PATH = str('{home}\\{o3de}')
 
-PATH_USER_O3DE = str('{home}\\{o3de}').format(home=PATH_USER_HOME,
+PATH_USER_O3DE = str(STR_USER_O3DE_PATH).format(home=PATH_USER_HOME,
                                               o3de=TAG_O3DE_FOLDER)
-PATH_USER_O3DE_REGISTRY = str('{0}\\Registry').format(PATH_USER_O3DE)
-PATH_USER_O3DE_BOOTSTRAP = str('{reg}\\{file}').format(reg=PATH_USER_O3DE_REGISTRY,
-                                                       file=TAG_O3DE_BOOTSTRAP)
+
+TAG_DIR_REGISTRY = str('Registry')
+STR_USER_O3DE_REGISTRY_PATH = str('{0}\\{1}')
+PATH_USER_O3DE_REGISTRY = str(STR_USER_O3DE_REGISTRY_PATH).format(PATH_USER_O3DE, TAG_DIR_REGISTRY)
+
+STR_USER_O3DE_BOOTSTRAP_PATH = str('{reg}\\{file}')
+PATH_USER_O3DE_BOOTSTRAP = str(STR_USER_O3DE_BOOTSTRAP_PATH).format(reg=PATH_USER_O3DE_REGISTRY,
+                                                                    file=TAG_O3DE_BOOTSTRAP)
 
 #python and site-dir
 TAG_DCCSI_PY_VERSION_MAJOR = str(3)
@@ -247,8 +266,8 @@ TAG_DCCSI_PY_VERSION_RELEASE = str(10)
 TAG_PYTHON_EXE = str('python.exe')
 TAG_TOOLS_DIR = str('Tools\\Python')
 TAG_PLATFORM = str('windows')
-STR_CONSTRUCT_DCCSI_PYTHON_INSTALL = str('{0}\\{1}\\{2}.{3}.{4}\\{5}')
-PATH_DCCSI_PYTHON_PATH = str(STR_CONSTRUCT_DCCSI_PYTHON_INSTALL.format(PATH_LY_DEV,
+STR_CONSTRUCT_O3DE_PYTHON_INSTALL = str('{0}\\{1}\\{2}.{3}.{4}\\{5}')
+PATH_DCCSI_PYTHON_PATH = str(STR_CONSTRUCT_O3DE_PYTHON_INSTALL.format(PATH_O3DE_DEV,
                                                                        TAG_TOOLS_DIR,
                                                                        TAG_DCCSI_PY_VERSION_MAJOR,
                                                                        TAG_DCCSI_PY_VERSION_MINOR,
@@ -290,19 +309,12 @@ PATH_SAT_INSTALL_PATH = str('{0}\\{1}\\{2}\\{3}\\{4}'
 # Main Code Block, runs this script as main (testing)
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
-    # there are not really tests to run here due to this being a list of
-    # constants for shared use.
-    _G_DEBUG = True
-    _DCCSI_DEV_MODE = True
-    _LOGGER.setLevel(_logging.DEBUG)  # force debugging
-
-    # this is a top level module and to reduce cyclical azpy imports
-    # it only has a basic logger configured, add log to console
-    _handler = _logging.StreamHandler(sys.stdout)
-    _handler.setLevel(_logging.DEBUG)
-    _formatter = _logging.Formatter(FRMT_LOG_LONG)
-    _handler.setFormatter(_formatter)
-    _LOGGER.addHandler(_handler)
+    """Run this file as a standalone script"""
+    
+    # overide logger for standalone to be more verbose and lof to file
+    _LOGGER = azpy.initialize_logger(_MODULENAME,
+                                     log_to_file=_DCCSI_GDEBUG,
+                                     default_log_level=_DCCSI_LOGLEVEL)
 
     # happy print
     _LOGGER.info(STR_CROSSBAR)
@@ -321,15 +333,15 @@ if __name__ == '__main__':
     from pathlib import Path
 
     _stash_dict = {}
-    _stash_dict['LY_DEV'] = Path(PATH_LY_DEV)
+    _stash_dict['O3DE_DEV'] = Path(PATH_O3DE_DEV)
     _stash_dict['DCCSIG_PATH'] = Path(PATH_DCCSIG_PATH)
     _stash_dict['DCCSI_AZPY_PATH'] = Path(PATH_DCCSI_AZPY_PATH)
-    _stash_dict['DCCSI_SDK_PATH'] = Path(PATH_DCCSI_SDK_PATH)
+    _stash_dict['DCCSI_TOOLS_PATH'] = Path(PATH_DCCSI_TOOLS_PATH)
     _stash_dict['DCCSI_PYTHON_PATH'] = Path(PATH_DCCSI_PYTHON_PATH)
     _stash_dict['DCCSI_PY_BASE'] = Path(PATH_DCCSI_PY_BASE)
     _stash_dict['DCCSI_PYTHON_LIB_PATH'] = Path(PATH_DCCSI_PYTHON_LIB_PATH)
-    _stash_dict['LY_BUILD_PATH'] = Path(PATH_LY_BUILD_PATH)
-    _stash_dict['LY_BIN_PATH'] = Path(PATH_LY_BIN_PATH)
+    _stash_dict['O3DE_BUILD_PATH'] = Path(PATH_O3DE_BUILD_PATH)
+    _stash_dict['O3DE_BIN_PATH'] = Path(PATH_O3DE_BIN_PATH)
     _stash_dict['QTFORPYTHON_PATH'] = Path(PATH_QTFORPYTHON_PATH)
     _stash_dict['QT_PLUGIN_PATH'] = Path(PATH_QT_PLUGIN_PATH)
     _stash_dict['SAT_INSTALL_PATH'] = Path(PATH_SAT_INSTALL_PATH)
@@ -339,7 +351,7 @@ if __name__ == '__main__':
     # py 2 and 3 compatible iter    
     def get_items(dict_object):
         for key in dict_object:
-            yield key, dict_object[key]    
+            yield key, dict_object[key]
 
     for key, value in get_items(_stash_dict):
         # check if path exists

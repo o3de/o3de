@@ -65,13 +65,6 @@ namespace AWSGameLift
                 ->Event("CreatePlayerId", &AWSGameLiftRequestBus::Events::CreatePlayerId,
                     { { { "IncludeBrackets", "" },
                         { "IncludeDashes", "" } } });
-
-            behaviorContext->EBus<AWSGameLiftMatchmakingEventRequestBus>("AWSGameLiftMatchmakingEventRequestBus")
-                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
-                ->Event("StartPolling", &AWSGameLiftMatchmakingEventRequestBus::Events::StartPolling,
-                    { { { "TicketId", "" },
-                        { "PlayerId", "" } } })
-                ->Event("StopPolling", &AWSGameLiftMatchmakingEventRequestBus::Events::StopPolling);
         }
     }
 
@@ -128,7 +121,7 @@ namespace AWSGameLift
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<AWSGameLiftMatchmakingAsyncRequestBus>("AWSGameLiftMatchmakingAsyncRequestBus")
-                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
+                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift/Matchmaking")
                 ->Event("AcceptMatchAsync", &AWSGameLiftMatchmakingAsyncRequestBus::Events::AcceptMatchAsync,
                     { { { "AcceptMatchRequest", "" } } })
                 ->Event("StartMatchmakingAsync", &AWSGameLiftMatchmakingAsyncRequestBus::Events::StartMatchmakingAsync,
@@ -137,20 +130,28 @@ namespace AWSGameLift
                     { { { "StopMatchmakingRequest", "" } } });
 
             behaviorContext->EBus<AzFramework::MatchmakingAsyncRequestNotificationBus>("AWSGameLiftMatchmakingAsyncRequestNotificationBus")
-                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
+                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift/Matchmaking")
                 ->Handler<AWSGameLiftMatchmakingAsyncRequestNotificationBusHandler>();
 
             behaviorContext->EBus<AWSGameLiftMatchmakingRequestBus>("AWSGameLiftMatchmakingRequestBus")
-                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
-                ->Event("AcceptMatch", &AWSGameLiftMatchmakingRequestBus::Events::AcceptMatch, { { { "AcceptMatchRequest", "" } } })
+                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift/Matchmaking")
+                ->Event("AcceptMatch", &AWSGameLiftMatchmakingRequestBus::Events::AcceptMatch,
+                    { { { "AcceptMatchRequest", "" } } })
                 ->Event("StartMatchmaking", &AWSGameLiftMatchmakingRequestBus::Events::StartMatchmaking,
                     { { { "StartMatchmakingRequest", "" } } })
                 ->Event("StopMatchmaking", &AWSGameLiftMatchmakingRequestBus::Events::StopMatchmaking,
                     { { { "StopMatchmakingRequest", "" } } });
 
-            behaviorContext->EBus<AzFramework::MatchAcceptanceNotificationBus>("AWSGameLiftMatchAcceptanceNotificationBus")
-                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
-                ->Handler<AWSGameLiftMatchAcceptanceNotificationBusHandler>();
+            behaviorContext->EBus<AWSGameLiftMatchmakingEventRequestBus>("AWSGameLiftMatchmakingEventRequestBus")
+                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift/Matchmaking")
+                ->Event("StartPolling", &AWSGameLiftMatchmakingEventRequestBus::Events::StartPolling,
+                    { { { "TicketId", "" },
+                        { "PlayerId", "" } } })
+                ->Event("StopPolling", &AWSGameLiftMatchmakingEventRequestBus::Events::StopPolling);
+
+            behaviorContext->EBus<AzFramework::MatchmakingNotificationBus>("AWSGameLiftMatchmakingNotificationBus")
+                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift/Matchmaking")
+                ->Handler<AWSGameLiftMatchmakingNotificationBusHandler>();
         }
     }
 
@@ -166,7 +167,7 @@ namespace AWSGameLift
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<AWSGameLiftSessionAsyncRequestBus>("AWSGameLiftSessionAsyncRequestBus")
-                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
+                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift/Session")
                 ->Event("CreateSessionAsync", &AWSGameLiftSessionAsyncRequestBus::Events::CreateSessionAsync,
                     { { { "CreateSessionRequest", "" } } })
                 ->Event("JoinSessionAsync", &AWSGameLiftSessionAsyncRequestBus::Events::JoinSessionAsync, { { { "JoinSessionRequest", "" } } })
@@ -175,11 +176,11 @@ namespace AWSGameLift
                 ->Event("LeaveSessionAsync", &AWSGameLiftSessionAsyncRequestBus::Events::LeaveSessionAsync);
 
             behaviorContext->EBus<AzFramework::SessionAsyncRequestNotificationBus>("AWSGameLiftSessionAsyncRequestNotificationBus")
-                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
+                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift/Session")
                 ->Handler<AWSGameLiftSessionAsyncRequestNotificationBusHandler>();
 
             behaviorContext->EBus<AWSGameLiftSessionRequestBus>("AWSGameLiftSessionRequestBus")
-                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift")
+                ->Attribute(AZ::Script::Attributes::Category, "AWSGameLift/Session")
                 ->Event("CreateSession", &AWSGameLiftSessionRequestBus::Events::CreateSession, { { { "CreateSessionRequest", "" } } })
                 ->Event("JoinSession", &AWSGameLiftSessionRequestBus::Events::JoinSession, { { { "JoinSessionRequest", "" } } })
                 ->Event("SearchSessions", &AWSGameLiftSessionRequestBus::Events::SearchSessions, { { { "SearchSessionsRequest", "" } } })
