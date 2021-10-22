@@ -42,7 +42,7 @@ namespace AZ::SceneAPI::Behaviors
 
     private:
         Events::ProcessingResult OnPrepareForExport(Events::PreExportEventContext& context) const;
-        AZStd::unique_ptr<rapidjson::Document> CreateProductAssetData(const SceneData::PrefabGroup* prefabGroup) const;
+        AZStd::unique_ptr<rapidjson::Document> CreateProductAssetData(const SceneData::PrefabGroup* prefabGroup, const AZ::IO::Path& relativePath) const;
 
         bool WriteOutProductAsset(
             Events::PreExportEventContext& context,
