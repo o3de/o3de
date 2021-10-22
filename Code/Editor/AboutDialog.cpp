@@ -6,10 +6,7 @@
  *
  */
 
-
-
 #include "EditorDefs.h"
-
 #include "AboutDialog.h"
 
 // Qt
@@ -56,7 +53,7 @@ CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice,
 
     // Crop image to cut out transparent border
     QRect cropRect((m_imageWidth - m_enforcedWidth) / 2, (m_imageHeight - m_enforcedHeight) / 2, m_enforcedWidth, m_enforcedHeight);
-    m_backgroundImage = image.copy(cropRect);
+    m_backgroundImage = AzQtComponents::CropPixmapForScreenDpi(image, screen(), cropRect);
 
     // Draw the Open 3D Engine logo from svg
     m_ui->m_logo->load(QStringLiteral(":/StartupLogoDialog/o3de_logo.svg"));
