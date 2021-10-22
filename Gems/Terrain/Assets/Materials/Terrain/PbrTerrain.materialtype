@@ -100,6 +100,36 @@
                     }
                 },
                 {
+                    "id": "detailMaterialIdImage",
+                    "displayName": "Detail Material Id Image",
+                    "description": "Texture containing detail material Ids and weights, controlled by the runtime.",
+                    "type": "Image",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailMaterialIdImage"
+                    }
+                },
+                {
+                    "id": "detailMaterialIdCenter",
+                    "displayName": "Detail Material Id Image Center",
+                    "description": "The center position of the detail mateiral Id image, controlled by the runtime.",
+                    "type": "Vector2",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailMaterialIdImageCenter"
+                    }
+                },
+                {
+                    "id": "detailAabb",
+                    "displayName": "Detail material bounds in 2d",
+                    "description": "The 2d world space bounds of the detail id material.",
+                    "type": "Vector4",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailAabb"
+                    }
+                },
+                {
                     "id": "detailTextureMultiplier",
                     "displayName": "Detail Texture UV Multiplier",
                     "description": "How many times to repeat the detail texture per sector",

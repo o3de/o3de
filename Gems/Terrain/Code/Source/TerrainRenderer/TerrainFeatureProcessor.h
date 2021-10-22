@@ -205,12 +205,28 @@ namespace Terrain
             AZStd::vector<DetailMaterialSurface> m_materialsForSurfaces;
         };
         
+        struct Int2DPoint
+        {
+            int32_t m_x{ 0 };
+            int32_t m_y{ 0 };
+
+            Int2DPoint operator+(const Int2DPoint& rhs) const;
+            Int2DPoint& operator+=(const Int2DPoint& rhs);
+            Int2DPoint operator-(const Int2DPoint& rhs) const;
+            Int2DPoint& operator-=(const Int2DPoint& rhs);
+            Int2DPoint operator-() const;
+        };
+
         struct Int2DAabb
         {
-            int32_t m_minX{ 0 };
-            int32_t m_minY{ 0 };
-            int32_t m_maxX{ 0 };
-            int32_t m_maxY{ 0 };
+            Int2DPoint m_min;
+            Int2DPoint m_max;
+
+            Int2DAabb operator+(const Int2DPoint& offset) const;
+            Int2DAabb operator-(const Int2DPoint& offset) const;
+
+            Int2DAabb GetClamped(Int2DAabb rhs) const;
+            bool IsValid() const;
         };
 
         // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
@@ -239,12 +255,17 @@ namespace Terrain
         void UpdateTerrainData();
         void PrepareMaterialData();
         void UpdateMacroMaterialData(MacroMaterialData& macroMaterialData, MaterialInstance material);
+        
+        void TerrainHeightOrSettingsUpdated(const AZ::Aabb& dirtyRegion);
+        void TerrainSurfaceDataUpdated(const AZ::Aabb& dirtyRegion);
 
         uint16_t CreateOrUpdateDetailMaterial(MaterialInstance material);
         void UpdateDetailMaterialData(DetailMaterialData& materialData, MaterialInstance material);
-        void CheckUpdateDetailTexture(const Int2DAabb& newBounds);
-        void UpdateDetailTexture(const Int2DAabb& updateArea, const Int2DAabb& textureBounds);
+        void CheckUpdateDetailTexture(const Int2DAabb& newBounds, const Int2DPoint& newCenter);
+        void UpdateDetailTexture(const Int2DAabb& updateArea, const Int2DAabb& textureBounds, const Int2DPoint& centerPixel);
         uint16_t GetDetailMaterialForSurfaceTypeAndPosition(AZ::Crc32 surfaceType, const AZ::Vector2& position);
+        uint8_t CalculateUpdateRegions(const Int2DAabb& updateArea, const Int2DAabb& textureBounds, const Int2DPoint& centerPixel,
+            AZStd::array<Int2DAabb, 4>& textureSpaceAreas, AZStd::array<Int2DAabb, 4>& scaledWorldSpaceAreas);
 
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
 
@@ -263,10 +284,10 @@ namespace Terrain
 
         // System-level parameters
         static constexpr float GridSpacing{ 1.0f };
-        static constexpr uint32_t GridSize{ 64 }; // number of terrain quads (vertices are m_gridSize + 1)
+        static constexpr int32_t GridSize{ 64 }; // number of terrain quads (vertices are m_gridSize + 1)
         static constexpr float GridMeters{ GridSpacing * GridSize };
-        static constexpr uint32_t DetailTextureSize{ 1024 };
-        static constexpr uint32_t DetailTextureSizeHalf{ DetailTextureSize >> 1 };
+        static constexpr int32_t DetailTextureSize{ 1024 };
+        static constexpr int32_t DetailTextureSizeHalf{ DetailTextureSize / 2 };
         static constexpr float DetailTextureScale{ 0.5f };
 
         AZStd::unique_ptr<AZ::RPI::AssetUtils::AsyncAssetLoader> m_materialAssetLoader;
@@ -279,9 +300,12 @@ namespace Terrain
         AZ::RHI::ShaderInputImageIndex m_macroColorMapIndex;
         AZ::RHI::ShaderInputImageIndex m_macroNormalMapIndex;
         AZ::RPI::MaterialPropertyIndex m_heightmapPropertyIndex;
+        AZ::RPI::MaterialPropertyIndex m_detailMaterialIdPropertyIndex;
+        AZ::RPI::MaterialPropertyIndex m_detailCenterPropertyIndex;
+        AZ::RPI::MaterialPropertyIndex m_detailAabbPropertyIndex;
 
         AZ::Data::Instance<AZ::RPI::Model> m_patchModel;
-        AZ::Vector3 m_previousCameraPosition = AZ::Vector3(NAN, NAN, NAN);
+        AZ::Vector3 m_previousCameraPosition = AZ::Vector3(AZStd::numeric_limits<float>::max(), 0.0, 0.0);
 
         // Per-area data
         struct TerrainAreaData
@@ -304,6 +328,7 @@ namespace Terrain
         AZ::Aabb m_dirtyDetailRegion{ AZ::Aabb::CreateNull() };
 
         Int2DAabb m_detailTextureBounds;
+        Int2DPoint m_detailTextureCenter;
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailTextureImage;
 
         AZStd::vector<SectorData> m_sectorData;
