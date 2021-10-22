@@ -178,7 +178,7 @@ namespace AZ
             AZ_Assert(findIter != m_groupHandlers.end(), "Could not find group handler for groupId %d", group.GetGroupId().GetIndex());
             FrameGraphExecuteGroupHandlerBase* handler = findIter->second.get();
             // Wait until all execute groups of the handler has finished and also make sure that the handler itself hasn't executed already (which is possible for parallel encoding).
-            if (handler->IsComplete() && !handler->IsExecuted())
+            if (!handler->IsExecuted() && handler->IsComplete())
             {
                 // This will execute the recorded work into the queue.
                 handler->End();
