@@ -14,7 +14,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include "HeightfieldProviderBus.h"
+#include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 namespace Physics
 {

@@ -77,13 +77,13 @@ namespace PhysX
 
     void HeightfieldColliderComponent::Deactivate()
     {
-        ClearHeightfield();
-
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         Physics::CollisionFilteringRequestBus::Handler::BusDisconnect();
         ColliderShapeRequestBus::Handler::BusDisconnect();
         ColliderComponentRequestBus::Handler::BusDisconnect();
         Physics::HeightfieldProviderNotificationBus::Handler::BusDisconnect();
+
+        ClearHeightfield();
     }
 
     void HeightfieldColliderComponent::OnHeightfieldDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion)
@@ -139,35 +139,7 @@ namespace PhysX
     {
         Physics::HeightfieldShapeConfiguration& configuration = static_cast<Physics::HeightfieldShapeConfiguration&>(*m_shapeConfig.second);
 
-        configuration = Physics::HeightfieldShapeConfiguration();
-
-        AZ::Vector2 gridSpacing(1.0f);
-        Physics::HeightfieldProviderRequestsBus::EventResult(
-            gridSpacing, GetEntityId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSpacing);
-
-        configuration.SetGridResolution(gridSpacing);
-
-        int32_t numRows = 0;
-        int32_t numColumns = 0;
-        Physics::HeightfieldProviderRequestsBus::Event(
-            GetEntityId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
-
-        configuration.SetNumRows(numRows);
-        configuration.SetNumColumns(numColumns);
-
-        float minHeightBounds = 0.0f;
-        float maxHeightBounds = 0.0f;
-        Physics::HeightfieldProviderRequestsBus::Event(
-            GetEntityId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldHeightBounds, minHeightBounds, maxHeightBounds);
-
-        configuration.SetMinHeightBounds(minHeightBounds);
-        configuration.SetMaxHeightBounds(maxHeightBounds);
-
-        AZStd::vector<Physics::HeightMaterialPoint> samples;
-        Physics::HeightfieldProviderRequestsBus::EventResult(
-            samples, GetEntityId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
-
-        configuration.SetSamples(samples);
+        Utils::InitHeightfieldShapeConfiguration(GetEntityId(), configuration);
     }
 
     void HeightfieldColliderComponent::RefreshHeightfield()

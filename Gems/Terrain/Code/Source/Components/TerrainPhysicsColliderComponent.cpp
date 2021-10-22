@@ -192,19 +192,14 @@ namespace Terrain
 
     AZ::Transform TerrainPhysicsColliderComponent::GetHeightfieldTransform() const
     {
-        AZ::Transform transform = AZ::Transform::CreateIdentity();
-        AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-
         // We currently don't support rotation of terrain heightfields.
-        transform.SetRotation(AZ::Quaternion::CreateIdentity());
+        AZ::Vector3 translate;
+        AZ::TransformBus::EventResult(translate, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
 
-        // Scale is already handled via the underlying shape component that we use to set our heightfield bounds, so we'll reset it
-        // back to 1.0 here to prevent double-scaling the data.
-        transform.SetUniformScale(1.0f);
+        AZ::Transform transform = AZ::Transform::CreateTranslation(translate);
 
         return transform;
     }
-
 
     void TerrainPhysicsColliderComponent::GenerateHeightsInBounds(AZStd::vector<float>& heights) const
     {

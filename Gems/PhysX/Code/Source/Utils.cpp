@@ -196,6 +196,10 @@ namespace PhysX
                     AZ_Assert(AZ::IsClose(-halfBounds, minHeightBounds) && AZ::IsClose(halfBounds, maxHeightBounds),
                         "Min/Max height bounds aren't centered around 0, the height conversions below will be incorrect.");
 
+                    // To prevent a possible error in log2 below, we need to check maxHeightBounds is greater thanminHeightBounds.
+                    AZ_Assert(maxHeightBounds > minHeightBounds,
+                        "Max height bounds is less than or equal to minHeightBounds, the height conversions below will be incorrect.");
+
                     // To convert our floating-point heights to fixed-point representation inside of an int16, we need a scale factor
                     // for the conversion.  The scale factor is used to map the most important bits of our floating-point height to the
                     // full 16-bit range.  To do this as safely as possible without introducing unnecessary rounding error, we will use
@@ -1518,6 +1522,39 @@ namespace PhysX
 
             return entityWorldTransformWithoutScale * jointLocalTransformWithoutScale;
         }
+		
+		void InitHeightfieldShapeConfiguration(AZ::EntityId entityId, Physics::HeightfieldShapeConfiguration& configuration)
+		{
+			configuration = Physics::HeightfieldShapeConfiguration();
+
+			AZ::Vector2 gridSpacing(1.0f);
+			Physics::HeightfieldProviderRequestsBus::EventResult(
+                gridSpacing, entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSpacing);
+
+			configuration.SetGridResolution(gridSpacing);
+
+			int32_t numRows = 0;
+			int32_t numColumns = 0;
+			Physics::HeightfieldProviderRequestsBus::Event(
+                            entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
+
+			configuration.SetNumRows(numRows);
+			configuration.SetNumColumns(numColumns);
+
+			float minHeightBounds = 0.0f;
+			float maxHeightBounds = 0.0f;
+			Physics::HeightfieldProviderRequestsBus::Event(
+				entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldHeightBounds, minHeightBounds, maxHeightBounds);
+
+			configuration.SetMinHeightBounds(minHeightBounds);
+			configuration.SetMaxHeightBounds(maxHeightBounds);
+
+			AZStd::vector<Physics::HeightMaterialPoint> samples;
+			Physics::HeightfieldProviderRequestsBus::EventResult(
+				samples, entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
+
+			configuration.SetSamples(samples);
+		}
     } // namespace Utils
 
     namespace ReflectionUtils

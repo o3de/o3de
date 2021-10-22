@@ -16,7 +16,6 @@
 
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
-
 namespace LmbrCentral
 {
     template<typename, typename>
