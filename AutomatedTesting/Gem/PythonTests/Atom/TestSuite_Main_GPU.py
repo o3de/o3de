@@ -89,7 +89,7 @@ class TestAllComponentsIndepthTests(object):
 
         level_creation_expected_lines = [
             "Viewport is set to the expected size: True",
-            "Basic level created"
+            "Exited game mode"
         ]
         unexpected_lines = [
             "Trace::Assert",
@@ -189,8 +189,8 @@ class TestPerformanceBenchmarkSuite(object):
             "Benchmark metadata captured.",
             "Pass timestamps captured.",
             "CPU frame time captured.",
-            "Capturing complete.",
-            "Captured data successfully."
+            "Captured data successfully.",
+            "Exited game mode"
         ]
 
         unexpected_lines = [

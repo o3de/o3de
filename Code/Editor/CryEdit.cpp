@@ -287,21 +287,22 @@ bool CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT n
 
     return false;
 }
-CCryEditDoc* CCryDocManager::OpenDocumentFile(const char* lpszFileName, bool bAddToMRU)
+CCryEditDoc* CCryDocManager::OpenDocumentFile(const char* filename, bool addToMostRecentFileList, COpenSameLevelOptions openSameLevelOptions)
 {
-    assert(lpszFileName != nullptr);
+    assert(filename != nullptr);
 
+    const bool reopenIfSame = openSameLevelOptions == COpenSameLevelOptions::ReopenLevelIfSame;
     // find the highest confidence
     auto pos = m_templateList.begin();
     CCrySingleDocTemplate::Confidence bestMatch = CCrySingleDocTemplate::noAttempt;
     CCrySingleDocTemplate* pBestTemplate = nullptr;
     CCryEditDoc* pOpenDocument = nullptr;
 
-    if (lpszFileName[0] == '\"')
+    if (filename[0] == '\"')
     {
-        ++lpszFileName;
+        ++filename;
     }
-    QString szPath = QString::fromUtf8(lpszFileName);
+    QString szPath = QString::fromUtf8(filename);
     if (szPath.endsWith('"'))
     {
         szPath.remove(szPath.length() - 1, 1);
@@ -325,7 +326,7 @@ CCryEditDoc* CCryDocManager::OpenDocumentFile(const char* lpszFileName, bool bAd
         }
     }
 
-    if (pOpenDocument != nullptr)
+    if (!reopenIfSame && pOpenDocument != nullptr)
     {
         return pOpenDocument;
     }
@@ -336,7 +337,7 @@ CCryEditDoc* CCryDocManager::OpenDocumentFile(const char* lpszFileName, bool bAd
         return nullptr;
     }
 
-    return pBestTemplate->OpenDocumentFile(szPath.toUtf8().data(), bAddToMRU, false);
+    return pBestTemplate->OpenDocumentFile(szPath.toUtf8().data(), addToMostRecentFileList, false);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -818,7 +819,7 @@ CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(const char* lpszPathName, b
     return OpenDocumentFile(lpszPathName, true, bMakeVisible);
 }
 
-CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(const char* lpszPathName, bool bAddToMRU, [[maybe_unused]] bool bMakeVisible)
+CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(const char* lpszPathName, bool addToMostRecentFileList, [[maybe_unused]] bool bMakeVisible)
 {
     CCryEditDoc* pCurDoc = GetIEditor()->GetDocument();
 
@@ -848,7 +849,7 @@ CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(const char* lpszPathName, b
     {
         pCurDoc->OnOpenDocument(lpszPathName);
         pCurDoc->SetPathName(lpszPathName);
-        if (bAddToMRU)
+        if (addToMostRecentFileList)
         {
             CCryEditApp::instance()->AddToRecentFileList(lpszPathName);
         }
@@ -2631,7 +2632,7 @@ void CCryEditApp::OnShowHelpers()
 void CCryEditApp::OnEditLevelData()
 {
     auto dir = QFileInfo(GetIEditor()->GetDocument()->GetLevelPathName()).dir();
-    CFileUtil::EditTextFile(dir.absoluteFilePath("LevelData.xml").toUtf8().data());
+    CFileUtil::EditTextFile(dir.absoluteFilePath("leveldata.xml").toUtf8().data());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3365,7 +3366,7 @@ void CCryEditApp::OnOpenSlice()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* lpszFileName)
+CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* filename, bool addToMostRecentFileList, COpenSameLevelOptions openSameLevelOptions)
 {
     if (m_openingLevel)
     {
@@ -3405,9 +3406,9 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* lpszFileName)
             openDocTraceHandler.SetShowWindow(false);
         }
 
-        // in this case, we set bAddToMRU to always be true because adding files to the MRU list
+        // in this case, we set addToMostRecentFileList to always be true because adding files to the MRU list
         // automatically culls duplicate and normalizes paths anyway
-        m_pDocManager->OpenDocumentFile(lpszFileName, true);
+        m_pDocManager->OpenDocumentFile(filename, addToMostRecentFileList, openSameLevelOptions);
 
         if (openDocTraceHandler.HasAnyErrors())
         {

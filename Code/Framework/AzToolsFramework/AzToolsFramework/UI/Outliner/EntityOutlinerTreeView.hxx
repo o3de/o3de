@@ -90,6 +90,8 @@ namespace AzToolsFramework
         const QColor m_selectedColor = QColor(255, 255, 255, 45);
         const QColor m_hoverColor = QColor(255, 255, 255, 30);
 
+        QModelIndex m_currentHoveredIndex;
+
         EditorEntityUiInterface* m_editorEntityFrameworkInterface;
     };
 

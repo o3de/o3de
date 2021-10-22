@@ -58,6 +58,7 @@
         "Gems/Prefab",
         "Gems/Presence",
         "Gems/PrimitiveAssets",
+        "Gems/Profiler",
         "Gems/PythonAssetBuilder",
         "Gems/QtForPython",
         "Gems/SaveData",

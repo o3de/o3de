@@ -15,6 +15,8 @@
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <TagWidget.h>
+#include <DownloadController.h>
+
 #include <QFrame>
 #include <QLabel>
 #include <QDialog>
@@ -32,16 +34,18 @@ namespace O3DE::ProjectManager
         Q_OBJECT // AUTOMOC
 
     public:
-        CartOverlayWidget(GemModel* gemModel, QWidget* parent = nullptr);
+        CartOverlayWidget(GemModel* gemModel, DownloadController* downloadController, QWidget* parent = nullptr);
 
     private:
         QStringList ConvertFromModelIndices(const QVector<QModelIndex>& gems) const;
 
         using GetTagIndicesCallback = AZStd::function<QVector<QModelIndex>()>;
         void CreateGemSection(const QString& singularTitle, const QString& pluralTitle, GetTagIndicesCallback getTagIndices);
+        void CreateDownloadSection();
 
         QVBoxLayout* m_layout = nullptr;
         GemModel* m_gemModel = nullptr;
+        DownloadController* m_downloadController = nullptr;
 
         inline constexpr static int s_width = 240;
     };
@@ -52,7 +56,7 @@ namespace O3DE::ProjectManager
         Q_OBJECT // AUTOMOC
 
     public:
-        CartButton(GemModel* gemModel, QWidget* parent = nullptr);
+        CartButton(GemModel* gemModel, DownloadController* downloadController, QWidget* parent = nullptr);
         ~CartButton();
         void ShowOverlay();
 
@@ -65,6 +69,7 @@ namespace O3DE::ProjectManager
         QLabel* m_countLabel = nullptr;
         QPushButton* m_dropDownButton = nullptr;
         CartOverlayWidget* m_cartOverlay = nullptr;
+        DownloadController* m_downloadController = nullptr;
 
         inline constexpr static int s_iconSize = 24;
         inline constexpr static int s_arrowDownIconSize = 8;
@@ -76,7 +81,7 @@ namespace O3DE::ProjectManager
         Q_OBJECT // AUTOMOC
 
     public:
-        explicit GemCatalogHeaderWidget(GemModel* gemModel, GemSortFilterProxyModel* filterProxyModel, QWidget* parent = nullptr);
+        explicit GemCatalogHeaderWidget(GemModel* gemModel, GemSortFilterProxyModel* filterProxyModel, DownloadController* downloadController, QWidget* parent = nullptr);
         ~GemCatalogHeaderWidget() = default;
 
         void ReinitForProject();
