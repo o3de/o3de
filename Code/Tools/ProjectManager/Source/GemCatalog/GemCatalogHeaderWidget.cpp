@@ -8,12 +8,14 @@
 
 #include <GemCatalog/GemCatalogHeaderWidget.h>
 #include <AzCore/std/functional.h>
+#include <TagWidget.h>
+
 #include <QHBoxLayout>
 #include <QMouseEvent>
 #include <QLabel>
 #include <QPushButton>
+#include <QMenu>
 #include <QProgressBar>
-#include <TagWidget.h>
 
 namespace O3DE::ProjectManager
 {
@@ -404,6 +406,28 @@ namespace O3DE::ProjectManager
 
         CartButton* cartButton = new CartButton(gemModel, downloadController);
         hLayout->addWidget(cartButton);
+
+        hLayout->addSpacing(16);
+
+        // Separating line
+        QFrame* vLine = new QFrame();
+        vLine->setFrameShape(QFrame::VLine);
+        vLine->setObjectName("verticalSeparatingLine");
+        hLayout->addWidget(vLine);
+
+        hLayout->addSpacing(16);
+
+        QMenu* gemMenu = new QMenu(this);
+        m_openGemReposAction = gemMenu->addAction(tr("Show Gem Repos"));
+
+        connect(m_openGemReposAction, &QAction::triggered, this,[this](){ emit OpenGemsRepo(); });
+
+        QPushButton* gemMenuButton = new QPushButton(this);
+        gemMenuButton->setObjectName("gemCatalogMenuButton");
+        gemMenuButton->setMenu(gemMenu);
+        gemMenuButton->setIcon(QIcon(":/menu.svg"));
+        gemMenuButton->setIconSize(QSize(36, 24));
+        hLayout->addWidget(gemMenuButton);
     }
 
     void GemCatalogHeaderWidget::ReinitForProject()

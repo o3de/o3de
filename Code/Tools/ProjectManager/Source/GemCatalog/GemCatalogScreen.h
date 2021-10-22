@@ -52,6 +52,10 @@ namespace O3DE::ProjectManager
         void resizeEvent(QResizeEvent* event) override;
         void moveEvent(QMoveEvent* event) override;
 
+    private slots:
+        void HandleOpenGemRepo();
+
+
     private:
         void FillModel(const QString& projectPath);
 
