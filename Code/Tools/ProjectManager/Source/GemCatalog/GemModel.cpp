@@ -10,6 +10,7 @@
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 
 namespace O3DE::ProjectManager
 {
@@ -299,23 +300,50 @@ namespace O3DE::ProjectManager
         AZ_Assert(gemModel, "Failed to obtain GemModel");
 
         QVector<QModelIndex> dependencies = gemModel->GatherGemDependencies(modelIndex);
+        uint32_t numChangedDependencies = 0;
+
         if (IsAdded(modelIndex))
         {
             for (const QModelIndex& dependency : dependencies)
             {
-                SetIsAddedDependency(*gemModel, dependency, true);
+                if (!IsAddedDependency(dependency))
+                {
+                    SetIsAddedDependency(*gemModel, dependency, true);
+
+                    // if the gem was already added then the state didn't really change
+                    if (!IsAdded(dependency))
+                    {
+                        numChangedDependencies++;
+                    }
+                }
             }
         }
         else
         {
             // still a dependency if some added gem depends on this one 
-            SetIsAddedDependency(model, modelIndex, gemModel->HasDependentGems(modelIndex));
+            bool hasDependentGems = gemModel->HasDependentGems(modelIndex);
+            if (IsAddedDependency(modelIndex) != hasDependentGems)
+            {
+                SetIsAddedDependency(model, modelIndex, hasDependentGems);
+            }
 
             for (const QModelIndex& dependency : dependencies)
             {
-                SetIsAddedDependency(*gemModel, dependency, gemModel->HasDependentGems(dependency));
+                hasDependentGems = gemModel->HasDependentGems(dependency);
+                if (IsAddedDependency(dependency) != hasDependentGems)
+                {
+                    SetIsAddedDependency(*gemModel, dependency, hasDependentGems);
+
+                    // if the gem was already added then the state didn't really change
+                    if (!IsAdded(dependency))
+                    {
+                        numChangedDependencies++;
+                    }
+                }
             }
         }
+
+        gemModel->emit gemStatusChanged(modelIndex, numChangedDependencies);
     }
 
     void GemModel::SetIsAddedDependency(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)
@@ -488,5 +516,4 @@ namespace O3DE::ProjectManager
         }
         return result;
     }
-
 } // namespace O3DE::ProjectManager

@@ -4,7 +4,7 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "ThumbnailPipeline",
+            "Name": "ToolsPipeline",
             "PassClass": "ParentPass",
             "Slots": [
                 {

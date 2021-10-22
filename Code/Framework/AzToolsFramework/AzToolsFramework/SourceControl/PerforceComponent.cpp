@@ -80,14 +80,7 @@ namespace AzToolsFramework
 
         // set up signals before we start thread.
         m_shutdownThreadSignal = false;
-
-        // Check to see if the 'p4' command is available at the command line
-        int p4VersionExitCode = QProcess::execute("p4", QStringList{ "-V" });
-        m_p4ApplicationDetected = (p4VersionExitCode == 0);
-        if (m_p4ApplicationDetected)
-        {
-            m_WorkerThread = AZStd::thread(AZStd::bind(&PerforceComponent::ThreadWorker, this));
-        }
+        m_WorkerThread = AZStd::thread(AZStd::bind(&PerforceComponent::ThreadWorker, this));
 
         SourceControlConnectionRequestBus::Handler::BusConnect();
         SourceControlCommandBus::Handler::BusConnect();
@@ -98,13 +91,10 @@ namespace AzToolsFramework
         SourceControlCommandBus::Handler::BusDisconnect();
         SourceControlConnectionRequestBus::Handler::BusDisconnect();
 
-        if (m_p4ApplicationDetected)
-        {
-            m_shutdownThreadSignal = true; // tell the thread to die.
-            m_WorkerSemaphore.release(1); // wake up the thread so that it sees the signal
-            m_WorkerThread.join(); // wait for the thread to finish.
-            m_WorkerThread = AZStd::thread();
-        }
+        m_shutdownThreadSignal = true; // tell the thread to die.
+        m_WorkerSemaphore.release(1); // wake up the thread so that it sees the signal
+        m_WorkerThread.join(); // wait for the thread to finish.
+        m_WorkerThread = AZStd::thread();
 
         SetConnection(nullptr);
     }

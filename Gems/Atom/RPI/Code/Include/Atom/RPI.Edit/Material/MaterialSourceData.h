@@ -50,7 +50,7 @@ namespace AZ
             
             AZStd::string m_parentMaterial; //!< The immediate parent of this material
 
-            uint32_t m_propertyLayoutVersion = 0; //!< The version of the property layout, defined in the material type, which was used to configure this material
+            uint32_t m_materialTypeVersion = 0; //!< The version of the material type that was used to configure this material
 
             struct Property
             {
@@ -63,6 +63,18 @@ namespace AZ
             using PropertyGroupMap = AZStd::map<AZStd::string, PropertyMap>;
 
             PropertyGroupMap m_properties;
+
+            enum class ApplyVersionUpdatesResult
+            {
+                Failed,
+                NoUpdates,
+                UpdatesApplied
+            };
+
+            //! Checks the material type version and potentially applies a series of property changes (most common are simple property renames)
+            //! based on the MaterialTypeAsset's version update procedure.
+            //! @param materialSourceFilePath Indicates the path of the .material file that the MaterialSourceData represents. Used for resolving file-relative paths.
+            ApplyVersionUpdatesResult ApplyVersionUpdates(AZStd::string_view materialSourceFilePath = "");
 
             //! Creates a MaterialAsset from the MaterialSourceData content.
             //! @param assetId ID for the MaterialAsset
