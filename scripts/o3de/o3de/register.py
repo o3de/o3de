@@ -596,7 +596,7 @@ def register(engine_path: pathlib.Path = None,
     :param default_third_party_folder: default 3rd party cache folder
     :param external_subdir_engine_path: Path to the engine to use when registering an external subdirectory.
      The registration occurs in the engine.json file in this case
-    :param external_subdir_engine_path: Path to the project to use when registering an external subdirectory.
+    :param external_subdir_project_path: Path to the project to use when registering an external subdirectory.
      The registrations occurs in the project.json in this case
     :param remove: add/remove the entries
     :param force: force update of the engine_path for specified "engine_name" from the engine.json file
