@@ -4135,9 +4135,9 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     Editor::EditorQtApplication::InstallQtLogHandler();
 
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
-    Editor::EditorQtApplication app(argc, argv);
+    Editor::EditorQtApplication* app = Editor::EditorQtApplication::newInstance(argc, argv);
 
-    if (app.arguments().contains("-autotest_mode"))
+    if (app->arguments().contains("-autotest_mode"))
     {
         // Nullroute all stdout to null for automated tests, this way we make sure
         // that the test result output is not polluted with unrelated output data.
@@ -4173,12 +4173,7 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
             return -1;
         }
 
-        AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyQtApplicationAvailable, &app);
-
-    #if defined(AZ_PLATFORM_MAC)
-        // Native menu bars do not work on macOS due to all the tool dialogs
-        QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar);
-    #endif
+        AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyQtApplicationAvailable, app);
 
         int exitCode = 0;
 
@@ -4189,9 +4184,9 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 
         if (didCryEditStart)
         {
-            app.EnableOnIdle();
+            app->EnableOnIdle();
 
-            ret = app.exec();
+            ret = app->exec();
         }
         else
         {
@@ -4201,6 +4196,8 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         CCryEditApp::instance()->ExitInstance(exitCode);
 
     }
+
+    delete app;
 
     gSettings.Disconnect();
 
