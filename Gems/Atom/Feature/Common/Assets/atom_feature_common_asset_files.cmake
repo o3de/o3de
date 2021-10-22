@@ -160,8 +160,6 @@ set(FILES
     Passes/LutGeneration.pass
     Passes/MainPipeline.pass
     Passes/MainPipelineRenderToTexture.pass
-    Passes/ToolsPipeline.pass
-    Passes/ToolsPipelineRenderToTexture.pass
     Passes/MeshMotionVector.pass
     Passes/ModulateTexture.pass
     Passes/MorphTarget.pass
@@ -211,8 +209,8 @@ set(FILES
     Passes/SsaoParent.pass
     Passes/SubsurfaceScattering.pass
     Passes/Taa.pass
-    Passes/ThumbnailPipeline.pass
-    Passes/ThumbnailPipelineRenderToTexture.pass
+    Passes/ToolsPipeline.pass
+    Passes/ToolsPipelineRenderToTexture.pass
     Passes/Transparent.pass
     Passes/TransparentParent.pass
     Passes/UI.pass
@@ -306,6 +304,7 @@ set(FILES
     ShaderLib/Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli
     ShaderLib/Atom/Features/Shadow/BicubicPcfFilters.azsli
     ShaderLib/Atom/Features/Shadow/DirectionalLightShadow.azsli
+    ShaderLib/Atom/Features/Shadow/NormalOffsetShadows.azsli
     ShaderLib/Atom/Features/Shadow/ProjectedShadow.azsli
     ShaderLib/Atom/Features/Shadow/ReceiverPlaneDepthBias.azsli
     ShaderLib/Atom/Features/Shadow/Shadow.azsli
