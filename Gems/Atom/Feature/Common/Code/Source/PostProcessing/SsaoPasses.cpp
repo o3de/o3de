@@ -34,7 +34,32 @@ namespace AZ
 
         bool SsaoParentPass::IsEnabled() const
         {
-            return ParentPass::IsEnabled();
+            if (!ParentPass::IsEnabled())
+            {
+                return false;
+            }
+            const RPI::Scene* scene = GetScene();
+            if (!scene)
+            {
+                return false;
+            }
+            PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
+            const RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
+            if (!fp)
+            {
+                return true;
+            }
+            PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
+            if (!postProcessSettings)
+            {
+                return true;
+            }
+            const SsaoSettings* ssaoSettings = postProcessSettings->GetSsaoSettings();
+            if (!ssaoSettings)
+            {
+                return true;
+            }
+            return ssaoSettings->GetEnabled();
         }
 
         void SsaoParentPass::InitializeInternal()

@@ -215,21 +215,6 @@ namespace ScriptCanvasEditor
 
     using EditorLoggingComponentNotificationBus = AZ::EBus<EditorLoggingComponentNotifications>;
 
-    class IUpgradeRequests
-    {
-    public:
-        AZ_TYPE_INFO(IUpgradeRequests, "{D25318F2-4DDA-4E76-98CB-6D561BB6234D}");
-
-        using AssetList = AZStd::list<AZ::Data::AssetInfo>;
-        virtual AssetList& GetAssetsToUpgrade() = 0;
-
-        virtual void GraphNeedsManualUpgrade(const AZ::Data::AssetId&) = 0;
-        virtual AZStd::vector<AZ::Data::AssetId>& GetGraphsThatNeedManualUpgrade() = 0;
-
-        virtual bool IsUpgrading() = 0;
-        virtual void SetIsUpgrading(bool isUpgrading) = 0;
-    };
-
     class UpgradeNotifications
         : public AZ::EBusTraits
     {
@@ -237,15 +222,11 @@ namespace ScriptCanvasEditor
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
 
-        using Bus = AZ::EBus<UpgradeNotifications>;
-
         virtual void OnUpgradeStart() {}
-        virtual void OnUpgradeComplete() {}
         virtual void OnUpgradeCancelled() {}
 
         virtual void OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>&, bool skipped = false) { (void)skipped; }
     };
 
-
-
+    using UpgradeNotificationsBus = AZ::EBus<UpgradeNotifications>;
 }

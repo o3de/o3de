@@ -92,35 +92,11 @@ namespace AZ::Render
         }
     }
 
-    void SphereLightDelegate::SetSofteningBoundaryWidthAngle(float widthInDegrees)
-    {
-        if (GetShadowsEnabled() && GetLightHandle().IsValid())
-        {
-            GetFeatureProcessor()->SetSofteningBoundaryWidthAngle(GetLightHandle(), DegToRad(widthInDegrees));
-        }
-    }
-
-    void SphereLightDelegate::SetPredictionSampleCount(uint32_t count)
-    {
-        if (GetShadowsEnabled() && GetLightHandle().IsValid())
-        {
-            GetFeatureProcessor()->SetPredictionSampleCount(GetLightHandle(), static_cast<uint16_t>(count));
-        }
-    }
-
     void SphereLightDelegate::SetFilteringSampleCount(uint32_t count)
     {
         if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
             GetFeatureProcessor()->SetFilteringSampleCount(GetLightHandle(), static_cast<uint16_t>(count));
-        }
-    }
-
-    void SphereLightDelegate::SetPcfMethod(PcfMethod method)
-    {
-        if (GetShadowsEnabled() && GetLightHandle().IsValid())
-        {
-            GetFeatureProcessor()->SetPcfMethod(GetLightHandle(), method);
         }
     }
 

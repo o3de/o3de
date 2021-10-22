@@ -1,0 +1,6 @@
+<download name="CharacterController_SwitchLevels" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="39327" md5="fd29c4d3878e9e5cbc1c0b294f0a5bd3"/>
+ </files>
+</download>

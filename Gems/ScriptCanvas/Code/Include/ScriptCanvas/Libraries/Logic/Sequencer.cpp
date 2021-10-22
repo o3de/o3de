@@ -16,8 +16,6 @@ namespace ScriptCanvas
     {
         namespace Logic
         {
-            static const int NUMBER_OF_OUTPUTS = 8;
-
             Sequencer::Sequencer()
                 : Node()
                 , m_selectedIndex(0)

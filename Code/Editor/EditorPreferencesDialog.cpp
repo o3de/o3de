@@ -27,8 +27,8 @@
 #include "EditorPreferencesPageGeneral.h"
 #include "EditorPreferencesPageFiles.h"
 #include "EditorPreferencesPageViewportGeneral.h"
-#include "EditorPreferencesPageViewportGizmo.h"
-#include "EditorPreferencesPageViewportMovement.h"
+#include "EditorPreferencesPageViewportManipulator.h"
+#include "EditorPreferencesPageViewportCamera.h"
 #include "EditorPreferencesPageViewportDebug.h"
 #include "EditorPreferencesPageExperimentalLighting.h"
 #include "EditorPreferencesPageAWS.h"
@@ -65,8 +65,8 @@ EditorPreferencesDialog::EditorPreferencesDialog(QWidget* pParent)
             CEditorPreferencesPage_General::Reflect(*serializeContext);
             CEditorPreferencesPage_Files::Reflect(*serializeContext);
             CEditorPreferencesPage_ViewportGeneral::Reflect(*serializeContext);
-            CEditorPreferencesPage_ViewportGizmo::Reflect(*serializeContext);
-            CEditorPreferencesPage_ViewportMovement::Reflect(*serializeContext);
+            CEditorPreferencesPage_ViewportManipulator::Reflect(*serializeContext);
+            CEditorPreferencesPage_ViewportCamera::Reflect(*serializeContext);
             CEditorPreferencesPage_ViewportDebug::Reflect(*serializeContext);
             CEditorPreferencesPage_ExperimentalLighting::Reflect(*serializeContext);
             CEditorPreferencesPage_AWS::Reflect(*serializeContext);
@@ -264,6 +264,9 @@ void EditorPreferencesDialog::SetFilter(const QString& filter)
     else if (m_currentPageItem)
     {
         m_currentPageItem->UpdateEditorFilter(ui->propertyEditor, m_filter);
+
+        // Refresh the Stylesheet - when using search functionality.
+        AzQtComponents::StyleManager::repolishStyleSheet(this);
     }
 }
 

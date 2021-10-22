@@ -65,7 +65,7 @@ namespace GraphCanvas
         ////
 
         // NodeNotifications
-        void OnNodeActivated();
+        void OnNodeActivated() override;
         ////
 
     private:

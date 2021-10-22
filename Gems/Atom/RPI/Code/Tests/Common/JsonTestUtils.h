@@ -15,7 +15,7 @@
 #include <AzCore/IO/TextStreamWriters.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/JSON/prettywriter.h>
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 
 namespace UnitTest

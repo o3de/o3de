@@ -112,8 +112,6 @@ namespace EMStudio
         QString m_lastWorkspaceFolder;
         QString m_lastNodeMapFolder;
 
-        bool m_skipFileChangedCheck;
-
         void UpdateLastUsedFolder(const char* filename, QString& outLastFolder) const;
         QString GetLastUsedFolder(const QString& lastUsedFolder) const;
     };

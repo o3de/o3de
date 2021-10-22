@@ -8,6 +8,7 @@
 
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/IO/FileIO.h>
@@ -26,8 +27,10 @@
 #include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextComponent.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponent.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationManager.h>
@@ -66,11 +69,12 @@
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiSystemComponent.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <Entity/EntityUtilityComponent.h>
 
 #include <QtWidgets/QMessageBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
 #include <QDir>
-AZ_POP_DISABLE_OVERRIDE_WARNING
+AZ_POP_DISABLE_WARNING
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -87,11 +91,6 @@ namespace AzToolsFramework
 {
     namespace Internal
     {
-        static const char* s_engineConfigFileName = "engine.json";
-        static const char* s_engineConfigEngineVersionKey = "O3DEVersion";
-
-        static const char* s_startupLogWindow = "Startup";
-
         template<typename IdContainerType>
         void DeleteEntities(const IdContainerType& entityIds)
         {
@@ -144,7 +143,7 @@ namespace AzToolsFramework
                     AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:UndoCaptureAndPurgeEntities");
                     for (const auto& entityId : entityIds)
                     {
-                        AZ::Entity* entity = NULL;
+                        AZ::Entity* entity = nullptr;
                         EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
 
                         if (entity)
@@ -253,6 +252,8 @@ namespace AzToolsFramework
         components.insert(components.end(), {
                 azrtti_typeid<EditorEntityContextComponent>(),
                 azrtti_typeid<Components::EditorEntityUiSystemComponent>(),
+                azrtti_typeid<FocusModeSystemComponent>(),
+                azrtti_typeid<ContainerEntitySystemComponent>(),
                 azrtti_typeid<SliceMetadataEntityContextComponent>(),
                 azrtti_typeid<Prefab::PrefabSystemComponent>(),
                 azrtti_typeid<EditorEntityFixupComponent>(),
@@ -271,7 +272,8 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::EditorInteractionSystemComponent>(),
                 azrtti_typeid<Components::EditorEntitySearchComponent>(),
                 azrtti_typeid<Components::EditorIntersectorComponent>(),
-                azrtti_typeid<AzToolsFramework::SliceRequestComponent>()
+                azrtti_typeid<AzToolsFramework::SliceRequestComponent>(),
+                azrtti_typeid<AzToolsFramework::EntityUtilityComponent>()
             });
 
         return components;
@@ -383,6 +385,7 @@ namespace AzToolsFramework
                 ->Event("CreateNewEntityAtPosition", &ToolsApplicationRequests::CreateNewEntityAtPosition)
                 ->Event("GetCurrentLevelEntityId", &ToolsApplicationRequests::GetCurrentLevelEntityId)
                 ->Event("GetExistingEntity", &ToolsApplicationRequests::GetExistingEntity)
+                ->Event("EntityExists", &ToolsApplicationRequests::EntityExists)
                 ->Event("DeleteEntityById", &ToolsApplicationRequests::DeleteEntityById)
                 ->Event("DeleteEntities", &ToolsApplicationRequests::DeleteEntities)
                 ->Event("DeleteEntityAndAllDescendants", &ToolsApplicationRequests::DeleteEntityAndAllDescendants)
@@ -786,6 +789,11 @@ namespace AzToolsFramework
     AZ::EntityId ToolsApplication::GetExistingEntity(AZ::u64 id)
     {
         return AZ::EntityId{id};
+    }
+
+    bool ToolsApplication::EntityExists(AZ::EntityId id)
+    {
+        return FindEntity(id) != nullptr;
     }
 
     void ToolsApplication::DeleteSelected()
@@ -1242,7 +1250,7 @@ namespace AzToolsFramework
 
     void ToolsApplication::RequestEditForFile(const char* assetPath, RequestEditResultCallback resultCallback)
     {
-        AZ_Error("RequestEdit", resultCallback != 0, "User result callback is required.");
+        AZ_Error("RequestEdit", resultCallback != nullptr, "User result callback is required.");
 
         AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
         if (fileIO && !fileIO->IsReadOnly(assetPath))

@@ -15,6 +15,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/std/containers/fixed_unordered_map.h>
 #include <AzFramework/Input/Buses/Requests/InputTextEntryRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
@@ -31,11 +32,11 @@ using namespace AzFramework;
 using namespace ImGui;
 
 // Wheel Delta const value.
-const constexpr uint32_t IMGUI_WHEEL_DELTA = 120; // From WinUser.h, for Linux
+static const constexpr uint32_t IMGUI_WHEEL_DELTA = 120; // From WinUser.h, for Linux
 
 // Typedef and local static map to hold LyInput->ImGui Nav mappings ( filled up in Initialize() )
-typedef AZStd::pair<AzFramework::InputChannelId, ImGuiNavInput_> LyButtonImGuiNavIndexPair;
-typedef AZStd::unordered_map<AzFramework::InputChannelId, ImGuiNavInput_> LyButtonImGuiNavIndexMap;
+using LyButtonImGuiNavIndexPair = AZStd::pair<AzFramework::InputChannelId, ImGuiNavInput_>;
+using LyButtonImGuiNavIndexMap = AZStd::fixed_unordered_map<AzFramework::InputChannelId, ImGuiNavInput_, 11, 32>;
 static LyButtonImGuiNavIndexMap s_lyInputToImGuiNavIndexMap;
 
 /**
@@ -80,59 +81,6 @@ namespace
         const auto& touches = InputDeviceTouch::Touch::All;
         const auto& it = AZStd::find(touches.cbegin(), touches.cend(), inputChannelId);
         return it != touches.cend() ? static_cast<unsigned int>(it - touches.cbegin()) : UINT_MAX;
-    }
-
-    /**
-    Utility function to map an AzFrameworkInput controller button to its integer index.
-
-    @param inputChannelId the ID for an AzFrameworkInput controller button.
-    @return the index of the indicated button, or -1 if not found.
-    */
-    unsigned int GetAzControllerButtonIndex(const InputChannelId& inputChannelId)
-    {
-        const auto& buttons = InputDeviceGamepad::Button::All;
-        const auto& triggers = InputDeviceGamepad::Trigger::All;
-        const auto& it = AZStd::find(buttons.cbegin(), buttons.cend(), inputChannelId);
-        if (it != buttons.cend())
-        {
-            return static_cast<unsigned int>(it - buttons.cbegin());
-        }
-        else
-        {
-            const auto& it2 = AZStd::find(triggers.cbegin(), triggers.cend(), inputChannelId);
-            if (it2 != triggers.cend())
-            {
-                return static_cast<unsigned int>(it2 - triggers.cbegin()) + AZ_ARRAY_SIZE(InputDeviceGamepad::Button::All);
-            }
-        }
-
-        return UINT_MAX;
-    }
-
-    /**
-    Utility function to map an AzFrameworkInput thumbstick movement to its integer index.
-
-    @param inputChannelId the ID for an AzFrameworkInput thumbstick movement.
-    @return the index of the indicated button, or -1 if not found.
-    */
-    unsigned int GetAzControllerThumbstickIndex(const InputChannelId& inputChannelId)
-    {
-        const auto& thumbstickMovements = InputDeviceGamepad::ThumbStickDirection::All;
-        const auto& it = AZStd::find(thumbstickMovements.cbegin(), thumbstickMovements.cend(), inputChannelId);
-        return it != thumbstickMovements.cend() ? static_cast<unsigned int>(it - thumbstickMovements.cbegin()) : UINT_MAX;
-    }
-
-    /**
-    Utility function to map an AzFrameworkInput thumbstick movement amountto its integer index.
-
-    @param inputChannelId the ID for an AzFrameworkInput thumbstick movement amount.
-    @return the index of the indicated button, or -1 if not found.
-    */
-    unsigned int GetAzControllerThumbstickAmountIndex(const InputChannelId& inputChannelId)
-    {
-        const auto& thumbstickMovementAmounts = InputDeviceGamepad::ThumbStickAxis1D::All;
-        const auto& it = AZStd::find(thumbstickMovementAmounts.cbegin(), thumbstickMovementAmounts.cend(), inputChannelId);
-        return it != thumbstickMovementAmounts.cend() ? static_cast<unsigned int>(it - thumbstickMovementAmounts.cbegin()) : UINT_MAX;
     }
 }
 

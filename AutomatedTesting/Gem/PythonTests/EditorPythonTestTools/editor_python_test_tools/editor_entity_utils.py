@@ -20,6 +20,7 @@ import azlmbr.legacy.general as general
 # Helper file Imports
 from editor_python_test_tools.utils import Report
 
+
 class EditorComponent:
     """
     EditorComponent class used to set and get the component property value using path
@@ -28,7 +29,6 @@ class EditorComponent:
     which also assigns self.id and self.type_id to the EditorComponent object.
     """
 
-    # Methods
     def get_component_name(self) -> str:
         """
         Used to get name of component
@@ -87,6 +87,13 @@ class EditorComponent:
             outcome.IsSuccess()
         ), f"Failure: Could not set value to '{self.get_component_name()}' : '{component_property_path}'"
 
+    def is_enabled(self):
+        """
+        Used to verify if the component is enabled.
+        :return: True if enabled, otherwise False.
+        """
+        return editor.EditorComponentAPIBus(bus.Broadcast, "IsComponentEnabled", self.id)
+
     @staticmethod
     def get_type_ids(component_names: list) -> list:
         """
@@ -115,16 +122,31 @@ class EditorEntity:
 
     # Creation functions
     @classmethod
-    def find_editor_entity(cls, entity_name: str) -> EditorEntity:
+    def find_editor_entity(cls, entity_name: str, must_be_unique : bool = False) -> EditorEntity:
         """
         Given Entity name, outputs entity object
         :param entity_name: Name of entity to find
         :return: EditorEntity class object
         """
-        entity_id = general.find_editor_entity(entity_name)
-        assert entity_id.IsValid(), f"Failure: Couldn't find entity with name: '{entity_name}'"
-        entity = cls(entity_id)
+        entities = cls.find_editor_entities([entity_name])
+        assert len(entities) != 0, f"Failure: Couldn't find entity with name: '{entity_name}'"
+        if must_be_unique:
+            assert len(entities) == 1, f"Failure: Multiple entities with name: '{entity_name}' when expected only one"
+
+        entity = cls(entities[0])
         return entity
+
+    @classmethod
+    def find_editor_entities(cls, entity_names: List[str]) -> EditorEntity:
+        """
+        Given Entities names, returns a list of EditorEntity 
+        :param entity_name: Name of entity to find
+        :return: List[EditorEntity] class object
+        """
+        searchFilter = azlmbr.entity.SearchFilter()
+        searchFilter.names = entity_names
+        ids = azlmbr.entity.SearchBus(bus.Broadcast, 'SearchEntities', searchFilter)
+        return [cls(id) for id in ids]
 
     @classmethod
     def create_editor_entity(cls, name: str = None, parent_id=None) -> EditorEntity:
@@ -150,8 +172,7 @@ class EditorEntity:
         cls,
         entity_position: Union[List, Tuple, math.Vector3],
         name: str = None,
-        parent_id: azlmbr.entity.EntityId = None,
-    ) -> EditorEntity:
+        parent_id: azlmbr.entity.EntityId = None) -> EditorEntity:
         """
         Used to create entity at position using 'CreateNewEntityAtPosition' Bus.
         :param entity_position: World Position(X, Y, Z) of entity in viewport.
@@ -214,6 +235,18 @@ class EditorEntity:
         """
         return editor.EditorEntityInfoRequestBus(bus.Event, "GetParent", self.id)
 
+    def get_children_ids(self) -> List[azlmbr.entity.EntityId]:
+        """
+        :return: Entity ids of children. Type: [entity.EntityId()]
+        """
+        return editor.EditorEntityInfoRequestBus(bus.Event, "GetChildren", self.id)
+
+    def get_children(self) -> List[EditorEntity]:
+        """
+        :return: List of EditorEntity children. Type: [EditorEntity]
+        """
+        return [EditorEntity(child_id) for child_id in self.get_children_ids()] 
+
     def add_component(self, component_name: str) -> EditorComponent:
         """
         Used to add new component to Entity.
@@ -248,7 +281,7 @@ class EditorEntity:
     def get_components_of_type(self, component_names: list) -> List[EditorComponent]:
         """
         Used to get components of type component_name that already exists on Entity
-        :param component_name: Name to component to check
+        :param component_names: List of names of components to check
         :return: List of Entity Component objects of given component name
         """
         component_list = []
@@ -312,3 +345,55 @@ class EditorEntity:
         editor.EditorEntityAPIBus(bus.Event, "SetStartStatus", self.id, status_to_set)
         set_status = self.get_start_status()
         assert set_status == status_to_set, f"Failed to set start status of {desired_start_status} to {self.get_name}"
+
+    def delete(self) -> None:
+        """
+        Used to delete the Entity.
+        :return: None
+        """
+        editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", self.id)
+
+    def set_visibility_state(self, is_visible: bool) -> None:
+        """
+        Sets the visibility state on the object to visible or not visible.
+        :param is_visible: True for making visible, False to make not visible.
+        :return: None
+        """
+        editor.EditorEntityAPIBus(bus.Event, "SetVisibilityState", self.id, is_visible)
+
+    def exists(self) -> bool:
+        """
+        Used to verify if the Entity exists.
+        :return: True if the Entity exists, False otherwise.
+        """
+        return editor.ToolsApplicationRequestBus(bus.Broadcast, "EntityExists", self.id)
+
+    def is_hidden(self) -> bool:
+        """
+        Gets the "isHidden" value from the Entity.
+        :return: True if "isHidden" is enabled, False otherwise.
+        """
+        return editor.EditorEntityInfoRequestBus(bus.Event, "IsHidden", self.id)
+
+    def is_visible(self) -> bool:
+        """
+        Gets the "isVisible" value from the Entity.
+        :return: True if "isVisible" is enabled, False otherwise.
+        """
+        return editor.EditorEntityInfoRequestBus(bus.Event, "IsVisible", self.id)
+
+    def set_local_uniform_scale(self, scale_float) -> None:
+        """
+        Sets the "SetLocalUniformScale" value on the entity.
+        :param scale_float: value for "SetLocalUniformScale" to set to.
+        :return: None
+        """
+        azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalUniformScale", self.id, scale_float)
+
+    def set_local_rotation(self, vector3_rotation) -> None:
+        """
+        Sets the "SetLocalRotation" value on the entity.
+        :param vector3_rotation: The math.Vector3 value to use for rotation on the entity (uses radians).
+        :return: None
+        """
+        azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalRotation", self.id, vector3_rotation)

@@ -8,10 +8,10 @@
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_pytest(
-        NAME AutomatedTesting::BlastTests
+        NAME AutomatedTesting::BlastTests_Main
         TEST_SUITE main
         TEST_SERIAL TRUE
-        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Active.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main.py
         RUNTIME_DEPENDENCIES
             Legacy::Editor
             AZ::AssetProcessor

@@ -52,7 +52,7 @@ bool CImageASC::Save(const QString& fileName, const CFloatImage& image)
     }
 
     // First print the file header
-    fprintf(file, fileHeader.c_str());
+    fprintf(file, "%s", fileHeader.c_str());
 
     // Then print all the pixels.
     for (uint32 y = 0; y < height; y++)
@@ -99,7 +99,7 @@ bool CImageASC::Load(const QString& fileName, CFloatImage& image)
 
     // Break all of the values in the file apart into tokens.
 
-    char* nextToken = nullptr;
+    [[maybe_unused]] char* nextToken = nullptr;
     token = azstrtok(str, 0, seps, &nextToken);
 
     // ncols = grid width

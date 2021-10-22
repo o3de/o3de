@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>

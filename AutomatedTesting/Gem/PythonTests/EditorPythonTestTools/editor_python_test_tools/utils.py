@@ -4,18 +4,18 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
+
+import json
+import math
 import os
 import time
-import math
+import traceback
+from typing import Callable, Tuple
 
 import azlmbr
 import azlmbr.legacy.general as general
 import azlmbr.debug
-import json
 
-import traceback
-
-from typing import Callable, Tuple
 
 class FailFast(Exception):
     """
@@ -127,6 +127,30 @@ class TestHelper:
                 if ret:
                     return True
 
+    @staticmethod
+    def close_error_windows():
+        """
+        Closes Error Report and Error Log windows that block focus if they are visible.
+        :return: None
+        """
+        if general.is_pane_visible("Error Report"):
+            general.close_pane("Error Report")
+        if general.is_pane_visible("Error Log"):
+            general.close_pane("Error Log")
+
+    @staticmethod
+    def close_display_helpers():
+        """
+        Closes helper gizmos, anti-aliasing, and FPS meters.
+        :return: None
+        """
+        if general.is_helpers_shown():
+            general.toggle_helpers()
+            general.idle_wait(1.0)
+        general.idle_wait(1.0)
+        general.run_console("r_displayInfo=0")
+        general.idle_wait(1.0)
+
 
 class Timeout:
     # type: (float) -> None
@@ -148,6 +172,7 @@ class Timeout:
     @property
     def timed_out(self):
         return time.time() > self.die_after
+
 
 class Report:
     _results = []
@@ -290,8 +315,8 @@ class Report:
         Report.info("   x: {:.2f}, y: {:.2f}, z: {:.2f}".format(vector3.x, vector3.y, vector3.z))
         if magnitude is not None:
             Report.info("   magnitude: {:.2f}".format(magnitude))
-            
-    
+
+
 '''
 Utility for scope tracing errors and warnings.
 Usage:
@@ -303,7 +328,7 @@ Usage:
 
     Report.result(Tests.warnings_not_found_in_section, not section_tracer.has_warnings)
 
-'''    
+'''
 class Tracer:
     def __init__(self):
         self.warnings = []
@@ -349,10 +374,10 @@ class Tracer:
             self.line = args[1]
             self.function = args[2]
             self.message = args[3]
-        
+
         def __str__(self):
             return f"Assert: [{self.filename}:{self.function}:{self.line}]: {self.message}"
-            
+
         def __repr__(self):
             return f"[Assert: {self.message}]"
 
@@ -360,21 +385,21 @@ class Tracer:
         def __init__(self, args):
             self.window = args[0]
             self.message = args[1]
-    
+
     def _on_warning(self, args):
         warningInfo = Tracer.WarningInfo(args)
         self.warnings.append(warningInfo)
         Report.info("Tracer caught Warning: %s" % warningInfo.message)
         self.has_warnings = True
         return False
-        
+
     def _on_error(self, args):
         errorInfo = Tracer.ErrorInfo(args)
         self.errors.append(errorInfo)
         Report.info("Tracer caught Error: %s" % errorInfo.message)
         self.has_errors = True
         return False
-        
+
     def _on_assert(self, args):
         assertInfo = Tracer.AssertInfo(args)
         self.asserts.append(assertInfo)
@@ -436,6 +461,7 @@ class AngleHelper:
 
 def vector3_str(vector3):
     return "(x: {:.2f}, y: {:.2f}, z: {:.2f})".format(vector3.x, vector3.y, vector3.z)
-    
+
+
 def aabb_str(aabb):
     return "[Min: %s, Max: %s]" % (vector3_str(aabb.min), vector3_str(aabb.max))

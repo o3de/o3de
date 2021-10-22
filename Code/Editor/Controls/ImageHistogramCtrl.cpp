@@ -30,12 +30,6 @@ namespace ImageHistogram
     const QColor    kGreenSectionColor = QColor(220, 255, 220);
     const QColor    kBlueSectionColor = QColor(220, 220, 255);
     const QColor    kSplitSeparatorColor = QColor(100, 100, 0);
-    const QColor    kButtonBackColor = QColor(20, 20, 20);
-    const QColor    kBtnLightColor(200, 200, 200);
-    const QColor    kBtnShadowColor(50, 50, 50);
-    const int       kButtonWidth = 40;
-    const QColor    kButtonTextColor(255, 255, 0);
-    const int       kTextLeftSpacing = 4;
     const int       kTextFontSize = 70;
     const char*     kTextFontFace = "Arial";
     const QColor    kTextColor(255, 255, 255);
@@ -194,7 +188,7 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
             float scale = 0;
 
             i = static_cast<int>(((float)x / graphWidth) * (kNumColorLevels - 1));
-            i = CLAMP(i, 0, kNumColorLevels - 1);
+            i = AZStd::clamp(i, 0, kNumColorLevels - 1);
 
             switch (m_drawMode)
             {
@@ -259,7 +253,7 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
         for (size_t x = 0, xCount = abs(rcGraph.width()); x < xCount; ++x)
         {
             i = static_cast<int>(((float)x / graphWidth) * (kNumColorLevels - 1));
-            i = CLAMP(i, 0, kNumColorLevels - 1);
+            i = AZStd::clamp(i, 0, kNumColorLevels - 1);
             crtX = static_cast<UINT>(rcGraph.left() + x + 1);
             scaleR = scaleG = scaleB = scaleA = 0;
 
@@ -351,7 +345,7 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
         {
             pos = (float)x / graphWidth;
             i = static_cast<int>((float)((int)(pos * kNumColorLevels) % aThirdOfNumColorLevels) / aThirdOfNumColorLevels * kNumColorLevels);
-            i = CLAMP(i, 0, kNumColorLevels - 1);
+            i = AZStd::clamp(i, 0, kNumColorLevels - 1);
             scale = 0;
 
             // R

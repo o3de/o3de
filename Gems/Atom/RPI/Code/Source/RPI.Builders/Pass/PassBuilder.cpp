@@ -11,7 +11,7 @@
 
 #include <AzCore/Asset/AssetManagerBus.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
@@ -28,7 +28,7 @@ namespace AZ
     {
         namespace
         {
-            static const char* PassBuilderName = "PassBuilder";
+            [[maybe_unused]] static const char* PassBuilderName = "PassBuilder";
             static const char* PassBuilderJobKey = "Pass Asset Builder";
             static const char* PassAssetExtension = "pass";
         }

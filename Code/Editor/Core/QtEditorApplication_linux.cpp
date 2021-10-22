@@ -8,11 +8,27 @@
 
 #include "QtEditorApplication.h"
 
+#ifdef PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+#include <AzFramework/XcbEventHandler.h>
+#endif
+
 namespace Editor
 {
-    bool EditorQtApplication::nativeEventFilter(const QByteArray& , void* , long* )
+    bool EditorQtApplication::nativeEventFilter([[maybe_unused]] const QByteArray& eventType, void* message, long*)
     {
-        // TODO_KDAB_LINUX
+        if (GetIEditor()->IsInGameMode())
+        {
+#ifdef PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+            // We need to handle RAW Input events in a separate loop. This is a workaround to enable XInput2 RAW Inputs using Editor mode.
+            // TODO To have this call here might be not be perfect.
+            AzFramework::XcbEventHandlerBus::Broadcast(&AzFramework::XcbEventHandler::PollSpecialEvents);
+
+            // Now handle the rest of the events.
+            AzFramework::XcbEventHandlerBus::Broadcast(
+                &AzFramework::XcbEventHandler::HandleXcbEvent, static_cast<xcb_generic_event_t*>(message));
+#endif
+            return true;
+        }
         return false;
     }
-}
+} // namespace Editor

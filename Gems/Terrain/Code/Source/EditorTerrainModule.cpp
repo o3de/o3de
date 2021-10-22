@@ -7,7 +7,15 @@
  */
 
 #include <EditorTerrainModule.h>
+#include <EditorComponents/EditorTerrainHeightGradientListComponent.h>
+#include <EditorComponents/EditorTerrainLayerSpawnerComponent.h>
+#include <EditorComponents/EditorTerrainSurfaceGradientListComponent.h>
 #include <EditorComponents/EditorTerrainSystemComponent.h>
+#include <EditorComponents/EditorTerrainWorldComponent.h>
+#include <EditorComponents/EditorTerrainWorldDebuggerComponent.h>
+#include <EditorComponents/EditorTerrainWorldRendererComponent.h>
+#include <TerrainRenderer/EditorComponents/EditorTerrainSurfaceMaterialsListComponent.h>
+#include <TerrainRenderer/EditorComponents/EditorTerrainMacroMaterialComponent.h>
 
 namespace Terrain
 {
@@ -16,7 +24,16 @@ namespace Terrain
         m_descriptors.insert(
             m_descriptors.end(),
             {
+                Terrain::EditorTerrainHeightGradientListComponent::CreateDescriptor(),
+                Terrain::EditorTerrainLayerSpawnerComponent::CreateDescriptor(),
+                Terrain::EditorTerrainMacroMaterialComponent::CreateDescriptor(),
+                Terrain::EditorTerrainSurfaceGradientListComponent::CreateDescriptor(),
                 Terrain::EditorTerrainSystemComponent::CreateDescriptor(),
+                Terrain::EditorTerrainSurfaceMaterialsListComponent::CreateDescriptor(),
+                Terrain::EditorTerrainWorldComponent::CreateDescriptor(),
+                Terrain::EditorTerrainWorldDebuggerComponent::CreateDescriptor(),
+                Terrain::EditorTerrainWorldRendererComponent::CreateDescriptor(),
+
             });
     }
 

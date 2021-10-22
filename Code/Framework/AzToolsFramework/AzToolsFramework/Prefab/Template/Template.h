@@ -63,6 +63,10 @@ namespace AzToolsFramework
             PrefabDomValueConstReference GetInstancesValue() const;
 
             const AZ::IO::Path& GetFilePath() const;
+            void SetFilePath(const AZ::IO::PathView& path);
+
+            // To tell if this Template was created from an product asset
+            bool IsProcedural() const;
 
         private:
             // Container for keeping links representing the Template's nested instances.
@@ -79,6 +83,9 @@ namespace AzToolsFramework
 
             // Flag to tell if this Template has changes that have yet to be saved to file.
             bool m_isDirty = false;
+
+            // Flag to tell if this Template was generated outside the Editor
+            mutable AZStd::optional<bool> m_isProcedural;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

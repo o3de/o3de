@@ -184,14 +184,9 @@ namespace AZ
             m_stagingMemoryAllocator.ReportMemoryUsage(builder);
         }
 
-        void Device::UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const
+        void Device::UpdateCpuTimingStatisticsInternal() const
         {
-            m_commandQueueContext.UpdateCpuTimingStatistics(cpuTimingStatistics);
-        }
-
-        void Device::BeginFrameInternal()
-        {
-            m_commandQueueContext.Begin();
+            m_commandQueueContext.UpdateCpuTimingStatistics();
         }
 
         void Device::EndFrameInternal()
@@ -629,6 +624,21 @@ namespace AZ
         bool Device::IsAftermathInitialized() const
         {
             return m_isAftermathInitialized;
+        }
+
+        RHI::ResultCode Device::CompactSRGMemory()
+        {
+            if (m_isDescriptorHeapCompactionNeeded)
+            {
+                m_isDescriptorHeapCompactionNeeded = false;
+                return m_descriptorContext->CompactDescriptorHeap();
+            }
+            return RHI::ResultCode::Success;
+        }
+
+        void Device::DescriptorHeapCompactionNeeded()
+        {
+            m_isDescriptorHeapCompactionNeeded = true;
         }
     }
 }

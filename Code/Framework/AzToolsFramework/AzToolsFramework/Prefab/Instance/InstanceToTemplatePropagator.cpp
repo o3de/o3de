@@ -156,7 +156,7 @@ namespace AzToolsFramework
             }
         }
 
-        bool InstanceToTemplatePropagator::PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, InstanceOptionalReference instanceToExclude)
+        bool InstanceToTemplatePropagator::PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, bool immediate, InstanceOptionalReference instanceToExclude)
         {
             PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
 
@@ -178,7 +178,7 @@ namespace AzToolsFramework
                     (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),
                     "Some of the patches were not successfully applied.");
                 m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, true);
-                m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId, instanceToExclude);
+                m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId, immediate, instanceToExclude);
                 return true;
             }
         }
@@ -262,8 +262,6 @@ namespace AzToolsFramework
         void InstanceToTemplatePropagator::AddPatchesToLink(const PrefabDom& patches, Link& link)
         {
             PrefabDom& linkDom = link.GetLinkDom();
-            PrefabDomValueReference linkPatchesReference =
-                PrefabDomUtils::FindPrefabDomValue(linkDom, PrefabDomUtils::PatchesName);
 
             /*
             If the original allocator the patches were created with gets destroyed, then the patches would become garbage in the

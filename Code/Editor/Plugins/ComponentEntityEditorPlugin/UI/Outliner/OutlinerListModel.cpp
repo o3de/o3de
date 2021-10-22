@@ -1234,8 +1234,6 @@ bool OutlinerListModel::ReparentEntities(const AZ::EntityId& newParentId, const 
 QMimeData* OutlinerListModel::mimeData(const QModelIndexList& indexes) const
 {
     AZ_PROFILE_FUNCTION(AzToolsFramework);
-    AZ::TypeId uuid1 = AZ::AzTypeInfo<AZ::Entity>::Uuid();
-    AZ::TypeId uuid2 = AZ::AzTypeInfo<AzToolsFramework::EditorEntityIdContainer>::Uuid();
 
     AzToolsFramework::EditorEntityIdContainer entityIdList;
     for (const QModelIndex& index : indexes)
@@ -1462,13 +1460,11 @@ void OutlinerListModel::OnEntityRuntimeActivationChanged(AZ::EntityId entityId, 
     QueueEntityUpdate(entityId);
 }
 
-void OutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin(AZ::EntityId parentId, AZ::EntityId childId)
+void OutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)
 {
     //add/remove operations trigger selection change signals which assert and break undo/redo operations in progress in inspector etc.
     //so disallow selection updates until change is complete
     emit EnableSelectionUpdates(false);
-    auto parentIndex = GetIndexFromEntity(parentId);
-    auto childIndex = GetIndexFromEntity(childId);
     beginResetModel();
 }
 

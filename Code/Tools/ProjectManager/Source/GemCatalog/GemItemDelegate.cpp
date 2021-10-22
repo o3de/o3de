@@ -8,9 +8,20 @@
 
 #include <GemCatalog/GemItemDelegate.h>
 #include <GemCatalog/GemModel.h>
+#include <GemCatalog/GemSortFilterProxyModel.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+
 #include <QEvent>
+#include <QAbstractItemView>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QHelpEvent>
+#include <QToolTip>
+#include <QHoverEvent>
+#include <QTextDocument>
+#include <QAbstractTextDocumentLayout>
+#include <QDesktopServices>
+#include <QMovie>
 
 namespace O3DE::ProjectManager
 {
@@ -23,6 +34,11 @@ namespace O3DE::ProjectManager
         AddPlatformIcon(GemInfo::Linux, ":/Linux.svg");
         AddPlatformIcon(GemInfo::macOS, ":/macOS.svg");
         AddPlatformIcon(GemInfo::Windows, ":/Windows.svg");
+
+        SetStatusIcon(m_notDownloadedPixmap, ":/Download.svg");
+        SetStatusIcon(m_unknownStatusPixmap, ":/X.svg");
+
+        m_downloadingMovie = new QMovie(":/in_progress.gif");
     }
 
     void GemItemDelegate::AddPlatformIcon(GemInfo::Platform platform, const QString& iconPath)
@@ -30,6 +46,25 @@ namespace O3DE::ProjectManager
         QPixmap pixmap(iconPath);
         qreal aspectRatio = static_cast<qreal>(pixmap.width()) / pixmap.height();
         m_platformIcons.insert(platform, QIcon(iconPath).pixmap(static_cast<int>(static_cast<qreal>(s_platformIconSize) * aspectRatio), s_platformIconSize));
+    }
+
+    void GemItemDelegate::SetStatusIcon(QPixmap& m_iconPixmap, const QString& iconPath)
+    {
+        QPixmap pixmap(iconPath);
+        float aspectRatio = static_cast<float>(pixmap.width()) / pixmap.height();
+        int xScaler = s_statusIconSize;
+        int yScaler = s_statusIconSize;
+
+        if (aspectRatio > 1.0f)
+        {
+            yScaler = static_cast<int>(1.0f / aspectRatio * s_statusIconSize);
+        }
+        else if (aspectRatio < 1.0f)
+        {
+            xScaler = static_cast<int>(aspectRatio * s_statusIconSize);
+        }
+
+        m_iconPixmap = QPixmap(QIcon(iconPath).pixmap(xScaler, yScaler));
     }
 
     void GemItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const
@@ -46,6 +81,8 @@ namespace O3DE::ProjectManager
 
         QRect fullRect, itemRect, contentRect;
         CalcRects(options, fullRect, itemRect, contentRect);
+
+        QRect buttonRect = CalcButtonRect(contentRect);
 
         QFont standardFont(options.font);
         standardFont.setPixelSize(static_cast<int>(s_fontSize));
@@ -99,28 +136,29 @@ namespace O3DE::ProjectManager
         painter->drawText(gemCreatorRect, Qt::TextSingleLine, gemCreator);
 
         // Gem summary
-
-        // In case there are feature tags displayed at the bottom, decrease the size of the summary text field.
         const QStringList featureTags = GemModel::GetFeatures(modelIndex);
-        const int featureTagAreaHeight = 30;
-        const int summaryHeight = contentRect.height() - (!featureTags.empty() * featureTagAreaHeight);
-
-        const int additionalSummarySpacing = s_itemMargins.right() * 3;
-        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - additionalSummarySpacing,
-            summaryHeight);
-        const QRect summaryRect = QRect(/*topLeft=*/QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), summarySize);
-
-        painter->setFont(standardFont);
-        painter->setPen(m_textColor);
-
+        const bool hasTags = !featureTags.isEmpty();
         const QString summary = GemModel::GetSummary(modelIndex);
-        painter->drawText(summaryRect, Qt::AlignLeft | Qt::TextWordWrap, summary);
+        const QRect summaryRect = CalcSummaryRect(contentRect, hasTags);
+        DrawText(summary, painter, summaryRect, standardFont);
 
-        DrawButton(painter, contentRect, modelIndex);
+        DrawDownloadStatusIcon(painter, contentRect, buttonRect, modelIndex);
+        DrawButton(painter, buttonRect, modelIndex);
         DrawPlatformIcons(painter, contentRect, modelIndex);
         DrawFeatureTags(painter, contentRect, featureTags, standardFont, summaryRect);
 
         painter->restore();
+    }
+
+    QRect GemItemDelegate::CalcSummaryRect(const QRect& contentRect, bool hasTags) const
+    {
+        const int featureTagAreaHeight = 30;
+        const int summaryHeight = contentRect.height() - (hasTags * featureTagAreaHeight);
+
+        const int additionalSummarySpacing = s_itemMargins.right() * 3;
+        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - additionalSummarySpacing,
+            summaryHeight);
+        return QRect(QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), summarySize);
     }
 
     QSize GemItemDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const
@@ -149,8 +187,7 @@ namespace O3DE::ProjectManager
                 return true;
             }
         }
-
-        if (event->type() == QEvent::MouseButtonPress)
+        else if (event->type() == QEvent::MouseButtonPress)
         {
             QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
 
@@ -164,9 +201,87 @@ namespace O3DE::ProjectManager
                 GemModel::SetIsAdded(*model, modelIndex, !isAdded);
                 return true;
             }
+
+            // we must manually handle html links because we aren't using QLabels
+            const QStringList featureTags = GemModel::GetFeatures(modelIndex);
+            const bool hasTags = !featureTags.isEmpty();
+            const QRect summaryRect = CalcSummaryRect(contentRect, hasTags);
+            if (summaryRect.contains(mouseEvent->pos()))
+            {
+                const QString html = GemModel::GetSummary(modelIndex);
+                QString anchor = anchorAt(html, mouseEvent->pos(), summaryRect);
+                if (!anchor.isEmpty())
+                {
+                    QDesktopServices::openUrl(QUrl(anchor));
+                    return true;
+                }
+            }
         }
 
         return QStyledItemDelegate::editorEvent(event, model, option, modelIndex);
+    }
+
+    QString GetGemNameList(const QVector<QModelIndex> modelIndices)
+    {
+        QString gemNameList;
+        for (int i = 0; i < modelIndices.size(); ++i)
+        {
+            if (!gemNameList.isEmpty())
+            {
+                if (i == modelIndices.size() - 1)
+                {
+                    gemNameList.append(" and ");
+                }
+                else
+                {
+                    gemNameList.append(", ");
+                }
+            }
+
+            gemNameList.append(GemModel::GetDisplayName(modelIndices[i]));
+        }
+
+        return gemNameList;
+    }
+
+    bool GemItemDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, const QStyleOptionViewItem& option, const QModelIndex& index)
+    {
+        if (event->type() == QEvent::ToolTip)
+        {
+            QRect fullRect, itemRect, contentRect;
+            CalcRects(option, fullRect, itemRect, contentRect);
+            const QRect buttonRect = CalcButtonRect(contentRect);
+            if (buttonRect.contains(event->pos()))
+            {
+                if (!QToolTip::isVisible())
+                {
+                    if(GemModel::IsAddedDependency(index) && !GemModel::IsAdded(index))
+                    {
+                        const GemModel* gemModel = GemModel::GetSourceModel(index.model());
+                        AZ_Assert(gemModel, "Failed to obtain GemModel");
+
+                        // we only want to display the gems that must be de-selected to automatically
+                        // disable this dependency, so don't include any that haven't been selected (added) 
+                        constexpr bool addedOnly = true;
+                        QVector<QModelIndex> dependents = gemModel->GatherDependentGems(index, addedOnly);
+                        QString nameList = GetGemNameList(dependents);
+                        if (!nameList.isEmpty())
+                        {
+                            QToolTip::showText(event->globalPos(), tr("This gem is a dependency of %1.\nTo disable this gem, first disable %1.").arg(nameList));
+                        }
+                    }
+                }
+                return true;
+            }
+            else if (QToolTip::isVisible())
+            {
+                QToolTip::hideText();
+                event->ignore();
+                return true;
+            }
+        }
+
+        return QStyledItemDelegate::helpEvent(event, view, option, index);
     }
 
     void GemItemDelegate::CalcRects(const QStyleOptionViewItem& option, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const
@@ -184,7 +299,7 @@ namespace O3DE::ProjectManager
 
     QRect GemItemDelegate::CalcButtonRect(const QRect& contentRect) const
     {
-        const QPoint topLeft = QPoint(contentRect.right() - s_buttonWidth - s_itemMargins.right(), contentRect.top() + contentRect.height() / 2 - s_buttonHeight / 2);
+        const QPoint topLeft = QPoint(contentRect.right() - s_buttonWidth, contentRect.center().y() - s_buttonHeight / 2);
         const QSize size = QSize(s_buttonWidth, s_buttonHeight);
         return QRect(topLeft, size);
     }
@@ -254,17 +369,60 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemItemDelegate::DrawButton(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const
+    AZStd::unique_ptr<QTextDocument> GetTextDocument(const QString& text, int width)
+    {
+        // using unique_ptr as a workaround for QTextDocument having a private copy constructor
+        auto doc = AZStd::make_unique<QTextDocument>();
+        QTextOption textOption(doc->defaultTextOption());
+        textOption.setWrapMode(QTextOption::WordWrap);
+        doc->setDefaultTextOption(textOption);
+        doc->setHtml(text);
+        doc->setTextWidth(width);
+        return doc;
+    }
+
+    void GemItemDelegate::DrawText(const QString& text, QPainter* painter, const QRect& rect, const QFont& standardFont) const 
     {
         painter->save();
-        const QRect buttonRect = CalcButtonRect(contentRect);
+
+        if (text.contains('<'))
+        {
+            painter->translate(rect.topLeft());
+
+            // use QTextDocument because drawText does not support rich text or html
+            QAbstractTextDocumentLayout::PaintContext paintContext;
+            paintContext.clip = QRect(0, 0, rect.width(), rect.height());
+            paintContext.palette.setColor(QPalette::Text, painter->pen().color());
+
+            AZStd::unique_ptr<QTextDocument> textDocument = GetTextDocument(text, rect.width());
+            textDocument->documentLayout()->draw(painter, paintContext);
+        }
+        else
+        {
+            painter->setFont(standardFont);
+            painter->setPen(m_textColor);
+            painter->drawText(rect, Qt::AlignLeft | Qt::TextWordWrap, text);
+        }
+
+        painter->restore();
+    }
+
+    void GemItemDelegate::DrawButton(QPainter* painter, const QRect& buttonRect, const QModelIndex& modelIndex) const
+    {
+        painter->save();
         QPoint circleCenter;
 
-        const bool isAdded = GemModel::IsAdded(modelIndex);
-        if (isAdded)
+        if (GemModel::IsAdded(modelIndex))
         {
             painter->setBrush(m_buttonEnabledColor);
             painter->setPen(m_buttonEnabledColor);
+
+            circleCenter = buttonRect.center() + QPoint(buttonRect.width() / 2 - s_buttonBorderRadius + 1, 1);
+        }
+        else if (GemModel::IsAddedDependency(modelIndex))
+        {
+            painter->setBrush(m_buttonImplicitlyEnabledColor);
+            painter->setPen(m_buttonImplicitlyEnabledColor);
 
             circleCenter = buttonRect.center() + QPoint(buttonRect.width() / 2 - s_buttonBorderRadius + 1, 1);
         }
@@ -281,5 +439,61 @@ namespace O3DE::ProjectManager
         painter->drawEllipse(circleCenter, s_buttonCircleRadius, s_buttonCircleRadius);
 
         painter->restore();
+    }
+
+    QString GemItemDelegate::anchorAt(const QString& html, const QPoint& position, const QRect& rect)
+    {
+        if (!html.isEmpty())
+        {
+            AZStd::unique_ptr<QTextDocument> doc = GetTextDocument(html, rect.width());
+            QAbstractTextDocumentLayout* layout = doc->documentLayout();
+            if (layout)
+            {
+                return layout->anchorAt(position - rect.topLeft());
+            }
+        }
+
+        return QString();
+    }
+
+    void GemItemDelegate::DrawDownloadStatusIcon(QPainter* painter, const QRect& contentRect, const QRect& buttonRect, const QModelIndex& modelIndex) const
+    {
+        const GemInfo::DownloadStatus downloadStatus = GemModel::GetDownloadStatus(modelIndex);
+
+        // Show no icon if gem is already downloaded
+        if (downloadStatus == GemInfo::DownloadStatus::Downloaded)
+        {
+            return;
+        }
+
+        QPixmap currentFrame;
+        const QPixmap* statusPixmap;
+        if (downloadStatus == GemInfo::DownloadStatus::Downloading)
+        {
+            if (m_downloadingMovie->state() != QMovie::Running)
+            {
+                m_downloadingMovie->start();
+                emit MovieStartedPlaying(m_downloadingMovie);
+            }
+
+            currentFrame = m_downloadingMovie->currentPixmap();
+            currentFrame = currentFrame.scaled(s_statusIconSize, s_statusIconSize);
+            statusPixmap = &currentFrame;
+        }
+        else if (downloadStatus == GemInfo::DownloadStatus::NotDownloaded)
+        {
+            statusPixmap = &m_notDownloadedPixmap;
+        }
+        else
+        {
+            statusPixmap = &m_unknownStatusPixmap;
+        }
+
+        QSize statusSize = statusPixmap->size();
+
+        painter->drawPixmap(
+            buttonRect.left() - s_statusButtonSpacing - statusSize.width(),
+            contentRect.center().y() - statusSize.height() / 2,
+            *statusPixmap);
     }
 } // namespace O3DE::ProjectManager

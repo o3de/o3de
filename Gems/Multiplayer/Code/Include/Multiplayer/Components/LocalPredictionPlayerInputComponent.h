@@ -21,6 +21,7 @@ namespace Multiplayer
         AZ_MULTIPLAYER_COMPONENT(Multiplayer::LocalPredictionPlayerInputComponent, s_localPredictionPlayerInputComponentConcreteUuid, Multiplayer::LocalPredictionPlayerInputComponentBase);
 
         static void Reflect([[maybe_unused]] AZ::ReflectContext* context);
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
 
         void OnInit() override;
         void OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating) override;
@@ -70,6 +71,8 @@ namespace Multiplayer
         void UpdateAutonomous(AZ::TimeMs deltaTimeMs);
         void UpdateBankedTime(AZ::TimeMs deltaTimeMs);
 
+        bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
+
         using StateHistoryItem = AZStd::unique_ptr<AzNetworking::StringifySerializer>;
         AZStd::map<ClientInputId, StateHistoryItem> m_predictiveStateHistory;
 
@@ -82,8 +85,8 @@ namespace Multiplayer
         AZ::ScheduledEvent m_autonomousUpdateEvent; // Drives autonomous input collection
         AZ::ScheduledEvent m_updateBankedTimeEvent; // Drives authority bank time updates
 
-        EntityMigrationStartEvent::Handler m_migrateStartHandler;
-        EntityMigrationEndEvent::Handler m_migrateEndHandler;
+        ClientMigrationStartEvent::Handler m_migrateStartHandler;
+        ClientMigrationEndEvent::Handler m_migrateEndHandler;
 
         double m_moveAccumulator = 0.0;
         double m_clientBankedTime = 0.0;

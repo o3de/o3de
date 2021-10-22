@@ -48,8 +48,6 @@ public:
         void());
     MOCK_METHOD0(GetModuleFilter,
         const char*());
-    MOCK_CONST_METHOD1(GetMemoryUsage,
-        void(ICrySizer * pSizer));
     MOCK_METHOD1(Indent,
         void(class CLogIndenter * indenter));
     MOCK_METHOD1(Unindent,

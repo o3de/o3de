@@ -16,14 +16,17 @@
 #include "Util/WhiteBoxEditorUtil.h"
 #include "WhiteBoxComponent.h"
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/numeric.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
@@ -31,7 +34,6 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
-#include <QFileDialog>
 #include <QMessageBox>
 #include <WhiteBox/EditorWhiteBoxColliderBus.h>
 #include <WhiteBox/WhiteBoxBus.h>
@@ -128,7 +130,7 @@ namespace WhiteBox
 
         AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
             &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs,
-            "@devroot@/Gems/WhiteBox/Editor/Scripts/default_shapes.py", scriptArgs);
+            "@engroot@/Gems/WhiteBox/Editor/Scripts/default_shapes.py", scriptArgs);
 
         EditorWhiteBoxComponentNotificationBus::Event(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()),
@@ -498,13 +500,13 @@ namespace WhiteBox
 
     static AZStd::string WhiteBoxPathAtProjectRoot(const AZStd::string_view name, const AZStd::string_view extension)
     {
-        const char* projectFolder = nullptr;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-            projectFolder, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAbsoluteDevGameFolderPath);
-
-        return AZStd::string::format(
-            "%s\\%.*s_whitebox.%.*s", projectFolder, aznumeric_cast<int>(name.size()), name.data(),
-            aznumeric_cast<int>(extension.size()), extension.data());
+        AZ::IO::Path whiteBoxPath;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Get(whiteBoxPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectPath);
+        }
+        whiteBoxPath /= AZ::IO::FixedMaxPathString::format("%.*s.%.*s", AZ_STRING_ARG(name), AZ_STRING_ARG(extension));
+        return whiteBoxPath.Native();
     }
 
     void EditorWhiteBoxComponent::ExportToFile()
@@ -513,7 +515,7 @@ namespace WhiteBox
             WhiteBoxPathAtProjectRoot(GetEntity()->GetName(), ObjExtension);
 
         const QString fileFilter = AZStd::string::format("*.%s", ObjExtension).c_str();
-        const QString absoluteSaveFilePath = QFileDialog::getSaveFileName(
+        const QString absoluteSaveFilePath = AzQtComponents::FileDialog::GetSaveFileName(
             nullptr, "Save As...", QString(initialAbsolutePathToExport.c_str()), fileFilter);
 
         const auto absoluteSaveFilePathUtf8 = absoluteSaveFilePath.toUtf8();
@@ -577,7 +579,7 @@ namespace WhiteBox
         {
             const QString fileFilter =
                 AZStd::string::format("*.%s", Pipeline::WhiteBoxMeshAssetHandler::AssetFileExtension).c_str();
-            const QString absolutePath = QFileDialog::getSaveFileName(
+            const QString absolutePath = AzQtComponents::FileDialog::GetSaveFileName(
                 nullptr, "Save As Asset...", QString(initialAbsolutePath.c_str()), fileFilter);
 
             return AZStd::string(absolutePath.toUtf8());

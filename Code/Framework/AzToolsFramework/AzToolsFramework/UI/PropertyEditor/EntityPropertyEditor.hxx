@@ -26,6 +26,7 @@
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
@@ -59,6 +60,7 @@ namespace AzToolsFramework
 {
     class ComponentEditor;
     class ComponentPaletteWidget;
+    class ComponentModeCollectionInterface;
     struct SourceControlFileInfo;
 
     namespace AssetBrowser
@@ -108,6 +110,7 @@ namespace AzToolsFramework
         , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
         , public AzToolsFramework::EntityPropertyEditorRequestBus::Handler
         , public AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
+        , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
         , public EditorInspectorComponentNotificationBus::MultiHandler
         , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
         , public AZ::EntitySystemBus::Handler
@@ -139,8 +142,8 @@ namespace AzToolsFramework
         EntityPropertyEditor(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags(), bool isLevelEntityEditor = false);
         virtual ~EntityPropertyEditor();
 
-        virtual void BeforeUndoRedo();
-        virtual void AfterUndoRedo();
+        void BeforeUndoRedo() override;
+        void AfterUndoRedo() override;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -231,9 +234,13 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         // EditorComponentModeNotificationBus
-        void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-        void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
         void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
+
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
 
         // EntityPropertEditorRequestBus
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
@@ -249,8 +256,8 @@ namespace AzToolsFramework
         bool IsEntitySelected(const AZ::EntityId& id) const;
         bool IsSingleEntitySelected(const AZ::EntityId& id) const;
 
-        virtual void GotSceneSourceControlStatus(AzToolsFramework::SourceControlFileInfo& fileInfo);
-        virtual void PerformActionsBasedOnSceneStatus(bool sceneIsNew, bool readOnly);
+        void GotSceneSourceControlStatus(AzToolsFramework::SourceControlFileInfo& fileInfo) override;
+        void PerformActionsBasedOnSceneStatus(bool sceneIsNew, bool readOnly) override;
 
         // enable/disable editor
         void EnableEditor(bool enabled);
@@ -626,6 +633,8 @@ namespace AzToolsFramework
         QPixmap m_reorderRowImage;
         float m_moveFadeSecondsRemaining;
         AZStd::vector<int> m_indexMapOfMovedRow;
+
+        AzToolsFramework::ComponentModeCollectionInterface* m_componentModeCollection = nullptr;
 
         // When m_initiatingPropertyChangeNotification is set to true, it means this EntityPropertyEditor is
         // broadcasting a change to all listeners about a property change for a given entity.  This is needed

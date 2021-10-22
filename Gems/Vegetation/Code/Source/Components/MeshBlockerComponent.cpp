@@ -19,6 +19,7 @@
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
 #include <Vegetation/Ebuses/FilterRequestBus.h>
 #include <Vegetation/InstanceData.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 namespace Vegetation
 {
@@ -259,7 +260,7 @@ namespace Vegetation
         for (const auto& id : processedIds)
         {
             bool accepted = true;
-            FilterRequestBus::EnumerateHandlersId(id, [this, &instanceData, &accepted](FilterRequestBus::Events* handler) {
+            FilterRequestBus::EnumerateHandlersId(id, [&instanceData, &accepted](FilterRequestBus::Events* handler) {
                 accepted = handler->Evaluate(instanceData);
                 return accepted;
             });

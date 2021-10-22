@@ -52,13 +52,13 @@ namespace GridMate
 
         MemberIDCompact GetID() const { return m_id; }
 
-        virtual AZStd::string ToString() const
+        AZStd::string ToString() const override
         {
             return AZStd::string::format("%x", m_id);
         }
-        virtual AZStd::string ToAddress() const        { return m_address; }
-        virtual MemberIDCompact Compact() const { return m_id; }
-        virtual bool IsValid() const            { return m_id != 0; }
+        AZStd::string ToAddress() const override        { return m_address; }
+        MemberIDCompact Compact() const override { return m_id; }
+        bool IsValid() const override            { return m_id != 0; }
 
     private:
         MemberIDCompact m_id;
@@ -285,9 +285,9 @@ namespace GridMate
         static const char* GetChunkName() { return "GridMateLANMember"; }
 
         /// return an abstracted member id. (member ID is world unique but unrelated to player ID it's related to the session).
-        virtual const MemberID& GetId() const           { return m_memberId; }
+        const MemberID& GetId() const override           { return m_memberId; }
         /// returns a base player id, it's implementation is platform dependent. (NOT supported)
-        virtual const PlayerId* GetPlayerId() const     { return nullptr; }
+        const PlayerId* GetPlayerId() const override     { return nullptr; }
 
         /// Remote member ctor.
         LANMember(ConnectionID connId, const LANMemberID& id, LANSession* session);
@@ -321,16 +321,16 @@ namespace GridMate
         friend class LANSessionService;
     public:
         GM_CLASS_ALLOCATOR(LANSearch);
-        virtual ~LANSearch();
+        ~LANSearch() override;
 
         /// Return true if the search has finished, otherwise false.
-        virtual unsigned int        GetNumResults() const                   { return static_cast<unsigned int>(m_results.size()); }
-        virtual const SearchInfo*   GetResult(unsigned int index) const     { return &m_results[index]; }
-        virtual void                AbortSearch();
+        unsigned int        GetNumResults() const override                   { return static_cast<unsigned int>(m_results.size()); }
+        const SearchInfo*   GetResult(unsigned int index) const override     { return &m_results[index]; }
+        void                AbortSearch() override;
 
     private:
         LANSearch(const LANSearchParams& searchParams, SessionService* service);
-        virtual void    Update();
+        void    Update() override;
         void            SearchDone();
 
         Driver*         m_driver;

@@ -9,7 +9,7 @@
 
 #include "UiEditorAnimationBus.h"
 #include "EditorDefs.h"
-#include "Resource.h"
+#include "Editor/Resource.h"
 #include "UiAnimViewSequenceManager.h"
 #include "UiAnimViewSplineCtrl.h"
 #include "UiAnimViewSequence.h"
@@ -28,7 +28,7 @@ public:
     CUndoUiAnimViewSplineCtrl(CUiAnimViewSplineCtrl* pCtrl, std::vector<ISplineInterpolator*>& splineContainer)
         : CUndoAnimKeySelection(CUiAnimViewSequenceManager::GetSequenceManager()->GetAnimationContext()->GetSequence())
     {
-        m_sequenceName = CUiAnimViewSequenceManager::GetSequenceManager()->GetAnimationContext()->GetSequence()->GetName();
+        m_sequenceName = QString::fromUtf8(CUiAnimViewSequenceManager::GetSequenceManager()->GetAnimationContext()->GetSequence()->GetName().c_str());
 
         m_pCtrl = pCtrl;
 
@@ -589,7 +589,6 @@ void CUiAnimViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
 
     CUiAnimViewSequenceNotificationContext context(pSequence);
 
-    QPoint cMousePosPrev = m_cMousePos;
     m_cMousePos = point;
 
     if (m_editMode == SelectMode)

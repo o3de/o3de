@@ -13,7 +13,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 
-#include <Atom/RPI.Public/FeatureProcessorFactory.h>
+#include <TerrainSystem/TerrainSystem.h>
 
 namespace Terrain
 {
@@ -45,9 +45,8 @@ namespace Terrain
         incompatible.push_back(AZ_CRC_CE("TerrainService"));
     }
 
-    void TerrainSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void TerrainSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC_CE("RPISystem"));
     }
 
     void TerrainSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -60,9 +59,15 @@ namespace Terrain
 
     void TerrainSystemComponent::Activate()
     {
+        // Currently, the Terrain System Component owns the Terrain System instance because the Terrain World component gets recreated
+        // every time an entity is added or removed to a level.  If this ever changes, the Terrain System ownership could move into
+        // the level component.
+        m_terrainSystem = new TerrainSystem();
     }
 
     void TerrainSystemComponent::Deactivate()
     {
+        delete m_terrainSystem;
+        m_terrainSystem = nullptr;
     }
 }

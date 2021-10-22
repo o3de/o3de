@@ -20,11 +20,13 @@
 #include <AzCore/IO/IOUtils.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/std/string/regex.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 
@@ -35,6 +37,7 @@
 #include <AzslCompiler.h>
 
 #include "ShaderPlatformInterfaceRequest.h"
+#include "ShaderBuilder_Traits_Platform.h"
 #include "AtomShaderConfig.h"
 
 #include "SrgLayoutUtility.h"
@@ -45,13 +48,13 @@ namespace AZ
     {
         namespace ShaderBuilderUtility
         {
-            static constexpr char ShaderBuilderUtilityName[] = "ShaderBuilderUtility";
+            [[maybe_unused]] static constexpr char ShaderBuilderUtilityName[] = "ShaderBuilderUtility";
 
             Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile)
             {
                 RPI::ShaderSourceData shaderSourceData;
 
-                auto document = JsonSerializationUtils::ReadJsonFile(fullPathToJsonFile);
+                auto document = JsonSerializationUtils::ReadJsonFile(fullPathToJsonFile, AZ::RPI::JsonUtils::DefaultMaxFileSize);
 
                 if (!document.IsSuccess())
                 {
@@ -127,7 +130,7 @@ namespace AZ
                 AZStd::unordered_map<int, Outcome<rapidjson::Document, AZStd::string>> outcomes;
                 for (int i : indicesOfInterest)
                 {
-                    outcomes[i] = JsonSerializationUtils::ReadJsonFile(pathOfJsonFiles[i]);
+                    outcomes[i] = JsonSerializationUtils::ReadJsonFile(pathOfJsonFiles[i], AZ::RPI::JsonUtils::DefaultMaxFileSize);
                     if (!outcomes[i].IsSuccess())
                     {
                         AZ_Error(builderName, false, "%s", outcomes[i].GetError().c_str());
@@ -454,11 +457,16 @@ namespace AZ
                 const uint32_t rhiUniqueIndex, const AZStd::string& platformIdentifier, const AZStd::string& shaderJsonPath,
                 const uint32_t supervariantIndex, RPI::ShaderAssetSubId shaderAssetSubId)
             {
-                // platform id from identifier
-                AzFramework::PlatformId platformId = AzFramework::PlatformId::PC;
+                // Define a fallback platform ID based on the current host platform
+                AzFramework::PlatformId platformId = AZ_TRAIT_ATOM_FALLBACK_ASSET_HOST_PLATFORM;
+
                 if (platformIdentifier == "pc")
                 {
                     platformId = AzFramework::PlatformId::PC;
+                }
+                else if (platformIdentifier == "linux")
+                {
+                    platformId = AzFramework::PlatformId::LINUX_ID;
                 }
                 else if (platformIdentifier == "mac")
                 {
@@ -471,6 +479,10 @@ namespace AZ
                 else if (platformIdentifier == "ios")
                 {
                     platformId = AzFramework::PlatformId::IOS;
+                }
+                else if (platformIdentifier == "server")
+                {
+                    platformId = AzFramework::PlatformId::SERVER;
                 }
 
                 uint32_t assetSubId = RPI::ShaderAsset::MakeProductAssetSubId(rhiUniqueIndex, supervariantIndex, aznumeric_cast<uint32_t>(shaderAssetSubId));
@@ -517,7 +529,7 @@ namespace AZ
                     {
                         // Search the function name into the list of valid entry points into the shader.
                         auto findId =
-                            AZStd::find_if(shaderEntryPoints.begin(), shaderEntryPoints.end(), [&functionName, &mask](const auto& item) {
+                            AZStd::find_if(shaderEntryPoints.begin(), shaderEntryPoints.end(), [&functionName](const auto& item) {
                                 return item.first == functionName;
                             });
 
@@ -618,7 +630,7 @@ namespace AZ
                 StructData inputStruct;
                 inputStruct.m_id = "";
 
-                auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToIaJson);
+                auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToIaJson, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                 if (!jsonOutcome.IsSuccess())
                 {
                     AZ_Error(ShaderBuilderUtilityName, false, "%s", jsonOutcome.GetError().c_str());
@@ -711,7 +723,7 @@ namespace AZ
                 StructData outputStruct;
                 outputStruct.m_id = "";
 
-                auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToOmJson);
+                auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(pathToOmJson, AZ::RPI::JsonUtils::DefaultMaxFileSize);
                 if (!jsonOutcome.IsSuccess())
                 {
                     AZ_Error(ShaderBuilderUtilityName, false, "%s", jsonOutcome.GetError().c_str());
@@ -807,6 +819,51 @@ namespace AZ
                     }
                 }
                 return success;
+            }
+
+            IncludedFilesParser::IncludedFilesParser()
+            {
+                AZStd::regex regex(R"(#\s*include\s+[<|"]([\w|/|\\|\.|-]+)[>|"])", AZStd::regex::ECMAScript);
+                m_includeRegex.swap(regex);
+            }
+
+            AZStd::vector<AZStd::string> IncludedFilesParser::ParseStringAndGetIncludedFiles(AZStd::string_view haystack) const
+            {
+                AZStd::vector<AZStd::string> listOfFilePaths;
+                AZStd::smatch match;
+                AZStd::string::const_iterator searchStart(haystack.cbegin());
+                while (AZStd::regex_search(searchStart, haystack.cend(), match, m_includeRegex))
+                {
+                    if (match.size() > 1)
+                    {
+                        AZStd::string relativeFilePath(match[1].str().c_str());
+                        AzFramework::StringFunc::Path::Normalize(relativeFilePath);
+                        listOfFilePaths.push_back(relativeFilePath);
+                    }
+                    searchStart = match.suffix().first;
+                }
+                return listOfFilePaths;
+            }
+
+            AZ::Outcome<AZStd::vector<AZStd::string>, AZStd::string> IncludedFilesParser::ParseFileAndGetIncludedFiles(AZStd::string_view sourceFilePath) const
+            {
+                AZ::IO::FileIOStream stream(sourceFilePath.data(), AZ::IO::OpenMode::ModeRead);
+                if (!stream.IsOpen())
+                {
+                    return AZ::Failure(AZStd::string::format("\"%s\" source file could not be opened.", sourceFilePath.data()));
+                }
+
+                if (!stream.CanRead())
+                {
+                    return AZ::Failure(AZStd::string::format("\"%s\" source file could not be read.", sourceFilePath.data()));
+                }
+
+                AZStd::string hayStack;
+                hayStack.resize_no_construct(stream.GetLength());
+                stream.Read(stream.GetLength(), hayStack.data());
+
+                auto listOfFilePaths = ParseStringAndGetIncludedFiles(hayStack);
+                return AZ::Success(AZStd::move(listOfFilePaths));
             }
 
         }  // namespace ShaderBuilderUtility

@@ -8,8 +8,6 @@
 
 
 #pragma once
-#ifndef CRYINCLUDE_EDITOR_EDITORDEFS_H
-#define CRYINCLUDE_EDITOR_EDITORDEFS_H
 
 #include <AzCore/PlatformDef.h>
 
@@ -186,5 +184,3 @@
 #endif
 #endif
 
-
-#endif // CRYINCLUDE_EDITOR_EDITORDEFS_H

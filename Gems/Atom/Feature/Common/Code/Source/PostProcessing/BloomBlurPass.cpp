@@ -271,8 +271,6 @@ namespace AZ
 
         void BloomBlurPass::BuildKernelData()
         {
-            RHI::Size sourceImageSize;
-
             m_weightData.clear();
             m_offsetData.clear();
             m_kernelRadiusData.clear();

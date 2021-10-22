@@ -56,7 +56,7 @@ namespace UnitTest
     }
 
 
-    // filesystem::path::is_absolute test
+    // PathView::IsAbsolute test
     TEST_F(PathFixture, IsAbsolute_ReturnsTrue)
     {
         using fixed_max_path = AZ::IO::FixedMaxPath;
@@ -88,7 +88,7 @@ namespace UnitTest
         static_assert(IsAbsolute());
     }
 
-    // filesystem::path::is_relative test
+    // PathView::isRelative test
     TEST_F(PathFixture, IsRelative_ReturnsTrue)
     {
         using fixed_max_path = AZ::IO::FixedMaxPath;
@@ -211,6 +211,82 @@ namespace UnitTest
             AZStd::tuple<AZStd::string_view, AZStd::string_view>("C:/test/foo", R"(c:\test/foo)"),
             AZStd::tuple<AZStd::string_view, AZStd::string_view>(R"(D:\test/bar/baz//foo)", "d:/test/bar/baz\\\\\\foo"),
             AZStd::tuple<AZStd::string_view, AZStd::string_view>(R"(foO/Bar)", "foo/bar")
+        ));
+
+
+    struct PathHashCompareParams
+    {
+        AZ::IO::PathView m_testPath{};
+        ::testing::Matcher<AZ::IO::PathView> m_compareMatcher;
+        ::testing::Matcher<size_t> m_hashMatcher;
+    };
+
+    class PathHashCompareFixture
+        : public ScopedAllocatorSetupFixture
+        , public ::testing::WithParamInterface<PathHashCompareParams>
+    {};
+
+    // Verifies that two paths that compare equal has their hash value compare equal
+    TEST_P(PathHashCompareFixture, PathsWhichCompareEqual_HashesToSameValue_Succeeds)
+    {
+        auto&& [testPath1, compareMatcher, hashMatcher] = GetParam();
+
+        // Compare path using parameterized Matcher
+        EXPECT_THAT(testPath1, compareMatcher);
+        // Compare hash using parameterized Matcher
+        const size_t testPath1Hash = AZStd::hash<AZ::IO::PathView>{}(testPath1);
+AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")
+        EXPECT_THAT(testPath1Hash, hashMatcher);
+AZ_POP_DISABLE_WARNING
+    }
+
+    INSTANTIATE_TEST_CASE_P(
+        HashPathCompareValidation,
+        PathHashCompareFixture,
+        ::testing::Values(
+            PathHashCompareParams{ AZ::IO::PathView("C:/test/foo", AZ::IO::WindowsPathSeparator),
+                testing::Eq(AZ::IO::PathView(R"(c:\test/foo)", AZ::IO::WindowsPathSeparator)),
+                testing::Eq(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(c:\test/foo)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/foo", AZ::IO::WindowsPathSeparator),
+                testing::Eq(AZ::IO::PathView(R"(/test/FOO)", AZ::IO::WindowsPathSeparator)),
+                testing::Eq(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/FOO)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("C:/test/foo", AZ::IO::WindowsPathSeparator),
+                testing::Eq(AZ::IO::PathView(R"(c:\test/foo)", AZ::IO::WindowsPathSeparator)),
+                testing::Eq(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(c:\test/foo)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("C:/test/foo", AZ::IO::PosixPathSeparator),
+                testing::Ne(AZ::IO::PathView(R"(c:\test/foo)", AZ::IO::WindowsPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(c:\test/foo)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView(R"(C:\test\foo)", AZ::IO::WindowsPathSeparator),
+                testing::Ne(AZ::IO::PathView(R"(c:/test/foo)", AZ::IO::PosixPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(c:/test/foo)", AZ::IO::PosixPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/aoo", AZ::IO::WindowsPathSeparator),
+                testing::Eq(AZ::IO::PathView(R"(/test/AOO)", AZ::IO::WindowsPathSeparator)),
+                testing::Eq(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/AOO)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/aoo", AZ::IO::PosixPathSeparator),
+                testing::Gt(AZ::IO::PathView(R"(/test/AOO)", AZ::IO::WindowsPathSeparator)),
+                testing::Eq(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/AOO)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/aoo", AZ::IO::WindowsPathSeparator),
+                testing::Gt(AZ::IO::PathView(R"(/test/AOO)", AZ::IO::PosixPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/AOO)", AZ::IO::PosixPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/AOO", AZ::IO::PosixPathSeparator),
+                testing::Lt(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::WindowsPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/AOO", AZ::IO::WindowsPathSeparator),
+                testing::Lt(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::PosixPathSeparator)),
+                testing::Eq(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::PosixPathSeparator))) },
+            // Paths with different character values, comparison based on path separator
+            PathHashCompareParams{ AZ::IO::PathView("/test/BOO", AZ::IO::PosixPathSeparator),
+                testing::Le(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::WindowsPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/BOO", AZ::IO::WindowsPathSeparator),
+                testing::Ge(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::WindowsPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/aoo)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/aoo", AZ::IO::WindowsPathSeparator),
+                testing::Le(AZ::IO::PathView(R"(/test/Boo)", AZ::IO::WindowsPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/Boo)", AZ::IO::WindowsPathSeparator))) },
+            PathHashCompareParams{ AZ::IO::PathView("/test/aoo", AZ::IO::PosixPathSeparator),
+                testing::Ge(AZ::IO::PathView(R"(/test/Boo)", AZ::IO::WindowsPathSeparator)),
+                testing::Ne(AZStd::hash<AZ::IO::PathView>{}(AZ::IO::PathView(R"(/test/Boo)", AZ::IO::WindowsPathSeparator))) }
         ));
 
     class PathSingleParamFixture
@@ -573,7 +649,16 @@ namespace UnitTest
             PathLexicallyNormalParams{ '/', "foo/./bar/..", "foo" },
             PathLexicallyNormalParams{ '/', "foo/.///bar/../", "foo" },
             PathLexicallyNormalParams{ '/', R"(/foo\./bar\..\)", "/foo" },
-            PathLexicallyNormalParams{ '\\', R"(C:/O3DE/dev/Cache\game/../pc)", R"(C:\O3DE\dev\Cache\pc)" }
+            PathLexicallyNormalParams{ '/', R"(/..)", "/" },
+            PathLexicallyNormalParams{ '\\', R"(C:/O3DE/dev/Cache\game/../pc)", R"(C:\O3DE\dev\Cache\pc)" },
+            PathLexicallyNormalParams{ '\\', R"(C:/foo/C:bar)", R"(C:\foo\bar)" },
+            PathLexicallyNormalParams{ '\\', R"(C:foo/C:bar)", R"(C:foo\bar)" },
+            PathLexicallyNormalParams{ '\\', R"(C:/foo/C:/bar)", R"(C:\bar)" },
+            PathLexicallyNormalParams{ '\\', R"(C:/foo/C:)", R"(C:\foo)" },
+            PathLexicallyNormalParams{ '\\', R"(C:/foo/C:/)", R"(C:\)" },
+            PathLexicallyNormalParams{ '\\', R"(C:/foo/D:bar)", R"(D:bar)" },
+            PathLexicallyNormalParams{ '\\', R"(..)", R"(..)" },
+            PathLexicallyNormalParams{ '\\', R"(foo/../../bar)", R"(..\bar)" }
         )
     );
 
@@ -613,7 +698,7 @@ namespace UnitTest
 
     using PathViewLexicallyProximateFixture = PathLexicallyFixture<PathViewLexicallyProximateParams>;
 
-    TEST_P(PathViewLexicallyProximateFixture, LexicallyProximate_ReturnsRelativePathIfNotEmptyOrTestPathIfNot)
+    TEST_P(PathViewLexicallyProximateFixture, LexicallyProximate_ReturnsRelativePathIfNotEmptyOrTestPath)
     {
         const auto& testParams = GetParam();
         AZ::IO::PathView testPath(testParams.m_testPathString, testParams.m_preferredSeparator);
@@ -641,7 +726,12 @@ namespace UnitTest
             PathViewLexicallyProximateParams{ '\\', "C:\\a\\b", "C:\\a\\d\\c", "..\\..\\b", false },
             PathViewLexicallyProximateParams{ '\\', "C:a\\b", "C:\\a\\b", "C:a\\b", false },
             PathViewLexicallyProximateParams{ '\\', "C:\\a\\b", "C:a\\b", "C:\\a\\b", false },
-            PathViewLexicallyProximateParams{ '\\', "E:\\a\\b", "F:\\a\\b", "E:\\a\\b", false }
+            PathViewLexicallyProximateParams{ '\\', "E:\\a\\b", "F:\\a\\b", "E:\\a\\b", false },
+            PathViewLexicallyProximateParams{ '\\', "D:/o3de/proJECT/cache/asset.txt", "d:\\o3de\\Project\\Cache", "asset.txt", true },
+            PathViewLexicallyProximateParams{ '\\', "D:/o3de/proJECT/cache/pc/..", "d:\\o3de\\Project\\Cache", "pc\\..", true },
+            PathViewLexicallyProximateParams{ '\\', "D:/o3de/proJECT/cache/pc/asset.txt/..", "d:\\o3de\\Project\\Cache\\", "pc\\asset.txt\\..", true },
+            PathViewLexicallyProximateParams{ '\\', "D:/o3de/proJECT/cache\\", "D:\\o3de\\Project\\Cache/", ".", true },
+            PathViewLexicallyProximateParams{ '\\', "D:/o3de/proJECT/cache/../foo", "D:\\o3de\\Project\\Cache", "..\\foo", false }
         )
     );
 
@@ -866,18 +956,8 @@ namespace UnitTest
 namespace Benchmark
 {
     class PathBenchmarkFixture
-        : public ::benchmark::Fixture
-        , public ::UnitTest::AllocatorsBase
+        : public ::UnitTest::AllocatorsBenchmarkFixture
     {
-    public:
-        void SetUp([[maybe_unused]] const ::benchmark::State& state)
-        {
-            ::UnitTest::AllocatorsBase::SetupAllocator();
-        }
-        void TearDown([[maybe_unused]] const ::benchmark::State& state)
-        {
-            ::UnitTest::AllocatorsBase::TeardownAllocator();
-        }
     protected:
         AZStd::fixed_vector<const char*, 20> m_appendPaths{ "foo", "bar", "baz", "bazzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz",
             "boo/bar/base", "C:\\path\\to\\O3DE", "C", "\\\\", "/", R"(test\\path/with\mixed\separators)" };

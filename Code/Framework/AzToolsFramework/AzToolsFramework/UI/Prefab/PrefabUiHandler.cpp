@@ -8,7 +8,9 @@
 
 #include <AzToolsFramework/UI/Prefab/PrefabUiHandler.h>
 
-#include <AzToolsFramework/UI/Prefab/PrefabEditInterface.h>
+#include <AzFramework/API/ApplicationAPI.h>
+
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerListModel.hxx>
 
@@ -26,19 +28,17 @@ namespace AzToolsFramework
 
     PrefabUiHandler::PrefabUiHandler()
     {
-        m_prefabEditInterface = AZ::Interface<Prefab::PrefabEditInterface>::Get();
-
-        if (m_prefabEditInterface == nullptr)
-        {
-            AZ_Assert(false, "PrefabUiHandler - could not get PrefabEditInterface on PrefabUiHandler construction.");
-            return;
-        }
-
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
-
         if (m_prefabPublicInterface == nullptr)
         {
             AZ_Assert(false, "PrefabUiHandler - could not get PrefabPublicInterface on PrefabUiHandler construction.");
+            return;
+        }
+
+        m_prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get();
+        if (m_prefabFocusPublicInterface == nullptr)
+        {
+            AZ_Assert(false, "PrefabUiHandler - could not get PrefabFocusPublicInterface on PrefabUiHandler construction.");
             return;
         }
     }
@@ -81,14 +81,14 @@ namespace AzToolsFramework
         return tooltip;
     }
 
-    QPixmap PrefabUiHandler::GenerateItemIcon(AZ::EntityId entityId) const
+    QIcon PrefabUiHandler::GenerateItemIcon(AZ::EntityId entityId) const
     {
-        if (m_prefabEditInterface->IsOwningPrefabBeingEdited(entityId))
+        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
-            return QPixmap(m_prefabEditIconPath);
+            return QIcon(m_prefabEditIconPath);
         }
 
-        return QPixmap(m_prefabIconPath);
+        return QIcon(m_prefabIconPath);
     }
 
     void PrefabUiHandler::PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -105,7 +105,7 @@ namespace AzToolsFramework
         const bool hasVisibleChildren = index.data(EntityOutlinerListModel::ExpandedRole).value<bool>() && index.model()->hasChildren(index);
 
         QColor backgroundColor = m_prefabCapsuleColor;
-        if (m_prefabEditInterface->IsOwningPrefabBeingEdited(entityId))
+        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             backgroundColor = m_prefabCapsuleEditColor;
         }
@@ -178,12 +178,6 @@ namespace AzToolsFramework
 
         AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
 
-        // We hide the root instance container entity from the Outliner, so avoid drawing its full container on children
-        if (m_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
-        {
-            return;
-        }
-
         const QTreeView* outlinerTreeView(qobject_cast<const QTreeView*>(option.widget));
         const int ancestorLeft = outlinerTreeView->visualRect(index).left() + (m_prefabBorderThickness / 2) - 1;
         const int curveRectSize = m_prefabCapsuleRadius * 2;
@@ -191,7 +185,7 @@ namespace AzToolsFramework
         const bool isLastColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnLockToggle;
 
         QColor borderColor = m_prefabCapsuleColor;
-        if (m_prefabEditInterface->IsOwningPrefabBeingEdited(entityId))
+        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             borderColor = m_prefabCapsuleEditColor;
         }
@@ -318,5 +312,18 @@ namespace AzToolsFramework
         QModelIndex lastChild = model->index(childCount - 1, EntityOutlinerListModel::ColumnName, index);
 
         return Internal_GetLastVisibleChild(model, lastChild);
+    }
+
+    void PrefabUiHandler::OnDoubleClick(AZ::EntityId entityId) const
+    {
+        bool prefabWipFeaturesEnabled = false;
+        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+            prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+
+        if (prefabWipFeaturesEnabled)
+        {
+            // Focus on this prefab
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
+        }
     }
 }

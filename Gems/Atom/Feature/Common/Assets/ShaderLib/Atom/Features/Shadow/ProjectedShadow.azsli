@@ -10,11 +10,9 @@
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/Shadow/ShadowmapAtlasLib.azsli>
 #include <Atom/RPI/Math.azsli>
 #include "BicubicPcfFilters.azsli"
-#include "JitterTablePcf.azsli"
 #include "Shadow.azsli"
 
 // ProjectedShadow calculates shadowed area projected from a light.
@@ -44,14 +42,7 @@ class ProjectedShadow
     float GetVisibilityEsmPcf();
     float GetThickness();
 
-    float SamplePcfBicubic();
-
     bool IsShadowed(float3 shadowPosition);
-    bool IsShadowedWithJitter(
-        float3 jitterUnitX,
-        float3 jitterUnitY,
-        float jitterDepthDiffBase,
-        uint jitterIndex);
     void SetShadowPosition();
     float3 GetAtlasPosition(float2 texturePosition);
     static float UnprojectDepth(uint shadowIndex, float depthBufferValue);
@@ -87,8 +78,7 @@ float ProjectedShadow::GetVisibility(
     shadow.SetShadowPosition();
 
     float visibility = 1.;
-    // Filter method is stored in top 16 bits.
-    uint filterMethod = ViewSrg::m_projectedShadows[shadow.m_shadowIndex].m_shadowFilterMethod & 0x0000FFFF;
+    const uint filterMethod = ViewSrg::m_projectedShadows[shadow.m_shadowIndex].m_shadowFilterMethod;
     switch (filterMethod)
     {
         case ViewSrg::ShadowFilterMethodNone:
@@ -145,72 +135,29 @@ float ProjectedShadow::GetVisibilityNoFilter()
 
 float ProjectedShadow::GetVisibilityPcf()
 {
-    // PCF filter method is stored in bottom 16 bits.
-    const uint pcfFilterMethod = ViewSrg::m_projectedShadows[m_shadowIndex].m_shadowFilterMethod >> 16;
-    if (pcfFilterMethod == PcfFilterMethod_Bicubic)
+    const uint filteringSampleCount = ViewSrg::m_projectedShadows[m_shadowIndex].m_filteringSampleCount;
+    const float3 atlasPosition = GetAtlasPosition(m_shadowPosition.xy);   
+
+    SampleShadowMapBicubicParameters param;
+    param.shadowMap = PassSrg::m_projectedShadowmaps;
+    param.shadowPos = float3(atlasPosition.xy * ViewSrg::m_invShadowmapAtlasSize, atlasPosition.z);
+    param.shadowMapSize = ViewSrg::m_shadowmapAtlasSize;
+    param.invShadowMapSize = ViewSrg::m_invShadowmapAtlasSize;
+    param.comparisonValue = m_shadowPosition.z - m_bias;
+    param.samplerState = SceneSrg::m_hwPcfSampler;
+
+    if (filteringSampleCount <= 4)       
     {
-        return SamplePcfBicubic();
+        return SampleShadowMapBicubic_4Tap(param);
     }
-
-    const uint predictionCount = ViewSrg::m_projectedShadows[m_shadowIndex].m_predictionSampleCount;
-
-    if (predictionCount <= 1)
+    else if (filteringSampleCount <= 9)
     {
-        return GetVisibilityNoFilter();
+        return SampleShadowMapBicubic_9Tap(param);
     }
-
-    const float4 jitterUnitVectorDepthDiffBase =
-        Shadow::GetJitterUnitVectorDepthDiffBase(m_normalVector, m_lightDirection);
-    const float3 jitterUnitY = jitterUnitVectorDepthDiffBase.xyz;
-    const float3 jitterUnitX = cross(jitterUnitY, m_lightDirection);
-    const float jitterDepthDiffBase = jitterUnitVectorDepthDiffBase.w;
-
-    uint shadowedCount = 0;
-    uint jitterIndex = 0;
-
-    // Predicting
-    for (; jitterIndex < predictionCount; ++jitterIndex)
+    else
     {
-        if (IsShadowedWithJitter(
-            jitterUnitX,
-            jitterUnitY,
-            jitterDepthDiffBase,
-            jitterIndex))
-        {
-            ++shadowedCount;
-        }
+        return SampleShadowMapBicubic_16Tap(param);
     }
-    if (shadowedCount == 0)
-    {
-        return 1.;
-    }
-    else if (shadowedCount == predictionCount)
-    {
-        return 0.;
-    }
-
-    // Filtering
-
-    // When the prediction detects the point on the boundary of shadow,
-    // i.e., both of a lit point and a a shadowed one exists in the jittering area,
-    // we calculate the more precious lit ratio in the area.
-    const uint filteringCount = max(
-        predictionCount,
-        ViewSrg::m_projectedShadows[m_shadowIndex].m_filteringSampleCount);
-
-    for (; jitterIndex < filteringCount; ++jitterIndex)
-    {
-        if (IsShadowedWithJitter(
-            jitterUnitX,
-            jitterUnitY,
-            jitterDepthDiffBase,
-            jitterIndex))
-        {
-            ++shadowedCount;
-        }
-    }
-
-    return (filteringCount - shadowedCount) * 1. / filteringCount;
 }
 
 float ProjectedShadow::GetVisibilityEsm()
@@ -337,33 +284,6 @@ float ProjectedShadow::GetThickness()
     return 0.;
 }
 
-float ProjectedShadow::SamplePcfBicubic()
-{
-    const uint filteringSampleCount = ViewSrg::m_projectedShadows[m_shadowIndex].m_filteringSampleCount;
-    const float3 atlasPosition = GetAtlasPosition(m_shadowPosition.xy);   
-
-    SampleShadowMapBicubicParameters param;
-    param.shadowMap = PassSrg::m_projectedShadowmaps;
-    param.shadowPos = float3(atlasPosition.xy * ViewSrg::m_invShadowmapAtlasSize, atlasPosition.z);
-    param.shadowMapSize = ViewSrg::m_shadowmapAtlasSize;
-    param.invShadowMapSize = ViewSrg::m_invShadowmapAtlasSize;
-    param.comparisonValue = m_shadowPosition.z - m_bias;
-    param.samplerState = SceneSrg::m_hwPcfSampler;
-
-    if (filteringSampleCount <= 4)       
-    {
-        return SampleShadowMapBicubic_4Tap(param);
-    }
-    else if (filteringSampleCount <= 9)
-    {
-        return SampleShadowMapBicubic_9Tap(param);
-    }
-    else
-    {
-        return SampleShadowMapBicubic_16Tap(param);
-    }
-}
-
 bool ProjectedShadow::IsShadowed(float3 shadowPosition)
 {
     static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
@@ -393,35 +313,6 @@ bool ProjectedShadow::IsShadowed(float3 shadowPosition)
     }
 
     return false;
-}
-
-bool ProjectedShadow::IsShadowedWithJitter(
-    float3 jitterUnitX,
-    float3 jitterUnitY,
-    float jitterDepthDiffBase,
-    uint jitterIndex)
-{    
-    ViewSrg::ProjectedShadow shadow = ViewSrg::m_projectedShadows[m_shadowIndex];
-    const float4x4 depthBiasMatrix = shadow.m_depthBiasMatrix;
-    const float boundaryScale = shadow.m_boundaryScale;
-
-    const float2 jitterXY = g_jitterTablePcf[jitterIndex];
-
-    const float dist = distance(m_worldPosition, m_viewPosition);
-    const float boundaryRadius = dist * tan(boundaryScale);
-    // jitterWorldXY is the jittering diff vector from the lighted point on the surface
-    // in the world space.  It is remarked as "v_J" in the comment
-    // named "Calculate depth adjusting diff for jittered samples"
-    // just before the function GetJitterUnitVectorDepthDiffBase.
-    const float3 jitterWorldXY = jitterUnitX * (jitterXY.x * boundaryRadius) + jitterUnitY * (jitterXY.y * boundaryRadius);
-    // The adjusting diff of depth ("d" in the comment) is calculated by
-    //   jitterXY.y * boundaryRadius * jitterDepthDiffBase.
-    const float3 jitterWorldZ = m_lightDirection * (jitterXY.y * boundaryRadius * jitterDepthDiffBase);
-
-    const float3 jitteredWorldPosition = m_worldPosition + jitterWorldXY + jitterWorldZ;
-    const float4 jitteredShadowmapHomogeneous = mul(depthBiasMatrix, float4(jitteredWorldPosition, 1));
-
-    return IsShadowed(jitteredShadowmapHomogeneous.xyz / jitteredShadowmapHomogeneous.w);
 }
 
 void ProjectedShadow::SetShadowPosition()

@@ -8,7 +8,6 @@
 
 #include <Multiplayer/IMultiplayerTools.h>
 #include <Multiplayer/Components/NetBindComponent.h>
-#include <Pipeline/NetBindMarkerComponent.h>
 #include <Pipeline/NetworkPrefabProcessor.h>
 #include <Pipeline/NetworkSpawnableHolderComponent.h>
 
@@ -46,7 +45,7 @@ namespace Multiplayer
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
-            serializeContext->Class<NetworkPrefabProcessor, PrefabProcessor>()->Version(1);
+            serializeContext->Class<NetworkPrefabProcessor, PrefabProcessor>()->Version(2);
         }
     }
 
@@ -111,7 +110,7 @@ namespace Multiplayer
         auto serializer = [](AZStd::vector<uint8_t>& output, const ProcessedObjectStore& object) -> bool {
             AZ::IO::ByteContainerStream stream(&output);
             auto& asset = object.GetAsset();
-            return AZ::Utils::SaveObjectToStream(stream, AZ::DataStream::ST_JSON, &asset, asset.GetType());
+            return AZ::Utils::SaveObjectToStream(stream, AZ::DataStream::ST_BINARY, &asset, asset.GetType());
         };
 
         auto&& [object, networkSpawnable] =
@@ -137,8 +136,6 @@ namespace Multiplayer
         networkSpawnableAsset.Create(networkSpawnable->GetId());
         networkSpawnableAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
 
-        size_t netEntitiesIndexCounter = 0;
-
         for (auto* prefabEntity : prefabNetEntities)
         {
             Instance* instance = netEntityToInstanceMap[prefabEntity];
@@ -148,30 +145,11 @@ namespace Multiplayer
             AZ_Assert(netEntity, "Unable to detach entity %s [%s] from the source prefab instance", 
                 prefabEntity->GetName().c_str(), entityId.ToString().c_str());
 
-            // Net entity will need a new ID to avoid IDs collision
-            netEntity->SetId(AZ::Entity::MakeId());
             netEntity->InvalidateDependencies();
             netEntity->EvaluateDependencies();
 
             // Insert the entity into the target net spawnable
             netSpawnableEntities.emplace_back(netEntity);
-
-            // Use the old ID for the breadcrumb entity to keep parent-child relationship in the original spawnable
-            AZ::Entity* breadcrumbEntity = aznew AZ::Entity(entityId, netEntity->GetName());
-            breadcrumbEntity->SetRuntimeActiveByDefault(netEntity->IsRuntimeActiveByDefault());
-
-            // Marker component is responsible to spawning entities based on the index.
-            NetBindMarkerComponent* netBindMarkerComponent = breadcrumbEntity->CreateComponent<NetBindMarkerComponent>();
-            netBindMarkerComponent->SetNetEntityIndex(netEntitiesIndexCounter);
-            netBindMarkerComponent->SetNetworkSpawnableAsset(networkSpawnableAsset);
-
-            // Copy the transform component from the original entity to have the correct transform and parent-child relationship
-            AzFramework::TransformComponent* transformComponent = netEntity->FindComponent<AzFramework::TransformComponent>();
-            breadcrumbEntity->CreateComponent<AzFramework::TransformComponent>(*transformComponent);
-
-            instance->AddEntity(*breadcrumbEntity);
-
-            netEntitiesIndexCounter++;
         }
 
         // Add net spawnable asset holder to the prefab root

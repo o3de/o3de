@@ -575,10 +575,7 @@ void UiInteractableStateFont::SetFontPathname(const AZStd::string& pathname)
             fontFamily = gEnv->pCryFont->LoadFontFamily(fileName.c_str());
             if (!fontFamily)
             {
-                AZStd::string errorMsg = "Error loading a font from ";
-                errorMsg += fileName.c_str();
-                errorMsg += ".";
-                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, errorMsg.c_str());
+                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, "Error loading a font from %s.", fileName.c_str());
             }
         }
 

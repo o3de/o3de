@@ -133,7 +133,6 @@ namespace ImageProcessingAtom
 
     IImageObjectPtr C3dLutColorChart::GenerateChartImage()
     {
-        const AZ::u32 mipCount = 1;
         IImageObjectPtr image(IImageObject::CreateImage(ePS_Red* ePS_Blue, ePS_Green, 1, ePixelFormat_R8G8B8A8));
 
         {

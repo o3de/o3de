@@ -6,14 +6,11 @@
 #
 #
 
+if(LY_MONOLITHIC_GAME) # Do not use OpenImageIO in monolithic game
+    return()
+endif()
+
 set(LY_BUILD_DEPENDENCIES
     PRIVATE
-        3rdParty::OpenImageIO
         3rdParty::ilmbase
-)
-
-# [GFX-TODO] Add macro defintion in OpenImageIO 3rd party find cmake file
-set(LY_COMPILE_DEFINITIONS
-    PRIVATE
-        OPEN_IMAGE_IO_ENABLED
 )

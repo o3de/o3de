@@ -38,7 +38,7 @@ namespace AZ
             ResultCode InitGroup(ShaderResourceGroup& srg);
 
             //! Returns the descriptor passed at initialization time.
-            const ShaderResourceGroupPoolDescriptor& GetDescriptor() const;
+            const ShaderResourceGroupPoolDescriptor& GetDescriptor() const override;
 
             //! Returns the SRG layout used when initializing the pool.
             const ShaderResourceGroupLayout* GetLayout() const;

@@ -80,9 +80,7 @@ namespace ScriptCanvas
         using ResultType = FunctionTraits::result_type;\
         static const size_t s_numArgs = FunctionTraits::arity;\
         static const size_t s_numNames = SCRIPT_CANVAS_FUNCTION_VAR_ARGS(__VA_ARGS__);\
-        static const size_t s_argsSlotIndicesStart = 2;\
-        static const size_t s_resultsSlotIndicesStart = s_argsSlotIndicesStart + s_numArgs;\
-        static const size_t s_numResults = ScriptCanvas::Internal::extended_tuple_size<ResultType>::value;\
+        /*static const size_t s_numResults = ScriptCanvas::Internal::extended_tuple_size<ResultType>::value;*/\
         \
         static const char* GetArgName(size_t i)\
         {\
@@ -150,7 +148,7 @@ namespace ScriptCanvas
         {
             static int indices[] = { inputDatumIndices... };
             static_assert(sizeof...(Is) == AZ_ARRAY_SIZE(indices), "size of default values doesn't match input datum indices for them");
-            std::initializer_list<int> { (MoreHelp(node, indices[Is], AZStd::forward<t_Args>(args)), 0)... };
+            [[maybe_unused]] std::initializer_list<int> dummy = { (MoreHelp(node, indices[Is], AZStd::forward<t_Args>(args)), 0)... };
         }
 
         template<typename ArgType>

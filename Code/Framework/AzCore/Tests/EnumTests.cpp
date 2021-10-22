@@ -81,7 +81,7 @@ namespace UnitTest
         auto EnumerateTestEnum = []() constexpr -> bool
         {
             int count = 0;
-            for (TestEnumEnumeratorValueAndString enumMember : TestEnumMembers)
+            for ([[maybe_unused]] TestEnumEnumeratorValueAndString enumMember : TestEnumMembers)
             {
                 ++count;
             }

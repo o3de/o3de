@@ -85,6 +85,12 @@ public:
 
 using EditorIdleProcessingBus = AZ::EBus<EditorIdleProcessing>;
 
+enum class COpenSameLevelOptions
+{
+    ReopenLevelIfSame,
+    NotReopenIfSame
+};
+
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SANDBOX_API CCryEditApp
@@ -174,7 +180,9 @@ public:
     virtual bool InitInstance();
     virtual int ExitInstance(int exitCode = 0);
     virtual bool OnIdle(LONG lCount);
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName);
+    virtual CCryEditDoc* OpenDocumentFile(const char* filename,
+        bool addToMostRecentFileList=true,
+        COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReopenIfSame);
 
     CCryDocManager* GetDocManager() { return m_pDocManager; }
 
@@ -448,7 +456,7 @@ public:
     ~CCrySingleDocTemplate() {};
     // avoid creating another CMainFrame
     // close other type docs before opening any things
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool bAddToMRU, bool bMakeVisible);
+    virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool addToMostRecentFileList, bool bMakeVisible);
     virtual CCryEditDoc* OpenDocumentFile(const char* lpszPathName, bool bMakeVisible = TRUE);
     virtual Confidence MatchDocType(const char* lpszPathName, CCryEditDoc*& rpDocMatch);
 
@@ -462,12 +470,13 @@ class CCryDocManager
     CCrySingleDocTemplate* m_pDefTemplate = nullptr;
 public:
     CCryDocManager();
+    virtual ~CCryDocManager() = default;
     CCrySingleDocTemplate* SetDefaultTemplate(CCrySingleDocTemplate* pNew);
     // Copied from MFC to get rid of the silly ugly unoverridable doc-type pick dialog
     virtual void OnFileNew();
     virtual bool DoPromptFileName(QString& fileName, UINT nIDSTitle,
         DWORD lFlags, bool bOpenFileDialog, CDocTemplate* pTemplate);
-    virtual CCryEditDoc* OpenDocumentFile(const char* lpszFileName, bool bAddToMRU);
+    virtual CCryEditDoc* OpenDocumentFile(const char* filename, bool addToMostRecentFileList, COpenSameLevelOptions openSameLevelOptions = COpenSameLevelOptions::NotReopenIfSame);
 
     QVector<CCrySingleDocTemplate*> m_templateList;
 };

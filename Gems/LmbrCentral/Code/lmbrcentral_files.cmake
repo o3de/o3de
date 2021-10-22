@@ -34,7 +34,6 @@ set(FILES
     include/LmbrCentral/Rendering/LightComponentBus.h
     include/LmbrCentral/Rendering/MaterialAsset.h
     include/LmbrCentral/Rendering/MaterialHandle.h
-    include/LmbrCentral/Rendering/MaterialOwnerBus.h
     include/LmbrCentral/Rendering/MeshAsset.h
     include/LmbrCentral/Rendering/MeshModificationBus.h
     include/LmbrCentral/Rendering/RenderNodeBus.h
@@ -107,6 +106,10 @@ set(FILES
     Source/Shape/SphereShape.cpp
     Source/Shape/SphereShapeComponent.h
     Source/Shape/SphereShapeComponent.cpp
+    Source/Shape/AxisAlignedBoxShape.h
+    Source/Shape/AxisAlignedBoxShape.cpp
+    Source/Shape/AxisAlignedBoxShapeComponent.h
+    Source/Shape/AxisAlignedBoxShapeComponent.cpp
     Source/Shape/BoxShape.h
     Source/Shape/BoxShape.cpp
     Source/Shape/BoxShapeComponent.h

@@ -191,7 +191,7 @@ class TestSubprocessCheckCallWrapperSafe(unittest.TestCase):
     reason="tests.unit.test_process_utils is restricted to the Windows platform.")
 class TestCloseWindowsProcess(unittest.TestCase):
 
-    @mock.patch('ly_test_tools.environment.process_utils.WINDOWS', False)
+    @mock.patch('ly_test_tools.WINDOWS', False)
     def test_CloseWindowsProccess_NotOnWindows_Error(self):
         with pytest.raises(NotImplementedError):
             process_utils.close_windows_process(1)
@@ -223,7 +223,7 @@ class TestCloseWindowsProcess(unittest.TestCase):
         mock_enum.assert_called_once()
 
 
-class Test(unittest.TestCase):
+class TestProcessMatching(unittest.TestCase):
 
     @mock.patch("ly_test_tools.environment.process_utils._safe_get_processes")
     def test_ProcExists_HasExtension_Found(self, mock_get_proc):
@@ -261,18 +261,55 @@ class Test(unittest.TestCase):
         self.assertTrue(result)
         proc_mock.name.assert_called()
 
-    @mock.patch('ly_test_tools.environment.process_utils._safe_kill_process', mock.MagicMock)
+    @mock.patch('ly_test_tools.environment.process_utils._safe_kill_processes')
     @mock.patch('ly_test_tools.environment.process_utils._safe_get_processes')
-    def test_KillProcNamed_MockKill_SilentSuccess(self, mock_get_proc):
+    def test_KillProcNamed_ExactMatch_Killed(self, mock_get_proc, mock_kill_proc):
+        name = "dummy.exe"
+        proc_mock = mock.MagicMock()
+        proc_mock.name.return_value = name
+        mock_get_proc.return_value = [proc_mock]
+
+        process_utils.kill_processes_named("dummy.exe", ignore_extensions=False)
+        mock_kill_proc.assert_called()
+        proc_mock.name.assert_called()
+
+    @mock.patch('ly_test_tools.environment.process_utils._safe_kill_processes')
+    @mock.patch('ly_test_tools.environment.process_utils._safe_get_processes')
+    def test_KillProcNamed_NearMatch_Ignore(self, mock_get_proc, mock_kill_proc):
+        name = "dummy.exe"
+        proc_mock = mock.MagicMock()
+        proc_mock.name.return_value = name
+        mock_get_proc.return_value = [proc_mock]
+
+        process_utils.kill_processes_named("dummy", ignore_extensions=False)
+        mock_kill_proc.assert_not_called()
+        proc_mock.name.assert_called()
+
+    @mock.patch('ly_test_tools.environment.process_utils._safe_kill_processes')
+    @mock.patch('ly_test_tools.environment.process_utils._safe_get_processes')
+    def test_KillProcNamed_NearMatchIgnoreExtension_Kill(self, mock_get_proc, mock_kill_proc):
         name = "dummy.exe"
         proc_mock = mock.MagicMock()
         proc_mock.name.return_value = name
         mock_get_proc.return_value = [proc_mock]
 
         process_utils.kill_processes_named("dummy", ignore_extensions=True)
+        mock_kill_proc.assert_called()
         proc_mock.name.assert_called()
 
-    @mock.patch('ly_test_tools.environment.process_utils._safe_kill_process', mock.MagicMock)
+    @mock.patch('ly_test_tools.environment.process_utils._safe_kill_processes')
+    @mock.patch('ly_test_tools.environment.process_utils._safe_get_processes')
+    def test_KillProcNamed_ExactMatchIgnoreExtension_Killed(self, mock_get_proc, mock_kill_proc):
+        name = "dummy.exe"
+        proc_mock = mock.MagicMock()
+        proc_mock.name.return_value = name
+        mock_get_proc.return_value = [proc_mock]
+
+        process_utils.kill_processes_named("dummy.exe", ignore_extensions=True)
+        mock_kill_proc.assert_called()
+        proc_mock.name.assert_called()
+
+    @mock.patch('ly_test_tools.environment.process_utils._safe_kill_processes', mock.MagicMock)
     @mock.patch('ly_test_tools.environment.process_utils._safe_get_processes')
     @mock.patch('os.path.exists')
     def test_KillProcFrom_MockKill_SilentSuccess(self, mock_path, mock_get_proc):
@@ -293,7 +330,7 @@ class Test(unittest.TestCase):
 
         mock_kill.assert_called()
 
-    @mock.patch('ly_test_tools.environment.process_utils._safe_kill_process', mock.MagicMock)
+    @mock.patch('ly_test_tools.environment.process_utils._safe_kill_processes', mock.MagicMock)
     @mock.patch('psutil.Process')
     def test_KillProcPid_NoProc_SilentPass(self, mock_psutil):
         mock_proc = mock.MagicMock()
@@ -302,7 +339,7 @@ class Test(unittest.TestCase):
 
         process_utils.kill_process_with_pid(1)
 
-    @mock.patch('ly_test_tools.environment.process_utils._safe_kill_process', mock.MagicMock)
+    @mock.patch('ly_test_tools.environment.process_utils._safe_kill_processes', mock.MagicMock)
     @mock.patch('psutil.Process')
     def test_KillProcPidRaiseOnMissing_NoProc_Raises(self, mock_psutil):
         mock_proc = mock.MagicMock()
@@ -339,7 +376,7 @@ class Test(unittest.TestCase):
         mock_wait_procs.side_effect = psutil.PermissionError()
         proc_mock = mock.MagicMock()
 
-        process_utils._safe_kill_process_list(proc_mock)
+        process_utils._safe_kill_processes(proc_mock)
 
         mock_wait_procs.assert_called()
         mock_log_warn.assert_called()

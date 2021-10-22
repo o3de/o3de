@@ -53,7 +53,7 @@ PropertyDirectoryCtrl::PropertyDirectoryCtrl(QWidget* parent)
 
         QObject::connect(refreshButton,
             &QPushButton::clicked,
-            [this]([[maybe_unused]] bool checked)
+            []([[maybe_unused]] bool checked)
         {
             UiEditorRefreshDirectoryNotificationBus::Broadcast(&UiEditorRefreshDirectoryNotificationInterface::OnRefreshDirectory);
         });

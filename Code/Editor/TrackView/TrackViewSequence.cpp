@@ -135,9 +135,7 @@ CTrackViewKeyHandle CTrackViewSequence::FindSingleSelectedKey()
 
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewSequence::OnEntityComponentPropertyChanged(AZ::ComponentId changedComponentId)
-{
-    const AZ::EntityId entityId = *AzToolsFramework::PropertyEditorEntityChangeNotificationBus::GetCurrentBusId();
-   
+{  
     // find the component node for this changeComponentId if it exists
     for (int i = m_pAnimSequence->GetNodeCount(); --i >= 0;)
     {
@@ -894,14 +892,14 @@ bool CTrackViewSequence::SetName(const char* name)
         return false;
     }
 
-    const char* oldName = GetName();
-    if (0 != strcmp(name, oldName))
+    AZStd::string oldName = GetName();
+    if (name != oldName)
     {
         m_pAnimSequence->SetName(name);
         MarkAsModified();
 
         AzToolsFramework::ScopedUndoBatch undoBatch("Rename Sequence");
-        GetSequence()->OnNodeRenamed(this, oldName);
+        GetSequence()->OnNodeRenamed(this, oldName.c_str());
         undoBatch.MarkEntityDirty(m_pAnimSequence->GetSequenceEntityId());
     }
 

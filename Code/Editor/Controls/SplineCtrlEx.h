@@ -159,15 +159,15 @@ public:
     //////////////////////////////////////////////////////////////////////////
 
     // IKeyTimeSet Implementation
-    virtual int GetKeyTimeCount() const;
-    virtual float GetKeyTime(int index) const;
-    virtual void MoveKeyTimes(int numChanges, int* indices, float scale, float offset, bool copyKeys);
-    virtual bool GetKeyTimeSelected(int index) const;
-    virtual void SetKeyTimeSelected(int index, bool selected);
-    virtual int GetKeyCount(int index) const;
-    virtual int GetKeyCountBound() const;
-    virtual void BeginEdittingKeyTimes();
-    virtual void EndEdittingKeyTimes();
+    int GetKeyTimeCount() const override;
+    float GetKeyTime(int index) const override;
+    void MoveKeyTimes(int numChanges, int* indices, float scale, float offset, bool copyKeys) override;
+    bool GetKeyTimeSelected(int index) const override;
+    void SetKeyTimeSelected(int index, bool selected) override;
+    int GetKeyCount(int index) const override;
+    int GetKeyCountBound() const override;
+    void BeginEdittingKeyTimes() override;
+    void EndEdittingKeyTimes() override;
 
     void SetEditLock(bool bLock) { m_bEditLock = bLock; }
 
@@ -361,8 +361,8 @@ public:
     SplineWidget(QWidget* parent);
     virtual ~SplineWidget();
 
-    void update() { QWidget::update(); }
-    void update(const QRect& rect) { QWidget::update(rect); }
+    void update() override { QWidget::update(); }
+    void update(const QRect& rect) override { QWidget::update(rect); }
 
     QPoint mapFromGlobal(const QPoint& point) const override { return QWidget::mapFromGlobal(point); }
 

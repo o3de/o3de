@@ -326,6 +326,7 @@ ActionManager::MenuWrapper ActionManager::FindMenu(const QString& menuId)
             return *menuIt;
         }
 
+        AZ_UNUSED(menuId); // Prevent unused warning in release builds
         AZ_Warning("ActionManager", false, "Did not find menu with menuId %s", menuId.toUtf8().data());
         return nullptr;
     }();

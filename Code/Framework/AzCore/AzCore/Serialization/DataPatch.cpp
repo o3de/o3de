@@ -8,6 +8,7 @@
 
 #include <cinttypes>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/DataPatch.h>
 #include <AzCore/Serialization/DataPatchBus.h>
 #include <AzCore/Serialization/DataPatchUpgradeManager.h>
@@ -135,7 +136,6 @@ namespace AZ
         AZStd::list<SerializeContext::ClassElement> m_dynamicClassElements; ///< Storage for class elements that represent dynamic serializable fields.
     };
 
-    static bool ConvertLegacyBoolToEnum(AZ::SerializeContext& context, AZStd::any& patchAny, const DataNode& sourceNode);
     static void ReportDataPatchMismatch(SerializeContext* context, const SerializeContext::ClassElement* classElement, const TypeId& patchDataTypeId);
 
     //=========================================================================

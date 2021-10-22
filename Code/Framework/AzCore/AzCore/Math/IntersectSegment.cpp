@@ -15,7 +15,7 @@ using namespace Intersect;
 // IntersectSegmentTriangleCCW
 // [10/21/2009]
 //=========================================================================
-int Intersect::IntersectSegmentTriangleCCW(
+bool Intersect::IntersectSegmentTriangleCCW(
     const Vector3& p, const Vector3& q, const Vector3& a, const Vector3& b, const Vector3& c,
     /*float &u, float &v, float &w,*/ Vector3& normal, float& t)
 {
@@ -34,7 +34,7 @@ int Intersect::IntersectSegmentTriangleCCW(
     float d = qp.Dot(normal);
     if (d <= 0.0f)
     {
-        return 0;
+        return false;
     }
 
     // Compute intersection t value of pq with plane of triangle. A ray
@@ -46,7 +46,7 @@ int Intersect::IntersectSegmentTriangleCCW(
     // range segment check t[0,1] (it this case [0,d])
     if (t < 0.0f || t > d)
     {
-        return 0;
+        return false;
     }
 
     // Compute barycentric coordinate components and test if within bounds
@@ -54,12 +54,12 @@ int Intersect::IntersectSegmentTriangleCCW(
     v = ac.Dot(e);
     if (v < 0.0f || v > d)
     {
-        return 0;
+        return false;
     }
     w = -ab.Dot(e);
     if (w < 0.0f || v + w > d)
     {
-        return 0;
+        return false;
     }
 
     // Segment/ray intersects triangle. Perform delayed division and
@@ -72,14 +72,14 @@ int Intersect::IntersectSegmentTriangleCCW(
 
     normal.Normalize();
 
-    return 1;
+    return true;
 }
 
 //=========================================================================
 // IntersectSegmentTriangle
 // [10/21/2009]
 //=========================================================================
-int
+bool
 Intersect::IntersectSegmentTriangle(
     const Vector3& p, const Vector3& q, const Vector3& a, const Vector3& b, const Vector3& c,
     /*float &u, float &v, float &w,*/ Vector3& normal, float& t)
@@ -111,7 +111,7 @@ Intersect::IntersectSegmentTriangle(
         // so either have a parallel ray or our normal is flipped
         if (d >= -Constants::FloatEpsilon)
         {
-            return 0; // parallel
+            return false; // parallel
         }
         d = -d;
         e = ap.Cross(qp);
@@ -125,19 +125,19 @@ Intersect::IntersectSegmentTriangle(
     // range segment check t[0,1] (it this case [0,d])
     if (t < 0.0f || t > d)
     {
-        return 0;
+        return false;
     }
 
     // Compute barycentric coordinate components and test if within bounds
     v = ac.Dot(e);
     if (v < 0.0f || v > d)
     {
-        return 0;
+        return false;
     }
     w = -ab.Dot(e);
     if (w < 0.0f || v + w > d)
     {
-        return 0;
+        return false;
     }
 
     // Segment/ray intersects the triangle. Perform delayed division and
@@ -150,14 +150,14 @@ Intersect::IntersectSegmentTriangle(
 
     normal.Normalize();
 
-    return 1;
+    return true;
 }
 
 //=========================================================================
 // TestSegmentAABBOrigin
 // [10/21/2009]
 //=========================================================================
-int
+bool
 AZ::Intersect::TestSegmentAABBOrigin(const Vector3& midPoint, const Vector3& halfVector, const Vector3& aabbExtends)
 {
     const Vector3 EPSILON(0.001f); // \todo this is slow load move to a const
@@ -168,7 +168,7 @@ AZ::Intersect::TestSegmentAABBOrigin(const Vector3& midPoint, const Vector3& hal
     // Try world coordinate axes as separating axes
     if (!absMidpoint.IsLessEqualThan(absHalfMidpoint))
     {
-        return 0;
+        return false;
     }
 
     // Add in an epsilon term to counteract arithmetic errors when segment is
@@ -188,11 +188,11 @@ AZ::Intersect::TestSegmentAABBOrigin(const Vector3& midPoint, const Vector3& hal
     Vector3 ead(ey * adz + ez * ady, ex * adz + ez * adx, ex * ady + ey * adx);
     if (!absMDCross.IsLessEqualThan(ead))
     {
-        return 0;
+        return false;
     }
 
     // No separating axis found; segment must be overlapping AABB
-    return 1;
+    return true;
 }
 
 
@@ -200,7 +200,7 @@ AZ::Intersect::TestSegmentAABBOrigin(const Vector3& midPoint, const Vector3& hal
 // IntersectRayAABB
 // [10/21/2009]
 //=========================================================================
-int
+RayAABBIsectTypes
 AZ::Intersect::IntersectRayAABB(
     const Vector3& rayStart, const Vector3& dir, const Vector3& dirRCP, const Aabb& aabb,
     float& tStart, float& tEnd, Vector3& startNormal /*, Vector3& inter*/)
@@ -356,7 +356,7 @@ AZ::Intersect::IntersectRayAABB(
 // IntersectRayAABB2
 // [2/18/2011]
 //=========================================================================
-int
+RayAABBIsectTypes
 AZ::Intersect::IntersectRayAABB2(const Vector3& rayStart, const Vector3& dirRCP, const Aabb& aabb, float& start, float& end)
 {
     float tmin, tmax, tymin, tymax, tzmin, tzmax;
@@ -408,7 +408,7 @@ AZ::Intersect::IntersectRayAABB2(const Vector3& rayStart, const Vector3& dirRCP,
     return ISECT_RAY_AABB_ISECT;
 }
 
-int AZ::Intersect::IntersectRayDisk(
+bool AZ::Intersect::IntersectRayDisk(
     const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& diskCenter, const float diskRadius, const Vector3& diskNormal, float& t)
 {
     // First intersect with the plane of the disk
@@ -421,10 +421,10 @@ int AZ::Intersect::IntersectRayDisk(
         if (pointOnPlane.GetDistance(diskCenter) < diskRadius)
         {
             t = planeIntersectionDistance;
-            return 1;
+            return true;
         }
     }
-    return 0;
+    return false;
 }
 
 // Reference: Real-Time Collision Detection - 5.3.7 Intersecting Ray or Segment Against Cylinder, and the book's errata.
@@ -628,7 +628,7 @@ int AZ::Intersect::IntersectRayCappedCylinder(
 int AZ::Intersect::IntersectRayCone(
     const Vector3& rayOrigin, const Vector3& rayDir,
     const Vector3& coneApex, const Vector3& coneDir, float coneHeight,
-    float coneBaseRaidus, float& t1, float& t2)
+    float coneBaseRadius, float& t1, float& t2)
 {
     // Q = rayOrgin, A = coneApex
     Vector3 AQ = rayOrigin - coneApex;
@@ -646,7 +646,7 @@ int AZ::Intersect::IntersectRayCone(
         return 0;
     }
 
-    float r2 = coneBaseRaidus * coneBaseRaidus;
+    float r2 = coneBaseRadius * coneBaseRadius;
     float h2 = coneHeight * coneHeight;
 
     float m2 = m * m;
@@ -1012,7 +1012,7 @@ int AZ::Intersect::IntersectRayQuad(
 }
 
 // reference: Real-Time Collision Detection, 5.3.3 Intersecting Ray or Segment Against Box
-int AZ::Intersect::IntersectRayBox(
+bool AZ::Intersect::IntersectRayBox(
     const Vector3& rayOrigin, const Vector3& rayDir, const Vector3& boxCenter, const Vector3& boxAxis1,
     const Vector3& boxAxis2, const Vector3& boxAxis3, float boxHalfExtent1, float boxHalfExtent2, float boxHalfExtent3, float& t)
 {
@@ -1044,7 +1044,7 @@ int AZ::Intersect::IntersectRayBox(
         // If the ray is parallel to the slab and the ray origin is outside, return no intersection.
         if (tp < 0.0f || tn < 0.0f)
         {
-            return 0;
+            return false;
         }
     }
     else
@@ -1065,7 +1065,7 @@ int AZ::Intersect::IntersectRayBox(
         tmax = AZ::GetMin(tmax, t2);
         if (tmin > tmax)
         {
-            return 0;
+            return false;
         }
     }
 
@@ -1085,7 +1085,7 @@ int AZ::Intersect::IntersectRayBox(
         // If the ray is parallel to the slab and the ray origin is outside, return no intersection.
         if (tp < 0.0f || tn < 0.0f)
         {
-            return 0;
+            return false;
         }
     }
     else
@@ -1106,7 +1106,7 @@ int AZ::Intersect::IntersectRayBox(
         tmax = AZ::GetMin(tmax, t2);
         if (tmin > tmax)
         {
-            return 0;
+            return false;
         }
     }
 
@@ -1126,7 +1126,7 @@ int AZ::Intersect::IntersectRayBox(
         // If the ray is parallel to the slab and the ray origin is outside, return no intersection.
         if (tp < 0.0f || tn < 0.0f)
         {
-            return 0;
+            return false;
         }
     }
     else
@@ -1147,15 +1147,15 @@ int AZ::Intersect::IntersectRayBox(
         tmax = AZ::GetMin(tmax, t2);
         if (tmin > tmax)
         {
-            return 0;
+            return false;
         }
     }
 
     t = (isRayOriginInsideBox ? tmax : tmin);
-    return 1;
+    return true;
 }
 
-int AZ::Intersect::IntersectRayObb(const Vector3& rayOrigin, const Vector3& rayDir, const Obb& obb, float& t)
+bool AZ::Intersect::IntersectRayObb(const Vector3& rayOrigin, const Vector3& rayDir, const Obb& obb, float& t)
 {
     return AZ::Intersect::IntersectRayBox(rayOrigin, rayDir, obb.GetPosition(),
         obb.GetAxisX(), obb.GetAxisY(), obb.GetAxisZ(),
@@ -1166,7 +1166,7 @@ int AZ::Intersect::IntersectRayObb(const Vector3& rayOrigin, const Vector3& rayD
 // IntersectSegmentCylinder
 // [10/21/2009]
 //=========================================================================
-int
+CylinderIsectTypes
 AZ::Intersect::IntersectSegmentCylinder(
     const Vector3& sa, const Vector3& dir, const Vector3& p, const Vector3& q, const float r, float& t)
 {
@@ -1225,7 +1225,7 @@ AZ::Intersect::IntersectSegmentCylinder(
         return RR_ISECT_RAY_CYL_NONE;                         // No real roots; no intersection
     }
     t = (-b - Sqrt(discr)) / a;
-    int result = RR_ISECT_RAY_CYL_PQ; // default along the PQ segment
+    CylinderIsectTypes result = RR_ISECT_RAY_CYL_PQ; // default along the PQ segment
 
     if (md + t * nd < 0.0f)
     {
@@ -1294,7 +1294,7 @@ AZ::Intersect::IntersectSegmentCylinder(
 // IntersectSegmentCapsule
 // [10/21/2009]
 //=========================================================================
-int
+CapsuleIsectTypes
 AZ::Intersect::IntersectSegmentCapsule(const Vector3& sa, const Vector3& dir, const Vector3& p, const Vector3& q, const float r, float& t)
 {
     int result = IntersectSegmentCylinder(sa, dir, p, q, r, t);
@@ -1361,13 +1361,13 @@ AZ::Intersect::IntersectSegmentCapsule(const Vector3& sa, const Vector3& dir, co
 // IntersectSegmentPolyhedron
 // [10/21/2009]
 //=========================================================================
-int
+bool
 AZ::Intersect::IntersectSegmentPolyhedron(
-    const Vector3& sa, const Vector3& sBA, const Plane p[], int numPlanes,
+    const Vector3& sa, const Vector3& dir, const Plane p[], int numPlanes,
     float& tfirst, float& tlast, int& iFirstPlane, int& iLastPlane)
 {
     // Compute direction vector for the segment
-    Vector3 d = /*b - a*/ sBA;
+    Vector3 d = /*b - a*/ dir;
     // Set initial interval to being the whole segment. For a ray, tlast should be
     // set to +RR_FLT_MAX. For a line, additionally tfirst should be set to -RR_FLT_MAX
     tfirst = 0.0f;
@@ -1388,7 +1388,7 @@ AZ::Intersect::IntersectSegmentPolyhedron(
             // If so, return "no intersection" if segment lies outside plane
             if (dist < 0.0f)
             {
-                return 0;
+                return false;
             }
         }
         else
@@ -1417,7 +1417,7 @@ AZ::Intersect::IntersectSegmentPolyhedron(
             // Exit with "no intersection" if intersection becomes empty
             if (tfirst > tlast)
             {
-                return 0;
+                return false;
             }
         }
     }
@@ -1425,11 +1425,11 @@ AZ::Intersect::IntersectSegmentPolyhedron(
     //DBG_Assert(iFirstPlane!=-1&&iLastPlane!=-1,("We have some bad border case to have only one plane, fix this function!"));
     if (iFirstPlane == -1 && iLastPlane == -1)
     {
-        return 0;
+        return false;
     }
 
     // A nonzero logical intersection, so the segment intersects the polyhedron
-    return 1;
+    return true;
 }
 
 //=========================================================================
@@ -1442,7 +1442,7 @@ AZ::Intersect::ClosestSegmentSegment(
     const Vector3& segment2Start, const Vector3& segment2End,
     float& segment1Proportion, float& segment2Proportion, 
     Vector3& closestPointSegment1, Vector3& closestPointSegment2,
-    float epsilon /*= 1e-4f*/ )
+    float epsilon)
 {
     const Vector3 segment1 = segment1End - segment1Start;
     const Vector3 segment2 = segment2End - segment2Start;

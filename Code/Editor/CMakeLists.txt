@@ -33,7 +33,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             Legacy::CryCommon
-            3rdParty::zlib
         PUBLIC
             3rdParty::Qt::Core
             3rdParty::Qt::Gui
@@ -103,9 +102,8 @@ ly_add_target(
             3rdParty::Qt::Gui
             3rdParty::Qt::Widgets
             3rdParty::Qt::Concurrent
-            3rdParty::tiff
+            3rdParty::TIFF
             3rdParty::squish-ccr
-            3rdParty::zlib
             3rdParty::AWSNativeSDK::STS
             Legacy::CryCommon
             Legacy::EditorCommon
@@ -174,6 +172,8 @@ ly_add_target(
         Legacy::EditorLib
         ProjectManager
 )
+
+ly_set_gem_variant_to_load(TARGETS Editor VARIANTS Tools)
 set_property(SOURCE
     CryEdit.cpp
     APPEND PROPERTY
@@ -251,5 +251,36 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Legacy::EditorLib.Tests
+    )
+
+    ly_add_target(
+        NAME EditorLib.Camera.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAMESPACE Legacy
+        FILES_CMAKE
+            Lib/Tests/Camera/editor_lib_camera_test_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzCore
+                AZ::AzTest
+                AZ::AzToolsFramework
+                AZ::AzTestShared
+                Legacy::EditorLib
+                Gem::Camera.Editor
+                Gem::AtomToolsFramework.Static
+        RUNTIME_DEPENDENCIES
+            Legacy::EditorLib
+    )
+
+    ly_add_source_properties(
+        SOURCES Lib/Tests/Camera/test_EditorCamera.cpp
+        PROPERTY COMPILE_DEFINITIONS 
+        VALUES CAMERA_EDITOR_MODULE="$<TARGET_FILE_BASE_NAME:Camera.Editor>"
+    )
+
+    ly_add_googletest(
+        NAME Legacy::EditorLib.Camera.Tests
     )
 endif()

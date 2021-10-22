@@ -59,7 +59,7 @@ namespace PhysX
     {
         if (!detached)
         {
-            AZ_PROFILE_END();
+            AZ_PROFILE_END(Physics);
         }
         else
         {

@@ -13,6 +13,7 @@
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneUI/CommonWidgets/OverlayWidget.h>
 #include <SceneAPI/SceneUI/SceneWidgets/ManifestWidget.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 ImporterRootDisplay::ImporterRootDisplay(AZ::SerializeContext* serializeContext, QWidget* parent)

@@ -17,6 +17,7 @@
 #include <GemCatalog/GemInfo.h>
 #include <ProjectInfo.h>
 #include <ProjectTemplateInfo.h>
+#include <GemRepo/GemRepoInfo.h>
 
 namespace O3DE::ProjectManager
 {
@@ -37,6 +38,14 @@ namespace O3DE::ProjectManager
          */
         virtual bool PythonStarted() = 0;
 
+        /**
+         * Attempt to start Python. Normally, Python is started when the bindings are created,
+         * but this method allows you to attempt to retry starting Python in case the configuration
+         * has changed.
+         * @return true if Python was started successfully, false on failure 
+         */
+        virtual bool StartPython() = 0;
+
         // Engine
 
         /**
@@ -55,15 +64,16 @@ namespace O3DE::ProjectManager
         // Gems
 
         /**
-         * Get info about a Gem 
-         * @param path the absolute path to the Gem 
+         * Get info about a Gem.
+         * @param path The absolute path to the Gem
+         * @param projectPath (Optional) The absolute path to the Gem project
          * @return an outcome with GemInfo on success 
          */
         virtual AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) = 0;
 
         /**
          * Get all available gem infos. This concatenates gems registered by the engine and the project.
-         * @param path The absolute path to the project.
+         * @param projectPath The absolute path to the project.
          * @return A list of gem infos.
          */
         virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) = 0;
@@ -155,6 +165,28 @@ namespace O3DE::ProjectManager
          * @return an outcome with ProjectTemplateInfos on success 
          */
         virtual AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) = 0;
+
+        // Gem Repos
+
+        /**
+         * Registers this gem repo with the current engine.
+         * @param repoUri the absolute filesystem path or url to the gem repo.
+         * @return true on success, false on failure.
+         */
+        virtual bool AddGemRepo(const QString& repoUri) = 0;
+
+        /**
+         * Unregisters this gem repo with the current engine.
+         * @param repoUri the absolute filesystem path or url to the gem repo.
+         * @return true on success, false on failure.
+         */
+        virtual bool RemoveGemRepo(const QString& repoUri) = 0;
+
+        /**
+         * Get all available gem repo infos. Gathers all repos registered with the engine.
+         * @return A list of gem repo infos.
+         */
+        virtual AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;

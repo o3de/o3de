@@ -61,7 +61,7 @@ namespace UnitTest
             void EndFrameInternal() override {}
             void WaitForIdleInternal() override {}
             void CompileMemoryStatisticsInternal(AZ::RHI::MemoryStatisticsBuilder&) override {}
-            void UpdateCpuTimingStatisticsInternal([[maybe_unused]] AZ::RHI::CpuTimingStatistics& cpuTimingStatistics) const override {}
+            void UpdateCpuTimingStatisticsInternal() const override {}
             AZStd::chrono::microseconds GpuTimestampToMicroseconds([[maybe_unused]] uint64_t gpuTimestamp, [[maybe_unused]] AZ::RHI::HardwareQueueClass queueClass) const override
             {
                 return AZStd::chrono::microseconds();
@@ -69,8 +69,8 @@ namespace UnitTest
             void FillFormatsCapabilitiesInternal([[maybe_unused]] FormatCapabilitiesList& formatsCapabilities) override {}
             AZ::RHI::ResultCode InitializeLimits() override { return AZ::RHI::ResultCode::Success; }
             void PreShutdown() override {}
-            AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::ImageDescriptor& descriptor) { return AZ::RHI::ResourceMemoryRequirements{}; };
-            AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::BufferDescriptor& descriptor) { return AZ::RHI::ResourceMemoryRequirements{}; };
+            AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::ImageDescriptor& descriptor) override { return AZ::RHI::ResourceMemoryRequirements{}; };
+            AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::BufferDescriptor& descriptor) override { return AZ::RHI::ResourceMemoryRequirements{}; };
             void ObjectCollectionNotify(AZ::RHI::ObjectCollectorNotifyFunction notifyFunction) override {}
         };
 
@@ -228,12 +228,12 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator, 0);
 
         private:
-            virtual AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, AZ::RHI::FenceState) override { return AZ::RHI::ResultCode::Success; }
-            virtual void ShutdownInternal() override {}
-            virtual void SignalOnCpuInternal() override {}
-            virtual void WaitOnCpuInternal() const override {};
-            virtual void ResetInternal() override {}
-            virtual AZ::RHI::FenceState GetFenceStateInternal() const override { return AZ::RHI::FenceState::Reset; }
+            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, AZ::RHI::FenceState) override { return AZ::RHI::ResultCode::Success; }
+            void ShutdownInternal() override {}
+            void SignalOnCpuInternal() override {}
+            void WaitOnCpuInternal() const override {};
+            void ResetInternal() override {}
+            AZ::RHI::FenceState GetFenceStateInternal() const override { return AZ::RHI::FenceState::Reset; }
         };
 
         class ShaderResourceGroupPool
@@ -276,7 +276,7 @@ namespace UnitTest
             AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator, 0);
 
         private:
-            virtual AZ::RHI::ResultCode FinalizeInternal() { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode FinalizeInternal() override { return AZ::RHI::ResultCode::Success; }
         };
 
         class PipelineState

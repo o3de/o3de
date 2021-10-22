@@ -728,7 +728,7 @@ namespace EMotionFX
                 m_localSpaceTransforms[nodeNr].Zero();
             }
 
-            const size_t numMorphs = m_morphWeights.size();
+            [[maybe_unused]] const size_t numMorphs = m_morphWeights.size();
             MCORE_ASSERT(m_actorInstance->GetMorphSetupInstance()->GetNumMorphTargets() == numMorphs);
             for (float& morphWeight : m_morphWeights)
             {
@@ -743,7 +743,7 @@ namespace EMotionFX
                 m_localSpaceTransforms[i].Zero();
             }
 
-            const size_t numMorphs = m_morphWeights.size();
+            [[maybe_unused]] const size_t numMorphs = m_morphWeights.size();
             MCORE_ASSERT(m_actor->GetMorphSetup(0)->GetNumMorphTargets() == numMorphs);
             for (float& morphWeight : m_morphWeights)
             {

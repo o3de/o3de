@@ -27,24 +27,13 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         return SceneSrg::GetObjectToWorldInverseTransposeMatrix(m_objectId);
     }
 
-    //[GFX TODO][ATOM-15280] Move wrinkle mask data from the default object srg into something specific to the Skin shader
-    uint m_wrinkle_mask_count;
-    float4 m_wrinkle_mask_weights[4];
-    Texture2D m_wrinkle_masks[16];
-
-    float GetWrinkleMaskWeight(uint index)
-    {
-        return m_wrinkle_mask_weights[index / 4][index % 4];
-    }
-
     //! Reflection Probe (smallest probe volume that overlaps the object position)
     struct ReflectionProbeData
     {
-        float3 m_aabbPos;
-        float3 m_outerAabbMin;
-        float3 m_outerAabbMax;
-        float3 m_innerAabbMin;
-        float3 m_innerAabbMax;
+        row_major float3x4 m_modelToWorld;
+        row_major float3x4 m_modelToWorldInverse; // does not include extents
+        float3 m_outerObbHalfLengths;
+        float3 m_innerObbHalfLengths;
         float m_padding;
         bool m_useReflectionProbe;
         bool m_useParallaxCorrection;
@@ -52,4 +41,32 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 
     ReflectionProbeData m_reflectionProbeData;
     TextureCube m_reflectionProbeCubeMap;
+
+    float4x4 GetReflectionProbeWorldMatrix()
+    {
+        float4x4 modelToWorld = float4x4(
+            float4(1, 0, 0, 0),
+            float4(0, 1, 0, 0),
+            float4(0, 0, 1, 0),
+            float4(0, 0, 0, 1));
+
+        modelToWorld[0] = m_reflectionProbeData.m_modelToWorld[0];
+        modelToWorld[1] = m_reflectionProbeData.m_modelToWorld[1];
+        modelToWorld[2] = m_reflectionProbeData.m_modelToWorld[2];
+        return modelToWorld;
+    }
+
+    float4x4 GetReflectionProbeWorldMatrixInverse()
+    {
+        float4x4 modelToWorldInverse = float4x4(
+            float4(1, 0, 0, 0),
+            float4(0, 1, 0, 0),
+            float4(0, 0, 1, 0),
+            float4(0, 0, 0, 1));
+
+        modelToWorldInverse[0] = m_reflectionProbeData.m_modelToWorldInverse[0];
+        modelToWorldInverse[1] = m_reflectionProbeData.m_modelToWorldInverse[1];
+        modelToWorldInverse[2] = m_reflectionProbeData.m_modelToWorldInverse[2];
+        return modelToWorldInverse;
+    }
 }

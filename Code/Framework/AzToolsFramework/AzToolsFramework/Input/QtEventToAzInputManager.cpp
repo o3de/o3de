@@ -158,6 +158,16 @@ namespace AzToolsFramework
         SetImplementation(nullptr);
     }
 
+    void QtEventToAzInputMapper::EditorQtMouseDevice::SetSystemCursorState(const AzFramework::SystemCursorState systemCursorState)
+    {
+        m_systemCursorState = systemCursorState;
+    }
+
+    AzFramework::SystemCursorState QtEventToAzInputMapper::EditorQtMouseDevice::GetSystemCursorState() const
+    {
+        return m_systemCursorState;
+    }
+
     QtEventToAzInputMapper::QtEventToAzInputMapper(QWidget* sourceWidget, int syntheticDeviceId)
         : QObject(sourceWidget)
         , m_sourceWidget(sourceWidget)
@@ -210,12 +220,15 @@ namespace AzToolsFramework
         if (m_capturingCursor != enabled)
         {
             m_capturingCursor = enabled;
+
             if (m_capturingCursor)
             {
+                m_mouseDevice->SetSystemCursorState(AzFramework::SystemCursorState::ConstrainedAndHidden);
                 qApp->setOverrideCursor(Qt::BlankCursor);
             }
             else
             {
+                m_mouseDevice->SetSystemCursorState(AzFramework::SystemCursorState::UnconstrainedAndVisible);
                 qApp->restoreOverrideCursor();
             }
         }
@@ -231,6 +244,17 @@ namespace AzToolsFramework
 
         const auto eventType = event->type();
 
+        if (eventType == QEvent::Type::MouseMove)
+        {
+            // clear override cursor when moving outside of the viewport
+            const auto* mouseEvent = static_cast<const QMouseEvent*>(event);
+            if (m_overrideCursor && !m_sourceWidget->geometry().contains(m_sourceWidget->mapFromGlobal(mouseEvent->globalPos())))
+            {
+                qApp->restoreOverrideCursor();
+                m_overrideCursor = false;
+            }
+        }
+
         // Only accept mouse & key release events that originate from an object that is not our target widget,
         // as we don't want to erroneously intercept user input meant for another component.
         if (object != m_sourceWidget && eventType != QEvent::Type::KeyRelease && eventType != QEvent::Type::MouseButtonRelease)
@@ -238,10 +262,22 @@ namespace AzToolsFramework
             return false;
         }
 
-        // If our focus changes, go ahead and reset all input devices.
         if (eventType == QEvent::FocusIn || eventType == QEvent::FocusOut)
         {
+            // If our focus changes, go ahead and reset all input devices.
             HandleFocusChange(event);
+
+            // If we focus in on the source widget and the mouse is contained in its
+            // bounds, refresh the cached cursor position to ensure it is up to date (this
+            // ensures cursor positions are refreshed correctly with context menu focus changes)
+            if (eventType == QEvent::FocusIn)
+            {
+                const auto globalCursorPosition = QCursor::pos();
+                if (m_sourceWidget->geometry().contains(m_sourceWidget->mapFromGlobal(globalCursorPosition)))
+                {
+                    HandleMouseMoveEvent(globalCursorPosition);
+                }
+            }
         }
         // Map key events to input channels.
         // ShortcutOverride is used in lieu of KeyPress for high priority input channels like Alt
@@ -249,7 +285,7 @@ namespace AzToolsFramework
         else if (
             eventType == QEvent::Type::KeyPress || eventType == QEvent::Type::KeyRelease || eventType == QEvent::Type::ShortcutOverride)
         {
-            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+            auto keyEvent = static_cast<QKeyEvent*>(event);
             HandleKeyEvent(keyEvent);
         }
         // Map mouse events to input channels.
@@ -257,20 +293,20 @@ namespace AzToolsFramework
             eventType == QEvent::Type::MouseButtonPress || eventType == QEvent::Type::MouseButtonRelease ||
             eventType == QEvent::Type::MouseButtonDblClick)
         {
-            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            auto mouseEvent = static_cast<QMouseEvent*>(event);
             HandleMouseButtonEvent(mouseEvent);
         }
         // Map mouse movement to the movement input channels.
         // This includes SystemCursorPosition alongside Movement::X and Movement::Y.
         else if (eventType == QEvent::Type::MouseMove)
         {
-            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-            HandleMouseMoveEvent(mouseEvent);
+            auto mouseEvent = static_cast<QMouseEvent*>(event);
+            HandleMouseMoveEvent(mouseEvent->globalPos());
         }
         // Map wheel events to the mouse Z movement channel.
         else if (eventType == QEvent::Type::Wheel)
         {
-            QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
+            auto wheelEvent = static_cast<QWheelEvent*>(event);
             HandleWheelEvent(wheelEvent);
         }
 
@@ -345,29 +381,25 @@ namespace AzToolsFramework
         return QPoint{ denormalizedX, denormalizedY };
     }
 
-    void QtEventToAzInputMapper::HandleMouseMoveEvent(QMouseEvent* mouseEvent)
+    void QtEventToAzInputMapper::HandleMouseMoveEvent(const QPoint& globalCursorPosition)
     {
-        const QPoint cursorPosition = mouseEvent->pos();
-        const QPoint cursorDelta = cursorPosition - m_previousCursorPosition;
+        const QPoint cursorDelta = globalCursorPosition - m_previousGlobalCursorPosition;
 
-        m_mouseDevice->m_cursorPositionData2D->m_normalizedPosition = WidgetPositionToNormalizedPosition(cursorPosition);
+        m_mouseDevice->m_cursorPositionData2D->m_normalizedPosition =
+            WidgetPositionToNormalizedPosition(m_sourceWidget->mapFromGlobal(globalCursorPosition));
         m_mouseDevice->m_cursorPositionData2D->m_normalizedPositionDelta = WidgetPositionToNormalizedPosition(cursorDelta);
 
         ProcessPendingMouseEvents(cursorDelta);
 
         if (m_capturingCursor)
         {
-            // Reset our cursor position to the previous point.
-            const QPoint targetScreenPosition = m_sourceWidget->mapToGlobal(m_previousCursorPosition);
-            AzQtComponents::SetCursorPos(targetScreenPosition);
-
-            // Even though we just set the cursor position, there are edge cases such as remote desktop that will leave
-            // the cursor position unchanged. For safety, we re-cache our last cursor position for delta generation.
-            const QPoint actualWidgetPosition = m_sourceWidget->mapFromGlobal(QCursor::pos());
-            m_mouseDevice->m_cursorPositionData2D->m_normalizedPosition = WidgetPositionToNormalizedPosition(actualWidgetPosition);
+            // Reset our cursor position to the previous point
+            AzQtComponents::SetCursorPos(m_previousGlobalCursorPosition);
         }
-
-        m_previousCursorPosition = cursorPosition;
+        else
+        {
+            m_previousGlobalCursorPosition = globalCursorPosition;
+        }
     }
 
     void QtEventToAzInputMapper::HandleKeyEvent(QKeyEvent* keyEvent)
@@ -429,6 +461,34 @@ namespace AzToolsFramework
                 channelData.second->UpdateState(false);
                 NotifyUpdateChannelIfNotIdle(channelData.second, event);
             }
+        }
+    }
+
+    static Qt::CursorShape QtCursorFromAzCursor(const ViewportInteraction::CursorStyleOverride cursorStyleOverride)
+    {
+        switch (cursorStyleOverride)
+        {
+        case ViewportInteraction::CursorStyleOverride::Forbidden:
+            return Qt::ForbiddenCursor;
+        default:
+            return Qt::ArrowCursor;
+        }
+    }
+
+    void QtEventToAzInputMapper::SetOverrideCursor(ViewportInteraction::CursorStyleOverride cursorStyleOverride)
+    {
+        ClearOverrideCursor();
+
+        qApp->setOverrideCursor(QtCursorFromAzCursor(cursorStyleOverride));
+        m_overrideCursor = true;
+    }
+
+    void QtEventToAzInputMapper::ClearOverrideCursor()
+    {
+        if (m_overrideCursor)
+        {
+            qApp->restoreOverrideCursor();
+            m_overrideCursor = false;
         }
     }
 } // namespace AzToolsFramework

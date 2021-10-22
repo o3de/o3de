@@ -6,6 +6,6 @@
 #
 #
 
-set(GEM_DEPENDENCIES
+set(LY_RUNTIME_DEPENDENCIES
     Gem::QtForPython.Editor
 )

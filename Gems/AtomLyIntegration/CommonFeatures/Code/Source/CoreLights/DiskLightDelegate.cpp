@@ -147,35 +147,11 @@ namespace AZ::Render
         }
     }
 
-    void DiskLightDelegate::SetSofteningBoundaryWidthAngle(float widthInDegrees)
-    {
-        if (GetShadowsEnabled() && GetLightHandle().IsValid())
-        {
-            GetFeatureProcessor()->SetSofteningBoundaryWidthAngle(GetLightHandle(), DegToRad(widthInDegrees));
-        }
-    }
-
-    void DiskLightDelegate::SetPredictionSampleCount(uint32_t count)
-    {
-        if (GetShadowsEnabled() && GetLightHandle().IsValid())
-        {
-            GetFeatureProcessor()->SetPredictionSampleCount(GetLightHandle(), static_cast<uint16_t>(count));
-        }
-    }
-
     void DiskLightDelegate::SetFilteringSampleCount(uint32_t count)
     {
         if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
             GetFeatureProcessor()->SetFilteringSampleCount(GetLightHandle(), static_cast<uint16_t>(count));
-        }
-    }
-
-    void DiskLightDelegate::SetPcfMethod(PcfMethod method)
-    {
-        if (GetShadowsEnabled() && GetLightHandle().IsValid())
-        {
-            GetFeatureProcessor()->SetPcfMethod(GetLightHandle(), method);
         }
     }
 

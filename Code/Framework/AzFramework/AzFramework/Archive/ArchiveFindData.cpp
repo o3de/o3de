@@ -15,34 +15,6 @@
 
 namespace AZ::IO
 {
-    size_t ArchiveFileIteratorHash::operator()(const AZ::IO::ArchiveFileIterator& iter) const
-    {
-        return iter.GetHash();
-    }
-
-    bool AZStdStringLessCaseInsensitive::operator()(AZStd::string_view left, AZStd::string_view right) const
-    {
-        // If one or both strings are 0-length, return true if the left side is smaller, false if they're equal or left is larger.
-        size_t compareLength = (AZStd::min)(left.size(), right.size());
-        if (compareLength == 0)
-        {
-            return left.size() < right.size();
-        }
-
-        // They're both non-zero, so compare the strings up until the length of the shorter string.
-        int compareResult = azstrnicmp(left.data(), right.data(), compareLength);
-
-        // If both strings are equal for the number of characters compared, return true if the left side is shorter, false if
-        // they're equal or left is longer.
-        if (compareResult == 0)
-        {
-            return left.size() < right.size();
-        }
-
-        // Return true if the left side should come first alphabetically, false if the right side should.
-        return compareResult < 0;
-    }
-
     FileDesc::FileDesc(Attribute fileAttribute, uint64_t fileSize, time_t accessTime, time_t creationTime, time_t writeTime)
         : nAttrib{ fileAttribute }
         , nSize{ fileSize }
@@ -52,10 +24,9 @@ namespace AZ::IO
     {
     }
 
-    ArchiveFileIterator::ArchiveFileIterator(FindData* findData, AZStd::string_view filename, const FileDesc& fileDesc)
+    // ArchiveFileIterator
+    ArchiveFileIterator::ArchiveFileIterator(FindData* findData)
         : m_findData{ findData }
-        , m_filename{ filename }
-        , m_fileDesc{ fileDesc }
     {
     }
 
@@ -73,21 +44,36 @@ namespace AZ::IO
         return operator++();
     }
 
-    bool ArchiveFileIterator::operator==(const AZ::IO::ArchiveFileIterator& rhs) const
-    {
-        return GetHash() == rhs.GetHash();
-    }
 
     ArchiveFileIterator::operator bool() const
     {
         return m_findData && m_lastFetchValid;
     }
 
-    size_t ArchiveFileIterator::GetHash() const
+    // FindData::ArchiveFile
+    FindData::ArchiveFile::ArchiveFile() = default;
+    FindData::ArchiveFile::ArchiveFile(AZStd::string_view filename, const FileDesc& fileDesc)
+        : m_filename(filename)
+        , m_fileDesc(fileDesc)
+    {
+    }
+    size_t FindData::ArchiveFile::GetHash() const
     {
         return AZStd::hash<AZ::IO::PathView>{}(m_filename.c_str());
     }
 
+    bool FindData::ArchiveFile::operator==(const ArchiveFile& rhs) const
+    {
+        return GetHash() == rhs.GetHash();
+    }
+
+    // FindData::ArchiveFilehash
+    size_t FindData::ArchiveFileHash::operator()(const ArchiveFile& archiveFile) const
+    {
+        return archiveFile.GetHash();
+    }
+
+    // FindData
     void FindData::Scan(IArchive* archive, AZStd::string_view szDir, bool bAllowUseFS, bool bScanZips)
     {
         // get the priority into local variable to avoid it changing in the course of
@@ -119,40 +105,37 @@ namespace AZ::IO
 
     void FindData::ScanFS([[maybe_unused]] IArchive* archive, AZStd::string_view szDirIn)
     {
-        AZStd::string searchDirectory;
-        AZStd::string pattern;
+        AZ::IO::PathView directory{ szDirIn };
+        AZ::IO::FixedMaxPath searchDirectory = directory.ParentPath();
+        AZ::IO::FixedMaxPath pattern = directory.Filename();
+        auto ScanFileSystem = [this](const char* filePath) -> bool
         {
-            AZ::IO::PathString directory{ szDirIn };
-            AZ::StringFunc::Path::GetFullPath(directory.c_str(), searchDirectory);
-            AZ::StringFunc::Path::GetFullFileName(directory.c_str(), pattern);
-        }
-        AZ::IO::FileIOBase::GetDirectInstance()->FindFiles(searchDirectory.c_str(), pattern.c_str(), [&](const char* filePath) -> bool
-        {
-            AZ::IO::ArchiveFileIterator fileIterator{ nullptr, AZ::IO::PathView(filePath).Filename().Native(), {} };
+            ArchiveFile archiveFile{ AZ::IO::PathView(filePath).Filename().Native(), {} };
 
             if (AZ::IO::FileIOBase::GetDirectInstance()->IsDirectory(filePath))
             {
-                fileIterator.m_fileDesc.nAttrib = fileIterator.m_fileDesc.nAttrib | AZ::IO::FileDesc::Attribute::Subdirectory;
-                m_fileSet.emplace(AZStd::move(fileIterator));
+                archiveFile.m_fileDesc.nAttrib = archiveFile.m_fileDesc.nAttrib | AZ::IO::FileDesc::Attribute::Subdirectory;
+                m_fileSet.emplace(AZStd::move(archiveFile));
             }
             else
             {
                 if (AZ::IO::FileIOBase::GetDirectInstance()->IsReadOnly(filePath))
                 {
-                    fileIterator.m_fileDesc.nAttrib = fileIterator.m_fileDesc.nAttrib | AZ::IO::FileDesc::Attribute::ReadOnly;
+                    archiveFile.m_fileDesc.nAttrib = archiveFile.m_fileDesc.nAttrib | AZ::IO::FileDesc::Attribute::ReadOnly;
                 }
                 AZ::u64 fileSize = 0;
                 AZ::IO::FileIOBase::GetDirectInstance()->Size(filePath, fileSize);
-                fileIterator.m_fileDesc.nSize = fileSize;
-                fileIterator.m_fileDesc.tWrite = AZ::IO::FileIOBase::GetDirectInstance()->ModificationTime(filePath);
+                archiveFile.m_fileDesc.nSize = fileSize;
+                archiveFile.m_fileDesc.tWrite = AZ::IO::FileIOBase::GetDirectInstance()->ModificationTime(filePath);
 
                 // These times are not supported by our file interface
-                fileIterator.m_fileDesc.tAccess = fileIterator.m_fileDesc.tWrite;
-                fileIterator.m_fileDesc.tCreate = fileIterator.m_fileDesc.tWrite;
-                m_fileSet.emplace(AZStd::move(fileIterator));
+                archiveFile.m_fileDesc.tAccess = archiveFile.m_fileDesc.tWrite;
+                archiveFile.m_fileDesc.tCreate = archiveFile.m_fileDesc.tWrite;
+                m_fileSet.emplace(AZStd::move(archiveFile));
             }
             return true;
-        });
+        };
+        AZ::IO::FileIOBase::GetDirectInstance()->FindFiles(searchDirectory.c_str(), pattern.c_str(), ScanFileSystem);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -180,7 +163,7 @@ namespace AZ::IO
                 fileDesc.nAttrib = AZ::IO::FileDesc::Attribute::ReadOnly | AZ::IO::FileDesc::Attribute::Archive;
                 fileDesc.nSize = fileEntry->desc.lSizeUncompressed;
                 fileDesc.tWrite = fileEntry->GetModificationTime();
-                m_fileSet.emplace(AZ::IO::ArchiveFileIterator{ this, fname, fileDesc });
+                m_fileSet.emplace(fname, fileDesc);
             }
 
             ZipDir::FindDir findDirectoryEntry(zipCache);
@@ -193,7 +176,7 @@ namespace AZ::IO
                 }
                 AZ::IO::FileDesc fileDesc;
                 fileDesc.nAttrib = AZ::IO::FileDesc::Attribute::ReadOnly | AZ::IO::FileDesc::Attribute::Archive | AZ::IO::FileDesc::Attribute::Subdirectory;
-                m_fileSet.emplace(AZ::IO::ArchiveFileIterator{ this, fname, fileDesc });
+                m_fileSet.emplace(fname, fileDesc);
             }
         };
 
@@ -203,52 +186,38 @@ namespace AZ::IO
         {
             // filter out the stuff which does not match.
 
-            // the problem here is that szDir might be something like "@assets@/levels/*"
-            // but our archive might be mounted at the root, or at some other folder at like "@assets@" or "@assets@/levels/mylevel"
+            // the problem here is that szDir might be something like "@products@/levels/*"
+            // but our archive might be mounted at the root, or at some other folder at like "@products@" or "@products@/levels/mylevel"
             // so there's really no way to filter out opening the pack and looking at the files inside.
             // however, the bind root is not part of the inner zip entry name either
             // and the ZipDir::FindFile actually expects just the chopped off piece.
-            // we have to find whats in common between them and check that:
+            // we have to find the common path segments between them and check that:
 
-            auto resolvedBindRoot = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(it->m_pathBindRoot);
-            if (!resolvedBindRoot)
+            AZ::IO::FixedMaxPath bindRoot;
+            if (!AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(bindRoot, it->m_pathBindRoot))
             {
                 AZ_Assert(false, "Unable to resolve Path for archive %s bind root %s", it->GetFullPath(), it->m_pathBindRoot.c_str());
                 return;
             }
 
-            AZ::IO::FixedMaxPath bindRoot{ *resolvedBindRoot };
-            auto [bindRootIter, sourcePathIter] = AZStd::mismatch(AZStd::begin(bindRoot), AZStd::end(bindRoot),
-                AZStd::begin(sourcePath), AZStd::end(sourcePath));
 
-            if (sourcePathIter == AZStd::begin(sourcePath))
-            {
-                // The path has no characters in common , early out the search as filepath is not part of the iterated zip
-                continue;
-            }
-
-            AZ::IO::FixedMaxPath sourcePathRemainder;
-            for (; sourcePathIter != AZStd::end(sourcePath); ++sourcePathIter)
-            {
-                sourcePathRemainder /= *sourcePathIter;
-            }
             // Example:
-            // "@assets@\\levels\\*" <--- szDir
-            // "@assets@\\" <--- mount point
+            // "@products@\\levels\\*" <--- szDir
+            // "@products@\\" <--- mount point
             // ~~~~~~~~~~~ Common part
             // "levels\\*" <---- remainder that is not in common
             // "" <--- mount point remainder.  In this case, we should scan the contents of the pak for the remainder
 
             // Example:
-            // "@assets@\\levels\\*" <--- szDir
-            // "@assets@\\levels\\mylevel\\" <--- mount point (its level.pak)
+            // "@products@\\levels\\*" <--- szDir
+            // "@products@\\levels\\mylevel\\" <--- mount point (its level.pak)
             //  ~~~~~~~~~~~~~~~~~~ common part
             // "*" <----  remainder that is not in common
             // "mylevel\\" <--- mount point remainder.
 
             // example:
-            // "@assets@\\levels\\otherlevel\\*" <--- szDir
-            // "@assets@\\levels\\mylevel\\" <--- mount point (its level.pak)
+            // "@products@\\levels\\otherlevel\\*" <--- szDir
+            // "@products@\\levels\\mylevel\\" <--- mount point (its level.pak)
             // "otherlevel\\*" <----  remainder
             // "mylevel\\" <--- mount point remainder.
 
@@ -256,23 +225,31 @@ namespace AZ::IO
             // then it means that the pack's mount point itself might be a return value, not the files inside the pack
             // in that case, we compare the mount point remainder itself with the search filter
 
+            auto [bindRootIter, sourcePathIter] = AZStd::mismatch(bindRoot.begin(), bindRoot.end(),
+                sourcePath.begin(), sourcePath.end());
             if (bindRootIter != bindRoot.end())
             {
+                AZ::IO::FixedMaxPath sourcePathRemainder;
+                for (; sourcePathIter != sourcePath.end(); ++sourcePathIter)
+                {
+                    sourcePathRemainder /= *sourcePathIter;
+                }
+
                 // Retrieve next path component of the mount point remainder
-                if (!bindRootIter->empty() && AZStd::wildcard_match(sourcePathRemainder.Native(), bindRootIter->Native()))
+                if (!bindRootIter->empty() && bindRootIter->Match(sourcePathRemainder.Native()))
                 {
                     AZ::IO::FileDesc fileDesc{ AZ::IO::FileDesc::Attribute::ReadOnly | AZ::IO::FileDesc::Attribute::Archive | AZ::IO::FileDesc::Attribute::Subdirectory };
-                    m_fileSet.emplace(AZ::IO::ArchiveFileIterator{ this, bindRootIter->Native(), fileDesc });
+                    m_fileSet.emplace(AZStd::move(bindRootIter->Native()), fileDesc);
                 }
             }
             else
             {
-                
+                AZ::IO::FixedMaxPath sourcePathRemainder = sourcePath.LexicallyRelative(bindRoot);
                 // if we get here, it means that the search pattern's root and the mount point for this pack are identical
                 // which means we may search inside the pack.
                 ScanInZip(it->pZip.get(), sourcePathRemainder.Native());
             }
-          
+
         }
     }
 
@@ -280,17 +257,17 @@ namespace AZ::IO
     {
         if (m_fileSet.empty())
         {
-            AZ::IO::ArchiveFileIterator emptyFileIterator;
-            emptyFileIterator.m_lastFetchValid = false;
-            emptyFileIterator.m_findData = this;
-            return emptyFileIterator;
+            return {};
         }
 
         // Remove Fetched item from the FindData map so that the iteration continues
-        AZ::IO::ArchiveFileIterator fileIterator{ *m_fileSet.begin() };
+        AZ::IO::ArchiveFileIterator fileIterator;
+        auto archiveFileIt = m_fileSet.begin();
+        fileIterator.m_filename = archiveFileIt->m_filename;
+        fileIterator.m_fileDesc = archiveFileIt->m_fileDesc;
         fileIterator.m_lastFetchValid = true;
         fileIterator.m_findData = this;
-        m_fileSet.erase(m_fileSet.begin());
+        m_fileSet.erase(archiveFileIt);
         return fileIterator;
     }
 }

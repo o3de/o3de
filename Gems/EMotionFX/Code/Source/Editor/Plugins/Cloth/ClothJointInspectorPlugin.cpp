@@ -71,7 +71,7 @@ namespace EMotionFX
         }
         else
         {
-            m_dock->setWidget(CreateErrorContentWidget("Cloth collider editor depends on the NVIDIA Cloth gem. Please enable it in the project configurator."));
+            m_dock->setWidget(CreateErrorContentWidget("Cloth collider editor depends on the NVIDIA Cloth gem. Please enable it in the Project Manager."));
         }
 
         return true;

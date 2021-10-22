@@ -282,7 +282,7 @@ namespace ReplicaBehavior {
         GM_CLASS_ALLOCATOR(EntityLikeScriptReplicaChunk);
 
         EntityLikeScriptReplicaChunk();
-        ~EntityLikeScriptReplicaChunk() = default;
+        ~EntityLikeScriptReplicaChunk() override = default;
 
         //////////////////////////////////////////////////////////////////////
         //! GridMate::ReplicaChunk overrides.
@@ -296,7 +296,7 @@ namespace ReplicaBehavior {
 
         int GetMaxServerProperties() const { return k_maxScriptableDataSets; }
 
-        AZ::u32 CalculateDirtyDataSetMask(MarshalContext& marshalContext);
+        AZ::u32 CalculateDirtyDataSetMask(MarshalContext& marshalContext) override;
 
         EntityLikeScriptDataSet m_scriptDataSets[k_maxScriptableDataSets];
         AZ::u32 m_enabledDataSetMask;
@@ -457,13 +457,13 @@ namespace ReplicaBehavior {
         Completed,
     };
 
-    class Integ_SimpleBehaviorTest
+    class SimpleBehaviorTest
         : public UnitTest::GridMateMPTestFixture
     {
     public:
         //GM_CLASS_ALLOCATOR(SimpleBehaviorTest);
 
-        Integ_SimpleBehaviorTest()
+        SimpleBehaviorTest()
             : m_sessionCount(0) { }
 
         virtual int GetNumSessions() { return 0; }
@@ -654,11 +654,11 @@ namespace ReplicaBehavior {
     *
     * This is a simple sanity check to ensure the logic sends the update when it's necessary.
     */
-    class Integ_Replica_DontSendDataSets_WithNoDiffFromCtorData
-        : public Integ_SimpleBehaviorTest
+    class Replica_DontSendDataSets_WithNoDiffFromCtorData
+        : public SimpleBehaviorTest
     {
     public:
-        Integ_Replica_DontSendDataSets_WithNoDiffFromCtorData()
+        Replica_DontSendDataSets_WithNoDiffFromCtorData()
             : m_replicaIdDefault(InvalidReplicaId), m_replicaIdModified(InvalidReplicaId)
         {
         }
@@ -774,9 +774,9 @@ namespace ReplicaBehavior {
         FilteredHook<LargeChunkWithDefaults> m_driller;
     };
 
-    TEST(Integ_Replica_DontSendDataSets_WithNoDiffFromCtorData, Integ_Replica_DontSendDataSets_WithNoDiffFromCtorData)
+    TEST(Replica_DontSendDataSets_WithNoDiffFromCtorData, DISABLED_Replica_DontSendDataSets_WithNoDiffFromCtorData)
     {
-        Integ_Replica_DontSendDataSets_WithNoDiffFromCtorData tester;
+        Replica_DontSendDataSets_WithNoDiffFromCtorData tester;
         tester.run();
     }
 
@@ -784,11 +784,11 @@ namespace ReplicaBehavior {
     * This test checks the actual size of the replica as marshalled in the binary payload.
     * The assessment of the payload size is done using driller EBus.
     */
-    class Integ_ReplicaDefaultDataSetDriller
-        : public Integ_SimpleBehaviorTest
+    class ReplicaDefaultDataSetDriller
+        : public SimpleBehaviorTest
     {
     public:
-        Integ_ReplicaDefaultDataSetDriller()
+        ReplicaDefaultDataSetDriller()
             : m_replicaId(InvalidReplicaId)
         {
         }
@@ -815,7 +815,7 @@ namespace ReplicaBehavior {
             m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
-        ~Integ_ReplicaDefaultDataSetDriller()
+        ~ReplicaDefaultDataSetDriller() override
         {
             m_driller.BusDisconnect();
         }
@@ -880,11 +880,11 @@ namespace ReplicaBehavior {
         ReplicaId m_replicaId;
     };
     
-    const int Integ_ReplicaDefaultDataSetDriller::NonDefaultValue;
+    const int ReplicaDefaultDataSetDriller::NonDefaultValue;
 
-    TEST(Integ_ReplicaDefaultDataSetDriller, Integ_ReplicaDefaultDataSetDriller)
+    TEST(ReplicaDefaultDataSetDriller, DISABLED_ReplicaDefaultDataSetDriller)
     {
-        Integ_ReplicaDefaultDataSetDriller tester;
+        ReplicaDefaultDataSetDriller tester;
         tester.run();
     }
 
@@ -892,11 +892,11 @@ namespace ReplicaBehavior {
     * This test checks the actual size of the replica as marshalled in the binary payload.
     * The assessment of the payload size is done using driller EBus.
     */
-    class Integ_Replica_ComparePackingBoolsVsU8
-        : public Integ_SimpleBehaviorTest
+    class Replica_ComparePackingBoolsVsU8
+        : public SimpleBehaviorTest
     {
     public:
-        Integ_Replica_ComparePackingBoolsVsU8()
+        Replica_ComparePackingBoolsVsU8()
             : m_replicaBoolsId(InvalidReplicaId)
             , m_replicaU8Id(InvalidReplicaId)
         {
@@ -928,7 +928,7 @@ namespace ReplicaBehavior {
             m_replicaU8Id = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica2);
         }
 
-        ~Integ_Replica_ComparePackingBoolsVsU8()
+        ~Replica_ComparePackingBoolsVsU8() override
         {
             m_driller.BusDisconnect();
         }
@@ -1020,17 +1020,17 @@ namespace ReplicaBehavior {
         ReplicaId m_replicaU8Id;
     };
 
-    TEST(Integ_Replica_ComparePackingBoolsVsU8, Integ_Replica_ComparePackingBoolsVsU8)
+    TEST(Replica_ComparePackingBoolsVsU8, DISABLED_Replica_ComparePackingBoolsVsU8)
     {
-        Integ_Replica_ComparePackingBoolsVsU8 tester;
+        Replica_ComparePackingBoolsVsU8 tester;
         tester.run();
     }
 
-    class Integ_CheckDataSetStreamIsntWrittenMoreThanNecessary
-        : public Integ_SimpleBehaviorTest
+    class CheckDataSetStreamIsntWrittenMoreThanNecessary
+        : public SimpleBehaviorTest
     {
     public:
-        Integ_CheckDataSetStreamIsntWrittenMoreThanNecessary()
+        CheckDataSetStreamIsntWrittenMoreThanNecessary()
             : m_replicaId(InvalidReplicaId)
         {
         }
@@ -1057,7 +1057,7 @@ namespace ReplicaBehavior {
             m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
-        ~Integ_CheckDataSetStreamIsntWrittenMoreThanNecessary()
+        ~CheckDataSetStreamIsntWrittenMoreThanNecessary() override
         {
             m_driller.BusDisconnect();
         }
@@ -1117,17 +1117,17 @@ namespace ReplicaBehavior {
         ReplicaId m_replicaId;
     };
 
-    TEST(Integ_CheckDataSetStreamIsntWrittenMoreThanNecessary, Integ_CheckDataSetStreamIsntWrittenMoreThanNecessary)
+    TEST(CheckDataSetStreamIsntWrittenMoreThanNecessary, DISABLED_CheckDataSetStreamIsntWrittenMoreThanNecessary)
     {
-        Integ_CheckDataSetStreamIsntWrittenMoreThanNecessary tester;
+        CheckDataSetStreamIsntWrittenMoreThanNecessary tester;
         tester.run();
     }
 
-    class Integ_CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty
-        : public Integ_SimpleBehaviorTest
+    class CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty
+        : public SimpleBehaviorTest
     {
     public:
-        Integ_CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty()
+        CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty()
             : m_replicaId(InvalidReplicaId)
         {
         }
@@ -1154,7 +1154,7 @@ namespace ReplicaBehavior {
             m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
-        ~Integ_CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty()
+        ~CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty() override
         {
             m_driller.BusDisconnect();
         }
@@ -1213,17 +1213,17 @@ namespace ReplicaBehavior {
         ReplicaId m_replicaId;
     };
 
-    TEST(Integ_CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty, Integ_CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty)
+    TEST(CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty, DISABLED_CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty)
     {
-        Integ_CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty tester;
+        CheckDataSetStreamIsntWrittenMoreThanNecessaryOnceDirty tester;
         tester.run();
     }
 
-    class Integ_CheckReplicaIsntSentWithNoChanges
-        : public Integ_SimpleBehaviorTest
+    class CheckReplicaIsntSentWithNoChanges
+        : public SimpleBehaviorTest
     {
     public:
-        Integ_CheckReplicaIsntSentWithNoChanges()
+        CheckReplicaIsntSentWithNoChanges()
             : m_replicaId(InvalidReplicaId)
         {
         }
@@ -1248,7 +1248,7 @@ namespace ReplicaBehavior {
             m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
-        ~Integ_CheckReplicaIsntSentWithNoChanges()
+        ~CheckReplicaIsntSentWithNoChanges() override
         {
             m_driller.BusDisconnect();
         }
@@ -1323,17 +1323,17 @@ namespace ReplicaBehavior {
         ReplicaId m_replicaId;
     };
 
-    TEST(Integ_CheckReplicaIsntSentWithNoChanges, Integ_CheckReplicaIsntSentWithNoChanges)
+    TEST(CheckReplicaIsntSentWithNoChanges, DISABLED_CheckReplicaIsntSentWithNoChanges)
     {
-        Integ_CheckReplicaIsntSentWithNoChanges tester;
+        CheckReplicaIsntSentWithNoChanges tester;
         tester.run();
     }
 
-    class Integ_CheckEntityScriptReplicaIsntSentWithNoChanges
-        : public Integ_SimpleBehaviorTest
+    class CheckEntityScriptReplicaIsntSentWithNoChanges
+        : public SimpleBehaviorTest
     {
     public:
-        Integ_CheckEntityScriptReplicaIsntSentWithNoChanges()
+        CheckEntityScriptReplicaIsntSentWithNoChanges()
             : m_replicaId(InvalidReplicaId)
         {
         }
@@ -1359,7 +1359,7 @@ namespace ReplicaBehavior {
             m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
         }
 
-        ~Integ_CheckEntityScriptReplicaIsntSentWithNoChanges()
+        ~CheckEntityScriptReplicaIsntSentWithNoChanges() override
         {
             m_driller.BusDisconnect();
         }
@@ -1410,9 +1410,9 @@ namespace ReplicaBehavior {
         ReplicaId m_replicaId;
     };
 
-    TEST(Integ_CheckEntityScriptReplicaIsntSentWithNoChanges, Integ_CheckEntityScriptReplicaIsntSentWithNoChanges)
+    TEST(CheckEntityScriptReplicaIsntSentWithNoChanges, DISABLED_CheckEntityScriptReplicaIsntSentWithNoChanges)
     {
-        Integ_CheckEntityScriptReplicaIsntSentWithNoChanges tester;
+        CheckEntityScriptReplicaIsntSentWithNoChanges tester;
         tester.run();
     }
 

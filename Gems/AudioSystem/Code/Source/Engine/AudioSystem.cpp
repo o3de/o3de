@@ -17,7 +17,6 @@
 #include <AzCore/std/bind/bind.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
-
 namespace Audio
 {
     extern CAudioLogger g_audioLogger;
@@ -57,7 +56,7 @@ namespace Audio
         threadDesc.m_cpuId = AZ_TRAIT_AUDIOSYSTEM_AUDIO_THREAD_AFFINITY;
 
         auto threadFunc = AZStd::bind(&CAudioThread::Run, this);
-        m_thread = AZStd::thread(threadFunc, &threadDesc);
+        m_thread = AZStd::thread(threadDesc, threadFunc);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -293,7 +292,7 @@ namespace Audio
         PushRequestBlocking(request);
 
         m_audioSystemThread.Deactivate();
-        const bool bSuccess = m_oATL.ShutDown();
+        m_oATL.ShutDown();
         m_bSystemInitialized = false;
     }
 

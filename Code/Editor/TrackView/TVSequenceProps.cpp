@@ -53,7 +53,7 @@ CTVSequenceProps::~CTVSequenceProps()
 // CTVSequenceProps message handlers
 bool CTVSequenceProps::OnInitDialog()
 {
-    ui->NAME->setText(m_pSequence->GetName());
+    ui->NAME->setText(m_pSequence->GetName().c_str());
     int seqFlags = m_pSequence->GetFlags();
 
     ui->ALWAYS_PLAY->setChecked((seqFlags & IAnimSequence::eSeqFlags_PlayOnReset));
@@ -141,7 +141,7 @@ void CTVSequenceProps::UpdateSequenceProps(const QString& name)
         ac->UpdateTimeRange();
     }
 
-    QString seqName = m_pSequence->GetName();
+    QString seqName = QString::fromUtf8(m_pSequence->GetName().c_str());
     if (name != seqName)
     {
         // Rename sequence.

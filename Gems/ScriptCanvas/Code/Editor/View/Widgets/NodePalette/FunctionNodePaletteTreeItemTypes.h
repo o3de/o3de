@@ -59,8 +59,8 @@ namespace ScriptCanvasEditor
         FunctionPaletteTreeItem(const char* name, const ScriptCanvas::Grammar::FunctionSourceId& sourceId, AZ::Data::Asset<AZ::Data::AssetData> asset);
         ~FunctionPaletteTreeItem() = default;
 
-        GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const;
-        QVariant OnData(const QModelIndex& index, int role) const;
+        GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
+        QVariant OnData(const QModelIndex& index, int role) const override;
 
         ScriptCanvas::Grammar::FunctionSourceId GetFunctionSourceId() const;
         AZ::Data::AssetId GetSourceAssetId() const;

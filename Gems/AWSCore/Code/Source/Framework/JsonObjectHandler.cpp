@@ -19,6 +19,7 @@ namespace AWSCore
     {
 
     public:
+        virtual ~JsonReaderHandler() = default;
 
         using Ch = char;
         using SizeType = rapidjson::SizeType;

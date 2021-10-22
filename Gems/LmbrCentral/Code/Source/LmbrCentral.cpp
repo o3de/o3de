@@ -72,6 +72,7 @@
 // Shape components
 #include "Shape/SphereShapeComponent.h"
 #include "Shape/DiskShapeComponent.h"
+#include "Shape/AxisAlignedBoxShapeComponent.h"
 #include "Shape/BoxShapeComponent.h"
 #include "Shape/QuadShapeComponent.h"
 #include "Shape/CylinderShapeComponent.h"
@@ -202,6 +203,7 @@ namespace LmbrCentral
             SphereShapeComponent::CreateDescriptor(),
             DiskShapeComponent::CreateDescriptor(),
             BoxShapeComponent::CreateDescriptor(),
+            AxisAlignedBoxShapeComponent::CreateDescriptor(),
             QuadShapeComponent::CreateDescriptor(),
             CylinderShapeComponent::CreateDescriptor(),
             CapsuleShapeComponent::CreateDescriptor(),
@@ -215,6 +217,7 @@ namespace LmbrCentral
             SphereShapeDebugDisplayComponent::CreateDescriptor(),
             DiskShapeDebugDisplayComponent::CreateDescriptor(),
             BoxShapeDebugDisplayComponent::CreateDescriptor(),
+            AxisAlignedBoxShapeDebugDisplayComponent::CreateDescriptor(),
             QuadShapeDebugDisplayComponent::CreateDescriptor(),
             CapsuleShapeDebugDisplayComponent::CreateDescriptor(),
             CylinderShapeDebugDisplayComponent::CreateDescriptor(),
@@ -481,7 +484,7 @@ namespace LmbrCentral
         }
 
         // load the catalog from disk (supported over VFS).
-        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, LoadCatalog, AZStd::string::format("@assets@/%s", s_assetCatalogFilename).c_str());
+        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, LoadCatalog, AZStd::string::format("@products@/%s", s_assetCatalogFilename).c_str());
     }
 
     void LmbrCentralSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)

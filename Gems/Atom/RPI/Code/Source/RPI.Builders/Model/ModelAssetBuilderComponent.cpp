@@ -60,7 +60,6 @@
 
 namespace
 {
-    const uint32_t IndicesPerFace = 3;
     const AZ::RHI::Format IndicesFormat = AZ::RHI::Format::R32_UINT;
 
     const uint32_t PositionFloatsPerVert = 3;
@@ -84,11 +83,6 @@ namespace
 
     // Morph targets
     const char* ShaderSemanticName_MorphTargetDeltas = "MORPHTARGET_VERTEXDELTAS";
-    const AZ::RHI::Format MorphTargetVertexIndexFormat = AZ::RHI::Format::R32_UINT; // Single-component, 32-bit integer as vertex index
-    const char* ShaderSemanticName_MorphTargetPositionDeltas = "MORPHTARGET_POSITIONDELTAS";
-    const AZ::RHI::Format MorphTargetPositionDeltaFormat = AZ::RHI::Format::R16_UINT; // 16-bit integer per compressed position delta component
-    const char* ShaderSemanticName_MorphTargetNormalDeltas = "MORPHTARGET_NORMALDELTAS";
-    const AZ::RHI::Format MorphTargetNormalDeltaFormat = AZ::RHI::Format::R8_UINT; // 8-bit integer per compressed normal delta component
 
     // Cloth data
     const char* const ShaderSemanticName_ClothData = "CLOTH_DATA";
@@ -959,7 +953,6 @@ namespace AZ
             size_t numInfluencesAdded = 0;
             for (const auto& skinData : sourceMesh.m_skinData)
             {
-                const size_t numJoints = skinData->GetBoneCount();
                 const AZ::u32 controlPointIndex = sourceMeshData->GetControlPointIndex(static_cast<int>(vertexIndex));
                 const size_t numSkinInfluences = skinData->GetLinkCount(controlPointIndex);
 

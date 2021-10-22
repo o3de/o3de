@@ -5,14 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#ifndef AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H
-#define AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H
-
-#include <AzCore/base.h>
-
 #pragma once
 
+#include <AzCore/base.h>
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Uuid.h>
@@ -418,6 +414,9 @@ namespace AzToolsFramework
         //! Gets an existing entity id from a known id.
         virtual AZ::EntityId GetExistingEntity(AZ::u64 id) = 0;
 
+        //! Returns if an entity with the given id exists
+        virtual bool EntityExists(AZ::EntityId id) = 0;
+
         /*!
          * Delete all currently-selected entities.
          */
@@ -765,12 +764,6 @@ namespace AzToolsFramework
         //! Spawn asset browser for the appropriate asset types.
         virtual void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) = 0;
 
-        /// Allow interception of selection / left-mouse clicks in ObjectMode, for customizing selection behavior.
-        virtual void HandleObjectModeSelection(const AZ::Vector2& /*point*/, int /*flags*/, bool& /*handled*/) {}
-
-        /// Allow interception of cursor, for customizing selection behavior.
-        virtual void UpdateObjectModeCursor(AZ::u32& /*cursorId*/, AZStd::string& /*cursorStr*/) {}
-
         /// Creates editor-side representation of an underlying entity.
         virtual void CreateEditorRepresentation(AZ::Entity* /*entity*/) { }
 
@@ -1089,4 +1082,5 @@ namespace AzToolsFramework
     }
 } // namespace AzToolsFramework
 
-#endif // AZTOOLSFRAMEWORK_TOOLSAPPLICATIONAPI_H
+AZ_DECLARE_BUDGET(AzToolsFramework);
+

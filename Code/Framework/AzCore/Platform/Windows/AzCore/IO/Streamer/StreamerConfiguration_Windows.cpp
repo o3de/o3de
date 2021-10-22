@@ -14,6 +14,9 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/StringFunc/StringFunc.h>
+
+// https://developercommunity.visualstudio.com/t/windows-sdk-100177630-pragma-push-pop-mismatch-in/386142
+#define _NTDDSCM_H_
 #include <winioctl.h>
 
 namespace AZ::IO
@@ -264,6 +267,7 @@ namespace AZ::IO
                     SettingsRegistryInterface::VisitResponse::Continue : SettingsRegistryInterface::VisitResponse::Skip;
             }
 
+            using SettingsRegistryInterface::Visitor::Visit;
             void Visit([[maybe_unused]] AZStd::string_view path, [[maybe_unused]] AZStd::string_view valueName,
                 [[maybe_unused]] AZ::SettingsRegistryInterface::Type type, AZStd::string_view value) override
             {

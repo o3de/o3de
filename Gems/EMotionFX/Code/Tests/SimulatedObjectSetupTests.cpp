@@ -406,7 +406,6 @@ namespace SimulatedObjectSetupTests
         const float newGravityFactor = 1.2f;
         const float newFriction = 0.3f;
         const bool newPinned = true;
-        const bool newStretchable = true;
 
         joint.SetConeAngleLimit(newConeAngleLimit);
         joint.SetMass(newMass);

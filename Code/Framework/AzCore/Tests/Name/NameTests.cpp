@@ -362,7 +362,7 @@ namespace UnitTest
         // Test specific construction case that was failing. 
         // The constructor calls Name::SetName() which does a move assignment
         // Name& Name::operator=(Name&& rhs) was leaving m_view pointing to the m_data in a temporary Name object.
-        AZ::Name emptyName(AZStd::string_view(nullptr));
+        AZ::Name emptyName(AZStd::string_view{});
         EXPECT_TRUE(emptyName.IsEmpty());
         EXPECT_EQ(0, emptyName.GetStringView().data()[0]);
     }
@@ -599,7 +599,6 @@ namespace UnitTest
 
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadCreatesOneName_NoCollision)
     {
-        const uint32_t maxUniqueHashes = std::numeric_limits<uint32_t>::max();
         AZ::NameDictionary::Destroy();
         AZ::NameDictionary::Create();
 
@@ -609,7 +608,6 @@ namespace UnitTest
 
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadCreatesOneName_HighCollisions)
     {
-        const uint32_t maxUniqueHashes = 25;
         AZ::NameDictionary::Destroy();
         AZ::NameDictionary::Create();
 
@@ -619,7 +617,6 @@ namespace UnitTest
 
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadRepeatedlyCreatesAndReleasesOneName_NoCollision)
     {
-        const uint32_t maxUniqueHashes = std::numeric_limits<uint32_t>::max();
         AZ::NameDictionary::Destroy();
         AZ::NameDictionary::Create();
 
@@ -630,7 +627,6 @@ namespace UnitTest
 
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadRepeatedlyCreatesAndReleasesOneName_HighCollisions)
     {
-        const uint32_t maxUniqueHashes = 25;
         AZ::NameDictionary::Destroy();
         AZ::NameDictionary::Create();
 

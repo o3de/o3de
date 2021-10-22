@@ -18,11 +18,6 @@
 #include "ScopedVariableSetter.h"
 #include "GridUtils.h"
 
-
-static const QColor timeMarkerCol = QColor(255, 0, 255);
-static const QColor textCol = QColor(0, 0, 0);
-static const QColor ltgrayCol = QColor(110, 110, 110);
-
 QColor InterpolateColor(const QColor& c1, const QColor& c2, float fraction)
 {
     const int r = static_cast<int>(static_cast<float>(c2.red() - c1.red()) * fraction + c1.red());

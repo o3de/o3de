@@ -82,9 +82,9 @@ namespace O3DE::ProjectManager
         void RestoreDefaultState();
 
         void SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda);
-        void SetProjectBuildButtonAction();
         void SetBuildLogsLink(const QUrl& logUrl);
         void ShowBuildFailed(bool show, const QUrl& logUrl);
+        void ShowBuildRequired();
         void SetProjectBuilding();
 
         void SetLaunchButtonEnabled(bool enabled);
@@ -99,10 +99,13 @@ namespace O3DE::ProjectManager
         void RemoveProject(const QString& projectName);
         void DeleteProject(const QString& projectName);
         void BuildProject(const ProjectInfo& projectInfo);
+        void OpenCMakeGUI(const ProjectInfo& projectInfo);
 
     private:
         void enterEvent(QEvent* event) override;
         void leaveEvent(QEvent* event) override;
+        void ShowWarning(bool show, const QString& warning);
+        void ShowDefaultBuildButton();
 
         ProjectInfo m_projectInfo;
 

@@ -35,6 +35,7 @@ set(FILES
     Asset/AssetInternal/WeakAsset.h
     Casting/lossy_cast.h
     Casting/numeric_cast.h
+    Casting/numeric_cast_internal.h
     Component/Component.cpp
     Component/Component.h
     Component/ComponentApplication.cpp
@@ -93,20 +94,18 @@ set(FILES
     Debug/AssetTracking.h
     Debug/AssetTrackingTypesImpl.h
     Debug/AssetTrackingTypes.h
+    Debug/Budget.h
+    Debug/Budget.cpp
+    Debug/BudgetTracker.h
+    Debug/BudgetTracker.cpp
     Debug/LocalFileEventLogger.h
     Debug/LocalFileEventLogger.cpp
-    Debug/FrameProfiler.h
-    Debug/FrameProfilerBus.h
-    Debug/FrameProfilerComponent.cpp
-    Debug/FrameProfilerComponent.h
     Debug/IEventLogger.h
     Debug/MemoryProfiler.h
     Debug/Profiler.cpp
+    Debug/Profiler.inl
     Debug/Profiler.h
     Debug/ProfilerBus.h
-    Debug/ProfilerDriller.cpp
-    Debug/ProfilerDriller.h
-    Debug/ProfilerDrillerBus.h
     Debug/StackTracer.h
     Debug/EventTrace.h
     Debug/EventTrace.cpp
@@ -167,6 +166,8 @@ set(FILES
     IO/FileIO.cpp
     IO/FileIO.h
     IO/FileIOEventBus.h
+    IO/FileReader.cpp
+    IO/FileReader.h
     IO/IOUtils.h
     IO/IOUtils.cpp
     IO/IStreamer.h
@@ -178,6 +179,8 @@ set(FILES
     IO/Path/Path.cpp
     IO/Path/Path.h
     IO/Path/Path.inl
+    IO/Path/PathIterable.inl
+    IO/Path/PathParser.inl
     IO/Path/Path_fwd.h
     IO/SystemFile.cpp
     IO/SystemFile.h
@@ -279,6 +282,7 @@ set(FILES
     Math/Internal/VertexContainer.inl
     Math/InterpolationSample.h
     Math/IntersectPoint.h
+    Math/IntersectSegment.inl
     Math/IntersectSegment.cpp
     Math/IntersectSegment.h
     Math/MathIntrinsics.h
@@ -442,6 +446,7 @@ set(FILES
     RTTI/AttributeReader.h
     RTTI/AzStdOnDemandPrettyName.inl
     RTTI/AzStdOnDemandReflection.inl
+    RTTI/AzStdOnDemandReflectionSpecializations.cpp
     RTTI/AzStdOnDemandReflectionLuaFunctions.inl
     RTTI/BehaviorContext.cpp
     RTTI/BehaviorContext.h
@@ -531,6 +536,8 @@ set(FILES
     Serialization/Json/JsonStringConversionUtils.h
     Serialization/Json/JsonSystemComponent.h
     Serialization/Json/JsonSystemComponent.cpp
+    Serialization/Json/JsonUtils.h
+    Serialization/Json/JsonUtils.cpp
     Serialization/Json/MapSerializer.h
     Serialization/Json/MapSerializer.cpp
     Serialization/Json/RegistrationContext.h
@@ -560,6 +567,8 @@ set(FILES
     Settings/SettingsRegistryMergeUtils.h
     Settings/SettingsRegistryScriptUtils.cpp
     Settings/SettingsRegistryScriptUtils.h
+    Settings/SettingsRegistryVisitorUtils.cpp
+    Settings/SettingsRegistryVisitorUtils.h
     State/HSM.cpp
     State/HSM.h
     Statistics/NamedRunningStatistic.h
@@ -570,8 +579,6 @@ set(FILES
     Statistics/StatisticalProfilerProxySystemComponent.cpp
     Statistics/StatisticalProfilerProxySystemComponent.h
     Statistics/StatisticsManager.h
-    Statistics/TimeDataStatisticsManager.cpp
-    Statistics/TimeDataStatisticsManager.h
     StringFunc/StringFunc.cpp
     StringFunc/StringFunc.h
     UserSettings/UserSettings.cpp
@@ -629,10 +636,14 @@ set(FILES
     Task/TaskGraph.cpp
     Task/TaskGraph.h
     Task/TaskGraph.inl
+    Task/TaskGraphSystemComponent.h
+    Task/TaskGraphSystemComponent.cpp
     Threading/ThreadSafeDeque.h
     Threading/ThreadSafeDeque.inl
     Threading/ThreadSafeObject.h
     Threading/ThreadSafeObject.inl
+    Threading/ThreadUtils.h
+    Threading/ThreadUtils.cpp
     Time/ITime.h
     Time/TimeSystemComponent.cpp
     Time/TimeSystemComponent.h

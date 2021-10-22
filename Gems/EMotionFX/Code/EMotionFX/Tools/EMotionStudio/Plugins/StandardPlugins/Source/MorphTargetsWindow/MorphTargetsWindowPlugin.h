@@ -91,6 +91,5 @@ namespace EMStudio
         QVBoxLayout*                            m_staticTextLayout;
         QWidget*                                m_staticTextWidget;
         MysticQt::DialogStack*                  m_dialogStack;
-        QLabel*                                 m_infoText;
     };
 } // namespace EMStudio

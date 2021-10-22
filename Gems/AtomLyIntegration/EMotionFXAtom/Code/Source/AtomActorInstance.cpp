@@ -426,15 +426,53 @@ namespace AZ
         {
             return m_meshFeatureProcessor->GetSortKey(*m_meshHandle);
         }
+
+        void AtomActorInstance::SetLodType(RPI::Cullable::LodType lodType)
+        {
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_lodType = lodType;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
+        }
+
+        RPI::Cullable::LodType AtomActorInstance::GetLodType() const
+        {
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_lodType;
+        }
         
         void AtomActorInstance::SetLodOverride(RPI::Cullable::LodOverride lodOverride)
         {
-            m_meshFeatureProcessor->SetLodOverride(*m_meshHandle, lodOverride);
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_lodOverride = lodOverride;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
         }
 
         RPI::Cullable::LodOverride AtomActorInstance::GetLodOverride() const
         {
-            return m_meshFeatureProcessor->GetLodOverride(*m_meshHandle);
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_lodOverride;
+        }
+
+        void AtomActorInstance::SetMinimumScreenCoverage(float minimumScreenCoverage)
+        {
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_minimumScreenCoverage = minimumScreenCoverage;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
+        }
+
+        float AtomActorInstance::GetMinimumScreenCoverage() const
+        {
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_minimumScreenCoverage;
+        }
+
+        void AtomActorInstance::SetQualityDecayRate(float qualityDecayRate)
+        {
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_qualityDecayRate = qualityDecayRate;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
+        }
+
+        float AtomActorInstance::GetQualityDecayRate() const
+        {
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_qualityDecayRate;
         }
 
         void AtomActorInstance::SetVisibility(bool visible)
@@ -773,7 +811,7 @@ namespace AZ
                     const uint64_t inputByteOffset = aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementOffset) * aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementSize);
 
                     const uint32_t outputElementSize = SkinnedMeshVertexStreamPropertyInterface::Get()->GetOutputStreamInfo(outputStream).m_elementSize;
-                    const uint64_t outputByteCount = aznumeric_cast<uint64_t>(lodVertexCount) * aznumeric_cast<uint64_t>(outputElementSize);
+                    [[maybe_unused]] const uint64_t outputByteCount = aznumeric_cast<uint64_t>(lodVertexCount) * aznumeric_cast<uint64_t>(outputElementSize);
                     const uint64_t outputByteOffset = aznumeric_cast<uint64_t>(outputBufferOffsetsInBytes[static_cast<uint8_t>(outputStream)]);
 
                     // The byte count from input and output buffers doesn't have to match necessarily.

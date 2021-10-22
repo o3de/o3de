@@ -9,6 +9,8 @@
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/Physics/CollisionBus.h>
@@ -307,6 +309,13 @@ namespace AzPhysics
     {
         CollisionGroup group = otherGroup;
         group.SetLayer(layer, true);
+        return group;
+    }
+
+    CollisionGroup GetCollisionGroupById(const CollisionGroups::Id& id)
+    {
+        CollisionGroup group;
+        Physics::CollisionRequestBus::BroadcastResult(group, &Physics::CollisionRequests::GetCollisionGroupById, id);
         return group;
     }
 }

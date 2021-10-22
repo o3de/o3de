@@ -199,7 +199,6 @@ void CTrackViewDopeSheetBase::SetTimeRange(float start, float end)
 void CTrackViewDopeSheetBase::SetTimeScale(float timeScale, float fAnchorTime)
 {
     const double fOldOffset = -fAnchorTime * m_timeScale;
-    const double fOldScale = m_timeScale;
 
     timeScale = std::max(timeScale, 0.001f);
     timeScale = std::min(timeScale, 100000.0f);
@@ -1426,8 +1425,6 @@ void CTrackViewDopeSheetBase::OnCaptureChanged()
 //////////////////////////////////////////////////////////////////////////
 bool CTrackViewDopeSheetBase::IsOkToAddKeyHere(const CTrackViewTrack* pTrack, float time) const
 {
-    const float timeEpsilon = 0.05f;
-
     for (unsigned int i = 0; i < pTrack->GetKeyCount(); ++i)
     {
         const CTrackViewKeyConstHandle& keyHandle = pTrack->GetKey(i);
@@ -2152,8 +2149,6 @@ void CTrackViewDopeSheetBase::AcceptUndo()
 {
     if (CUndo::IsRecording())
     {
-        const QPoint mousePos = mapFromGlobal(QCursor::pos());
-
         CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
 
         if (m_mouseMode == eTVMouseMode_Paste)
@@ -2623,7 +2618,6 @@ void CTrackViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* pa
 {
     int x0 = TimeToClient(timeRange.start);
     float t0 = timeRange.start;
-    QRect trackRect;
 
     const QBrush prevBrush = painter->brush();
     painter->setBrush(m_visibilityBrush);
@@ -2752,7 +2746,6 @@ void CTrackViewDopeSheetBase::DrawKeys(CTrackViewTrack* pTrack, QPainter* painte
         }
 
         int x1 = x + kDefaultWidthForDescription;
-        CTrackViewKeyHandle nextKey = keyHandle.GetNextKey();
 
         int nextKeyIndex = i + 1;
 
@@ -3453,7 +3446,7 @@ void CTrackViewDopeSheetBase::DrawNodeTrack(CTrackViewAnimNode* animNode, QPaint
 
     const QRect textRect = trackRect.adjusted(4, 0, -4, 0);
 
-    QString sAnimNodeName = animNode->GetName();
+    QString sAnimNodeName = QString::fromUtf8(animNode->GetName().c_str());
     const bool hasObsoleteTrack = animNode->HasObsoleteTrack();
 
     if (hasObsoleteTrack)

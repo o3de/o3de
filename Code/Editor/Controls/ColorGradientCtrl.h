@@ -81,7 +81,7 @@ protected:
         HIT_SPLINE,
     };
 
-    void paintEvent(QPaintEvent* e);
+    void paintEvent(QPaintEvent* e) override;
     void resizeEvent(QResizeEvent* event) override;
     void mousePressEvent(QMouseEvent* event) override;
     void mouseReleaseEvent(QMouseEvent* event) override;
@@ -130,7 +130,6 @@ private:
 private:
     ISplineInterpolator* m_pSpline;
 
-    bool m_bAutoDelete;
     bool m_bNoZoom;
 
     QRect m_rcClipRect;

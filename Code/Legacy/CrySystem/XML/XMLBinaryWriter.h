@@ -25,7 +25,7 @@ namespace XMLBinary
     {
     public:
         CXMLBinaryWriter();
-        bool WriteNode(IDataWriter* pFile, XmlNodeRef node, bool bNeedSwapEndian, XMLBinary::IFilter* pFilter, AZStd::string & error);
+        bool WriteNode(IDataWriter* pFile, XmlNodeRef node, XMLBinary::IFilter* pFilter, AZStd::string & error);
 
     private:
         bool CompileTables(XmlNodeRef node, XMLBinary::IFilter* pFilter, AZStd::string& error);

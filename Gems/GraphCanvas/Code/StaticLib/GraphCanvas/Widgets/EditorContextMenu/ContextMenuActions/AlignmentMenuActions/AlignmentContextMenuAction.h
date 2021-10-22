@@ -22,10 +22,11 @@ namespace GraphCanvas
         {
         }
 
+        using ContextMenuAction::RefreshAction;
         void RefreshAction() override
         {
             const AZ::EntityId& graphId = GetGraphId();
-            const AZ::EntityId& targetId = GetTargetId();            
+            const AZ::EntityId& targetId = GetTargetId();
 
             bool canAlignSelection = false;
             SceneRequestBus::EventResult(canAlignSelection, graphId, &SceneRequests::HasMultipleSelection);

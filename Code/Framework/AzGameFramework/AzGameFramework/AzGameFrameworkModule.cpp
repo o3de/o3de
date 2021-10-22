@@ -7,24 +7,15 @@
  */
 #include <AzGameFramework/AzGameFrameworkModule.h>
 
-// Component includes
-#include <AzFramework/Driller/RemoteDrillerInterface.h>
-#include <AzFramework/Driller/DrillToFileComponent.h>
-
 namespace AzGameFramework
 {
     AzGameFrameworkModule::AzGameFrameworkModule()
         : AZ::Module()
     {
-        m_descriptors.insert(m_descriptors.end(), {
-            AzFramework::DrillToFileComponent::CreateDescriptor(),
-        });
     }
 
     AZ::ComponentTypeList AzGameFrameworkModule::GetRequiredSystemComponents() const
     {
-        return AZ::ComponentTypeList{
-            azrtti_typeid<AzFramework::DrillToFileComponent>(),
-        };
+        return {};
     }
 }

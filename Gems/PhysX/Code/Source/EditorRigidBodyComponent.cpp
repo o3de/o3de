@@ -103,7 +103,6 @@ namespace PhysX
         }
     } // namespace Internal
 
-
     void EditorRigidBodyConfiguration::Reflect(AZ::ReflectContext* context)
     {
         auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -123,38 +122,38 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_initialLinearVelocity,
-                        "Initial linear velocity", "Initial linear velocity")
+                        "Initial linear velocity", "Linear velocity applied when the rigid body is activated.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInitialVelocitiesVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetSpeedUnit())
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_initialAngularVelocity,
-                        "Initial angular velocity", "Initial angular velocity (limited by maximum angular velocity)")
+                        "Initial angular velocity", "Angular velocity applied when the rigid body is activated (limited by maximum angular velocity).")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInitialVelocitiesVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetAngularVelocityUnit())
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_linearDamping,
-                        "Linear damping", "Linear damping (must be non-negative)")
+                        "Linear damping", "The rate of decay over time for linear velocity even if no forces are acting on the rigid body.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetDampingVisibility)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_angularDamping,
-                        "Angular damping", "Angular damping (must be non-negative)")
+                        "Angular damping", "The rate of decay over time for angular velocity even if no forces are acting on the rigid body.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetDampingVisibility)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_sleepMinEnergy,
-                        "Sleep threshold", "Kinetic energy per unit mass below which body can go to sleep (must be non-negative)")
+                        "Sleep threshold", "The rigid body can go to sleep (settle) when kinetic energy per unit mass is persistently below this value.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetSleepOptionsVisibility)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetSleepThresholdUnit())
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_startAsleep,
-                        "Start asleep", "The rigid body will be asleep when spawned")
+                        "Start asleep", "When active, the rigid body will be asleep when spawned, and wake when the body is disturbed.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetSleepOptionsVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_interpolateMotion,
-                        "Interpolate motion", "Makes object motion look smoother")
+                        "Interpolate motion", "When active, simulation results are interpolated resulting in smoother motion.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInterpolationVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_gravityEnabled,
-                        "Gravity enabled", "Rigid body will be affected by gravity")
+                        "Gravity enabled", "When active, global gravity affects this rigid body.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetGravityVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_kinematic,
-                        "Kinematic", "Rigid body is kinematic")
+                        "Kinematic", "When active, the rigid body is not affected by gravity or other forces and is moved by script.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetKinematicVisibility)
 
                     // Linear axis locking properties
@@ -162,85 +161,90 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockLinearX, "Lock X",
-                        "Lock motion along X direction")
+                        "When active, forces won't create translation on the X axis of the rigid body.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockLinearY, "Lock Y",
-                        "Lock motion along Y direction")
+                        "When active, forces won't create translation on the Y axis of the rigid body.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockLinearZ, "Lock Z",
-                        "Lock motion along Z direction")
+                        "When active, forces won't create translation on the Z axis of the rigid body.")
 
                     // Angular axis locking properties
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Angular Axis Locking")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockAngularX, "Lock X",
-                        "Lock rotation around X direction")
+                        "When active, forces won't create rotation on the X axis of the rigid body.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockAngularY, "Lock Y",
-                        "Lock rotation around Y direction")
+                        "When active, forces won't create rotation on the Y axis of the rigid body.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_lockAngularZ, "Lock Z",
-                        "Lock rotation around Z direction")
+                        "When active, forces won't create rotation on the Z axis of the rigid body.")
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Continuous Collision Detection")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCCDVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdEnabled,
-                        "CCD enabled", "Whether continuous collision detection is enabled for this body")
+                        "CCD enabled", "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
+                        "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX preferences.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCCDVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdMinAdvanceCoefficient,
-                        "Min advance coefficient", "Lower values reduce clipping but can affect simulation smoothness")
+                        "Min advance coefficient", "Lower values reduce clipping but can affect simulation smoothness.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                         ->Attribute(AZ::Edit::Attributes::Max, 0.99f)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCCDEnabled)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_ccdFrictionEnabled,
-                        "CCD friction", "Whether friction is applied when CCD collisions are resolved")
+                        "CCD friction", "When active, friction is applied when continuous collision detection (CCD) collisions are resolved.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::IsCCDEnabled)
                     ->ClassElement(AZ::Edit::ClassElements::Group, "") // end previous group by starting new unnamed expanded group
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_maxAngularVelocity,
-                        "Maximum angular velocity", "The PhysX solver will clamp angular velocities with magnitude exceeding this value")
+                        "Maximum angular velocity", "Clamp angular velocities to this maximum value. "
+                        "This prevents rigid bodies from rotating at unrealistic velocities after collisions.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetMaxVelocitiesVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetAngularVelocityUnit())
 
                     // Mass properties
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_computeCenterOfMass,
-                        "Compute COM", "Whether to automatically compute the center of mass")
+                        "Compute COM", "Compute the center of mass (COM) for this rigid body.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_centerOfMassOffset,
-                        "COM offset", "Center of mass offset in local frame")
+                        "COM offset", "Local space offset for the center of mass (COM).")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetCoMVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetLengthUnit())
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_computeMass,
-                        "Compute Mass", "Whether to automatically compute the mass")
+                        "Compute Mass", "When active, the mass of the rigid body is computed based on the volume and density values of its colliders.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzPhysics::RigidBodyConfiguration::m_mass,
-                        "Mass", "The mass of the object (must be non-negative, with a value of zero treated as infinite)")
+                        "Mass", "The mass of the rigid body in kilograms. A value of 0 is treated as infinite. "
+                        "The trajectory of infinite mass bodies cannot be affected by any collisions or forces other than gravity.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetMassUnit())
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetMassVisibility)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_computeInertiaTensor,
-                        "Compute inertia", "Whether to automatically compute the inertia values based on the mass and shape of the rigid body")
+                        "Compute inertia", "When active, inertia is computed based on the mass and shape of the rigid body.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
 
                     ->DataElement(Editor::InertiaHandler, &AzPhysics::RigidBodyConfiguration::m_inertiaTensor,
-                        "Inertia diagonal", "Diagonal elements of the inertia tensor")
+                        "Inertia diagonal", "Inertia diagonal elements that specify an inertia tensor; determines the "
+                        "torque required to rotate the rigid body on each axis.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaVisibility)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetInertiaUnit())
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RigidBodyConfiguration::m_includeAllShapesInMassCalculation,
-                        "Include non-simulated shapes in Mass", "If set, non-simulated shapes will also be included in the center of mass, inertia and mass calculations.")
+                        "Include non-simulated shapes in Mass",
+                        "When active, non-simulated shapes are included in the center of mass, inertia, and mass calculations.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, &AzPhysics::RigidBodyConfiguration::GetInertiaSettingsVisibility)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ;
@@ -251,7 +255,7 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorRigidBodyConfiguration::m_centerOfMassDebugDraw,
-                        "Debug draw COM", "Whether to debug draw the center of mass for this body")
+                        "Debug draw COM", "Display the rigid body's center of mass (COM) in the viewport.")
                 ;
             }
         }
@@ -286,6 +290,9 @@ namespace PhysX
         }
         CreateEditorWorldRigidBody();
 
+        PhysX::EditorColliderValidationRequestBus::Event(
+            GetEntityId(), &PhysX::EditorColliderValidationRequestBus::Events::ValidateRigidBodyMeshGeometryType);
+
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
@@ -305,6 +312,15 @@ namespace PhysX
         {
             sceneInterface->RemoveSimulatedBody(m_editorSceneHandle, m_editorRigidBodyHandle);
         }
+    }
+
+    void EditorRigidBodyComponent::OnConfigurationChanged()
+    {
+        CreateEditorWorldRigidBody();
+
+        // required in case the kinematic setting has changed
+        PhysX::EditorColliderValidationRequestBus::Event(
+            GetEntityId(), &PhysX::EditorColliderValidationRequestBus::Events::ValidateRigidBodyMeshGeometryType);
     }
 
     void EditorRigidBodyComponent::Reflect(AZ::ReflectContext* context)
@@ -333,7 +349,7 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/rigid-body-physics/")
                     ->DataElement(0, &EditorRigidBodyComponent::m_config, "Configuration", "Configuration for rigid body physics.")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::CreateEditorWorldRigidBody)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorRigidBodyComponent::OnConfigurationChanged)
                 ;
             }
         }

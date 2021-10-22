@@ -119,12 +119,12 @@ bool CXmlArchive::SaveToPak([[maybe_unused]] const QString& levelPath, CPakFile&
     _smart_ptr<IXmlStringData> pXmlStrData = root->getXMLData(5000000);
 
     // Save xml file.
-    QString xmlFilename = "Level.editor_xml";
+    QString xmlFilename = "level.editor_xml";
     pakFile.UpdateFile(xmlFilename.toUtf8().data(), (void*)pXmlStrData->GetString(), static_cast<int>(pXmlStrData->GetStringLength()));
 
     if (pakFile.GetArchive())
     {
-        CLogFile::FormatLine("Saving pak file %s", (const char*)pakFile.GetArchive()->GetFullPath());
+        CLogFile::FormatLine("Saving pak file %.*s", AZ_STRING_ARG(pakFile.GetArchive()->GetFullPath().Native()));
     }
 
     pNamedData->Save(pakFile);
@@ -134,7 +134,7 @@ bool CXmlArchive::SaveToPak([[maybe_unused]] const QString& levelPath, CPakFile&
 //////////////////////////////////////////////////////////////////////////
 bool CXmlArchive::LoadFromPak(const QString& levelPath, CPakFile& pakFile)
 {
-    QString xmlFilename = QDir(levelPath).absoluteFilePath("Level.editor_xml");
+    QString xmlFilename = QDir(levelPath).absoluteFilePath("level.editor_xml");
     root = XmlHelpers::LoadXmlFromFile(xmlFilename.toUtf8().data());
     if (!root)
     {

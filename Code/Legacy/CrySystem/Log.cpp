@@ -44,7 +44,7 @@ namespace LogCVars
     int max_backup_directory_size_mb = 200; //200MB default
 };
 
-#ifndef _RELEASE
+#if defined(SUPPORT_LOG_IDENTER)
 static CLog::LogStringType indentString ("    ");
 #endif
 
@@ -396,8 +396,6 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
         }
     }
 
-    FUNCTION_PROFILER(GetISystem(), PROFILE_SYSTEM);
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
 
     bool bfile = false, bconsole = false;
     const char* szCommand = szFormat;
@@ -443,8 +441,6 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
     {
         return;
     }
-
-    LogStringType tempString;
 
     char szBuffer[MAX_WARNING_LENGTH + 32];
     char* szString = szBuffer;
@@ -575,8 +571,6 @@ void CLog::LogPlus(const char* szFormat, ...)
         return;
     }
 
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     if (!szFormat)
     {
         return;
@@ -599,11 +593,11 @@ void CLog::LogPlus(const char* szFormat, ...)
 
     if (bfile)
     {
-        LogToFilePlus(szTemp);
+        LogToFilePlus("%s", szTemp);
     }
     if (bconsole)
     {
-        LogToConsolePlus(szTemp);
+        LogToConsolePlus("%s", szTemp);
     }
 }
 
@@ -750,7 +744,7 @@ void CLog::LogToConsolePlus(const char* szFormat, ...)
 
 
 //////////////////////////////////////////////////////////////////////
-static void RemoveColorCodeInPlace(CLog::LogStringType& rStr)
+[[maybe_unused]] static void RemoveColorCodeInPlace(CLog::LogStringType& rStr)
 {
     char* s = (char*)rStr.c_str();
     char* d = s;
@@ -1189,7 +1183,6 @@ void CLog::LogToFile(const char* szFormat, ...)
 //////////////////////////////////////////////////////////////////////
 void CLog::CreateBackupFile() const
 {
-    LOADING_TIME_PROFILE_SECTION;
     if (!m_backupLogs)
     {
         return;
@@ -1297,7 +1290,7 @@ void CLog::CheckAndPruneBackupLogs() const
     AZStd::list<fileInfo> fileInfoList;
 
     // Now that we've copied the new log over, lets check the size of the backup folder and trim it as necessary to keep it within appropriate limits
-    AZ::IO::Result res = fileSystem->FindFiles(LOG_BACKUP_PATH, "*",
+    fileSystem->FindFiles(LOG_BACKUP_PATH, "*",
         [&totalBackupDirectorySize, &fileSystem, &fileInfoList](const char* fileName)
     {
         AZ::u64 size;
@@ -1445,8 +1438,6 @@ void CLog::RemoveCallback(ILogCallback* pCallback)
 //////////////////////////////////////////////////////////////////////////
 void CLog::Update()
 {
-    FUNCTION_PROFILER_FAST(m_pSystem, PROFILE_SYSTEM, g_bProfilerEnabled);
-
     if (CryGetCurrentThreadId() == m_nMainThreadId)
     {
         if (!m_threadSafeMsgQueue.empty())

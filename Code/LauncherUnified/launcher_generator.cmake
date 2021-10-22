@@ -6,8 +6,8 @@
 #
 #
 
-
 set_property(GLOBAL PROPERTY LAUNCHER_UNIFIED_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
 # Launcher targets for a project need to be generated when configuring a project.
 # When building the engine source, this file will be included by LauncherUnified's CMakeLists.txt
 # When using an installed engine, this file will be included by the FindLauncherGenerator.cmake script
@@ -19,19 +19,10 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
     # Otherwise the the absolute project_path is returned with symlinks resolved
     file(REAL_PATH ${project_path} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
     if(NOT project_name)
-        if(NOT EXISTS ${project_real_path}/project.json)
-            message(FATAL_ERROR "The specified project path of ${project_real_path} does not contain a project.json file")
-        else()
-            # Add the project_name to global LY_PROJECTS_TARGET_NAME property
-            ly_file_read("${project_real_path}/project.json" project_json)
-            string(JSON project_name ERROR_VARIABLE json_error GET ${project_json} "project_name")
-            if(json_error)
-                message(FATAL_ERROR "There is an error reading the \"project_name\" key from the '${project_real_path}/project.json' file: ${json_error}")
-            endif()
-            message(WARNING "The project located at path ${project_real_path} has a valid \"project name\" of '${project_name}' read from it's project.json file."
-                " This indicates that the ${project_real_path}/CMakeLists.txt is not properly appending the \"project name\" "
-                "to the LY_PROJECTS_TARGET_NAME global property. Other configuration errors might occur")
-        endif()
+        o3de_read_json_key(project_name ${project_real_path}/project.json "project_name")
+        message(WARNING "The project located at path ${project_real_path} has a valid \"project name\" of '${project_name}' read from it's project.json file."
+            " This indicates that the ${project_real_path}/CMakeLists.txt is not properly appending the \"project name\" "
+            "to the LY_PROJECTS_TARGET_NAME global property. Other configuration errors might occur")
     endif()
 
     ################################################################################
@@ -121,6 +112,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
     set_target_properties(${project_name}.GameLauncher
         PROPERTIES 
             FOLDER ${project_name}
+            LY_PROJECT_NAME ${project_name}
     )
 
     # After ensuring that we correctly support DPI scaling, this should be switched to "PerMonitor"
@@ -128,6 +120,9 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
     if(LY_DEFAULT_PROJECT_PATH)
         set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
     endif()
+
+    # Associate the Clients Gem Variant with each projects GameLauncher
+    ly_set_gem_variant_to_load(TARGETS ${project_name}.GameLauncher VARIANTS Clients)
 
     ################################################################################
     # Server
@@ -168,11 +163,15 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             set_target_properties(${project_name}.ServerLauncher
                 PROPERTIES 
                     FOLDER ${project_name}
+                    LY_PROJECT_NAME ${project_name}
             )
 
             if(LY_DEFAULT_PROJECT_PATH)
                 set_property(TARGET ${project_name}.ServerLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
             endif()
+
+            # Associate the Servers Gem Variant with each projects ServerLauncher
+            ly_set_gem_variant_to_load(TARGETS ${project_name}.ServerLauncher VARIANTS Servers)
         endif()
 
     endif()

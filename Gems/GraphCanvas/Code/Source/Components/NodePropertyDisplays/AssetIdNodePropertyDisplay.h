@@ -7,13 +7,11 @@
  */
 #pragma once
 
-#if !defined(Q_MOC_RUN)
 #include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyAssetCtrl.hxx>
 
 #include <GraphCanvas/Components/NodePropertyDisplay/NodePropertyDisplay.h>
 #include <GraphCanvas/Components/NodePropertyDisplay/AssetIdDataInterface.h>
-#endif
 
 class QGraphicsProxyWidget;
 

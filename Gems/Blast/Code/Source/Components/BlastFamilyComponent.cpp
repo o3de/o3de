@@ -11,6 +11,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -48,6 +49,7 @@ namespace Blast
         BlastFamilyComponentNotificationBusHandler::Reflect(context);
         BlastActorConfiguration::Reflect(context);
         BlastActorData::Reflect(context);
+        BlastAsset::Reflect(context);
 
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
@@ -187,7 +189,7 @@ namespace Blast
 
     void BlastFamilyComponent::Activate()
     {
-        AZ_PROFILE_FUNCTION(System);
+        AZ_PROFILE_FUNCTION(Physics);
 
         AZ_Assert(m_blastAsset.GetId().IsValid(), "BlastFamilyComponent created with invalid blast asset.");
 
@@ -199,7 +201,7 @@ namespace Blast
 
     void BlastFamilyComponent::Deactivate()
     {
-        AZ_PROFILE_FUNCTION(System);
+        AZ_PROFILE_FUNCTION(Physics);
 
         // cleanup collision handlers
         for (auto& itr : m_collisionHandlers)
@@ -207,7 +209,7 @@ namespace Blast
             itr.second.Disconnect();
         }
         m_collisionHandlers.clear();
-        
+
         BlastFamilyDamageRequestBus::MultiHandler::BusDisconnect();
         BlastFamilyComponentRequestBus::Handler::BusDisconnect();
 
@@ -545,7 +547,7 @@ namespace Blast
         }
 
         m_solver->notifyActorCreated(*actor.GetTkActor().getActorLL());
-        
+
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
         {
             AZStd::pair<AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle> foundBody = physicsSystem->FindAttachedBodyHandleFromEntityId(actor.GetEntity()->GetId());

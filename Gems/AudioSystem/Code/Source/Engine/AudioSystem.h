@@ -13,6 +13,7 @@
 #include <AudioAllocators.h>
 #include <AudioInternalInterfaces.h>
 
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/std/containers/deque.h>
 #include <AzCore/std/containers/vector.h>
 
@@ -21,6 +22,8 @@
 #include <AzCore/std/parallel/thread.h>
 
 #define PROVIDE_GETNAME_SUPPORT
+
+AZ_DECLARE_BUDGET(Audio);
 
 namespace Audio
 {
@@ -117,7 +120,7 @@ namespace Audio
         void FreeAudioProxy(IAudioProxy* const pIAudioProxy) override;
 
         TAudioSourceId CreateAudioSource(const SAudioInputConfig& sourceConfig) override;
-        void DestroyAudioSource(TAudioSourceId sourceId);
+        void DestroyAudioSource(TAudioSourceId sourceId) override;
 
         // When AUDIO_RELEASE is defined, these two functions always return nullptr
         const char* GetAudioControlName(const EAudioControlType controlType, const TATLIDType atlID) const override;

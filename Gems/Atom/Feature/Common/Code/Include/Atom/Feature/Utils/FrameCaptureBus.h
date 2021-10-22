@@ -31,6 +31,11 @@ namespace AZ
         {
         public:
             virtual ~FrameCaptureRequests() = default;
+
+            //! Return true if frame capture is available.
+            //! It may return false if null renderer is used.
+            //! If the frame capture is not available, all capture functions in this interface would return false
+            virtual bool CanCapture() const = 0;
             
             //! Capture final screen output for the specified window and save it to given file path.
             //! The image format is determinate by file extension

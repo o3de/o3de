@@ -16,8 +16,7 @@ namespace AzManipulatorTestFramework
     using MouseInteractionEvent = AzToolsFramework::ViewportInteraction::MouseInteractionEvent;
 
     //! Implementation of the manipulator interface using bus calls to access to the manipulator manager.
-    class IndirectCallManipulatorManager
-        : public ManipulatorManagerInterface
+    class IndirectCallManipulatorManager : public ManipulatorManagerInterface
     {
     public:
         IndirectCallManipulatorManager(ViewportInteractionInterface& viewportInteraction);
@@ -39,11 +38,18 @@ namespace AzManipulatorTestFramework
 
     void IndirectCallManipulatorManager::ConsumeMouseInteractionEvent(const MouseInteractionEvent& event)
     {
+        m_viewportInteraction.UpdateVisibility();
+
+        // ensure we call display viewport 2d to simulate this update step (some state may be
+        // updated here, e.g. box select)
+        AzFramework::ViewportDebugDisplayEventBus::Event(
+            AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport2d,
+            AzFramework::ViewportInfo{ m_viewportInteraction.GetViewportId() }, m_viewportInteraction.GetDebugDisplay());
+
         DrawManipulators();
         AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::Event(
             AzToolsFramework::GetEntityContextId(),
-            &AzToolsFramework::ViewportInteraction::InternalMouseViewportRequests::InternalHandleAllMouseInteractions,
-            event);
+            &AzToolsFramework::ViewportInteraction::InternalMouseViewportRequests::InternalHandleAllMouseInteractions, event);
         DrawManipulators();
     }
 

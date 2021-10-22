@@ -42,7 +42,7 @@ namespace AZ
             AZ_Assert(targetPointer, "You must provide a target pointer");
 
             bool foundSuccess = false;
-            typedef AZStd::function<void(void**, const SerializeContext::ClassData**, const Uuid&, SerializeContext*)> CreationCallback;
+            using CreationCallback = AZStd::function<void (void **, const SerializeContext::ClassData **, const Uuid &, SerializeContext *)>;
             auto handler = [&targetPointer, objectClassData, &foundSuccess](void** instance, const SerializeContext::ClassData** classData, const Uuid& classId, SerializeContext* context)
                 {
                     void* convertibleInstance{};

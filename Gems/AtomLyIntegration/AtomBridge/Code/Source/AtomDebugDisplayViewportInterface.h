@@ -193,6 +193,8 @@ namespace AZ::AtomBridge
         AZ::u32 SetState(AZ::u32 state) override;
         void PushMatrix(const AZ::Transform& tm) override;
         void PopMatrix() override;
+        void PushPremultipliedMatrix(const AZ::Matrix3x4& matrix) override;
+        AZ::Matrix3x4 PopPremultipliedMatrix() override;
 
     private:
 

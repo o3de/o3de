@@ -70,6 +70,7 @@ namespace AZ
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
         void GarbageCollect() override;
 
+        size_type GetMaxContiguousAllocationSize() const override;
         size_type NumAllocatedBytes() const override;
         size_type Capacity() const override;
         IAllocatorAllocate* GetSubAllocator() override;
@@ -115,6 +116,7 @@ namespace AZ
         /// Return unused memory to the OS. Don't call this too often because you will force unnecessary allocations.
         void GarbageCollect() override;
 
+        size_type GetMaxContiguousAllocationSize() const override;
         size_type NumAllocatedBytes() const override;
         size_type Capacity() const override;
         IAllocatorAllocate* GetSubAllocator() override;

@@ -26,6 +26,11 @@ namespace AZ
 
             bool m_enable = true;
             AZStd::string m_defaultMaterial;
+            //! Sets whether to include material property names when generating material assets. If this
+            //! setting is true, material property name resolution and validation is deferred into load
+            //! time rather than at build time, allowing to break some dependencies (e.g. fbx files will no
+            //! longer need to be dependent on materialtype files).
+            bool m_includeMaterialPropertyNames = true;
         };
 
         //! Atom's implementation of converting SceneAPI data into Atom's default material: StandardPBR
@@ -45,6 +50,7 @@ namespace AZ
 
             // MaterialConverterBus overrides ...
             bool IsEnabled() const override;
+            bool ShouldIncludeMaterialPropertyNames() const override;
             bool ConvertMaterial(const AZ::SceneAPI::DataTypes::IMaterialData& materialData, RPI::MaterialSourceData& out) override;
             AZStd::string GetMaterialTypePath() const override;
             AZStd::string GetDefaultMaterialPath() const override;

@@ -18,25 +18,10 @@
 #include <QSettings>
 
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzCore/JSON/document.h>
 
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
-
-struct SGizmoSettings
-{
-    float axisGizmoSize;
-    bool axisGizmoText;
-    int axisGizmoMaxCount;
-
-    float helpersScale;
-    float tagpointScaleMulti;
-
-    // Scale size and transparency for debug spheres when using Ruler tool
-    float rulerSphereScale;
-    float rulerSphereTrans;
-
-    SGizmoSettings();
-};
 
 //////////////////////////////////////////////////////////////////////////
 // Settings for snapping in the viewports.
@@ -230,6 +215,11 @@ struct SSliceSettings
     bool dynamicByDefault;
 };
 
+struct SLevelSaveSettings
+{
+    AzToolsFramework::Prefab::SaveAllPrefabsPreference saveAllPrefabsPreference;
+};
+
 //////////////////////////////////////////////////////////////////////////
 struct SAssetBrowserSettings
 {
@@ -289,7 +279,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SettingOutcome GetValue(const AZStd::string_view path) override;
     SettingOutcome SetValue(const AZStd::string_view path, const AZStd::any& value) override;
     AzToolsFramework::ConsoleColorTheme GetConsoleColorTheme() const override;
-    int GetMaxNumberOfItemsShownInSearchView() const override;
+    AZ::u64 GetMaxNumberOfItemsShownInSearchView() const override;
 
     void ConvertPath(const AZStd::string_view sourcePath, AZStd::string& category, AZStd::string& attribute);
 
@@ -350,8 +340,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     //! how many save backups to keep
     int backupOnSaveMaxCount;
 
-    int useLowercasePaths;
-
     //////////////////////////////////////////////////////////////////////////
     // Autobackup.
     //////////////////////////////////////////////////////////////////////////
@@ -365,14 +353,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     int autoRemindTime;
     //////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    // Asset Browser Search View.
-    //////////////////////////////////////////////////////////////////////////
-    //! Current maximum number of items that can be displayed in the AssetBrowser Search View.
-    int maxNumberOfItemsShownInSearch;
-    //////////////////////////////////////////////////////////////////////////
-
-
     //! If true preview windows is displayed when browsing geometries.
     bool bPreviewGeometryWindow;
 
@@ -380,8 +360,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     //! Keeps the editor active even if no focus is set
     int keepEditorActive;
-
-    SGizmoSettings gizmo;
 
     // Settings of the snapping.
     SSnapSettings snap;
@@ -465,6 +443,8 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     const char* g_TemporaryLevelName;
 
     SSliceSettings sliceSettings;
+
+    SLevelSaveSettings levelSaveSettings;
 
     bool prefabSystem = true;                  ///< Toggle to enable/disable the Prefab system for level entities.
 

@@ -7,10 +7,14 @@
                 "selectedNodes": [
                     "RootNode",
                     "RootNode.pPlane1",
-                    "RootNode.pPlane1.Col0",
-                    "RootNode.pPlane1.transform",
-                    "RootNode.pPlane1.map1",
-                    "RootNode.pPlane1.lambert1"
+                    "RootNode.pPlane1.pPlane1_1",
+                    "RootNode.pPlane1.pPlane1_2",
+                    "RootNode.pPlane1.pPlane1_1.Col0",
+                    "RootNode.pPlane1.pPlane1_1.map1",
+                    "RootNode.pPlane1.pPlane1_1.lambert1",
+                    "RootNode.pPlane1.pPlane1_2.Col0",
+                    "RootNode.pPlane1.pPlane1_2.map1",
+                    "RootNode.pPlane1.pPlane1_2.lambert1"
                 ]
             },
             "rules": {
@@ -24,7 +28,7 @@
                     },
                     {
                         "$type": "ClothRule",
-                        "meshNodeName": "RootNode.pPlane1",
+                        "meshNodeName": "RootNode.pPlane1.pPlane1_1",
                         "inverseMassesStreamName": "Col0",
                         "motionConstraintsStreamName": "Default: 1.0",
                         "backstopStreamName": "None"

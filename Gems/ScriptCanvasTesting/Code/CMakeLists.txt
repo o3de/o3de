@@ -77,6 +77,7 @@ ly_add_target(
 
 # By default, the above module is used only in tools:
 ly_create_alias(NAME ScriptCanvasTesting.Tools  NAMESPACE Gem TARGETS Gem::ScriptCanvasTesting.Editor)
+ly_create_alias(NAME ScriptCanvasTesting.Builders  NAMESPACE Gem TARGETS Gem::ScriptCanvasTesting.Editor)
 
 ################################################################################
 # Tests

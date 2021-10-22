@@ -23,6 +23,26 @@ namespace AzToolsFramework
 {
     namespace Picking
     {
+        //! Custom ray/cone intersect function for manipulator bounds to workaround a bug in the current AZ::Intersect implementation.
+        //! @note Does not give reliable results if the ray origin is inside the cone.
+        //! @param      rayOrigin      The origin of the ray to test.
+        //! @param      rayDirection   The direction of the ray to test, it must be unit length.
+        //! @param      coneApex       The apex of the cone.
+        //! @param      coneAxis       The unit-length axis (direction) from the apex to the base.
+        //! @param      coneHeight     The height of the cone, from the apex to the base.
+        //! @param      coneBaseRadius The radius of the cone base.
+        //! @param[out] t              A possible coefficient in the ray's explicit equation from which an intersecting point is calculated
+        //!                            as "rayOrigin + t * rayDirection". 't' is the closest intersecting point to the ray origin.
+        //! @return                    true for intersecting, false for not intersecting.
+        bool IntersectRayCone(
+            const AZ::Vector3& rayOrigin,
+            const AZ::Vector3& rayDirection,
+            const AZ::Vector3& coneApex,
+            const AZ::Vector3& coneAxis,
+            float coneHeight,
+            float coneBaseRadius,
+            float& t);
+
         class ManipulatorBoundSphere : public BoundShapeInterface
         {
         public:

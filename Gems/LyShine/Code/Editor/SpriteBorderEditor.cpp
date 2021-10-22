@@ -227,7 +227,6 @@ void SpriteBorderEditor::DisplaySelectedCell(AZ::u32 cellIndex)
     // Determine how much we need to scale the view to fit the cell 
     // contents to the displayed properties image.
     const AZ::Vector2 cellSize = m_sprite->GetCellSize(cellIndex);
-    const AZ::Vector2 cellScale = AZ::Vector2(m_unscaledSpriteSheet.size().width() / cellSize.GetX(), m_unscaledSpriteSheet.size().height() / cellSize.GetY());
 
     // Scale-to-fit, while preserving aspect ratio.
     QRect croppedRect = m_unscaledSpriteSheet.rect();

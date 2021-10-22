@@ -415,7 +415,7 @@ namespace GraphCanvas
             return index(nextRow, GetSortColumn());
         }
 
-        void OnDropDownAboutToShow()
+        void OnDropDownAboutToShow() override
         {
             beginResetModel();
             setSourceModel(m_modelInterface->GetDropDownItemModel());
@@ -424,7 +424,7 @@ namespace GraphCanvas
             invalidate();
         }
 
-        void OnDropDownHidden()
+        void OnDropDownHidden() override
         {
             beginResetModel();
             setSourceModel(nullptr);

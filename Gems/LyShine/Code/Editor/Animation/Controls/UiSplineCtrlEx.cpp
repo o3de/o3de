@@ -78,7 +78,7 @@ protected:
         m_splineEntries.resize(m_splineEntries.size() + 1);
         SplineEntry& entry = m_splineEntries.back();
         ISplineSet* pSplineSet = (pCtrl ? pCtrl->m_pSplineSet : 0);
-        entry.id = (pSplineSet ? pSplineSet->GetIDFromSpline(pSpline) : 0);
+        entry.id = (pSplineSet ? pSplineSet->GetIDFromSpline(pSpline) : AZStd::string{});
         entry.pSpline = pSpline;
 
         const int numKeys = pSpline->GetKeyCount();
@@ -823,8 +823,6 @@ void SplineWidget::DrawGrid(QPainter* painter)
 void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float startTime, float endTime)
 {
     const QPen pOldPen = painter->pen();
-
-    const QRect rcClip = painter->clipBoundingRect().intersected(m_rcSpline).toRect();
 
     //////////////////////////////////////////////////////////////////////////
     ISplineInterpolator* pSpline = splineInfo.pSpline;

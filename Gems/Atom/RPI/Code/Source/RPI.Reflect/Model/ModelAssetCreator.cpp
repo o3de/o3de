@@ -118,6 +118,12 @@ namespace AZ
                 }
             }
 
+            const ModelMaterialSlotMap &sourceMaterialSlotMap = sourceAsset->GetMaterialSlots();
+            for (const auto& sourceMaterialSlot : sourceMaterialSlotMap)
+            {
+                creator.AddMaterialSlot(sourceMaterialSlot.second);
+            }
+
             return creator.End(clonedResult);
         }
     } // namespace RPI

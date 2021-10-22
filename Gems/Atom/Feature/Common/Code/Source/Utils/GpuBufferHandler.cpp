@@ -17,7 +17,7 @@ namespace AZ
 {
     namespace Render
     {
-        static const char* ClassName = "GpuBufferHandler";
+        [[maybe_unused]] static const char* ClassName = "GpuBufferHandler";
         static const uint32_t BufferMinSize = 1 << 16; // Min 64Kb.
 
         GpuBufferHandler::GpuBufferHandler(const Descriptor& descriptor)

@@ -82,6 +82,8 @@ namespace AZ::Render
 
     void AtomViewportDisplayIconsSystemComponent::Activate()
     {
+        m_drawContextRegistered = false;
+
         AzToolsFramework::EditorViewportIconDisplay::Register(this);
 
         Bootstrap::NotificationBus::Handler::BusConnect();
@@ -97,9 +99,10 @@ namespace AZ::Render
         {
             return;
         } 
-        if (perViewportDynamicDrawInterface)
+        if (perViewportDynamicDrawInterface && m_drawContextRegistered)
         {
             perViewportDynamicDrawInterface->UnregisterDynamicDrawContext(m_drawContextName);
+            m_drawContextRegistered = false;
         }
 
         AzToolsFramework::EditorViewportIconDisplay::Unregister(this);
@@ -366,6 +369,8 @@ namespace AZ::Render
                      {"TEXCOORD", RHI::Format::R32G32_FLOAT} });
                 drawContext->EndInit();
             });
+
+        m_drawContextRegistered = true;
 
         Data::AssetBus::Handler::BusDisconnect();
     }

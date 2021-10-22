@@ -20,6 +20,7 @@
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Slice/SliceAsset.h> // For slice asset sub ids
+#include <AzCore/RTTI/BehaviorContext.h>
 //////////////////////////////////////////////////////////////////////////
 
 namespace AssetBuilderSDK
@@ -73,6 +74,10 @@ namespace AssetBuilderSDK
         if (azstricmp(newPlatformName, "pc") == 0)
         {
             return AssetBuilderSDK::Platform_PC;
+        }
+        if (azstricmp(newPlatformName, "linux") == 0)
+        {
+            return AssetBuilderSDK::Platform_LINUX;
         }
         if (azstricmp(newPlatformName, "android") == 0)
         {

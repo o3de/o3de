@@ -29,7 +29,8 @@
                     "_em",
                     "_emit"
                 ],
-                "PixelFormat": "ETC2",
+                "PixelFormat": "ASTC_6x6",
+                "MaxTextureSize": 2048,
                 "DiscardAlpha": true
             },
             "ios": {
@@ -44,6 +45,7 @@
                     "_emit"
                 ],
                 "PixelFormat": "ASTC_6x6",
+                "MaxTextureSize": 2048,
                 "DiscardAlpha": true
             },
             "mac": {

@@ -168,7 +168,7 @@ namespace SandboxEditor
 
     void StartupTraceHandler::ShowMessageBox(const QString& message)
     {
-        AZ::SystemTickBus::QueueFunction([this, message]()
+        AZ::SystemTickBus::QueueFunction([message]()
         {
             // Parent to the main window, so that the error dialog doesn't
             // show up as a separate window when alt-tabbing.

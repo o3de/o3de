@@ -1,0 +1,26 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <viewsrg.srgi>
+#include "TerrainCommon.azsli"
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+
+struct VSDepthOutput
+{
+    float4 m_position : SV_Position;
+};
+
+VSDepthOutput MainVS(in VertexInput input)
+{
+    VSDepthOutput output;
+    ObjectSrg::TerrainData terrainData = ObjectSrg::m_terrainData;
+
+    float2 origUv = lerp(terrainData.m_uvMin, terrainData.m_uvMax, input.m_uv);
+    output.m_position = GetTerrainProjectedPosition(terrainData, input.m_position, origUv);
+    return output;
+}

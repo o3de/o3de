@@ -141,6 +141,29 @@ namespace AZ
                 const uint32_t rhiUniqueIndex, const AZStd::string& platformIdentifier, const AZStd::string& shaderJsonPath,
                 const uint32_t supervariantIndex, RPI::ShaderAssetSubId shaderAssetSubId);
 
+
+            class IncludedFilesParser
+            {
+            public:
+                IncludedFilesParser();
+                ~IncludedFilesParser() = default;
+
+                //! This static function was made public for testability purposes only.
+                //! Parses the string @haystack, looking for "#include file" lines with a regular expression.
+                //! Returns the list of relative paths as included by the file.
+                //! REMARK: The algorithm may over prescribe what files to include because it doesn't discern between comments, etc.
+                //!         Also, a #include line may be protected by #ifdef macros but this algorithm doesn't care.
+                //! Over prescribing is not a real problem, albeit potential waste in processing. Under prescribing would be a real problem.
+                AZStd::vector<AZStd::string> ParseStringAndGetIncludedFiles(AZStd::string_view haystack) const;
+
+                //! This static function was made public for testability purposes only.
+                //! Opens the file @sourceFilePath, loads the content into a string and returns ParseStringAndGetIncludedFiles(content)
+                AZ::Outcome<AZStd::vector<AZStd::string>, AZStd::string> ParseFileAndGetIncludedFiles(AZStd::string_view sourceFilePath) const;
+
+            private:
+                AZStd::regex m_includeRegex;
+            };
+
         }  // ShaderBuilderUtility namespace
     } // ShaderBuilder namespace
 } // AZ

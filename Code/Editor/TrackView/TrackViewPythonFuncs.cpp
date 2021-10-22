@@ -19,6 +19,7 @@
 // Editor
 #include "AnimationContext.h"
 
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace
 {
@@ -293,8 +294,8 @@ namespace
             CTrackViewTrack* pTrack = pNode->GetTrackForParameter(paramType);
             if (!pTrack || (paramFlags & IAnimNode::eSupportedParamFlags_MultipleTracks))
             {
-                const char* name = pNode->GetParamName(paramType);
-                if (_stricmp(name, paramName) == 0)
+                AZStd::string name = pNode->GetParamName(paramType);
+                if (name == paramName)
                 {
                     CUndo undo("Create track");
                     if (!pNode->CreateTrack(paramType))

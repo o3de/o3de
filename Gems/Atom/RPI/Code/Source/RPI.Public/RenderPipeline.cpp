@@ -375,11 +375,9 @@ namespace AZ
             m_scene->RemoveRenderPipeline(m_nameId);
         }
 
-        void RenderPipeline::OnStartFrame(const TickTimeInfo& tick)
+        void RenderPipeline::OnStartFrame([[maybe_unused]] const TickTimeInfo& tick)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
-
-            m_lastRenderStartTime = tick.m_currentGameTime;
+            AZ_PROFILE_SCOPE(RPI, "RenderPipeline: OnStartFrame");
 
             OnPassModified();
 

@@ -85,22 +85,14 @@ namespace EMStudio
         void WindowReInit(bool visible);
 
     private:
-        // declare the callbacks
-        MCORE_DEFINECOMMANDCALLBACK(CommandCreateMotionSetCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandReinitCallback);
+        MCORE_DEFINECOMMANDCALLBACK(CommandRemoveMotionSetCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandAdjustMotionSetCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandMotionSetAddMotionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandMotionSetRemoveMotionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandMotionSetAdjustMotionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandLoadMotionSetCallback);
-
-        CommandCreateMotionSetCallback*         m_createMotionSetCallback;
-        CommandReinitCallback*                  m_reinitCallback;
-        CommandAdjustMotionSetCallback*         m_adjustMotionSetCallback;
-        CommandMotionSetAddMotionCallback*      m_motionSetAddMotionCallback;
-        CommandMotionSetRemoveMotionCallback*   m_motionSetRemoveMotionCallback;
-        CommandMotionSetAdjustMotionCallback*   m_motionSetAdjustMotionCallback;
-        CommandLoadMotionSetCallback*           m_loadMotionSetCallback;
+        AZStd::vector<MCore::Command::Callback*> m_callbacks;
 
         MotionSetManagementWindow*              m_motionSetManagementWindow;
         MotionSetWindow*                        m_motionSetWindow;

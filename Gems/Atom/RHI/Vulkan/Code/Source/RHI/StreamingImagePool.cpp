@@ -153,7 +153,6 @@ namespace AZ
             }
 
             const VkMemoryRequirements memoryRequirements = GetMemoryRequirements(image.GetDescriptor(), targetMipLevel);
-            const uint16_t residentMipLevelBefore = static_cast<uint16_t>(image.GetResidentMipLevel());
 
             RHI::HeapMemoryUsage& memoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
             const size_t imageSizeBefore = image.GetResidentSizeInBytes();

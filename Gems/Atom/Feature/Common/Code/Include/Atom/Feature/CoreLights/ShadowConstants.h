@@ -37,20 +37,11 @@ namespace AZ
             Count
         };
 
-        enum class PcfMethod : uint16_t
-        {
-            BoundarySearch = 0, // Performs a variable number of taps, first to determine if we are on a shadow boundary, then the remaining taps are to find the occlusion amount
-            Bicubic,            // Uses a fixed size Pcf kernel with kernel weights set to approximate bicubic filtering
-
-            Count
-        };
-
         namespace Shadow
         {
             // [GFX TODO][ATOM-2408] Make the max number of cascade modifiable at runtime.
             static constexpr uint16_t MaxNumberOfCascades = 4;
             static constexpr uint16_t MaxPcfSamplingCount = 64;
-            static constexpr float MaxSofteningBoundaryWidth = 0.1f;
         } // namespace Shadow
 
     } // namespace Render

@@ -9,6 +9,8 @@
 
 #include <AzCore/Debug/Profiler.h>
 
+AZ_DECLARE_BUDGET(RHI);
+
 namespace AZ
 {
     namespace RHI
@@ -24,7 +26,7 @@ namespace AZ
             m_workItemIndex = 0;
             m_lastCompletedWorkItem = AsyncWorkHandle::Null;
             AZStd::thread_desc threadDesc{ "AsyncWorkQueue" };
-            m_thread = AZStd::thread([&]() { ProcessQueue(); }, &threadDesc);
+            m_thread = AZStd::thread(threadDesc, [&]() { ProcessQueue(); });
             m_isInitialized = true;
         }
 
@@ -126,7 +128,7 @@ namespace AZ
                 return;
             }
 
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_SCOPE(RHI, "AsyncWorkQueue: WaitToFinish");
 
             AZStd::unique_lock<AZStd::mutex> lock(m_waitWorkItemMutex);
             m_waitWorkItemCondition.wait(lock, [&]() {return HasFinishedWork(workHandle); });

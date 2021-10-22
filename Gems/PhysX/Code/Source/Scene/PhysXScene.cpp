@@ -182,7 +182,7 @@ namespace PhysX
             SimulatedBodyType* newBody = aznew SimulatedBodyType(*configuration);
             if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
             {
-                const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
+                [[maybe_unused]] const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
                 AZ_Warning("PhysXScene", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
             }
             crc = AZ::Crc32(newBody, sizeof(*newBody));
@@ -194,12 +194,12 @@ namespace PhysX
             RigidBody* newBody = aznew RigidBody(*configuration);
             if (!AZStd::holds_alternative<AZStd::monostate>(configuration->m_colliderAndShapeData))
             {
-                const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
+                [[maybe_unused]] const bool shapeAdded = AddShape(newBody, configuration->m_colliderAndShapeData);
                 AZ_Warning("PhysXScene", shapeAdded, "No Collider or Shape information found when creating Rigid body [%s]", configuration->m_debugName.c_str());
             }
             const AzPhysics::MassComputeFlags& flags = configuration->GetMassComputeFlags();
-            newBody->UpdateMassProperties(flags, &configuration->m_centerOfMassOffset,
-                &configuration->m_inertiaTensor, &configuration->m_mass);
+            newBody->UpdateMassProperties(flags, configuration->m_centerOfMassOffset,
+                configuration->m_inertiaTensor, configuration->m_mass);
 
             crc = AZ::Crc32(newBody, sizeof(*newBody));
             return newBody;

@@ -32,32 +32,32 @@ public:
 
     //-----------------------------------------------------------------------------
     //! Overrides from CAnimNode
-    virtual void Animate(SAnimContext& ac);
+    void Animate(SAnimContext& ac) override;
 
-    virtual void CreateDefaultTracks();
+    void CreateDefaultTracks() override;
 
-    virtual void OnReset();
+    void OnReset() override;
 
-    virtual void Activate(bool bActivate);
+    void Activate(bool bActivate) override;
 
-    virtual void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);
+    void Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks) override;
 
     //-----------------------------------------------------------------------------
     //! Overrides from IAnimNode
-    virtual unsigned int GetParamCount() const;
-    virtual CAnimParamType GetParamType(unsigned int nIndex) const;
+    unsigned int GetParamCount() const override;
+    CAnimParamType GetParamType(unsigned int nIndex) const override;
     void SetFlags(int flags) override;
 
-    virtual void Render();
+    void Render() override;
 
     bool IsAnyTextureVisible() const;
 
     static void Reflect(AZ::ReflectContext* context);
 
 protected:
-    virtual bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const;
+    bool GetParamInfoFromType(const CAnimParamType& paramId, SParamInfo& info) const override;
 
-    virtual bool NeedToRender() const { return true; }
+    bool NeedToRender() const override { return true; }
 
 private:
     CAnimScreenFaderNode(const CAnimScreenFaderNode&);

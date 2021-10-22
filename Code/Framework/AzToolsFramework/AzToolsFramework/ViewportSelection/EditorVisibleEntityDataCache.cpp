@@ -9,7 +9,9 @@
 #include "EditorVisibleEntityDataCache.h"
 
 #include <AzCore/std/sort.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityModel.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <Entity/EditorEntityHelpers.h>
 
@@ -21,13 +23,23 @@ namespace AzToolsFramework
         using ComponentEntityAccentType = Components::EditorSelectionAccentSystemComponent::ComponentEntityAccentType;
 
         EntityData() = default;
-        EntityData(AZ::EntityId entityId, const AZ::Transform& worldFromLocal, bool locked, bool visible, bool selected, bool iconHidden);
+        EntityData(
+            AZ::EntityId entityId,
+            const AZ::Transform& worldFromLocal,
+            bool locked,
+            bool visible,
+            bool inFocus,
+            bool descendantOfClosedContainer,
+            bool selected,
+            bool iconHidden);
 
         AZ::Transform m_worldFromLocal;
         AZ::EntityId m_entityId;
         ComponentEntityAccentType m_accent = ComponentEntityAccentType::None;
         bool m_locked = false;
         bool m_visible = true;
+        bool m_inFocus = true;
+        bool m_descendantOfClosedContainer = false;
         bool m_selected = false;
         bool m_iconHidden = false;
     };
@@ -57,12 +69,16 @@ namespace AzToolsFramework
         const AZ::Transform& worldFromLocal,
         const bool locked,
         const bool visible,
+        const bool inFocus,
+        const bool descendantOfClosedContainer,
         const bool selected,
         const bool iconHidden)
         : m_worldFromLocal(worldFromLocal)
         , m_entityId(entityId)
         , m_locked(locked)
         , m_visible(visible)
+        , m_inFocus(inFocus)
+        , m_descendantOfClosedContainer(descendantOfClosedContainer)
         , m_selected(selected)
         , m_iconHidden(iconHidden)
     {
@@ -106,6 +122,18 @@ namespace AzToolsFramework
         bool locked = false;
         EditorEntityInfoRequestBus::EventResult(locked, entityId, &EditorEntityInfoRequestBus::Events::IsLocked);
 
+        bool inFocus = false;
+        if (auto focusModeInterface = AZ::Interface<FocusModeInterface>::Get())
+        {
+            inFocus = focusModeInterface->IsInFocusSubTree(entityId);
+        }
+
+        bool descendantOfClosedContainer = false;
+        if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
+        {
+            descendantOfClosedContainer = containerEntityInterface->IsUnderClosedContainerEntity(entityId);
+        }
+
         bool iconHidden = false;
         EditorEntityIconComponentRequestBus::EventResult(
             iconHidden, entityId, &EditorEntityIconComponentRequests::IsEntityIconHiddenInViewport);
@@ -113,7 +141,7 @@ namespace AzToolsFramework
         AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(worldFromLocal, entityId, &AZ::TransformBus::Events::GetWorldTM);
 
-        return { entityId, worldFromLocal, locked, visible, IsSelected(entityId), iconHidden };
+        return { entityId, worldFromLocal, locked, visible, inFocus, descendantOfClosedContainer, IsSelected(entityId), iconHidden };
     }
 
     EditorVisibleEntityDataCache::EditorVisibleEntityDataCache()
@@ -126,10 +154,17 @@ namespace AzToolsFramework
         EntitySelectionEvents::Bus::Router::BusRouterConnect();
         EditorEntityIconComponentNotificationBus::Router::BusRouterConnect();
         ToolsApplicationNotificationBus::Handler::BusConnect();
+
+        AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
+
+        ContainerEntityNotificationBus::Handler::BusConnect(editorEntityContextId);
+        FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
     }
 
     EditorVisibleEntityDataCache::~EditorVisibleEntityDataCache()
     {
+        FocusModeNotificationBus::Handler::BusDisconnect();
+        ContainerEntityNotificationBus::Handler::BusDisconnect();
         ToolsApplicationNotificationBus::Handler::BusDisconnect();
         EditorEntityIconComponentNotificationBus::Router::BusRouterDisconnect();
         EntitySelectionEvents::Bus::Router::BusRouterDisconnect();
@@ -161,8 +196,8 @@ namespace AzToolsFramework
 
         // request list of visible entities from authoritative system
         EntityIdList nextVisibleEntityIds;
-        ViewportInteraction::MainEditorViewportInteractionRequestBus::Event(
-            viewportInfo.m_viewportId, &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::FindVisibleEntities,
+        ViewportInteraction::EditorEntityViewportInteractionRequestBus::Event(
+            viewportInfo.m_viewportId, &ViewportInteraction::EditorEntityViewportInteractionRequestBus::Events::FindVisibleEntities,
             nextVisibleEntityIds);
 
         // only bother resorting if we know the lists have changed
@@ -260,7 +295,10 @@ namespace AzToolsFramework
 
     bool EditorVisibleEntityDataCache::IsVisibleEntitySelectableInViewport(size_t index) const
     {
-        return m_impl->m_visibleEntityDatas[index].m_visible && !m_impl->m_visibleEntityDatas[index].m_locked;
+        return m_impl->m_visibleEntityDatas[index].m_visible
+            && !m_impl->m_visibleEntityDatas[index].m_locked
+            && m_impl->m_visibleEntityDatas[index].m_inFocus
+            && !m_impl->m_visibleEntityDatas[index].m_descendantOfClosedContainer;
     }
 
     AZStd::optional<size_t> EditorVisibleEntityDataCache::GetVisibleEntityIndexFromId(const AZ::EntityId entityId) const
@@ -312,8 +350,6 @@ namespace AzToolsFramework
 
     void EditorVisibleEntityDataCache::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        AZ_PROFILE_FUNCTION(AzToolsFramework);
-
         const AZ::EntityId entityId = *AZ::TransformNotificationBus::GetCurrentBusId();
 
         if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(entityId))
@@ -373,4 +409,72 @@ namespace AzToolsFramework
             m_impl->m_visibleEntityDatas[entityIndex.value()].m_iconHidden = iconHidden;
         }
     }
+
+    void EditorVisibleEntityDataCache::OnContainerEntityStatusChanged(AZ::EntityId entityId, [[maybe_unused]] bool open)
+    {
+        // Get container descendants
+        AzToolsFramework::EntityIdList descendantIds;
+        AZ::TransformBus::EventResult(descendantIds, entityId, &AZ::TransformBus::Events::GetAllDescendants);
+
+        // Update cached values
+        if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
+        {
+            for (AZ::EntityId descendantId : descendantIds)
+            {
+                if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(descendantId))
+                {
+                    m_impl->m_visibleEntityDatas[entityIndex.value()].m_descendantOfClosedContainer =
+                        containerEntityInterface->IsUnderClosedContainerEntity(descendantId);
+                }
+            }
+        }
+    }
+
+    void EditorVisibleEntityDataCache::OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId)
+    {
+        if (previousFocusEntityId.IsValid() && newFocusEntityId.IsValid())
+        {
+            // Get previous focus root descendants
+            AzToolsFramework::EntityIdList previousDescendantIds;
+            AZ::TransformBus::EventResult(previousDescendantIds, previousFocusEntityId, &AZ::TransformBus::Events::GetAllDescendants);
+
+            // Get new focus root descendants
+            AzToolsFramework::EntityIdList newDescendantIds;
+            AZ::TransformBus::EventResult(newDescendantIds, newFocusEntityId, &AZ::TransformBus::Events::GetAllDescendants);
+
+            // Merge EntityId Lists to avoid refreshing values twice
+            AzToolsFramework::EntityIdSet descendantsSet;
+            descendantsSet.insert(previousFocusEntityId);
+            descendantsSet.insert(newFocusEntityId);
+            descendantsSet.insert(previousDescendantIds.begin(), previousDescendantIds.end());
+            descendantsSet.insert(newDescendantIds.begin(), newDescendantIds.end());
+
+            // Update cached values
+            if (auto focusModeInterface = AZ::Interface<FocusModeInterface>::Get())
+            {
+                for (const AZ::EntityId& descendantId : descendantsSet)
+                {
+                    if (AZStd::optional<size_t> entityIndex = GetVisibleEntityIndexFromId(descendantId))
+                    {
+                        m_impl->m_visibleEntityDatas[entityIndex.value()].m_inFocus = focusModeInterface->IsInFocusSubTree(descendantId);
+                    }
+                }
+            }
+        }
+        else
+        {
+            // If either focus was the invalid entity, refresh all entities.
+            if (auto focusModeInterface = AZ::Interface<FocusModeInterface>::Get())
+            {
+                for (size_t entityIndex = 0; entityIndex < m_impl->m_visibleEntityDatas.size(); ++entityIndex)
+                {
+                    if (AZ::EntityId descendantId = GetVisibleEntityId(entityIndex); descendantId.IsValid())
+                    {
+                        m_impl->m_visibleEntityDatas[entityIndex].m_inFocus = focusModeInterface->IsInFocusSubTree(descendantId);
+                    }
+                }
+            }
+        }
+    }
+
 } // namespace AzToolsFramework

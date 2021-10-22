@@ -14,8 +14,10 @@
 
 namespace AZ::IO
 {
+#if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
     static constexpr char SchedulerName[] = "Scheduler";
     static constexpr char ImmediateReadsName[] = "Immediate reads";
+#endif // AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
 
     Scheduler::Scheduler(AZStd::shared_ptr<StreamStackEntry> streamStack, u64 memoryAlignment, u64 sizeAlignment, u64 granularity)
     {
@@ -41,10 +43,12 @@ namespace AZ::IO
 
             m_mainLoopDesc = threadDesc;
             m_mainLoopDesc.m_name = "IO Scheduler";
-            m_mainLoop = AZStd::thread([this]()
-            {
-                Thread_MainLoop();
-            }, &m_mainLoopDesc);
+            m_mainLoop = AZStd::thread(
+                m_mainLoopDesc,
+                [this]()
+                {
+                    Thread_MainLoop();
+                });
         }
     }
 
@@ -337,7 +341,7 @@ namespace AZ::IO
         AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
         auto visitor = [this, now](auto&& args) -> void
 #else
-        auto visitor = [this](auto&& args) -> void
+        auto visitor = [](auto&& args) -> void
 #endif
         {
             using Command = AZStd::decay_t<decltype(args)>;

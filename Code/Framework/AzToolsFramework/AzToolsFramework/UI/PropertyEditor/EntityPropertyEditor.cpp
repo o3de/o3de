@@ -33,6 +33,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -486,7 +487,11 @@ namespace AzToolsFramework
         , m_isSystemEntityEditor(false)
         , m_isLevelEntityEditor(isLevelEntityEditor)
     {
+
         initEntityPropertyEditorResources();
+
+        m_componentModeCollection = AZ::Interface<ComponentModeCollectionInterface>::Get();
+        AZ_Assert(m_componentModeCollection, "Could not retrieve component mode collection.");
 
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
         AZ_Assert(m_prefabPublicInterface != nullptr, "EntityPropertyEditor requires a PrefabPublicInterface instance on Initialize.");
@@ -2352,6 +2357,13 @@ namespace AzToolsFramework
     {
         QMenu* revertMenu = nullptr;
 
+        auto addRevertMenu = [&menu]()
+        {
+            QMenu* revertOverridesMenu = menu.addMenu(tr("Revert overrides"));
+            revertOverridesMenu->setToolTipsVisible(true);
+            return revertOverridesMenu;
+        };
+
         //check for changes on selected property
         if (componentClassData)
         {
@@ -2372,8 +2384,7 @@ namespace AzToolsFramework
             }
 
             // Only add the "Revert overrides" menu option if it belongs to a slice
-            revertMenu = menu.addMenu(tr("Revert overrides"));
-            revertMenu->setToolTipsVisible(true);
+            revertMenu = addRevertMenu();
             revertMenu->setEnabled(false);
 
             if (fieldNode)
@@ -2447,6 +2458,10 @@ namespace AzToolsFramework
 
         if (isPartOfSlice && hasSliceChanges)
         {
+            if (!revertMenu)
+            {
+                revertMenu = addRevertMenu();
+            }
             revertMenu->setEnabled(true);
 
             QAction* revertComponentAction = revertMenu->addAction(tr("Component"));
@@ -2487,11 +2502,15 @@ namespace AzToolsFramework
                 relevantEntities.push_back(id);
             }
 
+            if (!revertMenu)
+            {
+                revertMenu = addRevertMenu();
+            }
             revertMenu->setEnabled(true);
             QAction* revertAction = revertMenu->addAction(QObject::tr("Entity"));
             revertAction->setToolTip(QObject::tr("This will revert all component properties on this entity to the last saved."));
 
-            QObject::connect(revertAction, &QAction::triggered, [this, relevantEntities]
+            QObject::connect(revertAction, &QAction::triggered, [relevantEntities]
             {
                 SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
                     &SliceEditorEntityOwnershipServiceRequests::ResetEntitiesToSliceDefaults, relevantEntities);
@@ -4394,7 +4413,6 @@ namespace AzToolsFramework
     {
         ResetDrag(event);
 
-        Qt::MouseButtons realButtons = QApplication::mouseButtons();
         if (QApplication::overrideCursor() && !(event->buttons() & Qt::LeftButton))
         {
             QApplication::restoreOverrideCursor();
@@ -4606,7 +4624,6 @@ namespace AzToolsFramework
     bool EntityPropertyEditor::GetComponentsAtDropEventPosition(QDropEvent* event, AZ::Entity::ComponentArrayType& targetComponents)
     {
         const QPoint globalPos(mapToGlobal(event->pos()));
-        const QRect globalRect(GetInflatedRectFromPoint(globalPos, kComponentEditorDropTargetPrecision));
 
         //get component editor(s) where drop will occur
         ComponentEditor* targetComponentEditor = GetReorderDropTarget(
@@ -5686,39 +5703,49 @@ namespace AzToolsFramework
         SaveComponentEditorState();
     }
 
-    void EntityPropertyEditor::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
+    void EntityPropertyEditor::OnEditorModeActivated(
+        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
-        DisableComponentActions(this, m_entityComponentActions);
-        SetPropertyEditorState(m_gui, false);
-        m_disabled = true;
-
-        if (!componentModeTypes.empty())
+        if (mode == AzToolsFramework::ViewportEditorMode::Component)
         {
-            m_componentEditorLastSelectedIndex = GetComponentEditorIndexFromType(componentModeTypes.front());
-        }
+            DisableComponentActions(this, m_entityComponentActions);
+            SetPropertyEditorState(m_gui, false);
+            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
+            m_disabled = true;
+            
+            if (!componentModeTypes.empty())
+            {
+                m_componentEditorLastSelectedIndex = GetComponentEditorIndexFromType(componentModeTypes.front());
+            }
 
-        for (auto componentEditor : m_componentEditors)
-        {
-            componentEditor->EnteredComponentMode(componentModeTypes);
-        }
+            for (auto componentEditor : m_componentEditors)
+            {
+                componentEditor->EnteredComponentMode(componentModeTypes);
+            }
 
-        // record the selected state after entering component mode
-        SaveComponentEditorState();
+            // record the selected state after entering component mode
+            SaveComponentEditorState();
+        }
     }
 
-    void EntityPropertyEditor::LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes)
+    void EntityPropertyEditor::OnEditorModeDeactivated(
+        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
-        EnableComponentActions(this, m_entityComponentActions);
-        SetPropertyEditorState(m_gui, true);
-        m_disabled = false;
-
-        for (auto componentEditor : m_componentEditors)
+        if (mode == AzToolsFramework::ViewportEditorMode::Component)
         {
-            componentEditor->LeftComponentMode(componentModeTypes);
-        }
+            EnableComponentActions(this, m_entityComponentActions);
+            SetPropertyEditorState(m_gui, true);
+            const auto componentModeTypes = m_componentModeCollection->GetComponentTypes();
+            m_disabled = false;
 
-        // record the selected state after leaving component mode
-        SaveComponentEditorState();
+            for (auto componentEditor : m_componentEditors)
+            {
+                componentEditor->LeftComponentMode(componentModeTypes);
+            }
+
+            // record the selected state after leaving component mode
+            SaveComponentEditorState();
+        }
     }
 
     void EntityPropertyEditor::ActiveComponentModeChanged(const AZ::Uuid& componentType)

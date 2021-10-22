@@ -8,7 +8,7 @@
 
 #include <Atom/RHI.Edit/Utils.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzFramework/Process/ProcessCommunicator.h>
 #include <AzFramework/Process/ProcessWatcher.h>
@@ -30,7 +30,7 @@ namespace AZ
     namespace RHI
     {
         static AZStd::mutex s_profilingMutex;
-        static constexpr char ShaderPlatformInterfaceName[] = "ShaderPlatformInterface";
+        [[maybe_unused]] static constexpr char ShaderPlatformInterfaceName[] = "ShaderPlatformInterface";
 
         void ShaderCompilerProfiling::Entry::Reflect(ReflectContext* context)
         {

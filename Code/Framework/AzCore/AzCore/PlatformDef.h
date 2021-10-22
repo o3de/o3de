@@ -88,15 +88,6 @@
 
 #   define AZ_FORCE_INLINE  __forceinline
 
-/// Aligns a declaration.
-#   define AZ_ALIGN(_decl, _alignment) \
-    AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option") \
-    __declspec(align(_alignment)) \
-    _decl \
-    AZ_POP_DISABLE_WARNING
-
-/// Return the alignment of a type. This if for internal use only (use AZStd::alignment_of<>())
-#   define AZ_INTERNAL_ALIGNMENT_OF(_type) __alignof(_type)
 /// Pointer will be aliased.
 #   define AZ_MAY_ALIAS
 /// Function signature macro
@@ -120,15 +111,7 @@
 #define AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 #   define AZ_FORCE_INLINE  inline
-/// Aligns a declaration.
-#   define AZ_ALIGN(_decl, _alignment) \
-    AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option") \
-    _decl \
-    __attribute__((aligned(_alignment)))
-    AZ_POP_DISABLE_WARNING
 
-/// Return the alignment of a type. This if for internal use only (use AZStd::alignment_of<>())
-#   define AZ_INTERNAL_ALIGNMENT_OF(_type) __alignof__(_type)
 /// Pointer will be aliased.
 #   define AZ_MAY_ALIAS __attribute__((__may_alias__))
 /// Function signature macro

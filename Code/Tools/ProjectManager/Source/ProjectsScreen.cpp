@@ -65,6 +65,16 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_stack);
 
         connect(reinterpret_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyBuildProject, this, &ProjectsScreen::SuggestBuildProject);
+
+        // Will focus whatever button it finds so the Project tab is not focused on start-up
+        QTimer::singleShot(0, this, [this]
+            {
+                QPushButton* foundButton = m_stack->currentWidget()->findChild<QPushButton*>();
+                if (foundButton)
+                {
+                    foundButton->setFocus();
+                }
+            });
     }
 
     ProjectsScreen::~ProjectsScreen()
@@ -166,7 +176,7 @@ namespace O3DE::ProjectManager
     ProjectButton* ProjectsScreen::CreateProjectButton(const ProjectInfo& project)
     {
         ProjectButton* projectButton = new ProjectButton(project, this);
-        m_projectButtons.insert(project.m_path, projectButton);
+        m_projectButtons.insert(QDir::toNativeSeparators(project.m_path), projectButton);
         m_projectsFlowLayout->addWidget(projectButton);
 
         connect(projectButton, &ProjectButton::OpenProject, this, &ProjectsScreen::HandleOpenProject);
@@ -175,6 +185,15 @@ namespace O3DE::ProjectManager
         connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsScreen::HandleRemoveProject);
         connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsScreen::HandleDeleteProject);
         connect(projectButton, &ProjectButton::BuildProject, this, &ProjectsScreen::QueueBuildProject);
+        connect(projectButton, &ProjectButton::OpenCMakeGUI, this, 
+            [this](const ProjectInfo& projectInfo)
+            {
+                AZ::Outcome result = ProjectUtils::OpenCMakeGUI(projectInfo.m_path);
+                if (!result)
+                {
+                    QMessageBox::critical(this, tr("Failed to open CMake GUI"), result.GetError(), QMessageBox::Ok);
+                }
+            });
 
         return projectButton;
     }
@@ -193,7 +212,7 @@ namespace O3DE::ProjectManager
             QSet<QString> keepProject;
             for (const ProjectInfo& project : projectsVector)
             {
-                keepProject.insert(project.m_path);
+                keepProject.insert(QDir::toNativeSeparators(project.m_path));
             }
 
             // Clear flow and delete buttons for removed projects
@@ -204,6 +223,7 @@ namespace O3DE::ProjectManager
 
                 if (!keepProject.contains(projectButtonsIter.key()))
                 {
+                    projectButtonsIter.value()->deleteLater();
                     projectButtonsIter = m_projectButtons.erase(projectButtonsIter);
                 }
                 else
@@ -215,7 +235,7 @@ namespace O3DE::ProjectManager
             QString buildProjectPath = "";
             if (m_currentBuilder)
             {
-                buildProjectPath = m_currentBuilder->GetProjectInfo().m_path;
+                buildProjectPath = QDir::toNativeSeparators(m_currentBuilder->GetProjectInfo().m_path);
             }
 
             // Put currently building project in front, then queued projects, then sorts alphabetically
@@ -249,13 +269,13 @@ namespace O3DE::ProjectManager
             // Add any missing project buttons and restore buttons to default state
             for (const ProjectInfo& project : projectsVector)
             {
-                if (!m_projectButtons.contains(project.m_path))
+                if (!m_projectButtons.contains(QDir::toNativeSeparators(project.m_path)))
                 {
-                    m_projectButtons.insert(project.m_path, CreateProjectButton(project));
+                    m_projectButtons.insert(QDir::toNativeSeparators(project.m_path), CreateProjectButton(project));
                 }
                 else
                 {
-                    auto projectButtonIter = m_projectButtons.find(project.m_path);
+                    auto projectButtonIter = m_projectButtons.find(QDir::toNativeSeparators(project.m_path));
                     if (projectButtonIter != m_projectButtons.end())
                     {
                         projectButtonIter.value()->RestoreDefaultState();
@@ -273,7 +293,7 @@ namespace O3DE::ProjectManager
 
             for (const ProjectInfo& project : m_buildQueue)
             {
-                auto projectIter = m_projectButtons.find(project.m_path);
+                auto projectIter = m_projectButtons.find(QDir::toNativeSeparators(project.m_path));
                 if (projectIter != m_projectButtons.end())
                 {
                     projectIter.value()->SetProjectButtonAction(
@@ -288,7 +308,7 @@ namespace O3DE::ProjectManager
 
             for (const ProjectInfo& project : m_requiresBuild)
             {
-                auto projectIter = m_projectButtons.find(project.m_path);
+                auto projectIter = m_projectButtons.find(QDir::toNativeSeparators(project.m_path));
                 if (projectIter != m_projectButtons.end())
                 {
                     if (project.m_buildFailed)
@@ -297,7 +317,7 @@ namespace O3DE::ProjectManager
                     }
                     else
                     {
-                        projectIter.value()->SetProjectBuildButtonAction();
+                        projectIter.value()->ShowBuildRequired();
                     }
                 }
             }
@@ -347,8 +367,9 @@ namespace O3DE::ProjectManager
         painter.drawPixmap(backgroundRect, m_background);
 
         // Draw a semi-transparent overlay to darken down the colors.
-        painter.setCompositionMode (QPainter::CompositionMode_DestinationIn);
-        const float overlayTransparency = 0.7f;
+        // Use SourceOver, DestinationIn will make background transparent on Mac
+        painter.setCompositionMode (QPainter::CompositionMode_SourceOver);
+        const float overlayTransparency = 0.3f;
         painter.fillRect(backgroundRect, QColor(0, 0, 0, static_cast<int>(255.0f * overlayTransparency)));
     }
 
@@ -402,7 +423,7 @@ namespace O3DE::ProjectManager
                     constexpr int waitTimeInMs = 3000;
                     QTimer::singleShot(
                         waitTimeInMs, this,
-                        [this, button]
+                        [button]
                         {
                             if (button)
                             {

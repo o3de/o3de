@@ -17,13 +17,13 @@ public:
     CSmartVariableEnum<QString> mv_event;
     CSmartVariable<QString> mv_value;
 
-    virtual void OnCreateVars();
+    void OnCreateVars() override;
     bool SupportTrackType(const CUiAnimParamType& paramType, EUiAnimCurveType trackType, EUiAnimValue valueType) const override;
 
     bool OnKeySelectionChange(CUiAnimViewKeyBundle& selectedKeys) override;
     void OnUIChange(IVariable* pVar, CUiAnimViewKeyBundle& keys) override;
 
-    virtual unsigned int GetPriority() const { return 1; }
+    unsigned int GetPriority() const override { return 1; }
 
     static const GUID& GetClassID()
     {

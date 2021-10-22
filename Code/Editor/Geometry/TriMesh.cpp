@@ -161,61 +161,6 @@ void* CTriMesh::ReAllocElements(void* old_ptr, int new_elem_num, int size_of_ele
     return realloc(old_ptr, new_elem_num * size_of_element);
 }
 
-//////////////////////////////////////////////////////////////////////////
-// Unshare all vertices and split on 3 arrays, positions/texcoords.
-//////////////////////////////////////////////////////////////////////////
-void CTriMesh::SetFromMesh(CMesh& mesh)
-{
-    bbox = mesh.m_bbox;
-
-    int maxVerts = mesh.GetIndexCount();
-
-    SetVertexCount(maxVerts);
-    SetUVCount(maxVerts);
-    if (mesh.m_pColor0)
-    {
-        SetColorsCount(maxVerts);
-    }
-
-    SetFacesCount(mesh.GetIndexCount());
-
-    int numv = 0;
-    int numface = 0;
-    for (int nSubset = 0; nSubset < mesh.GetSubSetCount(); nSubset++)
-    {
-        SMeshSubset& subset = mesh.m_subsets[nSubset];
-        for (int i = subset.nFirstIndexId; i < subset.nFirstIndexId + subset.nNumIndices; i += 3)
-        {
-            CTriFace& face = pFaces[numface++];
-            for (int j = 0; j < 3; j++)
-            {
-                int idx = mesh.m_pIndices[i + j];
-                pVertices[numv].pos = mesh.m_pPositions ? mesh.m_pPositions[idx] : mesh.m_pPositionsF16[idx].ToVec3();
-                pWeights[numv] = 0.0f;
-                pUV[numv] = mesh.m_pTexCoord[idx];
-                if (mesh.m_pColor0)
-                {
-                    pColors[numv] = mesh.m_pColor0[idx];
-                }
-
-                face.v [j] = numv;
-                face.uv[j] = numv;
-                face.n [j] = mesh.m_pNorms[idx].GetN();
-                face.MatID = static_cast<unsigned char>(subset.nMatID);
-                face.flags = 0;
-
-                numv++;
-            }
-        }
-    }
-    SetFacesCount(numface);
-    SharePositions();
-    ShareUV();
-    UpdateEdges();
-
-    CalcFaceNormals();
-}
-
 /////////////////////////////////////////////////////////////////////////////////////
 inline int FindVertexInHash(const Vec3& vPosToFind, const CTriVertex* pVectors, std::vector<int>& hash, float fEpsilon)
 {
@@ -359,76 +304,6 @@ void CTriMesh::CalcFaceNormals()
 
 #define TEX_EPS 0.001f
 #define VER_EPS 0.001f
-
-//////////////////////////////////////////////////////////////////////////
-void CTriMesh::UpdateIndexedMesh(IIndexedMesh* pIndexedMesh) const
-{
-    {
-        const int maxVerts = nFacesCount * 3;
-
-        pIndexedMesh->SetVertexCount(maxVerts);
-        pIndexedMesh->SetTexCoordCount(maxVerts);
-        if (pColors)
-        {
-            pIndexedMesh->SetColorCount(maxVerts);
-        }
-        pIndexedMesh->SetIndexCount(0);
-        pIndexedMesh->SetFaceCount(nFacesCount);
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    // To find really used materials
-    std::vector<int> usedMaterialIds;
-    uint16 MatIdToSubset[MAX_SUB_MATERIALS];
-    uint16 nLastSubsetId = 0;
-    memset(MatIdToSubset, 0, sizeof(MatIdToSubset));
-    //////////////////////////////////////////////////////////////////////////
-
-    CMesh& mesh = *pIndexedMesh->GetMesh();
-    AABB bb;
-    bb.Reset();
-    for (int i = 0; i < nFacesCount; ++i)
-    {
-        const CTriFace& face = pFaces[i];
-        SMeshFace& meshFace = mesh.m_pFaces[i];
-
-        // Remap new used material ID to index of chunk id.
-        if (!MatIdToSubset[face.MatID])
-        {
-            MatIdToSubset[face.MatID] = 1 + nLastSubsetId++;
-            usedMaterialIds.push_back(face.MatID); // Order of material ids in usedMaterialIds correspond to the indices of chunks.
-        }
-        meshFace.nSubset = static_cast<unsigned char>(MatIdToSubset[face.MatID] - 1);
-
-        for (int j = 0; j < 3; ++j)
-        {
-            const int dstVIdx = i * 3 + j;
-
-            mesh.m_pPositions[dstVIdx] = pVertices[face.v[j]].pos;
-            mesh.m_pNorms[dstVIdx] = SMeshNormal(face.n[j]);
-            mesh.m_pTexCoord[dstVIdx] = pUV[face.uv[j]];
-            if (pColors)
-            {
-                mesh.m_pColor0[dstVIdx] = pColors[face.v[j]];
-            }
-
-            meshFace.v[j] = dstVIdx;
-
-            bb.Add(mesh.m_pPositions[dstVIdx]);
-        }
-    }
-
-    pIndexedMesh->SetBBox(bb);
-
-    pIndexedMesh->SetSubSetCount(static_cast<int>(usedMaterialIds.size()));
-    for (int i = 0; i < usedMaterialIds.size(); i++)
-    {
-        pIndexedMesh->SetSubsetMaterialId(i, usedMaterialIds[i]);
-    }
-
-    pIndexedMesh->Optimize();
-}
-
 
 //////////////////////////////////////////////////////////////////////////
 void CTriMesh::CopyStream(CTriMesh& fromMesh, int stream)

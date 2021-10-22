@@ -20,32 +20,36 @@ AZ_PUSH_DISABLE_WARNING(
 #include <QCoreApplication>
 #include <QHeaderView>
 #include <QMenu>
-
+#include <QResizeEvent>
 #include <QTimer>
 AZ_POP_DISABLE_WARNING
 namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        const float MinHeaderResizeProportion = .25f;
+        const float MaxHeaderResizeProportion = .75f;
+        const float DefaultHeaderResizeProportion = .5f;
+
         AssetBrowserTableView::AssetBrowserTableView(QWidget* parent)
-            : QTableView(parent)
-            , m_delegate(new EntryDelegate(this))
+            : AzQtComponents::TableView(parent)
+            , m_delegate(new SearchEntryDelegate(this))
         {
-            setSortingEnabled(true);
+            setSortingEnabled(false);
             setItemDelegate(m_delegate);
-            verticalHeader()->hide();
+            setRootIsDecorated(false);
 
             //Styling the header aligning text to the left and using a bold font.
-            horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
-            horizontalHeader()->setStyleSheet("QHeaderView { font-weight: bold; }");
+            header()->setDefaultAlignment(Qt::AlignLeft);
+            header()->setStyleSheet("QHeaderView { font-weight: bold; };");
+            
 
             setContextMenuPolicy(Qt::CustomContextMenu);
 
             setMouseTracking(true);
-            setSortingEnabled(false);
             setSelectionMode(QAbstractItemView::SingleSelection);
 
-            connect(this, &QTableView::customContextMenuRequested, this, &AssetBrowserTableView::OnContextMenu);
+            connect(this, &AzQtComponents::TableView::customContextMenuRequested, this, &AssetBrowserTableView::OnContextMenu);
 
             AssetBrowserViewRequestBus::Handler::BusConnect();
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
@@ -62,11 +66,15 @@ namespace AzToolsFramework
             m_tableModel = qobject_cast<AssetBrowserTableModel*>(model);
             AZ_Assert(m_tableModel, "Expecting AssetBrowserTableModel");
             m_sourceFilterModel = qobject_cast<AssetBrowserFilterModel*>(m_tableModel->sourceModel());
-            QTableView::setModel(model);
+            AzQtComponents::TableView::setModel(model);
             connect(m_tableModel, &AssetBrowserTableModel::layoutChanged, this, &AssetBrowserTableView::layoutChangedSlot);
 
-            horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeMode::Stretch);
-            horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeMode::Stretch);
+            header()->setStretchLastSection(true);
+            header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Interactive);
+            header()->setSectionResizeMode(1, QHeaderView::ResizeMode::Interactive);
+            UpdateSizeSlot(parentWidget()->width());
+            header()->setSortIndicatorShown(false);
+            header()->setSectionsClickable(false);
         }
 
         void AssetBrowserTableView::SetName(const QString& name)
@@ -98,7 +106,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::selectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
         {
-            QTableView::selectionChanged(selected, deselected);
+            AzQtComponents::TableView::selectionChanged(selected, deselected);
             Q_EMIT selectionChangedSignal(selected, deselected);
         }
 
@@ -115,7 +123,7 @@ namespace AzToolsFramework
                     selectionModel()->clear();
                 }
             }
-            QTableView::rowsAboutToBeRemoved(parent, start, end);
+            AzQtComponents::TableView::rowsAboutToBeRemoved(parent, start, end);
         }
 
         void AssetBrowserTableView::layoutChangedSlot(
@@ -146,7 +154,16 @@ namespace AzToolsFramework
 
         void AssetBrowserTableView::OnAssetBrowserComponentReady()
         {
+            UpdateSizeSlot(parentWidget()->width());
         }
+
+        void AssetBrowserTableView::UpdateSizeSlot(int newWidth)
+        {
+            setColumnWidth(0, aznumeric_cast<int>(newWidth * DefaultHeaderResizeProportion));
+            header()->setMinimumSectionSize(aznumeric_cast<int>(newWidth * MinHeaderResizeProportion));
+            header()->setMaximumSectionSize(aznumeric_cast<int>(newWidth * MaxHeaderResizeProportion));
+        }
+
 
         void AssetBrowserTableView::OnContextMenu([[maybe_unused]] const QPoint& point)
         {

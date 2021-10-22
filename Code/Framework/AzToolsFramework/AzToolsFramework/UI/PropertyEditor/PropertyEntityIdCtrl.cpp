@@ -119,11 +119,12 @@ namespace AzToolsFramework
 
             // replace the default input handler with one specific for dealing with
             // entity selection in the viewport
+
             EditorInteractionSystemViewportSelectionRequestBus::Event(
                 GetEntityContextId(), &EditorInteractionSystemViewportSelection::SetHandler,
-                [](const EditorVisibleEntityDataCache* entityDataCache)
+                [](const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
             {
-                return AZStd::make_unique<EditorPickEntitySelection>(entityDataCache);
+                    return AZStd::make_unique<EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
             });
 
             if (!pickModeEntityContextId.IsNull())
@@ -518,8 +519,8 @@ namespace AzToolsFramework
 
     void EntityIdPropertyHandler::WriteGUIValuesIntoProperty(size_t index, PropertyEntityIdCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         instance = GUI->GetEntityId();
     }
 

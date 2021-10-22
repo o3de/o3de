@@ -20,10 +20,12 @@ class BatchAnalytics:
     """
     def __init__(self,
                  stack: core.Construct,
+                 application_name: str,
                  analytics_bucket_name: str,
                  events_database_name: str,
                  events_table_name) -> None:
         self._stack = stack
+        self._application_name = application_name
         self._analytics_bucket_name = analytics_bucket_name
         self._events_database_name = events_database_name
         self._events_table_name = events_table_name
@@ -58,6 +60,12 @@ class BatchAnalytics:
                 )
             )
         )
+        core.CfnOutput(
+            self._stack,
+            id='AthenaWorkGroupName',
+            description='Name of the Athena work group that contains sample queries',
+            export_name=f"{self._application_name}:AthenaWorkGroup",
+            value=self._athena_work_group.name)
 
     def _create_athena_queries(self) -> None:
         """
@@ -113,6 +121,9 @@ class BatchAnalytics:
                 work_group=self._athena_work_group.name
             )
         ]
+
+        for named_query in self._named_queries:
+            named_query.node.add_dependency(self._athena_work_group)
 
     @property
     def athena_work_group_name(self) -> athena.CfnWorkGroup.name:

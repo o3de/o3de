@@ -6,14 +6,13 @@
 #
 #
 
-if(LY_PIX_ENABLED)
-    file(TO_CMAKE_PATH "${LY_PIX_PATH}" PIX_PATH)
-    message(STATUS "PIX found: ${PIX_PATH}")
+set(LY_PIX_PATH "${LY_3RDPARTY_PATH}/winpixeventruntime" CACHE PATH "Path to the Windows Pix Event Runtime.")
 
-    ly_add_external_target(
-        NAME pix
-        3RDPARTY_ROOT_DIRECTORY "${PIX_PATH}"
-        VERSION
-        INCLUDE_DIRECTORIES include
-    )
-endif()
+ly_add_external_target(
+    NAME pix
+    3RDPARTY_ROOT_DIRECTORY ${LY_PIX_PATH}
+    VERSION
+    INCLUDE_DIRECTORIES Include
+    COMPILE_DEFINITIONS USE_PIX
+)
+

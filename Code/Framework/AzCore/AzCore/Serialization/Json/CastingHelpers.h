@@ -8,14 +8,14 @@
 
 #pragma once
 
-#include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Casting/numeric_cast_internal.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/string/osstring.h>
 
 namespace AZ
 {
-    //! A helper function to casts between numeric types, and consider the data which is being converted comse from user data.
+    //! A helper function to casts between numeric types, and consider the data which is being converted comes from user data.
     //! If a conversion from FromType to ToType will not cause overflow or underflow, the result is stored in result, and the function returns Success
     //! Otherwise, the target is left untouched.
     template <typename ToType, typename FromType>
@@ -24,9 +24,9 @@ namespace AZ
     {
         using namespace JsonSerializationResult;
 
-        if (NumericCastInternal::FitsInToType<ToType>(value))
+        if (NumericCastInternal::template FitsInToType<ToType>(value))
         {
-            result = aznumeric_cast<ToType>(value);
+            result = static_cast<ToType>(value);
             return reporting("Successfully cast number.", ResultCode(Tasks::Convert, Outcomes::Success), path);
         }
         else

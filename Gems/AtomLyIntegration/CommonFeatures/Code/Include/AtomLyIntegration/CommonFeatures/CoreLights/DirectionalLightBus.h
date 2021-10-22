@@ -153,24 +153,6 @@ namespace AZ
             //! @param method filter method.
             virtual void SetShadowFilterMethod(ShadowFilterMethod method) = 0;
 
-            //! This gets the width of boundary between shadowed area and lit area.
-            //! @return Boundary width. The shadow is gradually changed the degree of shadowed.
-            virtual float GetSofteningBoundaryWidth() const = 0;
-
-            //! This specifies the width of boundary between shadowed area and lit area.
-            //! @param width Boundary width. The shadow is gradually changed the degree of shadowed.
-            //! If width == 0, softening edge is disabled. Units are in meters.
-            virtual void SetSofteningBoundaryWidth(float width) = 0;
-
-            //! This gets sample count to predict boundary of shadow.
-            //! @return Sample Count for prediction of whether the pixel is on the boundary (up to 16)
-            virtual uint32_t GetPredictionSampleCount() const = 0;
-
-            //! This sets sample count to predict boundary of shadow.
-            //! @param count Sample Count for prediction of whether the pixel is on the boundary (up to 16)
-            //! The value should be less than or equal to m_filteringSampleCount.
-            virtual void SetPredictionSampleCount(uint32_t count) = 0;
-
             //! This gets the sample count for filtering of the shadow boundary.
             //! @return Sample Count for filtering (up to 64)
             virtual uint32_t GetFilteringSampleCount() const = 0;
@@ -179,12 +161,13 @@ namespace AZ
             //! @param count Sample Count for filtering (up to 64)
             virtual void SetFilteringSampleCount(uint32_t count) = 0;
 
-            //! This gets the type of Pcf (percentage-closer filtering) to use.
-            virtual PcfMethod GetPcfMethod() const = 0;
+            //! Gets whether the directional shadowmap should use receiver plane bias.
+            //! This attempts to reduce shadow acne when using large pcf filters.
+            virtual bool GetShadowReceiverPlaneBiasEnabled() const = 0;
 
-            //! This sets the type of Pcf (percentage-closer filtering) to use.
-            //! @param method The Pcf method to use.
-            virtual void SetPcfMethod(PcfMethod method) = 0;
+            //! Sets whether the directional shadowmap should use receiver plane bias.
+            //! @param enable flag specifying whether to enable the receiver plane bias feature
+            virtual void SetShadowReceiverPlaneBiasEnabled(bool enable) = 0;
         };
         using DirectionalLightRequestBus = EBus<DirectionalLightRequests>;
 

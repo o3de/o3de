@@ -84,7 +84,7 @@ class ServiceClientJobConfigTest
     void ReloadConfigFile(bool reloadConfigFileName = false) override
     {
         AZ_UNUSED(reloadConfigFileName);
-    };
+    }
 };
 
 TEST_F(ServiceClientJobConfigTest, GetServiceUrl_CreateServiceWithServiceNameOnly_GetExpectedFeatureServiceUrl)

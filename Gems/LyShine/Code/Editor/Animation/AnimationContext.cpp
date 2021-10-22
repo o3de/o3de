@@ -521,7 +521,7 @@ void CUiAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnBeginLayerExport:
         if (m_pSequence)
         {
-            m_sequenceName = m_pSequence->GetName();
+            m_sequenceName = QString::fromUtf8(m_pSequence->GetName().c_str());
         }
         else
         {

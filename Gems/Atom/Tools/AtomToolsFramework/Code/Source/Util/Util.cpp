@@ -11,13 +11,13 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
-#include <QFileDialog>
 #include <QMessageBox>
 #include <QProcess>
 AZ_POP_DISABLE_WARNING
@@ -29,7 +29,7 @@ namespace AtomToolsFramework
         const QFileInfo initialFileInfo(initialPath);
         const QString initialExt(initialFileInfo.completeSuffix());
 
-        const QFileInfo selectedFileInfo(QFileDialog::getSaveFileName(
+        const QFileInfo selectedFileInfo(AzQtComponents::FileDialog::GetSaveFileName(
             QApplication::activeWindow(),
             "Save File",
             initialFileInfo.absolutePath() +
@@ -104,7 +104,7 @@ namespace AtomToolsFramework
         const QFileInfo initialFileInfo(initialPath);
         const QString initialExt(initialFileInfo.completeSuffix());
 
-        const QFileInfo duplicateFileInfo(QFileDialog::getSaveFileName(
+        const QFileInfo duplicateFileInfo(AzQtComponents::FileDialog::GetSaveFileName(
             QApplication::activeWindow(),
             "Duplicate File",
             GetUniqueFileInfo(initialPath).absoluteFilePath(),

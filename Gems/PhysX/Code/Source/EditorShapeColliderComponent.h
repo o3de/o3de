@@ -10,7 +10,6 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
@@ -58,7 +57,6 @@ namespace PhysX
     //! component to create geometry in the PhysX simulation.
     class EditorShapeColliderComponent
         : public AzToolsFramework::Components::EditorComponentBase
-        , protected AzFramework::EntityDebugDisplayEventBus::Handler
         , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , private AZ::TransformNotificationBus::Handler
         , protected DebugDraw::DisplayCallback
@@ -129,7 +127,7 @@ namespace PhysX
         void OnShapeChanged(LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons changeReason) override;
 
         // DisplayCallback
-        void Display(AzFramework::DebugDisplayRequests& debugDisplay) const;
+        void Display(AzFramework::DebugDisplayRequests& debugDisplay) const override;
 
         // ColliderShapeRequestBus
         AZ::Aabb GetColliderShapeAabb() override;

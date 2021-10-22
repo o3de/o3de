@@ -31,7 +31,7 @@ namespace AzToolsFramework
             void Connect();
             void Disconnect();
 
-            PrefabOperationResult CreatePrefabInMemory(const EntityIdList& entityIds, AZStd::string_view filePath) override;
+            CreatePrefabResult CreatePrefabInMemory(const EntityIdList& entityIds, AZStd::string_view filePath) override;
             InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
 

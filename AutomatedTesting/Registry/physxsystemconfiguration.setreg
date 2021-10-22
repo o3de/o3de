@@ -103,7 +103,7 @@
                     },
                     "MaterialLibrary": {
                         "assetId": {
-                            "guid": "{62446378-67F8-5E49-AC31-761DD5942695}"
+                            "guid": "{7CDF49C3-91A2-5C4E-B642-6D1AEC80E70E}"
                         },
                         "loadBehavior": "QueueLoad",
                         "assetHint": "assets/physics/surfacetypemateriallibrary.physmaterial"

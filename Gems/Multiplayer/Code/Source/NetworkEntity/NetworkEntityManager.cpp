@@ -16,9 +16,13 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/EntityContextBus.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Visibility/EntityBoundsUnionBus.h>
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
+#include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Pipeline/NetworkSpawnableHolderComponent.h>
 
 namespace Multiplayer
@@ -41,11 +45,22 @@ namespace Multiplayer
         AZ::Interface<INetworkEntityManager>::Unregister(this);
     }
 
-    void NetworkEntityManager::Initialize(HostId hostId, AZStd::unique_ptr<IEntityDomain> entityDomain)
+    void NetworkEntityManager::Initialize(const HostId& hostId, AZStd::unique_ptr<IEntityDomain> entityDomain)
     {
         m_hostId = hostId;
         m_entityDomain = AZStd::move(entityDomain);
         m_updateEntityDomainEvent.Enqueue(net_EntityDomainUpdateMs, true);
+        m_entityDomain->ActivateTracking(m_ownedEntities);
+    }
+
+    bool NetworkEntityManager::IsInitialized() const
+    {
+        return m_entityDomain != nullptr;
+    }
+
+    IEntityDomain* NetworkEntityManager::GetEntityDomain() const
+    {
+        return m_entityDomain.get();
     }
 
     NetworkEntityTracker* NetworkEntityManager::GetNetworkEntityTracker()
@@ -63,7 +78,7 @@ namespace Multiplayer
         return &m_multiplayerComponentRegistry;
     }
 
-    HostId NetworkEntityManager::GetHostId() const
+    const HostId& NetworkEntityManager::GetHostId() const
     {
         return m_hostId;
     }
@@ -86,7 +101,7 @@ namespace Multiplayer
     NetworkEntityHandle NetworkEntityManager::AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity)
     {
         m_networkEntityTracker.Add(netEntityId, entity);
-        return NetworkEntityHandle(entity, netEntityId, &m_networkEntityTracker);
+        return NetworkEntityHandle(entity, &m_networkEntityTracker);
     }
 
     void NetworkEntityManager::MarkForRemoval(const ConstNetworkEntityHandle& entityHandle)
@@ -96,8 +111,6 @@ namespace Multiplayer
             if (net_DebugCheckNetworkEntityManager)
             {
                 AZ_Assert(entityHandle.GetNetBindComponent(), "No NetBindComponent found on networked entity");
-                [[maybe_unused]] const bool isClientOnlyEntity = false;// (ServerIdFromEntityId(it->first) == InvalidHostId);
-                AZ_Assert(entityHandle.GetNetBindComponent()->IsNetEntityRoleAuthority() || isClientOnlyEntity, "Trying to delete a proxy entity, this will lead to issues deserializing entity updates");
             }
             m_removeList.push_back(entityHandle.GetNetEntityId());
             m_removeEntitiesEvent.Enqueue(AZ::TimeMs{ 0 });
@@ -204,6 +217,29 @@ namespace Multiplayer
         m_localDeferredRpcMessages.emplace_back(AZStd::move(message));
     }
 
+    void NetworkEntityManager::DebugDraw() const
+    {
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, AzFramework::g_defaultSceneEntityDebugDisplayId);
+        AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+
+        for (NetworkEntityTracker::const_iterator it = m_networkEntityTracker.begin(); it != m_networkEntityTracker.end(); ++it)
+        {
+            AZ::Entity* entity = it->second;
+            NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
+            if (netBindComponent->GetNetEntityRole() == NetEntityRole::Authority)
+            {
+                const AZ::Aabb entityBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(entity->GetId());
+                debugDisplay->DrawWireBox(entityBounds.GetMin(), entityBounds.GetMax());
+            }
+        }
+
+        if (m_entityDomain != nullptr)
+        {
+            m_entityDomain->DebugDraw();
+        }
+    }
+
     void NetworkEntityManager::DispatchLocalDeferredRpcMessages()
     {
         for (NetworkEntityRpcMessage& rpcMessage : m_localDeferredRpcMessages)
@@ -211,7 +247,7 @@ namespace Multiplayer
             AZ::Entity* entity = m_networkEntityTracker.GetRaw(rpcMessage.GetEntityId());
             if (entity != nullptr)
             {
-                NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
                 AZ_Assert(netBindComponent != nullptr, "Attempting to send an RPC to an entity with no NetBindComponent");
                 netBindComponent->HandleRpcMessage(nullptr, NetEntityRole::Server, rpcMessage);
             }
@@ -226,9 +262,8 @@ namespace Multiplayer
             return;
         }
 
-        m_entitiesNotInDomain.clear();
-        m_entityDomain->RetrieveEntitiesNotInDomain(m_entitiesNotInDomain);
-        for (NetEntityId exitingId : m_entitiesNotInDomain)
+        const IEntityDomain::EntitiesNotInDomain& entitiesNotInDomain = m_entityDomain->RetrieveEntitiesNotInDomain();
+        for (NetEntityId exitingId : entitiesNotInDomain)
         {
             OnEntityExitDomain(exitingId);
         }
@@ -239,27 +274,32 @@ namespace Multiplayer
         bool safeToExit = true;
         NetworkEntityHandle entityHandle = m_networkEntityTracker.Get(entityId);
 
-        // ClientAutonomous entities need special handling here. When we migrate a player's entity the player's client must tell the new server which
-        //  entity they were controlling. If we tell them to migrate before they know which entity they control it results in them requesting a new entity
-        //  from the new server, resulting in an orphaned PlayerChar. PlayerControllerComponentServerAuthority::PlayerClientHasControlledEntity()
-        //  will tell us whether the client sent an RPC acknowledging that they now know which entity is theirs.
-        if (AZ::Entity* entity = entityHandle.GetEntity())
+        // We also need special handling for the NetworkHierarchy as well, since related entities need to be migrated together
+        NetworkHierarchyRootComponentController* hierarchyRootController = entityHandle.FindController<NetworkHierarchyRootComponentController>();
+        NetworkHierarchyChildComponentController* hierarchyChildController = entityHandle.FindController<NetworkHierarchyChildComponentController>();
+
+        // Find the root entity
+        AZ::Entity* hierarchyRootEntity = nullptr;
+        if (hierarchyRootController)
         {
-            //if (PlayerComponent::Authority* playerController = FindController<PlayerComponent::Authority>(nonConstExitingEntityPtr))
-            //{
-            //    safeToExit = playerController->PlayerClientHasControlledEntity();
-            //}
+            hierarchyRootEntity = hierarchyRootController->GetParent().GetHierarchicalRoot();
+        }
+        else if (hierarchyChildController)
+        {
+            hierarchyRootEntity = hierarchyChildController->GetParent().GetHierarchicalRoot();
         }
 
-        // We also need special handling for the EntityHierarchyComponent as well, since related entities need to be migrated together
-        //auto* hierarchyController = FindController<EntityHierarchyComponent::Authority>(nonConstExitingEntityPtr);
-        //if (hierarchyController)
-        //{
-        //    if (hierarchyController->GetParentRelatedEntity())
-        //    {
-        //        safeToExit = false;
-        //    }
-        //}
+        if (hierarchyRootEntity)
+        {
+            NetEntityId rootNetId = GetNetEntityIdById(hierarchyRootEntity->GetId());
+            ConstNetworkEntityHandle rootEntityHandle = GetEntity(rootNetId);
+
+            // Check if the root entity is still tracked by this authority
+            if (rootEntityHandle.Exists() && rootEntityHandle.GetNetBindComponent()->HasController())
+            {
+                safeToExit = false;
+            }
+        }
 
         // Validate that we aren't already planning to remove this entity
         if (safeToExit)
@@ -279,10 +319,23 @@ namespace Multiplayer
         }
     }
 
+    void NetworkEntityManager::Reset()
+    {
+        m_multiplayerComponentRegistry.Reset();
+        m_removeList.clear();
+        m_entityDomain = nullptr;
+        m_updateEntityDomainEvent.RemoveFromQueue();
+        m_ownedEntities.clear();
+        m_entityExitDomainEvent.DisconnectAllHandlers();
+        m_onEntityMarkedDirty.DisconnectAllHandlers();
+        m_onEntityNotifyChanges.DisconnectAllHandlers();
+        m_controllersActivatedEvent.DisconnectAllHandlers();
+        m_controllersDeactivatedEvent.DisconnectAllHandlers();
+        m_localDeferredRpcMessages.clear();
+    }
+
     void NetworkEntityManager::RemoveEntities()
     {
-        //RewindableObjectState::ClearRewoundEntities();
-
         AZStd::vector<NetEntityId> removeList;
         removeList.swap(m_removeList);
         for (NetEntityId entityId : removeList)
@@ -332,6 +385,7 @@ namespace Multiplayer
 
             originalToCloneIdMap[originalEntity->GetId()] = clone->GetId();
 
+            // Can't use NetworkEntityTracker to do the lookup since the entity has not activated yet
             NetBindComponent* netBindComponent = clone->FindComponent<NetBindComponent>();
             if (netBindComponent != nullptr)
             {
@@ -368,7 +422,6 @@ namespace Multiplayer
                     &AzFramework::GameEntityContextRequestBus::Events::AddGameEntity, clone);
 
                 returnList.push_back(netBindComponent->GetEntityHandle());
-
             }
             else
             {
@@ -467,8 +520,60 @@ namespace Multiplayer
         return netEntityId;
     }
 
-    void NetworkEntityManager::OnRootSpawnableAssigned(
-        [[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
+    AZStd::unique_ptr<AzFramework::EntitySpawnTicket> NetworkEntityManager::RequestNetSpawnableInstantiation(
+        const AZ::Data::Asset<AzFramework::Spawnable>& netSpawnable, const AZ::Transform& transform)
+    {
+        // Prepare the parameters for the spawning process
+        AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
+        optionalArgs.m_priority = AzFramework::SpawnablePriority_High;
+
+        const AZ::Name netSpawnableName =
+            AZ::Interface<INetworkSpawnableLibrary>::Get()->GetSpawnableNameFromAssetId(netSpawnable.GetId());
+
+        if (netSpawnableName.IsEmpty())
+        {
+            AZ_Error("NetworkEntityManager", false,
+                "RequestNetSpawnableInstantiation: Requested spawnable %s doesn't exist in the NetworkSpawnableLibrary. Please make sure it is a network spawnable",
+                netSpawnable.GetHint().c_str());
+            return nullptr;
+        }
+
+        // Pre-insertion callback allows us to do network-specific setup for the entities before they are added to the scene
+        optionalArgs.m_preInsertionCallback = [netSpawnableName, rootTransform = transform]
+            (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableEntityContainerView entities)
+        {
+            bool shouldUpdateTransform = (rootTransform.IsClose(AZ::Transform::Identity()) == false);
+
+            for (uint32_t netEntityIndex = 0, entitiesSize = aznumeric_cast<uint32_t>(entities.size());
+                netEntityIndex < entitiesSize; ++netEntityIndex)
+            {
+                AZ::Entity* netEntity = *(entities.begin() + netEntityIndex);
+
+                if (shouldUpdateTransform)
+                {
+                    AzFramework::TransformComponent* netEntityTransform =
+                        netEntity->FindComponent<AzFramework::TransformComponent>();
+
+                    AZ::Transform worldTm = netEntityTransform->GetWorldTM();
+                    worldTm = rootTransform * worldTm;
+                    netEntityTransform->SetWorldTM(worldTm);
+                }
+
+                PrefabEntityId prefabEntityId;
+                prefabEntityId.m_prefabName = netSpawnableName;
+                prefabEntityId.m_entityOffset = netEntityIndex;
+                AZ::Interface<INetworkEntityManager>::Get()->SetupNetEntity(netEntity, prefabEntityId, NetEntityRole::Authority);
+            }
+        };
+
+        // Spawn with the newly created ticket. This allows the calling code to manage the lifetime of the constructed entities
+        auto ticket = AZStd::make_unique<AzFramework::EntitySpawnTicket>(netSpawnable);
+        AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(*ticket, AZStd::move(optionalArgs));
+        return ticket;
+    }
+
+    void NetworkEntityManager::OnRootSpawnableAssigned(AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable,
+        [[maybe_unused]] uint32_t generation)
     {
         auto* multiplayer = GetMultiplayer();
         const auto agentType = multiplayer->GetAgentType();
@@ -481,7 +586,6 @@ namespace Multiplayer
 
     void NetworkEntityManager::OnRootSpawnableReleased([[maybe_unused]] uint32_t generation)
     {
-        // TODO: Do we need to clear all entities here?
         auto* multiplayer = GetMultiplayer();
         const auto agentType = multiplayer->GetAgentType();
 

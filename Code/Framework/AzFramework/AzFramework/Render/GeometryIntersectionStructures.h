@@ -11,6 +11,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/functional.h>
 
 //! Common structures for Render geometry queries

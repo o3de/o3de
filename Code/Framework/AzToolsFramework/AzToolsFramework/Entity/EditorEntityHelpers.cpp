@@ -14,10 +14,13 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
@@ -587,15 +590,40 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
+        // Detect if the Entity is Visible
         bool visible = false;
         EditorEntityInfoRequestBus::EventResult(
             visible, entityId, &EditorEntityInfoRequestBus::Events::IsVisible);
 
-        bool locked = false;
-        EditorEntityInfoRequestBus::EventResult(
-            locked, entityId, &EditorEntityInfoRequestBus::Events::IsLocked);
+        if (!visible)
+        {
+            return false;
+        }
 
-        return visible && !locked;
+        // Detect if the Entity is Locked
+        bool locked = false;
+        EditorEntityInfoRequestBus::EventResult(locked, entityId, &EditorEntityInfoRequestBus::Events::IsLocked);
+
+        if (locked)
+        {
+            return false;
+        }
+
+        // Detect if the Entity is part of the Editor Focus
+        if (auto focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
+            !focusModeInterface->IsInFocusSubTree(entityId))
+        {
+            return false;
+        }
+
+        // Detect if the Entity is a descendant of a closed container
+        if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+            containerEntityInterface->IsUnderClosedContainerEntity(entityId))
+        {
+            return false;
+        }
+        
+        return true;
     }
 
     static void SetEntityLockStateRecursively(
@@ -1324,7 +1352,7 @@ namespace AzToolsFramework
             AZ::SliceComponent::EntityAncestorList::const_iterator ancestorIter = ancestors.begin();
             // Skip the first, that would be a regular slice root and not a subslice root, which was already checked.
             ++ancestorIter;
-            for (ancestorIter; ancestorIter != ancestors.end(); ++ancestorIter)
+            for (; ancestorIter != ancestors.end(); ++ancestorIter)
             {
                 const AZ::SliceComponent::Ancestor& ancestor = *ancestorIter;
                 if (!ancestor.m_entity || !SliceUtilities::IsRootEntity(*ancestor.m_entity))

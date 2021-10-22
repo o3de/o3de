@@ -236,14 +236,14 @@ namespace AzNetworking
         return true;
     }
 
-    bool UdpConnection::HandleCorePacket(IConnectionListener& connectionListener, UdpPacketHeader& header, ISerializer& serializer)
+    PacketDispatchResult UdpConnection::HandleCorePacket(IConnectionListener& connectionListener, UdpPacketHeader& header, ISerializer& serializer)
     {
         switch (static_cast<CorePackets::PacketType>(header.GetPacketType()))
         {
         case CorePackets::PacketType::InitiateConnectionPacket:
         {
             AZLOG(NET_CorePackets, "Received core packet %s", "InitiateConnection");
-            return true;
+            return PacketDispatchResult::Success;
         }
         break;
 
@@ -253,7 +253,7 @@ namespace AzNetworking
             CorePackets::ConnectionHandshakePacket packet;
             if (!serializer.Serialize(packet, "Packet"))
             {
-                return false;
+                return PacketDispatchResult::Failure;
             }
 
             if (m_state != ConnectionState::Connected)
@@ -264,7 +264,7 @@ namespace AzNetworking
                 }
             }
 
-            return true;
+            return PacketDispatchResult::Success;
         }
         break;
 
@@ -274,10 +274,10 @@ namespace AzNetworking
             CorePackets::TerminateConnectionPacket packet;
             if (!serializer.Serialize(packet, "Packet"))
             {
-                return false;
+                return PacketDispatchResult::Failure;
             }
             Disconnect(packet.GetDisconnectReason(), TerminationEndpoint::Remote);
-            return true;
+            return PacketDispatchResult::Success;
         }
         break;
 
@@ -287,10 +287,10 @@ namespace AzNetworking
             CorePackets::HeartbeatPacket packet;
             if (!serializer.Serialize(packet, "Packet"))
             {
-                return false;
+                return PacketDispatchResult::Failure;
             }
             // Do nothing, we've already processed our ack packets
-            return true;
+            return PacketDispatchResult::Success;
         }
         break;
 
@@ -302,6 +302,6 @@ namespace AzNetworking
             AZ_Assert(false, "Unhandled core packet type!");
         }
 
-        return false;
+        return PacketDispatchResult::Failure;
     }
 }

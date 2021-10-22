@@ -9,9 +9,9 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/schema.h>
 #include <AzCore/JSON/prettywriter.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
-#include <AzFramework/FileFunc/FileFunc.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AWSCoreInternalBus.h>
@@ -26,7 +26,6 @@ namespace AWSCore
         : m_status(Status::NotLoaded)
         , m_defaultAccountId("")
         , m_defaultRegion("")
-        , m_resourceMappings()
     {
     }
 
@@ -164,7 +163,7 @@ namespace AWSCore
         m_defaultRegion = jsonDocument.FindMember(ResourceMappingRegionKeyName)->value.GetString();
 
         auto resourceMappings = jsonDocument.FindMember(ResourceMappingResourcesKeyName)->value.GetObject();
-        for (auto mappingIter = resourceMappings.MemberBegin(); mappingIter != resourceMappings.MemberEnd(); mappingIter++)
+        for (auto mappingIter = resourceMappings.MemberBegin(); mappingIter != resourceMappings.MemberEnd(); ++mappingIter)
         {
             auto mappingValue = mappingIter->value.GetObject();
             if (mappingValue.MemberCount() != 0)
@@ -211,8 +210,7 @@ namespace AWSCore
         }
 
         AzFramework::StringFunc::Path::Normalize(configJsonPath);
-        AZ::IO::Path configJsonFileIOPath(configJsonPath);
-        auto readJsonOutcome = AzFramework::FileFunc::ReadJsonFile(configJsonFileIOPath);
+        auto readJsonOutcome = AZ::JsonSerializationUtils::ReadJsonFile(configJsonPath);
         if (readJsonOutcome.IsSuccess())
         {
             auto jsonDocument = readJsonOutcome.TakeValue();
