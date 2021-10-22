@@ -16,39 +16,6 @@
 // licensed and released under Creative Commons 3.0 Attribution
 // https://creativecommons.org/licenses/by/3.0/
 
-float3 HueToRgb(float hue)
-{
-    return saturate(float3(abs(hue * 6.0f - 3.0f) - 1.0f,
-                           2.0f - abs(hue * 6.0f - 2.0f),
-                           2.0f - abs(hue * 6.0f - 4.0f)));
-}
-
-float3 RgbToHcv(float3 rgb)
-{
-    // Based on work by Sam Hocevar and Emil Persson
-    const float4 p = (rgb.g < rgb.b) ? float4(rgb.bg, -1.0f, 2.0f/3.0f) : float4(rgb.gb, 0.0f, -1.0f/3.0f);
-    const float4 q1 = (rgb.r < p.x) ? float4(p.xyw, rgb.r) : float4(rgb.r, p.yzx);
-    const float c = q1.x - min(q1.w, q1.y);
-    const float h = abs((q1.w - q1.y) / (6.0f * c + 0.000001f ) + q1.z);
-    return float3(h, c, q1.x);
-}
-
-float3 RgbToHsl(float3 rgb)
-{
-    rgb.xyz = max(rgb.xyz, 0.000001f);
-    const float3 hcv = RgbToHcv(rgb);
-    const float L = hcv.z - hcv.y * 0.5f;
-    const float S = hcv.y / (1.0f - abs(L * 2.0f - 1.0f) + 0.000001f);
-    return float3(hcv.x, S, L);
-}
-
-float3 HslToRgb(float3 hsl)
-{
-    const float3 rgb = HueToRgb(hsl.x);
-    const float c = (1.0f - abs(2.0f * hsl.z - 1.0f)) * hsl.y;
-    return (rgb - 0.5f) * c + hsl.z;
-}
-
 // Color temperature
 float3 KelvinToRgb(float kelvin)
 {

@@ -598,6 +598,15 @@ namespace AZ
             m_shadowBufferNeedsUpdate = true;
         }
 
+        void DirectionalLightFeatureProcessor::SetNormalShadowBias(LightHandle handle, float normalShadowBias)
+        {
+            for (auto& it : m_shadowData)
+            {
+                it.second.GetData(handle.GetIndex()).m_normalShadowBias = normalShadowBias;
+            }
+            m_shadowBufferNeedsUpdate = true;
+        }
+
         void DirectionalLightFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
             PrepareForChangingRenderPipelineAndCameraView();

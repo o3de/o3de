@@ -183,7 +183,7 @@ namespace AZ
                 // access the root constants reflection
                 if (!azslc.ParseSrgPopulateRootConstantData(
                         outcomes[AzslSubProducts::srg].GetValue(),
-                        rootConstantData)) // consuming data from --srg ("InlineConstantBuffer" subjson section)
+                        rootConstantData)) // consuming data from --srg ("RootConstantBuffer" subjson section)
                 {
                     AZ_Error(builderName, false, "Failed to obtain root constant data reflection");
                     return AssetBuilderSDK::ProcessJobResult_Failed;

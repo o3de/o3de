@@ -55,6 +55,7 @@ namespace AZ
             RHI::ShaderInputNameIndex m_whiteBalanceWeightIndex = "m_whiteBalanceWeight";
             RHI::ShaderInputNameIndex m_whiteBalanceKelvinIndex = "m_whiteBalanceKelvin";
             RHI::ShaderInputNameIndex m_whiteBalanceTintIndex = "m_whiteBalanceTint";
+            RHI::ShaderInputNameIndex m_whiteBalanceLuminancePreservationIndex = "m_whiteBalanceLuminancePreservation";
 
             RHI::ShaderInputNameIndex m_splitToneBalanceIndex = "m_splitToneBalance";
             RHI::ShaderInputNameIndex m_splitToneWeightIndex = "m_splitToneWeight";
