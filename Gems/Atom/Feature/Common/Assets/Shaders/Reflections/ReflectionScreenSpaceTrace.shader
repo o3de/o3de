@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionScreenSpaceTrace",
+    "Source" : "ReflectionScreenSpaceTrace.azsl",
 
     "RasterState" :
     {

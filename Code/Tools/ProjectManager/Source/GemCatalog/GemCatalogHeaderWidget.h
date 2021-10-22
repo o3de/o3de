@@ -41,6 +41,7 @@ namespace O3DE::ProjectManager
         using GetTagIndicesCallback = AZStd::function<QVector<QModelIndex>()>;
         void CreateGemSection(const QString& singularTitle, const QString& pluralTitle, GetTagIndicesCallback getTagIndices);
         void CreateDownloadSection();
+        void OnCancelDownloadActivated(const QString& link);
 
         QVBoxLayout* m_layout = nullptr;
         GemModel* m_gemModel = nullptr;
