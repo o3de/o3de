@@ -133,12 +133,12 @@ def get_gem_json_paths_from_cached_repo(repo_uri: str) -> set:
 
 def get_gem_json_paths_from_all_cached_repos() -> set:
     json_data = manifest.load_o3de_manifest()
-    gem_list = set()
+    gem_set = set()
 
     for repo_uri in json_data['repos']:
-        gem_list.update(get_gem_json_paths_from_cached_repo(repo_uri)) 
+        gem_set.update(get_gem_json_paths_from_cached_repo(repo_uri)) 
 
-    return gem_list
+    return gem_set
     
 
 def refresh_repos() -> int:
