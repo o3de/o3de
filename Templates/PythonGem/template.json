@@ -19,6 +19,12 @@
             "isOptional": false
         },
         {
+            "file": "Code/${NameLower}_files.cmake",
+            "origin": "Code/${NameLower}_files.cmake",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
             "file": "Code/${NameLower}_editor_files.cmake",
             "origin": "Code/${NameLower}_editor_files.cmake",
             "isTemplated": true,
