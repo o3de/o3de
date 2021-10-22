@@ -26,7 +26,7 @@ namespace AzToolsFramework
 
             virtual ~ProceduralPrefabSystemComponentInterface() = default;
 
-            virtual AZStd::string Load(AZ::Data::AssetId assetId) = 0;
+            virtual void Track(const AZStd::string& prefabFilePath, TemplateId templateId) = 0;
         };
         
     } // namespace Prefab

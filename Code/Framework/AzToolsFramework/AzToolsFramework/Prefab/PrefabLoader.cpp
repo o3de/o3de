@@ -21,6 +21,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <Prefab/ProceduralPrefabSystemComponentInterface.h>
 
 namespace AzToolsFramework
 {
@@ -184,6 +185,20 @@ namespace AzToolsFramework
 
             TemplateReference newTemplateReference = m_prefabSystemComponentInterface->FindTemplate(newTemplateId);
             Template& newTemplate = newTemplateReference->get();
+
+            if(newTemplate.IsProcedural())
+            {
+                auto proceduralPrefabSystemComponentInterface = AZ::Interface<ProceduralPrefabSystemComponentInterface>::Get();
+
+                if (!proceduralPrefabSystemComponentInterface)
+                {
+                    
+                }
+                else
+                {
+                    proceduralPrefabSystemComponentInterface->Track(relativePath.Native(), newTemplateId);
+                }
+            }
 
             // Mark the file as being in progress.
             progressedFilePathsSet.emplace(relativePath);

@@ -591,8 +591,8 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::ContextMenu_InstantiateProceduralPrefab()
         {
-            AZ::Data::AssetId prefabAssetId;
-            bool hasUserForProceduralPrefabAsset = QueryUserForProceduralPrefabAsset(prefabAssetId);
+            AZStd::string prefabAssetPath;
+            bool hasUserForProceduralPrefabAsset = QueryUserForProceduralPrefabAsset(prefabAssetPath);
 
             if (hasUserForProceduralPrefabAsset)
             {
@@ -619,7 +619,7 @@ namespace AzToolsFramework
                     return;
                 }
 
-                AZStd::string prefabAssetPath = proceduralPrefabSystemComponentInterface->Load(prefabAssetId);
+                //AZStd::string prefabAssetPath = proceduralPrefabSystemComponentInterface->Load(prefabAssetId);
 
                 auto createPrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(prefabAssetPath, parentId, position);
                 if (!createPrefabOutcome.IsSuccess())
@@ -889,7 +889,7 @@ namespace AzToolsFramework
             return true;
         }
 
-        bool PrefabIntegrationManager::QueryUserForProceduralPrefabAsset(AZ::Data::AssetId& outAssetId)
+        bool PrefabIntegrationManager::QueryUserForProceduralPrefabAsset(AZStd::string& outAssetId)
         {
             using namespace AzToolsFramework;
             auto selection = AssetBrowser::AssetSelectionModel::AssetTypeSelection(azrtti_typeid<AZ::Prefab::ProceduralPrefabAsset>());
@@ -905,7 +905,7 @@ namespace AzToolsFramework
             {
                 return false;
             }
-            outAssetId = product->GetAssetId();
+            outAssetId = product->GetRelativePath();
             return true;
         }
 
