@@ -1,5 +1,5 @@
 {
-    "Source" : "DepthOfFieldComposite",
+    "Source" : "DepthOfFieldComposite.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }
