@@ -201,7 +201,7 @@ namespace AzNetworking
 
 namespace AZ
 {
-    AZ_TYPE_INFO_TEMPLATE_WITH_NAME(AzNetworking::QuantizedValues, "QuantizedValues", "{9C60D8BA-9B88-41BE-B4FE-51F617565A82}", AZ_TYPE_INFO_AUTO, AZ_TYPE_INFO_AUTO, AZ_TYPE_INFO_AUTO, AZ_TYPE_INFO_AUTO);
+    AZ_TYPE_INFO_TEMPLATE(AzNetworking::QuantizedValues, "{9C60D8BA-9B88-41BE-B4FE-51F617565A82}", AZ_TYPE_INFO_AUTO, AZ_TYPE_INFO_AUTO, AZ_TYPE_INFO_AUTO, AZ_TYPE_INFO_AUTO);
 }
 
 #include <AzNetworking/Utilities/QuantizedValues.inl>
