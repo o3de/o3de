@@ -1,5 +1,5 @@
 {
-    "Source" : "NewDepthOfFieldTileReduce",
+    "Source" : "NewDepthOfFieldTileReduce.azsl",
 
     "ProgramSettings" :
     {
