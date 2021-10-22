@@ -18,6 +18,7 @@ endif()
 # \arg:DIRECTORIES directories to install
 # \arg:DESTINATION (optional) destination to install the directory to (relative to CMAKE_PREFIX_PATH)
 # \arg:EXCLUDE_PATTERNS (optional) patterns to exclude
+# \arg:COMPONENT (optional) component to use (defaults to CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
 # \arg:VERBATIM (optional) copies the directories as they are, this excludes the default exclude patterns
 #
 # \notes: 
@@ -34,7 +35,7 @@ function(ly_install_directory)
     endif()
 
     set(options VERBATIM)
-    set(oneValueArgs DESTINATION)
+    set(oneValueArgs DESTINATION COMPONENT)
     set(multiValueArgs DIRECTORIES EXCLUDE_PATTERNS)
 
     cmake_parse_arguments(ly_install_directory "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -77,11 +78,21 @@ function(ly_install_directory)
             list(APPEND exclude_patterns PATTERN *.egg-info EXCLUDE)
         endif()
 
-        install(DIRECTORY ${directory}
-            DESTINATION ${ly_install_directory_DESTINATION}
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} # use the deafult for the time being
-            ${exclude_patterns}
-        )
+        if(ly_install_directory_COMPONENT)
+            install(DIRECTORY ${directory}
+                DESTINATION ${ly_install_directory_DESTINATION}
+                COMPONENT ${ly_install_directory_COMPONENT}
+                ${exclude_patterns}
+            )
+        else()
+            install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
+            install(DIRECTORY ${directory}
+                DESTINATION ${ly_install_directory_DESTINATION}
+                COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+                ${exclude_patterns}
+            )
+            install(CODE "endif()")
+        endif()
     endforeach()
 
 endfunction()
@@ -126,10 +137,12 @@ function(ly_install_files)
         set(install_type FILES)
     endif()
 
+    install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
     install(${install_type} ${files}
         DESTINATION ${ly_install_files_DESTINATION}
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} # use the default for the time being
     )
+    install(CODE "endif()")
 
 endfunction()
 
@@ -144,9 +157,11 @@ function(ly_install_run_code CODE)
         return()
     endif()
 
+    install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
     install(CODE ${CODE}
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} # use the default for the time being
     )
+    install(CODE "endif()")
 
 endfunction()
 
@@ -161,8 +176,10 @@ function(ly_install_run_script SCRIPT)
         return()
     endif()
 
+    install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
     install(SCRIPT ${SCRIPT}
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} # use the default for the time being
     )
+    install(CODE "endif()")
 
 endfunction()

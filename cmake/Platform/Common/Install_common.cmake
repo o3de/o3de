@@ -33,14 +33,13 @@ define_property(TARGET PROPERTY LY_INSTALL_GENERATE_RUN_TARGET
 # CPack is able to put the two together by taking Core from one permutation and then taking
 # each permutation.
 
-ly_set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME Core)
+ly_set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME CORE)
 if(LY_MONOLITHIC_GAME)
     set(LY_BUILD_PERMUTATION Monolithic)
-    set(LY_INSTALL_PERMUTATION_COMPONENT Monolithic)
 else()
     set(LY_BUILD_PERMUTATION Default)
-    set(LY_INSTALL_PERMUTATION_COMPONENT Default)
 endif()
+string(TOUPPER ${LY_BUILD_PERMUTATION} LY_INSTALL_PERMUTATION_COMPONENT)
 
 cmake_path(RELATIVE_PATH CMAKE_RUNTIME_OUTPUT_DIRECTORY BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE runtime_output_directory)
 cmake_path(RELATIVE_PATH CMAKE_LIBRARY_OUTPUT_DIRECTORY BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE library_output_directory)
@@ -84,7 +83,8 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                 cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
                 cmake_path(APPEND rel_include_dir "..")
                 cmake_path(NORMAL_PATH rel_include_dir OUTPUT_VARIABLE destination_dir)
-
+                
+                install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
                 install(DIRECTORY ${include_directory}
                     DESTINATION ${destination_dir}
                     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
@@ -95,6 +95,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                         PATTERN *.hxx
                         PATTERN *.jinja # LyAutoGen files
                 )
+                install(CODE "endif()")
             endif()
         endforeach()
     endif()
@@ -337,10 +338,13 @@ function(ly_setup_subdirectory absolute_target_source_dir)
 @cmake_copyright_comment@
 include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 ]] @ONLY)
+    
+    install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
     install(FILES "${target_install_source_dir}/CMakeLists.txt"
         DESTINATION ${relative_target_source_dir}
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
+    install(CODE "endif()")
 
     # 2. For this platform file, create a Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake file 
     #    that will include different configuration permutations (e.g. monolithic vs non-monolithic)
@@ -352,10 +356,12 @@ else()
     include(Platform/${PAL_PLATFORM_NAME}/Default/permutation.cmake)
 endif()
 ]])
+    install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
     install(FILES "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake"
         DESTINATION ${relative_target_source_dir}/Platform/${PAL_PLATFORM_NAME}
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
+    install(CODE "endif()")
 
     # 3. For this configuration permutation, generate a Platform/${PAL_PLATFORM_NAME}/${permutation}/permutation.cmake
     #    that will declare the target and configure it
@@ -389,6 +395,7 @@ function(ly_setup_o3de_install)
     ly_setup_assets()
 
     # Misc
+    install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
     install(FILES
         ${LY_ROOT_FOLDER}/ctest_pytest.ini
         ${LY_ROOT_FOLDER}/LICENSE.txt
@@ -396,10 +403,13 @@ function(ly_setup_o3de_install)
         DESTINATION .
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
+    install(CODE "endif()")
 
     # Inject other build directories
     foreach(external_dir ${LY_INSTALL_EXTERNAL_BUILD_DIRS})
-        install(CODE "include(${external_dir}/cmake_install.cmake)")
+        install(CODE "set(LY_CORE_COMPONENT_ALREADY_INCLUDED TRUE)
+include(${external_dir}/cmake_install.cmake)"
+ALL_COMPONENTS)
     endforeach()
 
     if(COMMAND ly_post_install_steps)
@@ -411,6 +421,7 @@ endfunction()
 #! ly_setup_cmake_install: install the "cmake" folder
 function(ly_setup_cmake_install)
 
+    install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
     install(DIRECTORY "${LY_ROOT_FOLDER}/cmake"
         DESTINATION .
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
@@ -418,11 +429,16 @@ function(ly_setup_cmake_install)
         PATTERN "Findo3de.cmake" EXCLUDE
         REGEX "3rdParty/Platform\/.*\/BuiltInPackages_.*\.cmake" EXCLUDE
     )
+    install(CODE "endif()")
+
     # Connect configuration types
+    install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
     install(FILES "${LY_ROOT_FOLDER}/cmake/install/ConfigurationTypes.cmake"
         DESTINATION cmake
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
+    install(CODE "endif()")
+
     # generate each ConfigurationType_<CONFIG>.cmake file and install it under that configuration
     foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
         string(TOUPPER ${conf} UCONF)
@@ -430,11 +446,13 @@ function(ly_setup_cmake_install)
             "${CMAKE_BINARY_DIR}/cmake/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/ConfigurationTypes_${conf}.cmake"
             @ONLY
         )
+        install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
         install(FILES "${CMAKE_BINARY_DIR}/cmake/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/ConfigurationTypes_${conf}.cmake"
             DESTINATION cmake/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
             COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
             CONFIGURATIONS ${conf}
         )
+        install(CODE "endif()")
     endforeach()
 
     # Transform the LY_EXTERNAL_SUBDIRS list into a json array
@@ -454,12 +472,14 @@ function(ly_setup_cmake_install)
 
     configure_file(${LY_ROOT_FOLDER}/cmake/install/engine.json.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/engine.json @ONLY)
 
+    install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
     install(FILES
             "${LY_ROOT_FOLDER}/CMakeLists.txt"
             "${CMAKE_CURRENT_BINARY_DIR}/cmake/engine.json"
         DESTINATION .
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
+    install(CODE "endif()")
 
     # Collect all Find files that were added with ly_add_external_target_path
     unset(additional_find_files)
@@ -477,6 +497,8 @@ function(ly_setup_cmake_install)
             list(APPEND additional_platform_files "${plat_files}")
         endforeach()
     endforeach()
+
+    install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
     install(FILES ${additional_find_files}
         DESTINATION cmake/3rdParty
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
@@ -485,6 +507,7 @@ function(ly_setup_cmake_install)
         DESTINATION cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
+    install(CODE "endif()")
 
     # Findo3de.cmake file: we generate a different Findo3de.camke file than the one we have in cmake. This one is going to expose all
     # targets that are pre-built
@@ -498,10 +521,12 @@ function(ly_setup_cmake_install)
     endforeach()
 
     configure_file(${LY_ROOT_FOLDER}/cmake/install/Findo3de.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/Findo3de.cmake @ONLY)
+    install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/Findo3de.cmake"
         DESTINATION cmake
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
+    install(CODE "endif()")
 
     # BuiltInPackage_<platform>.cmake: since associations could happen in any cmake file across the engine. We collect
     # all the associations in ly_associate_package and then generate them into BuiltInPackages_<platform>.cmake. This
@@ -518,10 +543,12 @@ function(ly_setup_cmake_install)
     file(GENERATE OUTPUT ${pal_builtin_file}
         CONTENT ${builtinpackages}
     )
+    install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
     install(FILES "${pal_builtin_file}"
         DESTINATION cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
+    install(CODE "endif()")
 
 endfunction()
 
@@ -536,9 +563,12 @@ function(ly_setup_runtime_dependencies)
             string(TOUPPER ${conf} UCONF)
             install(CODE
 "function(ly_copy source_file target_directory)
-    file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
+    cmake_path(GET source_file FILENAME file_name)
+    if(NOT EXISTS ${target_directory}/${file_name})
+        file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
+    endif()
 endfunction()"
-                COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF}
+                COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
             )
         endforeach()
     endif()
@@ -672,17 +702,23 @@ function(ly_setup_assets)
             if (NOT gem_install_dest_dir)
                 cmake_path(SET gem_install_dest_dir .)
             endif()
+
             if(IS_DIRECTORY ${gem_absolute_path})
+                install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
                 install(DIRECTORY "${gem_absolute_path}" 
                     DESTINATION ${gem_install_dest_dir}
                     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
                 )
+                install(CODE "endif()")
             elseif (EXISTS ${gem_absolute_path})
+                install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
                 install(FILES ${gem_absolute_path} 
                     DESTINATION ${gem_install_dest_dir}
                     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
                 )
+                install(CODE "endif()")
             endif()
+
         endforeach()
 
     endforeach()

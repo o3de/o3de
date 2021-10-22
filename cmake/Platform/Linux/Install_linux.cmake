@@ -22,9 +22,11 @@ endfunction()]])
 
 function(ly_install_code_function_override)
     string(CONFIGURE "${ly_copy_template}" ly_copy_function_linux @ONLY)
+    install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
     install(CODE "${ly_copy_function_linux}" 
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
+    install(CODE "endif()")
 endfunction()
 
 include(cmake/Platform/Common/Install_common.cmake)

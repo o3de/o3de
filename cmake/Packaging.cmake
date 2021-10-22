@@ -134,10 +134,12 @@ if(NOT EXISTS ${_cmake_package_dest})
     endif()
 endif()
 
+install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
 install(FILES ${_cmake_package_dest}
     DESTINATION ./Tools/Redistributables/CMake
     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
 )
+install(CODE "endif()")
 
 # the version string and git tags are intended to be synchronized so it should be safe to use that instead
 # of directly calling into git which could get messy in certain scenarios
@@ -158,10 +160,12 @@ if(${CPACK_PACKAGE_VERSION} VERSION_GREATER "0.0.0.0")
     list(POP_FRONT _status _status_code)
 
     if (${_status_code} EQUAL 0 AND EXISTS ${_3rd_party_license_dest})
+        install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
         install(FILES ${_3rd_party_license_dest}
             DESTINATION .
             COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         )
+        install(CODE "endif()")
     else()
         file(REMOVE ${_3rd_party_license_dest})
         message(FATAL_ERROR "Failed to acquire the 3rd Party license manifest file at ${_3rd_party_license_url}.  Error: ${_status}")
@@ -204,76 +208,73 @@ endif()
 # IMPORTANT: required to be included AFTER setting all property overrides
 include(CPack REQUIRED)
 
-function(ly_configure_cpack_component ly_configure_cpack_component_NAME)
-
-    set(options REQUIRED DISABLED)
-    set(oneValueArgs DISPLAY_NAME DESCRIPTION LICENSE_NAME LICENSE_FILE DEPENDS)
-    set(multiValueArgs)
-
-    cmake_parse_arguments(ly_configure_cpack_component "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    unset(component_type)
-
-    if(ly_configure_cpack_component_DISABLED)
-        list(APPEND component_type DISABLED)
-    endif()
-    if(ly_configure_cpack_component_REQUIRED)
-        list(APPEND component_type REQUIRED)
-    endif()
-
-    set(license_name ${DEFAULT_LICENSE_NAME})
-    set(license_file ${DEFAULT_LICENSE_FILE})
-
-    if(ly_configure_cpack_component_LICENSE_NAME AND ly_configure_cpack_component_LICENSE_FILE)
-        set(license_name ${ly_configure_cpack_component_LICENSE_NAME})
-        set(license_file ${ly_configure_cpack_component_LICENSE_FILE})
-    elseif(ly_configure_cpack_component_LICENSE_NAME OR ly_configure_cpack_component_LICENSE_FILE)
-        message(FATAL_ERROR "Invalid argument configuration. Both LICENSE_NAME and LICENSE_FILE must be set for ly_configure_cpack_component")
-    endif()
-
-    cpack_add_component(
-        ${ly_configure_cpack_component_NAME} ${component_type}
-        DISPLAY_NAME ${ly_configure_cpack_component_DISPLAY_NAME}
-        DESCRIPTION ${ly_configure_cpack_component_DESCRIPTION}
-    )
-endfunction()
-
 # configure ALL components here
-ly_configure_cpack_component(
-    ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} REQUIRED
-    DISPLAY_NAME "${PROJECT_NAME}"
-    DESCRIPTION "${PROJECT_NAME} Headers, scripts and common files"
-)
+file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" "
+set(CPACK_COMPONENTS_ALL ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
+set(CPACK_COMPONENT_${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_DISPLAY_NAME \"${PROJECT_NAME}\")
+set(CPACK_COMPONENT_${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_DESCRIPTION \"${PROJECT_NAME} Headers, scripts and common files\")
+set(CPACK_COMPONENT_${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_REQUIRED TRUE)
+set(CPACK_COMPONENT_${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_DISABLED FALSE)
 
-file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" "set(LY_CPACK_COMPONENTS_ALL ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})\n")
+include(CPackComponents.cmake)
+")
+
+# Generate a file (CPackComponents.config) that we will include that defines the components 
+# for this build permutation. This way we can get components for other permutations being passed
+# through LY_INSTALL_EXTERNAL_BUILD_DIRS
+unset(cpack_components_contents)
+
+set(required "FALSE")
+set(disabled "FALSE")
+if(${LY_INSTALL_PERMUTATION_COMPONENT} STREQUAL DEFAULT)
+    set(required "TRUE")
+else()
+    set(disabled "TRUE")
+endif()
+string(APPEND cpack_components_contents "
+list(APPEND CPACK_COMPONENTS_ALL ${LY_INSTALL_PERMUTATION_COMPONENT})
+set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_DISPLAY_NAME \"${PROJECT_NAME} (${LY_BUILD_PERMUTATION})\")
+set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_DESCRIPTION \"${PROJECT_NAME} scripts and common files for ${LY_BUILD_PERMUTATION}\")
+set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_DEPENDS ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
+set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_REQUIRED ${required})
+set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_DISABLED ${disabled})
+")
 
 foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
     string(TOUPPER ${conf} UCONF)
-    unset(flags)
-    if(${conf} STREQUAL profile AND ${LY_BUILD_PERMUTATION} STREQUAL Default)
-        set(flags REQUIRED)
+    set(required "FALSE")
+    set(disabled "FALSE")
+    if(${conf} STREQUAL profile AND ${LY_INSTALL_PERMUTATION_COMPONENT} STREQUAL DEFAULT)
+        set(required "TRUE")
     else()
-        set(flags DISABLED)
+        set(disabled "TRUE")
     endif()
 
     unset(permutation_description)
-    if(${LY_BUILD_PERMUTATION} STREQUAL Monolithic)
-        set(permutation_description " monolithic ")
+    if(${LY_INSTALL_PERMUTATION_COMPONENT} STREQUAL MONOLITHIC)
+        set(permutation_description "monolithic ")
     endif()
 
     # Inject a check to not declare components that have not been built. We are using AzCore since that is a
     # common target that will always be build, in every permutation and configuration
-    file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" 
-        "if(EXISTS \"${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/${conf}/${CMAKE_STATIC_LIBRARY_PREFIX}AzCore${CMAKE_STATIC_LIBRARY_SUFFIX}\")\n")
-    ly_configure_cpack_component(
-        ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF} ${flags}
-        DISPLAY_NAME "${PROJECT_NAME} (${conf})"
-        DESCRIPTION "${PROJECT_NAME} Libraries and Tools in${permutation_description}${conf}"
-    )
-    file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" 
-"list(APPEND LY_CPACK_COMPONENTS_ALL ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF})
-endif()\n")
+    string(APPEND cpack_components_contents "
+if(EXISTS \"${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/${conf}/${CMAKE_STATIC_LIBRARY_PREFIX}AzCore${CMAKE_STATIC_LIBRARY_SUFFIX}\")
+    list(APPEND CPACK_COMPONENTS_ALL ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF})
+    set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_DISPLAY_NAME \"${PROJECT_NAME} (${permutation_description}${conf})\")
+    set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_DESCRIPTION \"${PROJECT_NAME} Libraries and Applications in ${permutation_description}${conf}\")
+    set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_DEPENDS ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF})
+    set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_REQUIRED ${required})
+    set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_DISABLED ${disabled})
+endif()
+")
+endforeach()
+file(WRITE "${CMAKE_BINARY_DIR}/CPackComponents.cmake" ${cpack_components_contents})
 
+# Inject other build directories 
+foreach(external_dir ${LY_INSTALL_EXTERNAL_BUILD_DIRS})
+    file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}"
+        "include(${external_dir}/CPackComponents.cmake)\n"
+    )
 endforeach()
 
 if(LY_INSTALLER_DOWNLOAD_URL)
@@ -286,12 +287,3 @@ if(LY_INSTALLER_DOWNLOAD_URL)
         ALL
     )
 endif()
-
-# Inject other build directories
-foreach(external_dir ${LY_INSTALL_EXTERNAL_BUILD_DIRS})
-    file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}"
-        "include(${external_dir}/CPackConfig.cmake)\n"
-    )
-endforeach()
-
-file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" "set(CPACK_COMPONENTS_ALL \${LY_CPACK_COMPONENTS_ALL})\n")
