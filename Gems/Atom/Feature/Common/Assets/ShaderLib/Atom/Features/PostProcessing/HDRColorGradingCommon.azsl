@@ -69,14 +69,18 @@ float3 ColorGradeSaturation (float3 frameColor, float control)
 float3 ColorGradeWhiteBalance(float3 frameColor, float kelvin, float tint, float luminancePreservation)
 {
     const float3 kColor = TransformColor(KelvinToRgb(kelvin), ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
-    const float luminance = Luminance(frameColor);
+    const float luminance = CalculateLuminance(frameColor, ColorSpaceId::ACEScg);
 
-    float3 adjustedColor = frameColor.rgb * kColor.rgb;             // Apply Kelvin color
-    adjustedColor.g += tint * 0.001;                                // Apply tint
+    // Apply Kelvin color and tint and calculate the new luminance
+    float3 adjustedColor = frameColor.rgb * kColor.rgb;
+    adjustedColor.g = max(0.0, adjustedColor.g + tint * 0.001);
+    const float adjustedLuminance = CalculateLuminance(adjustedColor, ColorSpaceId::ACEScg);
 
-    const float3 resHsl = RgbToHsl(adjustedColor);               
-    const float3 resRgb = HslToRgb(float3(resHsl.xy, luminance));   // Preserve luminance
-    return lerp(adjustedColor, resRgb, luminancePreservation);
+    // Adjust the color based on the difference in luminance.
+    const float luminanceDifferenceRatio = luminance / adjustedLuminance;
+    const float3 adjustedColorLumPreserved = adjustedColor *  luminanceDifferenceRatio;
+
+    return lerp(adjustedColor, adjustedColorLumPreserved, luminancePreservation);
 }
 
 // pow(f, e) won't work if f is negative, or may cause inf/NAN.
