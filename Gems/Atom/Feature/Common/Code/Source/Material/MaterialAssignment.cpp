@@ -137,17 +137,48 @@ namespace AZ
 
             if (m_materialInstance->CanCompile())
             {
+                AZStd::vector<AZStd::pair<Name, Name>> renamedProperties;
+
                 for (const auto& propertyPair : m_propertyOverrides)
                 {
                     if (!propertyPair.second.empty())
                     {
-                        const auto& materialPropertyIndex = m_materialInstance->FindPropertyIndex(propertyPair.first);
+                        RPI::MaterialPropertyIndex materialPropertyIndex = m_materialInstance->FindPropertyIndex(propertyPair.first);
+
+                        // If we didn't find the name, check to see if there was a rename that should be used.
+                        if (materialPropertyIndex.IsNull())
+                        {
+                            Name propertyId = propertyPair.first;
+
+                            if (m_materialInstance->GetAsset()->GetMaterialTypeAsset()->ApplyPropertyRenames(propertyId))
+                            {
+                                renamedProperties.emplace_back(propertyPair.first, propertyId);
+                                
+                                // We should be able to find the property now, using the new name
+                                materialPropertyIndex = m_materialInstance->FindPropertyIndex(propertyId);
+
+                                AZ_Warning("MaterialAssignment", false,
+                                    "Material property '%s' has been renamed to '%s', and a material override references the old name. Save the level or prefab to permanently apply this change.",
+                                    propertyPair.first.GetCStr(),
+                                    propertyId.GetCStr());
+                            }
+                        }
+
                         if (!materialPropertyIndex.IsNull())
                         {
                             m_materialInstance->SetPropertyValue(
                                 materialPropertyIndex, AZ::RPI::MaterialPropertyValue::FromAny(propertyPair.second));
                         }
                     }
+                }
+
+                // Now that we're done looping over all the overrides, it's safe to apply any renames that were scheduled
+                for (auto& pair : renamedProperties)
+                {
+                    const Name& oldName = pair.first;
+                    const Name& newName = pair.second;
+                    m_propertyOverrides[newName] = m_propertyOverrides[oldName];
+                    m_propertyOverrides.erase(oldName);
                 }
 
                 return m_materialInstance->Compile();

@@ -1041,5 +1041,88 @@ namespace UnitTest
         EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[1].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderB"}));
     }
 
+    TEST_F(MaterialTypeAssetTests, ApplyPropertyRenames)
+    {
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        auto addRenameAction = [](MaterialVersionUpdate& versionUpdate, const char* from, const char* to)
+        {
+            versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction(
+                {
+                    Name{ from },
+                    Name{ to }
+                }));
+        };
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        // Version updates
+        materialTypeCreator.SetVersion(10);
+
+        MaterialVersionUpdate versionUpdate2(2);
+        addRenameAction(versionUpdate2, "general.fooA", "general.fooB");
+        materialTypeCreator.AddVersionUpdate(versionUpdate2);
+
+        MaterialVersionUpdate versionUpdate4(4);
+        addRenameAction(versionUpdate4, "general.barA", "general.barB");
+        materialTypeCreator.AddVersionUpdate(versionUpdate4);
+
+        MaterialVersionUpdate versionUpdate6(6);
+        addRenameAction(versionUpdate6, "general.fooB", "general.fooC");
+        addRenameAction(versionUpdate6, "general.barB", "general.barC");
+        materialTypeCreator.AddVersionUpdate(versionUpdate6);
+
+        MaterialVersionUpdate versionUpdate7(7);
+        addRenameAction(versionUpdate7, "general.bazA", "otherGroup.bazB");
+        materialTypeCreator.AddVersionUpdate(versionUpdate7);
+        
+        materialTypeCreator.BeginMaterialProperty(Name{ "general.fooC" }, MaterialPropertyDataType::Bool);
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{ "general.barC" }, MaterialPropertyDataType::Bool);
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{ "otherGroup.bazB" }, MaterialPropertyDataType::Bool);
+        materialTypeCreator.EndMaterialProperty();
+
+        EXPECT_TRUE(materialTypeCreator.End(materialTypeAsset));
+
+        AZ::Name propertyId;
+
+        propertyId = AZ::Name{"doesNotExist"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "doesNotExist");
+
+        propertyId = AZ::Name{"general.fooA"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "general.fooC");
+
+        propertyId = AZ::Name{"general.fooB"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "general.fooC");
+
+        propertyId = AZ::Name{"general.fooC"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "general.fooC");
+
+        propertyId = AZ::Name{"general.barA"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "general.barC");
+
+        propertyId = AZ::Name{"general.barB"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "general.barC");
+
+        propertyId = AZ::Name{"general.barC"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "general.barC");
+
+        propertyId = AZ::Name{"general.bazA"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "otherGroup.bazB");
+
+        propertyId = AZ::Name{"otherGroup.bazB"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "otherGroup.bazB");
+    }
 }
 
