@@ -409,7 +409,7 @@ namespace O3DE::ProjectManager
         connect( addGemButton, &QPushButton::clicked, [this]() { emit addGem();});
         hLayout->addWidget(addGemButton);
 
-        CartButton* cartButton = new CartButton(gemModel);
+        CartButton* cartButton = new CartButton(gemModel, downloadController);
         hLayout->addWidget(cartButton);
     }
 
