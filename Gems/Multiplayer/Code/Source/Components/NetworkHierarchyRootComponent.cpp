@@ -325,36 +325,36 @@ namespace Multiplayer
     {
         if (newHierarchyRoot)
         {
-            m_rootEntity = newHierarchyRoot;
-
-            if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
+            if (m_rootEntity != newHierarchyRoot)
             {
-                NetworkHierarchyChildComponentController* controller = static_cast<NetworkHierarchyChildComponentController*>(GetController());
-
-                const NetEntityId netRootId = GetNetworkEntityManager()->GetNetEntityIdById(m_rootEntity->GetId());
-                controller->SetHierarchyRoot(netRootId);
-            }
-
-            GetNetBindComponent()->SetOwningConnectionId(m_rootEntity->FindComponent<NetBindComponent>()->GetOwningConnectionId());
-        }
-        else
-        {
-            if (previousHierarchyRoot && m_rootEntity == previousHierarchyRoot || !previousHierarchyRoot)
-            {
-                m_rootEntity = nullptr;
+                m_rootEntity = newHierarchyRoot;
 
                 if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
                 {
-                    NetworkHierarchyChildComponentController* controller = static_cast<NetworkHierarchyChildComponentController*>(GetController());
-
-                    controller->SetHierarchyRoot(InvalidNetEntityId);
+                    NetworkHierarchyRootComponentController* controller = static_cast<NetworkHierarchyRootComponentController*>(GetController());
+                    const NetEntityId netRootId = GetNetworkEntityManager()->GetNetEntityIdById(m_rootEntity->GetId());
+                    controller->SetHierarchyRoot(netRootId);
                 }
 
-                GetNetBindComponent()->SetOwningConnectionId(m_previousOwningConnectionId);
-
-                // We lost the parent hierarchical entity, so as a root we need to re-build our own hierarchy.
-                RebuildHierarchy();
+                GetNetBindComponent()->SetOwningConnectionId(m_rootEntity->FindComponent<NetBindComponent>()->GetOwningConnectionId());
+                m_networkHierarchyChangedEvent.Signal(m_rootEntity->GetId());
             }
+        }
+        else if ((previousHierarchyRoot && m_rootEntity == previousHierarchyRoot) || !previousHierarchyRoot)
+        {
+            m_rootEntity = nullptr;
+
+            if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
+            {
+                NetworkHierarchyRootComponentController* controller = static_cast<NetworkHierarchyRootComponentController*>(GetController());
+                controller->SetHierarchyRoot(InvalidNetEntityId);
+            }
+
+            GetNetBindComponent()->SetOwningConnectionId(m_previousOwningConnectionId);
+            m_networkHierarchyLeaveEvent.Signal();
+
+            // We lost the parent hierarchical entity, so as a root we need to re-build our own hierarchy.
+            RebuildHierarchy();
         }
     }
 

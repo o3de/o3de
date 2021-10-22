@@ -148,25 +148,21 @@ namespace Multiplayer
                 m_networkHierarchyChangedEvent.Signal(m_rootEntity->GetId());
             }
         }
-        else
+        else if ((previousHierarchyRoot && m_rootEntity == previousHierarchyRoot) || !previousHierarchyRoot)
         {
-            if (m_rootEntity == previousHierarchyRoot || !previousHierarchyRoot)
+            m_rootEntity = nullptr;
+
+            if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
             {
-                m_rootEntity = nullptr;
-
-                if (HasController() && GetNetBindComponent()->GetNetEntityRole() == NetEntityRole::Authority)
-                {
-                    NetworkHierarchyChildComponentController* controller = static_cast<NetworkHierarchyChildComponentController*>(GetController());
-                    controller->SetHierarchyRoot(InvalidNetEntityId);
-                }
-
-                GetNetBindComponent()->SetOwningConnectionId(m_previousOwningConnectionId);
-                m_networkHierarchyLeaveEvent.Signal();
-
-                NotifyChildrenHierarchyDisbanded();
+                NetworkHierarchyChildComponentController* controller = static_cast<NetworkHierarchyChildComponentController*>(GetController());
+                controller->SetHierarchyRoot(InvalidNetEntityId);
             }
-        }
 
+            GetNetBindComponent()->SetOwningConnectionId(m_previousOwningConnectionId);
+            m_networkHierarchyLeaveEvent.Signal();
+
+            NotifyChildrenHierarchyDisbanded();
+        }
     }
 
     void NetworkHierarchyChildComponent::SetOwningConnectionId(AzNetworking::ConnectionId connectionId)
