@@ -223,49 +223,6 @@ namespace RedirectOutput
     }
 } // namespace RedirectOutput
 
-namespace O3DEProjectManagerPy
-{
-    using DownloadProgressFunc = AZStd::function<void(int)>;
-    DownloadProgressFunc currentProgressCallback;
-    bool requestCancelDownload = false;
-
-    static PyObject* CLICancelDownload(PyObject* /*self*/, PyObject* /*args*/)
-    {
-        if (requestCancelDownload)
-        {
-            return Py_True;
-        }
-        else
-        {
-            return Py_False;
-        }
-    }
-
-    static PyObject* CLIDownloadProgress(PyObject* /*self*/, PyObject* args)
-    {
-        int progress_percentage = 0;
-        if (!PyArg_ParseTuple(args, "i", &progress_percentage))
-            return NULL;
-        if (currentProgressCallback)
-        {
-            currentProgressCallback(progress_percentage);
-        }
-
-        Py_RETURN_NONE;
-    }
-
-    static PyMethodDef O3DEPMPyMethods[] = { { "download_progress", CLIDownloadProgress, METH_VARARGS, "Used to call back to the UI to inform of download progress." },
-                                             { "request_cancel_download", CLICancelDownload, METH_NOARGS, "Returns that the UI is requesting that the current download be cancelled." },
-                                             { NULL, NULL, 0, NULL } };
-
-    static PyModuleDef O3DEPMPyModule = { PyModuleDef_HEAD_INIT, "o3de_projectmanager", NULL, -1, O3DEPMPyMethods, NULL, NULL, NULL, NULL };
-
-    static PyObject* PyInit_O3DEPMPy(void)
-    {
-        return PyModule_Create(&O3DEPMPyModule);
-    }
-} // namespace O3DEProjectManagerPy
-
 
 namespace O3DE::ProjectManager
 {
@@ -314,7 +271,6 @@ namespace O3DE::ProjectManager
         AZ_TracePrintf("python", "Py_GetProgramFullPath=%ls \n", Py_GetProgramFullPath());
 
         PyImport_AppendInittab("azlmbr_redirect", RedirectOutput::PyInit_RedirectOutput);
-        PyImport_AppendInittab("o3de_projectmanager", &O3DEProjectManagerPy::PyInit_O3DEPMPy);
 
         try
         {
@@ -1126,20 +1082,26 @@ namespace O3DE::ProjectManager
     {
         // This process is currently limited to download a single gem at a time.
         bool downloadSucceeded = false;
-        O3DEProjectManagerPy::currentProgressCallback = gemProgressCallback;
-        O3DEProjectManagerPy::requestCancelDownload = false;
+
+        m_requestCancelDownload = false;
         auto result = ExecuteWithLockErrorHandling(
             [&]
             {
                 auto downloadResult = m_download.attr("download_gem")(
                     QString_To_Py_String(gemName), // gem name
                     pybind11::none(), // destination path
-                    false// skip auto register
+                    false, // skip auto register
+                    pybind11::cpp_function(
+                        [this, gemProgressCallback](int progress)
+                        {
+                            gemProgressCallback(progress);
+
+                            return m_requestCancelDownload;
+                        }) // Callback for download progress and cancelling
                     );
                 downloadSucceeded = (downloadResult.cast<int>() == 0);
             });
 
-        O3DEProjectManagerPy::currentProgressCallback = nullptr;
 
         if (!result.IsSuccess())
         {
@@ -1155,6 +1117,6 @@ namespace O3DE::ProjectManager
 
     void PythonBindings::CancelDownload()
     {
-        O3DEProjectManagerPy::requestCancelDownload = true;
+        m_requestCancelDownload = true;
     }
 }

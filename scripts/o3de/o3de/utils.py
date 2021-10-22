@@ -16,10 +16,6 @@ import shutil
 import urllib.request
 import logging
 import zipfile
-try:
-    import o3de_projectmanager
-except ImportError:
-    pass
 
 logger = logging.getLogger()
 logging.basicConfig()
@@ -38,14 +34,13 @@ def copyfileobj(fsrc, fdst, callback, length=0):
 
     copied = 0
     while True:
-        if o3de_projectmanager and o3de_projectmanager.request_cancel_download():
-            return 1
         buf = fsrc_read(length)
         if not buf:
             break
         fdst_write(buf)
         copied += len(buf)
-        callback(copied)
+        if callback(copied):
+            return 1
     return 0
 
 def validate_identifier(identifier: str) -> bool:
@@ -122,11 +117,12 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
-def download_file(parsed_uri, download_path: pathlib.Path) -> int:
+def download_file(parsed_uri, download_path: pathlib.Path, download_progress_callback = None) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_path: location path on disk to download file
     """
+    logger.warn(f'File about to downloaded to {download_path}.')
     if download_path.is_file():
         logger.warn(f'File already downloaded to {download_path}.')
     elif parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
@@ -137,8 +133,8 @@ def download_file(parsed_uri, download_path: pathlib.Path) -> int:
             except KeyError:
                 pass
             def download_progress(blocks):
-                if o3de_projectmanager and download_file_size:
-                    o3de_projectmanager.download_progress(int(blocks/int(download_file_size) * 100))
+                if download_progress_callback and download_file_size:
+                    return download_progress_callback(int(blocks/int(download_file_size) * 100))
             with download_path.open('wb') as f:
                 download_cancelled = copyfileobj(s, f, download_progress)
                 if download_cancelled:
@@ -152,12 +148,12 @@ def download_file(parsed_uri, download_path: pathlib.Path) -> int:
     return 0
 
 
-def download_zip_file(parsed_uri, download_zip_path: pathlib.Path) -> int:
+def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, download_progress_callback = None) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_zip_path: path to output zip file
     """
-    download_file_result = download_file(parsed_uri, download_zip_path)
+    download_file_result = download_file(parsed_uri, download_zip_path, download_progress_callback)
     if download_file_result != 0:
         return download_file_result
 
