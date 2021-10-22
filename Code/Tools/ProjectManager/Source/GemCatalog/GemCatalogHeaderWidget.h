@@ -87,7 +87,7 @@ namespace O3DE::ProjectManager
         void ReinitForProject();
 
     signals:
-        void addGem();
+        void AddGem();
         void OpenGemsRepo();
         
     private:

@@ -94,7 +94,7 @@ namespace O3DE::ProjectManager
 
         connect(m_gemModel, &GemModel::dataChanged, m_filterWidget, &GemFilterWidget::ResetGemStatusFilter);
         connect(
-            m_headerWidget, &GemCatalogHeaderWidget::addGem,
+            m_headerWidget, &GemCatalogHeaderWidget::AddGem,
             [&]()
             {
                 EngineInfo engineInfo;
