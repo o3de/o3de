@@ -301,6 +301,8 @@ set(FILES
     Spawnable/SpawnableMonitor.cpp
     Spawnable/SpawnableSystemComponent.h
     Spawnable/SpawnableSystemComponent.cpp
+    SurfaceData/SurfaceData.h
+    SurfaceData/SurfaceData.cpp
     Terrain/TerrainDataRequestBus.h
     Terrain/TerrainDataRequestBus.cpp
     Thermal/ThermalInfo.h
