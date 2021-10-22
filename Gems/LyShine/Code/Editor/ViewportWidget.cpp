@@ -706,11 +706,19 @@ bool ViewportWidget::event(QEvent* ev)
         // viewport the focus and activate the space bar when another widget has the focus. Once the shortcut
         // is pressed and focus is given to the viewport, the viewport takes over handling the space bar via
         // the KeyPress/KeyRelease events
-        if (key == Qt::Key_Space)
+        switch (key)
+        {
+        case Qt::Key_Space:
+        case Qt::Key_Up:
+        case Qt::Key_Down:
+        case Qt::Key_Left:
+        case Qt::Key_Right:
         {
             ev->accept();
             return true;
         }
+        break;
+        };
 
         UiEditorMode editorMode = m_editorWindow->GetEditorMode();
         if (editorMode == UiEditorMode::Preview)
@@ -731,7 +739,7 @@ bool ViewportWidget::event(QEvent* ev)
             };
         }
     }
-    
+
     bool result = RenderViewportWidget::event(ev);
     return result;
 }
@@ -742,11 +750,24 @@ void ViewportWidget::keyPressEvent(QKeyEvent* event)
     if (editorMode == UiEditorMode::Edit)
     {
         // in Edit mode just send input to ViewportInteraction
-        bool handled = m_viewportInteraction->KeyPressEvent(event);
-        if (!handled)
+        if (m_viewportInteraction->KeyPressEvent(event))
         {
-            RenderViewportWidget::keyPressEvent(event);
+            return;
         }
+
+        if (auto key = event->key(); Qt::Key_Left <= key && key <= Qt::Key_Down)
+        {
+            ViewportInteraction::NudgeSpeed speed =
+                (event->modifiers() & Qt::ShiftModifier) ? ViewportInteraction::NudgeSpeed::Fast : ViewportInteraction::NudgeSpeed::Slow;
+
+            ViewportInteraction::NudgeDirection direction =
+                static_cast<ViewportInteraction::NudgeDirection>(key - static_cast<int>(Qt::Key_Left));
+
+            m_viewportInteraction->Nudge(direction, speed);
+            return;
+        }
+
+        RenderViewportWidget::keyPressEvent(event);
     }
     else // if (editorMode == UiEditorMode::Preview)
     {
@@ -1259,6 +1280,7 @@ void ViewportWidget::SetupShortcuts()
             &QAction::triggered,
             [this]()
         {
+            setFocus();
             m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Up, ViewportInteraction::NudgeSpeed::Slow);
         });
         addAction(action);
@@ -1272,6 +1294,7 @@ void ViewportWidget::SetupShortcuts()
             &QAction::triggered,
             [this]()
         {
+            setFocus();
             m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Up, ViewportInteraction::NudgeSpeed::Fast);
         });
         addAction(action);
@@ -1281,10 +1304,12 @@ void ViewportWidget::SetupShortcuts()
     {
         QAction* action = new QAction("Down", this);
         action->setShortcut(QKeySequence(Qt::Key_Down));
+        action->setAutoRepeat(true);
         QObject::connect(action,
             &QAction::triggered,
             [this]()
         {
+            setFocus();
             m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Down, ViewportInteraction::NudgeSpeed::Slow);
         });
         addAction(action);
@@ -1298,6 +1323,7 @@ void ViewportWidget::SetupShortcuts()
             &QAction::triggered,
             [this]()
         {
+            setFocus();
             m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Down, ViewportInteraction::NudgeSpeed::Fast);
         });
         addAction(action);
@@ -1311,6 +1337,7 @@ void ViewportWidget::SetupShortcuts()
             &QAction::triggered,
             [this]()
         {
+            setFocus();
             m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Left, ViewportInteraction::NudgeSpeed::Slow);
         });
         addAction(action);
@@ -1324,6 +1351,7 @@ void ViewportWidget::SetupShortcuts()
             &QAction::triggered,
             [this]()
         {
+            setFocus();
             m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Left, ViewportInteraction::NudgeSpeed::Fast);
         });
         addAction(action);
@@ -1337,6 +1365,7 @@ void ViewportWidget::SetupShortcuts()
             &QAction::triggered,
             [this]()
         {
+            setFocus();
             m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Right, ViewportInteraction::NudgeSpeed::Slow);
         });
         addAction(action);
@@ -1350,6 +1379,7 @@ void ViewportWidget::SetupShortcuts()
             &QAction::triggered,
             [this]()
         {
+            setFocus();
             m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Right, ViewportInteraction::NudgeSpeed::Fast);
         });
         addAction(action);
