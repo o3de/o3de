@@ -105,6 +105,9 @@ set(_raw_text_license [[
         <Text Name="EulaAcceptance" X="42" Y="-56" Width="-42" Height="18" TabStop="yes" FontId="1" HideWhenDisabled="yes">#(loc.InstallEulaAcceptance)</Text>
 ]])
 
+# if we are doing an offline installer, there is a limit in size the wix tooling can handle and produces
+# issues for our current sizes. If the installer is offline, disable the curstom wix generator generating
+# a msi instead.
 if(LY_INSTALLER_DOWNLOAD_URL)
     set(WIX_THEME_WARNING_IMAGE ${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/warning.png)
 
