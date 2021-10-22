@@ -118,6 +118,7 @@ namespace Multiplayer
     {
         AzFramework::GameEntityContextEventBus::Handler::BusConnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
+        MultiplayerEditorServerRequestBus::Handler::BusConnect();
         AZ::Interface<IMultiplayer>::Get()->AddServerAcceptanceReceivedHandler(m_serverAcceptanceReceivedHandler);
     }
 
@@ -125,6 +126,7 @@ namespace Multiplayer
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AzFramework::GameEntityContextEventBus::Handler::BusDisconnect();
+        MultiplayerEditorServerRequestBus::Handler::BusDisconnect();
     }
 
     void MultiplayerEditorSystemComponent::NotifyRegisterViews()
@@ -154,8 +156,8 @@ namespace Multiplayer
                 m_serverProcess->TerminateProcess(0);
                 m_serverProcess = nullptr;
             }
-            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
-            if (editorNetworkInterface)
+
+            if (INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName)))
             {
                 editorNetworkInterface->Disconnect(m_editorConnId, AzNetworking::DisconnectReason::TerminatedByClient);
             }
@@ -252,62 +254,48 @@ namespace Multiplayer
             }
 
             const AZ::CVarFixedString remoteAddress = editorsv_serveraddr;
-            if (editorsv_launch && LocalHost == remoteAddress)
+            if (editorsv_launch)
             {
+                if (LocalHost != remoteAddress)
+                {
+                    AZ_Warning(
+                        "MultiplayerEditor", false,
+                        "Launching EditorServer skipped because incompatible cvars. editorsv_launch=true, meaning you want to launch an editor-server on this machine, but the editorsv_serveraddr is %s instead of the local address (127.0.0.1)."
+                        "Please either set editorsv_launch=false and keep the remote editor-server, or set editorsv_launch=true and editorsv_serveraddr=127.0.0.1.",
+                        remoteAddress.c_str())
+                    return;
+                }
+                
+                // Begin listening so we know when the editor-server being ready for us
+                INetworkInterface* editorNetworkInterface =
+                    AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
+                AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.");
+                editorNetworkInterface->Listen(editorsv_port);
+
+                // Launch the editor-server
                 m_serverProcess = LaunchEditorServer();
-
-                //AZ_Warning(
-                //    "MultiplayerEditor", false,
-                //    "Just launched LaunchEditorServer. About to sleep!")
-
-                //AZStd::this_thread::sleep_for(AZStd::chrono::seconds(10));
-
-                //AZ_Warning("MultiplayerEditor", false, "Just launched LaunchEditorServer. Done sleeping!")
-
             }
-
-            // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
-            AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
-
-            // Now that the server has launched, attempt to connect the NetworkInterface         
-            INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
-            AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.");
-            m_editorConnId = editorNetworkInterface->Connect(
-                AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));
-
-            if (m_editorConnId == AzNetworking::InvalidConnectionId)
+            else
             {
-                AZ_Warning(
-                    "MultiplayerEditor", false,
-                    "Could not connect to server targeted by Editor. If using a local server, check that it's built and editorsv_launch is true.");
-                return;
-            }
+                // Editorsv_launch=false, so we're expecting an editor-server already exists.
+                // Connect to the editor-server and then send the EditorServerInit packet.
+                INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
+                AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")
+                
+                m_editorConnId = editorNetworkInterface->Connect(AzNetworking::IpAddress(remoteAddress.c_str(), editorsv_port, AzNetworking::ProtocolType::Tcp));
 
-            // Read the buffer into EditorServerInit packets until we've flushed the whole thing
-            byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
-
-            while (byteStream.GetCurPos() < byteStream.GetLength())
-            {
-                MultiplayerEditorPackets::EditorServerInit packet;
-                auto& outBuffer = packet.ModifyAssetData();
-
-                // Size the packet's buffer appropriately
-                size_t readSize = outBuffer.GetCapacity();
-                size_t byteStreamSize = byteStream.GetLength() - byteStream.GetCurPos();
-                if (byteStreamSize < readSize)
+                if (m_editorConnId == AzNetworking::InvalidConnectionId)
                 {
-                    readSize = byteStreamSize;
+                    AZ_Warning(
+                        "MultiplayerEditor", false,
+                        "Editor game-mode multiplayer failed! Could not connect to an editor-server. editorsv_launch is false so we're assuming you're running your own editor-server at editorsv_serveraddr(%s) on editorsv_port(%i)."
+                        "Either set editorsv_launch=true so the editor launches an editor-server for you, or launch your own editor-server by hand before entering game-mode. Remember editor-servers must use editorsv_isDedicated=true.",
+                        remoteAddress.c_str(),
+                        static_cast < uint16_t>(editorsv_port))
+                    return;
                 }
 
-                outBuffer.Resize(readSize);
-                byteStream.Read(readSize, outBuffer.GetBuffer());
-
-                // If we've run out of buffer, mark that we're done
-                if (byteStream.GetCurPos() == byteStream.GetLength())
-                {
-                    packet.SetLastUpdate(true);
-                }
-                editorNetworkInterface->SendReliablePacket(m_editorConnId, packet);
+                SendEditorServerInitPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
             }
         }
     }
@@ -322,6 +310,65 @@ namespace Multiplayer
         // In normal game clients SendReadyForEntityUpdates will be enabled once the appropriate level's root spawnable is loaded,
         // but since we're in Editor, we're already in the level.
         AZ::Interface<IMultiplayer>::Get()->SendReadyForEntityUpdates(true);
+    }
+
+    void MultiplayerEditorSystemComponent::SendEditorServerInitPacket(AzNetworking::IConnection* connection)
+    {
+        const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        if (!prefabEditorEntityOwnershipInterface)
+        {
+            AZ_Error("MultiplayerEditor", prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface unavailable")
+            return;
+        }
+
+        const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& assetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
+
+        AZStd::vector<uint8_t> buffer;
+        AZ::IO::ByteContainerStream byteStream(&buffer);
+
+        // Serialize Asset information and AssetData into a potentially large buffer
+        for (const auto& asset : assetData)
+        {
+            AZ::Data::AssetId assetId = asset.GetId();
+            AZStd::string assetHint = asset.GetHint();
+            auto hintSize = aznumeric_cast<uint32_t>(assetHint.size());
+
+            byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<void*>(&assetId));
+            byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
+            byteStream.Write(assetHint.size(), assetHint.data());
+            AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, asset.GetData(), asset.GetData()->GetType());
+        }
+
+        // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
+         AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
+
+        // Read the buffer into EditorServerInit packets until we've flushed the whole thing
+        byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
+
+        while (byteStream.GetCurPos() < byteStream.GetLength())
+        {
+            MultiplayerEditorPackets::EditorServerInit editorServerInitPacket;
+            auto& outBuffer = editorServerInitPacket.ModifyAssetData();
+
+            // Size the packet's buffer appropriately
+            size_t readSize = outBuffer.GetCapacity();
+            const size_t byteStreamSize = byteStream.GetLength() - byteStream.GetCurPos();
+            if (byteStreamSize < readSize)
+            {
+                readSize = byteStreamSize;
+            }
+
+            outBuffer.Resize(readSize);
+            byteStream.Read(readSize, outBuffer.GetBuffer());
+
+            // If we've run out of buffer, mark that we're done
+            if (byteStream.GetCurPos() == byteStream.GetLength())
+            {
+                editorServerInitPacket.SetLastUpdate(true);
+            }
+
+            connection->SendReliablePacket(editorServerInitPacket);
+        }
     }
 
     void MultiplayerEditorSystemComponent::EnterGameMode()
