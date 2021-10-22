@@ -39,7 +39,14 @@ namespace AzFramework::SurfaceData
     {
         bool operator()(const SurfaceTagWeight& tagWeight1, const SurfaceTagWeight& tagWeight2) const
         {
-            if (!AZ::IsClose(tagWeight1.m_weight, tagWeight2.m_weight))
+            // Return a deterministic sort order for surface tags from highest to lowest weight, with the surface types sorted
+            // in a predictable order when the weights are equal.  The surface type sort order is meaningless since it is sorting CRC
+            // values, it's really just important for it to be stable.
+            // For the floating-point weight comparisons we use exact instead of IsClose value comparisons for a similar reason - we
+            // care about being sorted highest to lowest, but there's no inherent meaning in sorting surface types with *similar* weights
+            // together.
+
+            if (tagWeight1.m_weight != tagWeight2.m_weight)
             {
                 return tagWeight1.m_weight > tagWeight2.m_weight;
             }
