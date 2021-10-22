@@ -139,7 +139,7 @@ namespace PhysX
     {
         Physics::HeightfieldShapeConfiguration& configuration = static_cast<Physics::HeightfieldShapeConfiguration&>(*m_shapeConfig.second);
 
-        Utils::InitHeightfieldShapeConfiguration(GetEntityId(), configuration);
+        configuration = Utils::CreateHeightfieldShapeConfiguration(GetEntityId());
     }
 
     void HeightfieldColliderComponent::RefreshHeightfield()
