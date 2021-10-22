@@ -92,7 +92,7 @@ namespace O3DE::ProjectManager
         virtual AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) = 0;
 
         /**
-         * Registers the gem to the specified project, or to the engine if no project path is given
+         * Registers the gem to the specified project, or to the o3de_manifest.json if no project path is given
          * @param gemPath the path to the gem
          * @param projectPath the path to the project. If empty, will register the external path in o3de_manifest.json 
          * @return An outcome with the success flag as well as an error message in case of a failure.
