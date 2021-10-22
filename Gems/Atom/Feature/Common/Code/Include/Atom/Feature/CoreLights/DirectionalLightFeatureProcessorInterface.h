@@ -160,6 +160,9 @@ namespace AZ
 
             //! Reduces acne by applying a small amount of bias along shadow-space z.
             virtual void SetShadowBias(LightHandle handle, float bias) = 0;
+
+            //! Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            virtual void SetNormalShadowBias(LightHandle handle, float normalShadowBias) = 0;
         };
     } // namespace Render
 } // namespace AZ

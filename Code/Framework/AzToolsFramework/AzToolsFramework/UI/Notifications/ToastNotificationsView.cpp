@@ -177,4 +177,14 @@ namespace AzToolsFramework
             DisplayQueuedNotification();
         }
     }
+
+    void ToastNotificationsView::SetOffset(const QPoint& offset)
+    {
+        m_offset = offset;
+    }
+
+    void ToastNotificationsView::SetAnchorPoint(const QPointF& anchorPoint)
+    {
+        m_anchorPoint = anchorPoint;
+    }
 }
