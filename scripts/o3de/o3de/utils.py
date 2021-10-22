@@ -121,8 +121,8 @@ def download_file(parsed_uri, download_path: pathlib.Path, download_progress_cal
     """
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_path: location path on disk to download file
+    :download_progress_callback: callback called with the download progress as a percentage, returns true to request to cancel the download
     """
-    logger.warn(f'File about to downloaded to {download_path}.')
     if download_path.is_file():
         logger.warn(f'File already downloaded to {download_path}.')
     elif parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
@@ -135,6 +135,7 @@ def download_file(parsed_uri, download_path: pathlib.Path, download_progress_cal
             def download_progress(blocks):
                 if download_progress_callback and download_file_size:
                     return download_progress_callback(int(blocks/int(download_file_size) * 100))
+                return False
             with download_path.open('wb') as f:
                 download_cancelled = copyfileobj(s, f, download_progress)
                 if download_cancelled:
