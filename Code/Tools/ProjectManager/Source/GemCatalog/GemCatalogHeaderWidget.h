@@ -15,13 +15,15 @@
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <TagWidget.h>
+#include <DownloadController.h>
+
 #include <QFrame>
 #include <QLabel>
 #include <QDialog>
 #include <QMoveEvent>
 #include <QHideEvent>
 #include <QVBoxLayout>
-#include <DownloadController.h>
+#include <QAction>
 #endif
 
 namespace O3DE::ProjectManager
@@ -84,8 +86,13 @@ namespace O3DE::ProjectManager
 
         void ReinitForProject();
 
+    signals:
+        void OpenGemsRepo();
+
     private:
         AzQtComponents::SearchLineEdit* m_filterLineEdit = nullptr;
         inline constexpr static int s_height = 60;
+
+        QAction* m_openGemReposAction = nullptr;
     };
 } // namespace O3DE::ProjectManager

@@ -12,7 +12,8 @@
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"
                 },
-                {   // used for copy from MSAA to regular RT
+                { 
+                    // used for copy from MSAA to regular RT
                     "Name": "RenderTargetInputOnly",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
@@ -29,7 +30,7 @@
                 // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
                 {
                     "Name": "DepthLinearInput",
-                    "SlotType": "InputOutput"
+                    "SlotType": "Input"
                 },
                 {
                     "Name": "DepthLinear",
@@ -69,6 +70,12 @@
                         "Pass": "DepthToDepthLinearPass",
                         "Attachment": "Output"
                     }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input": "DepthLinearInput",
+                    "Output": "DepthLinear"
                 }
             ],
             "PassRequests": [
@@ -257,7 +264,8 @@
                                 "Attachment": "HairColorRenderTarget"
                             }
                         },
-                        {   // The final render target - this is MSAA mode RT - would it be cheaper to
+                        { 
+                            // The final render target - this is MSAA mode RT - would it be cheaper to
                             // use non-MSAA and then copy?
                             "LocalSlot": "RenderTargetInputOutput",
                             "AttachmentRef": {
@@ -340,7 +348,8 @@
                     "TemplateName": "HairShortCutResolveColorPassTemplate",
                     "Enabled": true,
                     "Connections": [
-                        {   // The final render target - this is MSAA mode RT - would it be cheaper to
+                        { 
+                            // The final render target - this is MSAA mode RT - would it be cheaper to
                             // use non-MSAA and then copy?
                             "LocalSlot": "RenderTargetInputOutput",
                             "AttachmentRef": {

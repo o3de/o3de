@@ -50,6 +50,9 @@ namespace AzToolsFramework
         void OnShow();
         void UpdateToastPosition();
 
+        void SetOffset(const QPoint& offset);
+        void SetAnchorPoint(const QPointF& anchorPoint);
+
     private:
         ToastId CreateToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration);
         void DisplayQueuedNotification();
