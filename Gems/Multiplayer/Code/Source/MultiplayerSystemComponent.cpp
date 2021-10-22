@@ -1148,6 +1148,12 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId connectionId)
     {
+        if (!entityHandle.Exists())
+        {
+            AZLOG_WARN("Attempting to enable autonomous control for an invalid entity");
+            return;
+        }
+
         entityHandle.GetNetBindComponent()->SetOwningConnectionId(connectionId);
         if (connectionId == InvalidConnectionId)
         {
