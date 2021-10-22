@@ -717,7 +717,10 @@ bool ViewportWidget::event(QEvent* ev)
             ev->accept();
             return true;
         }
-        break;
+        default:
+        {
+            break;
+        }
         };
 
         UiEditorMode editorMode = m_editorWindow->GetEditorMode();
@@ -735,7 +738,10 @@ bool ViewportWidget::event(QEvent* ev)
                 ev->accept();
                 return true;
             }
-            break;
+            default:
+            {
+                break;
+            }
             };
         }
     }
@@ -760,8 +766,9 @@ void ViewportWidget::keyPressEvent(QKeyEvent* event)
             ViewportInteraction::NudgeSpeed speed =
                 (event->modifiers() & Qt::ShiftModifier) ? ViewportInteraction::NudgeSpeed::Fast : ViewportInteraction::NudgeSpeed::Slow;
 
+            // Currently ViewportInteraction enum and the Qt key enum for arrow keys have the same order.
             ViewportInteraction::NudgeDirection direction =
-                static_cast<ViewportInteraction::NudgeDirection>(key - static_cast<int>(Qt::Key_Left));
+                aznumeric_cast<ViewportInteraction::NudgeDirection>(key - aznumeric_cast<int>(Qt::Key_Left));
 
             m_viewportInteraction->Nudge(direction, speed);
             return;
