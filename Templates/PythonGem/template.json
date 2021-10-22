@@ -37,24 +37,6 @@
             "isOptional": false
         },
         {
-            "file": "Code/${NameLower}_files.cmake",
-            "origin": "Code/${NameLower}_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/${NameLower}_shared_files.cmake",
-            "origin": "Code/${NameLower}_shared_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/${NameLower}_tests_files.cmake",
-            "origin": "Code/${NameLower}_tests_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
             "file": "Code/CMakeLists.txt",
             "origin": "Code/CMakeLists.txt",
             "isTemplated": true,
@@ -63,24 +45,6 @@
         {
             "file": "Code/Include/${Name}/${Name}Bus.h",
             "origin": "Code/Include/${Name}/${Name}Bus.h",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Android/${NameLower}_android_files.cmake",
-            "origin": "Code/Platform/Android/${NameLower}_android_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Android/${NameLower}_shared_android_files.cmake",
-            "origin": "Code/Platform/Android/${NameLower}_shared_android_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Android/PAL_android.cmake",
-            "origin": "Code/Platform/Android/PAL_android.cmake",
             "isTemplated": true,
             "isOptional": false
         },
@@ -139,24 +103,6 @@
             "isOptional": false
         },
         {
-            "file": "Code/Platform/iOS/${NameLower}_ios_files.cmake",
-            "origin": "Code/Platform/iOS/${NameLower}_ios_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/iOS/${NameLower}_shared_ios_files.cmake",
-            "origin": "Code/Platform/iOS/${NameLower}_shared_ios_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/iOS/PAL_ios.cmake",
-            "origin": "Code/Platform/iOS/PAL_ios.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
             "file": "Code/Source/${Name}EditorModule.cpp",
             "origin": "Code/Source/${Name}EditorModule.cpp",
             "isTemplated": true,
@@ -175,26 +121,8 @@
             "isOptional": false
         },
         {
-            "file": "Code/Source/${Name}Module.cpp",
-            "origin": "Code/Source/${Name}Module.cpp",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
             "file": "Code/Source/${Name}ModuleInterface.h",
             "origin": "Code/Source/${Name}ModuleInterface.h",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Source/${Name}SystemComponent.cpp",
-            "origin": "Code/Source/${Name}SystemComponent.cpp",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Source/${Name}SystemComponent.h",
-            "origin": "Code/Source/${Name}SystemComponent.h",
             "isTemplated": true,
             "isOptional": false
         },
@@ -202,72 +130,6 @@
             "file": "Code/Tests/${Name}EditorTest.cpp",
             "origin": "Code/Tests/${Name}EditorTest.cpp",
             "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Tests/${Name}Test.cpp",
-            "origin": "Code/Tests/${Name}Test.cpp",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Platform/Android/android_gem.cmake",
-            "origin": "Platform/Android/android_gem.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Platform/Android/android_gem.json",
-            "origin": "Platform/Android/android_gem.json",
-            "isTemplated": false,
-            "isOptional": false
-        },
-        {
-            "file": "Platform/Linux/linux_gem.cmake",
-            "origin": "Platform/Linux/linux_gem.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Platform/Linux/linux_gem.json",
-            "origin": "Platform/Linux/linux_gem.json",
-            "isTemplated": false,
-            "isOptional": false
-        },
-        {
-            "file": "Platform/Mac/mac_gem.cmake",
-            "origin": "Platform/Mac/mac_gem.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Platform/Mac/mac_gem.json",
-            "origin": "Platform/Mac/mac_gem.json",
-            "isTemplated": false,
-            "isOptional": false
-        },
-        {
-            "file": "Platform/Windows/windows_gem.cmake",
-            "origin": "Platform/Windows/windows_gem.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Platform/Windows/windows_gem.json",
-            "origin": "Platform/Windows/windows_gem.json",
-            "isTemplated": false,
-            "isOptional": false
-        },
-        {
-            "file": "Platform/iOS/ios_gem.cmake",
-            "origin": "Platform/iOS/ios_gem.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Platform/iOS/ios_gem.json",
-            "origin": "Platform/iOS/ios_gem.json",
-            "isTemplated": false,
             "isOptional": false
         },
         {
