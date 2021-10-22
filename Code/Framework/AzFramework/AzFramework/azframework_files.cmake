@@ -228,6 +228,7 @@ set(FILES
     Physics/Configuration/SimulatedBodyConfiguration.cpp
     Physics/Configuration/SystemConfiguration.h
     Physics/Configuration/SystemConfiguration.cpp
+    Physics/HeightfieldProviderBus.h
     Physics/SimulatedBodies/RigidBody.h
     Physics/SimulatedBodies/RigidBody.cpp
     Physics/SimulatedBodies/StaticRigidBody.h
@@ -251,6 +252,7 @@ set(FILES
     Physics/Shape.h
     Physics/ShapeConfiguration.h
     Physics/ShapeConfiguration.cpp
+    Physics/HeightfieldProviderBus.h
     Physics/SystemBus.h
     Physics/ColliderComponentBus.h
     Physics/RagdollPhysicsBus.h
