@@ -23,20 +23,13 @@ AZ_POP_DISABLE_WARNING
 
 namespace HttpRequestor
 {
-    //
-    // the call back function for http requests.
-    //
+    // The call back function for http requests.
     using Callback = AZStd::function<void(const Aws::Utils::Json::JsonView&, Aws::Http::HttpResponseCode)>;
 
-    
-    //
-    // the call back function for any http text requests.
-    //
+    // The callback function for any http text requests.
     using TextCallback = AZStd::function<void(const AZStd::string&, Aws::Http::HttpResponseCode)>;
 
-
-    //
-    // a map of REST headers.
-    //
+    // A map of REST headers.
     using Headers = AZStd::map<AZStd::string, AZStd::string>;
-}
+
+} // namespace HttpRequestor
