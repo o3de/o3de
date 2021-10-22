@@ -1124,6 +1124,7 @@ namespace O3DE::ProjectManager
 
     AZ::Outcome<void, AZStd::string> PythonBindings::DownloadGem(const QString& gemName, std::function<void(int)> gemProgressCallback)
     {
+        // This process is currently limited to download a single gem at a time.
         bool downloadSucceeded = false;
         O3DEProjectManagerPy::currentProgressCallback = gemProgressCallback;
         O3DEProjectManagerPy::requestCancelDownload = false;
