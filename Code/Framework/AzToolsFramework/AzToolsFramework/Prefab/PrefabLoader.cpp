@@ -192,11 +192,11 @@ namespace AzToolsFramework
 
                 if (!proceduralPrefabSystemComponentInterface)
                 {
-                    
+                    AZ_Error("Prefab", false, "Failed to find ProceduralPrefabSystemComponentInterface.  Procedural Prefab will not be tracked for hotloading.");
                 }
                 else
                 {
-                    proceduralPrefabSystemComponentInterface->Track(relativePath.Native(), newTemplateId);
+                    proceduralPrefabSystemComponentInterface->RegisterProceduralPrefab(relativePath.Native(), newTemplateId);
                 }
             }
 

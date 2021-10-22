@@ -33,20 +33,21 @@ namespace AzToolsFramework
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             AZ::Interface<ProceduralPrefabSystemComponentInterface>::Unregister(this);
 
-            m_templateToAssetLookup.clear();
+            m_assetIdToTemplateLookup.clear();
         }
 
         void ProceduralPrefabSystemComponent::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
         {
-            auto itr = m_templateToAssetLookup.find(assetId);
+            auto itr = m_assetIdToTemplateLookup.find(assetId);
 
-            if (itr != m_templateToAssetLookup.end())
+            if (itr != m_assetIdToTemplateLookup.end())
             {
                 auto prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
 
                 if (!prefabSystemComponentInterface)
                 {
-                    
+                    AZ_Error("Prefab", false, "Failed to get PrefabSystemComponentInterface");
+                    return;
                 }
 
                 AZStd::string assetPath;
@@ -58,9 +59,10 @@ namespace AzToolsFramework
                 {
                     AZ_Error(
                         "Prefab", false,
-                        "PrefabLoader::LoadTemplate - Failed to load Prefab file from '%.*s'."
+                        "ProceduralPrefabSystemComponent::OnCatalogAssetChanged - Failed to read Prefab file from '%.*s'."
                         "Error message: '%s'",
                         AZ_STRING_ARG(assetPath), readResult.GetError().c_str());
+                    return;
                 }
 
                 AZ::Outcome<PrefabDom, AZStd::string> readPrefabFileResult = AZ::JsonSerializationUtils::ReadJsonString(readResult.TakeValue());
@@ -68,30 +70,17 @@ namespace AzToolsFramework
                 {
                     AZ_Error(
                         "Prefab", false,
-                        "PrefabLoader::LoadTemplate - Failed to load Prefab file from '%.*s'."
+                        "ProceduralPrefabSystemComponent::OnCatalogAssetChanged - Failed to read Prefab json from '%.*s'."
                         "Error message: '%s'",
                         AZ_STRING_ARG(assetPath), readPrefabFileResult.GetError().c_str());
-                    
+                    return;
                 }
 
                 prefabSystemComponentInterface->UpdatePrefabTemplate(itr->second, readPrefabFileResult.TakeValue());
             }
         }
 
-        //void ProceduralPrefabSystemComponent::OnAssetReloaded([[maybe_unused]] AZ::Data::Asset<AZ::Data::AssetData> assetData)
-        //{
-        //    auto assetItr = m_templateToAssetLookup.find(assetData.GetId());
-
-        //    if (assetItr != m_templateToAssetLookup.end())
-        //    {
-        //        [[maybe_unused]] AzToolsFramework::Prefab::TemplateId templateId =
-        //            assetItr->second.GetAs<AZ::Prefab::ProceduralPrefabAsset>()->GetTemplateId();
-
-        //        assetItr->second = assetData;
-        //    }
-        //}
-
-        void ProceduralPrefabSystemComponent::Track(const AZStd::string& prefabFilePath, TemplateId templateId)
+        void ProceduralPrefabSystemComponent::RegisterProceduralPrefab(const AZStd::string& prefabFilePath, TemplateId templateId)
         {
             AZ::Data::AssetId assetId;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(
@@ -100,23 +89,12 @@ namespace AzToolsFramework
 
             if (assetId.IsValid())
             {
-                m_templateToAssetLookup[assetId] = templateId;
+                m_assetIdToTemplateLookup[assetId] = templateId;
+            }
+            else
+            {
+                AZ_Error("Prefab", false, "Failed to find AssetId for prefab %s", prefabFilePath.c_str());
             }
         }
-
-        //AZStd::string ProceduralPrefabSystemComponent::Load(AZ::Data::AssetId assetId)
-        //{
-        //    auto asset = AZ::Data::AssetManager::Instance().GetAsset<AZ::Prefab::ProceduralPrefabAsset>(assetId, AZ::Data::Default);
-
-        //    AZ::Data::AssetBus::MultiHandler::BusConnect(assetId);
-        //    m_templateToAssetLookup[assetId] = asset;
-
-        //    AZ::Data::AssetInfo assetInfo;
-        //    AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetId);
-
-        //    asset.BlockUntilLoadComplete();
-
-        //    return assetInfo.m_relativePath;
-        //}
     } // namespace Prefab
 } // namespace AzToolsFramework

@@ -15,18 +15,15 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        /*!
-         * PrefabSystemComponentInterface
-         * Interface serviced by the Prefab System Component.
-         */
         class ProceduralPrefabSystemComponentInterface
         {
         public:
-            AZ_RTTI(ProceduralPrefabSystemComponentInterface, "{7FE01294-4E28-4894-9599-705C510A844E}");
+            AZ_RTTI(ProceduralPrefabSystemComponentInterface, "{C403B89C-63DD-418C-B821-FBCBE1EF42AE}");
 
             virtual ~ProceduralPrefabSystemComponentInterface() = default;
 
-            virtual void Track(const AZStd::string& prefabFilePath, TemplateId templateId) = 0;
+            // Registers a procedural prefab file + templateId so the system can track changes and handle updates
+            virtual void RegisterProceduralPrefab(const AZStd::string& prefabFilePath, TemplateId templateId) = 0;
         };
         
     } // namespace Prefab

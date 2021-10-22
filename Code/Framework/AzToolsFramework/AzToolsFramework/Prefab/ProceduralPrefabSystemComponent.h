@@ -30,9 +30,9 @@ namespace AzToolsFramework
             
             void OnCatalogAssetChanged(const AZ::Data::AssetId&) override;
         
-            void Track(const AZStd::string& prefabFilePath, TemplateId templateId) override;
+            void RegisterProceduralPrefab(const AZStd::string& prefabFilePath, TemplateId templateId) override;
             
-            AZStd::unordered_map<AZ::Data::AssetId, TemplateId> m_templateToAssetLookup;
+            AZStd::unordered_map<AZ::Data::AssetId, TemplateId> m_assetIdToTemplateLookup;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

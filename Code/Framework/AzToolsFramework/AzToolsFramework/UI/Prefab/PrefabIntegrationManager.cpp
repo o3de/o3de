@@ -60,7 +60,6 @@
 #include <QTimer>
 #include <QVBoxLayout>
 #include <QWidget>
-#include <Prefab/ProceduralPrefabSystemComponentInterface.h>
 
 namespace AzToolsFramework
 {
@@ -611,16 +610,6 @@ namespace AzToolsFramework
                     EditorRequestBus::BroadcastResult(position, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
                 }
 
-                auto proceduralPrefabSystemComponentInterface = AZ::Interface<ProceduralPrefabSystemComponentInterface>::Get();
-
-                if (!proceduralPrefabSystemComponentInterface)
-                {
-                    AZ_Error("PrefabIntegrationManager", false, "Failed to get ProceduralPrefabSystemComponentInterface");
-                    return;
-                }
-
-                //AZStd::string prefabAssetPath = proceduralPrefabSystemComponentInterface->Load(prefabAssetId);
-
                 auto createPrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(prefabAssetPath, parentId, position);
                 if (!createPrefabOutcome.IsSuccess())
                 {
@@ -889,7 +878,7 @@ namespace AzToolsFramework
             return true;
         }
 
-        bool PrefabIntegrationManager::QueryUserForProceduralPrefabAsset(AZStd::string& outAssetId)
+        bool PrefabIntegrationManager::QueryUserForProceduralPrefabAsset(AZStd::string& outPrefabAssetPath)
         {
             using namespace AzToolsFramework;
             auto selection = AssetBrowser::AssetSelectionModel::AssetTypeSelection(azrtti_typeid<AZ::Prefab::ProceduralPrefabAsset>());
@@ -905,7 +894,7 @@ namespace AzToolsFramework
             {
                 return false;
             }
-            outAssetId = product->GetRelativePath();
+            outPrefabAssetPath = product->GetRelativePath();
             return true;
         }
 
