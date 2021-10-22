@@ -429,6 +429,26 @@ def ExportTestScreenshots(Map options, String workspace, String platformName, St
     }
 }
 
+def UploadAPLogs(Map options, String branchName, String jobName, String workspace, Map params) {
+    projects = params.CMAKE_LY_PROJECTS.split(",")
+    projects.each{ project ->
+        def apLogsPath = "${workspace}/${ENGINE_REPOSITORY_NAME}/${project}/user/log"
+        def s3UploadScriptPath = "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/build/tools/upload_to_s3.py"
+        if(env.IS_UNIX) {
+            pythonPath = "${options.PYTHON_DIR}/python.sh"
+        }
+        else {
+            pythonPath = "${options.PYTHON_DIR}/python.cmd"
+        }
+        def command = "${pythonPath} -u ${s3UploadScriptPath} --base_dir ${apLogsPath} " +
+                      "--file_regex \".*\" --bucket ${env.AP_LOGS_S3_BUCKET} " +
+                      "--search_subdirectories True --key_prefix ${env.JOB_NAME}/${branchName}/${env.BUILD_NUMBER}/${jobName}"
+        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+            palSh(command, "Uploading AP logs for job ${jobName} for branch ${branchName}", false)
+        }
+    }
+}
+
 def PostBuildCommonSteps(String workspace, boolean mount = true) {
     echo 'Starting post-build common steps...'
 
@@ -492,6 +512,14 @@ def CreateExportTestScreenshotsStage(Map pipelineConfig, String platformName, St
     }
 }
 
+def CreateUploadAPLogsStage(Map pipelineConfig, String branchName, String jobName, String workspace, Map params) {
+    return {
+        stage("${jobName}_upload_ap_logs") {
+            UploadAPLogs(pipelineConfig, branchName, jobName, workspace, params)
+        }
+    }
+}
+
 def CreateTeardownStage(Map environmentVars) {
     return {
         stage('Teardown') {
@@ -526,6 +554,9 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                                     if (envVars['NONBLOCKING_STEP']?.toBoolean()) {
                                         unstable(message: "Build step ${build_step} failed but it's a non-blocking step in build job ${build_job.key}")
                                     } else {
+                                        if (!IsPullRequest(branch) && build_job_name.toLowerCase().contains('asset') && env.AP_LOGS_S3_BUCKET) {
+                                            CreateUploadAPLogsStage(pipelineConfig, branchName, build_step, envVars['WORKSPACE'], platform.value.build_types[build_step].PARAMETERS).call()
+                                        }
                                         throw e
                                     }
                                 }
