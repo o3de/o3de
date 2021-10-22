@@ -67,7 +67,7 @@ namespace PhysX
         }
 
         void CreatePxGeometryFromHeightfield(
-            const Physics::HeightfieldShapeConfiguration& heightfieldConfig, physx::PxGeometryHolder& pxGeometry)
+            Physics::HeightfieldShapeConfiguration& heightfieldConfig, physx::PxGeometryHolder& pxGeometry)
         {
             physx::PxHeightField* heightfield = nullptr;
 
@@ -264,8 +264,13 @@ namespace PhysX
             }
             case Physics::ShapeType::CookedMesh:
             {
-                const Physics::CookedMeshShapeConfiguration& cookedMeshShapeConfig =
+                const Physics::CookedMeshShapeConfiguration& constCookedMeshShapeConfig =
                     static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfiguration);
+
+                // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
+                // native mesh pointer that gets stored in the configuration.
+                Physics::CookedMeshShapeConfiguration& cookedMeshShapeConfig =
+                    const_cast<Physics::CookedMeshShapeConfiguration&>(constCookedMeshShapeConfig);
 
                 physx::PxBase* nativeMeshObject = nullptr;
 
@@ -303,13 +308,18 @@ namespace PhysX
                 return false;
             }
             case Physics::ShapeType::Heightfield:
-                {
-                    const Physics::HeightfieldShapeConfiguration& heightfieldConfig =
-                        static_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
+            {
+                const Physics::HeightfieldShapeConfiguration& constHeightfieldConfig =
+                    static_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
 
-                    CreatePxGeometryFromHeightfield(heightfieldConfig, pxGeometry);
-                    break;
-                }
+                // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
+                // native heightfield pointer that gets stored in the configuration.
+                Physics::HeightfieldShapeConfiguration& heightfieldConfig =
+                    const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
+
+                CreatePxGeometryFromHeightfield(heightfieldConfig, pxGeometry);
+                break;
+            }
             default:
                 AZ_Warning("PhysX Rigid Body", false, "Shape not supported in PhysX. Shape Type: %d", shapeType);
                 return false;
@@ -1518,9 +1528,9 @@ namespace PhysX
             return entityWorldTransformWithoutScale * jointLocalTransformWithoutScale;
         }
         
-        void InitHeightfieldShapeConfiguration(AZ::EntityId entityId, Physics::HeightfieldShapeConfiguration& configuration)
+        Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId)
         {
-            configuration = Physics::HeightfieldShapeConfiguration();
+            Physics::HeightfieldShapeConfiguration configuration;
 
             AZ::Vector2 gridSpacing(1.0f);
             Physics::HeightfieldProviderRequestsBus::EventResult(
@@ -1549,6 +1559,8 @@ namespace PhysX
                 samples, entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
 
             configuration.SetSamples(samples);
+
+            return configuration;
         }
     } // namespace Utils
 

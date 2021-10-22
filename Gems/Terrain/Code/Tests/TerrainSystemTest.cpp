@@ -475,8 +475,10 @@ namespace UnitTest
         }
     }
 
-    TEST_F(TerrainSystemTest, GetSurfaceWeightsReturnsAllValidSurfaceWeights)
+    TEST_F(TerrainSystemTest, GetSurfaceWeightsReturnsAllValidSurfaceWeightsInOrder)
     {
+        // When there is more than one surface/weight defined, they should all be returned in descending weight order.
+
         CreateAndActivateTerrainSystem();
 
         const AZ::Aabb aabb = AZ::Aabb::CreateFromMinMax(AZ::Vector3::CreateZero(), AZ::Vector3::CreateOne());
@@ -490,32 +492,41 @@ namespace UnitTest
 
         const AZ::Crc32 tag1("tag1");
         const AZ::Crc32 tag2("tag2");
+        const AZ::Crc32 tag3("tag3");
+        const float tag1Weight = 0.8f;
+        const float tag2Weight = 1.0f;
+        const float tag3Weight = 0.5f;
 
-        AzFramework::SurfaceData::OrderedSurfaceTagWeightSet orderedSurfaceWeights;
-
-        AzFramework::SurfaceData::SurfaceTagWeight tagWeight1;
-        tagWeight1.m_surfaceType = tag1;
-        tagWeight1.m_weight = 1.0f;
-        orderedSurfaceWeights.emplace(tagWeight1);
-
-        AzFramework::SurfaceData::SurfaceTagWeight tagWeight2;
-        tagWeight2.m_surfaceType = tag2;
-        tagWeight2.m_weight = 0.8f;
-        orderedSurfaceWeights.emplace(tagWeight2);
+        AzFramework::SurfaceData::SurfaceTagWeightList orderedSurfaceWeights
+        {
+            { tag1, tag1Weight }, { tag2, tag2Weight }, { tag3, tag3Weight }
+        };
 
         NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus> mockSurfaceRequests(entity->GetId());
         ON_CALL(mockSurfaceRequests, GetSurfaceWeights).WillByDefault(SetArgReferee<1>(orderedSurfaceWeights));
 
-        AzFramework::SurfaceData::OrderedSurfaceTagWeightSet outSurfaceWeights;
+        AzFramework::SurfaceData::SurfaceTagWeightList outSurfaceWeights;
 
         // Asking for values outside the layer spawner bounds, should result in no results.
         m_terrainSystem->GetSurfaceWeights(aabb.GetMax() + AZ::Vector3::CreateOne(), outSurfaceWeights);
         EXPECT_TRUE(outSurfaceWeights.empty());
 
-        // Inside the layer spawner box should give us both the added surface weights.
+        // Inside the layer spawner box should give us all of the added surface weights.
         m_terrainSystem->GetSurfaceWeights(aabb.GetCenter(), outSurfaceWeights);
 
-        EXPECT_EQ(outSurfaceWeights.size(), 2);
+        EXPECT_EQ(outSurfaceWeights.size(), 3);
+
+        // The weights should be returned in decreasing order.
+        AZ::Crc32 expectedCrcList[] = { tag2, tag1, tag3 };
+        const float expectedWeightList[] = { tag2Weight, tag1Weight, tag3Weight };
+
+        int index = 0;
+        for (const auto& surfaceWeight : outSurfaceWeights)
+        {
+            EXPECT_EQ(surfaceWeight.m_surfaceType, expectedCrcList[index]);
+            EXPECT_NEAR(surfaceWeight.m_weight, expectedWeightList[index], 0.01f);
+            index++;
+        }
     }
 
     TEST_F(TerrainSystemTest, GetMaxSurfaceWeightsReturnsBiggestValidSurfaceWeight)
@@ -534,17 +545,17 @@ namespace UnitTest
         const AZ::Crc32 tag1("tag1");
         const AZ::Crc32 tag2("tag2");
 
-        AzFramework::SurfaceData::OrderedSurfaceTagWeightSet orderedSurfaceWeights;
+        AzFramework::SurfaceData::SurfaceTagWeightList orderedSurfaceWeights;
 
         AzFramework::SurfaceData::SurfaceTagWeight tagWeight1;
         tagWeight1.m_surfaceType = tag1;
         tagWeight1.m_weight = 1.0f;
-        orderedSurfaceWeights.emplace(tagWeight1);
+        orderedSurfaceWeights.emplace_back(tagWeight1);
 
         AzFramework::SurfaceData::SurfaceTagWeight tagWeight2;
         tagWeight2.m_surfaceType = tag2;
         tagWeight2.m_weight = 0.8f;
-        orderedSurfaceWeights.emplace(tagWeight2);
+        orderedSurfaceWeights.emplace_back(tagWeight2);
 
         NiceMock<UnitTest::MockTerrainAreaSurfaceRequestBus> mockSurfaceRequests(entity->GetId());
         ON_CALL(mockSurfaceRequests, GetSurfaceWeights).WillByDefault(SetArgReferee<1>(orderedSurfaceWeights));

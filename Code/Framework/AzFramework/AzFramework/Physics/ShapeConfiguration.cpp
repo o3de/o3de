@@ -286,12 +286,17 @@ namespace Physics
         return m_type;
     }
 
-    void* CookedMeshShapeConfiguration::GetCachedNativeMesh() const
+    const void* CookedMeshShapeConfiguration::GetCachedNativeMesh() const
     {
         return m_cachedNativeMesh;
     }
 
-    void CookedMeshShapeConfiguration::SetCachedNativeMesh(void* cachedNativeMesh) const
+    void* CookedMeshShapeConfiguration::GetCachedNativeMesh()
+    {
+        return m_cachedNativeMesh;
+    }
+
+    void CookedMeshShapeConfiguration::SetCachedNativeMesh(void* cachedNativeMesh)
     {
         m_cachedNativeMesh = cachedNativeMesh;
     }
@@ -353,12 +358,17 @@ namespace Physics
         return *this;
     }
 
-    void* HeightfieldShapeConfiguration::GetCachedNativeHeightfield() const
+    const void* HeightfieldShapeConfiguration::GetCachedNativeHeightfield() const
     {
         return m_cachedNativeHeightfield;
     }
 
-    void HeightfieldShapeConfiguration::SetCachedNativeHeightfield(void* cachedNativeHeightfield) const
+    void* HeightfieldShapeConfiguration::GetCachedNativeHeightfield()
+    {
+        return m_cachedNativeHeightfield;
+    }
+
+    void HeightfieldShapeConfiguration::SetCachedNativeHeightfield(void* cachedNativeHeightfield)
     {
         if (m_cachedNativeHeightfield)
         {
@@ -427,4 +437,5 @@ namespace Physics
     {
         m_maxHeightBounds = maxBounds;
     }
-}
+} // namespace Physics
+

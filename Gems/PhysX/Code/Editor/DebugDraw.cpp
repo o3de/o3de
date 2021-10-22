@@ -264,7 +264,11 @@ namespace PhysX
             case Physics::ShapeType::CookedMesh:
             {
                 const auto& cookedMeshConfig = static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfig);
-                physx::PxBase* meshData = static_cast<physx::PxBase*>(cookedMeshConfig.GetCachedNativeMesh());
+                const physx::PxBase* constMeshData = static_cast<const physx::PxBase*>(cookedMeshConfig.GetCachedNativeMesh());
+
+                // Specifically removing the const from the meshData pointer because the physx APIs expect this pointer to be non-const.
+                physx::PxBase* meshData = const_cast<physx::PxBase*>(constMeshData);
+
                 if (meshData)
                 {
                     if (meshData->is<physx::PxTriangleMesh>())

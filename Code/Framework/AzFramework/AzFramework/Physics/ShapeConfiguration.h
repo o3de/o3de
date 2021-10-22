@@ -187,8 +187,9 @@ namespace Physics
         
         MeshType GetMeshType() const;
 
-        void* GetCachedNativeMesh() const;
-        void SetCachedNativeMesh(void* cachedNativeMesh) const;
+        void* GetCachedNativeMesh();
+        const void* GetCachedNativeMesh() const;
+        void SetCachedNativeMesh(void* cachedNativeMesh);
 
     private:
         void ReleaseCachedNativeMesh();
@@ -197,7 +198,7 @@ namespace Physics
         MeshType m_type = MeshType::TriangleMesh;
         
         //! Cached native mesh object (e.g. PxConvexMesh or PxTriangleMesh). This data is not serialized.
-        mutable void* m_cachedNativeMesh = nullptr;
+        void* m_cachedNativeMesh = nullptr;
     };
 
     class HeightfieldShapeConfiguration
@@ -217,8 +218,9 @@ namespace Physics
             return ShapeType::Heightfield;
         }
 
-        void* GetCachedNativeHeightfield() const;
-        void SetCachedNativeHeightfield(void* cachedNativeHeightfield) const;
+        const void* GetCachedNativeHeightfield() const;
+        void* GetCachedNativeHeightfield();
+        void SetCachedNativeHeightfield(void* cachedNativeHeightfield);
         AZ::Vector2 GetGridResolution() const;
         void SetGridResolution(const AZ::Vector2& gridSpacing);
         int32_t GetNumColumns() const;
@@ -246,6 +248,6 @@ namespace Physics
         //! The grid of sample points for the heightfield.
         AZStd::vector<Physics::HeightMaterialPoint> m_samples;
         //! An optional storage pointer for the physics system to cache its native heightfield representation.
-        mutable void* m_cachedNativeHeightfield{ nullptr };
+        void* m_cachedNativeHeightfield{ nullptr };
     };
 } // namespace Physics
