@@ -178,7 +178,9 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Min, 0.f)
                             ->Attribute(Edit::Attributes::Max, 10.0f)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                            ;
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
+                                ;
                 }
             }
 
