@@ -22,7 +22,13 @@ namespace AWSMetrics
 
     AZStd::string IdentityProvider::GetEngineVersion()
     {
+        constexpr auto engineVersionKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey) + "/" + EngineVersionJsonKey;
         AZStd::string engineVersion;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr && settingsRegistry->Get(engineVersion, engineVersionKey))
+        {
+            return engineVersion;
+        }
+
         auto engineSettingsPath = AZ::IO::FixedMaxPath{ AZ::Utils::GetEnginePath() } / "engine.json";
         if (AZ::IO::SystemFile::Exists(engineSettingsPath.c_str()))
         {
@@ -30,8 +36,7 @@ namespace AWSMetrics
             if (settingsRegistry.MergeSettingsFile(
                     engineSettingsPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey))
             {
-                settingsRegistry.Get(
-                    engineVersion, AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey) + "/" + EngineVersionJsonKey);
+                settingsRegistry.Get(engineVersion, engineVersionKey);
             }
         }
         return engineVersion;
