@@ -73,28 +73,5 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     # If we are a host platform we want to add tools test like editor tests here
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
-        # We are a host platform, see if Editor tests are supported on this platform
-        if(PAL_TRAIT_${NameUpper}_EDITOR_TEST_SUPPORTED)
-            # We support ${Name}.Editor.Tests on this platform, add ${Name}.Editor.Tests target which depends on ${Name}.Editor
-            ly_add_target(
-                NAME ${Name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-                NAMESPACE Gem
-                FILES_CMAKE
-                    ${NameLower}_editor_tests_files.cmake
-                INCLUDE_DIRECTORIES
-                    PRIVATE
-                        Tests
-                        Source
-                BUILD_DEPENDENCIES
-                    PRIVATE
-                        AZ::AzTest
-                        Gem::${Name}.Editor
-            )
-
-            # Add ${Name}.Editor.Tests to googletest
-            ly_add_googletest(
-                NAME Gem::${Name}.Editor.Tests
-            )
-        endif()
     endif()
 endif()
