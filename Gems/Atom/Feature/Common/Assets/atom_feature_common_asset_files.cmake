@@ -157,6 +157,7 @@ set(FILES
     Passes/LowEndPipeline.pass
     Passes/LuminanceHeatmap.pass
     Passes/LuminanceHistogramGenerator.pass
+    Passes/LutGeneration.pass
     Passes/MainPipeline.pass
     Passes/MainPipelineRenderToTexture.pass
     Passes/MeshMotionVector.pass
@@ -291,6 +292,7 @@ set(FILES
     ShaderLib/Atom/Features/PostProcessing/FullscreenVertexUtil.azsli
     ShaderLib/Atom/Features/PostProcessing/GlyphData.azsli
     ShaderLib/Atom/Features/PostProcessing/GlyphRender.azsli
+    ShaderLib/Atom/Features/PostProcessing/HDRColorGradingCommon.azsl
     ShaderLib/Atom/Features/PostProcessing/PostProcessUtil.azsli
     ShaderLib/Atom/Features/PostProcessing/Shapers.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingMaterialSrg.azsli
@@ -302,7 +304,6 @@ set(FILES
     ShaderLib/Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli
     ShaderLib/Atom/Features/Shadow/BicubicPcfFilters.azsli
     ShaderLib/Atom/Features/Shadow/DirectionalLightShadow.azsli
-    ShaderLib/Atom/Features/Shadow/JitterTablePcf.azsli
     ShaderLib/Atom/Features/Shadow/ProjectedShadow.azsli
     ShaderLib/Atom/Features/Shadow/ReceiverPlaneDepthBias.azsli
     ShaderLib/Atom/Features/Shadow/Shadow.azsli
@@ -333,6 +334,8 @@ set(FILES
     Shaders/BRDFTexture/BRDFTextureCS.shader
     Shaders/Checkerboard/CheckerboardColorResolveCS.azsl
     Shaders/Checkerboard/CheckerboardColorResolveCS.shader
+    Shaders/ColorGrading/LutGeneration.azsl
+    Shaders/ColorGrading/LutGeneration.shader
     Shaders/Depth/DepthPass.azsl
     Shaders/Depth/DepthPass.shader
     Shaders/Depth/DepthPassCommon.azsli

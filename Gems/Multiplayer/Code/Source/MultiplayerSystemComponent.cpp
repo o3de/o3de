@@ -288,6 +288,10 @@ namespace Multiplayer
         return m_networkInterface->Listen(sessionConfig.m_port);
     }
 
+    void MultiplayerSystemComponent::OnCreateSessionEnd()
+    {
+    }
+
     bool MultiplayerSystemComponent::OnDestroySessionBegin()
     {
         // This can be triggered external from Multiplayer so only run if we are in an Initialized state
@@ -308,10 +312,18 @@ namespace Multiplayer
         return true;
     }
 
+    void MultiplayerSystemComponent::OnDestroySessionEnd()
+    {
+    }
+
     void MultiplayerSystemComponent::OnUpdateSessionBegin(const AzFramework::SessionConfig& sessionConfig, const AZStd::string& updateReason)
     {
         AZ_UNUSED(sessionConfig);
         AZ_UNUSED(updateReason);
+    }
+
+    void MultiplayerSystemComponent::OnUpdateSessionEnd()
+    {
     }
 
     void MultiplayerSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
@@ -673,12 +685,21 @@ namespace Multiplayer
         if (GetAgentType() == MultiplayerAgentType::ClientServer
          || GetAgentType() == MultiplayerAgentType::DedicatedServer)
         {
-            NetworkEntityHandle controlledEntity = SpawnDefaultPlayerPrefab();
-            if (controlledEntity.Exists())
+            INetworkEntityManager::EntityList entityList = SpawnDefaultPlayerPrefab();
+            for (auto& netEntity : entityList)
             {
-                controlledEntity.GetNetBindComponent()->SetOwningConnectionId(connection->GetConnectionId());
+                if (netEntity.Exists())
+                {
+                    netEntity.GetNetBindComponent()->SetOwningConnectionId(connection->GetConnectionId());
+                }
+                netEntity.Activate();
             }
-            controlledEntity.Activate();
+
+            NetworkEntityHandle controlledEntity;
+            if (entityList.size() > 0)
+            {
+                controlledEntity = entityList[0];
+            }
             
             connection->SetUserData(new ServerToClientConnectionData(connection, *this, controlledEntity));
             AZStd::unique_ptr<IReplicationWindow> window = AZStd::make_unique<ServerToClientReplicationWindow>(controlledEntity, connection);
@@ -788,12 +809,16 @@ namespace Multiplayer
         // Spawn the default player for this host since the host is also a player (not a dedicated server)
         if (m_agentType == MultiplayerAgentType::ClientServer)
         {
-            NetworkEntityHandle controlledEntity = SpawnDefaultPlayerPrefab();
-            if (NetBindComponent* controlledEntityNetBindComponent = controlledEntity.GetNetBindComponent())
+            INetworkEntityManager::EntityList entityList = SpawnDefaultPlayerPrefab();
+
+            for (NetworkEntityHandle controlledEntity : entityList)
             {
-                controlledEntityNetBindComponent->SetAllowAutonomy(true);
+                if (NetBindComponent* controlledEntityNetBindComponent = controlledEntity.GetNetBindComponent())
+                {
+                    controlledEntityNetBindComponent->SetAllowAutonomy(true);
+                }
+                controlledEntity.Activate();
             }
-            controlledEntity.Activate();
         }
         
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
@@ -1041,17 +1066,12 @@ namespace Multiplayer
         }
     }
 
-    NetworkEntityHandle MultiplayerSystemComponent::SpawnDefaultPlayerPrefab()
+    INetworkEntityManager::EntityList MultiplayerSystemComponent::SpawnDefaultPlayerPrefab()
     {
         PrefabEntityId playerPrefabEntityId(AZ::Name(static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str()));
         INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity(), Multiplayer::AutoActivate::DoNotActivate);
 
-        NetworkEntityHandle controlledEntity;
-        if (!entityList.empty())
-        {
-            controlledEntity = entityList[0];
-        }
-        return controlledEntity;
+        return entityList;
     }
 
     void host([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)

@@ -1595,7 +1595,7 @@ namespace UnitTest
         }
     };
 
-#if GTEST_OS_SUPPORTS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
     TEST_F(ThreadEventsDeathTest, UsingClientBus_AvoidsDeadlock)
     {
         EXPECT_EXIT(
@@ -1608,5 +1608,5 @@ namespace UnitTest
         , ::testing::ExitedWithCode(0),".*");
         
     }
-#endif // GTEST_OS_SUPPORTS_DEATH_TEST
+#endif // GTEST_HAS_DEATH_TEST
 }
