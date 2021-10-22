@@ -556,6 +556,47 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gemNames));
     }
 
+    AZ::Outcome<void, AZStd::string> PythonBindings::RegisterGem(const QString& gemPath, const QString& projectPath)
+    {
+        bool registrationResult = false;
+        auto result = ExecuteWithLockErrorHandling(
+            [&]
+        {
+            auto externalProjectPath = projectPath.isEmpty() ? pybind11::none() : QString_To_Py_Path(projectPath);
+            auto pythonRegistrationResult = m_register.attr("register")(
+                pybind11::none(), // engine_path
+                pybind11::none(), // project_path
+                QString_To_Py_Path(gemPath), // gem folder
+                pybind11::none(), // external subdirectory
+                pybind11::none(), // template_path
+                pybind11::none(), // restricted folder 
+                pybind11::none(), // repo uri 
+                pybind11::none(), // default_engines_folder
+                pybind11::none(), // default_projects_folder
+                pybind11::none(), // default_gems_folder
+                pybind11::none(), // default_templates_folder
+                pybind11::none(), // default_restricted_folder
+                pybind11::none(), // default_third_party_folder
+                pybind11::none(), // external_subdir_engine_path
+                externalProjectPath // external_subdir_project_path
+                );
+
+            // Returns an exit code so boolify it then invert result
+            registrationResult = !pythonRegistrationResult.cast<bool>();
+        });
+
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure<AZStd::string>(result.GetError().c_str());
+        }
+        else if (!registrationResult)
+        {
+            return AZ::Failure<AZStd::string>(AZStd::string::format("Failed to register gem path %s", gemPath.toUtf8().constData()));
+        }
+
+        return AZ::Success();
+    }
+
     bool PythonBindings::AddProject(const QString& path)
     {
         bool registrationResult = false;
