@@ -9,6 +9,7 @@
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/INetworkSpawnableLibrary.h>
 #include <Multiplayer/MultiplayerConstants.h>
+#include <Multiplayer/MultiplayerEditorServerBus.h>
 #include <Editor/MultiplayerEditorConnection.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
 
@@ -35,13 +36,25 @@ namespace Multiplayer
         m_networkEditorInterface->SetTimeoutMs(AZ::TimeMs{ 0 }); // Disable timeouts on this network interface
         if (editorsv_isDedicated)
         {
-            uint16_t editorServerPort = DefaultServerEditorPort;
-            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+            uint16_t editorsv_port = DefaultServerEditorPort;
+            if (const auto console = AZ::Interface<AZ::IConsole>::Get())
             {
-                console->GetCvarValue("editorsv_port", editorServerPort);
+                console->GetCvarValue("editorsv_port", editorsv_port);
             }
-            AZ_Assert(m_networkEditorInterface, "MP Editor Network Interface was unregistered before Editor Server could start listening.");
-            m_networkEditorInterface->Listen(editorServerPort);
+            AZ_Assert(m_networkEditorInterface, "MP Editor Network Interface was unregistered before Editor Server could start listening.")
+
+            // Check if there's already an Editor out there waiting to connect
+            ConnectionId editorServerToEditorConnectionId = m_networkEditorInterface->Connect(IpAddress(LocalHost.data(), editorsv_port, ProtocolType::Tcp));
+            
+            // If there wasn't an Editor waiting for this server to start, then assume this is an editor-server launched by hand... listen and wait for the editor to request a connection
+            if (editorServerToEditorConnectionId == AzNetworking::InvalidConnectionId)
+            {
+                m_networkEditorInterface->Listen(editorsv_port);
+            }
+            else
+            {
+                m_networkEditorInterface->SendReliablePacket(editorServerToEditorConnectionId, MultiplayerEditorPackets::EditorServerReadyForInit());
+            }
         }
     }
   
@@ -122,6 +135,15 @@ namespace Multiplayer
             return connection->SendReliablePacket(MultiplayerEditorPackets::EditorServerReady());
         }
 
+        return true;
+    }
+
+    bool MultiplayerEditorConnection::HandleRequest(
+        [[maybe_unused]] AzNetworking::IConnection* connection,
+        [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
+        [[maybe_unused]] MultiplayerEditorPackets::EditorServerReadyForInit& packet)
+    {
+        MultiplayerEditorServerRequestBus::Broadcast(&MultiplayerEditorServerRequestBus::Events::SendEditorServerInitPacket, connection);
         return true;
     }
 
