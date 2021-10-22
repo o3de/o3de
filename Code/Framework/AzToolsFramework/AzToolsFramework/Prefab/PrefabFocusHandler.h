@@ -65,7 +65,7 @@ namespace AzToolsFramework::Prefab
 
         // PrefabPublicNotifications overrides ...
         void OnPrefabInstancePropagationEnd() override;
-        void OnPrefabTemplateDirtyStatusChange(TemplateId templateId, bool status) override;
+        void OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, bool status) override;
         
     private:
         PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);

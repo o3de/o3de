@@ -254,7 +254,7 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::OnEntityInfoUpdatedName(AZ::EntityId entityId, [[maybe_unused]]const AZStd::string& name)
     {
-        // Determine if the entityId is the container for any of the instances in the vector
+        // Determine if the entityId is the container for any of the instances in the vector.
         auto result = AZStd::find_if(
             m_instanceFocusHierarchy.begin(), m_instanceFocusHierarchy.end(),
             [entityId](const InstanceOptionalReference& instance)
@@ -278,9 +278,9 @@ namespace AzToolsFramework::Prefab
         PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
     }
 
-    void PrefabFocusHandler::OnPrefabTemplateDirtyStatusChange(TemplateId templateId, [[maybe_unused]] bool status)
+    void PrefabFocusHandler::OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, [[maybe_unused]] bool status)
     {
-        // Determine if the entityId is the container for any of the instances in the vector
+        // Determine if the templateId matches any of the instances in the vector.
         auto result = AZStd::find_if(
             m_instanceFocusHierarchy.begin(), m_instanceFocusHierarchy.end(),
             [templateId](const InstanceOptionalReference& instance)
@@ -311,7 +311,7 @@ namespace AzToolsFramework::Prefab
             currentInstance = currentInstance->get().GetParentInstance();
         }
 
-        // Invert the vector, since we need the top instance to be at index 0
+        // Invert the vector, since we need the top instance to be at index 0.
         AZStd::reverse(m_instanceFocusHierarchy.begin(), m_instanceFocusHierarchy.end());
     }
 

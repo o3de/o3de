@@ -813,12 +813,12 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::SetTemplateDirtyFlag(TemplateId templateId, bool dirty)
         {
-            if (auto templateRef = FindTemplate(templateId); templateRef.has_value())
+            if (auto templateReference = FindTemplate(templateId); templateReference.has_value())
             {
-                templateRef->get().MarkAsDirty(dirty);
+                templateReference->get().MarkAsDirty(dirty);
 
                 PrefabPublicNotificationBus::Broadcast(
-                    &PrefabPublicNotificationBus::Events::OnPrefabTemplateDirtyStatusChange, templateId, dirty);
+                    &PrefabPublicNotificationBus::Events::OnPrefabTemplateDirtyFlagUpdated, templateId, dirty);
             }
         }
 
