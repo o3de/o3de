@@ -34,7 +34,8 @@ CStartupLogoDialog::CStartupLogoDialog(QString versionText, QString richTextCopy
     m_ui->setupUi(this);
 
     s_pLogoWindow = this;
-    setFixedSize(QSize(600, 300));
+    setFixedSize(QSize(m_enforcedWidth, m_enforcedHeight));
+    setAttribute(Qt::WA_TranslucentBackground, true);
 
     // Prepare background image
     m_backgroundImage = AzQtComponents::ScalePixmapForScreenDpi(

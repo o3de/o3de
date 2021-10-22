@@ -47,13 +47,16 @@ CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice,
                     CAboutDialog > QLabel#link { text-decoration: underline; color: #94D2FF; }");
 
     // Prepare background image
-    m_backgroundImage = AzQtComponents::ScalePixmapForScreenDpi(
+    QPixmap image = AzQtComponents::ScalePixmapForScreenDpi(
         QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background_2021_11.jpg")),
-        screen(),
-        QSize(m_enforcedWidth, m_enforcedHeight),
+        screen(), QSize(m_imageWidth, m_imageHeight),
         Qt::IgnoreAspectRatio,
         Qt::SmoothTransformation
     );
+
+    // Crop image to cut out transparent border
+    QRect cropRect((m_imageWidth - m_enforcedWidth) / 2, (m_imageHeight - m_enforcedHeight) / 2, m_enforcedWidth, m_enforcedHeight);
+    m_backgroundImage = image.copy(cropRect);
 
     // Draw the Open 3D Engine logo from svg
     m_ui->m_logo->load(QStringLiteral(":/StartupLogoDialog/o3de_logo.svg"));
