@@ -200,6 +200,8 @@ namespace O3DE::ProjectManager
          * @return A list of gem repo infos.
          */
         virtual AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() = 0;
+
+        virtual AZ::Outcome<void, AZStd::string> DownloadGem(const QString& gemName, std::function<void(int)> gemProgressCallback) = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;

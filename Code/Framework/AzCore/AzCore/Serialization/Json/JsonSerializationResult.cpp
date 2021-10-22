@@ -69,6 +69,9 @@ namespace AZ
                 case Tasks::CreatePatch:
                     target.append("a create patch operation ");
                     break;
+                case Tasks::Import:
+                    target.append("an import operation");
+                    break;
                 default:
                     target.append("an unknown operation ");
                     break;

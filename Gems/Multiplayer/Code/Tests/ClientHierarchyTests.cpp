@@ -16,7 +16,7 @@
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
 #include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
-#include <Source/NetworkInput/NetworkInputArray.h>
+#include <Multiplayer/NetworkInput/NetworkInputArray.h>
 #include <Source/NetworkEntity/NetworkEntityManager.h>
 
 namespace Multiplayer
@@ -213,9 +213,8 @@ namespace Multiplayer
             constexpr uint32_t bufferSize = 100;
             AZStd::array<uint8_t, bufferSize> buffer = {};
             NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
-            inSerializer.Serialize(reinterpret_cast<uint32_t&>(value),
-                "hierarchyRoot", /* Derived from NetworkHierarchyChildComponent.AutoComponent.xml */
-                AZStd::numeric_limits<uint32_t>::min(), AZStd::numeric_limits<uint32_t>::max());
+            ISerializer& serializer = inSerializer;
+            serializer.Serialize(value, "hierarchyRoot"); // Derived from NetworkHierarchyChildComponent.AutoComponent.xml
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 

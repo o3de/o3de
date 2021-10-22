@@ -30,7 +30,6 @@ namespace Multiplayer
     {
         friend class NetworkHierarchyChildComponent;
         friend class NetworkHierarchyRootComponentController;
-        friend class ServerToClientReplicationWindow;
     public:
         AZ_MULTIPLAYER_COMPONENT(Multiplayer::NetworkHierarchyRootComponent, s_networkHierarchyRootComponentConcreteUuid, Multiplayer::NetworkHierarchyRootComponentBase);
 

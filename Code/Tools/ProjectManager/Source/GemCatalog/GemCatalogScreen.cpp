@@ -12,6 +12,7 @@
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <GemCatalog/GemRequirementDialog.h>
 #include <GemCatalog/GemDependenciesDialog.h>
+#include <DownloadController.h>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -32,8 +33,12 @@ namespace O3DE::ProjectManager
         vLayout->setSpacing(0);
         setLayout(vLayout);
 
-        m_headerWidget = new GemCatalogHeaderWidget(m_gemModel, m_proxModel);
+        m_downloadController = new DownloadController();
+
+        m_headerWidget = new GemCatalogHeaderWidget(m_gemModel, m_proxModel, m_downloadController);
         vLayout->addWidget(m_headerWidget);
+
+        connect(m_headerWidget, &GemCatalogHeaderWidget::OpenGemsRepo, this, &GemCatalogScreen::HandleOpenGemRepo);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setMargin(0);
@@ -189,6 +194,27 @@ namespace O3DE::ProjectManager
         }
 
         return EnableDisableGemsResult::Success;
+    }
+
+    void GemCatalogScreen::HandleOpenGemRepo()
+    {
+        QVector<QModelIndex> gemsToBeAdded = m_gemModel->GatherGemsToBeAdded(true);
+        QVector<QModelIndex> gemsToBeRemoved = m_gemModel->GatherGemsToBeRemoved(true);
+
+        if (!gemsToBeAdded.empty() || !gemsToBeRemoved.empty())
+        {
+            QMessageBox::StandardButton warningResult = QMessageBox::warning(
+                nullptr, "Pending Changes",
+                "There are some unsaved changes to the gem selection,<br> they will be lost if you change screens.<br> Are you sure?",
+                QMessageBox::No | QMessageBox::Yes);
+
+            if (warningResult != QMessageBox::Yes)
+            {
+                return;
+            }
+        }
+
+        emit ChangeScreenRequest(ProjectManagerScreen::GemRepos);
     }
 
     ProjectManagerScreen GemCatalogScreen::GetScreenEnum()
