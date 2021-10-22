@@ -15,7 +15,6 @@
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <TagWidget.h>
 #include <QFrame>
-#include <QAction>
 #include <DownloadController.h>
 #endif
 
