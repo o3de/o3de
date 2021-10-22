@@ -102,7 +102,7 @@ namespace Terrain
 
     void TerrainMacroMaterialComponent::Activate()
     {
-        // Clear out our shape bounds and make sure the material is queued to load.
+        // Clear out our shape bounds and make sure the texture assets are queued to load.
         m_cachedShapeBounds = AZ::Aabb::CreateNull();
         m_configuration.m_macroColorAsset.QueueLoad();
         m_configuration.m_macroNormalAsset.QueueLoad();
@@ -110,7 +110,7 @@ namespace Terrain
         // Don't mark our material as active until it's finished loading and is valid.
         m_macroMaterialActive = false;
 
-        // Listen for the material asset to complete loading.
+        // Listen for the texture assets to complete loading.
         AZ::Data::AssetBus::MultiHandler::BusConnect(m_configuration.m_macroColorAsset.GetId());
         AZ::Data::AssetBus::MultiHandler::BusConnect(m_configuration.m_macroNormalAsset.GetId());
     }
@@ -168,12 +168,14 @@ namespace Terrain
 
     void TerrainMacroMaterialComponent::HandleMaterialStateChange()
     {
-        // We only want our component to appear active during the time that the macro material is loaded and valid.  The logic below
+        // We only want our component to appear active during the time that the macro material is fully loaded and valid.  The logic below
         // will handle all transition possibilities to notify if we've become active, inactive, or just changed.  We'll also only
         // keep a valid up-to-date copy of the shape bounds while the material is valid, since we don't need it any other time.
 
+        // Color and normal data is considered ready if it's finished loading or if we don't have a texture specified
         bool colorReady = m_colorImage || (!m_configuration.m_macroColorAsset.GetId().IsValid());
         bool normalReady = m_normalImage || (!m_configuration.m_macroNormalAsset.GetId().IsValid());
+        // If we don't have color or normal data, then we don't have *any* useful data, so don't activate the macro material.
         bool hasAnyData = m_configuration.m_macroColorAsset.GetId().IsValid() || m_configuration.m_macroNormalAsset.GetId().IsValid();
 
         bool wasPreviouslyActive = m_macroMaterialActive;
@@ -238,7 +240,7 @@ namespace Terrain
             m_configuration.m_macroColorAsset = asset;
             m_colorImage = AZ::RPI::StreamingImage::FindOrCreate(m_configuration.m_macroColorAsset);
 
-            // Clear the material asset reference to make sure we don't prevent hot-reloading.
+            // Clear the texture asset reference to make sure we don't prevent hot-reloading.
             m_configuration.m_macroColorAsset.Release();
         }
         else if (asset.GetId() == m_configuration.m_macroNormalAsset.GetId())
@@ -246,7 +248,7 @@ namespace Terrain
             m_configuration.m_macroNormalAsset = asset;
             m_normalImage = AZ::RPI::StreamingImage::FindOrCreate(m_configuration.m_macroNormalAsset);
 
-            // Clear the material asset reference to make sure we don't prevent hot-reloading.
+            // Clear the texture asset reference to make sure we don't prevent hot-reloading.
             m_configuration.m_macroColorAsset.Release();
         }
         else
