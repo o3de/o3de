@@ -91,10 +91,10 @@ namespace UnitTest
         }
     };
 
-    TEST_F(TerrainSurfaceGradientListTest, SurfaceGradientReturnsSurfaceWeightsInOrder)
+    TEST_F(TerrainSurfaceGradientListTest, SurfaceGradientReturnsSurfaceWeights)
     {
-        // When there is more that one surface/weight defined and added to the component, they should all
-        // be returned in descending weight order.
+        // When there is more than one surface/weight defined and added to the component, they should all
+        // be returned.  The component isn't required to return them in descending order.
         AddSurfaceGradientListToEntities();
 
         m_entity->Activate();
@@ -109,15 +109,15 @@ namespace UnitTest
         NiceMock<UnitTest::MockGradientRequests> mockGradientRequests2(m_gradientEntity2->GetId());
         ON_CALL(mockGradientRequests2, GetValue).WillByDefault(Return(gradient2Value));
 
-        AzFramework::SurfaceData::OrderedSurfaceTagWeightSet weightSet;
+        AzFramework::SurfaceData::SurfaceTagWeightList weightList;
         Terrain::TerrainAreaSurfaceRequestBus::Event(
-            m_entity->GetId(), &Terrain::TerrainAreaSurfaceRequestBus::Events::GetSurfaceWeights, AZ::Vector3::CreateZero(), weightSet);
+            m_entity->GetId(), &Terrain::TerrainAreaSurfaceRequestBus::Events::GetSurfaceWeights, AZ::Vector3::CreateZero(), weightList);
 
-        AZ::Crc32 expectedCrcList[] = { AZ::Crc32(surfaceTag2), AZ::Crc32(surfaceTag1) };
-        const float expectedWeightList[] = { gradient2Value, gradient1Value };
+        AZ::Crc32 expectedCrcList[] = { AZ::Crc32(surfaceTag1), AZ::Crc32(surfaceTag2) };
+        const float expectedWeightList[] = { gradient1Value, gradient2Value };
 
         int index = 0;
-        for (const auto& surfaceWeight : weightSet)
+        for (const auto& surfaceWeight : weightList)
         {
             EXPECT_EQ(surfaceWeight.m_surfaceType, expectedCrcList[index]);
             EXPECT_NEAR(surfaceWeight.m_weight, expectedWeightList[index], 0.01f);
