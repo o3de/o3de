@@ -114,7 +114,6 @@ namespace AZ::SceneAPI::Behaviors
         templateName.ReplaceExtension(AZ::Prefab::PrefabGroupAssetHandler::s_Extension);
         templateName = relativePath / templateName;
 
-        // validate the PrefabDom will make a valid Prefab template instance
         auto templateId = prefabLoaderInterface->LoadTemplateFromString(sb.GetString(), templateName.Native().c_str());
         if (templateId == InvalidTemplateId)
         {
