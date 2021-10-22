@@ -1644,10 +1644,7 @@ namespace AssetProcessor
                 }
             }
         }
-        else
-        {
-            AZ_Assert(false, "Cannot convert %s to a path relative to a scan folder!", fileName.toUtf8().constData());
-        }
+
         return false;
     }
 
