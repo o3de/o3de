@@ -66,7 +66,7 @@ namespace AZ
                 // The presentation mode may change when transitioning to or from a vsynced presentation mode
                 // In this case, the swapchain must be recreated.
                 InvalidateNativeSwapChain();
-                RecreateSwapchain();
+                CreateSwapchain();
             }
         }
 
@@ -92,7 +92,7 @@ namespace AZ
             auto& presentationQueue = device.GetCommandQueueContext().GetOrCreatePresentationCommandQueue(*this);
             m_presentationQueue = &presentationQueue;
 
-            result = RecreateSwapchain();
+            result = CreateSwapchain();
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             if (nativeDimensions)
@@ -146,7 +146,7 @@ namespace AZ
             auto& presentationQueue = device.GetCommandQueueContext().GetOrCreatePresentationCommandQueue(*this);
             m_presentationQueue = &presentationQueue;
 
-            RecreateSwapchain();
+            CreateSwapchain();
 
             if (nativeDimensions)
             {
@@ -220,19 +220,46 @@ namespace AZ
 
                 const VkResult result = vkQueuePresentKHR(vulkanQueue->GetNativeQueue(), &info);
 
+                // Vulkan's definition of the two types of errors.
+                // VK_ERROR_OUT_OF_DATE_KHR: "A surface has changed in such a way that it is no longer compatible with the swapchain,
+                //     and further presentation requests using the swapchain will fail. Applications must query the new surface
+                //     properties and recreate their swapchain if they wish to continue presenting to the surface."
+                // VK_SUBOPTIMAL_KHR: "A swapchain no longer matches the surface properties exactly, but can still be used to
+                //     present to the surface successfully."
+                //
+                // These result values may occur after resizing or some window operation. We should update the surface info and recreate the swapchain.
+                // VK_SUBOPTIMAL_KHR is treated as success, but we better update the surface info as well.
                 if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
                 {
                     InvalidateNativeSwapChain();
-                    RecreateSwapchain();
+                    CreateSwapchain();
+                }
+                else
+                {
+                    // Other errors are:
+                    // VK_ERROR_OUT_OF_HOST_MEMORY
+                    // VK_ERROR_OUT_OF_DEVICE_MEMORY
+                    // VK_ERROR_DEVICE_LOST
+                    // VK_ERROR_SURFACE_LOST_KHR
+                    // VK_ERROR_FULL_SCREEN_EXCLUSIVE_MODE_LOST_EXT
+                    AZ_Assert(result == VK_SUCCESS, "Unhandled error for swapchain presentation.");
                 }
             };
 
             m_presentationQueue->QueueCommand(AZStd::move(presentCommand));
 
             uint32_t acquiredImageIndex = GetCurrentImageIndex();
-            AcquireNewImage(&acquiredImageIndex);
-
-            return acquiredImageIndex;
+            RHI::ResultCode result = AcquireNewImage(&acquiredImageIndex);
+            if (result == RHI::ResultCode::Fail)
+            {
+                InvalidateNativeSwapChain();
+                CreateSwapchain();
+                return 0;
+            }
+            else
+            {
+                return acquiredImageIndex;
+            }
         }
 
         RHI::ResultCode SwapChain::BuildSurface(const RHI::SwapChainDescriptor& descriptor)
@@ -422,12 +449,7 @@ namespace AZ
                 acquiredImageIndex);
 
             RHI::ResultCode result = ConvertResult(vkResult);
-            if (vkResult == VK_ERROR_OUT_OF_DATE_KHR || vkResult == VK_SUBOPTIMAL_KHR)
-            {
-                InvalidateNativeSwapChain();
-                RecreateSwapchain();
-                return result;
-            }
+            RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             imageAvailableSemaphore->SignalEvent();
             if (m_currentFrameContext.m_imageAvailableSemaphore)
@@ -440,6 +462,7 @@ namespace AZ
             }
             m_currentFrameContext.m_imageAvailableSemaphore = imageAvailableSemaphore;
             m_currentFrameContext.m_presentableSemaphore = semaphoreAllocator.Allocate();
+
             return result;
         }
 
@@ -459,7 +482,7 @@ namespace AZ
             }
         }
 
-        RHI::ResultCode SwapChain::RecreateSwapchain()
+        RHI::ResultCode SwapChain::CreateSwapchain()
         {
             auto& device = static_cast<Device&>(GetDevice());
 
@@ -487,6 +510,7 @@ namespace AZ
 
             RHI::ResultCode result = BuildNativeSwapChain(m_dimensions);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            AZ_TracePrintf("Swapchain", "Swapchain created. Width: %u, Height: %u.", m_dimensions.m_imageWidth, m_dimensions.m_imageHeight);
 
             // Do not recycle the semaphore because they may not ever get signaled and since
             // we can't recycle Vulkan semaphores we just delete them.
@@ -512,11 +536,13 @@ namespace AZ
                 device.GetNativeDevice(), m_nativeSwapChain, &m_dimensions.m_imageCount, m_swapchainNativeImages.data());
             AssertSuccess(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(vkResult));
+            AZ_TracePrintf("Swapchain", "Obtained presentable images.");
 
             // Acquire the first image
             uint32_t imageIndex = 0;
             result = AcquireNewImage(&imageIndex);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
+            AZ_TracePrintf("Swapchain", "Acquired the first image.");
 
             return RHI::ResultCode::Success;
         }
