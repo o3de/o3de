@@ -43,7 +43,7 @@ namespace Terrain
         virtual ~TerrainMacroMaterialRequests() = default;
 
         // Get the terrain macro material and the region that it covers.
-        virtual void GetTerrainMacroMaterialData(MacroMaterialData& macroMaterial, AZ::Aabb& macroMaterialRegion) = 0;
+        virtual MacroMaterialData GetTerrainMacroMaterialData() = 0;
     };
 
     using TerrainMacroMaterialRequestBus = AZ::EBus<TerrainMacroMaterialRequests>;
@@ -62,8 +62,7 @@ namespace Terrain
 
         virtual void OnTerrainMacroMaterialCreated(
             [[maybe_unused]] AZ::EntityId macroMaterialEntity,
-            [[maybe_unused]] const MacroMaterialData& macroMaterial,
-            [[maybe_unused]] const AZ::Aabb& macroMaterialRegion)
+            [[maybe_unused]] const MacroMaterialData& macroMaterial)
         {
         }
 

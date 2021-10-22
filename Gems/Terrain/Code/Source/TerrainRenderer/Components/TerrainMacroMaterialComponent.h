@@ -64,7 +64,7 @@ namespace Terrain
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-        void GetTerrainMacroMaterialData(MacroMaterialData& macroMaterial, AZ::Aabb& macroMaterialRegion) override;
+        MacroMaterialData GetTerrainMacroMaterialData() override;
 
     private:
         ////////////////////////////////////////////////////////////////////////
@@ -81,6 +81,7 @@ namespace Terrain
         TerrainMacroMaterialConfig m_configuration;
         AZ::Aabb m_cachedShapeBounds;
         bool m_macroMaterialActive{ false };
-        MacroMaterialData m_materialData;
+        AZ::Data::Instance<AZ::RPI::Image> m_colorImage;
+        AZ::Data::Instance<AZ::RPI::Image> m_normalImage;
     };
 }

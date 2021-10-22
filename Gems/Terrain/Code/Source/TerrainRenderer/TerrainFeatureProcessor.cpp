@@ -185,10 +185,9 @@ namespace Terrain
         m_areaData.m_heightmapUpdated = true;
     }
     
-    void TerrainFeatureProcessor::OnTerrainMacroMaterialCreated(AZ::EntityId entityId, const MacroMaterialData& newMaterialData, const AZ::Aabb& region)
+    void TerrainFeatureProcessor::OnTerrainMacroMaterialCreated(AZ::EntityId entityId, const MacroMaterialData& newMaterialData)
     {
         MacroMaterialData& materialData = FindOrCreateMacroMaterial(entityId);
-        materialData.m_bounds = region;
 
         UpdateMacroMaterialData(materialData, newMaterialData);
 
@@ -244,8 +243,6 @@ namespace Terrain
 
     void TerrainFeatureProcessor::OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId)
     {
-        RemoveMacroMaterial(entityId);
-
         MacroMaterialData* materialData = FindMacroMaterial(entityId);
 
         if (materialData)
@@ -265,6 +262,7 @@ namespace Terrain
         }
         
         m_areaData.m_macroMaterialsUpdated = true;
+        RemoveMacroMaterial(entityId);
     }
 
     void TerrainFeatureProcessor::UpdateTerrainData()
@@ -378,11 +376,9 @@ namespace Terrain
         TerrainMacroMaterialRequestBus::EnumerateHandlers(
             [&](TerrainMacroMaterialRequests* handler)
             {
-                MacroMaterialData macroMaterial;
-                AZ::Aabb bounds;
-                handler->GetTerrainMacroMaterialData(macroMaterial, bounds);
+                MacroMaterialData macroMaterial = handler->GetTerrainMacroMaterialData();
                 AZ::EntityId entityId = *(Terrain::TerrainMacroMaterialRequestBus::GetCurrentBusId());
-                OnTerrainMacroMaterialCreated(entityId, macroMaterial, bounds);
+                OnTerrainMacroMaterialCreated(entityId, macroMaterial);
                 return true;
             }
         );

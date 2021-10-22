@@ -16,6 +16,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <Atom/RPI.Public/Image/StreamingImage.h>
+
 namespace Terrain
 {
     void TerrainMacroMaterialConfig::Reflect(AZ::ReflectContext* context)
@@ -45,16 +47,20 @@ namespace Terrain
                         "Terrain macro color texture for use by any terrain inside the bounding box on this entity.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_macroNormalAsset, "Normal Texture",
-                        "Terrain macro normal texture for use by any terrain inside the bounding box on this entity.")
+                        "Texture for defining surface normal direction. These will override normals generated from the geometry.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_normalFlipX, "Normal Flip X",
-                        "Flip the X values of the normal map.")
+                        "Flip tangent direction for this normal map.")
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_normalFlipY, "Normal Flip Y",
-                        "Flip the Y values of the normal map.")
+                        "Flip bitangent direction for this normal map.")
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_normalFactor, "Normal Factor",
-                        "Normal values scale factor.")
+                        AZ::Edit::UIHandlers::Slider, &TerrainMacroMaterialConfig::m_normalFactor, "Normal Factor",
+                        "Strength factor for scaling the normal map values.")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
+                        ->Attribute(AZ::Edit::Attributes::SoftMax, 2.0f)
                     ;
             }
         }
@@ -117,6 +123,9 @@ namespace Terrain
         m_configuration.m_macroColorAsset.Release();
         m_configuration.m_macroNormalAsset.Release();
 
+        m_colorImage.reset();
+        m_normalImage.reset();
+
         // Send out any notifications as appropriate based on the macro material destruction.
         HandleMaterialStateChange();
     }
@@ -159,14 +168,16 @@ namespace Terrain
 
     void TerrainMacroMaterialComponent::HandleMaterialStateChange()
     {
-        /*
         // We only want our component to appear active during the time that the macro material is loaded and valid.  The logic below
         // will handle all transition possibilities to notify if we've become active, inactive, or just changed.  We'll also only
         // keep a valid up-to-date copy of the shape bounds while the material is valid, since we don't need it any other time.
 
+        bool colorReady = m_colorImage || (!m_configuration.m_macroColorAsset.GetId().IsValid());
+        bool normalReady = m_normalImage || (!m_configuration.m_macroNormalAsset.GetId().IsValid());
+        bool hasAnyData = m_configuration.m_macroColorAsset.GetId().IsValid() || m_configuration.m_macroNormalAsset.GetId().IsValid();
+
         bool wasPreviouslyActive = m_macroMaterialActive;
-        //bool isNowActive = (m_macroMaterialInstance != nullptr);
-        bool isNowActive = false;
+        bool isNowActive = colorReady && normalReady && hasAnyData;
 
         // Set our state to active or inactive, based on whether or not the macro material instance is now valid.
         m_macroMaterialActive = isNowActive;
@@ -192,9 +203,10 @@ namespace Terrain
             // Start listening for shape changes.
             LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
 
+            MacroMaterialData material = GetTerrainMacroMaterialData();
+
             TerrainMacroMaterialNotificationBus::Broadcast(
-                &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialCreated, GetEntityId(), m_macroMaterialInstance,
-                m_cachedShapeBounds);
+                &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialCreated, GetEntityId(), material);
         }
         else if (wasPreviouslyActive && !isNowActive)
         {
@@ -212,32 +224,34 @@ namespace Terrain
         else
         {
             // We were active both before and after, so just send out a material changed event.
+            MacroMaterialData material = GetTerrainMacroMaterialData();
 
             TerrainMacroMaterialNotificationBus::Broadcast(
-                &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialChanged, GetEntityId(), m_macroMaterialInstance);
+                &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialChanged, GetEntityId(), material);
         }
-        */
     }
 
     void TerrainMacroMaterialComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        /*
-        m_configuration.m_materialAsset = asset;
-
-        if (m_configuration.m_materialAsset.Get()->GetMaterialTypeAsset().GetId() ==
-            TerrainMacroMaterialConfig::GetTerrainMacroMaterialTypeAssetId())
+        if (asset.GetId() == m_configuration.m_macroColorAsset.GetId())
         {
-            m_macroMaterialInstance = AZ::RPI::Material::FindOrCreate(m_configuration.m_materialAsset);
+            m_configuration.m_macroColorAsset = asset;
+            m_colorImage = AZ::RPI::StreamingImage::FindOrCreate(m_configuration.m_macroColorAsset);
+
+            // Clear the material asset reference to make sure we don't prevent hot-reloading.
+            m_configuration.m_macroColorAsset.Release();
+        }
+        else if (asset.GetId() == m_configuration.m_macroNormalAsset.GetId())
+        {
+            m_configuration.m_macroNormalAsset = asset;
+            m_normalImage = AZ::RPI::StreamingImage::FindOrCreate(m_configuration.m_macroNormalAsset);
+
+            // Clear the material asset reference to make sure we don't prevent hot-reloading.
+            m_configuration.m_macroColorAsset.Release();
         }
         else
         {
-            AZ_Error("Terrain", false, "Material '%s' has the wrong material type.", m_configuration.m_materialAsset.GetHint().c_str());
-            m_macroMaterialInstance.reset();
         }
-
-        // Clear the material asset reference to make sure we don't prevent hot-reloading.
-        m_configuration.m_materialAsset.Release();
-        */
 
         HandleMaterialStateChange();
     }
@@ -247,10 +261,18 @@ namespace Terrain
         OnAssetReady(asset);
     }
 
-    void TerrainMacroMaterialComponent::GetTerrainMacroMaterialData(
-        MacroMaterialData& macroMaterial, AZ::Aabb& macroMaterialRegion)
+    MacroMaterialData TerrainMacroMaterialComponent::GetTerrainMacroMaterialData()
     {
-        macroMaterial = m_materialData;
-        macroMaterialRegion = m_cachedShapeBounds;
+        MacroMaterialData macroMaterial;
+
+        macroMaterial.m_entityId = GetEntityId();
+        macroMaterial.m_bounds = m_cachedShapeBounds;
+        macroMaterial.m_colorImage = m_colorImage;
+        macroMaterial.m_normalImage = m_normalImage;
+        macroMaterial.m_normalFactor = m_configuration.m_normalFactor;
+        macroMaterial.m_normalFlipX = m_configuration.m_normalFlipX;
+        macroMaterial.m_normalFlipY = m_configuration.m_normalFlipY;
+
+        return macroMaterial;
     }
 }

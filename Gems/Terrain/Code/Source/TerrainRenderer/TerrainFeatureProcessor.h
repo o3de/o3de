@@ -120,7 +120,7 @@ namespace Terrain
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
         // TerrainMacroMaterialNotificationBus overrides...
-        void OnTerrainMacroMaterialCreated(AZ::EntityId entityId, const MacroMaterialData& material, const AZ::Aabb& region) override;
+        void OnTerrainMacroMaterialCreated(AZ::EntityId entityId, const MacroMaterialData& material) override;
         void OnTerrainMacroMaterialChanged(AZ::EntityId entityId, const MacroMaterialData& material) override;
         void OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
         void OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId) override;
