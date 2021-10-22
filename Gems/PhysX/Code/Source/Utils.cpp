@@ -308,18 +308,18 @@ namespace PhysX
                 return false;
             }
             case Physics::ShapeType::Heightfield:
-                {
-                    const Physics::HeightfieldShapeConfiguration& constHeightfieldConfig =
-                        static_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
+            {
+                const Physics::HeightfieldShapeConfiguration& constHeightfieldConfig =
+                    static_cast<const Physics::HeightfieldShapeConfiguration&>(shapeConfiguration);
 
-                    // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
-                    // native heightfield pointer that gets stored in the configuration.
-                    Physics::HeightfieldShapeConfiguration& heightfieldConfig =
-                        const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
+                // We are deliberately removing the const off of the ShapeConfiguration here because we're going to change the cached
+                // native heightfield pointer that gets stored in the configuration.
+                Physics::HeightfieldShapeConfiguration& heightfieldConfig =
+                    const_cast<Physics::HeightfieldShapeConfiguration&>(constHeightfieldConfig);
 
-                    CreatePxGeometryFromHeightfield(heightfieldConfig, pxGeometry);
-                    break;
-                }
+                CreatePxGeometryFromHeightfield(heightfieldConfig, pxGeometry);
+                break;
+            }
             default:
                 AZ_Warning("PhysX Rigid Body", false, "Shape not supported in PhysX. Shape Type: %d", shapeType);
                 return false;
