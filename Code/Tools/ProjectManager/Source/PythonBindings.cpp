@@ -223,6 +223,7 @@ namespace RedirectOutput
     }
 } // namespace RedirectOutput
 
+
 namespace O3DE::ProjectManager
 {
     PythonBindings::PythonBindings(const AZ::IO::PathView& enginePath)
@@ -1120,17 +1121,28 @@ namespace O3DE::ProjectManager
 
     AZ::Outcome<void, AZStd::string> PythonBindings::DownloadGem(const QString& gemName, std::function<void(int)> gemProgressCallback)
     {
+        // This process is currently limited to download a single gem at a time.
         bool downloadSucceeded = false;
+
+        m_requestCancelDownload = false;
         auto result = ExecuteWithLockErrorHandling(
             [&]
             {
                 auto downloadResult = m_download.attr("download_gem")(
                     QString_To_Py_String(gemName), // gem name
                     pybind11::none(), // destination path
-                    false// skip auto register
+                    false, // skip auto register
+                    pybind11::cpp_function(
+                        [this, gemProgressCallback](int progress)
+                        {
+                            gemProgressCallback(progress);
+
+                            return m_requestCancelDownload;
+                        }) // Callback for download progress and cancelling
                     );
                 downloadSucceeded = (downloadResult.cast<int>() == 0);
             });
+
 
         if (!result.IsSuccess())
         {
@@ -1142,5 +1154,10 @@ namespace O3DE::ProjectManager
         }
 
         return AZ::Success();
+    }
+
+    void PythonBindings::CancelDownload()
+    {
+        m_requestCancelDownload = true;
     }
 }
