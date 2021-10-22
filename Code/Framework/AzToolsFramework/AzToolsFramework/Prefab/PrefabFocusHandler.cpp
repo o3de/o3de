@@ -331,12 +331,12 @@ namespace AzToolsFramework::Prefab
             if (index < maxIndex)
             {
                 // Get the filename without the extension (stem).
-                prefabName = AZStd::string::format("%.*s", AZ_STRING_ARG(instance->get().GetTemplateSourcePath().Stem().Native()));
+                prefabName = instance->get().GetTemplateSourcePath().Stem().Native();
             }
             else
             {
                 // Get the full filename.
-                prefabName = AZStd::string::format("%.*s", AZ_STRING_ARG(instance->get().GetTemplateSourcePath().Filename().Native()));
+                prefabName = instance->get().GetTemplateSourcePath().Filename().Native();
             }
 
             if (prefabSystemComponentInterface->IsTemplateDirty(instance->get().GetTemplateId()))
