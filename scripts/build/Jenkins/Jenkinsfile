@@ -434,24 +434,25 @@ def ExportTestScreenshots(Map options, String workspace, String platformName, St
 }
 
 def UploadAPLogs(Map options, String branchName, String jobName, String workspace, Map params) {
-    projects = params.CMAKE_LY_PROJECTS.split(",")
-    projects.each{ project ->
-        def apLogsPath = "${workspace}/${ENGINE_REPOSITORY_NAME}/${project}/user/log"
-        def s3UploadScriptPath = "${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/build/tools/upload_to_s3.py"
-        if(env.IS_UNIX) {
-            pythonPath = "${options.PYTHON_DIR}/python.sh"
-        }
-        else {
-            pythonPath = "${options.PYTHON_DIR}/python.cmd"
-        }
-        def command = "${pythonPath} -u ${s3UploadScriptPath} --base_dir ${apLogsPath} " +
-                      "--file_regex \".*\" --bucket ${env.AP_LOGS_S3_BUCKET} " +
-                      "--search_subdirectories True --key_prefix ${env.JOB_NAME}/${branchName}/${env.BUILD_NUMBER}/${jobName}"
-        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+    dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+        projects = params.CMAKE_LY_PROJECTS.split(",")
+        projects.each{ project ->
+            def apLogsPath = "${project}/user/log"
+            def s3UploadScriptPath = "scripts/build/tools/upload_to_s3.py"
+            if(env.IS_UNIX) {
+                pythonPath = "${options.PYTHON_DIR}/python.sh"
+            }
+            else {
+                pythonPath = "${options.PYTHON_DIR}/python.cmd"
+            }
+            def command = "${pythonPath} -u ${s3UploadScriptPath} --base_dir ${apLogsPath} " +
+                          "--file_regex \".*\" --bucket ${env.AP_LOGS_S3_BUCKET} " +
+                          "--search_subdirectories True --key_prefix ${env.JOB_NAME}/${branchName}/${env.BUILD_NUMBER}/${jobName}" +
+                          "--extra-args {\"ACL\": \"bucket-owner-full-control\"}"
             palSh(command, "Uploading AP logs for job ${jobName} for branch ${branchName}", false)
+            }
         }
     }
-}
 
 def PostBuildCommonSteps(String workspace, boolean mount = true) {
     echo 'Starting post-build common steps...'
@@ -568,6 +569,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         } else {
                             try {
                                 CreateBuildStage(pipelineConfig,  platform.key, build_job.key, envVars).call()
+                            }
                             catch (Exception e) {
                                 if (IsAPLogUpload(branchName, build_job.key)) {
                                     CreateUploadAPLogsStage(pipelineConfig, branchName, build_job.key, envVars['WORKSPACE'], platform.value.build_types[build_job.key].PARAMETERS).call()
