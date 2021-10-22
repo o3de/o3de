@@ -9,12 +9,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 Generated from O3DE PythonGem Template"""
 
 import azlmbr
-
-# -------------------------------------------------------------------------
-def get_o3de_mainwindow():
-    widget_main_window = QtWidgets.QWidget.find(params.mainWindowId)
-    widget_main_window = wrapInstance(int(getCppPointer(widget_main_window)[0]), QtWidgets.QMainWindow)
-    return widget_main_window
+import az_qt_helpers
+from PySide2 import QtCore, QtWidgets, QtGui
+from PySide2.QtCore import QEvent, Qt
+from PySide2.QtWidgets import QMainWindow, QAction, QDialog, QHeaderView, QLabel, QLineEdit, QPushButton, QSplitter, QTreeWidget, QTreeWidgetItem, QWidget, QAbstractButton
 # -------------------------------------------------------------------------
 
 
@@ -53,11 +51,26 @@ if __name__ == "__main__":
     from shiboken2 import wrapInstance, getCppPointer
 
     # Get our Editor main window
-    _widget_main_window = get_o3de_mainwindow()
+    _widget_main_window = az_qt_helpers.get_editor_main_window()
+    # ---------------------------------------------------------------------
+
+
+    # ---------------------------------------------------------------------
+    # creat a custom menu
+    _tag_str = '${SanitizedCppName}'
+
+    # create our own menuBar
+    ${SanitizedCppName}_menu = _widget_main_window.menuBar().addMenu(f"&{_tag_str}")
+
+    # nest a menu for util/tool launching
+    ${SanitizedCppName}_launch_menu = ${SanitizedCppName}_menu.addMenu("examples")
     # ---------------------------------------------------------------------
 
     
     # ---------------------------------------------------------------------
+    # (1) add the first SampleUI
+    action_launch_sample_ui = ${SanitizedCppName}_launch_menu.addAction("O3DE:SampleUI")
+
     @Slot() 
     def clicked_sample_ui():
         while 1:  # simple PySide2 test, set to 0 to disable
@@ -71,19 +84,23 @@ if __name__ == "__main__":
     
 
     # ---------------------------------------------------------------------
+    # (1) and custom external module Qwidget
+    action_launch_${SanitizedCppName}_dialog = ${SanitizedCppName}_launch_menu.addAction("O3DE:${SanitizedCppName}_dialog")
+
     @Slot() 
     def clicked_${SanitizedCppName}_dialog():
         while 1:  # simple PySide2 test, set to 0 to disable
             try:
                 import az_qt_helpers
-                from ${SanitizedCppName}_dialog import ${SanitizedCppName}Dialog
+                from ${NameLower}_dialog import ${SanitizedCppName}Dialog
                 az_qt_helpers.register_view_pane('${SanitizedCppName} Popup', ${SanitizedCppName}Dialog)
-            except:
+            except Exception as e:
+                print(f'Error: {e}')
                 print('Skipping register our ${SanitizedCppName}Dialog with the Editor.')
-            ${SanitizedCppName}_dialog = ${SanitizedCppName}Dialog(parent=editor_main_window)
+            ${SanitizedCppName}_dialog = ${SanitizedCppName}Dialog(parent=_widget_main_window)
             ${SanitizedCppName}_dialog.show()
-        break
-    return
+            break
+        return
     # Add click event to menu bar
     action_launch_${SanitizedCppName}_dialog.triggered.connect(clicked_${SanitizedCppName}_dialog)
     # ---------------------------------------------------------------------

@@ -57,7 +57,6 @@ namespace ${SanitizedCppName}
     void ${SanitizedCppName}EditorSystemComponent::Deactivate()
     {
         ${SanitizedCppName}RequestBus::Handler::BusDisconnect();
-        ${SanitizedCppName}SystemComponent::Deactivate();
     }
 
 } // namespace ${SanitizedCppName}

@@ -9,7 +9,6 @@
  // {END_LICENSE}
 
 #pragma once
-
 #include <AzCore/Component/Component.h>
 #include <${Name}/${Name}Bus.h>
 
@@ -21,6 +20,7 @@ namespace ${SanitizedCppName}
     class ${SanitizedCppName}EditorSystemComponent
         : public ${SanitizedCppName}RequestBus::Handler
         , private AzToolsFramework::EditorEvents::Bus::Handler
+        , public AZ::Component
     {
     public:
         AZ_COMPONENT(${SanitizedCppName}EditorSystemComponent, "${EditorSysCompClassId}");
@@ -36,7 +36,7 @@ namespace ${SanitizedCppName}
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
         // AZ::Component
-        void Activate() override;
-        void Deactivate() override;
+        void Activate();
+        void Deactivate();
     };
 } // namespace ${SanitizedCppName}
