@@ -34,7 +34,7 @@ from shiboken2 import wrapInstance
 
 # -------------------------------------------------------------------------
 #  global space debug flag
-_G_DEBUG = settings.DCCSI_GDEBUG
+_DCCSI_GDEBUG = settings.DCCSI_GDEBUG
 
 #  global space debug flag
 _DCCSI_DEV_MODE = settings.DCCSI_DEV_MODE

@@ -13,6 +13,7 @@
 #include <EditorComponents/EditorTerrainSystemComponent.h>
 #include <EditorComponents/EditorTerrainWorldComponent.h>
 #include <EditorComponents/EditorTerrainWorldDebuggerComponent.h>
+#include <EditorComponents/EditorTerrainPhysicsColliderComponent.h>
 #include <EditorComponents/EditorTerrainWorldRendererComponent.h>
 #include <TerrainRenderer/EditorComponents/EditorTerrainSurfaceMaterialsListComponent.h>
 #include <TerrainRenderer/EditorComponents/EditorTerrainMacroMaterialComponent.h>
@@ -32,6 +33,7 @@ namespace Terrain
                 Terrain::EditorTerrainSurfaceMaterialsListComponent::CreateDescriptor(),
                 Terrain::EditorTerrainWorldComponent::CreateDescriptor(),
                 Terrain::EditorTerrainWorldDebuggerComponent::CreateDescriptor(),
+                Terrain::EditorTerrainPhysicsColliderComponent::CreateDescriptor(),
                 Terrain::EditorTerrainWorldRendererComponent::CreateDescriptor(),
 
             });
