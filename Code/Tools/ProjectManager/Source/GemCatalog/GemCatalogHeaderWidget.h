@@ -15,6 +15,7 @@
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <TagWidget.h>
 #include <QFrame>
+#include <QAction>
 #include <DownloadController.h>
 #endif
 
@@ -87,9 +88,12 @@ namespace O3DE::ProjectManager
 
     signals:
         void addGem();
-
+        void OpenGemsRepo();
+        
     private:
         AzQtComponents::SearchLineEdit* m_filterLineEdit = nullptr;
         inline constexpr static int s_height = 60;
+
+        QAction* m_openGemReposAction = nullptr;
     };
 } // namespace O3DE::ProjectManager

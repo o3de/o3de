@@ -133,7 +133,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            emit GotoPreviousScreenRequest();
+            emit GoToPreviousScreenRequest();
         }
     }
 

@@ -181,7 +181,7 @@ QTabBar::tab:focus {
     max-height:54px;
 }
 
-#footer > QPushButton, #AddGemButton {
+#footer > QPushButton {
     qproperty-flat: true;
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #0095f2, stop: 1.0 #1e70eb);
@@ -191,15 +191,6 @@ QTabBar::tab:focus {
     min-width: 150px;
     margin-right:30px;
 }
-
-#AddGemButton
-{
-    min-height: 24px;
-    max-height: 24px;
-    margin-right:10px;
-    min-width: 120px;
-}
-
 #footer > QPushButton:hover {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #10A5f2, stop: 1.0 #2e80eb);
@@ -225,6 +216,10 @@ QTabBar::tab:focus {
 
 #horizontalSeparatingLine {
     color: #666666;
+}
+
+#verticalSeparatingLine {
+    color: #888888;
 }
 
 /************** Project Settings **************/
@@ -500,6 +495,14 @@ QProgressBar::chunk {
     margin:0;
     padding: 0px;
     background-color: #444444;
+}
+
+#gemCatalogMenuButton {
+    qproperty-flat: true;
+    max-width:36px;
+    min-width:36px;
+    max-height:24px;
+    min-height:24px;
 }
 
 #GemCatalogHeaderLabel {

@@ -42,6 +42,10 @@ namespace O3DE::ProjectManager
         m_headerWidget = new GemCatalogHeaderWidget(m_gemModel, m_proxModel, m_downloadController);
         vLayout->addWidget(m_headerWidget);
 
+        connect(m_headerWidget, &GemCatalogHeaderWidget::OpenGemsRepo, this, [this](){
+            emit ChangeScreenRequest(ProjectManagerScreen::GemRepos);
+        });
+
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setMargin(0);
         vLayout->addLayout(hLayout);
