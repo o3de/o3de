@@ -301,6 +301,7 @@ namespace O3DE::ProjectManager
             m_enableGemProject = pybind11::module::import("o3de.enable_gem");
             m_disableGemProject = pybind11::module::import("o3de.disable_gem");
             m_editProjectProperties = pybind11::module::import("o3de.project_properties");
+            m_download = pybind11::module::import("o3de.download");
             m_pathlib = pybind11::module::import("pathlib");
 
             // make sure the engine is registered
@@ -553,6 +554,47 @@ namespace O3DE::ProjectManager
         }
 
         return AZ::Success(AZStd::move(gemNames));
+    }
+
+    AZ::Outcome<void, AZStd::string> PythonBindings::RegisterGem(const QString& gemPath, const QString& projectPath)
+    {
+        bool registrationResult = false;
+        auto result = ExecuteWithLockErrorHandling(
+            [&]
+        {
+            auto externalProjectPath = projectPath.isEmpty() ? pybind11::none() : QString_To_Py_Path(projectPath);
+            auto pythonRegistrationResult = m_register.attr("register")(
+                pybind11::none(), // engine_path
+                pybind11::none(), // project_path
+                QString_To_Py_Path(gemPath), // gem folder
+                pybind11::none(), // external subdirectory
+                pybind11::none(), // template_path
+                pybind11::none(), // restricted folder 
+                pybind11::none(), // repo uri 
+                pybind11::none(), // default_engines_folder
+                pybind11::none(), // default_projects_folder
+                pybind11::none(), // default_gems_folder
+                pybind11::none(), // default_templates_folder
+                pybind11::none(), // default_restricted_folder
+                pybind11::none(), // default_third_party_folder
+                pybind11::none(), // external_subdir_engine_path
+                externalProjectPath // external_subdir_project_path
+                );
+
+            // Returns an exit code so boolify it then invert result
+            registrationResult = !pythonRegistrationResult.cast<bool>();
+        });
+
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure<AZStd::string>(result.GetError().c_str());
+        }
+        else if (!registrationResult)
+        {
+            return AZ::Failure<AZStd::string>(AZStd::string::format("Failed to register gem path %s", gemPath.toUtf8().constData()));
+        }
+
+        return AZ::Success();
     }
 
     bool PythonBindings::AddProject(const QString& path)
@@ -1074,5 +1116,31 @@ namespace O3DE::ProjectManager
 
         std::sort(gemRepos.begin(), gemRepos.end());
         return AZ::Success(AZStd::move(gemRepos));
+    }
+
+    AZ::Outcome<void, AZStd::string> PythonBindings::DownloadGem(const QString& gemName, std::function<void(int)> gemProgressCallback)
+    {
+        bool downloadSucceeded = false;
+        auto result = ExecuteWithLockErrorHandling(
+            [&]
+            {
+                auto downloadResult = m_download.attr("download_gem")(
+                    QString_To_Py_String(gemName), // gem name
+                    pybind11::none(), // destination path
+                    false// skip auto register
+                    );
+                downloadSucceeded = (downloadResult.cast<int>() == 0);
+            });
+
+        if (!result.IsSuccess())
+        {
+            return result;
+        }
+        else if (!downloadSucceeded)
+        {
+            return AZ::Failure<AZStd::string>("Failed to download gem.");
+        }
+
+        return AZ::Success();
     }
 }

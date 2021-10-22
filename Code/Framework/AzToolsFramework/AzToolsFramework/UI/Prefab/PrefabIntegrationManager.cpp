@@ -255,7 +255,7 @@ namespace AzToolsFramework
                     if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity))
                     {
                         // Edit Prefab
-                        if (prefabWipFeaturesEnabled && !s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
+                        if (!s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
                         {
                             QAction* editAction = menu->addAction(QObject::tr("Edit Prefab"));
                             editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
@@ -805,16 +805,15 @@ namespace AzToolsFramework
             }
             else
             {
-                QString cleanSaveAs(QDir::cleanPath(prefabPath));
+                AZ::IO::FixedMaxPath lexicallyNormalPath = AZ::IO::PathView(prefabPath.toUtf8().constData()).LexicallyNormal();
 
                 bool isPathSafeForAssets = false;
-                for (AZStd::string assetSafeFolder : assetSafeFolders)
+                for (const AZStd::string& assetSafeFolder : assetSafeFolders)
                 {
-                    QString cleanAssetSafeFolder(QDir::cleanPath(assetSafeFolder.c_str()));
-                    // Compare using clean paths so slash direction does not matter.
-                    // Note that this comparison is case sensitive because some file systems
-                    // Open 3D Engine supports are case sensitive.
-                    if (cleanSaveAs.startsWith(cleanAssetSafeFolder))
+                    AZ::IO::PathView assetSafeFolderView(assetSafeFolder);
+                    // Check if the prefabPath is relative to the safe asset directory.
+                    // The Path classes are being used to make this check case insensitive.
+                    if (lexicallyNormalPath.IsRelativeTo(assetSafeFolderView))
                     {
                         isPathSafeForAssets = true;
                         break;
@@ -1159,25 +1158,14 @@ namespace AzToolsFramework
             {
                 s_editorEntityUiInterface->RegisterEntity(entityId, m_prefabUiHandler.GetHandlerId());
 
-                bool prefabWipFeaturesEnabled = false;
-                AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                    prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-                if (prefabWipFeaturesEnabled)
-                {
-                    // Register entity as a container
-                    s_containerEntityInterface->RegisterEntityAsContainer(entityId);
-                }
+                // Register entity as a container
+                s_containerEntityInterface->RegisterEntityAsContainer(entityId);
             }
         }
 
         void PrefabIntegrationManager::OnPrefabComponentDeactivate(AZ::EntityId entityId)
         {
-            bool prefabWipFeaturesEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
-
-            if (prefabWipFeaturesEnabled && !s_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
+            if (!s_prefabPublicInterface->IsLevelInstanceContainerEntity(entityId))
             {
                 // Unregister entity as a container
                 s_containerEntityInterface->UnregisterEntityAsContainer(entityId);

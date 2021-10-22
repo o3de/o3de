@@ -91,6 +91,14 @@ namespace O3DE::ProjectManager
          */
         virtual AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) = 0;
 
+        /**
+         * Registers the gem to the specified project, or to the o3de_manifest.json if no project path is given
+         * @param gemPath the path to the gem
+         * @param projectPath the path to the project. If empty, will register the external path in o3de_manifest.json 
+         * @return An outcome with the success flag as well as an error message in case of a failure.
+         */
+        virtual AZ::Outcome<void, AZStd::string> RegisterGem(const QString& gemPath, const QString& projectPath = {}) = 0;
+
 
         // Projects 
 
@@ -187,6 +195,8 @@ namespace O3DE::ProjectManager
          * @return A list of gem repo infos.
          */
         virtual AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() = 0;
+
+        virtual AZ::Outcome<void, AZStd::string> DownloadGem(const QString& gemName, std::function<void(int)> gemProgressCallback) = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;
