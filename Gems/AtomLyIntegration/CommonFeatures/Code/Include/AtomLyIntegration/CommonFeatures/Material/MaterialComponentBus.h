@@ -43,6 +43,9 @@ namespace AZ
             virtual void ClearInvalidMaterialOverrides() = 0;
             //! Repair materials that reference missing assets by assigning the default asset
             virtual void RepairInvalidMaterialOverrides() = 0;
+            //! Repair material property overrides that reference missing properties by auto-renaming them where possible
+            //! @return the number of properties that were updated
+            virtual uint32_t ApplyAutomaticPropertyUpdates() = 0;
             //! Set default material override
             virtual void SetDefaultMaterialOverride(const AZ::Data::AssetId& materialAssetId) = 0;
             //! Get default material override

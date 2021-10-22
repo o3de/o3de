@@ -857,4 +857,35 @@ namespace UnitTest
         EXPECT_EQ(material->GetPropertyValue<int32_t>(material->FindPropertyIndex(Name{ "MyInt" })), -7);
         EXPECT_EQ(srgData->GetConstant<int32_t>(srgData->FindShaderInputConstantIndex(Name{ "m_int" })), -7);
     }
+
+    TEST_F(MaterialTests, TestFindPropertyIndexUsingOldName)
+    {
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+        materialTypeCreator.AddShader(m_testMaterialShaderAsset);
+        AddCommonTestMaterialProperties(materialTypeCreator);
+        materialTypeCreator.SetVersion(2);
+        MaterialVersionUpdate versionUpdate(2);
+        versionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction({Name{ "OldName" },Name{ "MyInt" }}));
+        materialTypeCreator.AddVersionUpdate(versionUpdate);
+        materialTypeCreator.End(m_testMaterialTypeAsset);
+
+        MaterialAssetCreator materialCreator;
+        materialCreator.Begin(Uuid::CreateRandom(), *m_testMaterialTypeAsset);
+        materialCreator.End(m_testMaterialAsset);
+
+        Data::Instance<Material> material = Material::FindOrCreate(m_testMaterialAsset);
+
+        bool wasRenamed = false;
+        Name newName;
+        MaterialPropertyIndex indexFromOldName = material->FindPropertyIndex(Name{"OldName"}, &wasRenamed, &newName);
+        EXPECT_TRUE(wasRenamed);
+        EXPECT_EQ(newName, Name{"MyInt"});
+        
+        MaterialPropertyIndex indexFromNewName = material->FindPropertyIndex(Name{"MyInt"}, &wasRenamed, &newName);
+        EXPECT_FALSE(wasRenamed);
+
+        EXPECT_EQ(indexFromOldName, indexFromNewName);
+    }
+
 }
