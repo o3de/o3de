@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/AZStdContainers.inl>
 #include <AzCore/std/containers/bitset.h>
 
