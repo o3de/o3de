@@ -139,6 +139,24 @@
             "isOptional": false
         },
         {
+            "file": "Editor/Scripts/__init__.py",
+            "origin": "Editor/Scripts/__init__.py",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Editor/Scripts/bootstrap.py",
+            "origin": "Editor/Scripts/bootstrap.py",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Editor/Scripts/${NameLower}_dialog.py",
+            "origin": "Editor/Scripts/${NameLower}_dialog.py",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
             "file": "gem.json",
             "origin": "gem.json",
             "isTemplated": true,
@@ -159,6 +177,14 @@
         {
             "dir": "Code",
             "origin": "Code"
+        },
+        {
+            "dir": "Editor",
+            "origin": "Editor"
+        },
+        {
+            "dir": "Editor/Scripts",
+            "origin": "Editor/Scripts"
         },
         {
             "dir": "Code/Include",
