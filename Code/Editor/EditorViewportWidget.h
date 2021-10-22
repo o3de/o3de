@@ -78,6 +78,7 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
     float ManipulatorLineBoundWidth() const override;
     float ManipulatorCircleBoundWidth() const override;
     bool StickySelectEnabled() const override;
+    AZ::Vector3 DefaultEditorCameraPosition() const override;
 };
 
 // EditorViewportWidget window

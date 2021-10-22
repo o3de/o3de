@@ -9,7 +9,6 @@
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
-#include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 
 namespace AZ
 {

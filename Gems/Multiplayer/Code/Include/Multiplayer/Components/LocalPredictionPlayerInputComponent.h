@@ -71,6 +71,8 @@ namespace Multiplayer
         void UpdateAutonomous(AZ::TimeMs deltaTimeMs);
         void UpdateBankedTime(AZ::TimeMs deltaTimeMs);
 
+        bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
+
         using StateHistoryItem = AZStd::unique_ptr<AzNetworking::StringifySerializer>;
         AZStd::map<ClientInputId, StateHistoryItem> m_predictiveStateHistory;
 
