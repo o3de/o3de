@@ -40,6 +40,10 @@ namespace O3DE::ProjectManager
         m_updateSettingsScreen = new UpdateProjectSettingsScreen();
         m_gemCatalogScreen = new GemCatalogScreen();
 
+        connect(m_gemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, [this](ProjectManagerScreen screen){
+            emit ChangeScreenRequest(screen);
+        });
+
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");
         m_stack->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding));
@@ -118,7 +122,7 @@ namespace O3DE::ProjectManager
         {
             if (UpdateProjectSettings(true))
             {
-                emit GotoPreviousScreenRequest();
+                emit GoToPreviousScreenRequest();
             }
         }
     }

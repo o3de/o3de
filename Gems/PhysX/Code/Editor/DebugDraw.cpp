@@ -676,7 +676,17 @@ namespace PhysX
             }
         }
 
-        AZ::Transform Collider::GetColliderLocalTransform(const Physics::ColliderConfiguration& colliderConfig,
+        void Collider::DrawHeightfield(
+            [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay,
+            [[maybe_unused]] const Physics::ColliderConfiguration& colliderConfig,
+            [[maybe_unused]] const Physics::HeightfieldShapeConfiguration& heightfieldShapeConfig,
+            [[maybe_unused]] const AZ::Vector3& colliderScale,
+            [[maybe_unused]] const bool forceUniformScaling) const
+        {
+        }
+
+        AZ::Transform Collider::GetColliderLocalTransform(
+            const Physics::ColliderConfiguration& colliderConfig,
             const AZ::Vector3& colliderScale) const
         {
             // Apply entity world transform scale to collider offset

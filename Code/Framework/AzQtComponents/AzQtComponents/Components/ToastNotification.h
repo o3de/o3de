@@ -52,6 +52,8 @@ namespace AzQtComponents
         void mousePressEvent(QMouseEvent* mouseEvent) override;
         bool eventFilter(QObject* object, QEvent* event) override;
         
+        void paintEvent(QPaintEvent* event) override;
+
     public slots:
         void StartTimer();
         void FadeOut();
@@ -65,6 +67,7 @@ namespace AzQtComponents
 
         bool   m_closeOnClick;
         QTimer m_lifeSpan;
+        uint32_t m_borderRadius = 0;
 
         AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
         AZStd::chrono::milliseconds m_fadeDuration;

@@ -19,7 +19,14 @@
 
 namespace Editor
 {
-    bool EditorQtApplication::nativeEventFilter(const QByteArray& eventType, void* message, long* result)
+    EditorQtApplication* EditorQtApplication::newInstance(int& argc, char** argv)
+    {
+        QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar);
+
+        return new EditorQtApplicationMac(argc, argv);
+    }
+
+    bool EditorQtApplicationMac::nativeEventFilter(const QByteArray& eventType, void* message, long* result)
     {
         NSEvent* event = (NSEvent*)message;
         if (GetIEditor()->IsInGameMode())
