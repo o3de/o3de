@@ -119,7 +119,7 @@ namespace AZ
 
         private:
             // Helper function that binds a single attachment to the pass shader resource group
-            void BindAttachment(const RHI::FrameGraphCompileContext& context, const PassAttachmentBinding& binding, int16_t& imageIndex, int16_t& bufferIndex);
+            void BindAttachment(const RHI::FrameGraphCompileContext& context, PassAttachmentBinding& binding, int16_t& imageIndex, int16_t& bufferIndex);
 
             // Helper function to get the query by the scope index and query type
             RHI::Ptr<Query> GetQuery(ScopeQueryType queryType);
