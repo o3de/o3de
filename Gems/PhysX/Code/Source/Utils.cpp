@@ -1513,38 +1513,38 @@ namespace PhysX
             return entityWorldTransformWithoutScale * jointLocalTransformWithoutScale;
         }
 		
-		void InitHeightfieldShapeConfiguration(AZ::EntityId entityId, Physics::HeightfieldShapeConfiguration& configuration)
-		{
-			configuration = Physics::HeightfieldShapeConfiguration();
+        void InitHeightfieldShapeConfiguration(AZ::EntityId entityId, Physics::HeightfieldShapeConfiguration& configuration)
+        {
+            configuration = Physics::HeightfieldShapeConfiguration();
 
-			AZ::Vector2 gridSpacing(1.0f);
-			Physics::HeightfieldProviderRequestsBus::EventResult(
+            AZ::Vector2 gridSpacing(1.0f);
+            Physics::HeightfieldProviderRequestsBus::EventResult(
                 gridSpacing, entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSpacing);
 
-			configuration.SetGridResolution(gridSpacing);
+            configuration.SetGridResolution(gridSpacing);
 
-			int32_t numRows = 0;
-			int32_t numColumns = 0;
-			Physics::HeightfieldProviderRequestsBus::Event(
+            int32_t numRows = 0;
+            int32_t numColumns = 0;
+            Physics::HeightfieldProviderRequestsBus::Event(
                             entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
 
-			configuration.SetNumRows(numRows);
-			configuration.SetNumColumns(numColumns);
+            configuration.SetNumRows(numRows);
+            configuration.SetNumColumns(numColumns);
 
-			float minHeightBounds = 0.0f;
-			float maxHeightBounds = 0.0f;
-			Physics::HeightfieldProviderRequestsBus::Event(
-				entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldHeightBounds, minHeightBounds, maxHeightBounds);
+            float minHeightBounds = 0.0f;
+            float maxHeightBounds = 0.0f;
+            Physics::HeightfieldProviderRequestsBus::Event(
+                entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldHeightBounds, minHeightBounds, maxHeightBounds);
 
-			configuration.SetMinHeightBounds(minHeightBounds);
-			configuration.SetMaxHeightBounds(maxHeightBounds);
+            configuration.SetMinHeightBounds(minHeightBounds);
+            configuration.SetMaxHeightBounds(maxHeightBounds);
 
-			AZStd::vector<Physics::HeightMaterialPoint> samples;
-			Physics::HeightfieldProviderRequestsBus::EventResult(
-				samples, entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
+            AZStd::vector<Physics::HeightMaterialPoint> samples;
+            Physics::HeightfieldProviderRequestsBus::EventResult(
+                samples, entityId, &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
 
-			configuration.SetSamples(samples);
-		}
+            configuration.SetSamples(samples);
+        }
     } // namespace Utils
 
     namespace ReflectionUtils
