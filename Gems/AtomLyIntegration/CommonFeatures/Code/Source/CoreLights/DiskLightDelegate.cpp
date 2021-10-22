@@ -131,6 +131,14 @@ namespace AZ::Render
         }
     }
 
+    void DiskLightDelegate::SetNormalShadowBias(float bias)
+    {
+        if (GetShadowsEnabled() && GetLightHandle().IsValid())
+        {
+            GetFeatureProcessor()->SetNormalShadowBias(GetLightHandle(), bias);
+        }
+    }
+
     void DiskLightDelegate::SetShadowmapMaxSize(ShadowmapSize size)
     {
         if (GetShadowsEnabled() && GetLightHandle().IsValid())
