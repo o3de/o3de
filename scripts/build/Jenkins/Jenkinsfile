@@ -102,6 +102,10 @@ def IsJobEnabled(branchName, buildTypeMap, pipelineName, platformName) {
     }
 }
 
+def IsAPLogUpload(branchName, jobName) {
+    return !IsPullRequest(branchName) && jobName.toLowerCase().contains('asset') && env.AP_LOGS_S3_BUCKET
+}
+
 def GetRunningPipelineName(JENKINS_JOB_NAME) {
     // If the job name has an underscore
     def job_parts = JENKINS_JOB_NAME.tokenize('/')[0].tokenize('_')
@@ -554,7 +558,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                                     if (envVars['NONBLOCKING_STEP']?.toBoolean()) {
                                         unstable(message: "Build step ${build_step} failed but it's a non-blocking step in build job ${build_job.key}")
                                     } else {
-                                        if (!IsPullRequest(branch) && build_job_name.toLowerCase().contains('asset') && env.AP_LOGS_S3_BUCKET) {
+                                        if (IsAPLogUpload(branchName, build_job_name)) {
                                             CreateUploadAPLogsStage(pipelineConfig, branchName, build_step, envVars['WORKSPACE'], platform.value.build_types[build_step].PARAMETERS).call()
                                         }
                                         throw e
@@ -562,7 +566,14 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                                 }
                             }
                         } else {
-                            CreateBuildStage(pipelineConfig,  platform.key, build_job.key, envVars).call()
+                            try {
+                                CreateBuildStage(pipelineConfig,  platform.key, build_job.key, envVars).call()
+                            catch (Exception e) {
+                                if (IsAPLogUpload(branchName, build_job.key)) {
+                                    CreateUploadAPLogsStage(pipelineConfig, branchName, build_job.key, envVars['WORKSPACE'], platform.value.build_types[build_job.key].PARAMETERS).call()
+                                }
+                                throw e
+                            }
                         }
                     }
                     catch(Exception e) {
