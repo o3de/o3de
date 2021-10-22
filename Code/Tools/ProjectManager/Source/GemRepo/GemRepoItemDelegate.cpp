@@ -150,7 +150,7 @@ namespace O3DE::ProjectManager
                 emit RemoveRepo(modelIndex);
                 return true;
             }
-            else if (keyEvent->key() == Qt::Key_R)
+            else if (keyEvent->key() == Qt::Key_R || keyEvent->key() == Qt::Key_F5)
             {
                 emit RefreshRepo(modelIndex);
                 return true;
