@@ -403,13 +403,6 @@ namespace O3DE::ProjectManager
         hLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
         hLayout->addSpacerItem(new QSpacerItem(75, 0, QSizePolicy::Fixed));
 
-        QPushButton* addGemButton = new QPushButton("Add Gem");
-        addGemButton->setObjectName("AddGemButton");
-        addGemButton->setFlat(true);
-        addGemButton->setFocusPolicy(Qt::NoFocus);
-        connect( addGemButton, &QPushButton::clicked, [this]() { emit addGem();});
-        hLayout->addWidget(addGemButton);
-
         CartButton* cartButton = new CartButton(gemModel, downloadController);
         hLayout->addWidget(cartButton);
         hLayout->addSpacing(16);
@@ -423,9 +416,9 @@ namespace O3DE::ProjectManager
         hLayout->addSpacing(16);
 
         QMenu* gemMenu = new QMenu(this);
-        m_openGemReposAction = gemMenu->addAction(tr("Show Gem Repos"));
-
-        connect(m_openGemReposAction, &QAction::triggered, this,[this](){ emit OpenGemsRepo(); });
+        gemMenu->addAction( tr("Show Gem Repos"), [this]() { emit OpenGemsRepo(); });
+        gemMenu->addSeparator();
+        gemMenu->addAction( tr("Add Existing Gem"), [this]() { emit addGem(); });
 
         QPushButton* gemMenuButton = new QPushButton(this);
         gemMenuButton->setObjectName("gemCatalogMenuButton");

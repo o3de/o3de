@@ -93,7 +93,5 @@ namespace O3DE::ProjectManager
     private:
         AzQtComponents::SearchLineEdit* m_filterLineEdit = nullptr;
         inline constexpr static int s_height = 60;
-
-        QAction* m_openGemReposAction = nullptr;
     };
 } // namespace O3DE::ProjectManager
