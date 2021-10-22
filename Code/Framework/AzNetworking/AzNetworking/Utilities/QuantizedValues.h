@@ -11,6 +11,7 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/Math/Uuid.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzNetworking/Serialization/ISerializer.h>
