@@ -94,20 +94,21 @@ class TestEditorTestUtils(unittest.TestCase):
         mock_rename.assert_called_once_with(os.path.join('mock_log_path', 'error.dmp'),
                                             os.path.join('mock_log_path', 'error_mock_strftime.dmp'))
 
+    @mock.patch('os.path.getmtime', mock.MagicMock())
     @mock.patch('os.rename')
-    @mock.patch('os.path.getmtime')
+    @mock.patch('time.strftime')
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('os.path.exists')
-    def test_CycleCrashReport_LogExists_NamedCorrectly(self, mock_exists, mock_retrieve_log_path, mock_getmtime,
+    def test_CycleCrashReport_LogExists_NamedCorrectly(self, mock_exists, mock_retrieve_log_path, mock_strftime,
                                                        mock_rename):
         mock_exists.side_effect = [True, False]
         mock_retrieve_log_path.return_value = 'mock_log_path'
         mock_workspace = mock.MagicMock()
-        mock_getmtime.return_value = 1
+        mock_strftime.return_value = 'mock_strftime'
 
         editor_test_utils.cycle_crash_report(0, mock_workspace)
         mock_rename.assert_called_once_with(os.path.join('mock_log_path', 'error.log'),
-                                            os.path.join('mock_log_path', 'error_1969_12_31_16_00_01.log'))
+                                            os.path.join('mock_log_path', 'error_mock_strftime.log'))
 
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.environment.waiter.wait_for', mock.MagicMock())
