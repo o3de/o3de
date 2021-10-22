@@ -48,7 +48,7 @@ CAboutDialog::CAboutDialog(QString versionText, QString richTextCopyrightNotice,
 
     // Prepare background image
     m_backgroundImage = AzQtComponents::ScalePixmapForScreenDpi(
-        QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background_developer_preview.jpg")),
+        QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background_2021_11.jpg")),
         screen(),
         QSize(m_enforcedWidth, m_enforcedHeight),
         Qt::IgnoreAspectRatio,
