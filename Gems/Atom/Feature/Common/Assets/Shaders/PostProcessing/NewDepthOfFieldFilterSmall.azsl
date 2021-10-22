@@ -19,6 +19,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2D<float2> m_minMaxCocTile;
 
     // Texture dimensions. XY channels are width and height and ZW channels are 1 / width and 1 / height 
+    // Auto-filled by the pass system when "ShaderImageDimensionsConstant" is specified in the .pass file
     float4 m_textureDimensions;
 
     NewDepthOfFieldConstants m_dofConstants;
@@ -51,7 +52,7 @@ float3 GetOffset(uint index, float2 offsetUVMultiplier)
     return offset;
 }
 
-float CaclulateWeight(float offsetRadius, float samplingRadius, float sampleCoc, float centerCoc)
+float CalculateWeight(float offsetRadius, float samplingRadius, float sampleCoc, float centerCoc)
 {
     // The maximum distance for which samples are valid is the min of the sample CoC and the center CoC
     float maxRadius = abs(min(sampleCoc, centerCoc));
@@ -102,7 +103,7 @@ PSOutput MainPS(VSOutput IN)
         float4 sampleColorCoc = PassSrg::m_colorAndCoc.Sample(PassSrg::PointSampler, pixelUV + offset.xy).rgba;
 
         // Calculate weight
-        float weight = CaclulateWeight(offset.z, cocRadius, sampleColorCoc.a, centerCoc);
+        float weight = CalculateWeight(offset.z, cocRadius, sampleColorCoc.a, centerCoc);
 
         // Accumulate sample and weight
         color.rgb += sampleColorCoc.rgb * weight;

@@ -22,6 +22,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2D<float4> m_halfResColorAndCoc;
 
     // Texture dimensions. XY channels are width and height and ZW channels are 1 / width and 1 / height 
+    // Auto-filled by the pass system when "ShaderImageDimensionsConstant" is specified in the .pass file
     float4 m_fullResDimensions;
     float4 m_halfResDimensions;
 
@@ -69,15 +70,15 @@ PSOutput MainPS(VSOutput IN)
         
     // --- Weights based on pixel proximity ---
 
-    // Based on which pixel we're shading, we'll be closer/further to half res pixels
-    // Here are the pre-caculated weights, arranged to match the Gather pattern
+    // Based on which pixel we're shading, we'll be closer/farther to half res pixels
+    // Here are the pre-calculated weights, arranged to match the Gather pattern
     //
     //  W  Z
     //  X  Y
     //
     // Note: These weights come down to the same contributions as if we did a linear sample
     int2 pixel = int2(fullResPixelPos);
-	float4 weights = (pixel.x & 1)
+    float4 weights = (pixel.x & 1)
                  ? ( (pixel.y & 1) ? float4(0.1875f, 0.0625f, 0.1875f, 0.5625f) 
                                    : float4(0.5625f, 0.1875f, 0.0625f, 0.1875f) )
                  : ( (pixel.y & 1) ? float4(0.0625f, 0.1875f, 0.5625f, 0.1875f) 

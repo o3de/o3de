@@ -22,6 +22,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2D<float4> m_depth;
 
     // Texture dimensions. XY channels are width and height and ZW channels are 1 / width and 1 / height 
+    // Auto-filled by the pass system when "ShaderImageDimensionsConstant" is specified in the .pass file
     float4 m_inputDimensions;
     float4 m_outputDimensions;
 
@@ -61,7 +62,7 @@ PSOutput MainPS(VSOutput IN)
     // Clamp CoC
     cocGather = clamp(cocGather, -1.0f, 1.0f);
 
-    // Weigh samles by CoC to avoid in foces pixels bleeding into bokeh effect
+    // Weight samples by CoC to avoid in focus pixels bleeding into bokeh effect
     float4 weights = abs(cocGather) + COC_EPSILON;
     weights = weights / (weights.x + weights.y + weights.z + weights.w);
 

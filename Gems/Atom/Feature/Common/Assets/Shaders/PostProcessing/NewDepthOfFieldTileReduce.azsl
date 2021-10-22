@@ -19,6 +19,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     RWTexture2D<float2> m_minMaxCoC;
 
     // Texture dimensions. XY channels are width and height and ZW channels are 1 / width and 1 / height 
+    // Auto-filled by the pass system when "ShaderImageDimensionsConstant" is specified in the .pass file
     float4 m_inputDimensions;
     float4 m_outputDimensions;
 
@@ -59,7 +60,7 @@ void MainCS(uint3 group_thread_id : SV_GroupThreadID, uint3 group_id : SV_GroupI
     // For atomic min/max to work with uints, floating point values should be positive
     // Map from [-1, 1] range to [0, 2] and cast as uint
     InterlockedMin( LDS_MIN_COC[group_thread_id.x], asuint(cocMin + 1) );
-	InterlockedMax( LDS_MAX_COC[group_thread_id.x], asuint(cocMax + 1) );
+    InterlockedMax( LDS_MAX_COC[group_thread_id.x], asuint(cocMax + 1) );
 
     // Sync LDS
     GroupMemoryBarrierWithGroupSync();

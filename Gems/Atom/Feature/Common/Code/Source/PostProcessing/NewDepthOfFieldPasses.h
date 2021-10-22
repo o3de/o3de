@@ -17,6 +17,29 @@ namespace AZ
 {
     namespace Render
     {
+        // Technique
+        // 
+        // 1. This Depth of Field technique starts by downsampling the lighting buffer and calculating
+        //    the circle of confusion (CoC) for each downsampled pixel.
+        // 
+        // 2. It then computes the min and max CoC for tiles of 16x16 pixels
+        // 
+        // 3. It expands the min and max in a 3x3 region (twice, so 5x5 at the end) so that each tile
+        //    tile pixel has the min and max CoCs of the 5x5 tile region around it
+        // 
+        // 4. We perform a 48 tap scatter-as-gather blur around each pixel
+        // 
+        // 5. We perform a follow up 8 tap scatter-as-gather blur to fill the holes from the first blur
+        // 
+        // 6. We composite the blurred half resolution image onto the full resolution lighting buffer
+        // 
+        // See http://advances.realtimerendering.com/s2013/Sousa_Graphics_Gems_CryENGINE3.pptx
+        // for a more detailed explanation.
+        // 
+        // Notes: The name NewDepthOfField is in contrast to the previously implemented depth of field method
+        // That method will be removed in a follow up change and at that point NewDepthOfField will be renamed
+        // to simple DepthOfField.
+
         //! Parent pass for the new depth of field technique
         //! Main updates the view srg via the depth of field settings
         //! And enables/disables all depth of field passes based on component activation
