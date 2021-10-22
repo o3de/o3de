@@ -17,7 +17,7 @@ namespace ${SanitizedCppName}
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<${SanitizedCppName}EditorSystemComponent>()
+            serializeContext->Class<${SanitizedCppName}EditorSystemComponent>();
         }
     }
 
