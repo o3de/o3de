@@ -805,16 +805,15 @@ namespace AzToolsFramework
             }
             else
             {
-                QString cleanSaveAs(QDir::cleanPath(prefabPath));
+                AZ::IO::FixedMaxPath lexicallyNormalPath = AZ::IO::PathView(prefabPath.toUtf8().constData()).LexicallyNormal();
 
                 bool isPathSafeForAssets = false;
-                for (AZStd::string assetSafeFolder : assetSafeFolders)
+                for (const AZStd::string& assetSafeFolder : assetSafeFolders)
                 {
-                    QString cleanAssetSafeFolder(QDir::cleanPath(assetSafeFolder.c_str()));
-                    // Compare using clean paths so slash direction does not matter.
-                    // Note that this comparison is case sensitive because some file systems
-                    // Open 3D Engine supports are case sensitive.
-                    if (cleanSaveAs.startsWith(cleanAssetSafeFolder))
+                    AZ::IO::PathView assetSafeFolderView(assetSafeFolder);
+                    // Check if the prefabPath is relative to the safe asset directory.
+                    // The Path classes are being used to make this check case insensitive.
+                    if (lexicallyNormalPath.IsRelativeTo(assetSafeFolderView))
                     {
                         isPathSafeForAssets = true;
                         break;
