@@ -29,8 +29,6 @@
 
 namespace UnitTest
 {
-    using uniqueAssetBrowserEntry = AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserEntry>;
-
     class PublicAssetBrowserEntry : public AzToolsFramework::AssetBrowser::AssetBrowserEntry
     {
     public:
@@ -96,52 +94,41 @@ namespace UnitTest
             m_modelTesterTableModel.reset();
             m_tableModel.reset();
             m_filterModel.reset();
+
+            m_assetBrowserComponent->GetAssetBrowserModel()->GetRootEntry().reset();
             m_assetBrowserComponent->Deactivate();
             m_assetBrowserComponent.reset();
             m_searchWidget.reset();
 
+
             ToolsApplicationFixture::TearDownEditorFixtureImpl();
         }
 
-        AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserEntry> CreateAssetBrowserEntry(
+        AzToolsFramework::AssetBrowser::AssetBrowserEntry* CreateAssetBrowserEntry(
             AssetEntryType entryType, AzToolsFramework::AssetBrowser::AssetBrowserEntry* parent = nullptr, QString name = QString())
         {
-            AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserEntry> newEntry;
+            AzToolsFramework::AssetBrowser::AssetBrowserEntry* newEntry = nullptr;
             switch (entryType)
             {
             case AssetEntryType::Root:
-                newEntry = AZStd::make_unique<AzToolsFramework::AssetBrowser::RootAssetBrowserEntry>();
+                newEntry = aznew AzToolsFramework::AssetBrowser::RootAssetBrowserEntry();
                 break;
             case AssetEntryType::Folder:
-                {
-                    newEntry = AZStd::make_unique<AzToolsFramework::AssetBrowser::FolderAssetBrowserEntry>();
-                    if (parent)
-                    {
-                        reinterpret_cast<PublicAssetBrowserEntry*>(parent)->AddChild(newEntry.get());
-                    }
-                }
+                newEntry = aznew AzToolsFramework::AssetBrowser::FolderAssetBrowserEntry();
                 break;
             case AssetEntryType::Source:
-                {
-                    newEntry = AZStd::make_unique<AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry>();
-                    if (parent)
-                    {
-                        reinterpret_cast<PublicAssetBrowserEntry*>(parent)->AddChild(newEntry.get());
-                    }
-                }
+                newEntry = aznew AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry();
                 break;
             case AssetEntryType::Product:
-                {
-                    newEntry = AZStd::make_unique<AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry>();
-                    if (parent)
-                    {
-                        reinterpret_cast<PublicAssetBrowserEntry*>(parent)->AddChild(newEntry.get());
-                    }
-                }
+                newEntry = aznew AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry();
                 break;
             }
 
-            reinterpret_cast<PublicAssetBrowserEntry*>(newEntry.get())->setDisplayName(name);
+            if (parent)
+            {
+                reinterpret_cast<PublicAssetBrowserEntry*>(parent)->AddChild(newEntry);
+            }
+            reinterpret_cast<PublicAssetBrowserEntry*>(newEntry)->setDisplayName(name);
             return newEntry;
         }
 
@@ -191,43 +178,32 @@ namespace UnitTest
 
             AzAssetBrowser::RootAssetBrowserEntry* rootEntry = m_assetBrowserComponent->GetAssetBrowserModel()->GetRootEntry().get();
 
-            uniqueAssetBrowserEntry projectFolder = CreateAssetBrowserEntry(AssetEntryType::Folder, rootEntry, QString("projectFolder"));
+            AzAssetBrowser::AssetBrowserEntry* projectFolder = CreateAssetBrowserEntry(AssetEntryType::Folder, rootEntry, QString("projectFolder"));
 
-            uniqueAssetBrowserEntry folder_0 = CreateAssetBrowserEntry(AssetEntryType::Folder, projectFolder.get(), QString("folder_0"));
-            uniqueAssetBrowserEntry source_0_0 = CreateAssetBrowserEntry(AssetEntryType::Source, folder_0.get(), QString("source_0_0"));
-            [[maybe_unused]] uniqueAssetBrowserEntry product_0_0_0 =
-                CreateAssetBrowserEntry(AssetEntryType::Product, source_0_0.get(), QString("product_0_0_0"));
-            [[maybe_unused]] uniqueAssetBrowserEntry product_0_0_1 =
-                CreateAssetBrowserEntry(AssetEntryType::Product, source_0_0.get(), QString("product_0_0_1"));
-            [[maybe_unused]] uniqueAssetBrowserEntry product_0_0_2 =
-                CreateAssetBrowserEntry(AssetEntryType::Product, source_0_0.get(), QString("product_0_0_2"));
-            [[maybe_unused]] uniqueAssetBrowserEntry product_0_0_3 =
-                CreateAssetBrowserEntry(AssetEntryType::Product, source_0_0.get(), QString("product_0_0_3"));
+            AzAssetBrowser::AssetBrowserEntry* folder_0 = CreateAssetBrowserEntry(AssetEntryType::Folder, projectFolder, QString("folder_0"));
+            AzAssetBrowser::AssetBrowserEntry* source_0_0 = CreateAssetBrowserEntry(AssetEntryType::Source, folder_0, QString("source_0_0"));
+            CreateAssetBrowserEntry(AssetEntryType::Product, source_0_0, QString("product_0_0_0"));
+            CreateAssetBrowserEntry(AssetEntryType::Product, source_0_0, QString("product_0_0_1"));
+            CreateAssetBrowserEntry(AssetEntryType::Product, source_0_0, QString("product_0_0_2"));
+            CreateAssetBrowserEntry(AssetEntryType::Product, source_0_0, QString("product_0_0_3"));
 
-            uniqueAssetBrowserEntry source_0_1 = CreateAssetBrowserEntry(AssetEntryType::Source, folder_0.get(), QString("source_0_1"));
-            [[maybe_unused]] uniqueAssetBrowserEntry product_0_1_0 =
-                CreateAssetBrowserEntry(AssetEntryType::Product, source_0_1.get(), QString("product_0_1_0"));
-            [[maybe_unused]] uniqueAssetBrowserEntry product_0_1_1 =
-                CreateAssetBrowserEntry(AssetEntryType::Product, source_0_1.get(), QString("product_0_1_1"));
+            AzAssetBrowser::AssetBrowserEntry* source_0_1 = CreateAssetBrowserEntry(AssetEntryType::Source, folder_0, QString("source_0_1"));
+            CreateAssetBrowserEntry(AssetEntryType::Product, source_0_1, QString("product_0_1_0"));
+            CreateAssetBrowserEntry(AssetEntryType::Product, source_0_1, QString("product_0_1_1"));
 
-            uniqueAssetBrowserEntry folder_1 = CreateAssetBrowserEntry(AssetEntryType::Folder, projectFolder.get(), QString("folder_1"));
-            uniqueAssetBrowserEntry source_1_0 = CreateAssetBrowserEntry(AssetEntryType::Source, folder_1.get(), QString("source_1_0"));
-            CreateAssetBrowserEntry(AssetEntryType::Product, source_1_0.get(), QString("product_1_0_0"));
-            CreateAssetBrowserEntry(AssetEntryType::Product, source_1_0.get(), QString("product_1_0_1"));
-            CreateAssetBrowserEntry(AssetEntryType::Product, source_1_0.get(), QString("product_1_0_2"));
-            [[maybe_unused]] uniqueAssetBrowserEntry source_1_1 =
-                CreateAssetBrowserEntry(AssetEntryType::Source, folder_1.get(), QString("source_1_1"));
-            [[maybe_unused]] uniqueAssetBrowserEntry source_1_2 =
-                CreateAssetBrowserEntry(AssetEntryType::Source, folder_1.get(), QString("source_1_2"));
+            AzAssetBrowser::AssetBrowserEntry* folder_1 = CreateAssetBrowserEntry(AssetEntryType::Folder, projectFolder, QString("folder_1"));
+            AzAssetBrowser::AssetBrowserEntry* source_1_0 = CreateAssetBrowserEntry(AssetEntryType::Source, folder_1, QString("source_1_0"));
+            CreateAssetBrowserEntry(AssetEntryType::Product, source_1_0, QString("product_1_0_0"));
+            CreateAssetBrowserEntry(AssetEntryType::Product, source_1_0, QString("product_1_0_1"));
+            CreateAssetBrowserEntry(AssetEntryType::Product, source_1_0, QString("product_1_0_2"));
 
-            [[maybe_unused]] uniqueAssetBrowserEntry folder_2 =
-                CreateAssetBrowserEntry(AssetEntryType::Folder, projectFolder.get(), QString("folder_2"));
+            CreateAssetBrowserEntry(AssetEntryType::Source, folder_1, QString("source_1_1"));
+            CreateAssetBrowserEntry(AssetEntryType::Source, folder_1, QString("source_1_2"));
+            CreateAssetBrowserEntry(AssetEntryType::Folder, projectFolder, QString("folder_2"));
 
             // Setup String filters
             m_searchWidget->Setup(true, true);
             m_filterModel->SetFilter(m_searchWidget->GetFilter());
-
-            m_tableModel->UpdateTableModelMaps();
 
             qDebug() << "\n-------------Asset Browser Model------------\n";
             PrintModel(m_assetBrowserComponent->GetAssetBrowserModel());
@@ -261,11 +237,6 @@ namespace UnitTest
             }
         }
 
-        // Gets the index of the root prefab, i.e. the "New Level" container entity
-        QModelIndex GetRootIndex() const
-        {
-            return m_assetBrowserComponent->GetAssetBrowserModel()->index(0, 0);
-        }
         AZStd::unique_ptr<AzToolsFramework::AssetBrowser::SearchWidget> m_searchWidget;
         AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserComponent> m_assetBrowserComponent;
 
@@ -279,6 +250,7 @@ namespace UnitTest
 
     TEST_F(AssetBrowserTest, TestCheckCorrectNumberOfEntriesInTableView)
     {
+        m_filterModel->FilterUpdatedSlotImmediate();
         int tableViewRowcount = reinterpret_cast<PublicAssetBrowserTableMode*>(m_tableModel.get())->rowCount();
 
         // RowCount should be 14 -> 5 SourceEntries + 9 ProductEntries)
@@ -290,7 +262,6 @@ namespace UnitTest
         // Apply string filter
         m_searchWidget->SetTextFilter(QString("source_1_"));
         m_filterModel->FilterUpdatedSlotImmediate();
-        m_tableModel->UpdateTableModelMaps();
 
         /*
         |-Source_1_0
