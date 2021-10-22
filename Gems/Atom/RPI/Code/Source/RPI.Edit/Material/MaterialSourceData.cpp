@@ -174,7 +174,7 @@ namespace AZ
                 materialAssetCreator.Begin(assetId, *parentMaterialAsset.GetValue().Get(), includeMaterialPropertyNames);
             }
 
-            ApplyMaterialSourceDataPropertiesToAssetCreator(materialAssetCreator, materialSourceFilePath, *this);
+            ApplyPropertiesToAssetCreator(materialAssetCreator, materialSourceFilePath);
 
             Data::Asset<MaterialAsset> material;
             if (materialAssetCreator.End(material))
@@ -211,21 +211,21 @@ namespace AZ
 
             materialAssetCreator.Begin(assetId, *materialTypeAsset.GetValue().Get(), includeMaterialPropertyNames);
 
-            AZStd::vector<MaterialSourceData> parentMaterialSourceDataVec;
+            AZStd::vector<MaterialSourceData> parentSourceDataStack;
 
-            AZStd::string parentMaterialPath = m_parentMaterial;
-            AZStd::string parentMaterialSourcePath = AssetUtils::ResolvePathReference(materialSourceFilePath, parentMaterialPath);
-            while (!parentMaterialPath.empty())
+            AZStd::string parentSourceRelPath = m_parentMaterial;
+            AZStd::string parentSourceAbsPath = AssetUtils::ResolvePathReference(materialSourceFilePath, parentSourceRelPath);
+            while (!parentSourceRelPath.empty())
             {
-                MaterialSourceData parentMaterialSourceData;
-                if (!AZ::RPI::JsonUtils::LoadObjectFromFile(parentMaterialSourcePath, parentMaterialSourceData))
+                MaterialSourceData parentSourceData;
+                if (!AZ::RPI::JsonUtils::LoadObjectFromFile(parentSourceAbsPath, parentSourceData))
                 {
                     return Failure();
                 }
 
                 // Make sure the parent material has the same material type
                 auto materialTypeIdOutcome1 = AssetUtils::MakeAssetId(materialSourceFilePath, m_materialType, 0);
-                auto materialTypeIdOutcome2 = AssetUtils::MakeAssetId(parentMaterialSourcePath, parentMaterialSourceData.m_materialType, 0);
+                auto materialTypeIdOutcome2 = AssetUtils::MakeAssetId(parentSourceAbsPath, parentSourceData.m_materialType, 0);
                 if (!materialTypeIdOutcome1.IsSuccess() || !materialTypeIdOutcome2.IsSuccess() ||
                     materialTypeIdOutcome1.GetValue() != materialTypeIdOutcome2.GetValue())
                 {
@@ -233,18 +233,18 @@ namespace AZ
                     return Failure();
                 }
 
-                parentMaterialPath = parentMaterialSourceData.m_parentMaterial;
-                parentMaterialSourcePath = AssetUtils::ResolvePathReference(parentMaterialSourcePath, parentMaterialPath);
-                parentMaterialSourceDataVec.push_back(parentMaterialSourceData);
+                parentSourceDataStack.push_back(parentSourceData);
+                parentSourceRelPath = parentSourceData.m_parentMaterial;
+                parentSourceAbsPath = AssetUtils::ResolvePathReference(parentSourceAbsPath, parentSourceRelPath);
             }
 
-            AZStd::reverse(parentMaterialSourceDataVec.begin(), parentMaterialSourceDataVec.end());
-            for (const auto& parentMaterialSourceData : parentMaterialSourceDataVec)
+            while (!parentSourceDataStack.empty())
             {
-                ApplyMaterialSourceDataPropertiesToAssetCreator(materialAssetCreator, materialSourceFilePath, parentMaterialSourceData);
+                parentSourceDataStack.back().ApplyPropertiesToAssetCreator(materialAssetCreator, materialSourceFilePath);
+                parentSourceDataStack.pop_back();
             }
 
-            ApplyMaterialSourceDataPropertiesToAssetCreator(materialAssetCreator, materialSourceFilePath, *this);
+            ApplyPropertiesToAssetCreator(materialAssetCreator, materialSourceFilePath);
 
             Data::Asset<MaterialAsset> material;
             if (materialAssetCreator.End(material))
@@ -257,12 +257,10 @@ namespace AZ
             }
         }
 
-        void MaterialSourceData::ApplyMaterialSourceDataPropertiesToAssetCreator(
-            AZ::RPI::MaterialAssetCreator& materialAssetCreator,
-            const AZStd::string_view& materialSourceFilePath,
-            const MaterialSourceData& materialSourceData)
+        void MaterialSourceData::ApplyPropertiesToAssetCreator(
+            AZ::RPI::MaterialAssetCreator& materialAssetCreator, const AZStd::string_view& materialSourceFilePath) const
         {
-            for (auto& group : materialSourceData.m_properties)
+            for (auto& group : m_properties)
             {
                 for (auto& property : group.second)
                 {
