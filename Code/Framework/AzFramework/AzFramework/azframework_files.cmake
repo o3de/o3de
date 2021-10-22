@@ -252,7 +252,6 @@ set(FILES
     Physics/Shape.h
     Physics/ShapeConfiguration.h
     Physics/ShapeConfiguration.cpp
-    Physics/HeightfieldProviderBus.h
     Physics/SystemBus.h
     Physics/ColliderComponentBus.h
     Physics/RagdollPhysicsBus.h
@@ -301,6 +300,8 @@ set(FILES
     Spawnable/SpawnableMonitor.cpp
     Spawnable/SpawnableSystemComponent.h
     Spawnable/SpawnableSystemComponent.cpp
+    SurfaceData/SurfaceData.h
+    SurfaceData/SurfaceData.cpp
     Terrain/TerrainDataRequestBus.h
     Terrain/TerrainDataRequestBus.cpp
     Thermal/ThermalInfo.h

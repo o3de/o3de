@@ -63,6 +63,7 @@ namespace O3DE::ProjectManager
         bool RemoveGemRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
         AZ::Outcome<void, AZStd::string> DownloadGem(const QString& gemName, std::function<void(int)> gemProgressCallback) override;
+        void CancelDownload() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemRepoGemsInfos() override;
 
     private:
@@ -93,5 +94,7 @@ namespace O3DE::ProjectManager
         pybind11::handle m_download;
         pybind11::handle m_repo;
         pybind11::handle m_pathlib;
+
+        bool m_requestCancelDownload = false;
     };
 }

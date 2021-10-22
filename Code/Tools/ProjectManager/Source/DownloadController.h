@@ -27,7 +27,8 @@ namespace O3DE::ProjectManager
         explicit DownloadController(QWidget* parent = nullptr);
         ~DownloadController();
 
-        void AddGemDownload(const QString& m_gemName);
+        void AddGemDownload(const QString& gemName);
+        void CancelGemDownload(const QString& gemName);
 
         bool IsDownloadQueueEmpty()
         {
@@ -54,7 +55,6 @@ namespace O3DE::ProjectManager
     public slots:
         void UpdateUIProgress(int progress);
         void HandleResults(const QString& result);
-        void HandleCancel();
 
     signals:
         void StartGemDownload(const QString& gemName);
