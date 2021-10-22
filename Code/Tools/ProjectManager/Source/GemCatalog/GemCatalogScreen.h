@@ -43,7 +43,11 @@ namespace O3DE::ProjectManager
         GemModel* GetGemModel() const { return m_gemModel; }
         DownloadController* GetDownloadController() const { return m_downloadController; }
 
+    private slots:
+        void HandleOpenGemRepo();
+
     private:
+
         void FillModel(const QString& projectPath);
 
         GemListView* m_gemListView = nullptr;

@@ -1,7 +1,7 @@
 {
     "description": "Similar to StandardPBR but supports multiple layers blended together.",
+    "version": 3,
     "propertyLayout": {
-        "version": 3,
         "groups": [
             {
                 "name": "blend",
