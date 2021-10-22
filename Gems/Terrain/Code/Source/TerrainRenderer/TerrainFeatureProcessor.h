@@ -112,18 +112,6 @@ namespace Terrain
             AZStd::fixed_vector<uint16_t, MaxMaterialsPerSector> m_macroMaterials;
         };
 
-        struct MacroMaterialData
-        {
-            AZ::EntityId m_entityId;
-            AZ::Aabb m_bounds = AZ::Aabb::CreateNull();
-
-            AZ::Data::Instance<AZ::RPI::Image> m_colorImage;
-            AZ::Data::Instance<AZ::RPI::Image> m_normalImage;
-            bool m_normalFlipX{ false };
-            bool m_normalFlipY{ false };
-            float m_normalFactor{ 0.0f };
-        };
-
         // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
         void OnMaterialReinitialized(const MaterialInstance& material) override;
 
@@ -132,8 +120,8 @@ namespace Terrain
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
         // TerrainMacroMaterialNotificationBus overrides...
-        void OnTerrainMacroMaterialCreated(AZ::EntityId entityId, MaterialInstance material, const AZ::Aabb& region) override;
-        void OnTerrainMacroMaterialChanged(AZ::EntityId entityId, MaterialInstance material) override;
+        void OnTerrainMacroMaterialCreated(AZ::EntityId entityId, const MacroMaterialData& material, const AZ::Aabb& region) override;
+        void OnTerrainMacroMaterialChanged(AZ::EntityId entityId, const MacroMaterialData& material) override;
         void OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
         void OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId) override;
 
@@ -143,7 +131,7 @@ namespace Terrain
 
         void UpdateTerrainData();
         void PrepareMaterialData();
-        void UpdateMacroMaterialData(MacroMaterialData& macroMaterialData, MaterialInstance material);
+        void UpdateMacroMaterialData(MacroMaterialData& macroMaterialData, const MacroMaterialData& newMaterialData);
 
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
         

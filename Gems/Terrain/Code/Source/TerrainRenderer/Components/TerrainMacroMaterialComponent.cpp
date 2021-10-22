@@ -18,84 +18,47 @@
 
 namespace Terrain
 {
-    AZ::Data::AssetId TerrainMacroMaterialConfig::s_macroMaterialTypeAssetId{};
-
     void TerrainMacroMaterialConfig::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serialize)
+        if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context); serialize)
         {
             serialize->Class<TerrainMacroMaterialConfig, AZ::ComponentConfig>()
                 ->Version(1)
-                ->Field("MacroMaterial", &TerrainMacroMaterialConfig::m_materialAsset)
-            ;
+                ->Field("MacroColor", &TerrainMacroMaterialConfig::m_macroColorAsset)
+                ->Field("MacroNormal", &TerrainMacroMaterialConfig::m_macroNormalAsset)
+                ->Field("NormalFlipX", &TerrainMacroMaterialConfig::m_normalFlipX)
+                ->Field("NormalFlipY", &TerrainMacroMaterialConfig::m_normalFlipY)
+                ->Field("NormalFactor", &TerrainMacroMaterialConfig::m_normalFactor)
+                ;
 
-            // The edit context for this appears in EditorTerrainMacroMaterialComponent.cpp.
-        }
-    }
-
-    AZ::Data::AssetId TerrainMacroMaterialConfig::GetTerrainMacroMaterialTypeAssetId()
-    {
-        // Get the Asset ID for the TerrainMacroMaterial material type and store it in a class static so that we don't have to look it
-        // up again.
-        if (!s_macroMaterialTypeAssetId.IsValid())
-        {
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-                s_macroMaterialTypeAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, TerrainMacroMaterialTypeAsset,
-                azrtti_typeid<AZ::RPI::MaterialTypeAsset>(), false);
-            AZ_Assert(s_macroMaterialTypeAssetId.IsValid(), "The asset '%s' couldn't be found.", TerrainMacroMaterialTypeAsset);
-        }
-
-        return s_macroMaterialTypeAssetId;
-    }
-
-    bool TerrainMacroMaterialConfig::IsMaterialTypeCorrect(const AZ::Data::AssetId& assetId)
-    {
-        // We'll verify that whatever material we try to load has this material type as a dependency, as a way to implicitly detect
-        // that we're only trying to use terrain macro materials even before we load the asset.
-        auto macroMaterialTypeAssetId = GetTerrainMacroMaterialTypeAssetId();
-
-        // Get the dependencies for the requested asset.
-        AZ::Outcome<AZStd::vector<AZ::Data::ProductDependency>, AZStd::string> result;
-        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
-            result, &AZ::Data::AssetCatalogRequestBus::Events::GetDirectProductDependencies, assetId);
-
-        // If any of the dependencies match the TerrainMacroMaterial materialtype asset, then this should be the correct type of material.
-        if (result)
-        {
-            for (auto& dependency : result.GetValue())
+            if (auto* editContext = serialize->GetEditContext(); editContext)
             {
-                if (dependency.m_assetId == macroMaterialTypeAssetId)
-                {
-                    return true;
-                }
+                editContext
+                    ->Class<TerrainMacroMaterialConfig>(
+                        "Terrain Macro Material Component", "Provide a terrain macro material for a region of the world")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_macroColorAsset, "Color Texture",
+                        "Terrain macro color texture for use by any terrain inside the bounding box on this entity.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_macroNormalAsset, "Normal Texture",
+                        "Terrain macro normal texture for use by any terrain inside the bounding box on this entity.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_normalFlipX, "Normal Flip X",
+                        "Flip the X values of the normal map.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_normalFlipY, "Normal Flip Y",
+                        "Flip the Y values of the normal map.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_normalFactor, "Normal Factor",
+                        "Normal values scale factor.")
+                    ;
             }
         }
-
-        // Didn't have the expected dependency, so it must not be the right material type.
-        return false;
     }
-
-    AZ::Outcome<void, AZStd::string> TerrainMacroMaterialConfig::ValidateMaterialAsset(void* newValue, const AZ::Uuid& valueType)
-    {
-        if (azrtti_typeid<AZ::Data::Asset<AZ::RPI::MaterialAsset>>() != valueType)
-        {
-            AZ_Assert(false, "Unexpected value type");
-            return AZ::Failure(AZStd::string("Unexpectedly received something other than a material asset for the MacroMaterial!"));
-        }
-
-        auto newMaterialAsset = *static_cast<AZ::Data::Asset<AZ::RPI::MaterialAsset>*>(newValue);
-
-        if (!IsMaterialTypeCorrect(newMaterialAsset.GetId()))
-        {
-            return AZ::Failure(AZStd::string::format(
-                "The selected MacroMaterial ('%s') needs to use the TerrainMacroMaterial material type.",
-                newMaterialAsset.GetHint().c_str()));
-        }
-
-        return AZ::Success();
-    }
-
 
     void TerrainMacroMaterialComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
@@ -135,23 +98,24 @@ namespace Terrain
     {
         // Clear out our shape bounds and make sure the material is queued to load.
         m_cachedShapeBounds = AZ::Aabb::CreateNull();
-        m_configuration.m_materialAsset.QueueLoad();
+        m_configuration.m_macroColorAsset.QueueLoad();
+        m_configuration.m_macroNormalAsset.QueueLoad();
 
         // Don't mark our material as active until it's finished loading and is valid.
         m_macroMaterialActive = false;
 
         // Listen for the material asset to complete loading.
-        AZ::Data::AssetBus::Handler::BusConnect(m_configuration.m_materialAsset.GetId());
+        AZ::Data::AssetBus::MultiHandler::BusConnect(m_configuration.m_macroColorAsset.GetId());
+        AZ::Data::AssetBus::MultiHandler::BusConnect(m_configuration.m_macroNormalAsset.GetId());
     }
 
     void TerrainMacroMaterialComponent::Deactivate()
     {
         TerrainMacroMaterialRequestBus::Handler::BusDisconnect();
 
-        AZ::Data::AssetBus::Handler::BusDisconnect();
-        m_configuration.m_materialAsset.Release();
-
-        m_macroMaterialInstance.reset();
+        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
+        m_configuration.m_macroColorAsset.Release();
+        m_configuration.m_macroNormalAsset.Release();
 
         // Send out any notifications as appropriate based on the macro material destruction.
         HandleMaterialStateChange();
@@ -195,12 +159,14 @@ namespace Terrain
 
     void TerrainMacroMaterialComponent::HandleMaterialStateChange()
     {
+        /*
         // We only want our component to appear active during the time that the macro material is loaded and valid.  The logic below
         // will handle all transition possibilities to notify if we've become active, inactive, or just changed.  We'll also only
         // keep a valid up-to-date copy of the shape bounds while the material is valid, since we don't need it any other time.
 
         bool wasPreviouslyActive = m_macroMaterialActive;
-        bool isNowActive = (m_macroMaterialInstance != nullptr);
+        //bool isNowActive = (m_macroMaterialInstance != nullptr);
+        bool isNowActive = false;
 
         // Set our state to active or inactive, based on whether or not the macro material instance is now valid.
         m_macroMaterialActive = isNowActive;
@@ -250,10 +216,12 @@ namespace Terrain
             TerrainMacroMaterialNotificationBus::Broadcast(
                 &TerrainMacroMaterialNotificationBus::Events::OnTerrainMacroMaterialChanged, GetEntityId(), m_macroMaterialInstance);
         }
+        */
     }
 
     void TerrainMacroMaterialComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
+        /*
         m_configuration.m_materialAsset = asset;
 
         if (m_configuration.m_materialAsset.Get()->GetMaterialTypeAsset().GetId() ==
@@ -269,6 +237,7 @@ namespace Terrain
 
         // Clear the material asset reference to make sure we don't prevent hot-reloading.
         m_configuration.m_materialAsset.Release();
+        */
 
         HandleMaterialStateChange();
     }
@@ -279,9 +248,9 @@ namespace Terrain
     }
 
     void TerrainMacroMaterialComponent::GetTerrainMacroMaterialData(
-        AZ::Data::Instance<AZ::RPI::Material>& macroMaterial, AZ::Aabb& macroMaterialRegion)
+        MacroMaterialData& macroMaterial, AZ::Aabb& macroMaterialRegion)
     {
-        macroMaterial = m_macroMaterialInstance;
+        macroMaterial = m_materialData;
         macroMaterialRegion = m_cachedShapeBounds;
     }
 }

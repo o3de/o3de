@@ -185,12 +185,12 @@ namespace Terrain
         m_areaData.m_heightmapUpdated = true;
     }
     
-    void TerrainFeatureProcessor::OnTerrainMacroMaterialCreated(AZ::EntityId entityId, MaterialInstance material, const AZ::Aabb& region)
+    void TerrainFeatureProcessor::OnTerrainMacroMaterialCreated(AZ::EntityId entityId, const MacroMaterialData& newMaterialData, const AZ::Aabb& region)
     {
         MacroMaterialData& materialData = FindOrCreateMacroMaterial(entityId);
         materialData.m_bounds = region;
 
-        UpdateMacroMaterialData(materialData, material);
+        UpdateMacroMaterialData(materialData, newMaterialData);
 
         // Update all sectors in region.
         ForOverlappingSectors(materialData.m_bounds,
@@ -203,20 +203,14 @@ namespace Terrain
         );
     }
 
-    void TerrainFeatureProcessor::OnTerrainMacroMaterialChanged(AZ::EntityId entityId, MaterialInstance macroMaterial)
+    void TerrainFeatureProcessor::OnTerrainMacroMaterialChanged(AZ::EntityId entityId, const MacroMaterialData& newMaterialData)
     {
-        if (macroMaterial)
-        {
-            MacroMaterialData& data = FindOrCreateMacroMaterial(entityId);
-            UpdateMacroMaterialData(data, macroMaterial);
-        }
-        else
-        {
-            RemoveMacroMaterial(entityId);
-        }
+        MacroMaterialData& data = FindOrCreateMacroMaterial(entityId);
+        UpdateMacroMaterialData(data, newMaterialData);
     }
     
-    void TerrainFeatureProcessor::OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
+    void TerrainFeatureProcessor::OnTerrainMacroMaterialRegionChanged(
+        AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
     {
         MacroMaterialData& materialData = FindOrCreateMacroMaterial(entityId);
         for (SectorData& sectorData : m_sectorData)
@@ -250,6 +244,8 @@ namespace Terrain
 
     void TerrainFeatureProcessor::OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId)
     {
+        RemoveMacroMaterial(entityId);
+
         MacroMaterialData* materialData = FindMacroMaterial(entityId);
 
         if (materialData)
@@ -382,7 +378,7 @@ namespace Terrain
         TerrainMacroMaterialRequestBus::EnumerateHandlers(
             [&](TerrainMacroMaterialRequests* handler)
             {
-                MaterialInstance macroMaterial;
+                MacroMaterialData macroMaterial;
                 AZ::Aabb bounds;
                 handler->GetTerrainMacroMaterialData(macroMaterial, bounds);
                 AZ::EntityId entityId = *(Terrain::TerrainMacroMaterialRequestBus::GetCurrentBusId());
@@ -393,31 +389,9 @@ namespace Terrain
         TerrainMacroMaterialNotificationBus::Handler::BusConnect();
     }
 
-    void TerrainFeatureProcessor::UpdateMacroMaterialData(MacroMaterialData& macroMaterialData, MaterialInstance material)
+    void TerrainFeatureProcessor::UpdateMacroMaterialData(MacroMaterialData& macroMaterialData, const MacroMaterialData& newMaterialData)
     {
-        // Since we're using an actual macro material instance for now, get the values from it that we care about.
-        const auto materialLayout = material->GetMaterialPropertiesLayout();
-
-        const AZ::RPI::MaterialPropertyIndex macroColorTextureMapIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroColorTextureMap));
-        AZ_Error(TerrainFPName, macroColorTextureMapIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroColorTextureMap);
-            
-        const AZ::RPI::MaterialPropertyIndex macroNormalTextureMapIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalTextureMap));
-        AZ_Error(TerrainFPName, macroNormalTextureMapIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalTextureMap);
-
-        const AZ::RPI::MaterialPropertyIndex macroNormalFlipXIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalFlipX));
-        AZ_Error(TerrainFPName, macroNormalFlipXIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalFlipX);
-
-        const AZ::RPI::MaterialPropertyIndex macroNormalFlipYIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalFlipY));
-        AZ_Error(TerrainFPName, macroNormalFlipYIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalFlipY);
-
-        const AZ::RPI::MaterialPropertyIndex macroNormalFactorIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalFactor));
-        AZ_Error(TerrainFPName, macroNormalFactorIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalFactor);
-
-        macroMaterialData.m_colorImage = material->GetPropertyValue(macroColorTextureMapIndex).GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
-        macroMaterialData.m_normalImage = material->GetPropertyValue(macroNormalTextureMapIndex).GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
-        macroMaterialData.m_normalFlipX = material->GetPropertyValue(macroNormalFlipXIndex).GetValue<bool>();
-        macroMaterialData.m_normalFlipY = material->GetPropertyValue(macroNormalFlipYIndex).GetValue<bool>();
-        macroMaterialData.m_normalFactor = material->GetPropertyValue(macroNormalFactorIndex).GetValue<float>();
+        macroMaterialData = newMaterialData;
 
         if (macroMaterialData.m_bounds.IsValid())
         {
@@ -783,7 +757,7 @@ namespace Terrain
         // larger but this will limit how much is rendered.
     }
     
-    TerrainFeatureProcessor::MacroMaterialData* TerrainFeatureProcessor::FindMacroMaterial(AZ::EntityId entityId)
+    MacroMaterialData* TerrainFeatureProcessor::FindMacroMaterial(AZ::EntityId entityId)
     {
         for (MacroMaterialData& data : m_macroMaterials.GetDataVector())
         {
@@ -795,7 +769,7 @@ namespace Terrain
         return nullptr;
     }
 
-    TerrainFeatureProcessor::MacroMaterialData& TerrainFeatureProcessor::FindOrCreateMacroMaterial(AZ::EntityId entityId)
+    MacroMaterialData& TerrainFeatureProcessor::FindOrCreateMacroMaterial(AZ::EntityId entityId)
     {
         MacroMaterialData* dataPtr = FindMacroMaterial(entityId);
         if (dataPtr != nullptr)
