@@ -11,7 +11,6 @@
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Quaternion.h>
-#include <AzCore/Math/Uuid.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzNetworking/Serialization/ISerializer.h>
@@ -200,9 +199,9 @@ namespace AzNetworking
     };
 }
 
+#include <AzNetworking/Utilities/QuantizedValues.inl>
+
 namespace AZ
 {
     AZ_TYPE_INFO_TEMPLATE(AzNetworking::QuantizedValues, "{9C60D8BA-9B88-41BE-B4FE-51F617565A82}", AZ_TYPE_INFO_AUTO, AZ_TYPE_INFO_AUTO, AZ_TYPE_INFO_AUTO, AZ_TYPE_INFO_AUTO);
 }
-
-#include <AzNetworking/Utilities/QuantizedValues.inl>
