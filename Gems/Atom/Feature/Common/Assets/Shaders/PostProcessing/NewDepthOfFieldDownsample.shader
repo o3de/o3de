@@ -1,5 +1,5 @@
 {
-    "Source" : "NewDepthOfFieldDownsample",
+    "Source" : "NewDepthOfFieldDownsample.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }
