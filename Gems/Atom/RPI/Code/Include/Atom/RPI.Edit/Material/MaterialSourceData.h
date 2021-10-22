@@ -102,10 +102,8 @@ namespace AZ
                 bool includeMaterialPropertyNames = true) const;
 
         private:
-            static void ApplyMaterialSourceDataPropertiesToAssetCreator(
-                AZ::RPI::MaterialAssetCreator& materialAssetCreator,
-                const AZStd::string_view& materialSourceFilePath,
-                const MaterialSourceData& materialSourceData);
+            void ApplyPropertiesToAssetCreator(
+                AZ::RPI::MaterialAssetCreator& materialAssetCreator, const AZStd::string_view& materialSourceFilePath) const;
         };
     } // namespace RPI
 } // namespace AZ
