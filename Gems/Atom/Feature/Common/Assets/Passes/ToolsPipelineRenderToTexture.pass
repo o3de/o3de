@@ -4,7 +4,7 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "ThumbnailPipelineRenderToTexture",
+            "Name": "ToolsPipelineRenderToTexture",
             "PassClass": "RenderToTexturePass",
             "PassData": {
                 "$type": "RenderToTexturePassData",
@@ -15,7 +15,7 @@
             "PassRequests": [
                 {
                     "Name": "Pipeline",
-                    "TemplateName": "ThumbnailPipeline",
+                    "TemplateName": "ToolsPipeline",
                     "Connections": [
                         {
                             "LocalSlot": "SwapChainOutput",

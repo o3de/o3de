@@ -144,25 +144,11 @@ namespace AZ
 
             void HairFeatureProcessor::EnablePasses([[maybe_unused]] bool enable)
             {
-                return;
-
-                // [To Do] - This part should be enabled (remove the return) to reduce overhead
-                // when Hair is disabled / doesn't exist in the scene.
-                // Currently it might break features such as fog that depend on the output and for some
-                // reason doesn't quite work for ShortCut.
-                // The current overhead is minimal (< 0.1 msec) and this Gem is disabled by default.
-/*
-                if (!m_initialized)
-                {
-                    return;
-                }
-
                 RPI::Ptr<RPI::Pass> desiredPass = m_renderPipeline->GetRootPass()->FindPassByNameRecursive(HairParentPassName);
                 if (desiredPass)
                 {
                     desiredPass->SetEnabled(enable);
                 }
-*/
             }
 
             bool HairFeatureProcessor::RemoveHairRenderObject(Data::Instance<HairRenderObject> renderObject)
@@ -184,15 +170,13 @@ namespace AZ
 
             void HairFeatureProcessor::UpdateHairSkinning()
             {
-                // Copying CPU side m_SimCB content to the GPU buffer (matrices, wind parameters..) 
-
-                for (auto objIter = m_hairRenderObjects.begin(); objIter != m_hairRenderObjects.end(); ++objIter)
+                // Copying CPU side m_SimCB content to the GPU buffer (matrices, wind parameters..)
+                for (auto& hairRenderObject : m_hairRenderObjects)
                 {
-                    if (!objIter->get()->IsEnabled())
+                    if (hairRenderObject->IsEnabled())
                     {
-                        return;
+                        hairRenderObject->Update();
                     }
-                    objIter->get()->Update();
                 }
             }
 
