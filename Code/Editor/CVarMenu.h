@@ -19,6 +19,7 @@
 class CVarMenu
     : public QMenu
 {
+    Q_OBJECT
 public:
     // CVar that can be toggled on and off
     struct CVarToggle
