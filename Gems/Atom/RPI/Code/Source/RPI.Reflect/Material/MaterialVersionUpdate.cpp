@@ -14,16 +14,24 @@ namespace AZ
 {
     namespace RPI
     {
-        void MaterialVersionUpdate::Reflect(ReflectContext* context)
+        void MaterialVersionUpdate::RenamePropertyAction::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<MaterialVersionUpdate::RenamePropertyAction>()
+                serializeContext->Class<RenamePropertyAction>()
                     ->Version(1)
-                    ->Field("From", &MaterialVersionUpdate::RenamePropertyAction::m_fromPropertyId)
-                    ->Field("To", &MaterialVersionUpdate::RenamePropertyAction::m_toPropertyId)
+                    ->Field("From", &RenamePropertyAction::m_fromPropertyId)
+                    ->Field("To", &RenamePropertyAction::m_toPropertyId)
                     ;
+            }
+        }
 
+        void MaterialVersionUpdate::Reflect(ReflectContext* context)
+        {
+            MaterialVersionUpdate::RenamePropertyAction::Reflect(context);
+
+            if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+            {
                 serializeContext->RegisterGenericType<MaterialVersionUpdate::Actions>();
 
                 serializeContext->Class<MaterialVersionUpdate>()

@@ -32,6 +32,8 @@ namespace AZ
             struct RenamePropertyAction
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialVersionUpdate::RenameAction, "{A1FBEB19-EA05-40F0-9700-57D048DF572B}");
+                
+                static void Reflect(ReflectContext* context);
 
                 AZ::Name m_fromPropertyId;
                 AZ::Name m_toPropertyId;
