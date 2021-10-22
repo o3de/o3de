@@ -302,6 +302,7 @@ namespace O3DE::ProjectManager
             m_disableGemProject = pybind11::module::import("o3de.disable_gem");
             m_editProjectProperties = pybind11::module::import("o3de.project_properties");
             m_download = pybind11::module::import("o3de.download");
+            m_repo = pybind11::module::import("o3de.repo");
             m_pathlib = pybind11::module::import("pathlib");
 
             // make sure the engine is registered
@@ -645,13 +646,13 @@ namespace O3DE::ProjectManager
         }
     }
 
-    GemInfo PythonBindings::GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath)
+    GemInfo PythonBindings::GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath, bool fullPathGiven)
     {
         GemInfo gemInfo;
         gemInfo.m_path = Py_To_String(path);
         gemInfo.m_directoryLink = gemInfo.m_path;
 
-        auto data = m_manifest.attr("get_gem_json_data")(pybind11::none(), path, pyProjectPath);
+        auto data = m_manifest.attr("get_gem_json_data")(pybind11::none(), path, pyProjectPath, fullPathGiven);
         if (pybind11::isinstance<pybind11::dict>(data))
         {
             try
@@ -684,6 +685,10 @@ namespace O3DE::ProjectManager
                 if (gemInfo.m_gemOrigin != GemInfo::GemOrigin::Remote)
                 {
                     gemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
+                }
+                if (fullPathGiven)
+                {
+                    gemInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
                 }
 
                 if (data.contains("user_tags"))
@@ -1101,5 +1106,30 @@ namespace O3DE::ProjectManager
         }
 
         return AZ::Success();
+    }
+
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetAllGemRepoGemsInfos()
+    {
+        QVector<GemInfo> gemInfos;
+        AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(
+            [&]
+            {
+                auto gemPaths = m_repo.attr("get_gem_json_paths_from_all_cached_repos")();
+
+                if (pybind11::isinstance<pybind11::set>(gemPaths))
+                {
+                    for (auto path : gemPaths)
+                    {
+                        gemInfos.push_back(GemInfoFromPath(path, pybind11::none(), true));
+                    }
+                }
+            });
+
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure(result.GetError());
+        }
+
+        return AZ::Success(AZStd::move(gemInfos));
     }
 }

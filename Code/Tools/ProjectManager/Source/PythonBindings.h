@@ -62,13 +62,14 @@ namespace O3DE::ProjectManager
         bool RemoveGemRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
         AZ::Outcome<void, AZStd::string> DownloadGem(const QString& gemName, std::function<void(int)> gemProgressCallback) override;
+        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemRepoGemsInfos() override;
 
     private:
         AZ_DISABLE_COPY_MOVE(PythonBindings);
 
         AZ::Outcome<void, AZStd::string> ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback);
         bool ExecuteWithLock(AZStd::function<void()> executionCallback);
-        GemInfo GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
+        GemInfo GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath, bool fullPathGiven = false);
         GemRepoInfo GetGemRepoInfo(pybind11::handle repoUri);
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
         ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
@@ -89,6 +90,7 @@ namespace O3DE::ProjectManager
         pybind11::handle m_disableGemProject;
         pybind11::handle m_editProjectProperties;
         pybind11::handle m_download;
+        pybind11::handle m_repo;
         pybind11::handle m_pathlib;
     };
 }
