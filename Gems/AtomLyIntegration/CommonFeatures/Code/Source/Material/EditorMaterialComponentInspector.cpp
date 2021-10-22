@@ -352,6 +352,27 @@ namespace AZ
                     m_editData.m_materialPropertyOverrideMap, m_entityId, &MaterialComponentRequestBus::Events::GetPropertyOverrides,
                     m_materialAssignmentId);
 
+                // Apply any automatic property renames so that the material inspector will be property initialized with the right values
+                // for properties that have new names.
+                {
+                    AZStd::vector<AZStd::pair<Name, Name>> renamedProperties;
+                    for (auto& propertyOverridePair : m_editData.m_materialPropertyOverrideMap)
+                    {
+                        Name name = propertyOverridePair.first;
+                        if (m_materialInstance->GetAsset()->GetMaterialTypeAsset()->ApplyPropertyRenames(name))
+                        {
+                            renamedProperties.emplace_back(propertyOverridePair.first, name);
+                        }
+                    }
+                    for (auto& renamePair : renamedProperties)
+                    {
+                        const Name& oldName = renamePair.first;
+                        const Name& newName = renamePair.second;
+                        m_editData.m_materialPropertyOverrideMap[newName] = m_editData.m_materialPropertyOverrideMap[oldName];
+                        m_editData.m_materialPropertyOverrideMap.erase(oldName);
+                    }
+                }
+
                 for (auto& group : m_groups)
                 {
                     for (auto& property : group.second.m_properties)

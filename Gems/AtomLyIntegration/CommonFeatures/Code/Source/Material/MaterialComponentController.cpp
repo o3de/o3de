@@ -49,6 +49,7 @@ namespace AZ
                     ->Event("ClearIncompatibleMaterialOverrides", &MaterialComponentRequestBus::Events::ClearIncompatibleMaterialOverrides)
                     ->Event("ClearInvalidMaterialOverrides", &MaterialComponentRequestBus::Events::ClearInvalidMaterialOverrides)
                     ->Event("RepairInvalidMaterialOverrides", &MaterialComponentRequestBus::Events::RepairInvalidMaterialOverrides)
+                    ->Event("ApplyAutomaticPropertyUpdates", &MaterialComponentRequestBus::Events::ApplyAutomaticPropertyUpdates)
                     ->Event("SetMaterialOverride", &MaterialComponentRequestBus::Events::SetMaterialOverride)
                     ->Event("GetMaterialOverride", &MaterialComponentRequestBus::Events::GetMaterialOverride)
                     ->Event("ClearMaterialOverride", &MaterialComponentRequestBus::Events::ClearMaterialOverride)
@@ -405,6 +406,39 @@ namespace AZ
                 }
             }
             LoadMaterials();
+        }
+        
+        uint32_t MaterialComponentController::ApplyAutomaticPropertyUpdates()
+        {
+            uint32_t propertiesUpdated = 0;
+
+            for (auto& materialAssignmentPair : m_configuration.m_materials)
+            {
+                MaterialAssignment& materialAssignment = materialAssignmentPair.second;
+                
+                AZStd::vector<AZStd::pair<Name, Name>> renamedProperties;
+
+                for (const auto& propertyPair : materialAssignment.m_propertyOverrides)
+                {
+                    Name propertyId = propertyPair.first;
+
+                    if (materialAssignment.m_materialInstance->GetAsset()->GetMaterialTypeAsset()->ApplyPropertyRenames(propertyId))
+                    {
+                        renamedProperties.emplace_back(propertyPair.first, propertyId);
+                        ++propertiesUpdated;
+                    }
+                }
+
+                for (auto& pair : renamedProperties)
+                {
+                    const Name& oldName = pair.first;
+                    const Name& newName = pair.second;
+                    materialAssignment.m_propertyOverrides[newName] = materialAssignment.m_propertyOverrides[oldName];
+                    materialAssignment.m_propertyOverrides.erase(oldName);
+                }
+            }
+
+            return propertiesUpdated;
         }
 
         void MaterialComponentController::SetDefaultMaterialOverride(const AZ::Data::AssetId& materialAssetId)

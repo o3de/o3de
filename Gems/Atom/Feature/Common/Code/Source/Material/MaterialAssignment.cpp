@@ -137,31 +137,28 @@ namespace AZ
 
             if (m_materialInstance->CanCompile())
             {
-                AZStd::vector<AZStd::pair<Name, Name>> renamedProperties;
-
                 for (const auto& propertyPair : m_propertyOverrides)
                 {
                     if (!propertyPair.second.empty())
                     {
-                        RPI::MaterialPropertyIndex materialPropertyIndex = m_materialInstance->FindPropertyIndex(propertyPair.first);
+                        bool wasRenamed = false;
+                        Name newName;
+                        RPI::MaterialPropertyIndex materialPropertyIndex = m_materialInstance->FindPropertyIndex(propertyPair.first, &wasRenamed, &newName);
 
-                        // If we didn't find the name, check to see if there was a rename that should be used.
-                        if (materialPropertyIndex.IsNull())
+                        // FindPropertyIndex will have already reported a message about what the old and new names are. Here we just add some extra info to help the user resolve it.
+                        AZ_Warning("MaterialAssignment", !wasRenamed,
+                            "Consider running \"Apply Automatic Property Updates\" to use the latest property names.",
+                            propertyPair.first.GetCStr(),
+                            newName.GetCStr());
+
+                        if (wasRenamed && m_propertyOverrides.find(newName) != m_propertyOverrides.end())
                         {
-                            Name propertyId = propertyPair.first;
-
-                            if (m_materialInstance->GetAsset()->GetMaterialTypeAsset()->ApplyPropertyRenames(propertyId))
-                            {
-                                renamedProperties.emplace_back(propertyPair.first, propertyId);
-                                
-                                // We should be able to find the property now, using the new name
-                                materialPropertyIndex = m_materialInstance->FindPropertyIndex(propertyId);
-
-                                AZ_Warning("MaterialAssignment", false,
-                                    "Material property '%s' has been renamed to '%s', and a material override references the old name. Save the level or prefab to permanently apply this change.",
-                                    propertyPair.first.GetCStr(),
-                                    propertyId.GetCStr());
-                            }
+                            materialPropertyIndex.Reset();
+                            
+                            AZ_Warning("MaterialAssignment", false,
+                                "Material property '%s' has been renamed to '%s', and a property override exists for both. The one with the old name will be ignored.",
+                                propertyPair.first.GetCStr(),
+                                newName.GetCStr());
                         }
 
                         if (!materialPropertyIndex.IsNull())
@@ -170,15 +167,6 @@ namespace AZ
                                 materialPropertyIndex, AZ::RPI::MaterialPropertyValue::FromAny(propertyPair.second));
                         }
                     }
-                }
-
-                // Now that we're done looping over all the overrides, it's safe to apply any renames that were scheduled
-                for (auto& pair : renamedProperties)
-                {
-                    const Name& oldName = pair.first;
-                    const Name& newName = pair.second;
-                    m_propertyOverrides[newName] = m_propertyOverrides[oldName];
-                    m_propertyOverrides.erase(oldName);
                 }
 
                 return m_materialInstance->Compile();
