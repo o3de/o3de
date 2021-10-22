@@ -137,11 +137,14 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::OnTerrainDataCreateEnd()
     {
+        // The terrain system has finished creating itself, so we should now have data for creating a heightfield.
         NotifyListenersOfHeightfieldDataChange();
     }
 
     void TerrainPhysicsColliderComponent::OnTerrainDataDestroyBegin()
     {
+        // The terrain system is starting to destroy itself, so notify listeners of a change since the heightfield
+        // will no longer have any valid data.
         NotifyListenersOfHeightfieldDataChange();
     }
 
