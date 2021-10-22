@@ -37,7 +37,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "debug",
       "OUTPUT_DIRECTORY": "build/mac",
-      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD"
     }
@@ -51,7 +51,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/mac",
-      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD"
     }
@@ -81,7 +81,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/mac",
-      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
@@ -99,7 +99,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/mac",
-      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
       "CTEST_OPTIONS": "-L \"(SUITE_periodic)\"",
@@ -116,7 +116,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/mac",
-      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
       "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\"",
@@ -133,7 +133,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "release",
       "OUTPUT_DIRECTORY": "build/mac",
-      "CMAKE_OPTIONS": "-G Xcode -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD"
     }
@@ -148,7 +148,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "release",
       "OUTPUT_DIRECTORY": "build/mono_mac",
-      "CMAKE_OPTIONS": "-G Xcode -DLY_MONOLITHIC_GAME=TRUE -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS": "-G Xcode -DLY_MONOLITHIC_GAME=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "ALL_BUILD"
     }
