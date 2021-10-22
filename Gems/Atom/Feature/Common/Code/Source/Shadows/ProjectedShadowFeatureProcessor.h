@@ -79,7 +79,6 @@ namespace AZ::Render
             ProjectedShadowDescriptor m_desc;
             RPI::ViewPtr m_shadowmapView;
             float m_bias = 0.1f;
-            float m_normalShadowBias = 0.0f;
             ShadowId m_shadowId;
         };
 
