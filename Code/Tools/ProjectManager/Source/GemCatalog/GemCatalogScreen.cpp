@@ -19,6 +19,10 @@
 #include <QTimer>
 #include <PythonBindingsInterface.h>
 #include <QMessageBox>
+#include <QDir>
+#include <QStandardPaths>
+#include <QFileDialog>
+#include <QMessageBox>
 
 namespace O3DE::ProjectManager
 {
@@ -69,6 +73,7 @@ namespace O3DE::ProjectManager
     void GemCatalogScreen::ReinitForProject(const QString& projectPath)
     {
         m_gemModel->clear();
+        m_gemsToRegisterWithProject.clear();
         FillModel(projectPath);
 
         if (m_filterWidget)
@@ -84,6 +89,47 @@ namespace O3DE::ProjectManager
         m_headerWidget->ReinitForProject();
 
         connect(m_gemModel, &GemModel::dataChanged, m_filterWidget, &GemFilterWidget::ResetGemStatusFilter);
+        connect(
+            m_headerWidget, &GemCatalogHeaderWidget::addGem,
+            [&]()
+            {
+                EngineInfo engineInfo;
+                QString defaultPath;
+
+                AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+                if (engineInfoResult.IsSuccess())
+                {
+                    engineInfo = engineInfoResult.GetValue();
+                    defaultPath = engineInfo.m_defaultGemsFolder;
+                }
+
+                if (defaultPath.isEmpty())
+                {
+                    defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+                }
+
+                QString directory = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, tr("Browse"), defaultPath));
+                if (!directory.isEmpty())
+                {
+                    // register the gem to the o3de_manifest.json and to the project after the user confirms
+                    // project creation/update
+                    auto registerResult = PythonBindingsInterface::Get()->RegisterGem(directory);
+                    if(!registerResult)
+                    {
+                        QMessageBox::critical(this, tr("Failed to add gem"), registerResult.GetError().c_str());
+                    }
+                    else
+                    {
+                        m_gemsToRegisterWithProject.insert(directory);
+                        AZ::Outcome<GemInfo, void> gemInfoResult = PythonBindingsInterface::Get()->GetGemInfo(directory);
+                        if (gemInfoResult)
+                        {
+                            m_gemModel->AddGem(gemInfoResult.GetValue<GemInfo>());
+                            m_gemModel->UpdateGemDependencies();
+                        }
+                    }
+                }
+            });
 
         // Select the first entry after everything got correctly sized
         QTimer::singleShot(200, [=]{
@@ -175,6 +221,12 @@ namespace O3DE::ProjectManager
                     QString("Cannot add gem %1 to project.\n\nError:\n%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
 
                 return EnableDisableGemsResult::Failed;
+            }
+
+            // register external gems that were added with relative paths
+            if (m_gemsToRegisterWithProject.contains(gemPath))
+            {
+                pythonBindings->RegisterGem(QDir(projectPath).relativeFilePath(gemPath), projectPath);
             }
         }
 

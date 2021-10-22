@@ -402,7 +402,14 @@ namespace O3DE::ProjectManager
         hLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
         hLayout->addSpacerItem(new QSpacerItem(75, 0, QSizePolicy::Fixed));
 
-        CartButton* cartButton = new CartButton(gemModel, downloadController);
+        QPushButton* addGemButton = new QPushButton("Add Gem");
+        addGemButton->setObjectName("AddGemButton");
+        addGemButton->setFlat(true);
+        addGemButton->setFocusPolicy(Qt::NoFocus);
+        connect( addGemButton, &QPushButton::clicked, [this]() { emit addGem();});
+        hLayout->addWidget(addGemButton);
+
+        CartButton* cartButton = new CartButton(gemModel);
         hLayout->addWidget(cartButton);
     }
 

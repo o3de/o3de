@@ -16,6 +16,8 @@
 #include <GemCatalog/GemInspector.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
+#include <QSet>
+#include <QString>
 #endif
 
 namespace O3DE::ProjectManager
@@ -52,5 +54,6 @@ namespace O3DE::ProjectManager
         QVBoxLayout* m_filterWidgetLayout = nullptr;
         GemFilterWidget* m_filterWidget = nullptr;
         DownloadController* m_downloadController = nullptr;
+        QSet<QString> m_gemsToRegisterWithProject;
     };
 } // namespace O3DE::ProjectManager
