@@ -55,6 +55,4 @@ set(ENABLED_GEMS
     PrefabBuilder
     AudioSystem
     Profiler
-	Terrain
-	PhysXDebug
 )
