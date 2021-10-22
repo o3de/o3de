@@ -48,6 +48,20 @@ namespace Multiplayer
     void NetworkEntityManager::Initialize(const HostId& hostId, AZStd::unique_ptr<IEntityDomain> entityDomain)
     {
         m_hostId = hostId;
+
+        // Configure our vended NetEntityIds so that no two hosts generate the same NetEntityId
+        {
+            // Needs more thought
+            const uint64_t addrPortion = hostId.GetAddress(AzNetworking::ByteOrder::Host);
+            const uint64_t portPortion = hostId.GetPort(AzNetworking::ByteOrder::Host);
+            const uint64_t hostIdentifier = (portPortion << 32) | addrPortion;
+            const AZ::HashValue32 hostHash = AZ::TypeHash32(hostIdentifier);
+
+            NetEntityId hostEntityIdOffset = static_cast<NetEntityId>(hostHash) << 32;
+            m_nextEntityId &= NetEntityId{ 0x0000000000000000FFFFFFFFFFFFFFFF };
+            m_nextEntityId |= hostEntityIdOffset;
+        }
+
         m_entityDomain = AZStd::move(entityDomain);
         m_updateEntityDomainEvent.Enqueue(net_EntityDomainUpdateMs, true);
         m_entityDomain->ActivateTracking(m_ownedEntities);
@@ -227,11 +241,19 @@ namespace Multiplayer
         {
             AZ::Entity* entity = it->second;
             NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
+            AZ::Aabb entityBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(entity->GetId());
+            entityBounds.Expand(AZ::Vector3(0.01f));
             if (netBindComponent->GetNetEntityRole() == NetEntityRole::Authority)
             {
-                const AZ::Aabb entityBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(entity->GetId());
-                debugDisplay->DrawWireBox(entityBounds.GetMin(), entityBounds.GetMax());
+                debugDisplay->SetColor(AZ::Colors::Black);
+                debugDisplay->SetAlpha(0.5f);
             }
+            else
+            {
+                debugDisplay->SetColor(AZ::Colors::DeepSkyBlue);
+                debugDisplay->SetAlpha(0.25f);
+            }
+            debugDisplay->DrawWireBox(entityBounds.GetMin(), entityBounds.GetMax());
         }
 
         if (m_entityDomain != nullptr)

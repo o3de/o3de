@@ -92,17 +92,10 @@ namespace Multiplayer
         return m_isPoorConnection ? sv_MinEntitiesToReplicate : sv_MaxEntitiesToReplicate;
     }
 
-    bool ServerToClientReplicationWindow::IsInWindow(const ConstNetworkEntityHandle& entityHandle, NetEntityRole& outNetworkRole) const
+    bool ServerToClientReplicationWindow::IsInWindow([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle, NetEntityRole& outNetworkRole) const
     {
-        // TODO: Clean up this interface, this function is used for server->server migrations, and probably shouldn't be exposed in it's current setup
         AZ_Assert(false, "IsInWindow should not be called on the ServerToClientReplicationWindow");
         outNetworkRole = NetEntityRole::InvalidRole;
-        auto iter = m_replicationSet.find(entityHandle);
-        if (iter != m_replicationSet.end())
-        {
-            outNetworkRole = iter->second.m_netEntityRole;
-            return true;
-        }
         return false;
     }
 
@@ -146,7 +139,7 @@ namespace Multiplayer
         NetworkEntityTracker* networkEntityTracker = GetNetworkEntityTracker();        
         IFilterEntityManager* filterEntityManager = GetMultiplayer()->GetFilterEntityManager();
 
-        // Add all the neighbors
+        // Add all the neighbours
         for (AzFramework::VisibilityEntry* visEntry : gatheredEntries)
         {
             AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
@@ -301,7 +294,6 @@ namespace Multiplayer
     void ServerToClientReplicationWindow::AddEntityToReplicationSet(ConstNetworkEntityHandle& entityHandle, float priority, [[maybe_unused]] float distanceSquared)
     {
         // Assumption: the entity has been checked for filtering prior to this call.
-
         if (!sv_ReplicateServerProxies)
         {
             NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
@@ -312,11 +304,11 @@ namespace Multiplayer
             }
         }
 
-        const bool isQueueFull = (m_candidateQueue.size() >= sv_MaxEntitiesToTrackReplication);  // See if have the maximum number of entities in our set
+        const bool isQueueFull = (m_candidateQueue.size() >= sv_MaxEntitiesToTrackReplication); // See if have the maximum number of entities in our set
         const bool isInReplicationSet = m_replicationSet.find(entityHandle) != m_replicationSet.end();
         if (!isInReplicationSet)
         {
-            if (isQueueFull)  // if our set is full, then we need to remove the worst priority in our set
+            if (isQueueFull) // If our set is full, then we need to remove the worst priority in our set
             {
                 ConstNetworkEntityHandle removeEnt = m_candidateQueue.top().m_entityHandle;
                 m_candidateQueue.pop();
@@ -332,7 +324,7 @@ namespace Multiplayer
         INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get();
         AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
 
-        for (const AZ::Entity* controlledEntity : hierarchyComponent.m_hierarchicalEntities)
+        for (const AZ::Entity* controlledEntity : hierarchyComponent.GetHierarchicalEntities())
         {
             NetEntityId controlledNetEntitydId = networkEntityManager->GetNetEntityIdById(controlledEntity->GetId());
             AZ_Assert(controlledNetEntitydId != InvalidNetEntityId, "Unable to find the hierarchy entity in Network Entity Manager");
