@@ -169,6 +169,22 @@ namespace AZ
             return m_version;
         }
 
+
+        bool MaterialTypeAsset::ApplyPropertyRenames(AZ::Name& propertyId) const
+        {
+            bool renamed = false;
+
+            for (const auto& versionUpdates : m_materialVersionUpdates)
+            {
+                if (versionUpdates.ApplyPropertyRenames(propertyId))
+                {
+                    renamed = true;
+                }
+            }
+
+            return renamed;
+        }
+
         void MaterialTypeAsset::SetReady()
         {
             m_status = AssetStatus::Ready;
