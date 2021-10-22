@@ -419,7 +419,7 @@ void MemoryStatusItem::updateStatus()
 GeneralStatusItem::GeneralStatusItem(QString name, MainStatusBar* parent)
     : StatusBarItem(name, parent)
 {
-    connect(parent, &MainStatusBar::messageChanged, this, [this] { update(); });
+    connect(parent, &MainStatusBar::messageChanged, this, [this](const QString&) { update(); });
 }
 
 QString GeneralStatusItem::CurrentText() const
