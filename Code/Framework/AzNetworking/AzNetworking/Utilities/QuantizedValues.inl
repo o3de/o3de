@@ -322,4 +322,23 @@ namespace AzNetworking
     {
         QuantizedValuesConversionHelper<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>::DecodeQuantizedValues(*this);
     }
+
+    template <AZStd::size_t NUM_ELEMENTS, AZStd::size_t NUM_BYTES, int32_t MIN_VALUE, int32_t MAX_VALUE>
+    void QuantizedValues<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>::Reflect(AZ::ReflectContext* context, const char* name)
+    {
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<QuantizedValues<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>>()->Version(1);
+        }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<QuantizedValues<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>>(name)
+                ->Attribute(AZ::Script::Attributes::Category, "multiplayer")
+                ->Attribute(AZ::Script::Attributes::Module, "Multiplayer")
+                ->Method("Set", [](QuantizedValues<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>& self, const ValueType value) { self = value; })
+                ->Method("Get", [](QuantizedValues<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>& self) { return (ValueType)self; })
+                ;
+        }
+    }
 }

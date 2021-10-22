@@ -77,7 +77,7 @@ namespace AzNetworking
         using SimdTypei = typename QuantizedValuesHelper<NUM_ELEMENTS>::SimdType::Int32Type;
         using ValueType = typename QuantizedValuesHelper<NUM_ELEMENTS>::ValueType;
 
-        static void Reflect(AZ::ReflectContext* context);
+        static void Reflect(AZ::ReflectContext* context, const char* name);
 
         //! Default constructor.
         QuantizedValues();
@@ -197,25 +197,6 @@ namespace AzNetworking
         template <AZStd::size_t NUM_ELEMENTS2, AZStd::size_t NUM_BYTES2, int32_t MIN_VALUE2, int32_t MAX_VALUE2>
         friend struct QuantizedValuesConversionHelper;
     };
-
-    template <AZStd::size_t NUM_ELEMENTS, AZStd::size_t NUM_BYTES, int32_t MIN_VALUE, int32_t MAX_VALUE>
-    void QuantizedValues<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>::Reflect(AZ::ReflectContext* context)
-    {
-        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<QuantizedValues<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>>()->Version(1);
-        }
-
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->Class<QuantizedValues<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>>()
-                ->Attribute(AZ::Script::Attributes::Category, "multiplayer")
-                ->Attribute(AZ::Script::Attributes::Module, "Multiplayer")
-                ->Method("Set", [](QuantizedValues<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>& self, const ValueType value) { self = value; })
-                ->Method("Get", [](QuantizedValues<NUM_ELEMENTS, NUM_BYTES, MIN_VALUE, MAX_VALUE>& self) { return (ValueType)self; })
-                ;
-        }
-    }
 }
 
 namespace AZ
