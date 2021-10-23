@@ -59,6 +59,8 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) override;
 
         // Gem Repos
+        AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri) override;
+        bool RefreshAllGemRepos() override;
         bool AddGemRepo(const QString& repoUri) override;
         bool RemoveGemRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
@@ -91,6 +93,7 @@ namespace O3DE::ProjectManager
         pybind11::handle m_disableGemProject;
         pybind11::handle m_editProjectProperties;
         pybind11::handle m_download;
+        pybind11::handle m_repo;
         pybind11::handle m_pathlib;
 
         bool m_requestCancelDownload = false;
