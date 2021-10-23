@@ -50,7 +50,7 @@ namespace AzToolsFramework
             m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, m_useImmediatePropagation);
         }
 
-        void PrefabUndoInstance::Redo(InstanceOptionalConstReference instance)
+        void PrefabUndoInstance::RedoExclude(InstanceOptionalConstReference instance)
         {
             m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, m_useImmediatePropagation, instance);
         }
@@ -113,7 +113,7 @@ namespace AzToolsFramework
                 m_templateId);
         }
 
-        void PrefabUndoEntityUpdate::Redo(InstanceOptionalConstReference instance)
+        void PrefabUndoEntityUpdate::RedoExclude(InstanceOptionalConstReference instance)
         {
             [[maybe_unused]] bool isPatchApplicationSuccessful =
                 m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, m_useImmediatePropagation, instance);
@@ -313,7 +313,7 @@ namespace AzToolsFramework
             UpdateLink(m_linkDomNext);
         }
 
-        void PrefabUndoLinkUpdate::Redo(InstanceOptionalConstReference instanceToExclude)
+        void PrefabUndoLinkUpdate::RedoExclude(InstanceOptionalConstReference instanceToExclude)
         {
             UpdateLink(m_linkDomNext, instanceToExclude);
         }

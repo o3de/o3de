@@ -767,7 +767,7 @@ namespace AzToolsFramework
             linkUpdate->SetParent(undoBatch);
             linkUpdate->Capture(patch, linkId);
 
-            linkUpdate->Redo(parentInstance);
+            linkUpdate->RedoExclude(parentInstance);
         }
 
         void PrefabPublicHandler::Internal_HandleEntityChange(
@@ -778,7 +778,7 @@ namespace AzToolsFramework
             PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
             state->SetParent(undoBatch);
             state->Capture(beforeState, afterState, entityId);
-            state->Redo(instance);
+            state->RedoExclude(instance);
         }
 
         void PrefabPublicHandler::Internal_HandleInstanceChange(
@@ -1230,7 +1230,7 @@ namespace AzToolsFramework
             PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance deletion");
             command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
             command->SetParent(undoBatch.GetUndoBatch());
-            command->Redo(commonOwningInstance);
+            command->RedoExclude(commonOwningInstance);
             
             return AZ::Success();
         }
@@ -1321,7 +1321,7 @@ namespace AzToolsFramework
                     command->SetParent(undoBatch.GetUndoBatch());
                     {
                         AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DetachPrefab:RunRedo");
-                        command->Redo(parentInstance);
+                        command->RedoExclude(parentInstance);
                     }
 
                     instancePtr->DetachNestedInstances(

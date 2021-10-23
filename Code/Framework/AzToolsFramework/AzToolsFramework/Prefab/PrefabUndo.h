@@ -54,7 +54,7 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
-            void Redo(InstanceOptionalConstReference instance);
+            void RedoExclude(InstanceOptionalConstReference instance);
         };
 
         //! handles entity updates, such as when the values on an entity change
@@ -74,7 +74,7 @@ namespace AzToolsFramework
             void Undo() override;
             void Redo() override;
             //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
-            void Redo(InstanceOptionalConstReference instanceToExclude);
+            void RedoExclude(InstanceOptionalConstReference instanceToExclude);
 
         private:
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
@@ -139,7 +139,7 @@ namespace AzToolsFramework
             void Undo() override;
             void Redo() override;
             //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
-            void Redo(InstanceOptionalConstReference instanceToExclude);
+            void RedoExclude(InstanceOptionalConstReference instanceToExclude);
 
         private:
             void UpdateLink(PrefabDom& linkDom, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt);
