@@ -428,11 +428,9 @@ namespace AZ
                         ++propertiesUpdated;
                     }
                 }
-
-                for (auto& pair : renamedProperties)
+                
+                for (const auto& [oldName, newName] : renamedProperties)
                 {
-                    const Name& oldName = pair.first;
-                    const Name& newName = pair.second;
                     materialAssignment.m_propertyOverrides[newName] = materialAssignment.m_propertyOverrides[oldName];
                     materialAssignment.m_propertyOverrides.erase(oldName);
                 }
