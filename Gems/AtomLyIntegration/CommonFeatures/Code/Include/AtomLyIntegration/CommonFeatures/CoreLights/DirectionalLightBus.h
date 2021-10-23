@@ -168,6 +168,22 @@ namespace AZ
             //! Sets whether the directional shadowmap should use receiver plane bias.
             //! @param enable flag specifying whether to enable the receiver plane bias feature
             virtual void SetShadowReceiverPlaneBiasEnabled(bool enable) = 0;
+
+            //! Shadow bias reduces acne by applying a small amount of offset along shadow-space z.
+            //! @return Returns the amount of bias to apply.
+            virtual float GetShadowBias() const = 0;
+
+            //! Shadow bias reduces acne by applying a small amount of offset along shadow-space z.
+            //! @param Sets the amount of bias to apply.
+            virtual void SetShadowBias(float bias) = 0;
+
+            //! Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            //! @return Returns the amount of bias to apply.
+            virtual float GetNormalShadowBias() const = 0;
+
+            //! Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            //! @param normalShadowBias Sets the amount of normal shadow bias to apply.
+            virtual void SetNormalShadowBias(float normalShadowBias) = 0;
         };
         using DirectionalLightRequestBus = EBus<DirectionalLightRequests>;
 
