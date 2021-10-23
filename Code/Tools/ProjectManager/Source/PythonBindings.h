@@ -66,6 +66,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
         AZ::Outcome<void, AZStd::string> DownloadGem(const QString& gemName, std::function<void(int)> gemProgressCallback) override;
         void CancelDownload() override;
+        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemRepoGemsInfos() override;
 
     private:
         AZ_DISABLE_COPY_MOVE(PythonBindings);

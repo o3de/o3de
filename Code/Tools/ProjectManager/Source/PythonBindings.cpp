@@ -1201,4 +1201,31 @@ namespace O3DE::ProjectManager
     {
         m_requestCancelDownload = true;
     }
+
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetAllGemRepoGemsInfos()
+    {
+        QVector<GemInfo> gemInfos;
+        AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(
+            [&]
+            {
+                auto gemPaths = m_repo.attr("get_gem_json_paths_from_all_cached_repos")();
+
+                if (pybind11::isinstance<pybind11::set>(gemPaths))
+                {
+                    for (auto path : gemPaths)
+                    {
+                        GemInfo gemInfo = GemInfoFromPath(path, pybind11::none());
+                        gemInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
+                        gemInfos.push_back(gemInfo);
+                    }
+                }
+            });
+
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure(result.GetError());
+        }
+
+        return AZ::Success(AZStd::move(gemInfos));
+    }
 }
