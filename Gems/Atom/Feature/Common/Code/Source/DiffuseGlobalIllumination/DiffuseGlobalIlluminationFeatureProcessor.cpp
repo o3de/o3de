@@ -80,10 +80,12 @@ namespace AZ
             }
 
             // update the size multiplier on the DiffuseProbeGridDownsamplePass output
+            // NOTE: The ownerScene wasn't added to both filters. This is because the passes from the non-owner scene may have invalid SRG values which could lead to
+            // GPU error if the scene doesn't have this feature processor enabled.
+            // For example, the ASV MultiScene sample may have TDR.
             {
                 AZStd::vector<Name> downsamplePassHierarchy = { Name("DiffuseGlobalIlluminationPass"), Name("DiffuseProbeGridDownsamplePass") };
                 RPI::PassFilter downsamplePassFilter = RPI::PassFilter::CreateWithPassHierarchy(downsamplePassHierarchy);
-                downsamplePassFilter.SetOwenrScene(GetParentScene()); // only handles passes for this scene
                 RPI::PassSystemInterface::Get()->ForEachPass(
                     downsamplePassFilter,
                     [sizeMultiplier](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
@@ -112,7 +114,6 @@ namespace AZ
             {
                 AZStd::vector<Name> compositePassHierarchy = { Name("DiffuseGlobalIlluminationPass"), Name("DiffuseCompositePass") };
                 RPI::PassFilter compositePassFilter = RPI::PassFilter::CreateWithPassHierarchy(compositePassHierarchy);
-                compositePassFilter.SetOwenrScene(GetParentScene());  // only handles passes for this scene
                 RPI::PassSystemInterface::Get()->ForEachPass(compositePassFilter, [sizeMultiplier](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                     {
                         RPI::FullscreenTrianglePass* compositePass = static_cast<RPI::FullscreenTrianglePass*>(pass);
