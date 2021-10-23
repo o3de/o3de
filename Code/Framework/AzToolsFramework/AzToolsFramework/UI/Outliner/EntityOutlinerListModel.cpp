@@ -943,13 +943,15 @@ namespace AzToolsFramework
         {
             return false;
         }
-
+        
+        const int count = rowCount(parent);
+        const bool placeAtTail = (row >= count);
         AZ::EntityId newParentId = GetEntityFromIndex(parent);
-        AZ::EntityId beforeEntityId = GetEntityFromIndex(index(row, 0, parent));
+        AZ::EntityId beforeEntityId = (row >= 0 && row < count) ? GetEntityFromIndex(index(row, 0, parent)) : AZ::EntityId();
         EntityIdList topLevelEntityIds;
         topLevelEntityIds.reserve(entityIdListContainer.m_entityIds.size());
         ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::FindTopLevelEntityIdsInactive, entityIdListContainer.m_entityIds, topLevelEntityIds);
-        if (!ReparentEntities(newParentId, topLevelEntityIds, beforeEntityId))
+        if (!ReparentEntities(newParentId, topLevelEntityIds, beforeEntityId, newParentId.IsValid() && placeAtTail))
         {
             return false;
         }
@@ -1046,7 +1048,7 @@ namespace AzToolsFramework
         return true;
     }
 
-    bool EntityOutlinerListModel::ReparentEntities(const AZ::EntityId& newParentId, const EntityIdList &selectedEntityIds, const AZ::EntityId& beforeEntityId)
+    bool EntityOutlinerListModel::ReparentEntities(const AZ::EntityId& newParentId, const EntityIdList &selectedEntityIds, const AZ::EntityId& beforeEntityId, bool placeAtTail)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (!CanReparentEntities(newParentId, selectedEntityIds))
@@ -1100,18 +1102,10 @@ namespace AzToolsFramework
             }
         }
 
-        if (newParentId.IsValid())
-        {
-            //if adding to a valid parent entity, insert at the found entity location or at the head of the container
-            auto insertItr = beforeEntityItr != entityOrderArray.end() ? beforeEntityItr : entityOrderArray.begin();
-            entityOrderArray.insert(insertItr, processedEntityIds.begin(), processedEntityIds.end());
-        }
-        else
-        {
-            //if adding to an invalid parent entity (the root), insert at the found entity location or at the tail of the container
-            auto insertItr = beforeEntityItr != entityOrderArray.end() ? beforeEntityItr : entityOrderArray.end();
-            entityOrderArray.insert(insertItr, processedEntityIds.begin(), processedEntityIds.end());
-        }
+        //if adding to a valid parent entity, insert at the found entity location or at the head/tail depending on placeAtTail flag
+        auto insertItr = beforeEntityItr != entityOrderArray.end() ? beforeEntityItr : (placeAtTail ? entityOrderArray.end() : entityOrderArray.begin());
+        entityOrderArray.insert(insertItr, processedEntityIds.begin(), processedEntityIds.end());
+
 
         //remove placeholder entity ids
         entityOrderArray.erase(AZStd::remove(entityOrderArray.begin(), entityOrderArray.end(), AZ::EntityId()), entityOrderArray.end());

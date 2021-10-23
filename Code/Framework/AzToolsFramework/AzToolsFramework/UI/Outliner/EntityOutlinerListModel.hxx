@@ -162,7 +162,7 @@ namespace AzToolsFramework
 
         // Buffer Processing Slots - These are called using single-shot events when the buffers begin to fill.
         bool CanReparentEntities(const AZ::EntityId& newParentId, const EntityIdList& selectedEntityIds) const;
-        bool ReparentEntities(const AZ::EntityId& newParentId, const EntityIdList& selectedEntityIds, const AZ::EntityId& beforeEntityId = AZ::EntityId());
+        bool ReparentEntities(const AZ::EntityId& newParentId, const EntityIdList& selectedEntityIds, const AZ::EntityId& beforeEntityId = AZ::EntityId(), bool placeAtTail = false);
 
         //! Use the current filter setting and re-evaluate the filter.
         void InvalidateFilter();
