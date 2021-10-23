@@ -264,7 +264,11 @@ namespace PhysX
             case Physics::ShapeType::CookedMesh:
             {
                 const auto& cookedMeshConfig = static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfig);
-                physx::PxBase* meshData = static_cast<physx::PxBase*>(cookedMeshConfig.GetCachedNativeMesh());
+                const physx::PxBase* constMeshData = static_cast<const physx::PxBase*>(cookedMeshConfig.GetCachedNativeMesh());
+
+                // Specifically removing the const from the meshData pointer because the physx APIs expect this pointer to be non-const.
+                physx::PxBase* meshData = const_cast<physx::PxBase*>(constMeshData);
+
                 if (meshData)
                 {
                     if (meshData->is<physx::PxTriangleMesh>())
@@ -676,7 +680,17 @@ namespace PhysX
             }
         }
 
-        AZ::Transform Collider::GetColliderLocalTransform(const Physics::ColliderConfiguration& colliderConfig,
+        void Collider::DrawHeightfield(
+            [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay,
+            [[maybe_unused]] const Physics::ColliderConfiguration& colliderConfig,
+            [[maybe_unused]] const Physics::HeightfieldShapeConfiguration& heightfieldShapeConfig,
+            [[maybe_unused]] const AZ::Vector3& colliderScale,
+            [[maybe_unused]] const bool forceUniformScaling) const
+        {
+        }
+
+        AZ::Transform Collider::GetColliderLocalTransform(
+            const Physics::ColliderConfiguration& colliderConfig,
             const AZ::Vector3& colliderScale) const
         {
             // Apply entity world transform scale to collider offset

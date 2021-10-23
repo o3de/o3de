@@ -1,0 +1,63 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "NewDepthOfFieldTileReduceTemplate",
+            "PassClass": "NewDepthOfFieldTileReducePass",
+            "Slots": [
+                {
+                    "Name": "ColorAndCocInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderImageDimensionsConstant": "m_inputDimensions"
+                },
+                {
+                    "Name": "MinMaxCoC",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderImageDimensionsConstant": "m_outputDimensions",
+                    "LoadStoreAction": {
+                        "LoadAction": "Clear"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "MinMaxCoCAttachment",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "ColorAndCocInput"
+                        },
+                        "Multipliers": {
+                            // 1/16 = 0.0625
+                            "WidthMultiplier": 0.0625,
+                            "HeightMultiplier": 0.0625
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16_SNORM"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "MinMaxCoC",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "MinMaxCoCAttachment"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "ComputePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/PostProcessing/NewDepthOfFieldTileReduce.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

@@ -20,7 +20,7 @@
 #include <AzFramework/Session/SessionConfig.h>
 
 #include <AWSGameLiftPlayer.h>
-#include <Request/IAWSGameLiftServerRequests.h>
+#include <Request/AWSGameLiftServerRequestBus.h>
 
 namespace AWSGameLift
 {

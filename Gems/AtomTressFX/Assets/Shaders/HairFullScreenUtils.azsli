@@ -1,0 +1,60 @@
+/*
+* Modifications Copyright (c) Contributors to the Open 3D Engine Project.
+* For complete copyright and license terms please see the LICENSE at the root of this distribution.
+*
+* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+*
+*/
+
+#include <Atom/Features/PostProcessing/FullscreenVertexInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertexUtil.azsli>
+#include <viewsrg.srgi>
+
+//==============================================================================
+// Generate a fullscreen triangle from pipeline provided vertex id 
+VSOutput FullScreenVS(VSInput input)
+{
+    VSOutput OUT;
+
+    float4 posTex = GetVertexPositionAndTexCoords(input.m_vertexID);
+
+    OUT.m_texCoord = float2(posTex.z, posTex.w);    // [To Do] - test sign of Y based on original code
+    OUT.m_position = float4(posTex.xy, 0.0, 1.0);
+
+    return OUT;
+}
+
+//==============================================================================
+// Given the depth buffer depth of the current pixel and the fragment XY position, 
+// reconstruct the NDC.
+// screenCoords - from 0.. dimension of the screen of the current pixel
+// screenTexture - screen buffer texture representing the same resolution we work in
+// sDepth - the depth buffer depth at the fragment location
+// NDC - Normalized Device Coordinates = warped screen space ( -1.1, -1..1, 0..1 )
+float3 ScreenPosToNDC( Texture2D<float> screenTexture, float2 screenCoords, float depth )
+{ 
+    uint2 dimensions;
+    screenTexture.GetDimensions(dimensions.x, dimensions.y);
+    float2 UV = saturate(screenCoords / dimensions.xy);
+
+    float x = UV.x * 2.0f - 1.0f;
+    float y = (1.0f - UV.y) * 2.0f - 1.0f;
+    float3 NDC = float3(x, y, depth);
+
+    return NDC;
+}
+
+// Given the depth buffer depth of the current pixel and the fragment XY position, 
+// reconstruct the world space position
+float3 ScreenPosToWorldPos( 
+    Texture2D<float> screenTexture, float2 screenCoords, float depth, 
+    inout float3 screenPosNDC )
+{ 
+    screenPosNDC = ScreenPosToNDC(screenTexture, screenCoords, depth);
+    float4 projectedPos = float4(screenPosNDC, 1.0f);    // warped projected space [0..1]
+    float4 positionVS = mul(ViewSrg::m_projectionMatrixInverse, projectedPos);
+    positionVS /= positionVS.w; // notice the normalization factor - crucial! 
+    float4 positionWS = mul(ViewSrg::m_viewMatrixInverse, positionVS);
+
+    return positionWS.xyz;
+}

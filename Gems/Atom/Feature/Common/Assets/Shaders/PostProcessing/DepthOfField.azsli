@@ -14,6 +14,14 @@ inline float InvertDepth(float depth)
     return 1.0f - depth;
 }
 
+inline float4 InvertDepth(float4 depth)
+{
+    // Convert depth from [1.0 - 0.0] to [0.0 - 1.0].
+    // Set the front(near side) to 0.0 and the back(far side) to 1.0.
+
+    return float4(1, 1, 1, 1) - depth;
+}
+
 inline float ConvertDofFactor(float depth, float far, float near, float focusDistance)
 {
     // dofFactor : The value Calculated from depth.
