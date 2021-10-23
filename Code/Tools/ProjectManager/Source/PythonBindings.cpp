@@ -983,6 +983,46 @@ namespace O3DE::ProjectManager
         }
     }
 
+    AZ::Outcome<void, AZStd::string> PythonBindings::RefreshGemRepo(const QString& repoUri)
+    {
+        bool refreshResult = false;
+        AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(
+            [&]
+            {
+                auto pyUri = QString_To_Py_String(repoUri);
+                auto pythonRefreshResult = m_repo.attr("refresh_repo")(pyUri);
+
+                // Returns an exit code so boolify it then invert result
+                refreshResult = !pythonRefreshResult.cast<bool>();
+            });
+
+        if (!result.IsSuccess())
+        {
+            return result;
+        }
+        else if (!refreshResult)
+        {
+            return AZ::Failure<AZStd::string>("Failed to refresh repo.");
+        }
+
+        return AZ::Success();
+    }
+
+    bool PythonBindings::RefreshAllGemRepos()
+    {
+        bool refreshResult = false;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                auto pythonRefreshResult = m_repo.attr("refresh_repos")();
+
+                // Returns an exit code so boolify it then invert result
+                refreshResult = !pythonRefreshResult.cast<bool>();
+            });
+
+        return result && refreshResult;
+    }
+
     bool PythonBindings::AddGemRepo(const QString& repoUri)
     {
         bool registrationResult = false;

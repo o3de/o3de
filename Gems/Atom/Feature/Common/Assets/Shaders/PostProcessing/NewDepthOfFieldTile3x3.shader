@@ -1,5 +1,5 @@
 {
-    "Source" : "NewDepthOfFieldTile3x3",
+    "Source" : "NewDepthOfFieldTile3x3.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }
