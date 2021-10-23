@@ -688,13 +688,13 @@ namespace O3DE::ProjectManager
         }
     }
 
-    GemInfo PythonBindings::GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath, bool fullPathGiven)
+    GemInfo PythonBindings::GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath)
     {
         GemInfo gemInfo;
         gemInfo.m_path = Py_To_String(path);
         gemInfo.m_directoryLink = gemInfo.m_path;
 
-        auto data = m_manifest.attr("get_gem_json_data")(pybind11::none(), path, pyProjectPath, fullPathGiven);
+        auto data = m_manifest.attr("get_gem_json_data")(pybind11::none(), path, pyProjectPath);
         if (pybind11::isinstance<pybind11::dict>(data))
         {
             try
@@ -727,10 +727,6 @@ namespace O3DE::ProjectManager
                 if (gemInfo.m_gemOrigin != GemInfo::GemOrigin::Remote)
                 {
                     gemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
-                }
-                if (fullPathGiven)
-                {
-                    gemInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
                 }
 
                 if (data.contains("user_tags"))
@@ -1178,7 +1174,9 @@ namespace O3DE::ProjectManager
                 {
                     for (auto path : gemPaths)
                     {
-                        gemInfos.push_back(GemInfoFromPath(path, pybind11::none(), true));
+                        GemInfo gemInfo = GemInfoFromPath(path, pybind11::none());
+                        gemInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
+                        gemInfos.push_back(gemInfo);
                     }
                 }
             });

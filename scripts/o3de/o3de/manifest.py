@@ -494,7 +494,7 @@ def get_project_json_data(project_name: str = None,
 
 
 def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
-                      project_path: pathlib.Path = None, full_path_given: bool = False) -> dict or None:
+                      project_path: pathlib.Path = None) -> dict or None:
     if not gem_name and not gem_path:
         logger.error('Must specify either a Gem name or Gem Path.')
         return None
@@ -502,10 +502,10 @@ def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None
     if gem_name and not gem_path:
         gem_path = get_registered(gem_name=gem_name, project_path=project_path)
 
-    if not full_path_given:
-        return get_json_data('gem', gem_path, validation.valid_o3de_gem_json)
-    else:
+    if isinstance(gem_path, pathlib.Path) and gem_path.is_file():
         return get_json_data_file(gem_path, 'gem', validation.valid_o3de_gem_json)
+    else:
+        return get_json_data('gem', gem_path, validation.valid_o3de_gem_json)
 
 
 def get_template_json_data(template_name: str = None, template_path: str or pathlib.Path = None,

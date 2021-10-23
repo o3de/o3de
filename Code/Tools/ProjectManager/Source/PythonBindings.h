@@ -71,7 +71,7 @@ namespace O3DE::ProjectManager
 
         AZ::Outcome<void, AZStd::string> ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback);
         bool ExecuteWithLock(AZStd::function<void()> executionCallback);
-        GemInfo GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath, bool fullPathGiven = false);
+        GemInfo GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         GemRepoInfo GetGemRepoInfo(pybind11::handle repoUri);
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
         ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
