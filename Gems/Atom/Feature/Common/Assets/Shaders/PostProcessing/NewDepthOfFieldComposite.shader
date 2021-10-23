@@ -1,5 +1,5 @@
 {
-    "Source" : "NewDepthOfFieldComposite",
+    "Source" : "NewDepthOfFieldComposite.azsl",
 
     "DepthStencilState" : 
     {

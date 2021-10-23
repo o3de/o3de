@@ -1,5 +1,5 @@
 {
-    "Source" : "NewDepthOfFieldFilterSmall",
+    "Source" : "NewDepthOfFieldFilterSmall.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }
