@@ -6,7 +6,7 @@
 #
 #
 
-#! ly_install_code_function_override: Linux-specific copy function to handle RPATH fixes
+#! ly_setup_runtime_dependencies_copy_function_override: Linux-specific copy function to handle RPATH fixes
 set(ly_copy_template [[
 function(ly_copy source_file target_directory)
     file(COPY "${source_file}" DESTINATION "${target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
@@ -20,13 +20,11 @@ function(ly_copy source_file target_directory)
     endif()
 endfunction()]])
 
-function(ly_install_code_function_override)
+function(ly_setup_runtime_dependencies_copy_function_override)
     string(CONFIGURE "${ly_copy_template}" ly_copy_function_linux @ONLY)
-    install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
-    install(CODE "${ly_copy_function_linux}" 
+    ly_install(CODE "${ly_copy_function_linux}" 
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
-    install(CODE "endif()")
 endfunction()
 
 include(cmake/Platform/Common/Install_common.cmake)

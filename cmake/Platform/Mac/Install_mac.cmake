@@ -39,10 +39,10 @@ file(GENERATE
 # This needs to be done here because it needs to update the install prefix 
 # before cmake does anything else in the install process.
 configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/PreInstallSteps_mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/PreInstallSteps_mac.cmake @ONLY)
-install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/PreInstallSteps_mac.cmake COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
+ly_install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/PreInstallSteps_mac.cmake COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
 
-#! ly_install_target_override: Mac specific target installation
-function(ly_install_target_override)
+#! ly_setup_runtime_dependencies_copy_function_override: Mac specific target installation
+function(ly_setup_runtime_dependencies_copy_function_override)
 
     set(options)
     set(oneValueArgs TARGET ARCHIVE_DIR LIBRARY_DIR RUNTIME_DIR LIBRARY_SUBDIR RUNTIME_SUBDIR)
@@ -60,7 +60,7 @@ function(ly_install_target_override)
     
     foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
         string(TOUPPER ${conf} UCONF)
-        install(TARGETS ${TARGET_NAME}
+        ly_install(TARGETS ${TARGET_NAME}
             ARCHIVE
                 DESTINATION ${ly_platform_install_target_ARCHIVE_DIR}
                 COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}

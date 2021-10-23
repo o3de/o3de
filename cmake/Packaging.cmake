@@ -134,12 +134,10 @@ if(NOT EXISTS ${_cmake_package_dest})
     endif()
 endif()
 
-install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
-install(FILES ${_cmake_package_dest}
+ly_install(FILES ${_cmake_package_dest}
     DESTINATION ./Tools/Redistributables/CMake
     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
 )
-install(CODE "endif()")
 
 # the version string and git tags are intended to be synchronized so it should be safe to use that instead
 # of directly calling into git which could get messy in certain scenarios
@@ -160,12 +158,10 @@ if(${CPACK_PACKAGE_VERSION} VERSION_GREATER "0.0.0.0")
     list(POP_FRONT _status _status_code)
 
     if (${_status_code} EQUAL 0 AND EXISTS ${_3rd_party_license_dest})
-        install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)")
-        install(FILES ${_3rd_party_license_dest}
+        ly_install(FILES ${_3rd_party_license_dest}
             DESTINATION .
             COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         )
-        install(CODE "endif()")
     else()
         file(REMOVE ${_3rd_party_license_dest})
         message(FATAL_ERROR "Failed to acquire the 3rd Party license manifest file at ${_3rd_party_license_url}.  Error: ${_status}")
@@ -257,7 +253,7 @@ if(EXISTS \"${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/${conf}/${CMAKE_STATIC_LIBRARY_PRE
     list(APPEND CPACK_COMPONENTS_ALL ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF})
     set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_DISPLAY_NAME \"Binaries for ${LY_BUILD_PERMUTATION} ${conf}\")
     set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_DESCRIPTION \"${PROJECT_NAME} libraries and applications for ${LY_BUILD_PERMUTATION} ${conf}\")
-    set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_DEPENDS ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF})
+    set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_DEPENDS ${LY_INSTALL_PERMUTATION_COMPONENT})
     set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_REQUIRED ${required})
     set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_DISABLED ${disabled})
 endif()
