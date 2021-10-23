@@ -266,7 +266,7 @@ QStringList CustomizeKeyboardDialog::BuildModels(QWidget* parent)
         categories.append(category);
 
         QMenu* menu = menuAction->menu();
-        m_menuActions[category] = GetAllActionsForMenu(menu, QLatin1String());
+        m_menuActions[category] = GetAllActionsForMenu(menu, QString());
     }
 
     return categories;
