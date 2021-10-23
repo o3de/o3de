@@ -1,35 +1,23 @@
 {
-    "materialType": "ReflectionProbeVisualization.materialtype",
-    "propertyLayoutVersion": 1,
+    "description": "",
+    "materialType": "../Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
     "properties": {
         "general": {
-            "enableShadows": false,
+            "enableAreaLights": false,
             "enableDirectionalLights": false,
             "enablePunctualLights": false,
-            "enableAreaLights": false,
-            "enableIBL":  true
-        },
-        "baseColor": {
-           "color": [ 1.0, 1.0, 1.0 ],
-           "factor": 1.0,
-           "useTexture": false,
-           "textureMap": ""
-        },
-        "specularF0": {
-            "factor": 0.5,
-            "useTexture": false,
-            "textureMap": ""
-        },
-        "normal": {
-            "factor": 1.0,
-            "useTexture": false,
-            "textureMap": ""
+            "enableShadows": false
         },
         "metallic": {
             "factor": 1.0
         },
         "roughness": {
             "factor": 0.0
+        },
+        "specularF0": {
+            "useTexture": false
         }
     }
 }
