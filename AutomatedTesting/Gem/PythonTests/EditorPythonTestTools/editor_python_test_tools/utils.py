@@ -90,7 +90,7 @@ class TestHelper:
             found_unexpected_lines = [x for x in found_lines if unexpected_line in x]
             Report.critical_result(("ServerLauncher exists.", "ServerLauncher does not exist!"), not found_unexpected_lines)
 
-        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 30.0)
+        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 30*60.0)
 
         # @todo delete! debugging Jenkins
         Report.info("PRINTING THE ENTIRE SERVER LOG!")
