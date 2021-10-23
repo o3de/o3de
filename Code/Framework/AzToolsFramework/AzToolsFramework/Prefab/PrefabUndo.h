@@ -16,6 +16,8 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Link/Link.h>
 
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
+
 namespace AzToolsFramework
 {
     namespace Prefab
