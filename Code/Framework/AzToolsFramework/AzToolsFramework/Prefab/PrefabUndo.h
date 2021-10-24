@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include <AzCore/std/optional.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
