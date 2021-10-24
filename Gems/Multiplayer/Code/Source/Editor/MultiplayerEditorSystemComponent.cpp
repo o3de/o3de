@@ -52,7 +52,13 @@ namespace Multiplayer
     bool PyIsInGameMode()
     {
         // If the network entity manager is tracking at least 1 entity then the editor has connected and the autonomous player exists and is being replicated.
-        return AZ::Interface<INetworkEntityManager>::Get()->GetEntityCount() > 0;
+        if (const INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get())
+        {
+            return networkEntityManager->GetEntityCount() > 0;
+        }
+
+        AZ_Warning("MultiplayerEditorSystemComponent", false, "PyIsInGameMode returning false; no NetworkEntityManager has not been created yet.");
+        return false;
     }
 
     void PythonEditorFuncs::Reflect(AZ::ReflectContext* context)
