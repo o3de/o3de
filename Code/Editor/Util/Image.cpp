@@ -75,17 +75,16 @@ void CImageEx::ReverseUpDown()
     }
 
     uint32* pPixData = GetData();
-    uint32* pReversePix = new uint32[GetWidth() * GetHeight()];
 
-    for (int i = GetHeight() - 1, i2 = 0; i >= 0; i--, i2++)
+    for (int i = 0; i < GetHeight()/2; i++)
     {
         for (int k = 0; k < GetWidth(); k++)
         {
-            pReversePix[i2 * GetWidth() + k] = pPixData[i * GetWidth() + k];
+            uint32 tmp = pPixData[(GetHeight() - i) * GetWidth() + k];
+            pPixData[(GetHeight() - i) * GetWidth() + k] = pPixData[i * GetWidth() + k];
+            pPixData[i * GetWidth() + k] = tmp;
         }
     }
-
-    Attach(pReversePix, GetWidth(), GetHeight());
 }
 
 void CImageEx::FillAlpha(unsigned char value)
