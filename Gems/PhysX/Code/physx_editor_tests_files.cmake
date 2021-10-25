@@ -18,6 +18,7 @@ set(FILES
     Tests/PolygonPrismMeshUtilsTest.cpp
     Tests/PhysXColliderComponentModeTests.cpp
     Tests/ShapeColliderComponentTests.cpp
+    Tests/HeightfieldColliderComponentTests.cpp
     Tests/TestColliderComponent.h
     Tests/SystemComponentTest.cpp
     Tests/RigidBodyComponentTests.cpp
