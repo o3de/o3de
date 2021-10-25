@@ -167,6 +167,11 @@ CViewSystem::~CViewSystem()
     {
         m_pSystem->GetILevelSystem()->RemoveListener(this);
     }
+
+    if (s_debugCamera)
+    {
+        delete s_debugCamera;
+    }
 }
 
 //------------------------------------------------------------------------
