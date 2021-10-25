@@ -43,7 +43,7 @@ ly_add_target(
             3rdParty::pybind11
             AZ::AzCore
             AZ::AzFramework
-            AZ::AzQtComponents
+            AZ::AzToolsFramework
 )
 
 ly_add_target(

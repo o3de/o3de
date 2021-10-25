@@ -14,6 +14,7 @@
 #include <Prefab/PrefabTestFixture.h>
 #include <Prefab/Procedural/ProceduralPrefabAsset.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzToolsFramework/Prefab/Template/Template.h>
 
 namespace UnitTest
 {
@@ -131,5 +132,33 @@ namespace UnitTest
         EXPECT_EQ(result.GetResultCode().GetOutcome(), AZ::JsonSerializationResult::Outcomes::DefaultsUsed);
         EXPECT_TRUE(outputValue.HasMember("member"));
         EXPECT_STREQ(outputValue.FindMember("member")->value.GetString(), "value");
+    }
+
+    TEST_F(ProceduralPrefabAssetTest, Template_IsProcPrefab_DefaultsToNotProcPrefab)
+    {
+        AzToolsFramework::Prefab::PrefabDom dom;
+        dom.SetObject();
+        dom.AddMember("Source", "foo.prefab", dom.GetAllocator());
+        AzToolsFramework::Prefab::Template fooTemplate("foo", AZStd::move(dom));
+        EXPECT_FALSE(fooTemplate.IsProcedural());
+    }
+
+    TEST_F(ProceduralPrefabAssetTest, Template_IsProcPrefab_DomDrivesFlagToTrue)
+    {
+        AzToolsFramework::Prefab::PrefabDom dom;
+        dom.SetObject();
+        dom.AddMember("Source", "foo.procprefab", dom.GetAllocator());
+        AzToolsFramework::Prefab::Template fooTemplate("foo", AZStd::move(dom));
+        EXPECT_TRUE(fooTemplate.IsProcedural());
+        // the second time should use the cached version of the flag
+        EXPECT_TRUE(fooTemplate.IsProcedural());
+    }
+
+    TEST_F(ProceduralPrefabAssetTest, Template_IsProcPrefab_FailsWithNoSource)
+    {
+        AzToolsFramework::Prefab::PrefabDom dom;
+        dom.SetObject();
+        AzToolsFramework::Prefab::Template fooTemplate("foo", AZStd::move(dom));
+        EXPECT_FALSE(fooTemplate.IsProcedural());
     }
 }

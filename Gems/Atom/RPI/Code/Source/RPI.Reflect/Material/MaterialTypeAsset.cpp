@@ -37,6 +37,7 @@ namespace AZ
 
         void MaterialTypeAsset::Reflect(ReflectContext* context)
         {
+            MaterialVersionUpdate::Reflect(context);
             UvNamePair::Reflect(context);
 
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
@@ -44,7 +45,9 @@ namespace AZ
                 serializeContext->RegisterGenericType<MaterialUvNameMap>();
 
                 serializeContext->Class<MaterialTypeAsset, AZ::Data::AssetData>()
-                    ->Version(4) // ATOM-15472
+                    ->Version(5) // Material version update
+                    ->Field("Version", &MaterialTypeAsset::m_version)
+                    ->Field("VersionUpdates", &MaterialTypeAsset::m_materialVersionUpdates)
                     ->Field("ShaderCollection", &MaterialTypeAsset::m_shaderCollection)
                     ->Field("MaterialFunctors", &MaterialTypeAsset::m_materialFunctors)
                     ->Field("MaterialSrgShaderIndex", &MaterialTypeAsset::m_materialSrgShaderIndex)
@@ -159,6 +162,27 @@ namespace AZ
         MaterialUvNameMap MaterialTypeAsset::GetUvNameMap() const
         {
             return m_uvNameMap;
+        }
+
+        uint32_t MaterialTypeAsset::GetVersion() const
+        {
+            return m_version;
+        }
+
+
+        bool MaterialTypeAsset::ApplyPropertyRenames(AZ::Name& propertyId) const
+        {
+            bool renamed = false;
+
+            for (const auto& versionUpdates : m_materialVersionUpdates)
+            {
+                if (versionUpdates.ApplyPropertyRenames(propertyId))
+                {
+                    renamed = true;
+                }
+            }
+
+            return renamed;
         }
 
         void MaterialTypeAsset::SetReady()
