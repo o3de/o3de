@@ -58,6 +58,7 @@ namespace AZ
             void ClearIncompatibleMaterialOverrides() override;
             void ClearInvalidMaterialOverrides() override;
             void RepairInvalidMaterialOverrides() override;
+            uint32_t ApplyAutomaticPropertyUpdates() override;
             void SetDefaultMaterialOverride(const AZ::Data::AssetId& materialAssetId) override;
             const AZ::Data::AssetId GetDefaultMaterialOverride() const override;
             void ClearDefaultMaterialOverride() override;

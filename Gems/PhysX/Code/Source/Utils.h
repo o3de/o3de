@@ -188,6 +188,8 @@ namespace PhysX
         //! Returns defaultValue if the input is infinite or NaN, otherwise returns the input unchanged.
         const AZ::Vector3& Sanitize(const AZ::Vector3& input, const AZ::Vector3& defaultValue = AZ::Vector3::CreateZero());
 
+        Physics::HeightfieldShapeConfiguration CreateHeightfieldShapeConfiguration(AZ::EntityId entityId);
+
         namespace Geometry
         {
             using PointList = AZStd::vector<AZ::Vector3>;

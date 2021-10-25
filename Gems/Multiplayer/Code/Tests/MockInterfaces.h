@@ -33,7 +33,7 @@ namespace UnitTest
         MOCK_METHOD1(AddServerAcceptanceReceivedHandler, void(Multiplayer::ServerAcceptanceReceivedEvent::Handler&));
         MOCK_METHOD1(AddSessionInitHandler, void(Multiplayer::SessionInitEvent::Handler&));
         MOCK_METHOD1(AddSessionShutdownHandler, void(Multiplayer::SessionShutdownEvent::Handler&));
-        MOCK_METHOD3(SendNotifyClientMigrationEvent, void(const Multiplayer::HostId&, uint64_t, Multiplayer::ClientInputId));
+        MOCK_METHOD5(SendNotifyClientMigrationEvent, void(AzNetworking::ConnectionId, const Multiplayer::HostId&, uint64_t, Multiplayer::ClientInputId, Multiplayer::NetEntityId));
         MOCK_METHOD2(SendNotifyEntityMigrationEvent, void(const Multiplayer::ConstNetworkEntityHandle&, const Multiplayer::HostId&));
         MOCK_METHOD1(SendReadyForEntityUpdates, void(bool));
         MOCK_CONST_METHOD0(GetCurrentHostTimeMs, AZ::TimeMs());
@@ -42,6 +42,8 @@ namespace UnitTest
         MOCK_METHOD0(GetNetworkEntityManager, Multiplayer::INetworkEntityManager* ());
         MOCK_METHOD1(SetFilterEntityManager, void(Multiplayer::IFilterEntityManager*));
         MOCK_METHOD0(GetFilterEntityManager, Multiplayer::IFilterEntityManager* ());
+        MOCK_METHOD2(RegisterPlayerIdentifierForRejoin, void(uint64_t, Multiplayer::NetEntityId));
+        MOCK_METHOD4(CompleteClientMigration, void(uint64_t, AzNetworking::ConnectionId, const Multiplayer::HostId&, Multiplayer::ClientInputId));
         MOCK_METHOD1(SetShouldSpawnNetworkEntities, void(bool));
         MOCK_CONST_METHOD0(GetShouldSpawnNetworkEntities, bool());
     };

@@ -7,6 +7,7 @@
 #
 
 set(FILES
+    ../Assets/Icons/Resources.qrc
     Source/ActorModule.cpp
     Source/Editor/EditorSystemComponent.h
     Source/Editor/EditorSystemComponent.cpp
@@ -18,4 +19,7 @@ set(FILES
     Tools/EMStudio/AnimViewportRenderer.cpp
     Tools/EMStudio/AnimViewportSettings.h
     Tools/EMStudio/AnimViewportSettings.cpp
+    Tools/EMStudio/AnimViewportToolBar.h
+    Tools/EMStudio/AnimViewportToolBar.cpp
+    Tools/EMStudio/AnimViewportRequestBus.h
 )
