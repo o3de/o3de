@@ -33,10 +33,10 @@ public: // types
 
     enum class NudgeDirection
     {   
-        Left,
         Up,
-        Right,
         Down,
+        Left,
+        Right
     };
 
     enum class NudgeSpeed
