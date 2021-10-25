@@ -18,7 +18,6 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzFramework/Spawnable/Spawnable.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/Framework/INetworking.h>
 
@@ -47,7 +46,7 @@ namespace Multiplayer
             ConnectionId editorServerToEditorConnectionId = m_networkEditorInterface->Connect(IpAddress(LocalHost.data(), editorsv_port, ProtocolType::Tcp));
             
             // If there wasn't an Editor waiting for this server to start, then assume this is an editor-server launched by hand... listen and wait for the editor to request a connection
-            if (editorServerToEditorConnectionId == AzNetworking::InvalidConnectionId)
+            if (editorServerToEditorConnectionId == InvalidConnectionId)
             {
                 m_networkEditorInterface->Listen(editorsv_port);
             }
@@ -154,21 +153,18 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerEditorPackets::EditorServerReady& packet
     )
     {
-        if (connection->GetConnectionRole() == ConnectionRole::Connector)
-        {
-            // Receiving this packet means Editor sync is done, disconnect
-            connection->Disconnect(AzNetworking::DisconnectReason::TerminatedByClient, AzNetworking::TerminationEndpoint::Local);
+        // Receiving this packet means Editor sync is done, disconnect
+        connection->Disconnect(AzNetworking::DisconnectReason::TerminatedByClient, AzNetworking::TerminationEndpoint::Local);
 
-            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+        if (const auto console = AZ::Interface<AZ::IConsole>::Get())
+        {
+            AZ::CVarFixedString remoteAddress;
+            uint16_t remotePort;
+            if (console->GetCvarValue("editorsv_serveraddr", remoteAddress) != AZ::GetValueResult::ConsoleVarNotFound &&
+                console->GetCvarValue("sv_port", remotePort) != AZ::GetValueResult::ConsoleVarNotFound)
             {
-                AZ::CVarFixedString remoteAddress;
-                uint16_t remotePort;
-                if (console->GetCvarValue("editorsv_serveraddr", remoteAddress) != AZ::GetValueResult::ConsoleVarNotFound &&
-                    console->GetCvarValue("sv_port", remotePort) != AZ::GetValueResult::ConsoleVarNotFound)
-                    {
-                        // Connect the Editor to the editor server for Multiplayer simulation
-                        AZ::Interface<IMultiplayer>::Get()->Connect(remoteAddress.c_str(), remotePort);
-                    }
+                // Connect the Editor to the editor server for Multiplayer simulation
+                AZ::Interface<IMultiplayer>::Get()->Connect(remoteAddress.c_str(), remotePort);
             }
         }
         return true;
