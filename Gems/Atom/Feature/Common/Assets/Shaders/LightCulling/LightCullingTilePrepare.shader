@@ -1,5 +1,5 @@
 {
-    "Source": "LightCullingTilePrepare",
+    "Source": "LightCullingTilePrepare.azsl",
 
     "CompilerHints":
     {

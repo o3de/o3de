@@ -149,13 +149,17 @@ namespace Terrain
                 if (terrain->GetTerrainAabb().Contains(inPosition))
                 {
                     bool isTerrainValidAtPoint = false;
-                    const float terrainHeight = terrain->GetHeight(inPosition, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR, &isTerrainValidAtPoint);
+                    AzFramework::SurfaceData::SurfacePoint terrainSurfacePoint;
+                    terrain->GetSurfacePoint(
+                        inPosition, terrainSurfacePoint, AzFramework::Terrain::TerrainDataRequests::Sampler::BILINEAR,
+                        &isTerrainValidAtPoint);
+
                     const bool isHole = !isTerrainValidAtPoint;
 
                     SurfaceData::SurfacePoint point;
                     point.m_entityId = GetEntityId();
-                    point.m_position = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), terrainHeight);
-                    point.m_normal = terrain->GetNormal(inPosition);
+                    point.m_position = terrainSurfacePoint.m_position;
+                    point.m_normal = terrainSurfacePoint.m_normal;
 
                     // Always add a "terrain" or "terrainHole" tag.
                     const AZ::Crc32 terrainTag =
@@ -163,9 +167,7 @@ namespace Terrain
                     SurfaceData::AddMaxValueForMasks(point.m_masks, terrainTag, 1.0f);
 
                     // Add all of the surface tags that the terrain has at this point.
-                    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet surfaceWeights;
-                    terrain->GetSurfaceWeights(point.m_position, surfaceWeights);
-                    for (auto& tag : surfaceWeights)
+                    for (auto& tag : terrainSurfacePoint.m_surfaceTags)
                     {
                         SurfaceData::AddMaxValueForMasks(point.m_masks, tag.m_surfaceType, tag.m_weight);
                     }

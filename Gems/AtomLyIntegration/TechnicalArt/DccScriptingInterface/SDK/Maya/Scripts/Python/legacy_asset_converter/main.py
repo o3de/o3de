@@ -80,8 +80,8 @@ module_name = 'legacy_asset_converter.main'
 log_file_path = os.path.join(settings.DCCSI_LOG_PATH, f'{module_name}.log')
 
 _log_level = int(20)
-_G_DEBUG = True
-if _G_DEBUG:
+_DCCSI_GDEBUG = True
+if _DCCSI_GDEBUG:
     _log_level = int(10)
 
 from azpy.constants import FRMT_LOG_LONG

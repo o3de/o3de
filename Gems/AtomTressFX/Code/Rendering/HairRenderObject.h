@@ -179,14 +179,9 @@ namespace AZ
                     AMD::TressFXSimulationSettings* simSettings, AMD::TressFXRenderingSettings* renderSettings
                 );
 
-                //! Creates and fill the draw item associated with the PPLL render of the
-                //!  current hair object
-                const RHI::DrawPacket* GetFillDrawPacket()
-                {
-                    return m_fillDrawPacket;
-                }
+                bool BuildDrawPacket(RPI::Shader* geometryShader, RHI::DrawPacketBuilder::DrawRequest& drawRequest);
 
-                bool BuildPPLLDrawPacket(RHI::DrawPacketBuilder::DrawRequest& drawRequest);
+                const RHI::DrawPacket* GetGeometrylDrawPacket(RPI::Shader* geometryShader);
 
                 //! Creates and fill the dispatch item associated with the compute shader
                 bool BuildDispatchItem(RPI::Shader* computeShader, DispatchLevel dispatchLevel);
@@ -302,17 +297,20 @@ namespace AZ
                 //!   responsible for the various stages and passes' updates
                 HairFeatureProcessor* m_featureProcessor = nullptr;
 
-                //! The dispatch item used for the skinning
-                HairDispatchItem m_skinningDispatchItem;    
-
-                //! Compute dispatch items map per the existing passes
-                AZStd::map<RPI::Shader*, Data::Instance<HairDispatchItem>> m_dispatchItems;
-
                 //! Skinning compute shader used for creation of the compute Srgs and dispatch item
                 Data::Instance<RPI::Shader> m_skinningShader = nullptr;
 
-                //! PPLL fill shader used for creation of the raster Srgs and draw item
-                Data::Instance<RPI::Shader> m_PPLLFillShader = nullptr;
+                //! Compute dispatch items map per the existing passes
+                AZStd::unordered_map<RPI::Shader*, Data::Instance<HairDispatchItem>> m_dispatchItems;
+
+                //! Geometry raster shader used for creation of the raster Srgs.
+                //! Since the Srgs for geometry raster are the same across the shaders we keep
+                //! only a single shader - if this to change in the future, several shaders and sets
+                //! of dynamic Srgs should be created. 
+                Data::Instance<RPI::Shader> m_geometryRasterShader = nullptr;
+
+                //! DrawPacket for the multi object geometry raster pass.
+                AZStd::unordered_map<RPI::Shader*, const RHI::DrawPacket*>  m_geometryDrawPackets;
 
                 float m_frameDeltaTime = 0.02;
 
@@ -378,9 +376,6 @@ namespace AZ
                 //! Index buffer for the render pass via draw calls - naming was kept
                 Data::Instance<RHI::Buffer> m_indexBuffer;
                 RHI::IndexBufferView m_indexBufferView;
-
-                //! DrawPacket for the multi object raster fill pass.
-                const RHI::DrawPacket* m_fillDrawPacket = nullptr;
                 //-------------------------------------------------------------------
 
                 AZStd::mutex m_mutex;

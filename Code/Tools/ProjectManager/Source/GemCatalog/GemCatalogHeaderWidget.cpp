@@ -12,13 +12,16 @@
 #include <QMouseEvent>
 #include <QLabel>
 #include <QPushButton>
+#include <QProgressBar>
 #include <TagWidget.h>
+#include <QMenu>
 
 namespace O3DE::ProjectManager
 {
-    CartOverlayWidget::CartOverlayWidget(GemModel* gemModel, QWidget* parent)
+    CartOverlayWidget::CartOverlayWidget(GemModel* gemModel, DownloadController* downloadController, QWidget* parent)
         : QWidget(parent)
         , m_gemModel(gemModel)
+        , m_downloadController(downloadController)
     {
         setObjectName("GemCatalogCart");
 
@@ -41,6 +44,9 @@ namespace O3DE::ProjectManager
         hLayout->addSpacerItem(new QSpacerItem(10, 0, QSizePolicy::Expanding));
         hLayout->addWidget(closeButton);
         m_layout->addLayout(hLayout);
+
+        // downloading gems
+        CreateDownloadSection();
 
         // added
         CreateGemSection( tr("Gem to be activated"), tr("Gems to be activated"), [=]
@@ -149,6 +155,116 @@ namespace O3DE::ProjectManager
         update();
     }
 
+    void CartOverlayWidget::OnCancelDownloadActivated(const QString& gemName)
+    {
+        m_downloadController->CancelGemDownload(gemName);
+    }
+
+    void CartOverlayWidget::CreateDownloadSection()
+    {
+        QWidget* widget = new QWidget();
+        widget->setFixedWidth(s_width);
+        m_layout->addWidget(widget);
+
+        QVBoxLayout* layout = new QVBoxLayout();
+        layout->setAlignment(Qt::AlignTop);
+        widget->setLayout(layout);
+
+        QLabel* titleLabel = new QLabel();
+        titleLabel->setObjectName("GemCatalogCartOverlaySectionLabel");
+        layout->addWidget(titleLabel);
+
+        titleLabel->setText(tr("Gems to be installed"));
+
+        // Create header section
+        QWidget* downloadingGemsWidget = new QWidget();
+        downloadingGemsWidget->setObjectName("GemCatalogCartOverlayGemDownloadHeader");
+        layout->addWidget(downloadingGemsWidget);
+        QVBoxLayout* gemDownloadLayout = new QVBoxLayout();
+        gemDownloadLayout->setMargin(0);
+        gemDownloadLayout->setAlignment(Qt::AlignTop);
+        downloadingGemsWidget->setLayout(gemDownloadLayout);
+        QLabel* processingQueueLabel = new QLabel("Processing Queue");
+        gemDownloadLayout->addWidget(processingQueueLabel);
+
+        QWidget* downloadingItemWidget = new QWidget();
+        downloadingItemWidget->setObjectName("GemCatalogCartOverlayGemDownloadBG");
+        gemDownloadLayout->addWidget(downloadingItemWidget);
+        QVBoxLayout* downloadingItemLayout = new QVBoxLayout();
+        downloadingItemLayout->setAlignment(Qt::AlignTop);
+        downloadingItemWidget->setLayout(downloadingItemLayout);
+
+        auto update = [=](int downloadProgress)
+        {
+            if (m_downloadController->IsDownloadQueueEmpty())
+            {
+                widget->hide();
+            }
+            else
+            {
+                widget->setUpdatesEnabled(false);
+                // remove items
+                QLayoutItem* layoutItem = nullptr;
+                while ((layoutItem = downloadingItemLayout->takeAt(0)) != nullptr)
+                {
+                    if (layoutItem->layout())
+                    {
+                        // Gem info row
+                        QLayoutItem* rowLayoutItem = nullptr;
+                        while ((rowLayoutItem = layoutItem->layout()->takeAt(0)) != nullptr)
+                        {
+                            rowLayoutItem->widget()->deleteLater();
+                        }
+                        layoutItem->layout()->deleteLater();
+                    }
+                    if (layoutItem->widget())
+                    {
+                        layoutItem->widget()->deleteLater();
+                    }
+                }
+
+                // Setup gem download rows
+                const AZStd::vector<QString>& downloadQueue = m_downloadController->GetDownloadQueue();
+
+                QLabel* downloadsInProgessLabel = new QLabel("");
+                downloadsInProgessLabel->setText(
+                    QString("%1 %2").arg(downloadQueue.size()).arg(downloadQueue.size() == 1 ? tr("download in progress...") : tr("downloads in progress...")));
+                downloadingItemLayout->addWidget(downloadsInProgessLabel);
+
+                for (int downloadingGemNumber = 0; downloadingGemNumber < downloadQueue.size(); ++downloadingGemNumber)
+                {
+                    QHBoxLayout* nameProgressLayout = new QHBoxLayout();
+                    TagWidget* newTag = new TagWidget(downloadQueue[downloadingGemNumber]);
+                    nameProgressLayout->addWidget(newTag);
+                    QLabel* progress = new QLabel(downloadingGemNumber == 0? QString("%1%").arg(downloadProgress) : tr("Queued"));
+                    nameProgressLayout->addWidget(progress);
+                    QSpacerItem* spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+                    nameProgressLayout->addSpacerItem(spacer);
+                    QLabel* cancelText = new QLabel(QString("<a href=\"%1\">Cancel</a>").arg(downloadQueue[downloadingGemNumber]));
+                    cancelText->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+                    connect(cancelText, &QLabel::linkActivated, this, &CartOverlayWidget::OnCancelDownloadActivated);
+                    nameProgressLayout->addWidget(cancelText);
+                    downloadingItemLayout->addLayout(nameProgressLayout);
+                    QProgressBar* downloadProgessBar = new QProgressBar();
+                    downloadingItemLayout->addWidget(downloadProgessBar);
+                    downloadProgessBar->setValue(downloadingGemNumber == 0 ? downloadProgress : 0);
+                }
+
+                widget->setUpdatesEnabled(true);
+                widget->show();
+            }
+        };
+
+        auto downloadEnded = [=](bool /*success*/)
+        {
+            update(0); // update the list to remove the gem that has finished
+        };
+        // connect to download controller data changed
+        connect(m_downloadController, &DownloadController::GemDownloadProgress, this, update);
+        connect(m_downloadController, &DownloadController::Done, this, downloadEnded);
+        update(0);
+    }
+
     QStringList CartOverlayWidget::ConvertFromModelIndices(const QVector<QModelIndex>& gems) const
     {
         QStringList gemNames;
@@ -160,9 +276,10 @@ namespace O3DE::ProjectManager
         return gemNames;
     }
 
-    CartButton::CartButton(GemModel* gemModel, QWidget* parent)
+    CartButton::CartButton(GemModel* gemModel, DownloadController* downloadController, QWidget* parent)
         : QWidget(parent)
         , m_gemModel(gemModel)
+        , m_downloadController(downloadController)
     {
         m_layout = new QHBoxLayout();
         m_layout->setMargin(0);
@@ -239,7 +356,7 @@ namespace O3DE::ProjectManager
             delete m_cartOverlay;
         }
 
-        m_cartOverlay = new CartOverlayWidget(m_gemModel, this);
+        m_cartOverlay = new CartOverlayWidget(m_gemModel, m_downloadController, this);
         connect(m_cartOverlay, &QWidget::destroyed, this, [=]
             {
                 // Reset the overlay pointer on destruction to prevent dangling pointers.
@@ -265,7 +382,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    GemCatalogHeaderWidget::GemCatalogHeaderWidget(GemModel* gemModel, GemSortFilterProxyModel* filterProxyModel, QWidget* parent)
+    GemCatalogHeaderWidget::GemCatalogHeaderWidget(GemModel* gemModel, GemSortFilterProxyModel* filterProxyModel, DownloadController* downloadController, QWidget* parent)
         : QFrame(parent)
     {
         QHBoxLayout* hLayout = new QHBoxLayout();
@@ -293,8 +410,29 @@ namespace O3DE::ProjectManager
         hLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
         hLayout->addSpacerItem(new QSpacerItem(75, 0, QSizePolicy::Fixed));
 
-        CartButton* cartButton = new CartButton(gemModel);
+        CartButton* cartButton = new CartButton(gemModel, downloadController);
         hLayout->addWidget(cartButton);
+        hLayout->addSpacing(16);
+
+        // Separating line
+        QFrame* vLine = new QFrame();
+        vLine->setFrameShape(QFrame::VLine);
+        vLine->setObjectName("verticalSeparatingLine");
+        hLayout->addWidget(vLine);
+
+        hLayout->addSpacing(16);
+
+        QMenu* gemMenu = new QMenu(this);
+        gemMenu->addAction( tr("Show Gem Repos"), [this]() { emit OpenGemsRepo(); });
+        gemMenu->addSeparator();
+        gemMenu->addAction( tr("Add Existing Gem"), [this]() { emit AddGem(); });
+
+        QPushButton* gemMenuButton = new QPushButton(this);
+        gemMenuButton->setObjectName("gemCatalogMenuButton");
+        gemMenuButton->setMenu(gemMenu);
+        gemMenuButton->setIcon(QIcon(":/menu.svg"));
+        gemMenuButton->setIconSize(QSize(36, 24));
+        hLayout->addWidget(gemMenuButton);
     }
 
     void GemCatalogHeaderWidget::ReinitForProject()
