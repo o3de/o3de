@@ -70,6 +70,7 @@
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <Entity/EntityUtilityComponent.h>
+#include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
 
 #include <QtWidgets/QMessageBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
@@ -278,7 +279,8 @@ namespace AzToolsFramework
                 azrtti_typeid<Components::EditorEntitySearchComponent>(),
                 azrtti_typeid<Components::EditorIntersectorComponent>(),
                 azrtti_typeid<AzToolsFramework::SliceRequestComponent>(),
-                azrtti_typeid<AzToolsFramework::EntityUtilityComponent>()
+                azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
+                azrtti_typeid<AzToolsFramework::Script::LuaSymbolsReporterSystemComponent>(),
             });
 
         return components;
