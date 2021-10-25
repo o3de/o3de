@@ -478,6 +478,19 @@ class TestsFBX_AllPlatforms(object):
                     product.product_name = job.platform + "/" \
                                            + product.product_name
 
+    def compare_scene_debug_file(self, asset_processor, expected_file_path, actual_file_path):
+        debug_graph_path = os.path.join(asset_processor.project_test_cache_folder(), actual_file_path)
+        expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), expected_file_path)
+
+        logger.info(f"Parsing scene graph: {debug_graph_path}")
+        with open(debug_graph_path, "r") as scene_file:
+            actual_lines = scene_file.readlines()
+
+        logger.info(f"Parsing scene graph: {expected_debug_graph_path}")
+        with open(expected_debug_graph_path, "r") as scene_file:
+            expected_lines = scene_file.readlines()
+
+        assert utils.compare_lists(actual_lines, expected_lines), "Scene mismatch"
     def run_fbx_test(self, workspace, ap_setup_fixture, asset_processor,
                      project, blackbox_params: BlackboxAssetTest, overrideAsset = False):
         """
@@ -532,18 +545,12 @@ class TestsFBX_AllPlatforms(object):
             scene_debug_file = blackbox_params.override_scene_debug_file if overrideAsset\
                 else blackbox_params.scene_debug_file
 
-            debug_graph_path = os.path.join(asset_processor.project_test_cache_folder(), blackbox_params.scene_debug_file)
-            expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), scene_debug_file)
+            self.compare_scene_debug_file(asset_processor, scene_debug_file, blackbox_params.scene_debug_file)
 
-            logger.info(f"Parsing scene graph: {debug_graph_path}")
-            with open(debug_graph_path, "r") as scene_file:
-                actual_lines = scene_file.readlines()
-
-            logger.info(f"Parsing scene graph: {expected_debug_graph_path}")
-            with open(expected_debug_graph_path, "r") as scene_file:
-                expected_lines = scene_file.readlines()
-
-            assert utils.compare_lists(actual_lines, expected_lines), "Scene mismatch"
+            # Run again for the .dbgsg.xml file
+            self.compare_scene_debug_file(asset_processor,
+                                          os.path.join(scene_debug_file, ".xml"),
+                                          os.path.join(blackbox_params.scene_debug_file, ".xml"))
 
         # Check that each given source asset resulted in the expected jobs and products.
         self.populateAssetInfo(workspace, project, assetsToValidate)
