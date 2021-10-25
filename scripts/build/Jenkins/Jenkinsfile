@@ -559,23 +559,12 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                                     if (envVars['NONBLOCKING_STEP']?.toBoolean()) {
                                         unstable(message: "Build step ${build_step} failed but it's a non-blocking step in build job ${build_job.key}")
                                     } else {
-                                        if (IsAPLogUpload(branchName, build_job_name)) {
-                                            CreateUploadAPLogsStage(pipelineConfig, branchName, build_step, envVars['WORKSPACE'], platform.value.build_types[build_step].PARAMETERS).call()
-                                        }
                                         throw e
                                     }
                                 }
                             }
                         } else {
-                            try {
-                                CreateBuildStage(pipelineConfig,  platform.key, build_job.key, envVars).call()
-                            }
-                            catch (Exception e) {
-                                if (IsAPLogUpload(branchName, build_job.key)) {
-                                    CreateUploadAPLogsStage(pipelineConfig, branchName, build_job.key, envVars['WORKSPACE'], platform.value.build_types[build_job.key].PARAMETERS).call()
-                                }
-                                throw e
-                            }
+                            CreateBuildStage(pipelineConfig,  platform.key, build_job.key, envVars).call()
                         }
                     }
                     catch(Exception e) {
@@ -584,6 +573,9 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                             if (causes.contains('RemovedNodeCause')) {
                                 error "Node disconnected during build: ${e}"  // Error raised to retry stage on a new node
                             }
+                        }
+                        if (IsAPLogUpload(branchName, build_job_name)) {
+                            CreateUploadAPLogsStage(pipelineConfig, branchName, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
                         }
                         // All other errors will be raised outside the retry block
                         currentResult = envVars['ON_FAILURE_MARK'] ?: 'FAILURE'
