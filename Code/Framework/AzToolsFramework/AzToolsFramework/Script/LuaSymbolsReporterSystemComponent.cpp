@@ -191,10 +191,6 @@ namespace AzToolsFramework
             }
         }
 
-        LuaSymbolsReporterSystemComponent::LuaSymbolsReporterSystemComponent() = default;
-
-        LuaSymbolsReporterSystemComponent::~LuaSymbolsReporterSystemComponent() = default;
-
         void LuaSymbolsReporterSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
             provided.push_back(AZ_CRC_CE("LuaSymbolsReporterSystemService"));

@@ -82,7 +82,7 @@ namespace AzToolsFramework
         class LuaSymbolsReporterRequests
         {
         public:
-            AZ_RTTI(LuaSymbolsReporterRequests, "{3ff9a105-3159-49ff-8dc6-4948ae7b4ab8}");
+            AZ_RTTI(LuaSymbolsReporterRequests, "{3FF9A105-3159-49FF-8DC6-4948AE7B4AB8}");
             virtual ~LuaSymbolsReporterRequests() = default;
             // Put your public methods here
 

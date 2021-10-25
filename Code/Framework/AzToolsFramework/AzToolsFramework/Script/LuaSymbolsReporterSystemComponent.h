@@ -23,13 +23,13 @@ namespace AzToolsFramework
             , private AzToolsFramework::EditorEvents::Bus::Handler
         {
         public:
-            AZ_COMPONENT(LuaSymbolsReporterSystemComponent, "{db8d95ba-fecf-4d81-a45c-8c05e706e2ac}");
+            AZ_COMPONENT(LuaSymbolsReporterSystemComponent, "{DB8D95BA-FECF-4D81-A45C-8C05E706E2AC}");
             static void Reflect(AZ::ReflectContext* context);
 
             static constexpr char LogName[] = "LuaSymbolsReporter";
 
-            LuaSymbolsReporterSystemComponent();
-            ~LuaSymbolsReporterSystemComponent();
+            LuaSymbolsReporterSystemComponent() = default;
+            ~LuaSymbolsReporterSystemComponent() = default;
 
             ///////////////////////////////////////////////////////////////////////////
             /// LuaSymbolsReporterRequestBus::Handler
