@@ -303,6 +303,7 @@ namespace Terrain
         AZ::RPI::MaterialPropertyIndex m_detailMaterialIdPropertyIndex;
         AZ::RPI::MaterialPropertyIndex m_detailCenterPropertyIndex;
         AZ::RPI::MaterialPropertyIndex m_detailAabbPropertyIndex;
+        AZ::RPI::MaterialPropertyIndex m_detailHalfPixelUvPropertyIndex;
 
         AZ::Data::Instance<AZ::RPI::Model> m_patchModel;
         AZ::Vector3 m_previousCameraPosition = AZ::Vector3(AZStd::numeric_limits<float>::max(), 0.0, 0.0);

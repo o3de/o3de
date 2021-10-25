@@ -56,6 +56,7 @@ namespace Terrain
         static const char* const DetailMaterialIdImage("settings.detailMaterialIdImage");
         static const char* const DetailCenter("settings.detailMaterialIdCenter");
         static const char* const DetailAabb("settings.detailAabb");
+        static const char* const DetailHalfPixelUv("settings.detailHalfPixelUv");
 
         // Macro material
         static const char* const MacroColorTextureMap("baseColor.textureMap");
@@ -869,6 +870,9 @@ namespace Terrain
 
         m_detailAabbPropertyIndex = m_materialInstance->GetMaterialPropertiesLayout()->FindPropertyIndex(AZ::Name(MaterialInputs::DetailAabb));
         AZ_Error(TerrainFPName, m_detailAabbPropertyIndex.IsValid(), "Failed to find material input constant %s.", MaterialInputs::DetailAabb);
+        
+        m_detailHalfPixelUvPropertyIndex = m_materialInstance->GetMaterialPropertiesLayout()->FindPropertyIndex(AZ::Name(MaterialInputs::DetailHalfPixelUv));
+        AZ_Error(TerrainFPName, m_detailHalfPixelUvPropertyIndex.IsValid(), "Failed to find material input constant %s.", MaterialInputs::DetailHalfPixelUv);
 
         TerrainMacroMaterialRequestBus::EnumerateHandlers(
             [&](TerrainMacroMaterialRequests* handler)
@@ -1074,6 +1078,7 @@ namespace Terrain
                     m_detailTextureBounds.m_max.m_y * DetailTextureScale
                 );
                 m_materialInstance->SetPropertyValue(m_detailAabbPropertyIndex, detailAabb);
+                m_materialInstance->SetPropertyValue(m_detailHalfPixelUvPropertyIndex, 0.5f / DetailTextureSize);
 
                 AZ::Vector2 detailUvOffset = AZ::Vector2(float(newCenter.m_x) / DetailTextureSize, float(newCenter.m_y) / DetailTextureSize);
                 m_materialInstance->SetPropertyValue(m_detailCenterPropertyIndex, detailUvOffset);

@@ -100,6 +100,7 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
     float m_detailFadeLength;
 
     float4 m_detailAabb;
+    float m_detailHalfPixelUv;
 
     Sampler HeightmapSampler
     {

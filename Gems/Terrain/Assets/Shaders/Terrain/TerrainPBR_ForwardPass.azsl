@@ -121,13 +121,14 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     float3 detailColor = GetBaseColorInput(TerrainMaterialSrg::m_baseColorMap, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
     float3 blendedColor = BlendBaseColor(lerp(detailColor, TerrainMaterialSrg::m_baseColor.rgb, detailFactor), macroColor, TerrainMaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
 
-    bool debugDetailMaterailIds = true;
+    // ------- Debug detail materials using random colors -------
+    bool debugDetailMaterailIds = false;
     if (debugDetailMaterailIds) 
     {
         float2 detailRegionMin = TerrainMaterialSrg::m_detailAabb.xy;
         float2 detailRegionMax = TerrainMaterialSrg::m_detailAabb.zw;
         float2 detailRegionUv = (surface.position.xy - detailRegionMin) / (detailRegionMax - detailRegionMin);
-        if (all(detailRegionUv > 0.0) && all(detailRegionUv < 1.0))
+        if (all(detailRegionUv > TerrainMaterialSrg::m_detailHalfPixelUv) && all(detailRegionUv < 1.0 - TerrainMaterialSrg::m_detailHalfPixelUv))
         {
             detailRegionUv += TerrainMaterialSrg::m_detailMaterialIdImageCenter - (0.5);
 
@@ -151,6 +152,12 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
             }
 
             blendedColor = lerp(material1Color, material2Color, blend);
+            float seamBlend = 0.0;
+            if (abs(detailRegionUv.x) % 1.0 < 1.0 / 1024.0 || abs(detailRegionUv.y) % 1.0 < 1.0 / 1024.0)
+            {
+                seamBlend = 1.0;
+            }
+            blendedColor = lerp(blendedColor, float3(0.0, 0.0, 0.0), seamBlend); // draw texture seams
         }
     }
 
