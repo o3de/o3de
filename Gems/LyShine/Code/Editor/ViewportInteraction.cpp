@@ -739,38 +739,32 @@ void ViewportInteraction::MouseWheelEvent(QWheelEvent* ev)
 
 bool ViewportInteraction::KeyPressEvent(QKeyEvent* ev)
 {
-    auto key = ev->key();
-    if (key == Qt::Key_Space)
+    switch (ev->key())
     {
+    case Qt::Key_Space:
         if (!ev->isAutoRepeat())
         {
             ActivateSpaceBar();
         }
-
         return true;
-    }
-    else if (Qt::Key_Left <= key && key <= Qt::Key_Down)
-    {
-        const ViewportInteraction::NudgeSpeed nudgeSpeed =
-            (ev->modifiers() & Qt::ShiftModifier) ? ViewportInteraction::NudgeSpeed::Fast : ViewportInteraction::NudgeSpeed::Slow;
-
-        switch (ev->key())
-        {
-        case Qt::Key_Up:
-            Nudge(ViewportInteraction::NudgeDirection::Up, nudgeSpeed);
-            break;
-        case Qt::Key_Down:
-            Nudge(ViewportInteraction::NudgeDirection::Down, nudgeSpeed);
-            break;
-        case Qt::Key_Left:
-            Nudge(ViewportInteraction::NudgeDirection::Left, nudgeSpeed);
-            break;
-        case Qt::Key_Right:
-            Nudge(ViewportInteraction::NudgeDirection::Right, nudgeSpeed);
-            break;
-        }
-
+    case Qt::Key_Up:
+        Nudge(ViewportInteraction::NudgeDirection::Up,
+            (ev->modifiers() & Qt::ShiftModifier) ? ViewportInteraction::NudgeSpeed::Fast : ViewportInteraction::NudgeSpeed::Slow);
         return true;
+    case Qt::Key_Down:
+        Nudge(ViewportInteraction::NudgeDirection::Down,
+            (ev->modifiers() & Qt::ShiftModifier) ? ViewportInteraction::NudgeSpeed::Fast : ViewportInteraction::NudgeSpeed::Slow);
+        return true;
+    case Qt::Key_Left:
+        Nudge(ViewportInteraction::NudgeDirection::Left,
+            (ev->modifiers() & Qt::ShiftModifier) ? ViewportInteraction::NudgeSpeed::Fast : ViewportInteraction::NudgeSpeed::Slow);
+        return true;
+    case Qt::Key_Right:
+        Nudge(ViewportInteraction::NudgeDirection::Right,
+            (ev->modifiers() & Qt::ShiftModifier) ? ViewportInteraction::NudgeSpeed::Fast : ViewportInteraction::NudgeSpeed::Slow);
+        return true;
+    default:
+        break;
     }
 
     return false;

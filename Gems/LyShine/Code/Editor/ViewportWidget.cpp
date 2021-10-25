@@ -693,13 +693,14 @@ void ViewportWidget::wheelEvent(QWheelEvent* ev)
 
 bool ViewportWidget::eventFilter([[maybe_unused]] QObject* watched, QEvent* event)
 {
-    // When a shortcut is matched, Qt's event processing sends out a shortcut override event
-    // to allow other systems to override it. If it's not overridden, then the key events
-    // get processed as a shortcut, even if the widget that's the target has a keyPress event
-    // handler. In our case this causes a problem in preview mode for the Key_Delete event.
-    // So, if we are preview mode avoid treating Key_Delete as a shortcut.
     if (event->type() == QEvent::ShortcutOverride)
     {
+        // When a shortcut is matched, Qt's event processing sends out a shortcut override event
+        // to allow other systems to override it. If it's not overridden, then the key events
+        // get processed as a shortcut, even if the widget that's the target has a keyPress event
+        // handler. In our case this causes a problem in preview mode for the Key_Delete event.
+        // So, if we are preview mode avoid treating Key_Delete as a shortcut.
+
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
         int key = keyEvent->key();
 
@@ -707,7 +708,8 @@ bool ViewportWidget::eventFilter([[maybe_unused]] QObject* watched, QEvent* even
         // events when the viewport has the focus. The space bar is set up as a shortcut in order to give the
         // viewport the focus and activate the space bar when another widget has the focus. Once the shortcut
         // is pressed and focus is given to the viewport, the viewport takes over handling the space bar via
-        // the KeyPress/KeyRelease events
+        // the KeyPress/KeyRelease events.
+        // Also ignore nudge shortcuts in edit/preview mode so that the KeyPressEvent will be sent.
         switch (key)
         {
         case Qt::Key_Space:
