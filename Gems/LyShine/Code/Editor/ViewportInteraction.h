@@ -32,7 +32,7 @@ class ViewportInteraction
 public: // types
 
     enum class NudgeDirection
-    {   
+    {
         Up,
         Down,
         Left,
