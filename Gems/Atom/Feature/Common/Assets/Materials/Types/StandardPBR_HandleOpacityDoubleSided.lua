@@ -10,7 +10,7 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return {"general.doubleSided", "opacity.doubleSided", "opacity.mode"}
+    return {"general.doubleSided"}
 end
  
 ForwardPassIndex = 0
@@ -18,11 +18,9 @@ ForwardPassEdsIndex = 1
 
 function Process(context)
     local doubleSided = context:GetMaterialPropertyValue_bool("general.doubleSided")
-    local opacityDoubleSided = context:GetMaterialPropertyValue_bool("opacity.doubleSided")
-    local opacityMode = context:GetMaterialPropertyValue_enum("opacity.mode")
     local lastShader = context:GetShaderCount() - 1;
 
-    if(doubleSided or (opacityDoubleSided and opacityMode ~= 0)) then
+    if(doubleSided) then
         for i=0,lastShader do
             context:GetShader(i):GetRenderStatesOverride():SetCullMode(CullMode_None)
         end
