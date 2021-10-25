@@ -177,6 +177,19 @@ namespace O3DE::ProjectManager
         // Gem Repos
 
         /**
+         * Refresh gem repo in the current engine.
+         * @param repoUri the absolute filesystem path or url to the gem repo.
+         * @return An outcome with the success flag as well as an error message in case of a failure.
+         */
+        virtual AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri) = 0;
+
+        /**
+         * Refresh all gem repos in the current engine.
+         * @return true on success, false on failure.
+         */
+        virtual bool RefreshAllGemRepos() = 0;
+
+        /**
          * Registers this gem repo with the current engine.
          * @param repoUri the absolute filesystem path or url to the gem repo.
          * @return true on success, false on failure.
@@ -208,6 +221,12 @@ namespace O3DE::ProjectManager
         * Cancels the current download.
         */
         virtual void CancelDownload() = 0;
+
+        /**
+         * Gathers all gem infos for all gems registered from repos.
+         * @return A list of gem infos.
+         */
+        virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemRepoGemsInfos() = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;

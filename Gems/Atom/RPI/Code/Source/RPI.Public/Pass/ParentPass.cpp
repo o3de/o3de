@@ -149,29 +149,6 @@ namespace AZ
             return index.IsValid() ? m_children[index.GetIndex()] : Ptr<Pass>(nullptr);
         }
 
-        Ptr<Pass> ParentPass::FindPassByNameRecursive(const Name& passName) const
-        {
-            for (const Ptr<Pass>& child : m_children)
-            {
-                if (child->GetName() == passName)
-                {
-                    return child.get();
-                }
-
-                ParentPass* asParent = child->AsParent();
-                if (asParent)
-                {
-                    auto pass = asParent->FindPassByNameRecursive(passName);
-                    if (pass)
-                    {
-                        return pass;
-                    }
-                }
-            }
-
-            return nullptr;
-        }
-
         const Pass* ParentPass::FindPass(RHI::DrawListTag drawListTag) const
         {
             if (HasDrawListTag() && GetDrawListTag() == drawListTag)
