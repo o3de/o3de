@@ -86,7 +86,7 @@ namespace AZ
         //! Reports messages with AZ_Error or AZ_Warning (See @reportAsErrors).
         //! @param window  Debug window name used for AZ Trace functions.
         //! @param errorMessages  Message string.
-        //! @param reportAsErrors  If true messages are traced with AZ_Error, otherwise AZ_Warning is used.
+        //! @param reportAsErrors  If true, messages are traced with AZ_Error, otherwise AZ_Warning is used.
         //! @returns  true If the input text blob contains at least one line with the "error" string.
         bool ReportMessages(AZStd::string_view window, AZStd::string_view errorMessages, bool reportAsErrors);
 
