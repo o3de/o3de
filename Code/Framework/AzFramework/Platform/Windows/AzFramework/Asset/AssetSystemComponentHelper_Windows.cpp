@@ -14,7 +14,7 @@
 
 #include <Psapi.h>
 
-AZ_CVAR(bool, ap_tether_lifetime, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+AZ_CVAR(bool, ap_tether_lifetime, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "If enabled, a parent process that launches the AP will terminate the AP on exit");
 
 namespace AzFramework::AssetSystem::Platform
