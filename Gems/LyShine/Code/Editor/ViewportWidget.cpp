@@ -751,12 +751,10 @@ void ViewportWidget::keyPressEvent(QKeyEvent* event)
     if (editorMode == UiEditorMode::Edit)
     {
         // in Edit mode just send input to ViewportInteraction
-        if (m_viewportInteraction->KeyPressEvent(event))
+        if (!m_viewportInteraction->KeyPressEvent(event))
         {
-            return;
+            RenderViewportWidget::keyPressEvent(event);
         }
-
-        RenderViewportWidget::keyPressEvent(event);
     }
     else // if (editorMode == UiEditorMode::Preview)
     {

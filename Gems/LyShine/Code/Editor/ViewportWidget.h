@@ -172,7 +172,7 @@ private: // member functions
     //! Fill the entire viewport area with a background color
     void RenderViewportBackground();
 
-    ////! Create shortcuts for manipulating the viewport
+    //! Create shortcuts for manipulating the viewport
     void SetupShortcuts();
 
     //! Do the Qt stuff to hide/show the rulers
