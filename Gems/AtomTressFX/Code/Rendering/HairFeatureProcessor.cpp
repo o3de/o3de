@@ -143,12 +143,13 @@ namespace AZ
                 EnablePasses(true);
             }
 
-            void HairFeatureProcessor::EnablePasses([[maybe_unused]] bool enable)
+            void HairFeatureProcessor::EnablePasses(bool enable)
             {
-                RPI::Ptr<RPI::Pass> desiredPass = m_renderPipeline->GetRootPass()->FindPassByNameRecursive(HairParentPassName);
-                if (desiredPass)
+                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(HairParentPassName, GetParentScene());
+                RPI::Pass* pass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
+                if (pass)
                 {
-                    desiredPass->SetEnabled(enable);
+                    pass->SetEnabled(enable);
                 }
             }
 
@@ -465,8 +466,8 @@ namespace AZ
             {
                 m_computePasses[passName] = nullptr;
 
-                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(passName, m_renderPipeline);                
-                RPI::Ptr<RPI::Pass> desiredPass = m_renderPipeline->GetRootPass()->FindPassByNameRecursive(passName);
+                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(passName, m_renderPipeline);
+                RPI::Ptr<RPI::Pass> desiredPass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
                 if (desiredPass)
                 {
                     m_computePasses[passName] = static_cast<HairSkinningComputePass*>(desiredPass.get());
@@ -529,8 +530,8 @@ namespace AZ
                 m_hairShortCutGeometryDepthAlphaPass = nullptr;
                 m_hairShortCutGeometryShadingPass = nullptr;
 
-                m_hairShortCutGeometryDepthAlphaPass = static_cast<HairShortCutGeometryDepthAlphaPass*>(
-                    m_renderPipeline->GetRootPass()->FindPassByNameRecursive(HairShortCutGeometryDepthAlphaPassName).get());
+                RPI::PassFilter depthAlphaPassFilter = RPI::PassFilter::CreateWithPassName(HairShortCutGeometryDepthAlphaPassName, m_renderPipeline);
+                m_hairShortCutGeometryDepthAlphaPass = static_cast<HairShortCutGeometryDepthAlphaPass*>(RPI::PassSystemInterface::Get()->FindFirstPass(depthAlphaPassFilter));
                 if (m_hairShortCutGeometryDepthAlphaPass)
                 {
                     m_hairShortCutGeometryDepthAlphaPass->SetFeatureProcessor(this);
@@ -541,8 +542,8 @@ namespace AZ
                     return false;
                 }
 
-                m_hairShortCutGeometryShadingPass = static_cast<HairShortCutGeometryShadingPass*>(
-                    m_renderPipeline->GetRootPass()->FindPassByNameRecursive(HairShortCutGeometryShadingPassName).get());
+                RPI::PassFilter shaderingPassFilter = RPI::PassFilter::CreateWithPassName(HairShortCutGeometryShadingPassName, m_renderPipeline);
+                m_hairShortCutGeometryShadingPass = static_cast<HairShortCutGeometryShadingPass*>(RPI::PassSystemInterface::Get()->FindFirstPass(shaderingPassFilter));
                 if (m_hairShortCutGeometryShadingPass)
                 {
                     m_hairShortCutGeometryShadingPass->SetFeatureProcessor(this);
