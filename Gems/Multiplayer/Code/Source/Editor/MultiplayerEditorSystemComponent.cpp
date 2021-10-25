@@ -280,7 +280,7 @@ namespace Multiplayer
         }
 
         // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
-         AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
+        AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
         // Read the buffer into EditorServerInit packets until we've flushed the whole thing
         byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
