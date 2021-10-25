@@ -208,7 +208,7 @@ namespace AZ
                 return;
             }
 
-            const uint32_t originalVersion = m_materialTypeVersion;
+            [[maybe_unused]] const uint32_t originalVersion = m_materialTypeVersion;
 
             bool changesWereApplied = false;
 
