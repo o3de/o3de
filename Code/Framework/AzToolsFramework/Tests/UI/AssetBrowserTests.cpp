@@ -43,15 +43,6 @@ namespace UnitTest
         }
     };
 
-    class PublicAssetBrowserTableMode : public AzToolsFramework::AssetBrowser::AssetBrowserTableModel
-    {
-    public:
-        int rowCount(const QModelIndex& parent = QModelIndex()) const override
-        {
-            AzToolsFramework::AssetBrowser::AssetBrowserTableModel::rowCount(parent);
-        }
-    };
-
     // Test fixture for the AssetBrowser model that uses a QAbstractItemModelTester to validate the state of the model
     // when QAbstractItemModel signals fire. Tests will exit with a fatal error if an invalid state is detected.
     class AssetBrowserTest : public ToolsApplicationFixture
@@ -251,7 +242,7 @@ namespace UnitTest
     TEST_F(AssetBrowserTest, TestCheckCorrectNumberOfEntriesInTableView)
     {
         m_filterModel->FilterUpdatedSlotImmediate();
-        int tableViewRowcount = reinterpret_cast<PublicAssetBrowserTableMode*>(m_tableModel.get())->rowCount();
+        int tableViewRowcount = m_tableModel->rowCount();
 
         // RowCount should be 14 -> 5 SourceEntries + 9 ProductEntries)
         EXPECT_EQ(tableViewRowcount, 14);
@@ -259,25 +250,24 @@ namespace UnitTest
 
     TEST_F(AssetBrowserTest, TestCheckCorrectNumberOfEntriesInTableViewAfterStringFilter)
     {
+        /*
+        *|-Source_1_0
+        *| |
+        *| |-product_1_1_0
+        *| |-product_1_1_1
+        *| |-product_1_1_2
+        *|
+        *|-Source_1_1
+        *|
+        *|-Source_1_2
+        *
+        *Total matching entries 6.
+        */
+
         // Apply string filter
         m_searchWidget->SetTextFilter(QString("source_1_"));
         m_filterModel->FilterUpdatedSlotImmediate();
-
-        /*
-        |-Source_1_0
-        | |
-        | |-product_1_1_0
-        | |-product_1_1_1
-        | |-product_1_1_2
-        |
-        |-Source_1_1
-        |
-        |-Source_1_2
-
-        Total matching entries 6.
-        */
-
-        int tableViewRowcount = reinterpret_cast<PublicAssetBrowserTableMode*>(m_tableModel.get())->rowCount();
+        int tableViewRowcount = m_tableModel->rowCount();
         EXPECT_EQ(tableViewRowcount, 6);
     }
 } // namespace UnitTest
