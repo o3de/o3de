@@ -68,7 +68,7 @@ namespace EMotionFX
         }
 
         void FeatureVelocity::DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-            EMotionFX::DebugDraw::ActorInstanceData& draw,
+            [[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw,
             BehaviorInstance* behaviorInstance,
             size_t frameIndex)
         {
@@ -87,8 +87,15 @@ namespace EMotionFX
             const float scale = 0.15f;
             const AZ::Vector3 jointPosition = relativeToWorldTM.TransformPoint(jointModelTM.m_position);
             const AZ::Vector3 directionWorldSpace = relativeToWorldTM.TransformVector(velocity.m_direction * velocity.m_speed * scale);
-            draw.DrawLine(jointPosition, jointPosition + directionWorldSpace,
-                m_debugColor);
+            const AZ::Vector3 arrowPosition = jointPosition + directionWorldSpace;
+
+            drawQueue->DrawCylinder(/*center=*/(arrowPosition + jointPosition) * 0.5f,
+                /*direction=*/(arrowPosition - jointPosition).GetNormalizedSafe(),
+                /*radius=*/0.003f,
+                /*height=*/(arrowPosition - jointPosition).GetLength(),
+                m_debugColor,
+                AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
+                AZ::RPI::AuxGeomDraw::DepthTest::Off);
 
             drawQueue->DrawCone(jointPosition + directionWorldSpace, directionWorldSpace, 0.1f * scale, scale * 0.5f, m_debugColor, AZ::RPI::AuxGeomDraw::DrawStyle::Solid);
         }

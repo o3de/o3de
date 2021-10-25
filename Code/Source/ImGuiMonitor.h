@@ -45,7 +45,7 @@ namespace EMotionFX::MotionMatching
 
         // ImGuiMonitorRequestBus::Handler
         void PushPerformanceHistogramValue(const char* performanceMetricName, float value) override;
-        void PushCostHistogramValue(const char* costName, float value) override;
+        void PushCostHistogramValue(const char* costName, float value, const AZ::Color& color) override;
 
         void SetFeatureMatrixMemoryUsage(size_t sizeInBytes) override { m_featureMatrixMemoryUsageInBytes = sizeInBytes; }
         void SetFeatureMatrixNumFrames(size_t numFrames) override { m_featureMatrixNumFrames = numFrames; }
@@ -60,15 +60,14 @@ namespace EMotionFX::MotionMatching
         struct HistogramGroup
         {
             void OnImGuiUpdate();
-            void PushHistogramValue(const char* valueName, float value);
+            void PushHistogramValue(const char* valueName, float value, const AZ::Color& color);
 
             bool m_show = true;
             AZStd::string m_name;
             using HistogramIndexByNames = AZStd::unordered_map<const char*, size_t>;
             HistogramIndexByNames m_histogramIndexByName;
             AZStd::vector<ImGui::LYImGuiUtils::HistogramContainer> m_histograms;
-            int m_histogramContainerCount = 512;
-            ImColor m_barColor = ImColor(255, 0, 0);
+            int m_histogramContainerCount = 500;
 
             static constexpr float s_histogramHeight = 100.0f;
         };
