@@ -598,6 +598,15 @@ namespace AZ
             m_shadowBufferNeedsUpdate = true;
         }
 
+        void DirectionalLightFeatureProcessor::SetNormalShadowBias(LightHandle handle, float normalShadowBias)
+        {
+            for (auto& it : m_shadowData)
+            {
+                it.second.GetData(handle.GetIndex()).m_normalShadowBias = normalShadowBias;
+            }
+            m_shadowBufferNeedsUpdate = true;
+        }
+
         void DirectionalLightFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
             PrepareForChangingRenderPipelineAndCameraView();
@@ -638,54 +647,46 @@ namespace AZ
             UpdateViewsOfCascadeSegments();
         }
 
-        void DirectionalLightFeatureProcessor::CacheCascadedShadowmapsPass() {
-            const AZStd::vector<RPI::Pass*>& passes = RPI::PassSystemInterface::Get()->GetPassesForTemplateName(Name("CascadedShadowmapsTemplate"));
+        void DirectionalLightFeatureProcessor::CacheCascadedShadowmapsPass()
+        {
             m_cascadedShadowmapsPasses.clear();
-            for (RPI::Pass* pass : passes)
-            {
-                if (RPI::RenderPipeline* pipeline = pass->GetRenderPipeline())
+
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("CascadedShadowmapsTemplate"), GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
+                    RPI::RenderPipeline* pipeline = pass->GetRenderPipeline();
                     const RPI::RenderPipelineId pipelineId = pipeline->GetId();
-                    // This function can be called when the pipeline is not attached to the scene.
-                    // So we check it is attached to the scene.
-                    if (GetParentScene()->GetRenderPipeline(pipelineId).get() == pipeline)
+
+                    CascadedShadowmapsPass* shadowPass = azrtti_cast<CascadedShadowmapsPass*>(pass);
+                    AZ_Assert(shadowPass, "It is not a CascadedShadowmapPass.");
+                    if (pipeline->GetDefaultView())
                     {
-                        CascadedShadowmapsPass* shadowPass = azrtti_cast<CascadedShadowmapsPass*>(pass);
-                        AZ_Assert(shadowPass, "It is not a CascadedShadowmapPass.");
-                        if (pipeline->GetDefaultView())
-                        {
-                            m_cascadedShadowmapsPasses[pipelineId].push_back(shadowPass);
-                        }
+                        m_cascadedShadowmapsPasses[pipelineId].push_back(shadowPass);
                     }
-                }
-            }
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
         }
 
         void DirectionalLightFeatureProcessor::CacheEsmShadowmapsPass()
         {
-            const AZStd::vector<RPI::Pass*>& passes = RPI::PassSystemInterface::Get()->GetPassesForTemplateName(Name("EsmShadowmapsTemplate"));
             m_esmShadowmapsPasses.clear();
-            for (RPI::Pass* pass : passes)
-            {
-                if (RPI::RenderPipeline* pipeline = pass->GetRenderPipeline())
+
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("EsmShadowmapsTemplate"), GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
-                    const RPI::RenderPipelineId pipelineId = pipeline->GetId();
-                    // checking the render pipeline is just removed from the scene.
-                    if (GetParentScene()->GetRenderPipeline(pipelineId).get() == pipeline)
+                    const RPI::RenderPipelineId pipelineId = pass->GetRenderPipeline()->GetId();
+
+                    if (m_cascadedShadowmapsPasses.find(pipelineId) != m_cascadedShadowmapsPasses.end())
                     {
-                        if (m_cascadedShadowmapsPasses.find(pipelineId) != m_cascadedShadowmapsPasses.end())
+                        EsmShadowmapsPass* esmPass = azrtti_cast<EsmShadowmapsPass*>(pass);
+                        AZ_Assert(esmPass, "It is not an EsmShadowmapPass.");
+                        if (esmPass->GetLightTypeName() == m_lightTypeName)
                         {
-                            EsmShadowmapsPass* esmPass = azrtti_cast<EsmShadowmapsPass*>(pass);
-                            AZ_Assert(esmPass, "It is not an EsmShadowmapPass.");
-                            if (m_cascadedShadowmapsPasses.find(esmPass->GetRenderPipeline()->GetId()) != m_cascadedShadowmapsPasses.end() &&
-                                esmPass->GetLightTypeName() == m_lightTypeName)
-                            {
-                                m_esmShadowmapsPasses[pipelineId].push_back(esmPass);
-                            }
+                            m_esmShadowmapsPasses[pipelineId].push_back(esmPass);
                         }
                     }
-                }
-            }
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
         }
 
         void DirectionalLightFeatureProcessor::PrepareCameraViews()
@@ -1054,12 +1055,13 @@ namespace AZ
 
                         // if the shadow is rendering in an EnvironmentCubeMapPass it also needs to be a ReflectiveCubeMap view,
                         // to filter out shadows from objects that are excluded from the cubemap
-                        RPI::PassClassFilter<RPI::EnvironmentCubeMapPass> passFilter;
-                        AZStd::vector<AZ::RPI::Pass*> cubeMapPasses = AZ::RPI::PassSystemInterface::Get()->FindPasses(passFilter);
-                        if (!cubeMapPasses.empty())
-                        {
-                            usageFlags |= RPI::View::UsageReflectiveCubeMap;
-                        }
+                        RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassClass<RPI::EnvironmentCubeMapPass>();
+                        passFilter.SetOwenrScene(GetParentScene()); // only handles passes for this scene
+                        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&usageFlags]([[maybe_unused]] RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                            {
+                                usageFlags |= RPI::View::UsageReflectiveCubeMap;
+                                return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                            });
 
                         segment.m_view = RPI::View::CreateView(viewName, usageFlags);
                     }

@@ -10,6 +10,8 @@
 
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 
+#include <QTimer>
+
 namespace AzToolsFramework::Prefab
 {
     PrefabViewportFocusPathHandler::PrefabViewportFocusPathHandler()
@@ -47,6 +49,9 @@ namespace AzToolsFramework::Prefab
             [&](const QString&, int linkIndex)
             {
                 m_prefabFocusPublicInterface->FocusOnPathIndex(m_editorEntityContextId, linkIndex);
+
+                // Manually refresh path
+                QTimer::singleShot(0, [&]() { OnPrefabFocusChanged(); });
             }
         );
 

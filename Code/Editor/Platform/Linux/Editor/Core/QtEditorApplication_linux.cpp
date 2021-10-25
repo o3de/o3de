@@ -6,7 +6,7 @@
  *
  */
 
-#include "QtEditorApplication.h"
+#include "QtEditorApplication_linux.h"
 
 #ifdef PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 #include <AzFramework/XcbEventHandler.h>
@@ -14,7 +14,16 @@
 
 namespace Editor
 {
-    bool EditorQtApplication::nativeEventFilter([[maybe_unused]] const QByteArray& eventType, void* message, long*)
+    EditorQtApplication* EditorQtApplication::newInstance(int& argc, char** argv)
+    {
+#ifdef PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
+        return new EditorQtApplicationXcb(argc, argv);
+#endif
+
+        return nullptr;
+    }
+
+    bool EditorQtApplicationXcb::nativeEventFilter([[maybe_unused]] const QByteArray& eventType, void* message, long*)
     {
         if (GetIEditor()->IsInGameMode())
         {

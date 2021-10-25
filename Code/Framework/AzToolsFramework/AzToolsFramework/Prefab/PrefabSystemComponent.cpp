@@ -184,7 +184,7 @@ namespace AzToolsFramework
                 if (AZ::JsonSerialization::Compare(templateDomToUpdate, updatedDom) != AZ::JsonSerializerCompareResult::Equal)
                 {
                     templateDomToUpdate.CopyFrom(updatedDom, templateDomToUpdate.GetAllocator());
-                    templateToUpdate->get().MarkAsDirty(true);
+                    SetTemplateDirtyFlag(templateId, true);
                     PropagateTemplateChanges(templateId);
                 }
             }
@@ -812,11 +812,12 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::SetTemplateDirtyFlag(TemplateId templateId, bool dirty)
         {
-            auto templateRef = FindTemplate(templateId);
-
-            if (templateRef.has_value())
+            if (auto templateReference = FindTemplate(templateId); templateReference.has_value())
             {
-                templateRef->get().MarkAsDirty(dirty);
+                templateReference->get().MarkAsDirty(dirty);
+
+                PrefabPublicNotificationBus::Broadcast(
+                    &PrefabPublicNotificationBus::Events::OnPrefabTemplateDirtyFlagUpdated, templateId, dirty);
             }
         }
 

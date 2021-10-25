@@ -1,13 +1,9 @@
 {
-    "Source" : "ImagePreview",
+    "Source" : "NewDepthOfFieldFilterSmall.azsl",
 
-    "DepthStencilState" : { 
-        "Depth" : { "Enable" : false, "CompareFunc" : "GreaterEqual" }
+    "DepthStencilState" : {
+        "Depth" : { "Enable" : false }
     },
-
-    "RasterState" : { "CullMode" : "None" },
-        
-    "DrawList": "forward",
 
     "ProgramSettings":
     {

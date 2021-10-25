@@ -201,9 +201,7 @@ namespace PhysX
 
     void EditorHeightfieldColliderComponent::InitHeightfieldShapeConfiguration()
     {
-        Physics::HeightfieldShapeConfiguration& configuration = static_cast<Physics::HeightfieldShapeConfiguration&>(*m_shapeConfig);
-
-        Utils::InitHeightfieldShapeConfiguration(GetEntityId(), configuration);
+        *m_shapeConfig = Utils::CreateHeightfieldShapeConfiguration(GetEntityId());
     }
 
     void EditorHeightfieldColliderComponent::RefreshHeightfield()
