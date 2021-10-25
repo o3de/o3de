@@ -206,6 +206,20 @@ namespace EMStudio
         return result;
     }
 
+    void AnimViewportRenderer::UpdateActorRenderFlag(EMotionFX::ActorRenderFlagMask renderFlags)
+    {
+        for (AZ::Entity* entity : m_actorEntities)
+        {
+            EMotionFX::Integration::ActorComponent* actorComponent = entity->FindComponent<EMotionFX::Integration::ActorComponent>();
+            if (!actorComponent)
+            {
+                AZ_ErrorOnce("AnimViewport", false, "Found entity without actor component in the actor entity list.");
+                continue;
+            }
+            actorComponent->SetRenderFlag(renderFlags);
+        }
+    }
+
     void AnimViewportRenderer::ResetEnvironment()
     {
         // Reset environment

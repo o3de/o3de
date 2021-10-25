@@ -52,6 +52,8 @@ namespace EMStudio
         //! Return the center position of the existing objects.
         AZ::Vector3 GetCharacterCenter() const;
 
+        void UpdateActorRenderFlag(EMotionFX::ActorRenderFlagMask renderFlags);
+
     private:
 
         // This function resets the light, camera and other environment settings.

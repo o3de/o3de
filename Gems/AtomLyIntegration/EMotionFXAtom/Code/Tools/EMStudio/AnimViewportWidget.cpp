@@ -123,7 +123,7 @@ namespace EMStudio
         SetCameraViewMode(CameraViewMode::DEFAULT);
     }
 
-    void AnimViewportWidget::SetCameraViewMode([[maybe_unused]]CameraViewMode mode)
+    void AnimViewportWidget::SetCameraViewMode(CameraViewMode mode)
     {
         // Set the camera view mode.
         const AZ::Vector3 targetPosition = m_renderer->GetCharacterCenter();
@@ -154,5 +154,11 @@ namespace EMStudio
             break;
         }
         GetViewportContext()->SetCameraTransform(AZ::Transform::CreateLookAt(cameraPosition, targetPosition));
+    }
+
+    void AnimViewportWidget::ToggleRenderFlag(EMotionFX::ActorRenderFlag flag)
+    {
+        m_renderFlags[flag] = !m_renderFlags[flag];
+        m_renderer->UpdateActorRenderFlag(m_renderFlags);
     }
 } // namespace EMStudio

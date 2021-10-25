@@ -10,6 +10,7 @@
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <EMStudio/AnimViewportRequestBus.h>
+#include <Integration/Rendering/RenderFlag.h>
 
 namespace EMStudio
 {
@@ -33,6 +34,7 @@ namespace EMStudio
         // AnimViewportRequestBus::Handler overrides
         void ResetCamera();
         void SetCameraViewMode(CameraViewMode mode);
+        void ToggleRenderFlag(EMotionFX::ActorRenderFlag flag);
 
         static constexpr float CameraDistance = 2.0f;
 
@@ -40,5 +42,6 @@ namespace EMStudio
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_rotateCamera;
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_translateCamera;
         AZStd::shared_ptr<AzFramework::OrbitDollyScrollCameraInput> m_orbitDollyScrollCamera;
+        EMotionFX::ActorRenderFlagMask m_renderFlags;
     };
 }
