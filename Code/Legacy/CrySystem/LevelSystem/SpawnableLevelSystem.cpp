@@ -152,7 +152,7 @@ namespace LegacyLevelSystem
     // [LYN-2376] Remove once legacy slice support is removed
     int SpawnableLevelSystem::GetLevelCount()
     {
-        AZ_Warning("SpawnableLevelSystem", false, "GetLevelCount - No longer supported.");
+        AZ_Assert(false, "GetLevelCount - No longer supported.");
         return 0;
     }
 

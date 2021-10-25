@@ -83,31 +83,14 @@ class TestHelper:
         with Tracer() as section_tracer:
             multiplayer.PythonEditorFuncs_enter_game_mode()
             general.idle_wait_frames(1)
-            
+
             # Make sure the server launcher binary exists
             unexpected_line = "LaunchEditorServer failed! The ServerLauncher binary is missing!"
             found_lines = [printInfo.message.strip() for printInfo in section_tracer.errors]
             found_unexpected_lines = [x for x in found_lines if unexpected_line in x]
             Report.critical_result(("ServerLauncher exists.", "ServerLauncher does not exist!"), not found_unexpected_lines)
 
-        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 30*60.0)
-
-        # @todo delete! debugging Jenkins
-        Report.info("PRINTING THE ENTIRE SERVER LOG!")
-
-        serverlog_filename = os.path.join(os.getcwd(), 'AutomatedTesting/user/log/Server.log')
-
-        with open(serverlog_filename) as server_log_file:
-            Report.info( server_log_file.read() )
-        Report.info("END: PRINTING THE ENTIRE SERVER LOG")
-
-        #if not multiplayer.PythonEditorFuncs_is_in_game_mode():
-            # 5) Check the ServerLauncher logs for expected log output 
-            # Since the editor has  started a server launcher, the RemoteConsole with the default port=4600 will automatically be able to read the server logs
-        #    for line in expected_lines_server:
-        #        assert server_console.expect_log_line(line, EXPECTEDLINE_WAIT_TIME_SECONDS), f"Expected line not found: {line}"
-
-
+        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 30.0)
         Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())
 
     @staticmethod
