@@ -12,11 +12,22 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Aabb.h>
-
-#include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Reflect/Image/Image.h>
 
 namespace Terrain
 {
+    struct MacroMaterialData
+    {
+        AZ::EntityId m_entityId;
+        AZ::Aabb m_bounds = AZ::Aabb::CreateNull();
+
+        AZ::Data::Instance<AZ::RPI::Image> m_colorImage;
+        AZ::Data::Instance<AZ::RPI::Image> m_normalImage;
+        bool m_normalFlipX{ false };
+        bool m_normalFlipY{ false };
+        float m_normalFactor{ 0.0f };
+    };
+
     /**
     * Request terrain macro material data.
     */
@@ -32,7 +43,7 @@ namespace Terrain
         virtual ~TerrainMacroMaterialRequests() = default;
 
         // Get the terrain macro material and the region that it covers.
-        virtual void GetTerrainMacroMaterialData(AZ::Data::Instance<AZ::RPI::Material>& macroMaterial, AZ::Aabb& macroMaterialRegion) = 0;
+        virtual MacroMaterialData GetTerrainMacroMaterialData() = 0;
     };
 
     using TerrainMacroMaterialRequestBus = AZ::EBus<TerrainMacroMaterialRequests>;
@@ -51,14 +62,12 @@ namespace Terrain
 
         virtual void OnTerrainMacroMaterialCreated(
             [[maybe_unused]] AZ::EntityId macroMaterialEntity,
-            [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> macroMaterial,
-            [[maybe_unused]] const AZ::Aabb& macroMaterialRegion)
+            [[maybe_unused]] const MacroMaterialData& macroMaterial)
         {
         }
 
         virtual void OnTerrainMacroMaterialChanged(
-            [[maybe_unused]] AZ::EntityId macroMaterialEntity,
-            [[maybe_unused]] AZ::Data::Instance<AZ::RPI::Material> macroMaterial)
+            [[maybe_unused]] AZ::EntityId macroMaterialEntity, [[maybe_unused]] const MacroMaterialData& macroMaterial)
         {
         }
 
