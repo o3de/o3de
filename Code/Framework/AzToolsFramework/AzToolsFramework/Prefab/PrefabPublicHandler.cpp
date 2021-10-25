@@ -766,8 +766,7 @@ namespace AzToolsFramework
             PrefabUndoLinkUpdate* linkUpdate = aznew PrefabUndoLinkUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
             linkUpdate->SetParent(undoBatch);
             linkUpdate->Capture(patch, linkId);
-
-            linkUpdate->RedoExclude(parentInstance);
+            linkUpdate->RedoExclude(parentInstance->get());
         }
 
         void PrefabPublicHandler::Internal_HandleEntityChange(
