@@ -195,9 +195,9 @@ namespace Profiler
         return true;
     }
 
-    bool ProfilerSystemComponent::StartCapture(const AZStd::string& outputFilePath)
+    bool ProfilerSystemComponent::StartCapture(AZStd::string outputFilePath)
     {
-        m_captureFile = outputFilePath;
+        m_captureFile = AZStd::move(outputFilePath);
         return m_cpuProfiler.BeginContinuousCapture();
     }
 

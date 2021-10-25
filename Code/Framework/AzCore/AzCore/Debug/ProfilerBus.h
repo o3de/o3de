@@ -56,7 +56,7 @@ namespace AZ
             virtual bool CaptureFrame(const AZStd::string& outputFilePath) = 0;
 
             //! Starting/ending a multi-frame capture of profiling data
-            virtual bool StartCapture(const AZStd::string& outputFilePath) = 0;
+            virtual bool StartCapture(AZStd::string outputFilePath) = 0;
             virtual bool EndCapture() = 0;
         };
         using ProfilerRequestBus = AZ::EBus<ProfilerRequests>;

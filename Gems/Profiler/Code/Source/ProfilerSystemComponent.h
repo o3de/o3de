@@ -42,7 +42,7 @@ namespace Profiler
         bool IsActive() const override;
         void SetActive(bool active) override;
         bool CaptureFrame(const AZStd::string& outputFilePath) override;
-        bool StartCapture(const AZStd::string& outputFilePath) override;
+        bool StartCapture(AZStd::string outputFilePath) override;
         bool EndCapture() override;
 
 
