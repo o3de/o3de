@@ -1230,7 +1230,7 @@ namespace AzToolsFramework
             PrefabUndoInstance* command = aznew PrefabUndoInstance("Instance deletion");
             command->Capture(instanceDomBefore, instanceDomAfter, commonOwningInstance->get().GetTemplateId());
             command->SetParent(undoBatch.GetUndoBatch());
-            command->RedoExclude(commonOwningInstance);
+            command->RedoExclude(commonOwningInstance->get());
             
             return AZ::Success();
         }
