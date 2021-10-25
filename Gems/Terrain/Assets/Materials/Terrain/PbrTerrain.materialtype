@@ -130,6 +130,16 @@
                     }
                 },
                 {
+                    "id": "detailHalfPixelUv",
+                    "displayName": "Detail texture half pixel uv size",
+                    "description": "Uv size of a half pixel in the detail material id texture. Controlled by the runtime.",
+                    "type": "float",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailHalfPixelUv"
+                    }
+                },
+                {
                     "id": "detailTextureMultiplier",
                     "displayName": "Detail Texture UV Multiplier",
                     "description": "How many times to repeat the detail texture per sector",
