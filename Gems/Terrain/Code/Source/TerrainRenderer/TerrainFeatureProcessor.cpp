@@ -51,13 +51,6 @@ namespace Terrain
     {
         // Terrain material
         static const char* const HeightmapImage("settings.heightmapImage");
-
-        // Macro material
-        static const char* const MacroColorTextureMap("baseColor.textureMap");
-        static const char* const MacroNormalTextureMap("normal.textureMap");
-        static const char* const MacroNormalFlipX("normal.flipX");
-        static const char* const MacroNormalFlipY("normal.flipY");
-        static const char* const MacroNormalFactor("normal.factor");
     }
 
     namespace ShaderInputs
