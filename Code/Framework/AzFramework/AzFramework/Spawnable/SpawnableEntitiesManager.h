@@ -55,12 +55,17 @@ namespace AzFramework
 
         void SpawnAllEntities(EntitySpawnTicket& ticket, SpawnAllEntitiesOptionalArgs optionalArgs = {}) override;
         void SpawnEntities(
-            EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices, SpawnEntitiesOptionalArgs optionalArgs = {}) override;
+            EntitySpawnTicket& ticket, AZStd::vector<uint32_t> entityIndices, SpawnEntitiesOptionalArgs optionalArgs = {}) override;
         void DespawnAllEntities(EntitySpawnTicket& ticket, DespawnAllEntitiesOptionalArgs optionalArgs = {}) override;
         void DespawnEntity(AZ::EntityId entityId, EntitySpawnTicket& ticket, DespawnEntityOptionalArgs optionalArgs = {}) override;
         void RetrieveEntitySpawnTicket(EntitySpawnTicket::Id entitySpawnTicketId, RetrieveEntitySpawnTicketCallback callback) override;
         void ReloadSpawnable(
             EntitySpawnTicket& ticket, AZ::Data::Asset<Spawnable> spawnable, ReloadSpawnableOptionalArgs optionalArgs = {}) override;
+
+        void UpdateEntityAliasTypes(
+            EntitySpawnTicket& ticket,
+            AZStd::vector<EntityAliasTypeChange> updatedAliases,
+            UpdateEntityAliasTypesOptionalArgs optionalArgs = {}) override;
 
         void ListEntities(
             EntitySpawnTicket& ticket, ListEntitiesCallback listCallback, ListEntitiesOptionalArgs optionalArgs = {}) override;
@@ -70,6 +75,8 @@ namespace AzFramework
             EntitySpawnTicket& ticket, ClaimEntitiesCallback listCallback, ClaimEntitiesOptionalArgs optionalArgs = {}) override;
 
         void Barrier(EntitySpawnTicket& spawnInfo, BarrierCallback completionCallback, BarrierOptionalArgs optionalArgs = {}) override;
+        void LoadBarrier(
+            EntitySpawnTicket& spawnInfo, BarrierCallback completionCallback, LoadBarrierOptionalArgs optionalArgs = {}) override;
 
         //
         // The following function is thread safe but intended to be run from the main thread.
@@ -78,7 +85,13 @@ namespace AzFramework
         CommandQueueStatus ProcessQueue(CommandQueuePriority priority);
 
     protected:
-        struct Ticket
+        enum class CommandResult : bool
+        {
+            Executed,
+            Requeue
+        };
+
+        struct Ticket final
         {
             AZ_CLASS_ALLOCATOR(Ticket, AZ::ThreadPoolAllocator, 0);
             static constexpr uint32_t Processing = AZStd::numeric_limits<uint32_t>::max();
@@ -100,14 +113,14 @@ namespace AzFramework
             AZStd::unordered_set<AZ::EntityId> m_previouslySpawned;
 
             AZStd::vector<AZ::Entity*> m_spawnedEntities;
-            AZStd::vector<size_t> m_spawnedEntityIndices;
+            AZStd::vector<uint32_t> m_spawnedEntityIndices;
             AZ::Data::Asset<Spawnable> m_spawnable;
             uint32_t m_nextRequestId{ 0 }; //!< Next id for this ticket.
             uint32_t m_currentRequestId { 0 }; //!< The id for the command that should be executed.
             bool m_loadAll{ true };
         };
 
-        struct SpawnAllEntitiesCommand
+        struct SpawnAllEntitiesCommand final
         {
             EntitySpawnCallback m_completionCallback;
             EntityPreInsertionCallback m_preInsertionCallback;
@@ -116,9 +129,9 @@ namespace AzFramework
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
         };
-        struct SpawnEntitiesCommand
+        struct SpawnEntitiesCommand final
         {
-            AZStd::vector<size_t> m_entityIndices;
+            AZStd::vector<uint32_t> m_entityIndices;
             EntitySpawnCallback m_completionCallback;
             EntityPreInsertionCallback m_preInsertionCallback;
             AZ::SerializeContext* m_serializeContext;
@@ -127,7 +140,7 @@ namespace AzFramework
             uint32_t m_requestId;
             bool m_referencePreviouslySpawnedEntities;
         };
-        struct DespawnAllEntitiesCommand
+        struct DespawnAllEntitiesCommand final
         {
             EntityDespawnCallback m_completionCallback;
             Ticket* m_ticket;
@@ -142,7 +155,7 @@ namespace AzFramework
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
         };
-        struct ReloadSpawnableCommand
+        struct ReloadSpawnableCommand final
         {
             AZ::Data::Asset<Spawnable> m_spawnable;
             ReloadSpawnableCallback m_completionCallback;
@@ -151,35 +164,51 @@ namespace AzFramework
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
         };
-        struct ListEntitiesCommand
+        struct UpdateEntityAliasTypesCommand final
+        {
+            AZStd::vector<EntityAliasTypeChange> m_entityAliases;
+            UpdateEntityAliasTypesCallback m_completionCallback;
+            Ticket* m_ticket;
+            EntitySpawnTicket::Id m_ticketId;
+            uint32_t m_requestId;
+        };
+        struct ListEntitiesCommand final
         {
             ListEntitiesCallback m_listCallback;
             Ticket* m_ticket;
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
         };
-        struct ListIndicesEntitiesCommand
+        struct ListIndicesEntitiesCommand final
         {
             ListIndicesEntitiesCallback m_listCallback;
             Ticket* m_ticket;
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
         };
-        struct ClaimEntitiesCommand
+        struct ClaimEntitiesCommand final
         {
             ClaimEntitiesCallback m_listCallback;
             Ticket* m_ticket;
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
         };
-        struct BarrierCommand
+        struct BarrierCommand final
         {
             BarrierCallback m_completionCallback;
             Ticket* m_ticket;
             EntitySpawnTicket::Id m_ticketId;
             uint32_t m_requestId;
         };
-        struct DestroyTicketCommand
+        struct LoadBarrierCommand final
+        {
+            BarrierCallback m_completionCallback;
+            Ticket* m_ticket;
+            EntitySpawnTicket::Id m_ticketId;
+            uint32_t m_requestId;
+            bool m_checkAliasSpawnables;
+        };
+        struct DestroyTicketCommand final
         {
             Ticket* m_ticket;
             uint32_t m_requestId;
@@ -191,10 +220,12 @@ namespace AzFramework
             DespawnAllEntitiesCommand,
             DespawnEntityCommand,
             ReloadSpawnableCommand,
+            UpdateEntityAliasTypesCommand,
             ListEntitiesCommand,
             ListIndicesEntitiesCommand,
             ClaimEntitiesCommand,
             BarrierCommand,
+            LoadBarrierCommand,
             DestroyTicketCommand>;
 
         struct Queue
@@ -213,17 +244,30 @@ namespace AzFramework
 
         AZ::Entity* CloneSingleEntity(
             const AZ::Entity& entityTemplate, EntityIdMap& templateToCloneMap, AZ::SerializeContext& serializeContext);
+        AZ::Entity* CloneSingleAliasedEntity(
+            const AZ::Entity& entityTemplate,
+            const Spawnable::EntityAlias& alias,
+            EntityIdMap& templateToCloneMap,
+            AZ::Entity* previouslySpawnedEntity,
+            AZ::SerializeContext& serializeContext);
+        void AppendComponents(
+            AZ::Entity& target,
+            const AZ::Entity::ComponentArrayType& componentTemplates,
+            EntityIdMap& templateToCloneMap,
+            AZ::SerializeContext& serializeContext);
         
-        bool ProcessRequest(SpawnAllEntitiesCommand& request);
-        bool ProcessRequest(SpawnEntitiesCommand& request);
-        bool ProcessRequest(DespawnAllEntitiesCommand& request);
-        bool ProcessRequest(DespawnEntityCommand& request);
-        bool ProcessRequest(ReloadSpawnableCommand& request);
-        bool ProcessRequest(ListEntitiesCommand& request);
-        bool ProcessRequest(ListIndicesEntitiesCommand& request);
-        bool ProcessRequest(ClaimEntitiesCommand& request);
-        bool ProcessRequest(BarrierCommand& request);
-        bool ProcessRequest(DestroyTicketCommand& request);
+        CommandResult ProcessRequest(SpawnAllEntitiesCommand& request);
+        CommandResult ProcessRequest(SpawnEntitiesCommand& request);
+        CommandResult ProcessRequest(DespawnAllEntitiesCommand& request);
+        CommandResult ProcessRequest(DespawnEntityCommand& request);
+        CommandResult ProcessRequest(ReloadSpawnableCommand& request);
+        CommandResult ProcessRequest(UpdateEntityAliasTypesCommand& request);
+        CommandResult ProcessRequest(ListEntitiesCommand& request);
+        CommandResult ProcessRequest(ListIndicesEntitiesCommand& request);
+        CommandResult ProcessRequest(ClaimEntitiesCommand& request);
+        CommandResult ProcessRequest(BarrierCommand& request);
+        CommandResult ProcessRequest(LoadBarrierCommand& request);
+        CommandResult ProcessRequest(DestroyTicketCommand& request);
 
         //! Generate a base set of original-to-new entity ID mappings to use during spawning.
         //! Since Entity references get fixed up on an entity-by-entity basis while spawning, it's important to have the complete

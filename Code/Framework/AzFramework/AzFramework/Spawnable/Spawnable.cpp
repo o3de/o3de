@@ -46,8 +46,13 @@ namespace AzFramework
         AZ_Assert(aliases, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
         for (const EntityAlias& alias : *aliases)
         {
-            if ((alias.m_aliasType != Spawnable::EntityAliasType::Original && alias.m_aliasType != Spawnable::EntityAliasType::Disabled) &&
-                !alias.m_spawnable.IsReady())
+            if (!alias.m_queueLoad ||
+                alias.m_aliasType == Spawnable::EntityAliasType::Original ||
+                alias.m_aliasType == Spawnable::EntityAliasType::Disabled)
+            {
+                continue;
+            }
+            if (!alias.m_spawnable.IsReady() && !alias.m_spawnable.IsError())
             {
                 return false;
             }
