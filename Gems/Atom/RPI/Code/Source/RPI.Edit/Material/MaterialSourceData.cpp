@@ -193,6 +193,7 @@ namespace AZ
             MaterialAssetCreator materialAssetCreator;
             materialAssetCreator.SetElevateWarnings(elevateWarnings);
 
+#if 0
             MaterialTypeSourceData materialTypeSourceData;
             AZStd::string materialTypeSourcePath = AssetUtils::ResolvePathReference(materialSourceFilePath, m_materialType);
             if (!AZ::RPI::JsonUtils::LoadObjectFromFile(materialTypeSourcePath, materialTypeSourceData))
@@ -208,6 +209,13 @@ namespace AZ
             {
                 return Failure();
             }
+#else
+            auto materialTypeAsset = AssetUtils::LoadAsset<MaterialTypeAsset>(materialSourceFilePath, m_materialType);
+            if (!materialTypeAsset.IsSuccess())
+            {
+                return Failure();
+            }
+#endif
 
             materialAssetCreator.Begin(assetId, *materialTypeAsset.GetValue().Get(), includeMaterialPropertyNames);
 
