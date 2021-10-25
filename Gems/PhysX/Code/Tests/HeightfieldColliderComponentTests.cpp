@@ -118,7 +118,7 @@ namespace PhysXEditorTests
             UnitTest::MockTerrainPhysicsColliderComponent::CreateDescriptor());
     }
 
-    TEST_F(PhysXEditorFixture, EditorHeightfieldColliderComponent_DependenciesSatisfied_EntityIsValid)
+    TEST_F(PhysXEditorFixture, EditorHeightfieldColliderComponentDependenciesSatisfiedEntityIsValid)
     {
         EntityPtr entity = CreateInactiveEditorEntity("HeightfieldColliderComponentEditorEntity");
         entity->CreateComponent<PhysX::EditorHeightfieldColliderComponent>();
@@ -131,7 +131,7 @@ namespace PhysXEditorTests
         EXPECT_TRUE(sortOutcome.IsSuccess());
     }
 
-    TEST_F(PhysXEditorFixture, EditorHeightfieldColliderComponent_DependenciesMissing_EntityIsInvalid)
+    TEST_F(PhysXEditorFixture, EditorHeightfieldColliderComponentDependenciesMissingEntityIsInvalid)
     {
         EntityPtr entity = CreateInactiveEditorEntity("HeightfieldColliderComponentEditorEntity");
         entity->CreateComponent<PhysX::EditorHeightfieldColliderComponent>();
@@ -143,7 +143,7 @@ namespace PhysXEditorTests
         EXPECT_TRUE(sortOutcome.GetError().m_code == AZ::Entity::DependencySortResult::MissingRequiredService);
     }
 
-    TEST_F(PhysXEditorFixture, EditorHeightfieldColliderComponent_MultipleHeightfieldColliderComponents_EntityIsInvalid)
+    TEST_F(PhysXEditorFixture, EditorHeightfieldColliderComponentMultipleHeightfieldColliderComponentsEntityIsInvalid)
     {
         EntityPtr entity = CreateInactiveEditorEntity("HeightfieldColliderComponentEditorEntity");
         entity->CreateComponent<PhysX::EditorHeightfieldColliderComponent>();
@@ -157,7 +157,7 @@ namespace PhysXEditorTests
         EXPECT_TRUE(sortOutcome.GetError().m_code == AZ::Entity::DependencySortResult::HasIncompatibleServices);
     }
 
-    TEST_F(PhysXEditorFixture, EditorHeightfieldColliderComponent_HeightfieldColliderWithCorrectComponents_CorrectRuntimeComponents)
+    TEST_F(PhysXEditorFixture, EditorHeightfieldColliderComponentHeightfieldColliderWithCorrectComponentsCorrectRuntimeComponents)
     {
         EntityPtr editorEntity = SetupHeightfieldComponent();
         editorEntity->Activate();
@@ -172,7 +172,7 @@ namespace PhysXEditorTests
         CleanupHeightfieldComponent();
     }
 
-    TEST_F(PhysXEditorFixture, EditorHeightfieldColliderComponent_HeightfieldColliderWithAABox_CorrectRuntimeGeometry)
+    TEST_F(PhysXEditorFixture, EditorHeightfieldColliderComponentHeightfieldColliderWithAABoxCorrectRuntimeGeometry)
     {
         EntityPtr editorEntity = SetupHeightfieldComponent();
         editorEntity->Activate();
