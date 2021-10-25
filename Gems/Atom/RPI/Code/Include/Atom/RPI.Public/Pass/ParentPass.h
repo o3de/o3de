@@ -68,9 +68,6 @@ namespace AZ
             template<typename PassType>
             Ptr<PassType> FindChildPass() const;
 
-            //! Searches the tree for the first pass that has same pass name (Depth-first search). Return nullptr if none found.
-            Ptr<Pass> FindPassByNameRecursive(const Name& passName) const;
-
             //! Gets the list of children. Useful for validating hierarchies
             AZStd::array_view<Ptr<Pass>> GetChildren() const;
 

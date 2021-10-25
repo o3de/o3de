@@ -16,95 +16,85 @@ namespace AZ
 {
     namespace RPI
     {
-        // A base class for a filter which can be used to filter passes
+        class Scene;
+        class RenderPipeline;
+
         class PassFilter
         {
         public:
-            //! Whether the input pass matches with the filter 
-            virtual bool Matches(const Pass* pass) const = 0;
+            static PassFilter CreateWithPassName(Name passName, const Scene* scene);
+            static PassFilter CreateWithPassName(Name passName, const RenderPipeline* renderPipeline);
 
-            //! Return the pass' name if a pass name is used for the filter.
-            //! Return nullptr if the filter doesn't have pass name used for matching
-            virtual const Name* GetPassName() const = 0;
+            //! Create a PassFilter with pass hierarchy information
+            //! Filter for passes which have a matching name and also with ordered parents.
+            //! For example, if the filter is initialized with
+            //! pass name: "ShadowPass1"
+            //! pass parents names: "MainPipeline", "Shadow"
+            //! Passes with these names match the filter:
+            //!     "Root.MainPipeline.SwapChainPass.Shadow.ShadowPass1" 
+            //! or  "Root.MainPipeline.Shadow.ShadowPass1"
+            //! or  "MainPipeline.Shadow.Group1.ShadowPass1"
+            //!
+            //! Passes with these names wont match:
+            //!     "MainPipeline.ShadowPass1"
+            //! or  "Shadow.MainPipeline.ShadowPass1"
+            static PassFilter CreateWithPassHierarchy(const AZStd::vector<Name>& passHierarchy);
+            static PassFilter CreateWithPassHierarchy(const AZStd::vector<AZStd::string>& passHierarchy);
+            static PassFilter CreateWithTemplateName(Name templateName, const Scene* scene);
+            static PassFilter CreateWithTemplateName(Name templateName, const RenderPipeline* renderPipeline);
+            template <typename PassClass>
+            static PassFilter CreateWithPassClass();
 
-            //! Return this filter's info as a string
-            virtual AZStd::string ToString() const = 0;
-        };
+            enum FilterOptions : uint32_t
+            {
+                Empty = 0,
+                PassName = AZ_BIT(0),
+                PassTemplateName = AZ_BIT(1),
+                PassClass = AZ_BIT(2),
+                PassHierarchy = AZ_BIT(3),
+                OwnerScene = AZ_BIT(4),
+                OwnerRenderPipeline = AZ_BIT(5)
+            };
 
-        //! Filter for passes which have a matching name and also with ordered parents.
-        //! For example, if the filter is initialized with
-        //! pass name: "ShadowPass1"
-        //! pass parents names: "MainPipeline", "Shadow"
-        //! Passes with these names match the filter:
-        //!     "Root.MainPipeline.SwapChainPass.Shadow.ShadowPass1" 
-        //! or  "Root.MainPipeline.Shadow.ShadowPass1"
-        //! or  "MainPipeline.Shadow.Group1.ShadowPass1"
-        //!
-        //! Passes with these names wont match:
-        //!     "MainPipeline.ShadowPass1"
-        //! or  "Shadow.MainPipeline.ShadowPass1"
-        class PassHierarchyFilter
-            : public PassFilter
-        {
-        public:
-            AZ_RTTI(PassHierarchyFilter, "{478F169F-BA97-4321-AC34-EDE823997159}", PassFilter);
-            AZ_CLASS_ALLOCATOR(PassHierarchyFilter, SystemAllocator, 0);
+            void SetOwenrScene(const Scene* scene);
+            void SetOwenrRenderPipeline(const RenderPipeline* renderPipeline);
+            void SetPassName(Name passName);
+            void SetTemplateName(Name passTemplateName);
+            void SetPassClass(TypeId passClassTypeId);
 
-            //! Construct filter with only pass name. 
-            PassHierarchyFilter(const Name& passName);
+            const Name& GetPassName() const;
+            const Name& GetPassTemplateName() const;
 
-            virtual ~PassHierarchyFilter() = default;
+            uint32_t GetEnabledFilterOptions() const;
 
-            //! Construct filter with pass name and its parents' names in the order of the hierarchy
-            //! This means k-th element is always an ancestor of the (k-1)-th element.
-            //! And the last element is the pass name. 
-            PassHierarchyFilter(const AZStd::vector<Name>& passHierarchy);
-            PassHierarchyFilter(const AZStd::vector<AZStd::string>& passHierarchy);
+            //! Return true if the input pass matches the filter
+            bool Matches(const Pass* pass) const;
 
-            // PassFilter overrides...
-            bool Matches(const Pass* pass) const override;
-            const Name* GetPassName() const override;
-            AZStd::string ToString() const override;
+            //! Return true if the input pass matches the filter with selected filter options
+            //! The input filter options should be a subset of options returned by GetEnabledFilterOptions()
+            //! This function is used to avoid extra checks for passes which was already filtered.
+            //! Check PassLibrary::ForEachPass() function's implementation for more details
+            bool Matches(const Pass* pass, uint32_t options) const;
 
         private:
-            PassHierarchyFilter() = delete;
+            void UpdateFilterOptions();
 
-            AZStd::vector<Name> m_parentNames;
             Name m_passName;
+            Name m_templateName;
+            TypeId m_passClassTypeId = TypeId::CreateNull();
+            AZStd::vector<Name> m_parentNames;
+            const RenderPipeline* m_ownerRenderPipeline = nullptr;
+            const Scene* m_ownerScene = nullptr;
+            uint32_t m_filterOptions = 0;
         };
 
-        //! Filter for passes based on their class.
-        template<typename PassClass>
-        class PassClassFilter
-            : public PassFilter
-        {
-        public:
-            AZ_RTTI(PassClassFilter, "{AF6E3AD5-433A-462A-997A-F36D8A551D02}", PassFilter);
-            AZ_CLASS_ALLOCATOR(PassHierarchyFilter, SystemAllocator, 0);
-            PassClassFilter() = default;
-
-            // PassFilter overrides...
-            bool Matches(const Pass* pass) const override;
-            const Name* GetPassName() const override;
-            AZStd::string ToString() const override;
-        };
-
-        template<typename PassClass>
-        bool PassClassFilter<PassClass>::Matches(const Pass* pass) const
-        {
-            return pass->RTTI_IsTypeOf(PassClass::RTTI_Type());
-        }
-
-        template<typename PassClass>
-        const Name* PassClassFilter<PassClass>::GetPassName() const
-        {
-            return nullptr;
-        }
-
-        template<typename PassClass>
-        AZStd::string PassClassFilter<PassClass>::ToString() const
-        {
-            return AZStd::string::format("PassClassFilter<%s>", PassClass::RTTI_TypeName());
+        template <typename PassClass>
+        PassFilter PassFilter::CreateWithPassClass()
+        {            
+            PassFilter filter;
+            filter.m_passClassTypeId = PassClass::RTTI_Type();
+            filter.UpdateFilterOptions();
+            return filter;
         }
     }   // namespace RPI
 }   // namespace AZ
