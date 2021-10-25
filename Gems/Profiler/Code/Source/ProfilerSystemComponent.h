@@ -8,17 +8,17 @@
 
 #pragma once
 
-#include <Profiler/ProfilerBus.h>
 #include <CpuProfilerImpl.h>
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/std/parallel/thread.h>
 
 namespace Profiler
 {
     class ProfilerSystemComponent
         : public AZ::Component
-        , protected ProfilerRequestBus::Handler
+        , protected AZ::Debug::ProfilerRequestBus::Handler
     {
     public:
         AZ_COMPONENT(ProfilerSystemComponent, "{3f52c1d7-d920-4781-8ed7-88077ec4f305}");
@@ -39,10 +39,11 @@ namespace Profiler
         void Deactivate() override;
 
         // ProfilerRequestBus interface implementation
-        void SetProfilerEnabled(bool enabled) override;
-        bool CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath) override;
-        bool BeginContinuousCpuProfilingCapture() override;
-        bool EndContinuousCpuProfilingCapture(const AZStd::string& outputFilePath) override;
+        bool IsActive() const override;
+        void SetActive(bool active) override;
+        bool CaptureFrame(const AZStd::string& outputFilePath) override;
+        bool StartCapture(const AZStd::string& outputFilePath) override;
+        bool EndCapture() override;
 
 
         AZStd::thread m_cpuDataSerializationThread;
@@ -51,6 +52,7 @@ namespace Profiler
         AZStd::atomic_bool m_cpuCaptureInProgress{ false };
 
         CpuProfilerImpl m_cpuProfiler;
+        AZStd::string m_captureFile;
     };
 
 } // namespace Profiler

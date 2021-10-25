@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/std/string/string.h>
 
 namespace AZ
 {
@@ -23,16 +25,12 @@ namespace AZ
         public:
             virtual ~ProfilerNotifications() = default;
 
-            virtual void OnProfileSystemInitialized() = 0;
+            //! Notify when the current profiler capture is finished
+            //! @param result Set to true if it's finished successfully
+            //! @param info The output file path or error information which depends on the return.
+            virtual void OnCaptureFinished(bool result, const AZStd::string& info) = 0;
         };
         using ProfilerNotificationBus = AZ::EBus<ProfilerNotifications>;
-
-        enum class ProfileFrameAdvanceType
-        {
-            Game,
-            Render,
-            Default = Game
-        };
 
         /**
         * ProfilerRequests provides an interface for making profiling system requests
@@ -41,14 +39,26 @@ namespace AZ
             : public AZ::EBusTraits
         {
         public:
+            // EBusTraits overrides
+            static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+            static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+
             // Allow multiple threads to concurrently make requests
             using MutexType = AZStd::mutex;
 
             virtual ~ProfilerRequests() = default;
 
-            virtual bool IsActive() = 0;
-            virtual void FrameAdvance(ProfileFrameAdvanceType type) = 0;
+            //! Getter/setter for the profiler active state
+            virtual bool IsActive() const = 0;
+            virtual void SetActive(bool active) = 0;
+
+            //! Capture a single frame of profiling data
+            virtual bool CaptureFrame(const AZStd::string& outputFilePath) = 0;
+
+            //! Starting/ending a multi-frame capture of profiling data
+            virtual bool StartCapture(const AZStd::string& outputFilePath) = 0;
+            virtual bool EndCapture() = 0;
         };
         using ProfilerRequestBus = AZ::EBus<ProfilerRequests>;
-    }
-}
+    } // namespace Debug
+} // namespace AZ

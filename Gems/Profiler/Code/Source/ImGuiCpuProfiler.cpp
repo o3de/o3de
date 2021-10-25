@@ -10,9 +10,9 @@
 
 #include <ImGuiCpuProfiler.h>
 
-#include <Profiler/ProfilerBus.h>
 #include <CpuProfilerImpl.h>
 
+#include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/JSON/filereadstream.h>
 #include <AzCore/Outcome/Outcome.h>
@@ -156,16 +156,10 @@ namespace Profiler
 
         if (m_captureToFile)
         {
-            AZStd::string timeString;
-            AZStd::to_string(timeString, AZStd::GetTimeNowSecond());
-
-            const AZStd::string frameDataFilePath = AZStd::string::format("%s/cpu_single_%s.json", defaultSaveLocation, timeString.c_str());
-
-            char resolvedPath[AZ::IO::MaxPathLength];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
-            m_lastCapturedFilePath = resolvedPath;
-
-            ProfilerRequestBus::Broadcast(&ProfilerRequestBus::Events::CaptureCpuProfilingStatistics, frameDataFilePath);
+            AZ::Debug::ProfilerRequestBus::Broadcast(
+                &AZ::Debug::ProfilerRequestBus::Events::CaptureFrame,
+                GenerateOutputFile("single")
+            );
         }
         m_captureToFile = false;
 
@@ -208,22 +202,15 @@ namespace Profiler
         {
             if (isInProgress)
             {
-                AZStd::string timeString;
-                AZStd::to_string(timeString, AZStd::GetTimeNowSecond());
-
-                const AZStd::string frameDataFilePath = AZStd::string::format("%s/cpu_multi_%s.json", defaultSaveLocation, timeString.c_str());
-
-                char resolvedPath[AZ::IO::MaxPathLength];
-                AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
-                m_lastCapturedFilePath = resolvedPath;
-
-                ProfilerRequestBus::Broadcast(&ProfilerRequestBus::Events::EndContinuousCpuProfilingCapture, frameDataFilePath);
-
+                AZ::Debug::ProfilerRequestBus::Broadcast(&AZ::Debug::ProfilerRequestBus::Events::EndCapture);
                 m_paused = true;
             }
             else
             {
-                ProfilerRequestBus::Broadcast(&ProfilerRequestBus::Events::BeginContinuousCpuProfilingCapture);
+                AZ::Debug::ProfilerRequestBus::Broadcast(
+                    &AZ::Debug::ProfilerRequestBus::Events::StartCapture,
+                    GenerateOutputFile("multi")
+                );
             }
         }
 
@@ -416,6 +403,20 @@ namespace Profiler
             ImGui::ListBox("", &m_currentFileIndex, getter, &m_cachedCapturePaths, aznumeric_cast<int>(m_cachedCapturePaths.size()));
         }
         ImGui::End();
+    }
+
+    AZStd::string ImGuiCpuProfiler::GenerateOutputFile(const char* nameHint)
+    {
+        AZStd::string timeString;
+        AZStd::to_string(timeString, AZStd::GetTimeNowSecond());
+
+        const AZStd::string frameDataFilePath = AZStd::string::format("%s/cpu_%s_%s.json", defaultSaveLocation, nameHint, timeString.c_str());
+
+        char resolvedPath[AZ::IO::MaxPathLength];
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
+        m_lastCapturedFilePath = resolvedPath;
+
+        return frameDataFilePath;
     }
 
     void ImGuiCpuProfiler::LoadFile()

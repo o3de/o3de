@@ -106,6 +106,8 @@ set(FILES
     Debug/Profiler.inl
     Debug/Profiler.h
     Debug/ProfilerBus.h
+    Debug/ProfilerReflection.cpp
+    Debug/ProfilerReflection.h
     Debug/StackTracer.h
     Debug/EventTrace.h
     Debug/EventTrace.cpp
