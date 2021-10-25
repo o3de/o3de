@@ -266,13 +266,14 @@ namespace Multiplayer
                 {
                     AZ_Warning(
                         "MultiplayerEditor", false,
-                        "Launching EditorServer skipped because incompatible cvars. editorsv_launch=true, meaning you want to launch an editor-server on this machine, but the editorsv_serveraddr is %s instead of the local address (127.0.0.1)."
+                        "Launching EditorServer skipped because incompatible cvars. editorsv_launch=true, meaning you want to launch an editor-server on this machine, but the editorsv_serveraddr is %s instead of the local address (127.0.0.1). "
                         "Please either set editorsv_launch=false and keep the remote editor-server, or set editorsv_launch=true and editorsv_serveraddr=127.0.0.1.",
                         remoteAddress.c_str())
                     return;
                 }
                 
-                // Begin listening so we know when the editor-server being ready for us
+                // Begin listening for MPEditor packets before we launch the editor-server.
+                // The editor-server will send us (the editor) an "EditorServerReadyForInit" packet to let us know it's ready to receive data.
                 INetworkInterface* editorNetworkInterface =
                     AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
                 AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.");
@@ -294,7 +295,7 @@ namespace Multiplayer
                 {
                     AZ_Warning(
                         "MultiplayerEditor", false,
-                        "Editor game-mode multiplayer failed! Could not connect to an editor-server. editorsv_launch is false so we're assuming you're running your own editor-server at editorsv_serveraddr(%s) on editorsv_port(%i)."
+                        "Editor multiplayer game-mode failed! Could not connect to an editor-server. editorsv_launch is false so we're assuming you're running your own editor-server at editorsv_serveraddr(%s) on editorsv_port(%i)."
                         "Either set editorsv_launch=true so the editor launches an editor-server for you, or launch your own editor-server by hand before entering game-mode. Remember editor-servers must use editorsv_isDedicated=true.",
                         remoteAddress.c_str(),
                         static_cast < uint16_t>(editorsv_port))
