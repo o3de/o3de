@@ -36,14 +36,16 @@ namespace Multiplayer
         if (editorsv_isDedicated)
         {
             uint16_t editorsv_port = DefaultServerEditorPort;
-            if (const auto console = AZ::Interface<AZ::IConsole>::Get())
-            {
-                console->GetCvarValue("editorsv_port", editorsv_port);
-            }
+            const auto console = AZ::Interface<AZ::IConsole>::Get();
+
+            AZ_Warning(
+                "MultiplayerEditorConnection", console->GetCvarValue("editorsv_port", editorsv_port) == AZ::GetValueResult::Success,
+                "MultiplayerEditorConnection failed! Could not find the editorsv_port cvar; we may not be able to connect to the editor's port!")
+
             AZ_Assert(m_networkEditorInterface, "MP Editor Network Interface was unregistered before Editor Server could start listening.")
 
             // Check if there's already an Editor out there waiting to connect
-            ConnectionId editorServerToEditorConnectionId = m_networkEditorInterface->Connect(IpAddress(LocalHost.data(), editorsv_port, ProtocolType::Tcp));
+            const ConnectionId editorServerToEditorConnectionId = m_networkEditorInterface->Connect(IpAddress(LocalHost.data(), editorsv_port, ProtocolType::Tcp));
             
             // If there wasn't an Editor waiting for this server to start, then assume this is an editor-server launched by hand... listen and wait for the editor to request a connection
             if (editorServerToEditorConnectionId == InvalidConnectionId)
@@ -117,18 +119,17 @@ namespace Multiplayer
 
             // Load the level via the root spawnable that was registered
             const AZ::CVarFixedString loadLevelString = "LoadLevel Root.spawnable";
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
+            const auto console = AZ::Interface<AZ::IConsole>::Get();
+            console->PerformCommand(loadLevelString.c_str());
 
             // Setup the normal multiplayer connection
             AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
             INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName));
 
-            uint16_t serverPort = DefaultServerPort;
-            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
-            {
-                console->GetCvarValue("sv_port", serverPort);
-            }
-            networkInterface->Listen(serverPort);
+            uint16_t sv_port = DefaultServerPort;
+            AZ_Warning("MultiplayerEditorConnection", console->GetCvarValue("sv_port", sv_port) == AZ::GetValueResult::Success,
+                "MultiplayerEditorConnection::HandleRequest for EditorServerInit failed! Could not find the sv_port cvar; we won't be able to listen on the correct port for incoming network messages!")
+            networkInterface->Listen(sv_port);
 
             AZLOG_INFO("Editor Server completed asset receive, responding to Editor...");
             return connection->SendReliablePacket(MultiplayerEditorPackets::EditorServerReady());
@@ -155,18 +156,23 @@ namespace Multiplayer
     {
         // Receiving this packet means Editor sync is done, disconnect
         connection->Disconnect(AzNetworking::DisconnectReason::TerminatedByClient, AzNetworking::TerminationEndpoint::Local);
+        const auto console = AZ::Interface<AZ::IConsole>::Get();
+        AZ::CVarFixedString editorsv_serveraddr = AZ::CVarFixedString(LocalHost);
+        uint16_t sv_port = DefaultServerEditorPort;
 
-        if (const auto console = AZ::Interface<AZ::IConsole>::Get())
-        {
-            AZ::CVarFixedString remoteAddress;
-            uint16_t remotePort;
-            if (console->GetCvarValue("editorsv_serveraddr", remoteAddress) != AZ::GetValueResult::ConsoleVarNotFound &&
-                console->GetCvarValue("sv_port", remotePort) != AZ::GetValueResult::ConsoleVarNotFound)
-            {
-                // Connect the Editor to the editor server for Multiplayer simulation
-                AZ::Interface<IMultiplayer>::Get()->Connect(remoteAddress.c_str(), remotePort);
-            }
-        }
+        AZ_Warning(
+            "MultiplayerEditorConnection", console->GetCvarValue("sv_port", sv_port) == AZ::GetValueResult::Success,
+            "MultiplayerEditorConnection::HandleRequest for EditorServerReady failed! Could not find the sv_port cvar; we may not be able to "
+            "connect to the correct port for incoming network messages!")
+
+        AZ_Warning(
+            "MultiplayerEditorConnection", console->GetCvarValue("editorsv_serveraddr", editorsv_serveraddr) == AZ::GetValueResult::Success,
+            "MultiplayerEditorConnection::HandleRequest for EditorServerReady failed! Could not find the editorsv_serveraddr cvar; we may not be able to "
+            "connect to the correct port for incoming network messages!")
+        
+        // Connect the Editor to the editor server for Multiplayer simulation
+        AZ::Interface<IMultiplayer>::Get()->Connect(editorsv_serveraddr.c_str(), sv_port);
+
         return true;
     }
 
@@ -197,13 +203,13 @@ namespace Multiplayer
 
     void MultiplayerEditorConnection::OnDisconnect([[maybe_unused]] AzNetworking::IConnection* connection, [[maybe_unused]] DisconnectReason reason, [[maybe_unused]] TerminationEndpoint endpoint)
     {
-        bool editorLaunch = false;
-        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
-        {
-            console->GetCvarValue("editorsv_launch", editorLaunch);
-        }
+        const auto console = AZ::Interface<AZ::IConsole>::Get();
+        bool editorsv_launch = false;
+        AZ_Warning(
+            "MultiplayerEditorConnection", console->GetCvarValue("editorsv_launch", editorsv_launch) == AZ::GetValueResult::Success,
+            "MultiplayerEditorConnection::OnDisconnect failed! Could not find the editorsv_launch cvar.")
 
-        if (editorsv_isDedicated && editorLaunch && m_networkEditorInterface->GetConnectionSet().GetConnectionCount() == 1)
+        if (editorsv_isDedicated && editorsv_launch && m_networkEditorInterface->GetConnectionSet().GetConnectionCount() == 1)
         {
             if (m_networkEditorInterface->GetPort() != 0)
             {
