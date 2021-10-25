@@ -141,7 +141,26 @@ namespace AZ
                 {
                     if (!propertyPair.second.empty())
                     {
-                        const auto& materialPropertyIndex = m_materialInstance->FindPropertyIndex(propertyPair.first);
+                        bool wasRenamed = false;
+                        Name newName;
+                        RPI::MaterialPropertyIndex materialPropertyIndex = m_materialInstance->FindPropertyIndex(propertyPair.first, &wasRenamed, &newName);
+
+                        // FindPropertyIndex will have already reported a message about what the old and new names are. Here we just add some extra info to help the user resolve it.
+                        AZ_Warning("MaterialAssignment", !wasRenamed,
+                            "Consider running \"Apply Automatic Property Updates\" to use the latest property names.",
+                            propertyPair.first.GetCStr(),
+                            newName.GetCStr());
+
+                        if (wasRenamed && m_propertyOverrides.find(newName) != m_propertyOverrides.end())
+                        {
+                            materialPropertyIndex.Reset();
+                            
+                            AZ_Warning("MaterialAssignment", false,
+                                "Material property '%s' has been renamed to '%s', and a property override exists for both. The one with the old name will be ignored.",
+                                propertyPair.first.GetCStr(),
+                                newName.GetCStr());
+                        }
+
                         if (!materialPropertyIndex.IsNull())
                         {
                             m_materialInstance->SetPropertyValue(
