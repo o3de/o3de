@@ -262,6 +262,7 @@ namespace AzToolsFramework
         {
             return m_rootEntry;
         }
+
         void AssetBrowserModel::SetRootEntry(AZStd::shared_ptr<RootAssetBrowserEntry> rootEntry)
         {
             m_rootEntry = rootEntry;
