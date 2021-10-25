@@ -9,6 +9,7 @@
 
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <AzFramework/Viewport/CameraInput.h>
+#include <EMStudio/AnimViewportRequestBus.h>
 
 namespace EMStudio
 {
@@ -16,14 +17,24 @@ namespace EMStudio
 
     class AnimViewportWidget
         : public AtomToolsFramework::RenderViewportWidget
+        , private AnimViewportRequestBus::Handler
     {
     public:
         AnimViewportWidget(QWidget* parent = nullptr);
+        ~AnimViewportWidget() override;
         AnimViewportRenderer* GetAnimViewportRenderer() { return m_renderer.get(); }
+
+        void Reinit(bool resetCamera = true);
 
     private:
         void SetupCameras();
         void SetupCameraController();
+
+        // AnimViewportRequestBus::Handler overrides
+        void ResetCamera();
+        void SetCameraViewMode(CameraViewMode mode);
+
+        static constexpr float CameraDistance = 2.0f;
 
         AZStd::unique_ptr<AnimViewportRenderer> m_renderer;
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_rotateCamera;

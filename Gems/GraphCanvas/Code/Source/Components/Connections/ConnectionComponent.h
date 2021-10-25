@@ -19,6 +19,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 
 #include <GraphCanvas/Components/Connections/ConnectionBus.h>
 #include <GraphCanvas/Components/GeometryBus.h>
@@ -210,7 +211,7 @@ namespace GraphCanvas
 
         ConnectionValidationTooltip m_validationResult;
         Endpoint m_endpointTooltip;
-        ToastId  m_toastId;
+        AzToolsFramework::ToastId  m_toastId;
 
         //! The Id of the graph this connection belongs to.
         GraphId m_graphId;

@@ -230,9 +230,11 @@ namespace MaterialEditor
 
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.m_propertyLayout.m_version;
         sourceData.m_materialType = m_materialSourceData.m_materialType;
         sourceData.m_parentMaterial = m_materialSourceData.m_parentMaterial;
+        
+        AZ_Assert(m_materialAsset && m_materialAsset->GetMaterialTypeAsset(), "When IsOpen() is true, these assets should not be null.");
+        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
 
         // Force save data to store forward slashes
         AzFramework::StringFunc::Replace(sourceData.m_materialType, "\\", "/");
@@ -302,9 +304,11 @@ namespace MaterialEditor
 
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.m_propertyLayout.m_version;
         sourceData.m_materialType = m_materialSourceData.m_materialType;
         sourceData.m_parentMaterial = m_materialSourceData.m_parentMaterial;
+        
+        AZ_Assert(m_materialAsset && m_materialAsset->GetMaterialTypeAsset(), "When IsOpen() is true, these assets should not be null.");
+        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
 
         // Force save data to store forward slashes
         AzFramework::StringFunc::Replace(sourceData.m_materialType, "\\", "/");
@@ -373,8 +377,10 @@ namespace MaterialEditor
 
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.m_propertyLayout.m_version;
         sourceData.m_materialType = m_materialSourceData.m_materialType;
+        
+        AZ_Assert(m_materialAsset && m_materialAsset->GetMaterialTypeAsset(), "When IsOpen() is true, these assets should not be null.");
+        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
 
         // Only assign a parent path if the source was a .material
         if (AzFramework::StringFunc::Path::IsExtension(m_relativePath.c_str(), MaterialSourceData::Extension))
@@ -679,6 +685,12 @@ namespace MaterialEditor
                 return false;
             }
             m_materialTypeSourceData = materialTypeOutcome.GetValue();
+            
+            if (MaterialSourceData::ApplyVersionUpdatesResult::Failed == m_materialSourceData.ApplyVersionUpdates(m_absolutePath))
+            {
+                AZ_Error("MaterialDocument", false, "Material source data could not be auto updated to the latest version of the material type: '%s'.", m_materialSourceData.m_materialType.c_str());
+                return false;
+            }
         }
         else if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), MaterialTypeSourceData::Extension))
         {

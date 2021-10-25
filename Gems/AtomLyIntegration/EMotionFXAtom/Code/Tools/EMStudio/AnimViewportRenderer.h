@@ -49,6 +49,9 @@ namespace EMStudio
 
         void Reinit();
 
+        //! Return the center position of the existing objects.
+        AZ::Vector3 GetCharacterCenter() const;
+
     private:
 
         // This function resets the light, camera and other environment settings.

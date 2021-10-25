@@ -21,6 +21,8 @@
 #include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
+#include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Pipeline/NetworkSpawnableHolderComponent.h>
 
 namespace Multiplayer
@@ -46,6 +48,20 @@ namespace Multiplayer
     void NetworkEntityManager::Initialize(const HostId& hostId, AZStd::unique_ptr<IEntityDomain> entityDomain)
     {
         m_hostId = hostId;
+
+        // Configure our vended NetEntityIds so that no two hosts generate the same NetEntityId
+        {
+            // Needs more thought
+            const uint64_t addrPortion = hostId.GetAddress(AzNetworking::ByteOrder::Host);
+            const uint64_t portPortion = hostId.GetPort(AzNetworking::ByteOrder::Host);
+            const uint64_t hostIdentifier = (portPortion << 32) | addrPortion;
+            const AZ::HashValue32 hostHash = AZ::TypeHash32(hostIdentifier);
+
+            NetEntityId hostEntityIdOffset = static_cast<NetEntityId>(hostHash) << 32;
+            m_nextEntityId &= NetEntityId{ 0x0000000000000000FFFFFFFFFFFFFFFF };
+            m_nextEntityId |= hostEntityIdOffset;
+        }
+
         m_entityDomain = AZStd::move(entityDomain);
         m_updateEntityDomainEvent.Enqueue(net_EntityDomainUpdateMs, true);
         m_entityDomain->ActivateTracking(m_ownedEntities);
@@ -225,11 +241,19 @@ namespace Multiplayer
         {
             AZ::Entity* entity = it->second;
             NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
+            AZ::Aabb entityBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(entity->GetId());
+            entityBounds.Expand(AZ::Vector3(0.01f));
             if (netBindComponent->GetNetEntityRole() == NetEntityRole::Authority)
             {
-                const AZ::Aabb entityBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(entity->GetId());
-                debugDisplay->DrawWireBox(entityBounds.GetMin(), entityBounds.GetMax());
+                debugDisplay->SetColor(AZ::Colors::Black);
+                debugDisplay->SetAlpha(0.5f);
             }
+            else
+            {
+                debugDisplay->SetColor(AZ::Colors::DeepSkyBlue);
+                debugDisplay->SetAlpha(0.25f);
+            }
+            debugDisplay->DrawWireBox(entityBounds.GetMin(), entityBounds.GetMax());
         }
 
         if (m_entityDomain != nullptr)
@@ -272,15 +296,32 @@ namespace Multiplayer
         bool safeToExit = true;
         NetworkEntityHandle entityHandle = m_networkEntityTracker.Get(entityId);
 
-        // We also need special handling for the EntityHierarchyComponent as well, since related entities need to be migrated together
-        //auto* hierarchyController = FindController<EntityHierarchyComponent::Authority>(nonConstExitingEntityPtr);
-        //if (hierarchyController)
-        //{
-        //    if (hierarchyController->GetParentRelatedEntity())
-        //    {
-        //        safeToExit = false;
-        //    }
-        //}
+        // We also need special handling for the NetworkHierarchy as well, since related entities need to be migrated together
+        NetworkHierarchyRootComponentController* hierarchyRootController = entityHandle.FindController<NetworkHierarchyRootComponentController>();
+        NetworkHierarchyChildComponentController* hierarchyChildController = entityHandle.FindController<NetworkHierarchyChildComponentController>();
+
+        // Find the root entity
+        AZ::Entity* hierarchyRootEntity = nullptr;
+        if (hierarchyRootController)
+        {
+            hierarchyRootEntity = hierarchyRootController->GetParent().GetHierarchicalRoot();
+        }
+        else if (hierarchyChildController)
+        {
+            hierarchyRootEntity = hierarchyChildController->GetParent().GetHierarchicalRoot();
+        }
+
+        if (hierarchyRootEntity)
+        {
+            NetEntityId rootNetId = GetNetEntityIdById(hierarchyRootEntity->GetId());
+            ConstNetworkEntityHandle rootEntityHandle = GetEntity(rootNetId);
+
+            // Check if the root entity is still tracked by this authority
+            if (rootEntityHandle.Exists() && rootEntityHandle.GetNetBindComponent()->HasController())
+            {
+                safeToExit = false;
+            }
+        }
 
         // Validate that we aren't already planning to remove this entity
         if (safeToExit)

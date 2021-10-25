@@ -102,7 +102,6 @@ namespace Terrain
 
     void TerrainLayerSpawnerComponent::Activate()
     {
-        AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
         TerrainSpawnerRequestBus::Handler::BusConnect(GetEntityId());
 
@@ -114,8 +113,6 @@ namespace Terrain
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::UnregisterArea, GetEntityId());
         TerrainSpawnerRequestBus::Handler::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
-        AZ::TransformNotificationBus::Handler::BusDisconnect();
-        
     }
 
     bool TerrainLayerSpawnerComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -138,13 +135,12 @@ namespace Terrain
         return false;
     }
 
-    void TerrainLayerSpawnerComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
-    {
-        RefreshArea();
-    }
-
     void TerrainLayerSpawnerComponent::OnShapeChanged([[maybe_unused]] ShapeChangeReasons changeReason)
     {
+        // This will notify us of both shape changes and transform changes.
+        // It's important to use this event for transform changes instead of listening to OnTransformChanged, because we need to guarantee
+        // the shape has received the transform change message and updated its internal state before passing it along to us.
+
         RefreshArea();
     }
     
