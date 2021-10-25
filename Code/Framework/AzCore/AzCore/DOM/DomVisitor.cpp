@@ -19,8 +19,9 @@ namespace AZ::DOM
         case VisitorErrorCode::InvalidData:
             return "invalid data specified";
         case VisitorErrorCode::InternalError:
-        default:
             return "internal error";
+        default:
+            return "unknown error";
         }
     }
 
@@ -29,7 +30,7 @@ namespace AZ::DOM
     {
     }
 
-    VisitorError::VisitorError(VisitorErrorCode code, AZStd::string_view additionalInfo)
+    VisitorError::VisitorError(VisitorErrorCode code, AZStd::string additionalInfo)
         : m_code(code)
         , m_additionalInfo(additionalInfo)
     {
@@ -54,95 +55,143 @@ namespace AZ::DOM
         return AZStd::string::format("VisitorError: %s. %s.", CodeToString(m_code), m_additionalInfo.c_str());
     }
 
-    VisitorInterface::Result VisitorInterface::VisitorFailure(VisitorErrorCode code)
+    Visitor::Result Visitor::VisitorFailure(VisitorErrorCode code)
     {
         return AZ::Failure(VisitorError(code));
     }
 
-    VisitorInterface::Result VisitorInterface::VisitorFailure(VisitorErrorCode code, AZStd::string_view additionalInfo)
+    Visitor::Result Visitor::VisitorFailure(VisitorErrorCode code, AZStd::string additionalInfo)
     {
         return AZ::Failure(VisitorError(code, additionalInfo));
     }
 
-    VisitorInterface::Result VisitorInterface::VisitorFailure(VisitorError error)
+    Visitor::Result Visitor::VisitorFailure(VisitorError error)
     {
         return AZ::Failure(error);
     }
 
-    VisitorInterface::Result VisitorInterface::VisitorSuccess()
+    Visitor::Result Visitor::VisitorSuccess()
     {
         return AZ::Success();
     }
 
-    VisitorInterface::Result VisitorInterface::Null()
+    Visitor::Result Visitor::Null()
     {
         return VisitorSuccess();
     }
 
-    VisitorInterface::Result VisitorInterface::Bool([[maybe_unused]] bool value)
+    Visitor::Result Visitor::Bool([[maybe_unused]] bool value)
     {
         return VisitorSuccess();
     }
 
-    VisitorInterface::Result VisitorInterface::Int64([[maybe_unused]] AZ::s64 value)
+    Visitor::Result Visitor::Int64([[maybe_unused]] AZ::s64 value)
     {
         return VisitorSuccess();
     }
 
-    VisitorInterface::Result VisitorInterface::Uint64([[maybe_unused]] AZ::u64 value)
+    Visitor::Result Visitor::Uint64([[maybe_unused]] AZ::u64 value)
     {
         return VisitorSuccess();
     }
 
-    VisitorInterface::Result VisitorInterface::Double([[maybe_unused]] double value)
+    Visitor::Result Visitor::Double([[maybe_unused]] double value)
     {
         return VisitorSuccess();
     }
 
-    VisitorInterface::Result VisitorInterface::String(
-        [[maybe_unused]] AZStd::string_view value, [[maybe_unused]] StorageSemantics storageSemantics)
+    Visitor::Result Visitor::String([[maybe_unused]] AZStd::string_view value, [[maybe_unused]] StorageSemantics storageSemantics)
     {
         return VisitorSuccess();
     }
 
-    VisitorInterface::Result VisitorInterface::OpaqueValue(
-        [[maybe_unused]] const OpaqueType& value, [[maybe_unused]] StorageSemantics storageSemantics)
+    Visitor::Result Visitor::OpaqueValue([[maybe_unused]] const OpaqueType& value, [[maybe_unused]] StorageSemantics storageSemantics)
     {
         return VisitorFailure(VisitorErrorCode::UnsupportedOperation, "Opaque values are not supported by this visitor");
     }
 
-    VisitorInterface::Result VisitorInterface::StartObject()
+    Visitor::Result Visitor::RawValue([[maybe_unused]]AZStd::string_view value, [[maybe_unused]]StorageSemantics storageSemantics)
+    {
+        return VisitorFailure(VisitorErrorCode::UnsupportedOperation, "Raw values are not supported by this visitor");
+    }
+
+    Visitor::Result Visitor::StartObject()
     {
         return VisitorSuccess();
     }
 
-    VisitorInterface::Result VisitorInterface::EndObject([[maybe_unused]] AZ::u64 attributeCount)
+    Visitor::Result Visitor::EndObject([[maybe_unused]] AZ::u64 attributeCount)
     {
         return VisitorSuccess();
     }
 
-    VisitorInterface::Result VisitorInterface::Key([[maybe_unused]] AZ::Name)
+    Visitor::Result Visitor::Key([[maybe_unused]] AZ::Name key)
     {
         return VisitorSuccess();
     }
 
-    VisitorInterface::Result VisitorInterface::StartArray()
+    Visitor::Result Visitor::RawKey(AZStd::string_view key, [[maybe_unused]]StorageSemantics storageSemantics)
+    {
+        return Key(AZ::Name(key));
+    }
+
+    Visitor::Result Visitor::StartArray()
     {
         return VisitorSuccess();
     }
 
-    VisitorInterface::Result VisitorInterface::EndArray([[maybe_unused]] AZ::u64 elementCount)
+    Visitor::Result Visitor::EndArray([[maybe_unused]] AZ::u64 elementCount)
     {
         return VisitorSuccess();
     }
 
-    VisitorInterface::Result VisitorInterface::StartNode([[maybe_unused]] AZ::Name name)
+    Visitor::Result Visitor::StartNode([[maybe_unused]] AZ::Name name)
     {
         return VisitorSuccess();
     }
 
-    VisitorInterface::Result VisitorInterface::EndNode([[maybe_unused]] AZ::u64 attributeCount, [[maybe_unused]] AZ::u64 elementCount)
+    Visitor::Result Visitor::RawStartNode(AZStd::string_view name, [[maybe_unused]]StorageSemantics storageSemantics)
+    {
+        return StartNode(AZ::Name(name));
+    }
+
+    Visitor::Result Visitor::EndNode([[maybe_unused]] AZ::u64 attributeCount, [[maybe_unused]] AZ::u64 elementCount)
     {
         return VisitorSuccess();
+    }
+
+    VisitorFlags Visitor::GetVisitorFlags() const
+    {
+        return VisitorFlags::SupportsRawKeys | VisitorFlags::SupportsArrays | VisitorFlags::SupportsObjects | VisitorFlags::SupportsNodes;
+    }
+
+    bool Visitor::SupportsRawValues() const
+    {
+        return (GetVisitorFlags() & VisitorFlags::SupportsRawValues) != VisitorFlags::Null;
+    }
+
+    bool Visitor::SupportsRawKeys() const
+    {
+        return (GetVisitorFlags() & VisitorFlags::SupportsRawKeys) != VisitorFlags::Null;
+    }
+
+    bool Visitor::SupportsObjects() const
+    {
+        return (GetVisitorFlags() & VisitorFlags::SupportsObjects) != VisitorFlags::Null;
+    }
+
+    bool Visitor::SupportsArrays() const
+    {
+        return (GetVisitorFlags() & VisitorFlags::SupportsArrays) != VisitorFlags::Null;
+    }
+
+    bool Visitor::SupportsNodes() const
+    {
+        return (GetVisitorFlags() & VisitorFlags::SupportsNodes) != VisitorFlags::Null;
+    }
+
+    bool Visitor::SupportsOpaqueValues() const
+    {
+        return (GetVisitorFlags() & VisitorFlags::SupportsOpaqueValues) != VisitorFlags::Null;
     }
 } // namespace AZ::DOM

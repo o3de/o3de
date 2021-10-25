@@ -8,13 +8,16 @@
 
 #pragma once
 
+#include <AzCore/Name/Name.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/Name/Name.h>
 
 namespace AZ::DOM
 {
+    //
+    // StorageSemantics enum
+    // 
     //! Specifies the semantics under which a reference type is safe to store.
     enum class StorageSemantics
     {
@@ -28,6 +31,9 @@ namespace AZ::DOM
         StoreByCopy,
     };
 
+    //
+    // VisitorErrorCode enum
+    // 
     //! Error code specifying the reason a Visitor operation failed.
     enum class VisitorErrorCode
     {
@@ -47,13 +53,13 @@ namespace AZ::DOM
 
     //
     // VisitorError class
-    // 
+    //
     //! Details of the reason for failure within a VisitorInterface operation.
     class VisitorError final
     {
     public:
         explicit VisitorError(VisitorErrorCode code);
-        VisitorError(VisitorErrorCode code, AZStd::string_view additionalInfo);
+        VisitorError(VisitorErrorCode code, AZStd::string additionalInfo);
 
         //! Gets the error code associated with this error.
         VisitorErrorCode GetCode() const;
@@ -76,8 +82,34 @@ namespace AZ::DOM
     using OpaqueType = AZStd::any;
 
     //
-    // VisitorInterface class
-    // 
+    // VisitorFlags enum
+    //
+    //! Flags representning capabilities of a \ref Visitor.
+    enum class VisitorFlags : AZ::u16
+    {
+        //! No flags are set. This can be used in conjunction with bitwise operators to check a flag.
+        Null = 0,
+        //! If set, this Visitor interface supports raw strings in place of specific value types.
+        //! Visitors with this flag accept RawValue calls in lieu of more specific value calls such as Int64 or String.
+        SupportsRawValues = (0 << 1),
+        //! If set, this Visitor interface supports raw strings in place of Name types for keys and Node names.
+        //! Visitors with this flag accept RawKey and RawStartNode in lieu of Key and StartNode calls.
+        SupportsRawKeys = (0 << 2),
+        //! If set, this Visitor interface supports Object types described via BeginObject and EndObject.
+        SupportsObjects = (0 << 3),
+        //! If set, this Visitor interface supports Array types described via BeginArray and EndArray.
+        SupportsArrays = (0 << 4),
+        //! If set, this Visitor interface supports Node types described BeginNode and EndNode.
+        SupportsNodes = (0 << 4),
+        //! If set, this Visitor interface supports opaque values described via OpaqueValue.
+        SupportsOpaqueValues = (0 << 5),
+    };
+
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(VisitorFlags);
+
+    //
+    // Visitor class
+    //
     //! An interface for performing operations on elements of a generic DOM (Document Object Model).
     //! A Document Object Model is defined here as a tree structure comprised of one of the following values:
     //! - Primitives: plain data types, including
@@ -90,21 +122,36 @@ namespace AZ::DOM
     //! - \ref Object: an ordered container of key/value pairs where keys are  AZ::Names and values may be any DOM type
     //!   (including Object)
     //! - \ref Array: an ordered container of values, in which values are any DOM value type (including Array)
-    //! - \ref Node: a container 
+    //! - \ref Node: a container
     //! - \ref OpaqueValue: An arbitrary value stored in an AZStd::any. This is a non-serializable representation of an
     //!   entry useful for in-memory options. This is intended to be used as an intermediate value over the course of DOM
     //!   transformation and as a proxy to pass through types of which the DOM has no knowledge to other systems.
-    //! 
+    //!
     //!   Opaque values are rejected by the default VisitorInterface implementation.
     //!
     //!   Care should be ensured that DOMs representing opaque types are only visited by consumers that understand them.
-    class VisitorInterface
+    class Visitor
     {
     public:
         //! The result of a Visitor operation.
         //! A failure indicates a non-recoverable issue and signals that no further visit calls may be made in the
         //! current state.
         using Result = AZ::Outcome<void, VisitorError>;
+
+        //! Returns a set of flags representing the operations this Visitor supports.
+        virtual VisitorFlags GetVisitorFlags() const;
+        //! /see VisitorFlags::SupportsRawValues
+        bool SupportsRawValues() const;
+        //! /see VisitorFlags::SupportsRawKeys
+        bool SupportsRawKeys() const;
+        //! /see VisitorFlags::SupportsObjects
+        bool SupportsObjects() const;
+        //! /see VisitorFlags::SupportsArrays
+        bool SupportsArrays() const;
+        //! /see VisitorFlags::SupportsNodes
+        bool SupportsNodes() const;
+        //! /see VisitorFlags::SupportsOpaqueValues
+        bool SupportsOpaqueValues() const;
 
         //! Operates on an empty null value.
         virtual Result Null();
@@ -125,6 +172,9 @@ namespace AZ::DOM
         //! cases with specific implementations, not generic usage.
         //! Storage semantics are provided to indicate where the value may be stored persistently or requires a copy.
         virtual Result OpaqueValue(const OpaqueType& value, StorageSemantics storageSemantics);
+        //! Operates on a raw value encoded as a UTF-8 string that hasn't had its type deduced.
+        //! Visitors that support raw values 
+        virtual Result RawValue(AZStd::string_view value, StorageSemantics storageSemantics);
 
         //! Operates on an Object.
         //! Callers may make any number of Key calls, followed by calls representing a value (including a nested
@@ -138,7 +188,10 @@ namespace AZ::DOM
         //! Specifies a key for a key/value pair.
         //! Key must be called subsequent to a call to \ref StartObject or \ref StartNode and immediately followed by
         //! calls representing the key's associated value.
-        virtual Result Key(AZ::Name);
+        virtual Result Key(AZ::Name key);
+        //! Specifies a key for a key/value pair using a raw string instead of \ref AZ::Name.
+        //! \see Key
+        virtual Result RawKey(AZStd::string_view key, StorageSemantics storageSemantics);
 
         //! Operates on an Array.
         //! Callers may make any number of subsequent value calls to represent the elements of the array, and then must
@@ -154,18 +207,21 @@ namespace AZ::DOM
         //! call, and then must call EndNode. See \ref StartObject and \ref StartArray as Node types combine the
         //! functionality of both structures into a named Node structure.
         virtual Result StartNode(AZ::Name name);
+        //! Operates on a Node using a raw string instead of \ref AZ::Name.
+        //! \see StartNode
+        virtual Result RawStartNode(AZStd::string_view name, StorageSemantics storageSemantics);
         //! Finishes operating on a Node.
         //! Callers must provide both the number of attributes the were provided and the number of elements that were
         //! provided to the node, attributes being values prefaced by a call to Key.
         virtual Result EndNode(AZ::u64 attributeCount, AZ::u64 elementCount);
 
     protected:
-        VisitorInterface() = default;
+        Visitor() = default;
 
         //! Helper method, constructs a failure \ref Result with the specified code.
         static Result VisitorFailure(VisitorErrorCode code);
         //! Helper method, constructs a failure \ref Result with the specified code and supplemental info.
-        static Result VisitorFailure(VisitorErrorCode code, AZStd::string_view additionalInfo);
+        static Result VisitorFailure(VisitorErrorCode code, AZStd::string additionalInfo);
         //! Helper method, constructs a failure \ref Result with the specified error.
         static Result VisitorFailure(VisitorError error);
         //! Helper method, constructs a success \ref Result.
