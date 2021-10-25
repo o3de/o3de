@@ -1,5 +1,5 @@
 { 
-    "Source" : "ApplyShaperLookupTable",
+    "Source" : "ApplyShaperLookupTable.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

@@ -22,6 +22,7 @@ AZ_GFX_VEC3_PARAM(ColorFilterSwatch, m_colorFilterSwatch, AZ::Vector3(1.0f, 0.5f
 AZ_GFX_FLOAT_PARAM(WhiteBalanceWeight, m_whiteBalanceWeight, 0.0)
 AZ_GFX_FLOAT_PARAM(WhiteBalanceKelvin, m_whiteBalanceKelvin, 6600.0)
 AZ_GFX_FLOAT_PARAM(WhiteBalanceTint, m_whiteBalanceTint, 0.0)
+AZ_GFX_FLOAT_PARAM(WhiteBalanceLuminancePreservation, m_whiteBalanceLuminancePreservation, 1.0)
 
 AZ_GFX_FLOAT_PARAM(SplitToneWeight, m_splitToneWeight, 0.0)
 AZ_GFX_FLOAT_PARAM(SplitToneBalance, m_splitToneBalance, 0.0)

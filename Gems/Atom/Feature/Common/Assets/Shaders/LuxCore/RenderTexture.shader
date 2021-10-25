@@ -1,5 +1,5 @@
 { 
-    "Source" : "RenderTexture",
+    "Source" : "RenderTexture.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

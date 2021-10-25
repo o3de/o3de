@@ -77,6 +77,9 @@ namespace O3DE::ProjectManager
 
         int TotalAddedGems(bool includeDependencies = false) const;
 
+    signals:
+        void gemStatusChanged(const QModelIndex& modelIndex, uint32_t numChangedDependencies);
+
     private:
         void FindGemDisplayNamesByNameStrings(QStringList& inOutGemNames);
         void GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems);
