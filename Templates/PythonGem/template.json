@@ -19,12 +19,6 @@
             "isOptional": false
         },
         {
-            "file": "Code/${NameLower}_files.cmake",
-            "origin": "Code/${NameLower}_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
             "file": "Code/${NameLower}_editor_files.cmake",
             "origin": "Code/${NameLower}_editor_files.cmake",
             "isTemplated": true,
@@ -199,10 +193,6 @@
             "origin": "Code/Platform"
         },
         {
-            "dir": "Code/Platform/Android",
-            "origin": "Code/Platform/Android"
-        },
-        {
             "dir": "Code/Platform/Linux",
             "origin": "Code/Platform/Linux"
         },
@@ -215,40 +205,12 @@
             "origin": "Code/Platform/Windows"
         },
         {
-            "dir": "Code/Platform/iOS",
-            "origin": "Code/Platform/iOS"
-        },
-        {
             "dir": "Code/Source",
             "origin": "Code/Source"
         },
         {
             "dir": "Code/Tests",
             "origin": "Code/Tests"
-        },
-        {
-            "dir": "Platform",
-            "origin": "Platform"
-        },
-        {
-            "dir": "Platform/Android",
-            "origin": "Platform/Android"
-        },
-        {
-            "dir": "Platform/Linux",
-            "origin": "Platform/Linux"
-        },
-        {
-            "dir": "Platform/Mac",
-            "origin": "Platform/Mac"
-        },
-        {
-            "dir": "Platform/Windows",
-            "origin": "Platform/Windows"
-        },
-        {
-            "dir": "Platform/iOS",
-            "origin": "Platform/iOS"
         }
     ]
 }
