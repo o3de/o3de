@@ -66,7 +66,7 @@ namespace EMotionFX
             m_rootTrajectoryData = aznew FeatureTrajectory();
             m_rootTrajectoryData->SetNodeIndex(m_rootNodeIndex);
             m_rootTrajectoryData->SetRelativeToNodeIndex(m_rootNodeIndex);
-            m_rootTrajectoryData->SetDebugDrawColor(AZ::Colors::Magenta);
+            m_rootTrajectoryData->SetDebugDrawColor(AZ::Color::CreateFromRgba(157,78,221,255));
             m_rootTrajectoryData->SetNumFutureSamplesPerFrame(6);
             m_rootTrajectoryData->SetNumPastSamplesPerFrame(6);
             m_rootTrajectoryData->SetFutureTimeRange(1.0f);
@@ -86,8 +86,8 @@ namespace EMotionFX
             m_leftFootPositionData = aznew FeaturePosition();
             m_leftFootPositionData->SetNodeIndex(m_leftFootNodeIndex);
             m_leftFootPositionData->SetRelativeToNodeIndex(m_rootNodeIndex);
-            m_leftFootPositionData->SetDebugDrawColor(AZ::Colors::Red);
-            m_leftFootPositionData->SetDebugDrawEnabled(false);
+            m_leftFootPositionData->SetDebugDrawColor(AZ::Color::CreateFromRgba(255,173,173,255));
+            m_leftFootPositionData->SetDebugDrawEnabled(true);
             m_features.RegisterFeature(m_leftFootPositionData);
             m_features.AddKdTreeFeature(m_leftFootPositionData);
             //----------------------------------------------------------------------------------------------------------
@@ -103,8 +103,8 @@ namespace EMotionFX
             m_rightFootPositionData = aznew FeaturePosition();
             m_rightFootPositionData->SetNodeIndex(m_rightFootNodeIndex);
             m_rightFootPositionData->SetRelativeToNodeIndex(m_rootNodeIndex);
-            m_rightFootPositionData->SetDebugDrawColor(AZ::Colors::Green);
-            m_rightFootPositionData->SetDebugDrawEnabled(false);
+            m_rightFootPositionData->SetDebugDrawColor(AZ::Color::CreateFromRgba(253,255,182,255));
+            m_rightFootPositionData->SetDebugDrawEnabled(true);
             m_features.RegisterFeature(m_rightFootPositionData);
             m_features.AddKdTreeFeature(m_rightFootPositionData);
             //----------------------------------------------------------------------------------------------------------
@@ -114,7 +114,7 @@ namespace EMotionFX
             m_leftFootVelocityData = aznew FeatureVelocity();
             m_leftFootVelocityData->SetNodeIndex(m_leftFootNodeIndex);
             m_leftFootVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
-            m_leftFootVelocityData->SetDebugDrawColor(AZ::Colors::Cyan);
+            m_leftFootVelocityData->SetDebugDrawColor(AZ::Color::CreateFromRgba(155,246,255,255));
             m_leftFootVelocityData->SetDebugDrawEnabled(true);
             m_features.RegisterFeature(m_leftFootVelocityData);
             m_features.AddKdTreeFeature(m_leftFootVelocityData);
@@ -125,7 +125,7 @@ namespace EMotionFX
             m_rightFootVelocityData = aznew FeatureVelocity();
             m_rightFootVelocityData->SetNodeIndex(m_rightFootNodeIndex);
             m_rightFootVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
-            m_rightFootVelocityData->SetDebugDrawColor(AZ::Colors::Cyan);
+            m_rightFootVelocityData->SetDebugDrawColor(AZ::Color::CreateFromRgba(189,178,255,255));
             m_rightFootVelocityData->SetDebugDrawEnabled(true);
             m_features.RegisterFeature(m_rightFootVelocityData);
             m_features.AddKdTreeFeature(m_rightFootVelocityData);
@@ -184,7 +184,7 @@ namespace EMotionFX
             AZ_UNUSED(draw);
 
             const float markerSize = 0.02f;
-            const AZ::Color color = AZ::Colors::Magenta;
+            const AZ::Color color = AZ::Color::CreateFromRgba(90,219,64,255);
 
             const BehaviorInstance::ControlSpline& spline = behaviorInstance->GetControlSpline();
             if (spline.m_futureSplinePoints.size() > 1)
@@ -348,13 +348,13 @@ namespace EMotionFX
             const float time = timer.GetDeltaTimeInSeconds();
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "FindLowestCostFrameIndex", time * 1000.0f);
 
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Left Foot Position Cost", minLeftFootPositionCost);
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Right Foot Position Cost", minRightFootPositionCost);
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Left Foot Velocity Cost", minLeftFootVelocityCost);
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Right Foot Velocity Cost", minRightFootVelocityCost);
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Trajectory Past Cost", minTrajectoryPastCost);
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Trajectory Future Cost", minTrajectoryFutureCost);
-            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Total Cost", minCost);
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Left Foot Position Cost", minLeftFootPositionCost, m_leftFootPositionData->GetDebugDrawColor());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Right Foot Position Cost", minRightFootPositionCost, m_rightFootPositionData->GetDebugDrawColor());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Left Foot Velocity Cost", minLeftFootVelocityCost, m_leftFootVelocityData->GetDebugDrawColor());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Right Foot Velocity Cost", minRightFootVelocityCost, m_rightFootVelocityData->GetDebugDrawColor());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Trajectory Past Cost", minTrajectoryPastCost, m_rootTrajectoryData->GetDebugDrawColor());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Trajectory Future Cost", minTrajectoryFutureCost, m_rootTrajectoryData->GetDebugDrawColor());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Total Cost", minCost, AZ::Color::CreateFromRgba(202,255,191,255));
 
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeMemoryUsage, m_features.GetKdTree().CalcMemoryUsageInBytes());
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::SetKdTreeNumNodes, m_features.GetKdTree().GetNumNodes());

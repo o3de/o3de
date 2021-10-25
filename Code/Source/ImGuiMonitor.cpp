@@ -21,11 +21,9 @@ namespace EMotionFX::MotionMatching
     ImGuiMonitor::ImGuiMonitor()
     {
         m_performanceStats.m_name = "Performance Statistics";
-        m_performanceStats.m_barColor = ImColor(206, 0, 13);
 
         m_featureCosts.m_name = "Feature Costs";
-        m_featureCosts.m_histogramContainerCount = 128;
-        m_featureCosts.m_barColor = ImColor(66, 166, 178);
+        m_featureCosts.m_histogramContainerCount = 100;
 
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
         ImGuiMonitorRequestBus::Handler::BusConnect();
@@ -77,20 +75,22 @@ namespace EMotionFX::MotionMatching
 
     void ImGuiMonitor::PushPerformanceHistogramValue(const char* performanceMetricName, float value)
     {
-        m_performanceStats.PushHistogramValue(performanceMetricName, value);
+        m_performanceStats.PushHistogramValue(performanceMetricName, value, AZ::Color::CreateFromRgba(229,56,59,255));
     }
 
-    void ImGuiMonitor::PushCostHistogramValue(const char* costName, float value)
+    void ImGuiMonitor::PushCostHistogramValue(const char* costName, float value, const AZ::Color& color)
     {
-        m_featureCosts.PushHistogramValue(costName, value);
+        m_featureCosts.PushHistogramValue(costName, value, color);
     }
 
-    void ImGuiMonitor::HistogramGroup::PushHistogramValue(const char* valueName, float value)
+    void ImGuiMonitor::HistogramGroup::PushHistogramValue(const char* valueName, float value, const AZ::Color& color)
     {
         auto iterator = m_histogramIndexByName.find(valueName);
         if (iterator != m_histogramIndexByName.end())
         {
-            m_histograms[iterator->second].PushValue(value);
+            ImGui::LYImGuiUtils::HistogramContainer& histogramContiner = m_histograms[iterator->second];
+            histogramContiner.PushValue(value);
+            histogramContiner.SetBarLineColor(ImColor(color.GetR(), color.GetG(), color.GetB(), color.GetA()));
         }
         else
         {
@@ -121,9 +121,25 @@ namespace EMotionFX::MotionMatching
         {
             for (auto& histogram : m_histograms)
             {
-                ImGui::PushStyleColor(ImGuiCol_PlotHistogram, m_barColor.Value);
-                histogram.Draw(ImGui::GetColumnWidth(), s_histogramHeight);
-                ImGui::PopStyleColor();
+                ImGui::BeginGroup();
+                {
+                    histogram.Draw(ImGui::GetColumnWidth() - 70, s_histogramHeight);
+
+                    ImGui::SameLine();
+
+                    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0,0,0,255));
+                    {
+                        const ImColor color = histogram.GetBarLineColor();
+                        ImGui::PushStyleColor(ImGuiCol_Button, color.Value);
+                        {
+                            const AZStd::string valueString = AZStd::string::format("%.2f", histogram.GetLastValue());
+                            ImGui::Button(valueString.c_str());
+                        }
+                        ImGui::PopStyleColor();
+                    }
+                    ImGui::PopStyleColor();
+                }
+                ImGui::EndGroup();
             }
         }
     }

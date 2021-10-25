@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Color.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/EBus/EBus.h>
@@ -23,7 +24,7 @@ namespace EMotionFX::MotionMatching
     {
     public:
         virtual void PushPerformanceHistogramValue(const char* performanceMetricName, float value) = 0;
-        virtual void PushCostHistogramValue(const char* costName, float value) = 0;
+        virtual void PushCostHistogramValue(const char* costName, float value, const AZ::Color& color) = 0;
 
         virtual void SetFeatureMatrixMemoryUsage(size_t sizeInBytes) = 0;
         virtual void SetFeatureMatrixNumFrames(size_t numFrames) = 0;

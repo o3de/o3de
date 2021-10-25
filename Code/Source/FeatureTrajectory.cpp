@@ -252,10 +252,10 @@ namespace EMotionFX
             const Transform transform = actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(m_nodeIndex);
 
             DebugDrawTrajectory(drawQueue, draw, behaviorInstance, frameIndex, transform,
-                AZ::Colors::LawnGreen, m_numPastSamples, AZStd::bind(&FeatureTrajectory::CalcPastFrameDataIndex, this, AZStd::placeholders::_1));
+                m_debugColor, m_numPastSamples, AZStd::bind(&FeatureTrajectory::CalcPastFrameDataIndex, this, AZStd::placeholders::_1));
 
             DebugDrawTrajectory(drawQueue, draw, behaviorInstance, frameIndex, transform,
-                AZ::Colors::LawnGreen, m_numFutureSamples, AZStd::bind(&FeatureTrajectory::CalcFutureFrameDataIndex, this, AZStd::placeholders::_1));
+                m_debugColor, m_numFutureSamples, AZStd::bind(&FeatureTrajectory::CalcFutureFrameDataIndex, this, AZStd::placeholders::_1));
         }
 
         size_t FeatureTrajectory::CalcMidFrameDataIndex() const

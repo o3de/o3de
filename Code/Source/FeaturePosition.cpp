@@ -10,10 +10,13 @@
 *
 */
 
-#include <EMotionFX/Source/ActorInstance.h>
 #include <Allocators.h>
+#include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/EventManager.h>
+#include <EMotionFX/Source/TransformData.h>
+#include <Behavior.h>
+#include <BehaviorInstance.h>
 #include <FrameDatabase.h>
 #include <FeaturePosition.h>
 
@@ -69,11 +72,26 @@ namespace EMotionFX
             SetFeatureData(context.m_featureMatrix, context.m_frameIndex, position);
         }
 
-        void FeaturePosition::DebugDraw([[maybe_unused]] AZ::RPI::AuxGeomDrawPtr& drawQueue,
+        void FeaturePosition::DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
             [[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw,
-            [[maybe_unused]] BehaviorInstance* behaviorInstance,
-            [[maybe_unused]] size_t frameIndex)
+            BehaviorInstance* behaviorInstance,
+            size_t frameIndex)
         {
+            const Behavior* behavior = behaviorInstance->GetBehavior();
+            const ActorInstance* actorInstance = behaviorInstance->GetActorInstance();
+            const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
+            const Transform jointModelTM = pose->GetModelSpaceTransform(m_nodeIndex);
+            const Transform relativeToWorldTM = pose->GetWorldSpaceTransform(m_relativeToNodeIndex);
+
+            const AZ::Vector3 position = GetFeatureData(behavior->GetFeatures().GetFeatureMatrix(), frameIndex);
+            const AZ::Vector3 transformedPos = relativeToWorldTM.TransformPoint(position);
+
+            constexpr float markerSize = 0.03f;
+            drawQueue->DrawSphere(transformedPos,
+                markerSize,
+                m_debugColor,
+                AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
+                AZ::RPI::AuxGeomDraw::DepthTest::Off);
         }
 
         float FeaturePosition::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
