@@ -20,7 +20,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 {
     const static int HighlightBorderSize = 5;
     const static int TopHighlightBorderSize = 25;
-    const static char* HighlightBorderColor = "#44B2F8";
+    const static char* HighlightBorderColor = "#4A90E2";
 
     static void UnparentWidgets(ViewportUiElementIdInfoLookup& viewportUiElementIdInfoLookup)
     {
@@ -290,9 +290,9 @@ namespace AzToolsFramework::ViewportUi::Internal
         return false;
     }
 
-    void ViewportUiDisplay::CreateComponentModeBorder(const AZStd::string& borderTitle)
+    void ViewportUiDisplay::CreateViewportBorder(const AZStd::string& borderTitle)
     {
-        AZStd::string styleSheet = AZStd::string::format(
+        const AZStd::string styleSheet = AZStd::string::format(
             "border: %dpx solid %s; border-top: %dpx solid %s;", HighlightBorderSize, HighlightBorderColor, TopHighlightBorderSize,
             HighlightBorderColor);
         m_uiOverlay.setStyleSheet(styleSheet.c_str());
@@ -303,7 +303,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_componentModeBorderText.setText(borderTitle.c_str());
     }
 
-    void ViewportUiDisplay::RemoveComponentModeBorder()
+    void ViewportUiDisplay::RemoveViewportBorder()
     {
         m_componentModeBorderText.setVisible(false);
         m_uiOverlay.setStyleSheet("border: none;");
@@ -339,7 +339,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         // no background for the widget else each set of buttons/text-fields/etc would have a black box around them
         SetTransparentBackground(mainWindow);
-        mainWindow->setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
+        mainWindow->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
     }
 
     void ViewportUiDisplay::InitializeUiOverlay()
@@ -420,6 +420,7 @@ namespace AzToolsFramework::ViewportUi::Internal
             m_uiMainWindow.setVisible(true);
             m_uiOverlay.setVisible(true);
         }
+
         m_uiMainWindow.setMask(region);
     }
 
@@ -437,6 +438,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         {
             return element->second;
         }
+
         return ViewportUiElementInfo{ nullptr, InvalidViewportUiElementId, false };
     }
 

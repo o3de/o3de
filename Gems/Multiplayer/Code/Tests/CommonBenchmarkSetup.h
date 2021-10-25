@@ -328,6 +328,7 @@ namespace Multiplayer
         void Terminate([[maybe_unused]] AzNetworking::DisconnectReason reason) override {}
         void AddClientDisconnectedHandler([[maybe_unused]] ClientDisconnectedEvent::Handler& handler) override {}
         void AddConnectionAcquiredHandler([[maybe_unused]] ConnectionAcquiredEvent::Handler& handler) override {}
+        void AddServerAcceptanceReceivedHandler([[maybe_unused]] ServerAcceptanceReceivedEvent::Handler& handler) override {}
         void AddSessionInitHandler([[maybe_unused]] SessionInitEvent::Handler& handler) override {}
         void AddSessionShutdownHandler([[maybe_unused]] SessionShutdownEvent::Handler& handler) override {}
         void SendReadyForEntityUpdates([[maybe_unused]] bool readyForEntityUpdates) override {}
@@ -341,8 +342,11 @@ namespace Multiplayer
         void AddClientMigrationEndEventHandler([[maybe_unused]] ClientMigrationEndEvent::Handler& handler) override {}
         void AddNotifyClientMigrationHandler([[maybe_unused]] NotifyClientMigrationEvent::Handler& handler) override {}
         void AddNotifyEntityMigrationEventHandler([[maybe_unused]] NotifyEntityMigrationEvent::Handler& handler) override {}
-        void SendNotifyClientMigrationEvent([[maybe_unused]] const HostId& hostId, [[maybe_unused]] uint64_t userIdentifier, [[maybe_unused]] ClientInputId lastClientInputId) override {}
+        void SendNotifyClientMigrationEvent([[maybe_unused]] AzNetworking::ConnectionId connectionId, [[maybe_unused]] const HostId& hostId,
+            [[maybe_unused]] uint64_t userIdentifier, [[maybe_unused]] ClientInputId lastClientInputId, [[maybe_unused]] NetEntityId netEntityId) override {}
         void SendNotifyEntityMigrationEvent([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle, [[maybe_unused]] const HostId& remoteHostId) override {}
+        void RegisterPlayerIdentifierForRejoin(uint64_t, NetEntityId) override {}
+        void CompleteClientMigration(uint64_t, AzNetworking::ConnectionId, const HostId&, ClientInputId) override {}
         void SetShouldSpawnNetworkEntities([[maybe_unused]] bool value) override {}
         bool GetShouldSpawnNetworkEntities() const override { return true; }
 
@@ -534,9 +538,8 @@ namespace Multiplayer
             constexpr uint32_t bufferSize = 100;
             AZStd::array<uint8_t, bufferSize> buffer = {};
             NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
-            inSerializer.Serialize(reinterpret_cast<uint32_t&>(netParentId),
-                "parentEntityId", /* Derived from NetworkTransformComponent.AutoComponent.xml */
-                AZStd::numeric_limits<uint32_t>::min(), AZStd::numeric_limits<uint32_t>::max());
+            ISerializer& serializer = inSerializer;
+            serializer.Serialize(netParentId, "parentEntityId"); // Derived from NetworkTransformComponent.AutoComponent.xml
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 
@@ -559,9 +562,8 @@ namespace Multiplayer
             constexpr uint32_t bufferSize = 100;
             AZStd::array<uint8_t, bufferSize> buffer = {};
             NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
-            inSerializer.Serialize(reinterpret_cast<uint32_t&>(value),
-                "hierarchyRoot", /* Derived from NetworkHierarchyChildComponent.AutoComponent.xml */
-                AZStd::numeric_limits<uint32_t>::min(), AZStd::numeric_limits<uint32_t>::max());
+            ISerializer& serializer = inSerializer;
+            serializer.Serialize(value, "hierarchyRoot"); // Derived from NetworkHierarchyChildComponent.AutoComponent.xml
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 

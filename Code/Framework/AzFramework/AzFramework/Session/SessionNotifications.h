@@ -30,17 +30,42 @@ namespace AzFramework
         //////////////////////////////////////////////////////////////////////////
 
         // OnSessionHealthCheck is fired in health check process
-        // @return The result of all OnSessionHealthCheck
+        // Use this notification to perform any custom health check
+        // @return True if OnSessionHealthCheck succeeds, false otherwise
         virtual bool OnSessionHealthCheck() = 0;
 
-        // OnCreateSessionBegin is fired at the beginning of session creation
+        // OnCreateSessionBegin is fired at the beginning of session creation process
+        // Use this notification to perform any necessary configuration or initialization before
+        // creating session
         // @param  sessionConfig The properties to describe a session
-        // @return The result of all OnCreateSessionBegin notifications
+        // @return True if OnCreateSessionBegin succeeds, false otherwise
         virtual bool OnCreateSessionBegin(const SessionConfig& sessionConfig) = 0;
 
-        // OnDestroySessionBegin is fired at the beginning of session termination
-        // @return The result of all OnDestroySessionBegin notifications
+        // OnCreateSessionEnd is fired at the end of session creation process
+        // Use this notification to perform any follow-up operation after session is created and active
+        virtual void OnCreateSessionEnd() = 0;
+
+        // OnDestroySessionBegin is fired at the beginning of session termination process
+        // Use this notification to perform any cleanup operation before destroying session,
+        // like gracefully disconnect players, cleanup data, etc.
+        // @return True if OnDestroySessionBegin succeeds, false otherwise
         virtual bool OnDestroySessionBegin() = 0;
+
+        // OnDestroySessionEnd is fired at the end of session termination process
+        // Use this notification to perform any follow-up operation after session is destroyed,
+        // like shutdown application process, etc.
+        virtual void OnDestroySessionEnd() = 0;
+
+        // OnUpdateSessionBegin is fired at the beginning of session update process
+        // Use this notification to perform any configuration or initialization to handle
+        // the session settings changing 
+        // @param sessionConfig The properties to describe a session
+        // @param updateReason The reason for session update
+        virtual void OnUpdateSessionBegin(const SessionConfig& sessionConfig, const AZStd::string& updateReason) = 0;
+
+        // OnUpdateSessionBegin is fired at the end of session update process
+        // Use this notification to perform any follow-up operations after session is updated
+        virtual void OnUpdateSessionEnd() = 0;
     };
     using SessionNotificationBus = AZ::EBus<SessionNotifications>;
 } // namespace AzFramework

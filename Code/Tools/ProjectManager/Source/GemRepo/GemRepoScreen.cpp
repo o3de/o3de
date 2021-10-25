@@ -13,6 +13,7 @@
 #include <GemRepo/GemRepoAddDialog.h>
 #include <GemRepo/GemRepoInspector.h>
 #include <PythonBindingsInterface.h>
+#include <ProjectManagerDefs.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -24,6 +25,7 @@
 #include <QTableWidget>
 #include <QFrame>
 #include <QStackedWidget>
+#include <QMessageBox>
 
 namespace O3DE::ProjectManager
 {
@@ -78,22 +80,79 @@ namespace O3DE::ProjectManager
 
         if (repoAddDialog->exec() == QDialog::DialogCode::Accepted)
         {
-            QString repoUrl = repoAddDialog->GetRepoPath();
-            if (repoUrl.isEmpty())
+            QString repoUri = repoAddDialog->GetRepoPath();
+            if (repoUri.isEmpty())
             {
+                QMessageBox::warning(this, tr("No Input"), tr("Please provide a repo Uri."));
                 return;
             }
 
-            AZ::Outcome<void, AZStd::string> addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUrl);
-            if (addGemRepoResult.IsSuccess())
+            bool addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUri);
+            if (addGemRepoResult)
             {
                 Reinit();
             }
             else
             {
-                QMessageBox::critical(this, tr("Operation failed"),
-                    QString("Failed to add gem repo: %1.<br>Error:<br>%2").arg(repoUrl, addGemRepoResult.GetError().c_str()));
+                QString failureMessage = tr("Failed to add gem repo: %1.").arg(repoUri);
+                QMessageBox::critical(this, tr("Operation failed"), failureMessage);
+                AZ_Error("Project Manger", false, failureMessage.toUtf8());
             }
+        }
+    }
+
+    void GemRepoScreen::HandleRemoveRepoButton(const QModelIndex& modelIndex)
+    {
+        QString repoName = m_gemRepoModel->GetName(modelIndex);
+
+        QMessageBox::StandardButton warningResult = QMessageBox::warning(
+            this, tr("Remove Repo"), tr("Are you sure you would like to remove gem repo: %1?").arg(repoName),
+            QMessageBox::No | QMessageBox::Yes);
+
+        if (warningResult == QMessageBox::Yes)
+        {
+            QString repoUri = m_gemRepoModel->GetRepoUri(modelIndex);
+            bool removeGemRepoResult = PythonBindingsInterface::Get()->RemoveGemRepo(repoUri);
+            if (removeGemRepoResult)
+            {
+                Reinit();
+            }
+            else
+            {
+                QString failureMessage = tr("Failed to remove gem repo: %1.").arg(repoUri);
+                QMessageBox::critical(this, tr("Operation failed"), failureMessage);
+                AZ_Error("Project Manger", false, failureMessage.toUtf8());
+            }
+        }
+    }
+
+    void GemRepoScreen::HandleRefreshAllButton()
+    {
+        bool refreshResult = PythonBindingsInterface::Get()->RefreshAllGemRepos();
+        Reinit();
+
+        if (!refreshResult)
+        {
+            QMessageBox::critical(
+                this, tr("Operation failed"), QString("Some repos failed to refresh."));
+        }
+    }
+
+    void GemRepoScreen::HandleRefreshRepoButton(const QModelIndex& modelIndex)
+    {
+        const QString repoUri = m_gemRepoModel->GetRepoUri(modelIndex);
+
+        AZ::Outcome<void, AZStd::string> refreshResult = PythonBindingsInterface::Get()->RefreshGemRepo(repoUri);
+        if (refreshResult.IsSuccess())
+        {
+            Reinit();
+        }
+        else
+        {
+            QMessageBox::critical(
+                this, tr("Operation failed"),
+                QString("Failed to refresh gem repo %1<br>Error:<br>%2")
+                    .arg(m_gemRepoModel->GetName(modelIndex), refreshResult.GetError().c_str()));
         }
     }
 
@@ -104,9 +163,29 @@ namespace O3DE::ProjectManager
         {
             // Add all available repos to the model
             const QVector<GemRepoInfo> allGemRepoInfos = allGemRepoInfosResult.GetValue();
+            QDateTime oldestRepoUpdate;
+            if (!allGemRepoInfos.isEmpty())
+            {
+                oldestRepoUpdate = allGemRepoInfos[0].m_lastUpdated;
+            }
             for (const GemRepoInfo& gemRepoInfo : allGemRepoInfos)
             {
                 m_gemRepoModel->AddGemRepo(gemRepoInfo);
+
+                // Find least recently updated repo
+                if (gemRepoInfo.m_lastUpdated < oldestRepoUpdate)
+                {
+                    oldestRepoUpdate = gemRepoInfo.m_lastUpdated;
+                }
+            }
+
+            if (!allGemRepoInfos.isEmpty())
+            {
+                m_lastAllUpdateLabel->setText(tr("Last Updated: %1").arg(oldestRepoUpdate.toString(RepoTimeFormat)));
+            }
+            else
+            {
+                m_lastAllUpdateLabel->setText(tr("Last Updated: Never"));
             }
         }
         else
@@ -188,6 +267,8 @@ namespace O3DE::ProjectManager
         m_AllUpdateButton->setObjectName("gemRepoHeaderRefreshButton");
         topMiddleHLayout->addWidget(m_AllUpdateButton);
 
+        connect(m_AllUpdateButton, &QPushButton::clicked, this, &GemRepoScreen::HandleRefreshAllButton);
+
         topMiddleHLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
         QPushButton* addRepoButton = new QPushButton(tr("Add Repository"), this);
@@ -229,6 +310,9 @@ namespace O3DE::ProjectManager
 
         m_gemRepoListView = new GemRepoListView(m_gemRepoModel, m_gemRepoModel->GetSelectionModel(), this);
         middleVLayout->addWidget(m_gemRepoListView);
+
+        connect(m_gemRepoListView, &GemRepoListView::RemoveRepo, this, &GemRepoScreen::HandleRemoveRepoButton);
+        connect(m_gemRepoListView, &GemRepoListView::RefreshRepo, this, &GemRepoScreen::HandleRefreshRepoButton);
 
         hLayout->addLayout(middleVLayout);
 

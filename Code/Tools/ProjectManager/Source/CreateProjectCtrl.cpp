@@ -49,6 +49,8 @@ namespace O3DE::ProjectManager
         m_stack->addWidget(m_gemCatalogScreen);
         vLayout->addWidget(m_stack);
 
+        connect(m_gemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
+
         // When there are multiple project templates present, we re-gather the gems when changing the selected the project template.
         connect(m_newProjectSettingsScreen, &NewProjectSettingsScreen::OnTemplateSelectionChanged, this, [=](int oldIndex, [[maybe_unused]] int newIndex)
             {
@@ -133,7 +135,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            emit GotoPreviousScreenRequest();
+            emit GoToPreviousScreenRequest();
         }
     }
 
@@ -238,9 +240,13 @@ namespace O3DE::ProjectManager
                     PythonBindingsInterface::Get()->AddProject(projectInfo.m_path);
 
 #ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
-                    if (!m_gemCatalogScreen->EnableDisableGemsForProject(projectInfo.m_path))
+                    const GemCatalogScreen::EnableDisableGemsResult gemResult = m_gemCatalogScreen->EnableDisableGemsForProject(m_projectInfo.m_path);
+                    if (gemResult == GemCatalogScreen::EnableDisableGemsResult::Failed)
                     {
                         QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
+                    }
+                    if (gemResult != GemCatalogScreen::EnableDisableGemsResult::Success)
+                    {
                         return;
                     }
 #endif // TEMPLATE_GEM_CONFIGURATION_ENABLED

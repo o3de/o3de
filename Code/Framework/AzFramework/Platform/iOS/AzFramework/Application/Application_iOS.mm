@@ -112,9 +112,10 @@ namespace AzFramework
     void ApplicationIos::PumpSystemEventLoopUntilEmpty()
     {
         SInt32 result;
+        const CFTimeInterval MaxSecondsInRunLoop = 0.001; // One millisecond
         do
         {
-            result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, DBL_EPSILON, TRUE);
+            result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, MaxSecondsInRunLoop, TRUE);
         }
         while (result == kCFRunLoopRunHandledSource);
     }

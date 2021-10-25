@@ -1,5 +1,5 @@
 {
-    "Source": "BloomBlurCS",
+    "Source": "BloomBlurCS.azsl",
     
     "DrawList" : "forward",
 

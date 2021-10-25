@@ -55,7 +55,7 @@ namespace AZ
             RHI::Ptr<BufferMemory> bufferMemory;
 
             const VkMemoryPropertyFlags flags = ConvertHeapMemoryLevel(m_descriptor.m_heapMemoryLevel) | m_descriptor.m_additionalMemoryPropertyFlags;
-            RHI::Ptr<Memory> memory = GetDevice().AllocateMemory(memoryRequirements.size, memoryRequirements.memoryTypeBits, flags);
+            RHI::Ptr<Memory> memory = GetDevice().AllocateMemory(memoryRequirements.size, memoryRequirements.memoryTypeBits, flags, m_descriptor.m_bindFlags);
             if (memory)
             {
                 

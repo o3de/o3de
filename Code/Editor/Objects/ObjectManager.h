@@ -20,8 +20,8 @@
 #include "ObjectManagerEventBus.h"
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Component/Component.h>
 #include <Include/SandboxAPI.h>
 
 // forward declarations.
@@ -58,7 +58,6 @@ public:
  */
 class CObjectManager
     : public IObjectManager
-    , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
 {
 public:
     //! Selection functor callback.
@@ -328,10 +327,6 @@ private:
     void NotifyObjectListeners(CBaseObject* pObject, CBaseObject::EObjectListenerEvent event);
 
     void FindDisplayableObjects(DisplayContext& dc, bool bDisplay);
-
-    // EditorComponentModeNotificationBus
-    void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-    void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
 
 private:
     typedef std::map<GUID, CBaseObjectPtr, guid_less_predicate> Objects;

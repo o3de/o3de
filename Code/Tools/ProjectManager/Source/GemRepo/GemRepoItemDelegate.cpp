@@ -8,6 +8,7 @@
 
 #include <GemRepo/GemRepoItemDelegate.h>
 #include <GemRepo/GemRepoModel.h>
+#include <ProjectManagerDefs.h>
 
 #include <QEvent>
 #include <QPainter>
@@ -95,7 +96,7 @@ namespace O3DE::ProjectManager
         painter->drawText(repoCreatorRect, Qt::TextSingleLine, repoCreator);
 
         // Repo update
-        QString repoUpdatedDate = GemRepoModel::GetLastUpdated(modelIndex).toString("dd/MM/yyyy hh:mmap");
+        QString repoUpdatedDate = GemRepoModel::GetLastUpdated(modelIndex).toString(RepoTimeFormat);
         repoUpdatedDate = standardFontMetrics.elidedText(repoUpdatedDate, Qt::TextElideMode::ElideRight, s_updatedMaxWidth);
 
         QRect repoUpdatedDateRect = GetTextRect(standardFont, repoUpdatedDate, s_fontSize);
@@ -107,7 +108,7 @@ namespace O3DE::ProjectManager
 
         // Draw refresh button
         painter->drawPixmap(
-            repoUpdatedDateRect.left() + repoUpdatedDateRect.width() + s_refreshIconSpacing,
+            repoUpdatedDateRect.left() + s_updatedMaxWidth + s_refreshIconSpacing,
             contentRect.center().y() - s_refreshIconSize / 3, // Dividing size by 3 centers much better
             m_refreshIcon);
 
@@ -144,6 +145,16 @@ namespace O3DE::ProjectManager
                 GemRepoModel::SetEnabled(*model, modelIndex, !isAdded);
                 return true;
             }
+            else if (keyEvent->key() == Qt::Key_X)
+            {
+                emit RemoveRepo(modelIndex);
+                return true;
+            }
+            else if (keyEvent->key() == Qt::Key_R || keyEvent->key() == Qt::Key_F5)
+            {
+                emit RefreshRepo(modelIndex);
+                return true;
+            }
         }
 
         if (event->type() == QEvent::MouseButtonPress)
@@ -153,11 +164,23 @@ namespace O3DE::ProjectManager
             QRect fullRect, itemRect, contentRect;
             CalcRects(option, fullRect, itemRect, contentRect);
             const QRect buttonRect = CalcButtonRect(contentRect);
+            const QRect deleteButtonRect = CalcDeleteButtonRect(contentRect);
+            const QRect refreshButtonRect = CalcRefreshButtonRect(contentRect, buttonRect);
 
             if (buttonRect.contains(mouseEvent->pos()))
             {
                 const bool isAdded = GemRepoModel::IsEnabled(modelIndex);
                 GemRepoModel::SetEnabled(*model, modelIndex, !isAdded);
+                return true;
+            }
+            else if (deleteButtonRect.contains(mouseEvent->pos()))
+            {
+                emit RemoveRepo(modelIndex);
+                return true;
+            }
+            else if (refreshButtonRect.contains(mouseEvent->pos()))
+            {
+                emit RefreshRepo(modelIndex);
                 return true;
             }
         }
@@ -213,9 +236,21 @@ namespace O3DE::ProjectManager
         painter->restore();
     }
 
+    QRect GemRepoItemDelegate::CalcDeleteButtonRect(const QRect& contentRect) const
+    {
+        const QPoint topLeft = QPoint(contentRect.right() - s_iconSize, contentRect.center().y() - s_iconSize / 2);
+        return QRect(topLeft, QSize(s_iconSize, s_iconSize));
+    }
+
+    QRect GemRepoItemDelegate::CalcRefreshButtonRect(const QRect& contentRect, const QRect& buttonRect) const
+    {
+        const int topLeftX = buttonRect.left() + s_buttonWidth + s_buttonSpacing + s_nameMaxWidth + s_creatorMaxWidth + s_updatedMaxWidth + s_contentSpacing * 2 + s_refreshIconSpacing;
+        const QPoint topLeft = QPoint(topLeftX, contentRect.center().y() - s_refreshIconSize / 3);
+        return QRect(topLeft, QSize(s_refreshIconSize, s_refreshIconSize));
+    }
+
     void GemRepoItemDelegate::DrawEditButtons(QPainter* painter, const QRect& contentRect) const
     {
-        painter->drawPixmap(contentRect.right() - s_iconSize * 2 - s_iconSpacing, contentRect.center().y() - s_iconSize / 2, m_editIcon);
         painter->drawPixmap(contentRect.right() - s_iconSize, contentRect.center().y() - s_iconSize / 2, m_deleteIcon);
     }
 

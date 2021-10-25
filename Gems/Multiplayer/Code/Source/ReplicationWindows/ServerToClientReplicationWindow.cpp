@@ -9,6 +9,7 @@
 #include <Source/ReplicationWindows/ServerToClientReplicationWindow.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/ILogger.h>
@@ -91,17 +92,10 @@ namespace Multiplayer
         return m_isPoorConnection ? sv_MinEntitiesToReplicate : sv_MaxEntitiesToReplicate;
     }
 
-    bool ServerToClientReplicationWindow::IsInWindow(const ConstNetworkEntityHandle& entityHandle, NetEntityRole& outNetworkRole) const
+    bool ServerToClientReplicationWindow::IsInWindow([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle, NetEntityRole& outNetworkRole) const
     {
-        // TODO: Clean up this interface, this function is used for server->server migrations, and probably shouldn't be exposed in it's current setup
         AZ_Assert(false, "IsInWindow should not be called on the ServerToClientReplicationWindow");
         outNetworkRole = NetEntityRole::InvalidRole;
-        auto iter = m_replicationSet.find(entityHandle);
-        if (iter != m_replicationSet.end())
-        {
-            outNetworkRole = iter->second.m_netEntityRole;
-            return true;
-        }
         return false;
     }
 
@@ -145,7 +139,7 @@ namespace Multiplayer
         NetworkEntityTracker* networkEntityTracker = GetNetworkEntityTracker();        
         IFilterEntityManager* filterEntityManager = GetMultiplayer()->GetFilterEntityManager();
 
-        // Add all the neighbors
+        // Add all the neighbours
         for (AzFramework::VisibilityEntry* visEntry : gatheredEntries)
         {
             AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
@@ -174,11 +168,11 @@ namespace Multiplayer
         // Note: Do not add any Client entities after this point, otherwise you stomp over the Autonomous mode
         m_replicationSet[m_controlledEntity] = { NetEntityRole::Autonomous, 1.0f };  // Always replicate autonomous entities
 
-        //auto hierarchyController = FindController<EntityHierarchyComponent::Authority>(m_ControlledEntity);
-        //if (hierarchyController != nullptr)
-        //{
-        //    CollectControlledEntitiesRecursive(m_replicationSet, *hierarchyController);
-        //}
+        auto* hierarchyComponent = m_controlledEntity.FindComponent<NetworkHierarchyRootComponent>();
+        if (hierarchyComponent != nullptr)
+        {
+            UpdateHierarchyReplicationSet(m_replicationSet, *hierarchyComponent);
+        }
     }
 
     AzNetworking::PacketId ServerToClientReplicationWindow::SendEntityUpdateMessages(NetworkEntityUpdateVector& entityUpdateVector)
@@ -300,7 +294,6 @@ namespace Multiplayer
     void ServerToClientReplicationWindow::AddEntityToReplicationSet(ConstNetworkEntityHandle& entityHandle, float priority, [[maybe_unused]] float distanceSquared)
     {
         // Assumption: the entity has been checked for filtering prior to this call.
-
         if (!sv_ReplicateServerProxies)
         {
             NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
@@ -311,11 +304,11 @@ namespace Multiplayer
             }
         }
 
-        const bool isQueueFull = (m_candidateQueue.size() >= sv_MaxEntitiesToTrackReplication);  // See if have the maximum number of entities in our set
+        const bool isQueueFull = (m_candidateQueue.size() >= sv_MaxEntitiesToTrackReplication); // See if have the maximum number of entities in our set
         const bool isInReplicationSet = m_replicationSet.find(entityHandle) != m_replicationSet.end();
         if (!isInReplicationSet)
         {
-            if (isQueueFull)  // if our set is full, then we need to remove the worst priority in our set
+            if (isQueueFull) // If our set is full, then we need to remove the worst priority in our set
             {
                 ConstNetworkEntityHandle removeEnt = m_candidateQueue.top().m_entityHandle;
                 m_candidateQueue.pop();
@@ -326,18 +319,20 @@ namespace Multiplayer
         }
     }
 
-    //void ServerToClientReplicationWindow::CollectControlledEntitiesRecursive(ReplicationSet& replicationSet, EntityHierarchyComponent::Authority& hierarchyController)
-    //{
-    //    auto controlledEnts = hierarchyController.GetChildrenRelatedEntities();
-    //    for (auto& controlledEnt : controlledEnts)
-    //    {
-    //        AZ_Assert(controlledEnt != nullptr, "We have lost a controlled entity unexpectedly");
-    //        replicationSet[controlledEnt.GetConstEntity()] = EntityReplicationData(EntityNetworkRoleT::e_Autonomous, EntityPrioritySystem::k_MaxPriority); // Always replicate controlled entities
-    //        auto hierarchyController = controlledEnt.FindController<EntityHierarchyComponent::Authority>();
-    //        if (hierarchyController != nullptr)
-    //        {
-    //            CollectControlledEntitiesRecursive(replicationSet, *hierarchyController);
-    //        }
-    //    }
-    //}
+    void ServerToClientReplicationWindow::UpdateHierarchyReplicationSet(ReplicationSet& replicationSet, NetworkHierarchyRootComponent& hierarchyComponent)
+    {
+        INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get();
+        AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
+
+        for (const AZ::Entity* controlledEntity : hierarchyComponent.GetHierarchicalEntities())
+        {
+            NetEntityId controlledNetEntitydId = networkEntityManager->GetNetEntityIdById(controlledEntity->GetId());
+            AZ_Assert(controlledNetEntitydId != InvalidNetEntityId, "Unable to find the hierarchy entity in Network Entity Manager");
+
+            ConstNetworkEntityHandle controlledEntityHandle = networkEntityManager->GetEntity(controlledNetEntitydId);
+            AZ_Assert(controlledEntityHandle != nullptr, "We have lost a controlled entity unexpectedly");
+            
+            replicationSet[controlledEntityHandle] = { NetEntityRole::Autonomous, 1.0f };
+        }
+    }
 }

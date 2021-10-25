@@ -12,6 +12,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
 #include <AzToolsFramework/UI/SearchWidget/SearchCriteriaWidget.hxx>
 AZ_POP_DISABLE_WARNING
@@ -20,67 +21,6 @@ namespace AzToolsFramework
 {
     namespace ComponentPaletteUtil
     {
-        bool OffersRequiredServices(
-            const AZ::SerializeContext::ClassData* componentClass,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
-            const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter
-        )
-        {
-            AZ_Assert(componentClass, "Component class must not be null");
-
-            if (!componentClass)
-            {
-                return false;
-            }
-
-            AZ::ComponentDescriptor* componentDescriptor = nullptr;
-            EBUS_EVENT_ID_RESULT(componentDescriptor, componentClass->m_typeId, AZ::ComponentDescriptorBus, GetDescriptor);
-            if (!componentDescriptor)
-            {
-                return false;
-            }
-
-            // If no services are provided, this function returns true
-            if (serviceFilter.empty())
-            {
-                return true;
-            }
-
-            AZ::ComponentDescriptor::DependencyArrayType providedServices;
-            componentDescriptor->GetProvidedServices(providedServices, nullptr);
-
-            //reject this component if it does not offer any of the required services
-            if (AZStd::find_first_of(
-                providedServices.begin(),
-                providedServices.end(),
-                serviceFilter.begin(),
-                serviceFilter.end()) == providedServices.end())
-            {
-                return false;
-            }
-
-            //reject this component if it does offer any of the incompatible services
-            if (AZStd::find_first_of(
-                providedServices.begin(),
-                providedServices.end(),
-                incompatibleServiceFilter.begin(),
-                incompatibleServiceFilter.end()) != providedServices.end())
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        bool OffersRequiredServices(
-            const AZ::SerializeContext::ClassData* componentClass,
-            const AZStd::vector<AZ::ComponentServiceType>& serviceFilter
-        )
-        {
-            const AZStd::vector<AZ::ComponentServiceType> incompatibleServices;
-            return OffersRequiredServices(componentClass, serviceFilter, incompatibleServices);
-        }
-
         bool IsAddableByUser(const AZ::SerializeContext::ClassData* componentClass)
         {
             AZ_Assert(componentClass, "component class must not be null");

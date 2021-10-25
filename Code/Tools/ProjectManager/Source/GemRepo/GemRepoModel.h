@@ -35,7 +35,7 @@ namespace O3DE::ProjectManager
         static QString GetSummary(const QModelIndex& modelIndex);
         static QString GetAdditionalInfo(const QModelIndex& modelIndex);
         static QString GetDirectoryLink(const QModelIndex& modelIndex);
-        static QString GetRepoLink(const QModelIndex& modelIndex);
+        static QString GetRepoUri(const QModelIndex& modelIndex);
         static QDateTime GetLastUpdated(const QModelIndex& modelIndex);
         static QString GetPath(const QModelIndex& modelIndex);
 
@@ -55,7 +55,7 @@ namespace O3DE::ProjectManager
             RoleSummary,
             RoleIsEnabled,
             RoleDirectoryLink,
-            RoleRepoLink,
+            RoleRepoUri,
             RoleLastUpdated,
             RolePath,
             RoleAdditionalInfo,

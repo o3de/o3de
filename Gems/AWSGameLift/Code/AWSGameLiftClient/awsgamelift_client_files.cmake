@@ -7,6 +7,8 @@
 #
 
 set(FILES
+    ../AWSGameLiftCommon/Include/AWSGameLiftPlayer.h
+    ../AWSGameLiftCommon/Source/AWSGameLiftPlayer.cpp
     ../AWSGameLiftCommon/Source/AWSGameLiftSessionConstants.h
     Include/Request/AWSGameLiftAcceptMatchRequest.h
     Include/Request/AWSGameLiftCreateSessionOnQueueRequest.h
@@ -15,9 +17,13 @@ set(FILES
     Include/Request/AWSGameLiftSearchSessionsRequest.h
     Include/Request/AWSGameLiftStartMatchmakingRequest.h
     Include/Request/AWSGameLiftStopMatchmakingRequest.h
-    Include/Request/IAWSGameLiftRequests.h
+    Include/Request/AWSGameLiftRequestBus.h
+    Include/Request/AWSGameLiftSessionRequestBus.h
+    Include/Request/AWSGameLiftMatchmakingRequestBus.h
     Source/Activity/AWSGameLiftActivityUtils.cpp
     Source/Activity/AWSGameLiftActivityUtils.h
+    Source/Activity/AWSGameLiftAcceptMatchActivity.cpp
+    Source/Activity/AWSGameLiftAcceptMatchActivity.h
     Source/Activity/AWSGameLiftCreateSessionActivity.cpp
     Source/Activity/AWSGameLiftCreateSessionActivity.h
     Source/Activity/AWSGameLiftCreateSessionOnQueueActivity.cpp
@@ -28,6 +34,10 @@ set(FILES
     Source/Activity/AWSGameLiftLeaveSessionActivity.h
     Source/Activity/AWSGameLiftSearchSessionsActivity.cpp
     Source/Activity/AWSGameLiftSearchSessionsActivity.h
+    Source/Activity/AWSGameLiftStartMatchmakingActivity.cpp
+    Source/Activity/AWSGameLiftStartMatchmakingActivity.h
+    Source/Activity/AWSGameLiftStopMatchmakingActivity.cpp
+    Source/Activity/AWSGameLiftStopMatchmakingActivity.h
     Source/AWSGameLiftClientLocalTicketTracker.cpp
     Source/AWSGameLiftClientLocalTicketTracker.h
     Source/AWSGameLiftClientManager.cpp
@@ -42,5 +52,4 @@ set(FILES
     Source/Request/AWSGameLiftStartMatchmakingRequest.cpp
     Source/Request/AWSGameLiftStopMatchmakingRequest.cpp
     Source/Request/IAWSGameLiftInternalRequests.h
-    Source/Request/IAWSGameLiftMatchmakingInternalRequests.h
 )

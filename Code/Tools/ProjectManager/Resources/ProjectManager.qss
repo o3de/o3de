@@ -61,6 +61,24 @@ QTabBar::tab:focus {
     color: #4082eb;
 }
 
+#ToastNotification {
+    background-color: black;
+    border-radius: 20px;
+    border:1px solid #dddddd;
+    qproperty-minimumSize: 100px 50px;
+}
+
+#ToastNotification #icon_frame {
+    border-radius: 4px;
+    qproperty-minimumSize: 44px 20px;
+}
+
+#ToastNotification #iconLabel {
+    qproperty-minimumSize: 30px 20px;
+    qproperty-maximumSize: 30px 20px;
+    margin-left: 6px;
+}
+
 /************** General (Forms) **************/
 
 #formLineEditWidget,
@@ -216,6 +234,10 @@ QTabBar::tab:focus {
 
 #horizontalSeparatingLine {
     color: #666666;
+}
+
+#verticalSeparatingLine {
+    color: #888888;
 }
 
 /************** Project Settings **************/
@@ -481,6 +503,34 @@ QProgressBar::chunk {
     font-weight: 600;
 }
 
+#gemCatalogMenuButton {
+    qproperty-flat: true;
+    max-width:36px;
+    min-width:36px;
+    max-height:24px;
+    min-height:24px;
+}
+
+#GemCatalogCartOverlayGemDownloadHeader {
+    margin:0;
+    padding: 0px;
+    background-color: #333333;
+}
+
+#GemCatalogCartOverlayGemDownloadBG {
+    margin:0;
+    padding: 0px;
+    background-color: #444444;
+}
+
+#gemCatalogMenuButton {
+    qproperty-flat: true;
+    max-width:36px;
+    min-width:36px;
+    max-height:24px;
+    min-height:24px;
+}
+
 #GemCatalogHeaderLabel {
     font-size: 12px;
     color: #FFFFFF;
@@ -496,11 +546,32 @@ QProgressBar::chunk {
     background-color: #333333;
 }
 
-/************** Filter tag widget **************/
+#GemDependenciesDialog QLabel {
+    margin-bottom:10px;
+}
+
+#GemDependenciesDialog QCheckBox {
+    background-color: #333333;
+    border-radius: 3px;
+    spacing:3px;
+    margin-right:5px;
+    padding:4px;
+    margin-top:5px;
+}
+
+/************** Filter Tag widget **************/
 
 #FilterTagWidgetTextLabel {
     color: #94D2FF;
     font-size: 10px;
+}
+
+#TagWidget {
+    background-color: #333333;
+    padding:3px;
+    font-size:12px;
+    border-radius: 3px;
+    margin-right: 3px;
 }
 
 /************** Gems SubWidget **************/

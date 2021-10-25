@@ -38,6 +38,11 @@ namespace AZ
             void AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const ShaderVariantId& shaderVaraintId = ShaderVariantId{}, const AZ::Name& shaderTag = Uuid::CreateRandom().ToString<AZ::Name>());
             void AddShader(const AZ::Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag);
 
+            //! Sets the version of the MaterialTypeAsset
+            void SetVersion(uint32_t version);
+            //! Adds a version update object into the MaterialTypeAsset
+            void AddVersionUpdate(const MaterialVersionUpdate& materialVersionUpdate);
+
             //! Indicates that this MaterialType will own the specified shader option.
             //! Material-owned shader options can be connected to material properties (either directly or through functors).
             //! They cannot be accessed externally (for example, through the Material::SetSystemShaderOption() function).
@@ -112,6 +117,7 @@ namespace AZ
             //! Saves the per-material SRG layout in m_shaderResourceGroupLayout for easier access
             void CacheMaterialSrgLayout();
             
+            bool ValidateMaterialVersion();
             bool ValidateBeginMaterialProperty();
             bool ValidateEndMaterialProperty();
 

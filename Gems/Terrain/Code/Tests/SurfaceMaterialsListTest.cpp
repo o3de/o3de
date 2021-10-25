@@ -63,22 +63,21 @@ namespace UnitTest
         }
     };
 
-    TEST_F(TerrainSurfaceMaterialsListTest, SurfaceGradientListRequiresShapeToActivate)
+    TEST_F(TerrainSurfaceMaterialsListTest, SurfaceMaterialsListRequiresShapeToActivate)
     {
         // Check that the component requires a shape service to activate: trying to Activate the entity will cause the test to fail, so
         // use the EvaluateDependenciesGetDetails function to check the dependencies are met.
-
         auto entity = CreateEntity();
 
         AddSurfaceMaterialListComponent(entity.get());
 
         const AZ::Entity::DependencySortOutcome sortOutcome = entity->EvaluateDependenciesGetDetails();
         EXPECT_FALSE(sortOutcome.IsSuccess());
-        
+
         entity.reset();
     }
 
-    TEST_F(TerrainSurfaceMaterialsListTest, SurfaceGradientListActivatesSuccessfully)
+    TEST_F(TerrainSurfaceMaterialsListTest, SurfaceMaterialsListActivatesSuccessfully)
     {
         auto entity = CreateEntityWithShapeComponents();
 
