@@ -80,7 +80,7 @@ def Multiplayer_AutoComponent_NetworkInput():
 
     with Tracer() as section_tracer:
         # 2) Enter game mode
-        helper.multiplayer_enter_game_mode(Tests.enter_game_mode, player_prefab_path)
+        helper.multiplayer_enter_game_mode(Tests.enter_game_mode, player_prefab_path.lower())
 
         # 3) Make sure the network player was spawned
         player_id = general.find_game_entity(player_prefab_name)
