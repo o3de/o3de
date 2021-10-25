@@ -7,6 +7,7 @@
  */
 
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
+#include <TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h>
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -675,9 +676,9 @@ namespace Terrain
             pixels.resize((quadrantWorldArea.m_max.m_x - quadrantWorldArea.m_min.m_x) * (quadrantWorldArea.m_max.m_y - quadrantWorldArea.m_min.m_y));
             uint32_t index = 0;
 
-            for (int xPos = quadrantWorldArea.m_min.m_x; xPos < quadrantWorldArea.m_max.m_x; ++xPos)
+            for (int yPos = quadrantWorldArea.m_min.m_y; yPos < quadrantWorldArea.m_max.m_y; ++yPos)
             {
-                for (int yPos = quadrantWorldArea.m_min.m_y; yPos < quadrantWorldArea.m_max.m_y; ++yPos)
+                for (int xPos = quadrantWorldArea.m_min.m_x; xPos < quadrantWorldArea.m_max.m_x; ++xPos)
                 {
                     AZ::Vector2 position = AZ::Vector2(xPos * DetailTextureScale, yPos * DetailTextureScale);
                     AzFramework::SurfaceData::OrderedSurfaceTagWeightSet surfaceWeights;
@@ -689,7 +690,7 @@ namespace Terrain
                     {
                         if (surfaceTagWeight.m_weight > 0.0f)
                         {
-                            AZ::Crc32 surfaceType = surfaceWeights.begin()->m_surfaceType;
+                            AZ::Crc32 surfaceType = surfaceTagWeight.m_surfaceType;
                             uint16_t materialId = GetDetailMaterialForSurfaceTypeAndPosition(surfaceType, position);
                             if (materialId != m_detailMaterials.NoFreeSlot && materialId < 255)
                             {
