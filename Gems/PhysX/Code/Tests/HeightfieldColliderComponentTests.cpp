@@ -18,8 +18,6 @@
 #include <PhysX/PhysXLocks.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 
-#pragma optimize("", off)
-
 namespace UnitTest
 {
     class MockTerrainPhysicsColliderComponent
