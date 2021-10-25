@@ -12,11 +12,35 @@ import azlmbr
 from shiboken2 import wrapInstance, getCppPointer
 from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtCore import QEvent, Qt
-from PySide2.QtWidgets import QAction, QDialog, QHeaderView, QLabel, QLineEdit, QPushButton, QSplitter, QTreeWidget, QTreeWidgetItem, QWidget, QAbstractButton
+from PySide2.QtWidgets import QVBoxLayout, QAction, QDialog, QHeaderView, QLabel, QLineEdit, QPushButton, QSplitter, QTreeWidget, QTreeWidgetItem, QWidget, QAbstractButton
 
 # Once PySide2 has been bootstrapped, register our ${SanitizedCppName}Dialog with the Editor
 
 class ${SanitizedCppName}Dialog(QDialog):
     def __init__(self, parent=None):
         super(${SanitizedCppName}Dialog, self).__init__(parent)
-        self.setWindowTitle("${SanitizedCppName} Dialog")
+
+        self.setObjectName("${SanitizedCppName}Dialog")
+
+        self.setWindowTitle("HelloWorld, ${SanitizedCppName} Dialog")
+
+        self.mainLayout = QVBoxLayout(self)
+
+        self.introLabel = QLabel("Put your cool stuff here!")
+
+        self.mainLayout.addWidget(self.introLabel, 0, Qt.AlignCenter)
+
+        self.helpText = str("For help getting started,"
+            "visit the <a href=\"https://o3de.org/docs/tools-ui/ui-dev-intro/\">UI Development</a> documentation<br/>"
+            "or come ask a question in the <a href=\"https://discord.gg/R77Wss3kHe\">sig-ui-ux channel</a> on Discord")
+
+        self.helpLabel = QLabel()
+        self.helpLabel.setTextFormat(Qt.RichText)
+        self.helpLabel.setText(self.helpText)
+        self.helpLabel.setOpenExternalLinks(True)
+
+        self.mainLayout.addWidget(self.helpLabel, 0, Qt.AlignCenter)
+
+        self.setLayout(self.mainLayout)
+
+        return
