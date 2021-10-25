@@ -739,11 +739,35 @@ void ViewportInteraction::MouseWheelEvent(QWheelEvent* ev)
 
 bool ViewportInteraction::KeyPressEvent(QKeyEvent* ev)
 {
-    if (ev->key() == Qt::Key_Space)
+    auto key = ev->key();
+    if (key == Qt::Key_Space)
     {
         if (!ev->isAutoRepeat())
         {
             ActivateSpaceBar();
+        }
+
+        return true;
+    }
+    else if (Qt::Key_Left <= key && key <= Qt::Key_Down)
+    {
+        const ViewportInteraction::NudgeSpeed nudgeSpeed =
+            (ev->modifiers() & Qt::ShiftModifier) ? ViewportInteraction::NudgeSpeed::Fast : ViewportInteraction::NudgeSpeed::Slow;
+
+        switch (ev->key())
+        {
+        case Qt::Key_Up:
+            Nudge(ViewportInteraction::NudgeDirection::Up, nudgeSpeed);
+            break;
+        case Qt::Key_Down:
+            Nudge(ViewportInteraction::NudgeDirection::Down, nudgeSpeed);
+            break;
+        case Qt::Key_Left:
+            Nudge(ViewportInteraction::NudgeDirection::Left, nudgeSpeed);
+            break;
+        case Qt::Key_Right:
+            Nudge(ViewportInteraction::NudgeDirection::Right, nudgeSpeed);
+            break;
         }
 
         return true;

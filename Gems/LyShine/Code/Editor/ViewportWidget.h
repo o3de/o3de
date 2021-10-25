@@ -122,12 +122,15 @@ protected:
     void wheelEvent(QWheelEvent* ev) override;
 
     //! Prevents shortcuts from interfering with preview mode.
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
+    //! Handle events from Qt.
     bool event(QEvent* ev) override;
 
-    //! Key press event from Qt
+    //! Key press event from Qt.
     void keyPressEvent(QKeyEvent* event) override;
 
-    //! Key release event from Qt
+    //! Key release event from Qt.
     void keyReleaseEvent(QKeyEvent* event) override;
 
     void focusOutEvent(QFocusEvent* ev) override;
@@ -169,7 +172,7 @@ private: // member functions
     //! Fill the entire viewport area with a background color
     void RenderViewportBackground();
 
-    //! Create shortcuts for manipulating the viewport
+    ////! Create shortcuts for manipulating the viewport
     void SetupShortcuts();
 
     //! Do the Qt stuff to hide/show the rulers
