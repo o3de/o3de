@@ -20,6 +20,11 @@
 
 namespace Terrain
 {
+    bool TerrainMacroMaterialConfig::NormalMapAttributesAreReadOnly() const
+    {
+        return !m_macroNormalAsset.GetId().IsValid();
+    }
+
     void TerrainMacroMaterialConfig::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serialize = azrtti_cast<AZ::SerializeContext*>(context); serialize)
@@ -48,12 +53,15 @@ namespace Terrain
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_macroNormalAsset, "Normal Texture",
                         "Texture for defining surface normal direction. These will override normals generated from the geometry.")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_normalFlipX, "Normal Flip X",
                         "Flip tangent direction for this normal map.")
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainMacroMaterialConfig::NormalMapAttributesAreReadOnly)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainMacroMaterialConfig::m_normalFlipY, "Normal Flip Y",
                         "Flip bitangent direction for this normal map.")
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainMacroMaterialConfig::NormalMapAttributesAreReadOnly)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Slider, &TerrainMacroMaterialConfig::m_normalFactor, "Normal Factor",
                         "Strength factor for scaling the normal map values.")
@@ -61,6 +69,7 @@ namespace Terrain
                         ->Attribute(AZ::Edit::Attributes::Max, 10.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMin, 0.0f)
                         ->Attribute(AZ::Edit::Attributes::SoftMax, 2.0f)
+                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &TerrainMacroMaterialConfig::NormalMapAttributesAreReadOnly)
                     ;
             }
         }

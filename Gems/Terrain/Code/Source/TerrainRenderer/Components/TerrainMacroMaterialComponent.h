@@ -31,6 +31,8 @@ namespace Terrain
         AZ_RTTI(TerrainMacroMaterialConfig, "{9DBAFFF0-FD20-4594-8884-E3266D8CCAC8}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
+        bool NormalMapAttributesAreReadOnly() const;
+
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_macroColorAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_macroNormalAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
         bool m_normalFlipX = false;
