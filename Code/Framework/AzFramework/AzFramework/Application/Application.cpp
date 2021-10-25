@@ -59,6 +59,7 @@
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
+#include <AzFramework/SurfaceData/SurfaceData.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
@@ -315,6 +316,8 @@ namespace AzFramework
         AzFramework::RemoteStorageDriveConfig::Reflect(context);
 
         Physics::ReflectionUtils::ReflectPhysicsApi(context);
+        AzFramework::SurfaceData::SurfaceTagWeight::Reflect(context);
+        AzFramework::SurfaceData::SurfacePoint::Reflect(context);
         AzFramework::Terrain::TerrainDataRequests::Reflect(context);
 
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))

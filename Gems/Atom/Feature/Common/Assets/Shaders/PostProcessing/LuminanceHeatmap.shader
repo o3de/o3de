@@ -1,5 +1,5 @@
 { 
-    "Source" : "LuminanceHeatmap",
+    "Source" : "LuminanceHeatmap.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

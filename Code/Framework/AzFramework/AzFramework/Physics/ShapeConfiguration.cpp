@@ -37,6 +37,7 @@ namespace Physics
             REFLECT_SHAPETYPE_ENUM_VALUE(Sphere);
             REFLECT_SHAPETYPE_ENUM_VALUE(Cylinder);
             REFLECT_SHAPETYPE_ENUM_VALUE(PhysicsAsset);
+            REFLECT_SHAPETYPE_ENUM_VALUE(Heightfield);
 
             #undef REFLECT_SHAPETYPE_ENUM_VALUE
         }
@@ -285,12 +286,17 @@ namespace Physics
         return m_type;
     }
 
-    void* CookedMeshShapeConfiguration::GetCachedNativeMesh() const
+    const void* CookedMeshShapeConfiguration::GetCachedNativeMesh() const
     {
         return m_cachedNativeMesh;
     }
 
-    void CookedMeshShapeConfiguration::SetCachedNativeMesh(void* cachedNativeMesh) const
+    void* CookedMeshShapeConfiguration::GetCachedNativeMesh()
+    {
+        return m_cachedNativeMesh;
+    }
+
+    void CookedMeshShapeConfiguration::SetCachedNativeMesh(void* cachedNativeMesh)
     {
         m_cachedNativeMesh = cachedNativeMesh;
     }
@@ -305,4 +311,131 @@ namespace Physics
             m_cachedNativeMesh = nullptr;
         }
     }
-}
+
+    void HeightfieldShapeConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext
+                ->RegisterGenericType<AZStd::shared_ptr<HeightfieldShapeConfiguration>>();
+
+            serializeContext->Class<HeightfieldShapeConfiguration, ShapeConfiguration>()
+                ->Version(1);
+        }
+    }
+
+    HeightfieldShapeConfiguration::~HeightfieldShapeConfiguration()
+    {
+        SetCachedNativeHeightfield(nullptr);
+    }
+
+    HeightfieldShapeConfiguration::HeightfieldShapeConfiguration(const HeightfieldShapeConfiguration& other)
+        : ShapeConfiguration(other)
+        , m_gridResolution(other.m_gridResolution)
+        , m_numColumns(other.m_numColumns)
+        , m_numRows(other.m_numRows)
+        , m_samples(other.m_samples)
+        , m_minHeightBounds(other.m_minHeightBounds)
+        , m_maxHeightBounds(other.m_maxHeightBounds)
+        , m_cachedNativeHeightfield(nullptr)
+    {
+    }
+
+    HeightfieldShapeConfiguration& HeightfieldShapeConfiguration::operator=(const HeightfieldShapeConfiguration& other)
+    {
+        ShapeConfiguration::operator=(other);
+
+        m_gridResolution = other.m_gridResolution;
+        m_numColumns = other.m_numColumns;
+        m_numRows = other.m_numRows;
+        m_samples = other.m_samples;
+        m_minHeightBounds = other.m_minHeightBounds;
+        m_maxHeightBounds = other.m_maxHeightBounds;
+
+        // Prevent raw pointer from being copied
+        m_cachedNativeHeightfield = nullptr;
+
+        return *this;
+    }
+
+    const void* HeightfieldShapeConfiguration::GetCachedNativeHeightfield() const
+    {
+        return m_cachedNativeHeightfield;
+    }
+
+    void* HeightfieldShapeConfiguration::GetCachedNativeHeightfield()
+    {
+        return m_cachedNativeHeightfield;
+    }
+
+    void HeightfieldShapeConfiguration::SetCachedNativeHeightfield(void* cachedNativeHeightfield)
+    {
+        if (m_cachedNativeHeightfield)
+        {
+            Physics::SystemRequestBus::Broadcast(&Physics::SystemRequests::ReleaseNativeHeightfieldObject, m_cachedNativeHeightfield);
+        }
+
+        m_cachedNativeHeightfield = cachedNativeHeightfield;
+    }
+
+    AZ::Vector2 HeightfieldShapeConfiguration::GetGridResolution() const
+    {
+        return m_gridResolution;
+    }
+
+    void HeightfieldShapeConfiguration::SetGridResolution(const AZ::Vector2& gridResolution)
+    {
+        m_gridResolution = gridResolution;
+    }
+
+    int32_t HeightfieldShapeConfiguration::GetNumColumns() const
+    {
+        return m_numColumns;
+    }
+
+    void HeightfieldShapeConfiguration::SetNumColumns(int32_t numColumns)
+    {
+        m_numColumns = numColumns;
+    }
+
+    int32_t HeightfieldShapeConfiguration::GetNumRows() const
+    {
+        return m_numRows;
+    }
+
+    void HeightfieldShapeConfiguration::SetNumRows(int32_t numRows)
+    {
+        m_numRows = numRows;
+    }
+
+    const AZStd::vector<Physics::HeightMaterialPoint>& HeightfieldShapeConfiguration::GetSamples() const
+    {
+        return m_samples;
+    }
+
+    void HeightfieldShapeConfiguration::SetSamples(const AZStd::vector<Physics::HeightMaterialPoint>& samples)
+    {
+        m_samples = samples;
+    }
+
+    float HeightfieldShapeConfiguration::GetMinHeightBounds() const
+    {
+        return m_minHeightBounds;
+    }
+
+    void HeightfieldShapeConfiguration::SetMinHeightBounds(float minBounds)
+    {
+        m_minHeightBounds = minBounds;
+    }
+
+    float HeightfieldShapeConfiguration::GetMaxHeightBounds() const
+    {
+        return m_maxHeightBounds;
+    }
+
+    void HeightfieldShapeConfiguration::SetMaxHeightBounds(float maxBounds)
+    {
+        m_maxHeightBounds = maxBounds;
+    }
+} // namespace Physics
+

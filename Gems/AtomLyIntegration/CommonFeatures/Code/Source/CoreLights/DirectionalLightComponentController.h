@@ -80,6 +80,10 @@ namespace AZ
             void SetFilteringSampleCount(uint32_t count) override;
             bool GetShadowReceiverPlaneBiasEnabled() const override;
             void SetShadowReceiverPlaneBiasEnabled(bool enable) override;
+            float GetShadowBias() const override;
+            void SetShadowBias(float bias) override;
+            float GetNormalShadowBias() const override;
+            void SetNormalShadowBias(float bias) override;
 
         private:
             friend class EditorDirectionalLightComponent;
