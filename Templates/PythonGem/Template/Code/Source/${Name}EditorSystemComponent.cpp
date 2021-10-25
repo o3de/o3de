@@ -17,7 +17,7 @@ namespace ${SanitizedCppName}
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<${SanitizedCppName}EditorSystemComponent>();
+            serializeContext->Class<${SanitizedCppName}EditorSystemComponent, AZ::Component>();
         }
     }
 
@@ -29,7 +29,13 @@ namespace ${SanitizedCppName}
         }
     }
 
-    ${SanitizedCppName}EditorSystemComponent::~${SanitizedCppName}EditorSystemComponent() = default;
+    ${SanitizedCppName}EditorSystemComponent::~${SanitizedCppName}EditorSystemComponent()
+    {
+        if (${SanitizedCppName}Interface::Get() == this)
+        {
+            ${SanitizedCppName}Interface::Unregister(this);
+        }
+    }
 
     void ${SanitizedCppName}EditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
@@ -51,11 +57,13 @@ namespace ${SanitizedCppName}
 
     void ${SanitizedCppName}EditorSystemComponent::Activate()
     {
+        ${SanitizedCppName}RequestBus::Handler::BusConnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
     void ${SanitizedCppName}EditorSystemComponent::Deactivate()
     {
+        AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         ${SanitizedCppName}RequestBus::Handler::BusDisconnect();
     }
 
