@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzCore/DOM/DOMVisitor.h>
+#include <AzCore/DOM/DomVisitor.h>
 
 namespace AZ::DOM
 {
