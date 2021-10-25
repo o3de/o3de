@@ -777,7 +777,7 @@ namespace AzToolsFramework
             PrefabUndoEntityUpdate* state = aznew PrefabUndoEntityUpdate(AZStd::to_string(static_cast<AZ::u64>(entityId)));
             state->SetParent(undoBatch);
             state->Capture(beforeState, afterState, entityId);
-            state->RedoExclude(instance);
+            state->RedoExclude(instance->get());
         }
 
         void PrefabPublicHandler::Internal_HandleInstanceChange(
