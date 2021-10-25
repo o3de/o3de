@@ -28,23 +28,22 @@ namespace AzGameFramework
         // can read from the FileIOBase instance if available
         m_settingsRegistry->SetUseFileIO(true);
 
-        // Attempt to mount the engine pak from the Executable Directory
-        // at the Assets alias, otherwise to attempting to mount the engine pak
-        // from the Cache folder
-        AZ::IO::FixedMaxPath enginePakPath = AZ::Utils::GetExecutableDirectory();
-        enginePakPath /= "Engine.pak";
-        if (m_archiveFileIO->Exists(enginePakPath.c_str()))
+        // Attempt to mount the engine pak to the project product asset alias
+        // Search Order:
+        // - Project Cache Root Directory
+        // - Executable Directory
+        bool enginePakOpened{};
+        AZ::IO::FixedMaxPath enginePakPath;
+        if (m_settingsRegistry->Get(enginePakPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
         {
-            m_archive->OpenPack("@assets@", enginePakPath.Native());
+            // fall back to checking Project Cache Root.
+            enginePakPath /= "engine.pak";
+            enginePakOpened = m_archive->OpenPack("@products@", enginePakPath.Native());
         }
-        else if (enginePakPath.clear(); m_settingsRegistry->Get(enginePakPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))
+        if (!enginePakOpened)
         {
-            // fall back to checking if there is an Engine.pak in the Asset Cache
-            enginePakPath /= "Engine.pak";
-            if (m_archiveFileIO->Exists(enginePakPath.c_str()))
-            {
-                m_archive->OpenPack("@assets@", enginePakPath.Native());
-            }
+            enginePakPath = AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / "engine.pak";
+            m_archive->OpenPack("@products@", enginePakPath.Native());
         }
     }
 
@@ -97,6 +96,8 @@ namespace AzGameFramework
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
+#else
+        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
 #endif
         // Update the Runtime file paths in case the "{BootstrapSettingsRootKey}/assets" key was overriden by a setting registry
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);

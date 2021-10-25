@@ -151,11 +151,11 @@ namespace AZ
 
         void ShaderAssetBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
         {
-            AZStd::string fullPath;
-            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, true);
+            AZStd::string shaderAssetSourceFileFullPath;
+            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), shaderAssetSourceFileFullPath, true);
             ShaderBuilderUtility::IncludedFilesParser includedFilesParser;
 
-            AZ_TracePrintf(ShaderAssetBuilderName, "CreateJobs for Shader \"%s\"\n", fullPath.data());
+            AZ_TracePrintf(ShaderAssetBuilderName, "CreateJobs for Shader \"%s\"\n", shaderAssetSourceFileFullPath.data());
 
             // Used to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
             // Note it's probably important for this to be set once outside the platform loop so every platform's ShaderAsset
@@ -166,7 +166,7 @@ namespace AZ
 
             // Need to get the name of the azsl file from the .shader source asset, to be able to declare a dependency to SRG Layout Job.
             // and the macro options to preprocess.
-            auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(fullPath);
+            auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderAssetSourceFileFullPath);
             if (!descriptorParseOutcome.IsSuccess())
             {
                 AZ_Error(
@@ -178,7 +178,7 @@ namespace AZ
             RPI::ShaderSourceData shaderSourceData = descriptorParseOutcome.TakeValue();
 
             AZStd::string azslFullPath;
-            ShaderBuilderUtility::GetAbsolutePathToAzslFile(fullPath, shaderSourceData.m_source, azslFullPath);
+            ShaderBuilderUtility::GetAbsolutePathToAzslFile(shaderAssetSourceFileFullPath, shaderSourceData.m_source, azslFullPath);
 
             {
                 // Add the AZSL as source dependency
@@ -191,9 +191,9 @@ namespace AZ
             {
                 AZ_Error(
                     ShaderAssetBuilderName, false, "Shader program listed as the source entry does not exist: %s.", azslFullPath.c_str());
-                // Treat as success, so when the azsl file shows up the AP will try to recompile.
-                response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
-                return;
+                // Even though there was an error here, don't stop, because we need to report the SourceFileDependency so when the azsl
+                // file shows up the AP will try to recompile. We will go ahead and create the job anyway, and then ProcessJob can
+                // report the failure.
             }
 
             GlobalBuildOptions buildOptions = ReadBuildOptions(ShaderAssetBuilderName);
@@ -228,9 +228,9 @@ namespace AZ
                 response.m_createJobOutputs.push_back(jobDescriptor);
             }  // for all request.m_enabledPlatforms
 
-            const AZStd::sys_time_t createJobsEndStamp = AZStd::GetTimeNowMicroSecond();
-            const u64 createJobDurationMicros = createJobsEndStamp - shaderAssetBuildTimestamp;
-            AZ_TracePrintf(ShaderAssetBuilderName, "CreateJobs for %s took %llu microseconds", fullPath.c_str(), createJobDurationMicros );
+            AZ_TracePrintf(
+                ShaderAssetBuilderName, "CreateJobs for %s took %llu microseconds", shaderAssetSourceFileFullPath.c_str(),
+                AZStd::GetTimeNowMicroSecond() - shaderAssetBuildTimestamp);
 
             response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
         }

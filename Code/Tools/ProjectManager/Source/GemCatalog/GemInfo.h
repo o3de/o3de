@@ -44,12 +44,22 @@ namespace O3DE::ProjectManager
 
         enum GemOrigin
         {
-            Open3DEEngine = 1 << 0,
+            Open3DEngine = 1 << 0,
             Local = 1 << 1,
-            NumGemOrigins = 2
+            Remote = 1 << 2,
+            NumGemOrigins = 3
         };
         Q_DECLARE_FLAGS(GemOrigins, GemOrigin)
         static QString GetGemOriginString(GemOrigin origin);
+
+        enum DownloadStatus
+        {
+            UnknownDownloadStatus = -1,
+            NotDownloaded,
+            Downloading,
+            Downloaded,
+        };
+        static QString GetDownloadStatusString(DownloadStatus status);
 
         GemInfo() = default;
         GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded);
@@ -68,6 +78,7 @@ namespace O3DE::ProjectManager
         QString m_summary = "No summary provided.";
         Platforms m_platforms;
         Types m_types; //! Asset and/or Code and/or Tool
+        DownloadStatus m_downloadStatus = UnknownDownloadStatus;
         QStringList m_features;
         QString m_requirement;
         QString m_directoryLink;
@@ -75,8 +86,7 @@ namespace O3DE::ProjectManager
         QString m_version = "Unknown Version";
         QString m_lastUpdatedDate = "Unknown Date";
         int m_binarySizeInKB = 0;
-        QStringList m_dependingGemUuids;
-        QStringList m_conflictingGemUuids;
+        QStringList m_dependencies;
     };
 } // namespace O3DE::ProjectManager
 

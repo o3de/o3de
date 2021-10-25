@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/FileReader.h>
 #include <AzCore/IO/GenericStreams.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/TextStreamWriters.h>
@@ -274,7 +276,9 @@ namespace AZ::SettingsRegistryMergeUtils
             return engineRoot;
         }
 
-        return {};
+        // Fall back to using the project root as the engine root if the engine path could not be reconciled
+        // by checking the project.json "engine" string within o3de_manifest.json "engine_paths" object
+        return projectRoot;
     }
 
     AZ::IO::FixedMaxPath FindProjectRoot(SettingsRegistryInterface& settingsRegistry)
@@ -307,7 +311,13 @@ namespace AZ::SettingsRegistryMergeUtils
             return projectRoot;
         }
 
-        return {};
+        // Step 3 Check for a "Cache" directory by scanning upwards from the executable directory
+        if (auto candidateRoot = Internal::ScanUpRootLocator("Cache");
+            !candidateRoot.empty() && AZ::IO::SystemFile::IsDirectory(candidateRoot.c_str()))
+        {
+            projectRoot = AZStd::move(candidateRoot);
+        }
+        return projectRoot;
     }
 
     AZStd::string_view ConfigParserSettings::DefaultCommentPrefixFilter(AZStd::string_view line)
@@ -388,8 +398,36 @@ namespace AZ::SettingsRegistryMergeUtils
         const ConfigParserSettings& configParserSettings)
     {
         auto configPath = FindEngineRoot(registry) / filePath;
-        IO::SystemFile configFile;
-        if (!configFile.Open(configPath.c_str(), IO::SystemFile::OpenMode::SF_OPEN_READ_ONLY))
+        IO::FileReader configFile;
+        bool configFileOpened{};
+        switch (configParserSettings.m_fileReaderClass)
+        {
+        case ConfigParserSettings::FileReaderClass::UseFileIOIfAvailableFallbackToSystemFile:
+        {
+            auto fileIo = AZ::IO::FileIOBase::GetInstance();
+            configFileOpened = configFile.Open(fileIo, configPath.c_str());
+            break;
+        }
+        case ConfigParserSettings::FileReaderClass::UseSystemFileOnly:
+        {
+            configFileOpened = configFile.Open(nullptr, configPath.c_str());
+            break;
+        }
+        case ConfigParserSettings::FileReaderClass::UseFileIOOnly:
+        {
+            auto fileIo = AZ::IO::FileIOBase::GetInstance();
+            if (fileIo == nullptr)
+            {
+                return false;
+            }
+            configFileOpened = configFile.Open(fileIo, configPath.c_str());
+            break;
+        }
+        default:
+            AZ_Error("SettingsRegistryMergeUtils", false, "An Invalid FileReaderClass enum value has been supplied");
+            return false;
+        }
+        if (!configFileOpened)
         {
             AZ_Warning("SettingsRegistryMergeUtils", false, R"(Unable to open file "%s")", configPath.c_str());
             return false;
@@ -480,7 +518,7 @@ namespace AZ::SettingsRegistryMergeUtils
                 AZ_Error("SettingsRegistryMergeUtils", false,
                     R"(The config file "%s" contains a line which is longer than the max line length of %zu.)" "\n"
                     R"(Parsing will halt. The line content so far is:)" "\n"
-                    R"("%.*s")" "\n", configFile.Name(), configBuffer.max_size(),
+                    R"("%.*s")" "\n", configPath.c_str(), configBuffer.max_size(),
                     aznumeric_cast<int>(configBuffer.size()), configBuffer.data());
                 configFileParsed = false;
                 break;
@@ -508,7 +546,7 @@ namespace AZ::SettingsRegistryMergeUtils
         AZ::IO::FixedMaxPath path = AZ::Utils::GetExecutableDirectory();
         registry.Set(FilePathKey_BinaryFolder, path.LexicallyNormal().Native());
 
-        // Engine root folder - corresponds to the @engroot@ and @devroot@ aliases
+        // Engine root folder - corresponds to the @engroot@ and @engroot@ aliases
         AZ::IO::FixedMaxPath engineRoot = FindEngineRoot(registry);
         registry.Set(FilePathKey_EngineRootFolder, engineRoot.LexicallyNormal().Native());
 
@@ -532,7 +570,7 @@ namespace AZ::SettingsRegistryMergeUtils
                 assetPlatform = AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
             }
 
-            // Project path - corresponds to the @devassets@ alias
+            // Project path - corresponds to the @projectroot@ alias
             // NOTE: Here we append to engineRoot, but if projectPathValue is absolute then engineRoot is discarded.
             path = engineRoot / projectPathValue;
 
@@ -624,7 +662,7 @@ namespace AZ::SettingsRegistryMergeUtils
                 }
                 else
                 {
-                    // Cache: root - same as the @root@ alias, this is the starting path for cache files.
+                    // Cache: root - same as the @products@ alias, this is the starting path for cache files.
                     path = normalizedProjectPath / "Cache";
                     registry.Set(FilePathKey_CacheProjectRootFolder, path.LexicallyNormal().Native());
                     path /= assetPlatform;
@@ -687,7 +725,9 @@ namespace AZ::SettingsRegistryMergeUtils
         if (registry.Get(cacheRootPath, FilePathKey_CacheRootFolder))
         {
             mergePath = AZStd::move(cacheRootPath);
-            mergePath /= SettingsRegistryInterface::RegistryFolder;
+            AZStd::fixed_string<32> registryFolderLower(SettingsRegistryInterface::RegistryFolder);
+            AZStd::to_lower(registryFolderLower.begin(), registryFolderLower.end());
+            mergePath /= registryFolderLower;
             registry.MergeSettingsFolder(mergePath.Native(), specializations, platform, "", scratchBuffer);
         }
 

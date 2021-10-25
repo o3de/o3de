@@ -34,11 +34,13 @@ logger = logging.getLogger(__name__)
 targetProjects = ["AutomatedTesting"]
 
 @pytest.fixture
+@pytest.mark.SUITE_sandbox
 def local_resources(request, workspace, ap_setup_fixture):
     ap_setup_fixture["tests_dir"] = os.path.dirname(os.path.realpath(__file__))
 
 
 @dataclass
+@pytest.mark.SUITE_sandbox
 class BlackboxAssetTest:
     test_name: str
     asset_folder: str
@@ -65,7 +67,7 @@ blackbox_fbx_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=0,
+                            warning_count=1,
                             products = [
                                 asset_db_utils.DBProduct(
                                     product_name='onemeshonematerial/onemeshonematerial.dbgsg',
@@ -97,7 +99,7 @@ blackbox_fbx_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=9,
+                            warning_count=22,
                             products = [
                                 asset_db_utils.DBProduct(
                                     product_name='softnaminglod/lodtest.dbgsg',
@@ -129,7 +131,7 @@ blackbox_fbx_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=6,
+                            warning_count=14,
                             products = [
                                 asset_db_utils.DBProduct(
                                     product_name='softnamingphysics/physicstest.dbgsg',
@@ -163,7 +165,7 @@ blackbox_fbx_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=0,
+                            warning_count=2,
                             products = [
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshonematerial/multiple_mesh_one_material.dbgsg',
@@ -195,7 +197,7 @@ blackbox_fbx_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=0,
+                            warning_count=2,
                             products= [
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.dbgsg',
@@ -228,7 +230,7 @@ blackbox_fbx_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=0,
+                            warning_count=1,
                             products = [
                                 asset_db_utils.DBProduct(
                                     product_name='onemeshmultiplematerials/single_mesh_multiple_materials.dbgsg',
@@ -258,7 +260,7 @@ blackbox_fbx_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=0,
+                            warning_count=1,
                             products=[
                                 asset_db_utils.DBProduct(
                                     product_name='vertexcolor/vertexcolor.dbgsg',
@@ -272,6 +274,38 @@ blackbox_fbx_tests = [
         ),
         id="35796285",
         marks=pytest.mark.test_case_id("C35796285"),
+    ),
+    pytest.param(
+        BlackboxAssetTest(
+            test_name= "MotionTest_RunAP_SuccessWithMatchingProducts",
+            asset_folder= "Motion",
+            scene_debug_file="Jack_Idle_Aim_ZUp.dbgsg",
+            assets = [
+                asset_db_utils.DBSourceAsset(
+                    source_file_name = "Jack_Idle_Aim_ZUp.fbx",
+                    uuid = b"eda904ae0e145f8b973d57fc5809918b",
+                    jobs = [
+                        asset_db_utils.DBJob(
+                            job_key= "Scene compilation",
+                            builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
+                            status=4,
+                            error_count=0,
+                            warning_count=0,
+                            products = [
+                                asset_db_utils.DBProduct(
+                                    product_name='motion/jack_idle_aim_zup.dbgsg',
+                                    sub_id=-517610290,
+                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='motion/jack_idle_aim_zup.motion',
+                                    sub_id=186392073,
+                                    asset_type=b'00494b8e75784ba28b28272e90680787')
+                            ]
+                        ),
+                    ]
+                )
+            ]
+        ),
     ),
 ]
 
@@ -294,7 +328,7 @@ blackbox_fbx_special_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=0,
+                            warning_count=2,
                             products = [
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg',
@@ -315,7 +349,7 @@ blackbox_fbx_special_tests = [
                             builder_guid=b"bd8bf65894854fe3830e8ec3a23c35f3",
                             status=4,
                             error_count=0,
-                            warning_count=0,
+                            warning_count=2,
                             products = [
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg',
@@ -338,9 +372,11 @@ blackbox_fbx_special_tests = [
 @pytest.mark.usefixtures("local_resources")
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.assetpipeline
+@pytest.mark.SUITE_sandbox
 class TestsFBX_AllPlatforms(object):
 
     @pytest.mark.BAT
+    @pytest.mark.SUITE_sandbox
     @pytest.mark.parametrize("blackbox_param", blackbox_fbx_tests)
     def test_FBXBlackboxTest_SourceFiles_Processed_ResultInExpectedProducts(self, workspace,
                                                                             ap_setup_fixture, asset_processor, project,
@@ -359,6 +395,7 @@ class TestsFBX_AllPlatforms(object):
                           asset_processor, project, blackbox_param)
 
     @pytest.mark.BAT
+    @pytest.mark.SUITE_sandbox
     @pytest.mark.parametrize("blackbox_param", blackbox_fbx_special_tests)
     def test_FBXBlackboxTest_AssetInfoModified_AssetReprocessed_ResultInExpectedProducts(self,
                                                                                          workspace, ap_setup_fixture,
@@ -382,7 +419,6 @@ class TestsFBX_AllPlatforms(object):
         self.run_fbx_test(workspace, ap_setup_fixture,
                           asset_processor, project, blackbox_param, True)
 
-
     def populateAssetInfo(self, workspace, project, assets):
 
         # Check that each given source asset resulted in the expected jobs and products.
@@ -392,7 +428,6 @@ class TestsFBX_AllPlatforms(object):
                 for product in job.products:
                     product.product_name = job.platform + "/" \
                                            + product.product_name
-
 
     def run_fbx_test(self, workspace, ap_setup_fixture, asset_processor,
                      project, blackbox_params: BlackboxAssetTest, overrideAsset = False):

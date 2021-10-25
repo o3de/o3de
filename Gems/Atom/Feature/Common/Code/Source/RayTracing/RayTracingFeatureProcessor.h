@@ -268,14 +268,23 @@ namespace AZ
             bool m_materialInfoBufferNeedsUpdate = false;
 
             // side list for looking up existing BLAS objects so they can be re-used when the same mesh is added multiple times
-            struct RayTracingBlasInstance
+            struct SubMeshBlasInstance
             {
                 RHI::Ptr<RHI::RayTracingBlas> m_blas;
-                uint32_t m_count = 0;
             };
 
-            using RayTracingBlasMap = AZStd::unordered_map<AZ::Data::AssetId, RayTracingBlasInstance>;
-            RayTracingBlasMap m_blasMap;
+            struct MeshBlasInstance
+            {
+                uint32_t m_count = 0;
+                AZStd::vector<SubMeshBlasInstance> m_subMeshes;
+            };
+
+            using BlasInstanceMap = AZStd::unordered_map<AZ::Data::AssetId, MeshBlasInstance>;
+            BlasInstanceMap m_blasInstanceMap;
+
+            // Cache view pointers so we dont need to update them if none changed from frame to frame.
+            AZStd::vector<const RHI::BufferView*> m_meshBuffers;
+            AZStd::vector<const RHI::ImageView*> m_materialTextures;
         };
     }
 }

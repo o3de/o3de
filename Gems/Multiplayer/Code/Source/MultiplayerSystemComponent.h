@@ -37,6 +37,8 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
+    AZ_CVAR_EXTERNED(AZ::CVarFixedString, sv_defaultPlayerSpawnAsset);
+
     //! Multiplayer system component wraps the bridging logic between the game and transport layer.
     class MultiplayerSystemComponent final
         : public AZ::Component
@@ -55,7 +57,7 @@ namespace Multiplayer
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         MultiplayerSystemComponent();
-        ~MultiplayerSystemComponent() override = default;
+        ~MultiplayerSystemComponent() override;
 
         //! AZ::Component overrides.
         //! @{
@@ -67,7 +69,11 @@ namespace Multiplayer
         //! @{
         bool OnSessionHealthCheck() override;
         bool OnCreateSessionBegin(const AzFramework::SessionConfig& sessionConfig) override;
+        void OnCreateSessionEnd() override;
         bool OnDestroySessionBegin() override;
+        void OnDestroySessionEnd() override;
+        void OnUpdateSessionBegin(const AzFramework::SessionConfig& sessionConfig, const AZStd::string& updateReason) override;
+        void OnUpdateSessionEnd() override;
         //! @}
 
         //! AZ::TickBus::Handler overrides.
@@ -76,7 +82,7 @@ namespace Multiplayer
         int GetTickOrder() override;
         //! @}
 
-        bool IsHandshakeComplete() const;
+        bool IsHandshakeComplete(AzNetworking::IConnection* connection) const;
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::Connect& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::Accept& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerPackets::ReadyForEntityUpdates& packet);
@@ -105,13 +111,20 @@ namespace Multiplayer
         //! @{
         MultiplayerAgentType GetAgentType() const override;
         void InitializeMultiplayer(MultiplayerAgentType state) override;
+        bool StartHosting(uint16_t port, bool isDedicated = true) override;
+        bool Connect(const AZStd::string& remoteAddress, uint16_t port) override;
+        void Terminate(AzNetworking::DisconnectReason reason) override;
+        void AddClientMigrationStartEventHandler(ClientMigrationStartEvent::Handler& handler) override;
+        void AddClientMigrationEndEventHandler(ClientMigrationEndEvent::Handler& handler) override;
         void AddClientDisconnectedHandler(ClientDisconnectedEvent::Handler& handler) override;
+        void AddNotifyClientMigrationHandler(NotifyClientMigrationEvent::Handler& handler) override;
+        void AddNotifyEntityMigrationEventHandler(NotifyEntityMigrationEvent::Handler& handler) override;
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
         void AddSessionInitHandler(SessionInitEvent::Handler& handler) override;
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) override;
-        bool StartHosting(uint16_t port, bool isDedicated = true) override;
-        bool Connect(AZStd::string remoteAddress, uint16_t port) override;
-        void Terminate(AzNetworking::DisconnectReason reason) override;
+        void AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler) override;
+        void SendNotifyClientMigrationEvent(AzNetworking::ConnectionId connectionId, const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId) override;
+        void SendNotifyEntityMigrationEvent(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) override;
         void SendReadyForEntityUpdates(bool readyForEntityUpdates) override;
         AZ::TimeMs GetCurrentHostTimeMs() const override;
         float GetCurrentBlendFactor() const override;
@@ -119,6 +132,10 @@ namespace Multiplayer
         INetworkEntityManager* GetNetworkEntityManager() override;
         void SetFilterEntityManager(IFilterEntityManager* entityFilter) override;
         IFilterEntityManager* GetFilterEntityManager() override;
+        void RegisterPlayerIdentifierForRejoin(uint64_t temporaryUserIdentifier, NetEntityId controlledEntityId) override;
+        void CompleteClientMigration(uint64_t temporaryUserIdentifier, AzNetworking::ConnectionId connectionId, const HostId& publicHostId, ClientInputId migratedClientInputId) override;
+        void SetShouldSpawnNetworkEntities(bool value) override;
+        bool GetShouldSpawnNetworkEntities() const override;
         //! @}
 
         //! Console commands.
@@ -130,9 +147,11 @@ namespace Multiplayer
 
         void TickVisibleNetworkEntities(float deltaTime, float serverRateSeconds);
         void OnConsoleCommandInvoked(AZStd::string_view command, const AZ::ConsoleCommandContainer& args, AZ::ConsoleFunctorFlags flags, AZ::ConsoleInvokedFrom invokedFrom);
+        void OnAutonomousEntityReplicatorCreated();
         void ExecuteConsoleCommandList(AzNetworking::IConnection* connection, const AZStd::fixed_vector<Multiplayer::LongNetworkString, 32>& commands);
-        NetworkEntityHandle SpawnDefaultPlayerPrefab();
-        
+        NetworkEntityHandle SpawnDefaultPlayerPrefab(uint64_t temporaryUserIdentifier);
+        void EnableAutonomousControl(NetworkEntityHandle entityHandle, AzNetworking::ConnectionId connectionId);
+
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
 
         AzNetworking::INetworkInterface* m_networkInterface = nullptr;
@@ -148,18 +167,27 @@ namespace Multiplayer
 
         SessionInitEvent m_initEvent;
         SessionShutdownEvent m_shutdownEvent;
-        ConnectionAcquiredEvent m_connAcquiredEvent;
+        ConnectionAcquiredEvent m_connectionAcquiredEvent;
+        ServerAcceptanceReceivedEvent m_serverAcceptanceReceivedEvent;
         ClientDisconnectedEvent m_clientDisconnectedEvent;
+        ClientMigrationStartEvent m_clientMigrationStartEvent;
+        ClientMigrationEndEvent m_clientMigrationEndEvent;
+        NotifyClientMigrationEvent m_notifyClientMigrationEvent;
+        NotifyEntityMigrationEvent m_notifyEntityMigrationEvent;
+        AZ::Event<NetEntityId>::Handler m_autonomousEntityReplicatorCreatedHandler;
 
         AZStd::queue<AZStd::string> m_pendingConnectionTickets;
+        AZStd::unordered_map<uint64_t, NetEntityId> m_playerRejoinData;
 
         AZ::TimeMs m_lastReplicatedHostTimeMs = AZ::TimeMs{ 0 };
         HostFrameId m_lastReplicatedHostFrameId = HostFrameId(0);
 
+        uint64_t m_temporaryUserIdentifier = 0; // Used in the event of a migration or rejoin
+
         double m_serverSendAccumulator = 0.0;
         float m_renderBlendFactor = 0.0f;
         float m_tickFactor = 0.0f;
-        bool m_didHandshake = false;
+        bool m_spawnNetboundEntities = true;
 
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;

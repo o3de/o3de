@@ -30,7 +30,6 @@ set(FILES
     StaticLib/GraphCanvas/Components/PersistentIdBus.h
     StaticLib/GraphCanvas/Components/SceneBus.h
     StaticLib/GraphCanvas/Components/StyleBus.h
-    StaticLib/GraphCanvas/Components/ToastBus.h
     StaticLib/GraphCanvas/Components/ViewBus.h
     StaticLib/GraphCanvas/Components/VisualBus.h
     StaticLib/GraphCanvas/GraphicsItems/AnimatedPulse.cpp
@@ -91,6 +90,7 @@ set(FILES
     StaticLib/GraphCanvas/Styling/Style.cpp
     StaticLib/GraphCanvas/Styling/Style.h
     StaticLib/GraphCanvas/Styling/StyleHelper.h
+    StaticLib/GraphCanvas/Styling/StyleHelper.cpp
     StaticLib/GraphCanvas/Styling/StyleManager.cpp
     StaticLib/GraphCanvas/Styling/StyleManager.h
     StaticLib/GraphCanvas/Types/ComponentSaveDataInterface.h
@@ -221,9 +221,6 @@ set(FILES
     StaticLib/GraphCanvas/Widgets/StyledItemDelegates/GenericComboBoxDelegate.h
     StaticLib/GraphCanvas/Widgets/StyledItemDelegates/IconDecoratedNameDelegate.cpp
     StaticLib/GraphCanvas/Widgets/StyledItemDelegates/IconDecoratedNameDelegate.h
-    StaticLib/GraphCanvas/Widgets/ToastNotification/ToastNotification.cpp
-    StaticLib/GraphCanvas/Widgets/ToastNotification/ToastNotification.h
-    StaticLib/GraphCanvas/Widgets/ToastNotification/ToastNotification.ui
     StaticLib/GraphCanvas/Utils/ColorUtils.h
     StaticLib/GraphCanvas/Utils/ConversionUtils.h
     StaticLib/GraphCanvas/Utils/GraphUtils.cpp

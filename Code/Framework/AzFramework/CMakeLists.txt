@@ -29,7 +29,6 @@ ly_add_target(
             AZ::AzCore
         PUBLIC
             AZ::GridMate
-            3rdParty::zlib
             3rdParty::zstd
             3rdParty::lz4
 )
@@ -43,6 +42,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAMESPACE AZ
         FILES_CMAKE
             Tests/framework_shared_tests_files.cmake
+            AzFramework/Physics/physics_mock_files.cmake
         INCLUDE_DIRECTORIES
             PUBLIC
                 Tests
@@ -54,7 +54,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzTestShared
     )
-
+    
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
         ly_add_target(
@@ -76,6 +76,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAMESPACE AZ
             FILES_CMAKE
                 Tests/frameworktests_files.cmake
+                ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
@@ -92,6 +93,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_googletest(
             NAME AZ::AzFramework.Tests
         )
+
+        include(${pal_dir}/platform_specific_test_targets.cmake)
 
     endif()
 

@@ -7,6 +7,8 @@
  */
 
 #include <Atom/Feature/Material/MaterialAssignment.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -69,9 +71,9 @@ namespace AZ
         }
 
         MaterialAssignment::MaterialAssignment(const AZ::Data::AssetId& materialAssetId)
-            : m_materialInstance()
+            : m_materialAsset(materialAssetId, AZ::AzTypeInfo<AZ::RPI::MaterialAsset>::Uuid())
+            , m_materialInstance()
         {
-            m_materialAsset.Create(materialAssetId);
         }
 
         MaterialAssignment::MaterialAssignment(const Data::Asset<RPI::MaterialAsset>& asset)
@@ -88,12 +90,89 @@ namespace AZ
 
         void MaterialAssignment::RebuildInstance()
         {
+            if (m_materialInstancePreCreated)
+            {
+                return;
+            }
+
             if (m_materialAsset.IsReady())
             {
-                m_materialInstance =
-                    m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
+                m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_materialAsset) : RPI::Material::Create(m_materialAsset);
                 AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
             }
+            else if (m_defaultMaterialAsset.IsReady())
+            {
+                m_materialInstance = m_propertyOverrides.empty() ? RPI::Material::FindOrCreate(m_defaultMaterialAsset) : RPI::Material::Create(m_defaultMaterialAsset);
+                AZ_Error("MaterialAssignment", m_materialInstance, "Material instance not initialized");
+            }
+        }
+
+        void MaterialAssignment::Release()
+        {
+            if (!m_materialInstancePreCreated)
+            {
+                m_materialInstance = nullptr;
+            }
+            m_materialAsset.Release();
+            m_defaultMaterialAsset.Release();
+        }
+
+        bool MaterialAssignment::RequiresLoading() const
+        {
+            return
+                !m_materialInstancePreCreated &&
+                !m_materialAsset.IsReady() &&
+                !m_materialAsset.IsLoading() &&
+                !m_defaultMaterialAsset.IsReady() &&
+                !m_defaultMaterialAsset.IsLoading();
+        }
+
+        bool MaterialAssignment::ApplyProperties()
+        {
+            // if there is no instance or no properties there's nothing to apply
+            if (!m_materialInstance || m_propertyOverrides.empty())
+            {
+                return true;
+            }
+
+            if (m_materialInstance->CanCompile())
+            {
+                for (const auto& propertyPair : m_propertyOverrides)
+                {
+                    if (!propertyPair.second.empty())
+                    {
+                        bool wasRenamed = false;
+                        Name newName;
+                        RPI::MaterialPropertyIndex materialPropertyIndex = m_materialInstance->FindPropertyIndex(propertyPair.first, &wasRenamed, &newName);
+
+                        // FindPropertyIndex will have already reported a message about what the old and new names are. Here we just add some extra info to help the user resolve it.
+                        AZ_Warning("MaterialAssignment", !wasRenamed,
+                            "Consider running \"Apply Automatic Property Updates\" to use the latest property names.",
+                            propertyPair.first.GetCStr(),
+                            newName.GetCStr());
+
+                        if (wasRenamed && m_propertyOverrides.find(newName) != m_propertyOverrides.end())
+                        {
+                            materialPropertyIndex.Reset();
+                            
+                            AZ_Warning("MaterialAssignment", false,
+                                "Material property '%s' has been renamed to '%s', and a property override exists for both. The one with the old name will be ignored.",
+                                propertyPair.first.GetCStr(),
+                                newName.GetCStr());
+                        }
+
+                        if (!materialPropertyIndex.IsNull())
+                        {
+                            m_materialInstance->SetPropertyValue(
+                                materialPropertyIndex, AZ::RPI::MaterialPropertyValue::FromAny(propertyPair.second));
+                        }
+                    }
+                }
+
+                return m_materialInstance->Compile();
+            }
+
+            return false;
         }
 
         AZStd::string MaterialAssignment::ToString() const

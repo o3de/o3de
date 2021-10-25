@@ -12,7 +12,6 @@
 #include <CoreLights/Shadow.h>
 #include <Math/GaussianMathFilter.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
@@ -585,18 +584,27 @@ namespace AZ
             m_shadowBufferNeedsUpdate = true;
         }
 
-        void DirectionalLightFeatureProcessor::SetShadowBoundaryWidth(LightHandle handle, float boundaryWidth)
+        void DirectionalLightFeatureProcessor::SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable)
         {
-            for (auto& it : m_shadowData)
+            m_shadowProperties.GetData(handle.GetIndex()).m_isReceiverPlaneBiasEnabled = enable;
+        }
+
+        void DirectionalLightFeatureProcessor::SetShadowBias(LightHandle handle, float bias) 
+        {
+            for (auto& it : m_shadowData) 
             {
-                it.second.GetData(handle.GetIndex()).m_boundaryScale = boundaryWidth / 2.f;
+                it.second.GetData(handle.GetIndex()).m_shadowBias = bias;               
             }
             m_shadowBufferNeedsUpdate = true;
         }
 
-        void DirectionalLightFeatureProcessor::SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable)
+        void DirectionalLightFeatureProcessor::SetNormalShadowBias(LightHandle handle, float normalShadowBias)
         {
-            m_shadowProperties.GetData(handle.GetIndex()).m_isReceiverPlaneBiasEnabled = enable;
+            for (auto& it : m_shadowData)
+            {
+                it.second.GetData(handle.GetIndex()).m_normalShadowBias = normalShadowBias;
+            }
+            m_shadowBufferNeedsUpdate = true;
         }
 
         void DirectionalLightFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
@@ -1117,50 +1125,13 @@ namespace AZ
             for (const auto& passIt : m_esmShadowmapsPasses)
             {
                 const RPI::View* cameraView = passIt.second.front()->GetRenderPipeline()->GetDefaultView().get();
-                UpdateStandardDeviations(handle, cameraView);
-                UpdateFilterOffsetsCounts(handle, cameraView);
+                UpdateFilterEnabled(handle, cameraView);
                 UpdateShadowmapPositionInAtlas(handle, cameraView);
                 SetFilterParameterToPass(handle, cameraView);
             }
         }
 
-        void DirectionalLightFeatureProcessor::UpdateStandardDeviations(LightHandle handle, const RPI::View* cameraView)
-        {
-            if (handle != m_shadowingLightHandle)
-            {
-                return;
-            }
-
-            const DirectionalLightShadowData& data = m_shadowData.at(cameraView).GetData(handle.GetIndex());
-            const ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
-            AZStd::fixed_vector<float, Shadow::MaxNumberOfCascades> standardDeviations;
-            for (size_t cascadeIndex = 0; cascadeIndex < property.m_segments.at(cameraView).size(); ++cascadeIndex)
-            {
-                const Aabb& aabb = property.m_segments.at(cameraView)[cascadeIndex].m_aabb;
-                const float aabbDiameter = AZStd::GetMax(
-                    aabb.GetMax().GetX() - aabb.GetMin().GetX(),
-                    aabb.GetMax().GetZ() - aabb.GetMin().GetZ());
-                float standardDeviation = 0.f;
-                if (aabbDiameter > 0.f)
-                {
-                    const float boundaryWidth = data.m_boundaryScale * 2.f;
-                    const float ratioToAabbWidth = boundaryWidth / aabbDiameter;
-                    const float widthInPixels = ratioToAabbWidth * data.m_shadowmapSize;
-                    standardDeviation = widthInPixels / (2 * GaussianMathFilter::ReliableSectionFactor);
-                }
-                standardDeviations.push_back(standardDeviation);
-            }
-
-            for (const RPI::RenderPipelineId& pipelineId : m_renderPipelineIdsForPersistentView.at(cameraView))
-            {
-                for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses.at(pipelineId))
-                {
-                    esmPass->SetFilterParameters(standardDeviations);
-                }
-            }
-        }
-
-        void DirectionalLightFeatureProcessor::UpdateFilterOffsetsCounts(LightHandle handle, const RPI::View* cameraView)
+        void DirectionalLightFeatureProcessor::UpdateFilterEnabled(LightHandle handle, const RPI::View* cameraView)
         {
             if (handle != m_shadowingLightHandle)
             {
@@ -1171,29 +1142,11 @@ namespace AZ
             if (shadowData.m_shadowFilterMethod == aznumeric_cast<uint32_t>(ShadowFilterMethod::Esm) ||
                 (shadowData.m_shadowFilterMethod == aznumeric_cast<uint32_t>(ShadowFilterMethod::EsmPcf)))
             {
-                // Get array of filter counts for the camera view.
-                const RPI::RenderPipelineId& pipelineId = m_renderPipelineIdsForPersistentView.at(cameraView).front();
-                AZ_Assert(!m_esmShadowmapsPasses.at(pipelineId).empty(), "Cannot find a EsmShadowmapsPass.");
-                const AZStd::array_view<uint32_t> filterCounts = m_esmShadowmapsPasses.at(pipelineId).front()->GetFilterCounts();
-                AZ_Assert(filterCounts.size() == GetCascadeCount(handle), "FilterCounts differs with cascade count.");
-
-                // Create array of filter offsets
-                AZStd::vector<uint32_t> filterOffsets;
-                filterOffsets.reserve(filterCounts.size());
-                uint32_t filterOffset = 0;
-                for (const uint32_t count : filterCounts)
-                {
-                    filterOffsets.push_back(filterOffset);
-                    filterOffset += count;
-                }
-
                 // Write filter offsets and filter counts to ESM data
                 for (uint16_t index = 0; index < GetCascadeCount(handle); ++index)
                 {
                     EsmShadowmapsPass::FilterParameter& filterParameter = m_esmParameterData.at(cameraView).GetData(index);
                     filterParameter.m_isEnabled = true;
-                    filterParameter.m_parameterOffset = filterOffsets[index];
-                    filterParameter.m_parameterCount = filterCounts[index];
                 }
             }
             else
@@ -1203,8 +1156,6 @@ namespace AZ
                 {
                     EsmShadowmapsPass::FilterParameter& filterParameter = m_esmParameterData.at(cameraView).GetData(index);
                     filterParameter.m_isEnabled = false;
-                    filterParameter.m_parameterOffset = 0;
-                    filterParameter.m_parameterCount = 0;
                 }
             }
         }
@@ -1589,10 +1540,6 @@ namespace AZ
 
                 for (uint16_t cascadeIndex = 0; cascadeIndex < GetCascadeCount(handle); ++cascadeIndex)
                 {
-                    const Matrix4x4& worldToLightClipMatrix = property.m_segments.at(cameraView)[cascadeIndex].m_view->GetWorldToClipMatrix();
-                    const Matrix4x4 depthBiasMatrix = Shadow::GetClipToShadowmapTextureMatrix() * worldToLightClipMatrix;
-                    shadowData.m_depthBiasMatrices[cascadeIndex] = depthBiasMatrix;
-
                     const Matrix4x4& lightViewToLightClipMatrix = property.m_segments.at(cameraView)[cascadeIndex].m_view->GetViewToClipMatrix();
                     const Matrix4x4 lightViewToShadowmapMatrix = Shadow::GetClipToShadowmapTextureMatrix() * lightViewToLightClipMatrix;
                     shadowData.m_lightViewToShadowmapMatrices[cascadeIndex] = lightViewToShadowmapMatrix;

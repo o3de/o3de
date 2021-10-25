@@ -61,6 +61,24 @@ QTabBar::tab:focus {
     color: #4082eb;
 }
 
+#ToastNotification {
+    background-color: black;
+    border-radius: 20px;
+    border:1px solid #dddddd;
+    qproperty-minimumSize: 100px 50px;
+}
+
+#ToastNotification #icon_frame {
+    border-radius: 4px;
+    qproperty-minimumSize: 44px 20px;
+}
+
+#ToastNotification #iconLabel {
+    qproperty-minimumSize: 30px 20px;
+    qproperty-maximumSize: 30px 20px;
+    margin-left: 6px;
+}
+
 /************** General (Forms) **************/
 
 #formLineEditWidget,
@@ -216,6 +234,10 @@ QTabBar::tab:focus {
 
 #horizontalSeparatingLine {
     color: #666666;
+}
+
+#verticalSeparatingLine {
+    color: #888888;
 }
 
 /************** Project Settings **************/
@@ -438,6 +460,11 @@ QTabBar::tab:focus {
     max-height:26px;
 }
 
+#projectActionButton, #openEditorButton {
+    min-height:26px;
+    max-height:26px;
+}
+
 #labelButtonOverlay {
     background-color: rgba(50,50,50,200);
     min-width:210px;
@@ -476,6 +503,34 @@ QProgressBar::chunk {
     font-weight: 600;
 }
 
+#gemCatalogMenuButton {
+    qproperty-flat: true;
+    max-width:36px;
+    min-width:36px;
+    max-height:24px;
+    min-height:24px;
+}
+
+#GemCatalogCartOverlayGemDownloadHeader {
+    margin:0;
+    padding: 0px;
+    background-color: #333333;
+}
+
+#GemCatalogCartOverlayGemDownloadBG {
+    margin:0;
+    padding: 0px;
+    background-color: #444444;
+}
+
+#gemCatalogMenuButton {
+    qproperty-flat: true;
+    max-width:36px;
+    min-width:36px;
+    max-height:24px;
+    min-height:24px;
+}
+
 #GemCatalogHeaderLabel {
     font-size: 12px;
     color: #FFFFFF;
@@ -491,10 +546,43 @@ QProgressBar::chunk {
     background-color: #333333;
 }
 
-/************** Filter tag widget **************/
+#GemDependenciesDialog QLabel {
+    margin-bottom:10px;
+}
+
+#GemDependenciesDialog QCheckBox {
+    background-color: #333333;
+    border-radius: 3px;
+    spacing:3px;
+    margin-right:5px;
+    padding:4px;
+    margin-top:5px;
+}
+
+/************** Filter Tag widget **************/
 
 #FilterTagWidgetTextLabel {
     color: #94D2FF;
+    font-size: 10px;
+}
+
+#TagWidget {
+    background-color: #333333;
+    padding:3px;
+    font-size:12px;
+    border-radius: 3px;
+    margin-right: 3px;
+}
+
+/************** Gems SubWidget **************/
+
+#gemSubWidgetTitleLabel {
+    color: #FFFFFF;
+    font-size: 16px;
+}
+
+#gemSubWidgetTextLabel {
+    color: #DDDDDD;
     font-size: 10px;
 }
 
@@ -556,17 +644,20 @@ QProgressBar::chunk {
     font-size: 12px;
 }
 
+#gemRepoNoReposLabel {
+    font-size: 16px;
+}
+
 #gemRepoHeaderRefreshButton {
     background-color: transparent;
     qproperty-flat: true;
     qproperty-iconSize: 14px;
 }
 
-#gemRepoHeaderAddButton {
+#gemRepoAddButton {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #888888, stop: 1.0 #555555);
     qproperty-flat: true;
-    margin-right:30px;
     min-width:120px;
     max-width:120px;
     min-height:24px;
@@ -576,11 +667,11 @@ QProgressBar::chunk {
     font-size:12px;
     font-weight:600;
 }
-#gemRepoHeaderAddButton:hover {
+#gemRepoAddButton:hover {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #999999, stop: 1.0 #666666);
 }
-#gemRepoHeaderAddButton:pressed {
+#gemRepoAddButton:pressed {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #555555, stop: 1.0 #777777);
 }
@@ -596,4 +687,29 @@ QProgressBar::chunk {
 
 #gemRepoInspector {
     background: #444444;
+}
+
+#gemRepoAddDialogInstructionTitleLabel {
+    font-size:14px;
+}
+
+#addGemRepoDialog #formFrame {
+    margin-left:0px;
+}
+
+/************** Gem Repo Inspector **************/
+
+#gemRepoInspectorNameLabel {
+    font-size: 18px;
+    color: #FFFFFF;
+}
+
+#gemRepoInspectorBodyLabel {
+    font-size: 12px;
+    color: #DDDDDD;
+}
+
+#gemRepoInspectorAddInfoTitleLabel {
+    font-size: 16px;
+    color: #FFFFFF;
 }

@@ -10,6 +10,7 @@
 #include <Common/RPITestFixture.h>
 #include <Common/JsonTestUtils.h>
 #include <Common/ShaderAssetTestUtils.h>
+#include <Common/ErrorMessageFinder.h>
 #include <Material/MaterialAssetTestUtils.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
@@ -17,6 +18,7 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
+#include <Atom/RPI.Edit/Material/MaterialUtils.h>
 
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -60,22 +62,72 @@ namespace UnitTest
             localFileIO->SetAlias("@exefolder@", rootPath);
 
             m_testMaterialSrgLayout = CreateCommonTestMaterialSrgLayout();
-
             m_testShaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgLayout);
+            m_assetSystemStub.RegisterSourceInfo("@exefolder@/Temp/test.shader", m_testShaderAsset.GetId());
 
-            MaterialTypeAssetCreator materialTypeCreator;
-            materialTypeCreator.Begin(Uuid::CreateRandom());
-            materialTypeCreator.AddShader(m_testShaderAsset);
-            AddCommonTestMaterialProperties(materialTypeCreator, "general.");
-            materialTypeCreator.End(m_testMaterialTypeAsset);
+            // The MaterialSourceData relies on both MaterialTypeSourceData and MaterialTypeAsset. We have to make sure the
+            // .materialtype file is present on disk, and that the MaterialTypeAsset is available through the asset database stub...
+
+            const char* materialTypeJson = R"(
+                    {
+                        "version": 10,
+                        "propertyLayout": {
+                            "properties": {
+                                "general": [
+                                    {"name": "MyBool", "type": "bool"},
+                                    {"name": "MyInt", "type": "Int"},
+                                    {"name": "MyUInt", "type": "UInt"},
+                                    {"name": "MyFloat", "type": "Float"},
+                                    {"name": "MyFloat2", "type": "Vector2"},
+                                    {"name": "MyFloat3", "type": "Vector3"},
+                                    {"name": "MyFloat4", "type": "Vector4"},
+                                    {"name": "MyColor", "type": "Color"},
+                                    {"name": "MyImage", "type": "Image"},
+                                    {"name": "MyEnum", "type": "Enum", "enumValues": ["Enum0", "Enum1", "Enum2"], "defaultValue": "Enum0"}
+                                ]
+                            }
+                        },
+                        "shaders": [
+                            {
+                                "file": "@exefolder@/Temp/test.shader"
+                            }
+                        ],
+                        "versionUpdates": [
+                            {
+                                "toVersion": 2,
+                                "actions": [
+                                    {"op": "rename", "from": "general.testColorNameA", "to": "general.testColorNameB"}
+                                ]
+                            },
+                            {
+                                "toVersion": 4,
+                                "actions": [
+                                    {"op": "rename", "from": "general.testColorNameB", "to": "general.testColorNameC"}
+                                ]
+                            },
+                            {
+                                "toVersion": 10,
+                                "actions": [
+                                    {"op": "rename", "from": "general.testColorNameC", "to": "general.MyColor"}
+                                ]
+                            }
+                        ]
+                    }
+                )";
+
+            AZ::Utils::WriteFile(materialTypeJson, "@exefolder@/Temp/test.materialtype");
+
+            MaterialTypeSourceData materialTypeSourceData;
+            LoadTestDataFromJson(materialTypeSourceData, materialTypeJson);
+            m_testMaterialTypeAsset = materialTypeSourceData.CreateMaterialTypeAsset(Uuid::CreateRandom()).TakeValue();
 
             // Since this test doesn't actually instantiate a Material, it won't need to instantiate this ImageAsset, so all we
             // need is an asset reference with a valid ID.
             m_testImageAsset = Data::Asset<ImageAsset>{ Data::AssetId{Uuid::CreateRandom(), StreamingImageAsset::GetImageAssetSubId()}, azrtti_typeid<StreamingImageAsset>() };
 
             // Register the test assets with the AssetSystemStub so CreateMaterialAsset() can use AssetUtils.
-            m_assetSystemStub.RegisterSourceInfo("test.materialtype", m_testMaterialTypeAsset.GetId());
-            m_assetSystemStub.RegisterSourceInfo("test.streamingimage", m_testImageAsset.GetId());
+            m_assetSystemStub.RegisterSourceInfo("@exefolder@/Temp/test.materialtype", m_testMaterialTypeAsset.GetId());
+            m_assetSystemStub.RegisterSourceInfo("@exefolder@/Temp/test.streamingimage", m_testImageAsset.GetId());
         }
 
         void TearDown() override
@@ -88,22 +140,22 @@ namespace UnitTest
             RPITestFixture::TearDown();
         }
     };
-    
-    void AddPropertyGroup(MaterialSourceData& material, AZStd::string_view groupNameId)
+
+    void AddPropertyGroup(MaterialSourceData& material, AZStd::string_view groupName)
     {
-        material.m_properties.insert(groupNameId);
+        material.m_properties.insert(groupName);
     }
-    
-    void AddProperty(MaterialSourceData& material, AZStd::string_view groupNameId, AZStd::string_view propertyNameId, const MaterialPropertyValue& anyValue)
+
+    void AddProperty(MaterialSourceData& material, AZStd::string_view groupName, AZStd::string_view propertyName, const MaterialPropertyValue& anyValue)
     {
-        material.m_properties[groupNameId][propertyNameId].m_value = anyValue;
+        material.m_properties[groupName][propertyName].m_value = anyValue;
     }
 
     TEST_F(MaterialSourceDataTests, CreateMaterialAsset_BasicProperties)
     {
         MaterialSourceData sourceData;
 
-        sourceData.m_materialType = "test.materialtype";
+        sourceData.m_materialType = "@exefolder@/Temp/test.materialtype";
         AddPropertyGroup(sourceData, "general");
         AddProperty(sourceData, "general", "MyBool", true);
         AddProperty(sourceData, "general", "MyInt", -10);
@@ -113,7 +165,7 @@ namespace UnitTest
         AddProperty(sourceData, "general", "MyFloat2", AZ::Vector2(2.1f, 2.2f));
         AddProperty(sourceData, "general", "MyFloat3", AZ::Vector3(3.1f, 3.2f, 3.3f));
         AddProperty(sourceData, "general", "MyFloat4", AZ::Vector4(4.1f, 4.2f, 4.3f, 4.4f));
-        AddProperty(sourceData, "general", "MyImage", AZStd::string("test.streamingimage"));
+        AddProperty(sourceData, "general", "MyImage", AZStd::string("@exefolder@/Temp/test.streamingimage"));
         AddProperty(sourceData, "general", "MyEnum", AZStd::string("Enum1"));
 
         auto materialAssetOutcome = sourceData.CreateMaterialAsset(Uuid::CreateRandom(), "", true);
@@ -139,7 +191,7 @@ namespace UnitTest
         EXPECT_STREQ(a.m_materialType.data(), b.m_materialType.data());
         EXPECT_STREQ(a.m_description.data(), b.m_description.data());
         EXPECT_STREQ(a.m_parentMaterial.data(), b.m_parentMaterial.data());
-        EXPECT_EQ(a.m_propertyLayoutVersion, b.m_propertyLayoutVersion);
+        EXPECT_EQ(a.m_materialTypeVersion, b.m_materialTypeVersion);
 
         EXPECT_EQ(a.m_properties.size(), b.m_properties.size());
         for (auto& groupA : a.m_properties)
@@ -170,7 +222,7 @@ namespace UnitTest
 
                 auto& propertyA = propertyIterA.second;
                 auto& propertyB = propertyIterB->second;
-                
+
                 bool typesMatch = propertyA.m_value.GetTypeId() == propertyB.m_value.GetTypeId();
                 EXPECT_TRUE(typesMatch);
                 if (typesMatch)
@@ -205,32 +257,32 @@ namespace UnitTest
             "    \"propertyLayout\": {                                           \n"
             "        \"version\": 1,                                             \n"
             "        \"groups\": [                                               \n"
-            "            { \"id\": \"groupA\" },                                 \n"
-            "            { \"id\": \"groupB\" },                                 \n"
-            "            { \"id\": \"groupC\" }                                  \n"
+            "            { \"name\": \"groupA\" },                               \n"
+            "            { \"name\": \"groupB\" },                               \n"
+            "            { \"name\": \"groupC\" }                                \n"
             "        ],                                                          \n"
             "        \"properties\": {                                           \n"
             "            \"groupA\": [                                           \n"
-            "                {\"id\": \"MyBool\", \"type\": \"bool\"},           \n"
-            "                {\"id\": \"MyInt\", \"type\": \"int\"},             \n"
-            "                {\"id\": \"MyUInt\", \"type\": \"uint\"}            \n"
+            "                {\"name\": \"MyBool\", \"type\": \"bool\"},         \n"
+            "                {\"name\": \"MyInt\", \"type\": \"int\"},           \n"
+            "                {\"name\": \"MyUInt\", \"type\": \"uint\"}          \n"
             "            ],                                                      \n"
             "            \"groupB\": [                                           \n"
-            "                {\"id\": \"MyFloat\", \"type\": \"float\"},         \n"
-            "                {\"id\": \"MyFloat2\", \"type\": \"vector2\"},      \n"
-            "                {\"id\": \"MyFloat3\", \"type\": \"vector3\"}       \n"
+            "                {\"name\": \"MyFloat\", \"type\": \"float\"},       \n"
+            "                {\"name\": \"MyFloat2\", \"type\": \"vector2\"},    \n"
+            "                {\"name\": \"MyFloat3\", \"type\": \"vector3\"}     \n"
             "            ],                                                      \n"
             "            \"groupC\": [                                           \n"
-            "                {\"id\": \"MyFloat4\", \"type\": \"vector4\"},      \n"
-            "                {\"id\": \"MyColor\", \"type\": \"color\"},         \n"
-            "                {\"id\": \"MyImage\", \"type\": \"image\"}          \n"
+            "                {\"name\": \"MyFloat4\", \"type\": \"vector4\"},    \n"
+            "                {\"name\": \"MyColor\", \"type\": \"color\"},       \n"
+            "                {\"name\": \"MyImage\", \"type\": \"image\"}        \n"
             "            ]                                                       \n"
             "        }                                                           \n"
             "    }                                                               \n"
             "}                                                                   \n";
 
-        const char* materialTypeFilePath = "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/roundTripTest.materialtype";
-        
+        const char* materialTypeFilePath = "@exefolder@/Temp/roundTripTest.materialtype";
+
         AZ::IO::FileIOStream file;
         EXPECT_TRUE(file.Open(materialTypeFilePath, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath));
         file.Write(strlen(materialTypeJson), materialTypeJson);
@@ -240,7 +292,7 @@ namespace UnitTest
         sourceDataOriginal.m_materialType = materialTypeFilePath;
         sourceDataOriginal.m_parentMaterial = materialTypeFilePath;
         sourceDataOriginal.m_description = "This is a description";
-        sourceDataOriginal.m_propertyLayoutVersion = 7;
+        sourceDataOriginal.m_materialTypeVersion = 7;
         AddPropertyGroup(sourceDataOriginal, "groupA");
         AddProperty(sourceDataOriginal, "groupA", "MyBool", true);
         AddProperty(sourceDataOriginal, "groupA", "MyInt", -10);
@@ -252,14 +304,14 @@ namespace UnitTest
         AddPropertyGroup(sourceDataOriginal, "groupC");
         AddProperty(sourceDataOriginal, "groupC", "MyFloat4", AZ::Vector4(4.1f, 4.2f, 4.3f, 4.4f));
         AddProperty(sourceDataOriginal, "groupC", "MyColor", AZ::Color{0.1f, 0.2f, 0.3f, 0.4f});
-        AddProperty(sourceDataOriginal, "groupC", "MyImage", AZStd::string("test.streamingimage"));
+        AddProperty(sourceDataOriginal, "groupC", "MyImage", AZStd::string("@exefolder@/Temp/test.streamingimage"));
 
         AZStd::string sourceDataSerialized;
         JsonTestResult storeResult = StoreTestDataToJson(sourceDataOriginal, sourceDataSerialized);
 
         MaterialSourceData sourceDataCopy;
         JsonTestResult loadResult = LoadTestDataFromJson(sourceDataCopy, sourceDataSerialized);
-        
+
         CheckEqual(sourceDataOriginal, sourceDataCopy);
     }
 
@@ -271,16 +323,16 @@ namespace UnitTest
                 "properties": {
                     "general": [
                         {
-                            "id": "testColor",
+                            "name": "testColor",
                             "type": "color"
                         }
                     ]
                 }
             }
-        } 
+        }
         )";
 
-        const char* materialTypeFilePath = "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/simpleMaterialType.materialtype";
+        const char* materialTypeFilePath = "@exefolder@/Temp/simpleMaterialType.materialtype";
 
         AZ::IO::FileIOStream file;
         EXPECT_TRUE(file.Open(materialTypeFilePath, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath));
@@ -296,7 +348,7 @@ namespace UnitTest
                     "testColor": [0.1,0.2,0.3]
                 }
             },
-            "materialType": "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/simpleMaterialType.materialtype"
+            "materialType": "@exefolder@/Temp/simpleMaterialType.materialtype"
         }
         )";
 
@@ -330,7 +382,7 @@ namespace UnitTest
     {
         const AZStd::string inputJson = R"(
             {
-                "propertyLayoutVersion": 1,
+                "materialTypeVersion": 1,
                 "properties": {
                     "baseColor": {
                         "color": [1.0,1.0,1.0]
@@ -354,7 +406,7 @@ namespace UnitTest
         const AZStd::string inputJson = R"(
             {
                 "materialType": "DoesNotExist.materialtype",
-                "propertyLayoutVersion": 1,
+                "materialTypeVersion": 1,
                 "properties": {
                     "baseColor": {
                         "color": [1.0,1.0,1.0]
@@ -381,16 +433,16 @@ namespace UnitTest
                 "properties": {
                     "general": [
                         {
-                            "id": "testColor",
+                            "name": "testColor",
                             "type": "color"
                         }
                     ]
                 }
             }
-        } 
+        }
         )";
 
-        const char* materialTypeFilePath = "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/simpleMaterialType.materialtype";
+        const char* materialTypeFilePath = "@exefolder@/Temp/simpleMaterialType.materialtype";
 
         AZ::IO::FileIOStream file;
         EXPECT_TRUE(file.Open(materialTypeFilePath, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath));
@@ -399,8 +451,8 @@ namespace UnitTest
 
         const AZStd::string inputJson = R"(
         {
-            "materialType": "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/simpleMaterialType.materialtype",
-            "propertyLayoutVersion": 1,
+            "materialType": "@exefolder@/Temp/simpleMaterialType.materialtype",
+            "materialTypeVersion": 1,
             "properties": {
                 "general": {
                     "testColor": [1.0,1.0,1.0]
@@ -427,16 +479,16 @@ namespace UnitTest
                 "properties": {
                     "general": [
                         {
-                            "id": "testColor",
+                            "name": "testColor",
                             "type": "color"
                         }
                     ]
                 }
             }
-        } 
+        }
         )";
 
-        const char* materialTypeFilePath = "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/simpleMaterialType.materialtype";
+        const char* materialTypeFilePath = "@exefolder@/Temp/simpleMaterialType.materialtype";
 
         AZ::IO::FileIOStream file;
         EXPECT_TRUE(file.Open(materialTypeFilePath, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath));
@@ -445,8 +497,8 @@ namespace UnitTest
 
         const AZStd::string inputJson = R"(
         {
-            "materialType": "@exefolder@/Gems/Atom/RPI/Code/Tests/Material/Temp/simpleMaterialType.materialtype",
-            "propertyLayoutVersion": 1,
+            "materialType": "@exefolder@/Temp/simpleMaterialType.materialtype",
+            "materialTypeVersion": 1,
             "properties": {
                 "general": {
                     "doesNotExist": [1.0,1.0,1.0]
@@ -467,20 +519,20 @@ namespace UnitTest
     TEST_F(MaterialSourceDataTests, CreateMaterialAsset_MultiLevelDataInheritance)
     {
         MaterialSourceData sourceDataLevel1;
-        sourceDataLevel1.m_materialType = "test.materialtype";
+        sourceDataLevel1.m_materialType = "@exefolder@/Temp/test.materialtype";
         AddPropertyGroup(sourceDataLevel1, "general");
         AddProperty(sourceDataLevel1, "general", "MyFloat", 1.5f);
         AddProperty(sourceDataLevel1, "general", "MyColor", AZ::Color{0.1f, 0.2f, 0.3f, 0.4f});
 
         MaterialSourceData sourceDataLevel2;
-        sourceDataLevel2.m_materialType = "test.materialtype";
+        sourceDataLevel2.m_materialType = "@exefolder@/Temp/test.materialtype";
         sourceDataLevel2.m_parentMaterial = "level1.material";
         AddPropertyGroup(sourceDataLevel2, "general");
         AddProperty(sourceDataLevel2, "general", "MyColor", AZ::Color{0.15f, 0.25f, 0.35f, 0.45f});
         AddProperty(sourceDataLevel2, "general", "MyFloat2", AZ::Vector2{4.1f, 4.2f});
 
         MaterialSourceData sourceDataLevel3;
-        sourceDataLevel3.m_materialType = "test.materialtype";
+        sourceDataLevel3.m_materialType = "@exefolder@/Temp/test.materialtype";
         sourceDataLevel3.m_parentMaterial = "level2.material";
         AddPropertyGroup(sourceDataLevel3, "general");
         AddProperty(sourceDataLevel3, "general", "MyFloat", 3.5f);
@@ -497,7 +549,7 @@ namespace UnitTest
 
         auto materialAssetLevel3 = sourceDataLevel3.CreateMaterialAsset(Uuid::CreateRandom(), "", true);
         EXPECT_TRUE(materialAssetLevel3.IsSuccess());
-        
+
         auto layout = m_testMaterialTypeAsset->GetMaterialPropertiesLayout();
         MaterialPropertyIndex myFloat = layout->FindPropertyIndex(Name("general.MyFloat"));
         MaterialPropertyIndex myFloat2 = layout->FindPropertyIndex(Name("general.MyFloat2"));
@@ -535,14 +587,14 @@ namespace UnitTest
         m_assetSystemStub.RegisterSourceInfo("otherBase.materialtype", otherMaterialType.GetId());
 
         MaterialSourceData sourceDataLevel1;
-        sourceDataLevel1.m_materialType = "test.materialtype";
+        sourceDataLevel1.m_materialType = "@exefolder@/Temp/test.materialtype";
 
         MaterialSourceData sourceDataLevel2;
-        sourceDataLevel2.m_materialType = "test.materialtype";
+        sourceDataLevel2.m_materialType = "@exefolder@/Temp/test.materialtype";
         sourceDataLevel2.m_parentMaterial = "level1.material";
 
         MaterialSourceData sourceDataLevel3;
-        sourceDataLevel3.m_materialType = "otherBase.materialtype";
+        sourceDataLevel3.m_materialType = "@exefolder@/Temp/otherBase.materialtype";
         sourceDataLevel3.m_parentMaterial = "level2.material";
 
         auto materialAssetLevel1 = sourceDataLevel1.CreateMaterialAsset(Uuid::CreateRandom(), "", true);
@@ -570,7 +622,7 @@ namespace UnitTest
         {
             MaterialSourceData sourceData;
 
-            sourceData.m_materialType = "test.materialtype";
+            sourceData.m_materialType = "@exefolder@/Temp/test.materialtype";
 
             AddPropertyGroup(sourceData, "general");
 
@@ -587,7 +639,7 @@ namespace UnitTest
         {
             MaterialSourceData sourceData;
 
-            sourceData.m_materialType = "test.materialtype";
+            sourceData.m_materialType = "@exefolder@/Temp/test.materialtype";
 
             AddPropertyGroup(sourceData, "general");
 
@@ -629,7 +681,7 @@ namespace UnitTest
 
         expectWarning([](MaterialSourceData& materialSourceData)
         {
-            AddProperty(materialSourceData, "general", "DoesNotExist", AZStd::string("test.streamingimage"));
+            AddProperty(materialSourceData, "general", "DoesNotExist", AZStd::string("@exefolder@/Temp/test.streamingimage"));
         });
 
         // Missing image reference
@@ -638,6 +690,124 @@ namespace UnitTest
             AddProperty(materialSourceData, "general", "MyImage", AZStd::string("doesNotExist.streamingimage"));
         }, 3); // Expect a 3rd error because AssetUtils reports its own assertion failure
     }
+
+
+    TEST_F(MaterialSourceDataTests, Load_MaterialTypeVersionUpdate)
+    {
+        const AZStd::string inputJson = R"(
+        {
+            "materialType": "@exefolder@/Temp/test.materialtype",
+            "materialTypeVersion": 1,
+            "properties": {
+                "general": {
+                    "testColorNameA": [0.1, 0.2, 0.3]
+                }
+            }
+        }
+        )";
+
+        MaterialSourceData material;
+        JsonTestResult loadResult = LoadTestDataFromJson(material, inputJson);
+
+        EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
+        EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, loadResult.m_jsonResultCode.GetProcessing());
+
+        // Initially, the loaded material data will match the .material file exactly. This gives us the accurate representation of
+        // what's actually saved on disk.
+        
+        EXPECT_NE(material.m_properties["general"].find("testColorNameA"), material.m_properties["general"].end());
+        EXPECT_EQ(material.m_properties["general"].find("testColorNameB"), material.m_properties["general"].end());
+        EXPECT_EQ(material.m_properties["general"].find("testColorNameC"), material.m_properties["general"].end());
+        EXPECT_EQ(material.m_properties["general"].find("MyColor"), material.m_properties["general"].end());
+
+        AZ::Color testColor = material.m_properties["general"]["testColorNameA"].m_value.GetValue<AZ::Color>();
+        EXPECT_TRUE(AZ::Color(0.1f, 0.2f, 0.3f, 1.0f).IsClose(testColor, 0.01));
+
+        EXPECT_EQ(1, material.m_materialTypeVersion);
+
+        // Then we force the material data to update to the latest material type version specification
+        ErrorMessageFinder warningFinder; // Note this finds errors and warnings, and we're looking for a warning.
+        warningFinder.AddExpectedErrorMessage("Automatic updates are available. Consider updating the .material source file");
+        warningFinder.AddExpectedErrorMessage("This material is based on version '1'");
+        warningFinder.AddExpectedErrorMessage("material type is now at version '10'");
+        material.ApplyVersionUpdates();
+        warningFinder.CheckExpectedErrorsFound();
+
+        // Now the material data should match the latest material type.
+        // Look for the property under the latest name in the material type, not the name used in the .material file.
+
+        EXPECT_EQ(material.m_properties["general"].find("testColorNameA"), material.m_properties["general"].end());
+        EXPECT_EQ(material.m_properties["general"].find("testColorNameB"), material.m_properties["general"].end());
+        EXPECT_EQ(material.m_properties["general"].find("testColorNameC"), material.m_properties["general"].end());
+        EXPECT_NE(material.m_properties["general"].find("MyColor"), material.m_properties["general"].end());
+
+        testColor = material.m_properties["general"]["MyColor"].m_value.GetValue<AZ::Color>();
+        EXPECT_TRUE(AZ::Color(0.1f, 0.2f, 0.3f, 1.0f).IsClose(testColor, 0.01));
+
+        EXPECT_EQ(10, material.m_materialTypeVersion);
+
+        // Calling ApplyVersionUpdates() again should not report the warning again, since the material has already been updated.
+        warningFinder.Reset();
+        material.ApplyVersionUpdates();
+    }
+    
+    TEST_F(MaterialSourceDataTests, Load_MaterialTypeVersionPartialUpdate)
+    {
+        // This case is similar to Load_MaterialTypeVersionUpdate but we start at a later
+        // version so only some of the version updates are applied.
+
+        const AZStd::string inputJson = R"(
+        {
+            "materialType": "@exefolder@/Temp/test.materialtype",
+            "materialTypeVersion": 3,
+            "properties": {
+                "general": {
+                    "testColorNameB": [0.1, 0.2, 0.3]
+                }
+            }
+        }
+        )";
+
+        MaterialSourceData material;
+        JsonTestResult loadResult = LoadTestDataFromJson(material, inputJson);
+
+        EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
+        EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, loadResult.m_jsonResultCode.GetProcessing());
+
+        material.ApplyVersionUpdates();
+
+        AZ::Color testColor = material.m_properties["general"]["MyColor"].m_value.GetValue<AZ::Color>();
+        EXPECT_TRUE(AZ::Color(0.1f, 0.2f, 0.3f, 1.0f).IsClose(testColor, 0.01));
+
+        EXPECT_EQ(10, material.m_materialTypeVersion);
+    }
+    
+    TEST_F(MaterialSourceDataTests, Load_Error_MaterialTypeVersionUpdateWithMismatchedVersion)
+    {
+        const AZStd::string inputJson = R"(
+        {
+            "materialType": "@exefolder@/Temp/test.materialtype",
+            "materialTypeVersion": 3, // At this version, the property should be testColorNameB not testColorNameA
+            "properties": {
+                "general": {
+                    "testColorNameA": [0.1, 0.2, 0.3]
+                }
+            }
+        }
+        )";
+
+        MaterialSourceData material;
+        JsonTestResult loadResult = LoadTestDataFromJson(material, inputJson);
+
+        loadResult.ContainsMessage("/properties/general/testColorNameA", "Property 'general.testColorNameA' not found in material type.");
+        
+        EXPECT_FALSE(material.m_properties["general"]["testColorNameA"].m_value.IsValid());
+
+        material.ApplyVersionUpdates();
+        
+        EXPECT_FALSE(material.m_properties["general"]["MyColor"].m_value.IsValid());
+    }
+
 }
 
 

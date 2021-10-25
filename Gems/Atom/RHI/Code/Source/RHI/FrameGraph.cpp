@@ -8,7 +8,6 @@
 #include <Atom/RHI/BufferFrameAttachment.h>
 #include <Atom/RHI/BufferPoolBase.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraph.h>
 #include <Atom/RHI/ImageFrameAttachment.h>
 #include <Atom/RHI/ImagePoolBase.h>
@@ -110,13 +109,11 @@ namespace AZ
                 {
                     if (attachment->GetFirstScopeAttachment() == nullptr)
                     {
+                        //We allow the rendering to continue even if an attachment is not used.
                         AZ_Error(
                             "FrameGraph", false,
                             "Invalid State: attachment '%s' was added but never used!",
                             attachment->GetId().GetCStr());
-
-                        Clear();
-                        return ResultCode::InvalidOperation;
                     }
                 }
             }

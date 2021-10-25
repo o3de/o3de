@@ -46,7 +46,7 @@ static void DumfontTexture(IConsoleCmdArgs* cmdArgs)
 
     if (fontName && *fontName && *fontName != '0')
     {
-        AZStd::string fontFilePath("@devroot@/");
+        AZStd::string fontFilePath("@engroot@/");
         fontFilePath += fontName;
         fontFilePath += ".bmp";
 

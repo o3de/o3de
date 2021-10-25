@@ -7,7 +7,7 @@
  */
 
 #include <Source/NetworkEntity/EntityReplication/PropertySubscriber.h>
-#include <Source/NetworkEntity/EntityReplication/EntityReplicationManager.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 
 namespace Multiplayer

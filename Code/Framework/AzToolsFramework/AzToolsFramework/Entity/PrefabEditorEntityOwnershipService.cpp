@@ -18,8 +18,9 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
 #include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
-#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -52,7 +53,7 @@ namespace AzToolsFramework
         AZ_Assert(m_loaderInterface != nullptr,
             "Couldn't get prefab loader interface, it's a requirement for PrefabEntityOwnership system to work");
 
-        m_rootInstance = AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab({}, {}, "NewLevel.prefab"));
+        m_rootInstance = AZStd::unique_ptr<Prefab::Instance>(m_prefabSystemComponent->CreatePrefab({}, {}, "newLevel.prefab"));
         m_sliceOwnershipService.BusConnect(m_entityContextId);
         m_sliceOwnershipService.m_shouldAssertForLegacySlicesUsage = m_shouldAssertForLegacySlicesUsage;
         m_editorSliceOwnershipService.BusConnect();
@@ -79,6 +80,8 @@ namespace AzToolsFramework
 
     void PrefabEditorEntityOwnershipService::Reset()
     {
+        m_isRootPrefabAssigned = false;
+
         if (m_rootInstance)
         {
             AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
@@ -203,6 +206,7 @@ namespace AzToolsFramework
         m_rootInstance->SetTemplateSourcePath(m_loaderInterface->GenerateRelativePath(filename));
         m_rootInstance->SetContainerEntityName("Level");
         m_prefabSystemComponent->PropagateTemplateChanges(templateId);
+        m_isRootPrefabAssigned = true;
 
         return true;
     }
@@ -302,23 +306,30 @@ namespace AzToolsFramework
         }
 
         m_prefabSystemComponent->PropagateTemplateChanges(templateId);
+        m_isRootPrefabAssigned = true;
+    }
+
+    bool PrefabEditorEntityOwnershipService::IsRootPrefabAssigned() const
+    {
+        return m_isRootPrefabAssigned;
     }
 
     Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::CreatePrefab(
         const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Prefab::Instance>>&& nestedPrefabInstances,
         AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder)
     {
-        AZStd::unique_ptr<Prefab::Instance> createdPrefabInstance =
-            m_prefabSystemComponent->CreatePrefab(entities, AZStd::move(nestedPrefabInstances), filePath, nullptr, false);
+        if (!instanceToParentUnder)
+        {
+            instanceToParentUnder = *m_rootInstance;
+        }
+
+        AZStd::unique_ptr<Prefab::Instance> createdPrefabInstance = m_prefabSystemComponent->CreatePrefab(
+            entities, AZStd::move(nestedPrefabInstances), filePath, nullptr, instanceToParentUnder, false);
 
         if (createdPrefabInstance)
         {
-            if (!instanceToParentUnder)
-            {
-                instanceToParentUnder = *m_rootInstance;
-            }
-
-            Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(AZStd::move(createdPrefabInstance));
+            Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(
+                AZStd::move(createdPrefabInstance));
             AZ::Entity* containerEntity = addedInstance.m_containerEntity.get();
             containerEntity->AddComponent(aznew Prefab::EditorPrefabComponent());
             HandleEntitiesAdded({containerEntity});
@@ -332,16 +343,18 @@ namespace AzToolsFramework
     Prefab::InstanceOptionalReference PrefabEditorEntityOwnershipService::InstantiatePrefab(
         AZ::IO::PathView filePath, Prefab::InstanceOptionalReference instanceToParentUnder)
     {
-        AZStd::unique_ptr<Prefab::Instance> createdPrefabInstance = m_prefabSystemComponent->InstantiatePrefab(filePath);
-
-        if (createdPrefabInstance)
+        if (!instanceToParentUnder)
         {
-            if (!instanceToParentUnder)
-            {
-                instanceToParentUnder = *m_rootInstance;
-            }
+            instanceToParentUnder = *m_rootInstance;
+        }
 
-            Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(AZStd::move(createdPrefabInstance));
+        AZStd::unique_ptr<Prefab::Instance> instantiatedPrefabInstance =
+            m_prefabSystemComponent->InstantiatePrefab(filePath, instanceToParentUnder);
+
+        if (instantiatedPrefabInstance)
+        {
+            Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(
+                AZStd::move(instantiatedPrefabInstance));
             HandleEntitiesAdded({addedInstance.m_containerEntity.get()});
             return addedInstance;
         }

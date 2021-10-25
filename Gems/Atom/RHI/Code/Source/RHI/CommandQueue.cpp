@@ -7,8 +7,9 @@
  */
 
 #include <Atom/RHI/CommandQueue.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Device.h>
+
+#include <AzCore/Debug/Profiler.h>
 
 namespace AZ
 {
@@ -31,6 +32,23 @@ namespace AZ
                 return ResultCode::InvalidOperation;
             }
 #endif
+
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
+            {
+                auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
+
+                static constexpr AZStd::string_view presentStatName("Present");
+                static constexpr AZ::Crc32 presentStatId(presentStatName);
+                rhiMetrics.GetStatsManager().AddStatistic(presentStatId, presentStatName, /*units=*/"clocks", /*failIfExist=*/false);
+
+                if (!GetName().IsEmpty())
+                {
+                    const AZStd::string commandQueueName(GetName().GetCStr());
+                    const AZ::Crc32 commandQueueId(GetName().GetHash());
+                    rhiMetrics.GetStatsManager().AddStatistic(commandQueueId, commandQueueName, /*units=*/"clocks", /*failIfExist=*/false);
+                }
+            }
+
             const ResultCode resultCode = InitInternal(device, descriptor);
 
             if (resultCode == ResultCode::Success)
@@ -42,7 +60,7 @@ namespace AZ
                 m_isWorkQueueEmpty = true;
                 
                 AZStd::thread_desc threadDesc{ GetName().GetCStr() };
-                m_thread = AZStd::thread([&]() { ProcessQueue(); }, &threadDesc);
+                m_thread = AZStd::thread(threadDesc, [&]() { ProcessQueue(); });
             }
             return resultCode;
         }

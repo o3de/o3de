@@ -204,21 +204,27 @@ class TestLauncherBuilder(object):
     """
     def test_CreateLauncher_DummyWorkspace_DefaultLauncher(self):
         dummy_workspace = mock.MagicMock()
-        launcher_platform = 'windows'
         under_test = ly_test_tools.launchers.launcher_helper.create_launcher(
-            dummy_workspace, launcher_platform)
+            dummy_workspace, ly_test_tools.HOST_OS_EDITOR)
         assert isinstance(under_test, ly_test_tools.launchers.Launcher)
 
     def test_CreateDedicateLauncher_DummyWorkspace_DefaultLauncher(self):
         dummy_workspace = mock.MagicMock()
-        launcher_platform = 'windows_dedicated'
         under_test = ly_test_tools.launchers.launcher_helper.create_dedicated_launcher(
-            dummy_workspace, launcher_platform)
+            dummy_workspace, ly_test_tools.HOST_OS_DEDICATED_SERVER)
         assert isinstance(under_test, ly_test_tools.launchers.Launcher)
 
+    @mock.patch('os.path.exists', mock.MagicMock(return_value=True))
     def test_CreateEditor_DummyWorkspace_DefaultLauncher(self):
         dummy_workspace = mock.MagicMock()
-        launcher_platform = 'windows_editor'
+        dummy_workspace.paths.build_directory.return_value = 'dummy'
         under_test = ly_test_tools.launchers.launcher_helper.create_editor(
-            dummy_workspace, launcher_platform)
+            dummy_workspace, ly_test_tools.HOST_OS_GENERIC_EXECUTABLE)
+        assert isinstance(under_test, ly_test_tools.launchers.Launcher)
+
+    def test_CreateEditor_InvalidPlatform_ValidLauncherStillReturned(self):
+        dummy_workspace = mock.MagicMock()
+        dummy_workspace.paths.build_directory.return_value = 'dummy'
+        under_test = ly_test_tools.launchers.launcher_helper.create_editor(
+            dummy_workspace, 'does not exist')
         assert isinstance(under_test, ly_test_tools.launchers.Launcher)

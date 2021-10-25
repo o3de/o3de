@@ -1,0 +1,120 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/RPI/Math.azsli>
+#include "NewDepthOfFieldCommon.azsli"
+#include "DepthOfField.azsli"
+
+#include <viewsrg.srgi>
+
+#define COC_EPSILON 0.0001
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_depth;
+    Texture2D<float4> m_halfResColorAndCoc;
+
+    // Texture dimensions. XY channels are width and height and ZW channels are 1 / width and 1 / height 
+    // Auto-filled by the pass system when "ShaderImageDimensionsConstant" is specified in the .pass file
+    float4 m_fullResDimensions;
+    float4 m_halfResDimensions;
+
+    Sampler LinearSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    // Sampling positions
+    float2 fullResPixelPos = IN.m_position.xy;
+    float2 halfResPixelPos = fullResPixelPos * 0.5f;
+    float2 fullResUV = fullResPixelPos * PassSrg::m_fullResDimensions.zw;
+    float2 halfResUV = halfResPixelPos * PassSrg::m_halfResDimensions.zw;
+
+    // Full res CoC (Circle of Confusion)
+    float depth = PassSrg::m_depth.Sample(PassSrg::LinearSampler, fullResUV);
+    float far = ViewSrg::m_dof.m_cameraParameters.x;
+    float near = ViewSrg::m_dof.m_cameraParameters.y;
+    float focusDistance = ViewSrg::m_dof.m_cameraParameters.z;
+    float coc = ConvertDofFactor(InvertDepth(depth), far, near, focusDistance);
+
+    // --- Weights based on CoC similarity ---
+
+    // Gather CoCs
+    float4 cocGather = PassSrg::m_halfResColorAndCoc.GatherAlpha(PassSrg::LinearSampler, halfResUV);
+
+    // Calculate differences
+    float4 diff = saturate(cocGather - coc);
+    
+    // Slide differences such that small difference (i.e. most similar CoC) will become 0
+    // (which then gets inverted in the next step)
+    float minDiff = min4(diff);
+    diff -= minDiff;
+
+    // Invert the differences with a slope multiplier of 2
+    float4 cocDiffWeights = saturate(1 - (2 * diff));
+        
+    // --- Weights based on pixel proximity ---
+
+    // Based on which pixel we're shading, we'll be closer/farther to half res pixels
+    // Here are the pre-calculated weights, arranged to match the Gather pattern
+    //
+    //  W  Z
+    //  X  Y
+    //
+    // Note: These weights come down to the same contributions as if we did a linear sample
+    int2 pixel = int2(fullResPixelPos);
+    float4 weights = (pixel.x & 1)
+                 ? ( (pixel.y & 1) ? float4(0.1875f, 0.0625f, 0.1875f, 0.5625f) 
+                                   : float4(0.5625f, 0.1875f, 0.0625f, 0.1875f) )
+                 : ( (pixel.y & 1) ? float4(0.0625f, 0.1875f, 0.5625f, 0.1875f) 
+                                   : float4(0.1875f, 0.5625f, 0.1875f, 0.0625f) );
+    
+    // Combine and normalize weights
+    weights *= cocDiffWeights;
+    weights /= (weights.x + weights.y + weights.z + weights.w);
+    
+    // --- Color ---
+
+    // For each color channel, do a gather and multiply the samples by the weights calculated above
+    float3 color;
+    float4 red = PassSrg::m_halfResColorAndCoc.GatherRed(PassSrg::LinearSampler, halfResUV);
+    color.r = dot(red, weights);
+    float4 blue = PassSrg::m_halfResColorAndCoc.GatherBlue(PassSrg::LinearSampler, halfResUV);
+    color.b = dot(blue, weights);
+    float4 green = PassSrg::m_halfResColorAndCoc.GatherGreen(PassSrg::LinearSampler, halfResUV);
+    color.g = dot(green, weights);
+
+
+    // --- Alpha ---
+
+    // Calculate alpha such that we fully take the half res texture value if the CoC of the full
+    // resolution pixel is greater than the size of a half resolution pixel
+    float cocRadius = abs(coc) * ViewSrg::m_dof.m_cocToScreenRatio * 0.5f;
+    float alpha = saturate(cocRadius / PassSrg::m_halfResDimensions.w);
+    
+    // We may have objects in focus (CoC = 0) but that receive contribution from background bokeh
+    // (which have a negative CoC that we calculated in the large filter). Take the max here. 
+    float minCoc = min4(cocGather);
+    alpha = max(alpha, -minCoc);
+
+    PSOutput OUT;
+    OUT.m_color.rgb = color.rgb;
+    OUT.m_color.a = alpha;
+    return OUT;
+}
+

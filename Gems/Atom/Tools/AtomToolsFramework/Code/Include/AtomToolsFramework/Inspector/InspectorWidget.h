@@ -52,33 +52,33 @@ namespace AtomToolsFramework
         void AddGroupsEnd() override;
 
         void AddGroup(
-            const AZStd::string& groupNameId,
+            const AZStd::string& groupName,
             const AZStd::string& groupDisplayName,
             const AZStd::string& groupDescription,
             QWidget* groupWidget) override;
 
-        void SetGroupVisible(const AZStd::string& groupNameId, bool visible) override;
-        bool IsGroupVisible(const AZStd::string& groupNameId) const override;
-        bool IsGroupHidden(const AZStd::string& groupNameId) const override;
+        void SetGroupVisible(const AZStd::string& groupName, bool visible) override;
+        bool IsGroupVisible(const AZStd::string& groupName) const override;
+        bool IsGroupHidden(const AZStd::string& groupName) const override;
 
-        void RefreshGroup(const AZStd::string& groupNameId) override;
-        void RebuildGroup(const AZStd::string& groupNameId) override;
+        void RefreshGroup(const AZStd::string& groupName) override;
+        void RebuildGroup(const AZStd::string& groupName) override;
 
         void RefreshAll() override;
         void RebuildAll() override;
 
-        void ExpandGroup(const AZStd::string& groupNameId) override;
-        void CollapseGroup(const AZStd::string& groupNameId) override;
-        bool IsGroupExpanded(const AZStd::string& groupNameId) const override;
+        void ExpandGroup(const AZStd::string& groupName) override;
+        void CollapseGroup(const AZStd::string& groupName) override;
+        bool IsGroupExpanded(const AZStd::string& groupName) const override;
 
         void ExpandAll() override;
         void CollapseAll() override;
 
     protected:
-        virtual bool ShouldGroupAutoExpanded(const AZStd::string& groupNameId) const;
-        virtual void OnGroupExpanded(const AZStd::string& groupNameId);
-        virtual void OnGroupCollapsed(const AZStd::string& groupNameId);
-        virtual void OnHeaderClicked(const AZStd::string& groupNameId, QMouseEvent* event);
+        virtual bool ShouldGroupAutoExpanded(const AZStd::string& groupName) const;
+        virtual void OnGroupExpanded(const AZStd::string& groupName);
+        virtual void OnGroupCollapsed(const AZStd::string& groupName);
+        virtual void OnHeaderClicked(const AZStd::string& groupName, QMouseEvent* event);
 
     private:
         QScopedPointer<Ui::InspectorWidget> m_ui;

@@ -70,8 +70,10 @@ namespace AZ
 
             virtual ~Material();
 
-            //! Finds the material property index from the material property name
-            MaterialPropertyIndex FindPropertyIndex(const Name& name) const;
+            //! Finds the material property index from the material property ID
+            //! @param wasRenamed optional parameter that is set to true if @propertyId is an old name and an automatic rename was applied to find the index.
+            //! @param newName optional parameter that is set to the new property name, if the property was renamed.
+            MaterialPropertyIndex FindPropertyIndex(const Name& propertyId, bool* wasRenamed = nullptr, Name* newName = nullptr) const;
 
             //! Sets the value of a material property. The template data type must match the property's data type.
             //! @return true if property value was changed

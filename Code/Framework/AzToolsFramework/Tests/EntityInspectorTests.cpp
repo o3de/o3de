@@ -22,6 +22,7 @@
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 
 // Inspector Test Includes
@@ -313,17 +314,17 @@ namespace UnitTest
         AZ_TEST_ASSERT(testComponent1_ProvidedServices.size() == 1);
         const AZ::SerializeContext::ClassData* testComponent1_ClassData = context->FindClassData(testComponent1_typeId);
 
-        EXPECT_TRUE(AzToolsFramework::ComponentPaletteUtil::OffersRequiredServices(testComponent1_ClassData, testComponent1_ProvidedServices));
+        EXPECT_TRUE(AzToolsFramework::OffersRequiredServices(testComponent1_ClassData, testComponent1_ProvidedServices));
 
         // Verify that OffersRequiredServices returns when given services provided by a different component
         AZ::ComponentDescriptor::DependencyArrayType testComponent2_ProvidedServices;
         Inspector_TestComponent2::GetProvidedServices(testComponent2_ProvidedServices);
         AZ_TEST_ASSERT(testComponent2_ProvidedServices.size() == 1);
         AZ_TEST_ASSERT(testComponent1_ProvidedServices != testComponent2_ProvidedServices);
-        EXPECT_FALSE(AzToolsFramework::ComponentPaletteUtil::OffersRequiredServices(testComponent1_ClassData, testComponent2_ProvidedServices));
+        EXPECT_FALSE(AzToolsFramework::OffersRequiredServices(testComponent1_ClassData, testComponent2_ProvidedServices));
 
         // verify that OffersRequiredServices returns true when provided with an empty list of services
-        EXPECT_TRUE(AzToolsFramework::ComponentPaletteUtil::OffersRequiredServices(testComponent1_ClassData, AZ::ComponentDescriptor::DependencyArrayType()));
+        EXPECT_TRUE(AzToolsFramework::OffersRequiredServices(testComponent1_ClassData, AZ::ComponentDescriptor::DependencyArrayType()));
 
         //////////////////////////////////////////////////////////////////////////
         // TEST IsAddableByUser()

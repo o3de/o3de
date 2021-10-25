@@ -14,10 +14,13 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/Slice/SliceMetadataEntityContextBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
@@ -266,6 +269,68 @@ namespace AzToolsFramework
         auto editorComponentBaseComponent = azrtti_cast<Components::EditorComponentBase*>(component);
         AZ_Assert(editorComponentBaseComponent, "Editor component does not derive from EditorComponentBase");
         return editorComponentBaseComponent;
+    }
+
+    bool OffersRequiredServices(
+        const AZ::SerializeContext::ClassData* componentClass,
+        const AZStd::vector<AZ::ComponentServiceType>& serviceFilter,
+        const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter
+    )
+    {
+        AZ_Assert(componentClass, "Component class must not be null");
+
+        if (!componentClass)
+        {
+            return false;
+        }
+
+        AZ::ComponentDescriptor* componentDescriptor = nullptr;
+        AZ::ComponentDescriptorBus::EventResult(
+            componentDescriptor, componentClass->m_typeId, &AZ::ComponentDescriptor::GetDescriptor);
+        if (!componentDescriptor)
+        {
+            return false;
+        }
+
+        // If no services are provided, this function returns true
+        if (serviceFilter.empty())
+        {
+            return true;
+        }
+
+        AZ::ComponentDescriptor::DependencyArrayType providedServices;
+        componentDescriptor->GetProvidedServices(providedServices, nullptr);
+
+        //reject this component if it does not offer any of the required services
+        if (AZStd::find_first_of(
+            providedServices.begin(),
+            providedServices.end(),
+            serviceFilter.begin(),
+            serviceFilter.end()) == providedServices.end())
+        {
+            return false;
+        }
+
+        //reject this component if it does offer any of the incompatible services
+        if (AZStd::find_first_of(
+            providedServices.begin(),
+            providedServices.end(),
+            incompatibleServiceFilter.begin(),
+            incompatibleServiceFilter.end()) != providedServices.end())
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    bool OffersRequiredServices(
+        const AZ::SerializeContext::ClassData* componentClass,
+        const AZStd::vector<AZ::ComponentServiceType>& serviceFilter
+    )
+    {
+        const AZStd::vector<AZ::ComponentServiceType> incompatibleServices;
+        return OffersRequiredServices(componentClass, serviceFilter, incompatibleServices);
     }
 
     bool ShouldInspectorShowComponent(const AZ::Component* component)
@@ -587,15 +652,40 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
 
+        // Detect if the Entity is Visible
         bool visible = false;
         EditorEntityInfoRequestBus::EventResult(
             visible, entityId, &EditorEntityInfoRequestBus::Events::IsVisible);
 
-        bool locked = false;
-        EditorEntityInfoRequestBus::EventResult(
-            locked, entityId, &EditorEntityInfoRequestBus::Events::IsLocked);
+        if (!visible)
+        {
+            return false;
+        }
 
-        return visible && !locked;
+        // Detect if the Entity is Locked
+        bool locked = false;
+        EditorEntityInfoRequestBus::EventResult(locked, entityId, &EditorEntityInfoRequestBus::Events::IsLocked);
+
+        if (locked)
+        {
+            return false;
+        }
+
+        // Detect if the Entity is part of the Editor Focus
+        if (auto focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
+            !focusModeInterface->IsInFocusSubTree(entityId))
+        {
+            return false;
+        }
+
+        // Detect if the Entity is a descendant of a closed container
+        if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+            containerEntityInterface->IsUnderClosedContainerEntity(entityId))
+        {
+            return false;
+        }
+        
+        return true;
     }
 
     static void SetEntityLockStateRecursively(

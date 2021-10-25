@@ -9,8 +9,6 @@
 set(FILES
     Include/Atom/Utils/DdsFile.h
     Include/Atom/Utils/ImageComparison.h
-    Include/Atom/Utils/ImGuiCpuProfiler.h
-    Include/Atom/Utils/ImGuiCpuProfiler.inl
     Include/Atom/Utils/ImGuiCullingDebug.h
     Include/Atom/Utils/ImGuiCullingDebug.inl
     Include/Atom/Utils/ImGuiGpuProfiler.h
@@ -23,6 +21,7 @@ set(FILES
     Include/Atom/Utils/ImGuiShaderMetrics.inl
     Include/Atom/Utils/ImGuiTransientAttachmentProfiler.h
     Include/Atom/Utils/ImGuiTransientAttachmentProfiler.inl
+    Include/Atom/Utils/PngFile.h
     Include/Atom/Utils/PpmFile.h
     Include/Atom/Utils/StableDynamicArray.h
     Include/Atom/Utils/StableDynamicArray.inl
@@ -31,6 +30,7 @@ set(FILES
     Include/Atom/Utils/AssetCollectionAsyncLoader.h
     Source/DdsFile.cpp
     Source/ImageComparison.cpp
+    Source/PngFile.cpp
     Source/PpmFile.cpp
     Source/Utils.cpp
     Source/AssetCollectionAsyncLoader.cpp

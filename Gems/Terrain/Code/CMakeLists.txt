@@ -21,9 +21,13 @@ ly_add_target(
             AZ::AzFramework
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
+            Gem::Atom_Feature_Common
+            Gem::AtomLyIntegration_CommonFeatures.Static
             Gem::GradientSignal
             Gem::SurfaceData
             Gem::LmbrCentral
+            
+            
 )
 
 ly_add_target(
@@ -107,6 +111,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzFramework
                 Gem::LmbrCentral.Mocks
+                Gem::GradientSignal.Mocks
                 Gem::Terrain.Mocks
                 Gem::Terrain.Static
     )

@@ -30,7 +30,7 @@ import PySide2.QtGui as QtGui
 # -------------------------------------------------------------------------
 #  global space
 # To Do: update to dynaconf dynamic env and settings?
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _MODULE_PATH = Path(__file__)
@@ -38,7 +38,7 @@ _MODULE_PATH = Path(__file__)
 _MODULENAME = 'azpy.shared.ui.custom_treemodel'
 
 _log_level = int(20)
-if _G_DEBUG:
+if _DCCSI_GDEBUG:
     _log_level = int(10)
 _LOGGER = azpy.initialize_logger(_MODULENAME,
                                  log_to_file=False,

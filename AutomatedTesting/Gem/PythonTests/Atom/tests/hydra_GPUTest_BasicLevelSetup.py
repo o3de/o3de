@@ -17,7 +17,7 @@ import azlmbr.math as math
 import azlmbr.paths
 import azlmbr.editor as editor
 
-sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "PythonTests"))
+sys.path.append(os.path.join(azlmbr.paths.projectroot, "Gem", "PythonTests"))
 
 import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.editor_test_helper import EditorTestHelper
@@ -82,7 +82,6 @@ def run():
             general.close_pane("Error Log")
         general.idle_wait(1.0)
         general.run_console("r_displayInfo=0")
-        general.run_console("r_antialiasingmode=0")
         general.idle_wait(1.0)
 
         return True
@@ -216,7 +215,6 @@ def run():
     ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(f"{'AtomBasicLevelSetup'}.ppm")
     general.exit_game_mode()
     helper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=2.0)
-    general.log("Basic level created")
 
 
 if __name__ == "__main__":

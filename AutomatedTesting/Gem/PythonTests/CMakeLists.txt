@@ -33,7 +33,7 @@ add_subdirectory(WhiteBox)
 add_subdirectory(NvCloth)
 
 ## Prefab ##
-add_subdirectory(prefab)
+add_subdirectory(Prefab)
 
 ## Editor Python Bindings ##
 add_subdirectory(EditorPythonBindings)
@@ -58,3 +58,6 @@ add_subdirectory(smoke)
 
 ## AWS ##
 add_subdirectory(AWS)
+
+## Integration tests for editor testing framework ##
+add_subdirectory(editor_test_testing)

@@ -1,5 +1,5 @@
 {
-    "Source": "LightCullingRemap",
+    "Source": "LightCullingRemap.azsl",
 
     "Compiler":
     {

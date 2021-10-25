@@ -96,10 +96,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         connect(
             m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
             &AzAssetBrowserWindow::SetTableViewVisibleAfterFilter);
-
-        connect(
-            m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
-            &AzAssetBrowserWindow::UpdateTableModelAfterFilter);
         connect(
             m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::selectionChangedSignal, this,
             &AzAssetBrowserWindow::SelectionChangedSlot);
@@ -141,6 +137,10 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::ClearTypeFilter, m_ui->m_searchWidget,
         &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
+    connect(
+        this, &AzAssetBrowserWindow::SizeChangedSignal, m_ui->m_assetBrowserTableViewWidget,
+        &AzAssetBrowser::AssetBrowserTableView::UpdateSizeSlot);
+
     m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
 }
 
@@ -162,6 +162,25 @@ QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* pa
 
     // the listener is attached to the parent and will get cleaned up then
     return listener;
+}
+
+void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)
+{
+    // leftLayout is the parent of the tableView
+    // rightLayout is the parent of the preview window.
+    // Workaround: When docking windows this event keeps holding the old size of the widgets instead of the new one
+    // but the resizeEvent holds the new size of the whole widget
+    // So we have to save the proportions somehow
+    const QWidget* leftLayout = m_ui->m_leftLayout;
+    const QVBoxLayout* rightLayout = m_ui->m_rightLayout;
+
+    const float oldLeftLayoutWidth = aznumeric_cast<float>(leftLayout->geometry().width());
+    const float oldWidth = aznumeric_cast<float>(leftLayout->geometry().width() + rightLayout->geometry().width());
+
+    const float newWidth = oldLeftLayoutWidth * aznumeric_cast<float>(resizeEvent->size().width()) / oldWidth;
+    
+    emit SizeChangedSignal(aznumeric_cast<int>(newWidth));
+    QWidget::resizeEvent(resizeEvent);
 }
 
 void AzAssetBrowserWindow::OnInitViewToggleButton()
@@ -228,24 +247,6 @@ void AzAssetBrowserWindow::SetExpandedAssetBrowserMode()
 
     m_assetBrowserDisplayState = AzAssetBrowser::AssetBrowserDisplayState::ExpandedMode;
 
-    disconnect(
-        m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
-        &AzAssetBrowserWindow::UpdateTableModelAfterFilter);
-    disconnect(
-        m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
-        &AzAssetBrowserWindow::SetTableViewVisibleAfterFilter);
-
-    disconnect(
-        m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::selectionChangedSignal, this,
-        &AzAssetBrowserWindow::SelectionChangedSlot);
-    disconnect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
-    disconnect(
-        m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearStringFilter, m_ui->m_searchWidget,
-        &AzAssetBrowser::SearchWidget::ClearStringFilter);
-    disconnect(
-        m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearTypeFilter, m_ui->m_searchWidget,
-        &AzAssetBrowser::SearchWidget::ClearTypeFilter);
-
     if (m_ui->m_assetBrowserTableViewWidget->isVisible())
     {
         m_ui->m_assetBrowserTableViewWidget->setVisible(false);
@@ -258,37 +259,9 @@ void AzAssetBrowserWindow::SetDefaultAssetBrowserMode()
     namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 
     m_assetBrowserDisplayState = AzAssetBrowser::AssetBrowserDisplayState::DefaultMode;
-
-    connect(
-        m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
-        &AzAssetBrowserWindow::SetTableViewVisibleAfterFilter);
-
-    connect(
-        m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
-        &AzAssetBrowserWindow::UpdateTableModelAfterFilter);
-    connect(
-        m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::selectionChangedSignal, this,
-        &AzAssetBrowserWindow::SelectionChangedSlot);
-    connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
-    connect(
-        m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearStringFilter, m_ui->m_searchWidget,
-        &AzAssetBrowser::SearchWidget::ClearStringFilter);
-    connect(
-        m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearTypeFilter, m_ui->m_searchWidget,
-        &AzAssetBrowser::SearchWidget::ClearTypeFilter);
-
-    //If the filter is not empty we want to switch views and Update the model
-    UpdateTableModelAfterFilter();
     SetTableViewVisibleAfterFilter();
 }
 
-void AzAssetBrowserWindow::UpdateTableModelAfterFilter()
-{
-    if (!m_ui->m_searchWidget->GetFilterString().isEmpty())
-    {
-        m_tableModel->UpdateTableModelMaps();
-    }
-}
 
 void AzAssetBrowserWindow::SetTableViewVisibleAfterFilter()
 {
@@ -366,8 +339,8 @@ void AzAssetBrowserWindow::SelectionChangedSlot(const QItemSelection& /*selected
     UpdatePreview();
 }
 
-// while its tempting to use Activated here, we dont actually want it to count as activation
-// just becuase on some OS clicking once is activation.
+// while its tempting to use Activated here, we don't actually want it to count as activation
+// just because on some OS clicking once is activation.
 void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex& element)
 {
     namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;

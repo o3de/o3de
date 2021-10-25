@@ -58,6 +58,7 @@
                     "_rough"
                 ],
                 "PixelFormat": "ASTC_6x6",
+                "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
@@ -87,6 +88,7 @@
                     "_rough"
                 ],
                 "PixelFormat": "ASTC_6x6",
+                "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"

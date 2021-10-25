@@ -44,20 +44,20 @@ namespace MaterialEditor
         AtomToolsFramework::InspectorWidget::Reset();
     }
 
-    bool MaterialInspector::ShouldGroupAutoExpanded(const AZStd::string& groupNameId) const
+    bool MaterialInspector::ShouldGroupAutoExpanded(const AZStd::string& groupName) const
     {
-        auto stateItr = m_windowSettings->m_inspectorCollapsedGroups.find(GetGroupSaveStateKey(groupNameId));
+        auto stateItr = m_windowSettings->m_inspectorCollapsedGroups.find(GetGroupSaveStateKey(groupName));
         return stateItr == m_windowSettings->m_inspectorCollapsedGroups.end();
     }
 
-    void MaterialInspector::OnGroupExpanded(const AZStd::string& groupNameId)
+    void MaterialInspector::OnGroupExpanded(const AZStd::string& groupName)
     {
-        m_windowSettings->m_inspectorCollapsedGroups.erase(GetGroupSaveStateKey(groupNameId));
+        m_windowSettings->m_inspectorCollapsedGroups.erase(GetGroupSaveStateKey(groupName));
     }
 
-    void MaterialInspector::OnGroupCollapsed(const AZStd::string& groupNameId)
+    void MaterialInspector::OnGroupCollapsed(const AZStd::string& groupName)
     {
-        m_windowSettings->m_inspectorCollapsedGroups.insert(GetGroupSaveStateKey(groupNameId));
+        m_windowSettings->m_inspectorCollapsedGroups.insert(GetGroupSaveStateKey(groupName));
     }
 
     void MaterialInspector::OnDocumentOpened(const AZ::Uuid& documentId)
@@ -86,17 +86,24 @@ namespace MaterialEditor
         AddGroupsEnd();
     }
 
-    AZ::Crc32 MaterialInspector::GetGroupSaveStateKey(const AZStd::string& groupNameId) const
+    AZ::Crc32 MaterialInspector::GetGroupSaveStateKey(const AZStd::string& groupName) const
     {
-        return AZ::Crc32(AZStd::string::format("MaterialInspector::PropertyGroup::%s::%s", m_documentPath.c_str(), groupNameId.c_str()));
+        return AZ::Crc32(AZStd::string::format("MaterialInspector::PropertyGroup::%s::%s", m_documentPath.c_str(), groupName.c_str()));
     }
 
-    bool MaterialInspector::CompareInstanceNodeProperties(
-        const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) const
+    bool MaterialInspector::IsInstanceNodePropertyModifed(const AzToolsFramework::InstanceDataNode* node) const
     {
-        AZ_UNUSED(source);
-        const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
-        return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
+        const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(node);
+        return property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
+    }
+
+    const char* MaterialInspector::GetInstanceNodePropertyIndicator(const AzToolsFramework::InstanceDataNode* node) const
+    {
+        if (IsInstanceNodePropertyModifed(node))
+        {
+            return ":/Icons/changed_property.svg";
+        }
+        return ":/Icons/blank.png";
     }
 
     void MaterialInspector::AddOverviewGroup()
@@ -105,10 +112,10 @@ namespace MaterialEditor
         MaterialDocumentRequestBus::EventResult(
             materialTypeSourceData, m_documentId, &MaterialDocumentRequestBus::Events::GetMaterialTypeSourceData);
 
-        const AZStd::string groupNameId = "overview";
+        const AZStd::string groupName = "overview";
         const AZStd::string groupDisplayName = "Overview";
         const AZStd::string groupDescription = materialTypeSourceData->m_description;
-        auto& group = m_groups[groupNameId];
+        auto& group = m_groups[groupName];
 
         AtomToolsFramework::DynamicProperty property;
         AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
@@ -122,9 +129,9 @@ namespace MaterialEditor
 
         // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
         auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-            &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId),
-            [this](const auto source, const auto target) { return CompareInstanceNodeProperties(source, target); });
-        AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
+            &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName), {},
+            [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
+        AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupWidget);
     }
 
     void MaterialInspector::AddUvNamesGroup()
@@ -132,10 +139,10 @@ namespace MaterialEditor
         AZ::Data::Asset<AZ::RPI::MaterialAsset> materialAsset;
         MaterialDocumentRequestBus::EventResult(materialAsset, m_documentId, &MaterialDocumentRequestBus::Events::GetAsset);
 
-        const AZStd::string groupNameId = UvGroupName;
+        const AZStd::string groupName = UvGroupName;
         const AZStd::string groupDisplayName = "UV Sets";
         const AZStd::string groupDescription = "UV set names in this material, which can be renamed to match those in the model.";
-        auto& group = m_groups[groupNameId];
+        auto& group = m_groups[groupName];
 
         const auto& uvNameMap = materialAsset->GetMaterialTypeAsset()->GetUvNameMap();
         group.m_properties.reserve(uvNameMap.size());
@@ -145,7 +152,7 @@ namespace MaterialEditor
             AtomToolsFramework::DynamicProperty property;
             AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
                 property, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetProperty,
-                AZ::RPI::MaterialPropertyId(groupNameId, uvNamePair.m_shaderInput.ToString()).GetFullName());
+                AZ::RPI::MaterialPropertyId(groupName, uvNamePair.m_shaderInput.ToString()).GetFullName());
             group.m_properties.push_back(property);
 
             property.SetValue(property.GetConfig().m_parentValue);
@@ -153,9 +160,9 @@ namespace MaterialEditor
 
         // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
         auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-            &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId),
-            [this](const auto source, const auto target) { return CompareInstanceNodeProperties(source, target); });
-        AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
+            &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName), {},
+            [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
+        AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupWidget);
     }
 
     void MaterialInspector::AddPropertiesGroup()
@@ -166,14 +173,14 @@ namespace MaterialEditor
 
         for (const auto& groupDefinition : materialTypeSourceData->GetGroupDefinitionsInDisplayOrder())
         {
-            const AZStd::string& groupNameId = groupDefinition.m_nameId;
-            const AZStd::string& groupDisplayName = !groupDefinition.m_displayName.empty() ? groupDefinition.m_displayName : groupNameId;
+            const AZStd::string& groupName = groupDefinition.m_name;
+            const AZStd::string& groupDisplayName = !groupDefinition.m_displayName.empty() ? groupDefinition.m_displayName : groupName;
             const AZStd::string& groupDescription =
                 !groupDefinition.m_description.empty() ? groupDefinition.m_description : groupDisplayName;
-            auto& group = m_groups[groupNameId];
+            auto& group = m_groups[groupName];
 
             const auto& propertyLayout = materialTypeSourceData->m_propertyLayout;
-            const auto& propertyListItr = propertyLayout.m_properties.find(groupNameId);
+            const auto& propertyListItr = propertyLayout.m_properties.find(groupName);
             if (propertyListItr != propertyLayout.m_properties.end())
             {
                 group.m_properties.reserve(propertyListItr->second.size());
@@ -182,21 +189,21 @@ namespace MaterialEditor
                     AtomToolsFramework::DynamicProperty property;
                     AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
                         property, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetProperty,
-                        AZ::RPI::MaterialPropertyId(groupNameId, propertyDefinition.m_nameId).GetFullName());
+                        AZ::RPI::MaterialPropertyId(groupName, propertyDefinition.m_name).GetFullName());
                     group.m_properties.push_back(property);
                 }
             }
 
             // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
             auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupNameId),
-                [this](const auto source, const auto target) { return CompareInstanceNodeProperties(source, target); });
-            AddGroup(groupNameId, groupDisplayName, groupDescription, propertyGroupWidget);
+                &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName), {},
+                [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
+            AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupWidget);
             
             bool isGroupVisible = false;
             AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(
-                isGroupVisible, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsPropertyGroupVisible, AZ::Name{groupNameId});
-            SetGroupVisible(groupNameId, isGroupVisible);
+                isGroupVisible, m_documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsPropertyGroupVisible, AZ::Name{groupName});
+            SetGroupVisible(groupName, isGroupVisible);
         }
     }
 

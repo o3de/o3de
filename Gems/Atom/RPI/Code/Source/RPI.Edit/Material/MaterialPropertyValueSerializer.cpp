@@ -62,18 +62,20 @@ namespace AZ
                 return context.Report(JsonSerializationResult::Tasks::ReadField, JsonSerializationResult::Outcomes::Catastrophic, "Material type reference not found.");
             }
 
-            // Construct the full property name (groupId.propertyId) by parsing it from the JSON path string.
-            size_t startPropertyNameId = context.GetPath().Get().rfind('/');
-            size_t startGroupNameId = context.GetPath().Get().rfind('/', startPropertyNameId-1);
-            AZStd::string_view groupNameId = context.GetPath().Get().substr(startGroupNameId + 1, startPropertyNameId - startGroupNameId - 1);
-            AZStd::string_view propertyNameId = context.GetPath().Get().substr(startPropertyNameId + 1);
+            const JsonMaterialPropertyValueSerializer::LoadContext* loadContext = context.GetMetadata().Find<JsonMaterialPropertyValueSerializer::LoadContext>();
+
+            // Construct the full property name (groupName.propertyName) by parsing it from the JSON path string.
+            size_t startPropertyName = context.GetPath().Get().rfind('/');
+            size_t startGroupName = context.GetPath().Get().rfind('/', startPropertyName-1);
+            AZStd::string_view groupName = context.GetPath().Get().substr(startGroupName + 1, startPropertyName - startGroupName - 1);
+            AZStd::string_view propertyName = context.GetPath().Get().substr(startPropertyName + 1);
 
             JSR::ResultCode result(JSR::Tasks::ReadField);
 
-            auto propertyDefinition = materialType->FindProperty(groupNameId, propertyNameId);
+            auto propertyDefinition = materialType->FindProperty(groupName, propertyName, loadContext->m_materialTypeVersion);
             if (!propertyDefinition)
             {
-                AZStd::string message = AZStd::string::format("Property '%.*s.%.*s' not found in material type.", AZ_STRING_ARG(groupNameId), AZ_STRING_ARG(propertyNameId));
+                AZStd::string message = AZStd::string::format("Property '%.*s.%.*s' not found in material type.", AZ_STRING_ARG(groupName), AZ_STRING_ARG(propertyName));
                 return context.Report(JsonSerializationResult::Tasks::ReadField, JsonSerializationResult::Outcomes::Unsupported, message);
             }
             else

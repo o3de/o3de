@@ -13,6 +13,7 @@
 #include <Atom/RPI.Reflect/Base.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyDescriptor.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 
 namespace AZ
 {
@@ -40,12 +41,12 @@ namespace AZ
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyConnection, "{C2F37C26-D7EF-4142-A650-EF50BB18610F}");
 
                 PropertyConnection() = default;
-                PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view nameId, int32_t shaderIndex = -1);
+                PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view fieldName, int32_t shaderIndex = -1);
 
                 MaterialPropertyOutputType m_type = MaterialPropertyOutputType::Invalid;
 
                 //! The name of a specific shader setting. This will either be a ShaderResourceGroup input or a ShaderOption, depending on m_type
-                AZStd::string m_nameId;
+                AZStd::string m_fieldName;
 
                 //! For m_type==ShaderOption, this is either the index of a specific shader in m_shaderCollection, or -1 which means every shader in m_shaderCollection.
                 //! For m_type==ShaderInput, this field is not used.
@@ -58,8 +59,8 @@ namespace AZ
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::GroupDefinition, "{B2D0FC5C-72A3-435E-A194-1BFDABAC253D}");
 
-                //! The unique name of the property group. A property's full ID will be groupNameId.propertyNameId.
-                AZStd::string m_nameId;
+                //! The unique name of the property group. The full property ID will be groupName.propertyName
+                AZStd::string m_name;
 
                 // Editor metadata ...
                 AZStd::string m_displayName;
@@ -74,7 +75,7 @@ namespace AZ
                 static const float DefaultMax;
                 static const float DefaultStep;
 
-                AZStd::string m_nameId; //!< The name of the property within the property group. The full ID will be groupNameId.propertyNameId.
+                AZStd::string m_name; //!< The name of the property within the property group. The full property ID will be groupName.propertyName.
 
                 MaterialPropertyVisibility m_visibility = MaterialPropertyVisibility::Default;
 
@@ -119,21 +120,50 @@ namespace AZ
 
             using PropertyList = AZStd::vector<PropertyDefinition>;
 
+            struct VersionUpdatesRenameOperationDefinition
+            {
+                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::VersionUpdatesRenameOperationDefinition, "{F2295489-E15A-46CC-929F-8D42DEDBCF14}");
+
+                AZStd::string m_operation;
+                
+                AZStd::string m_renameFrom;
+                AZStd::string m_renameTo;
+            };
+
+            // TODO: Support script operations--At that point, we'll likely need to replace VersionUpdatesRenameOperationDefinition with a more generic
+            // data structure that has a custom JSON serialize. We will only be supporting rename for now.
+            using VersionUpdateActions = AZStd::vector<VersionUpdatesRenameOperationDefinition>;
+
+            struct VersionUpdateDefinition
+            {
+                AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::VersionUpdateDefinition, "{2C9D3B91-0585-4BC9-91D2-4CF0C71BC4B7}");
+
+                uint32_t m_toVersion;
+                VersionUpdateActions m_actions;
+            };
+
+            using VersionUpdates = AZStd::vector<VersionUpdateDefinition>;
+
             struct PropertyLayout
             {
                 AZ_TYPE_INFO(AZ::RPI::MaterialTypeSourceData::PropertyLayout, "{AE53CF3F-5C3B-44F5-B2FB-306F0EB06393}");
-
-                //! Indicates the version of the set of available properties. Can be used to detect materials that might need to be updated.
-                uint32_t m_version = 0;
+                
+                //! This field is unused, and has been replaced by MaterialTypeSourceData::m_version below. It is kept for legacy file compatibility to suppress warnings and errors.
+                uint32_t m_versionOld = 0;
 
                 //! List of groups that will contain the available properties
                 AZStd::vector<GroupDefinition> m_groups;
 
                 //! Collection of all available user-facing properties
-                AZStd::map<AZStd::string /*group name ID*/, PropertyList> m_properties;
+                AZStd::map<AZStd::string /*group name*/, PropertyList> m_properties;
             };
 
             AZStd::string m_description;
+
+            //! Version 1 is the default and should not contain any version update.
+            uint32_t m_version = 1;
+
+            VersionUpdates m_versionUpdates;
 
             PropertyLayout m_propertyLayout;
 
@@ -151,9 +181,14 @@ namespace AZ
             //! Copy over UV custom names to the properties enum values.
             void ResolveUvEnums();
 
-            const GroupDefinition* FindGroup(AZStd::string_view groupNameId) const;
+            const GroupDefinition* FindGroup(AZStd::string_view groupName) const;
 
-            const PropertyDefinition* FindProperty(AZStd::string_view groupNameId, AZStd::string_view propertyNameId) const;
+            //! Searches for a specific property. 
+            //! Note this function can find properties using old versions of the property name; in that case,
+            //! the name in the returned PropertyDefinition* will not match the @propertyName that was searched for.
+            //! @param materialTypeVersion indicates the version number of the property name being passed in. Only renames above this version number will be applied.
+            //! @return the requested property, or null if it could not be found
+            const PropertyDefinition* FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName, uint32_t materialTypeVersion = 0) const;
 
             //! Construct a complete list of group definitions, including implicit groups, arranged in the same order as the source data
             //! Groups with the same name will be consolidated into a single entry
@@ -179,6 +214,11 @@ namespace AZ
             bool ConvertPropertyValueToSourceDataFormat(const PropertyDefinition& propertyDefinition, MaterialPropertyValue& propertyValue) const;
 
             Outcome<Data::Asset<MaterialTypeAsset>> CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath = "", bool elevateWarnings = true) const;
+            
+            //! Possibly renames @propertyId based on the material version update steps.
+            //! @param materialTypeVersion indicates the version number of the property name being passed in. Only renames above this version number will be applied.
+            //! @return true if the property was renamed
+            bool ApplyPropertyRenames(MaterialPropertyId& propertyId, uint32_t materialTypeVersion = 0) const;
         };
 
         //! The wrapper class for derived material functors.

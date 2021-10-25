@@ -9,15 +9,22 @@
 #include <GemRepo/GemRepoListView.h>
 #include <GemRepo/GemRepoItemDelegate.h>
 
+#include <QShortcut>
+
 namespace O3DE::ProjectManager
 {
-    GemRepoListView::GemRepoListView(QAbstractItemModel* model, QWidget* parent)
+    GemRepoListView::GemRepoListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent)
         : QListView(parent)
     {
         setObjectName("gemRepoListView");
         setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
         setModel(model);
-        setItemDelegate(new GemRepoItemDelegate(model, this));
+        setSelectionModel(selectionModel);
+
+        GemRepoItemDelegate* itemDelegate = new GemRepoItemDelegate(model, this);
+        connect(itemDelegate, &GemRepoItemDelegate::RemoveRepo, this, &GemRepoListView::RemoveRepo);
+        connect(itemDelegate, &GemRepoItemDelegate::RefreshRepo, this, &GemRepoListView::RefreshRepo);
+        setItemDelegate(itemDelegate);
     }
 } // namespace O3DE::ProjectManager

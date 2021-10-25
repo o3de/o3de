@@ -6,7 +6,6 @@
  *
  */
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/MemoryStatisticsBus.h>
 
@@ -161,11 +160,11 @@ namespace AZ
             return ResultCode::InvalidOperation;
         }
 
-        ResultCode Device::UpdateCpuTimingStatistics(CpuTimingStatistics& cpuTimingStatistics) const
+        ResultCode Device::UpdateCpuTimingStatistics() const
         {
             if (ValidateIsNotInFrame())
             {
-                UpdateCpuTimingStatisticsInternal(cpuTimingStatistics);
+                UpdateCpuTimingStatisticsInternal();
                 return ResultCode::Success;
             }
             return ResultCode::InvalidOperation;

@@ -46,6 +46,9 @@ namespace AzToolsFramework
             explicit AssetPickerDialog(AssetSelectionModel& selection, QWidget* parent = nullptr);
             virtual ~AssetPickerDialog();
 
+        Q_SIGNALS:
+            void SizeChangedSignal(int newWidth);
+
         protected:
             //////////////////////////////////////////////////////////////////////////
             // QDialog
@@ -53,6 +56,7 @@ namespace AzToolsFramework
             void accept() override;
             void reject() override;
             void keyPressEvent(QKeyEvent* e) override;
+            void resizeEvent(QResizeEvent* resizeEvent) override;
 
         private Q_SLOTS:
             void DoubleClickedSlot(const QModelIndex& index);

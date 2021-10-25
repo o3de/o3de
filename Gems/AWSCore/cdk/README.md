@@ -64,6 +64,16 @@ To add additional dependencies, for example other CDK libraries, just add
 them to your `setup.py` file and rerun the `pip install -r requirements.txt`
 command.
 
+## Optional Features
+Server access logging is enabled by default. To disable the feature, use the following commands to synthesize and deploy this CDK application.
+
+```
+$ cdk synth -c disable_access_log=true --all
+$ cdk deploy -c disable_access_log=true --all
+```
+
+See https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html for more information about server access logging.
+
 ## Useful commands
 
  * `cdk ls`          list all stacks in the app

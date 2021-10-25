@@ -11,6 +11,8 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzFramework/Entity/EntityContext.h>
+
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Template/Template.h>
 
@@ -18,26 +20,26 @@ namespace AzToolsFramework::Prefab
 {
     using PrefabFocusOperationResult = AZ::Outcome<void, AZStd::string>;
 
-    //! Interface to handle operations related to the Prefab Focus system.
+    //! Interface to handle internal operations related to the Prefab Focus system.
     class PrefabFocusInterface
     {
     public:
         AZ_RTTI(PrefabFocusInterface, "{F3CFA37B-5FD8-436A-9C30-60EB54E350E1}");
 
+        //! Initializes the editor interfaces for Prefab Focus mode.
+        //! If this is not called on initialization, the Prefab Focus Mode functions will still work
+        //! but won't trigger the Editor APIs to visualize focus mode on the UI.
+        virtual void InitializeEditorInterfaces() = 0;
+
         //! Set the focused prefab instance to the owning instance of the entityId provided.
         //! @param entityId The entityId of the entity whose owning instance we want the prefab system to focus on.
-        virtual PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) = 0;
+        virtual PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) = 0;
 
         //! Returns the template id of the instance the prefab system is focusing on.
-        virtual TemplateId GetFocusedPrefabTemplateId() = 0;
+        virtual TemplateId GetFocusedPrefabTemplateId(AzFramework::EntityContextId entityContextId) const = 0;
 
         //! Returns a reference to the instance the prefab system is focusing on.
-        virtual InstanceOptionalReference GetFocusedPrefabInstance() = 0;
-
-        //! Returns whether the entity belongs to the instance that is being focused on, or one of its descendants.
-        //! @param entityId The entityId of the queried entity.
-        //! @return true if the entity belongs to the focused instance or one of its descendants, false otherwise.
-        virtual bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) = 0;
+        virtual InstanceOptionalReference GetFocusedPrefabInstance(AzFramework::EntityContextId entityContextId) const = 0;
     };
 
 } // namespace AzToolsFramework::Prefab

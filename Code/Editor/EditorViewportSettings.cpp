@@ -15,6 +15,7 @@
 
 namespace SandboxEditor
 {
+    constexpr AZStd::string_view AssetBrowserMaxItemsShownInSearchSetting = "/Amazon/Preferences/Editor/AssetBrowser/MaxItemsShowInSearch";
     constexpr AZStd::string_view GridSnappingSetting = "/Amazon/Preferences/Editor/GridSnapping";
     constexpr AZStd::string_view GridSizeSetting = "/Amazon/Preferences/Editor/GridSize";
     constexpr AZStd::string_view AngleSnappingSetting = "/Amazon/Preferences/Editor/AngleSnapping";
@@ -50,6 +51,10 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraOrbitLookIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitLookId";
     constexpr AZStd::string_view CameraOrbitDollyIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitDollyId";
     constexpr AZStd::string_view CameraOrbitPanIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitPanId";
+    constexpr AZStd::string_view CameraFocusIdSetting = "/Amazon/Preferences/Editor/Camera/FocusId";
+    constexpr AZStd::string_view CameraDefaultStartingPositionX = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/x";
+    constexpr AZStd::string_view CameraDefaultStartingPositionY = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/y";
+    constexpr AZStd::string_view CameraDefaultStartingPositionZ = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/z";
 
     template<typename T>
     void SetRegistry(const AZStd::string_view setting, T&& value)
@@ -107,6 +112,31 @@ namespace SandboxEditor
     AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks()
     {
         return AZStd::make_unique<EditorViewportSettingsCallbacksImpl>();
+    }
+
+    AZ::Vector3 DefaultEditorCameraPosition()
+    {
+        float xPosition = aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionX, 0.0));
+        float yPosition = aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionY, -10.0));
+        float zPosition = aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionZ, 4.0));
+        return AZ::Vector3(xPosition, yPosition, zPosition);
+    }
+
+    void SetDefaultCameraEditorPosition(const AZ::Vector3 defaultCameraPosition)
+    {
+        SetRegistry(CameraDefaultStartingPositionX, defaultCameraPosition.GetX());
+        SetRegistry(CameraDefaultStartingPositionY, defaultCameraPosition.GetY());
+        SetRegistry(CameraDefaultStartingPositionZ, defaultCameraPosition.GetZ());
+    }
+
+    AZ::u64 MaxItemsShownInAssetBrowserSearch()
+    {
+        return GetRegistry(AssetBrowserMaxItemsShownInSearchSetting, aznumeric_cast<AZ::u64>(50));
+    }
+
+    void SetMaxItemsShownInAssetBrowserSearch(const AZ::u64 numberOfItemsShown)
+    {
+        SetRegistry(AssetBrowserMaxItemsShownInSearchSetting, numberOfItemsShown);
     }
 
     bool GridSnappingEnabled()
@@ -461,5 +491,15 @@ namespace SandboxEditor
     void SetCameraOrbitPanChannelId(AZStd::string_view cameraOrbitPanId)
     {
         SetRegistry(CameraOrbitPanIdSetting, cameraOrbitPanId);
+    }
+
+    AzFramework::InputChannelId CameraFocusChannelId()
+    {
+        return AzFramework::InputChannelId(GetRegistry(CameraFocusIdSetting, AZStd::string("keyboard_key_alphanumeric_X")).c_str());
+    }
+
+    void SetCameraFocusChannelId(AZStd::string_view cameraFocusId)
+    {
+        SetRegistry(CameraFocusIdSetting, cameraFocusId);
     }
 } // namespace SandboxEditor

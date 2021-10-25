@@ -62,7 +62,8 @@ namespace Terrain
         //! @terrainExistsPtr: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a terrain
         //! HOLE then *terrainExistsPtr will become false,
         //!                  otherwise *terrainExistsPtr will become true.
-        float GetHeight(AZ::Vector3 position, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+        float GetHeight(const AZ::Vector3& position, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+        float GetHeightFromVector2(const AZ::Vector2& position, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
         float GetHeightFromFloats(float x, float y, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
 
         //! Given an XY coordinate, return the max surface type and weight.
@@ -70,18 +71,39 @@ namespace Terrain
         //! HOLE then *terrainExistsPtr will be set to false,
         //!                  otherwise *terrainExistsPtr will be set to true.
         AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeight(
-            AZ::Vector3 position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+            const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+        AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromVector2(
+            const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT, bool* terrainExistsPtr = nullptr) const override;
         AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(
-            float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+            const float x, const float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+
+        void GetSurfaceWeights(
+            const AZ::Vector3& inPosition,
+            AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
+            Sampler sampleFilter = Sampler::DEFAULT,
+            bool* terrainExistsPtr = nullptr) const override;
+        void GetSurfaceWeightsFromVector2(
+            const AZ::Vector2& inPosition,
+            AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
+            Sampler sampleFilter = Sampler::DEFAULT,
+            bool* terrainExistsPtr = nullptr) const override;
+        void GetSurfaceWeightsFromFloats(
+            float x,
+            float y,
+            AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
+            Sampler sampleFilter = Sampler::DEFAULT,
+            bool* terrainExistsPtr = nullptr) const override;
 
         //! Convenience function for  low level systems that can't do a reverse lookup from Crc to string. Everyone else should use
         //! GetMaxSurfaceWeight or GetMaxSurfaceWeightFromFloats. Not available in the behavior context. Returns nullptr if the position is
         //! inside a hole or outside of the terrain boundaries.
         const char* GetMaxSurfaceName(
-            AZ::Vector3 position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+            const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
 
         //! Returns true if there's a hole at location x,y.
         //! Also returns true if there's no terrain data at location x,y.
+        bool GetIsHole(const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR) const override;
+        bool GetIsHoleFromVector2(const AZ::Vector2& position, Sampler sampleFilter = Sampler::BILINEAR) const override;
         bool GetIsHoleFromFloats(float x, float y, Sampler sampleFilter = Sampler::BILINEAR) const override;
 
         // Given an XY coordinate, return the surface normal.
@@ -89,16 +111,43 @@ namespace Terrain
         //! HOLE then *terrainExistsPtr will be set to false,
         //!                  otherwise *terrainExistsPtr will be set to true.
         AZ::Vector3 GetNormal(
-            AZ::Vector3 position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+            const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+        AZ::Vector3 GetNormalFromVector2(
+            const AZ::Vector2& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
         AZ::Vector3 GetNormalFromFloats(
             float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
+
+        void GetSurfacePoint(
+            const AZ::Vector3& inPosition,
+            AzFramework::SurfaceData::SurfacePoint& outSurfacePoint,
+            Sampler sampleFilter = Sampler::DEFAULT,
+            bool* terrainExistsPtr = nullptr) const override;
+        void GetSurfacePointFromVector2(
+            const AZ::Vector2& inPosition,
+            AzFramework::SurfaceData::SurfacePoint& outSurfacePoint,
+            Sampler sampleFilter = Sampler::DEFAULT,
+            bool* terrainExistsPtr = nullptr) const override;
+        void GetSurfacePointFromFloats(
+            float x,
+            float y,
+            AzFramework::SurfaceData::SurfacePoint& outSurfacePoint,
+            Sampler sampleFilter = Sampler::DEFAULT,
+            bool* terrainExistsPtr = nullptr) const override;
+
 
     private:
         void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
 
+        AZ::EntityId FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const;
+        void GetOrderedSurfaceWeights(
+            const float x,
+            const float y,
+            Sampler sampler,
+            AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
+            bool* terrainExistsPtr) const;
         float GetHeightSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
         float GetTerrainAreaHeight(float x, float y, bool& terrainExists) const;
-        AZ::Vector3  GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
+        AZ::Vector3 GetNormalSynchronous(float x, float y, Sampler sampler, bool* terrainExistsPtr) const;
 
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;

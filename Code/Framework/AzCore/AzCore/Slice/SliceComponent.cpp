@@ -13,6 +13,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/algorithm.h>

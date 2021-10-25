@@ -16,7 +16,6 @@
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/CpuProfiler.h>
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -291,11 +290,6 @@ namespace AZ
         void PointLightFeatureProcessor::SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowFilterMethod, method);
-        }
-
-        void PointLightFeatureProcessor::SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetSofteningBoundaryWidthAngle, boundaryWidthRadians);
         }
 
         void PointLightFeatureProcessor::SetFilteringSampleCount(LightHandle handle, uint16_t count)

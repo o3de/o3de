@@ -1,0 +1,183 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <viewsrg.srgi>
+#include <TerrainCommon.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassSrg.azsli>
+#include <Atom/Features/PBR/ForwardPassOutput.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+#include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
+#include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
+#include <Atom/Features/PBR/Decals.azsli>
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+    float3 m_normal: NORMAL;
+    float3 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float3 m_worldPosition : UV0;
+    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV2;
+    float2 m_uv : UV1;
+};
+
+VSOutput TerrainPBR_MainPassVS(VertexInput IN)
+{
+    VSOutput OUT;
+ 
+    ObjectSrg::TerrainData terrainData = ObjectSrg::m_terrainData;
+
+    float2 uv = IN.m_uv;
+    float2 origUv = lerp(terrainData.m_uvMin, terrainData.m_uvMax, uv);
+    float3 worldPosition = GetTerrainWorldPosition(terrainData, IN.m_position, origUv);
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0));
+    OUT.m_worldPosition = worldPosition;
+
+    // Calculate normal
+    float up    = GetHeight(origUv + terrainData.m_uvStep * float2( 0.0f, -1.0f));
+    float right = GetHeight(origUv + terrainData.m_uvStep * float2( 1.0f,  0.0f));
+    float down  = GetHeight(origUv + terrainData.m_uvStep * float2( 0.0f,  1.0f));
+    float left  = GetHeight(origUv + terrainData.m_uvStep * float2(-1.0f,  0.0f));
+
+    OUT.m_bitangent = normalize(float3(0.0, terrainData.m_sampleSpacing * 2.0f, down - up));
+    OUT.m_tangent = normalize(float3(terrainData.m_sampleSpacing * 2.0f, 0.0, right - left));
+    OUT.m_normal = cross(OUT.m_tangent, OUT.m_bitangent);
+    OUT.m_uv = uv;
+
+    // directional light shadow 
+    const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
+    if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
+    {
+        DirectionalLightShadow::GetShadowCoords(
+            shadowIndex,
+            worldPosition,
+            OUT.m_normal,
+            OUT.m_shadowCoords);
+    }
+    
+    return OUT;
+}
+
+ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
+{
+    // ------- Surface -------
+    Surface surface;
+    
+    // Position
+    surface.position = IN.m_worldPosition.xyz;
+    float viewDistance = length(ViewSrg::m_worldPosition - surface.position);
+    float detailFactor = saturate((viewDistance - TerrainMaterialSrg::m_detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
+
+    ObjectSrg::TerrainData terrainData = ObjectSrg::m_terrainData;
+    float2 origUv = lerp(terrainData.m_uvMin, terrainData.m_uvMax, IN.m_uv);
+    origUv.y = 1.0 - origUv.y;
+    float2 detailUv = IN.m_uv * TerrainMaterialSrg::m_detailTextureMultiplier;
+    
+    // ------- Normal -------
+    float3 macroNormal = IN.m_normal;
+    
+    // ------- Macro Color / Normal -------
+    float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
+    [unroll] for (uint i = 0; i < 4; ++i)
+    {
+        float2 macroUvMin = ObjectSrg::m_macroMaterialData[i].m_uvMin;
+        float2 macroUvMax = ObjectSrg::m_macroMaterialData[i].m_uvMax;
+        float2 macroUv = lerp(macroUvMin, macroUvMax, IN.m_uv);
+        if (macroUv.x >= 0.0 && macroUv.x <= 1.0 && macroUv.y >= 0.0 && macroUv.y <= 1.0)
+        {
+            if ((ObjectSrg::m_macroMaterialData[i].m_mapsInUse & 1) > 0)
+            {
+                macroColor = GetBaseColorInput(ObjectSrg::m_macroColorMap[i], TerrainMaterialSrg::m_sampler, macroUv, macroColor, true);
+            }
+            if ((ObjectSrg::m_macroMaterialData[i].m_mapsInUse & 2) > 0)
+            {
+                bool flipX = ObjectSrg::m_macroMaterialData[i].m_flipNormalX;
+                bool flipY = ObjectSrg::m_macroMaterialData[i].m_flipNormalY;
+                bool factor = ObjectSrg::m_macroMaterialData[i].m_normalFactor;
+                macroNormal = GetNormalInputTS(ObjectSrg::m_macroNormalMap[i], TerrainMaterialSrg::m_sampler, 
+                    macroUv, flipX, flipY, CreateIdentity3x3(), true, factor);
+            }
+            break;
+        }
+    }
+
+    float3 detailNormal = GetNormalInputTS(TerrainMaterialSrg::m_normalMap, TerrainMaterialSrg::m_sampler, 
+        detailUv, TerrainMaterialSrg::m_flipNormalX, TerrainMaterialSrg::m_flipNormalY, CreateIdentity3x3(), o_normal_useTexture, TerrainMaterialSrg::m_normalFactor);
+
+    detailNormal = ReorientTangentSpaceNormal(macroNormal, detailNormal);
+    surface.normal = lerp(detailNormal, macroNormal, detailFactor);
+    surface.normal = normalize(surface.normal);
+    surface.vertexNormal = normalize(IN.m_normal);
+
+    // ------- Base Color -------
+    float3 detailColor = GetBaseColorInput(TerrainMaterialSrg::m_baseColorMap, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
+    float3 blendedColor = BlendBaseColor(lerp(detailColor, TerrainMaterialSrg::m_baseColor.rgb, detailFactor), macroColor, TerrainMaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
+
+    // ------- Specular -------
+    float specularF0Factor = GetSpecularInput(TerrainMaterialSrg::m_specularF0Map, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
+    specularF0Factor = lerp(specularF0Factor, 0.5, detailFactor);
+    surface.SetAlbedoAndSpecularF0(blendedColor, specularF0Factor, 0.0);
+
+    // ------- Roughness -------
+    surface.roughnessLinear = GetRoughnessInput(TerrainMaterialSrg::m_roughnessMap, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_roughnessFactor, 0.0, 1.0, o_roughness_useTexture);
+    surface.roughnessLinear = lerp(surface.roughnessLinear, 1.0, detailFactor);
+    surface.CalculateRoughnessA();
+
+    // Clear Coat, Transmission (Not used for terrain)
+    surface.clearCoat.InitializeToZero();
+    surface.transmission.InitializeToZero();
+
+    // ------- LightingData -------
+
+    LightingData lightingData;
+
+    // Light iterator
+    lightingData.tileIterator.Init(IN.m_position, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
+    lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
+
+    // Shadow, Occlusion
+    lightingData.shadowCoords = IN.m_shadowCoords;
+
+    // Diffuse and Specular response
+    lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
+    lightingData.diffuseResponse = 1.0f - lightingData.specularResponse;
+
+    const float alpha = 1.0f;
+
+    // ------- Lighting Calculation -------
+
+    // Apply Decals
+    ApplyDecals(lightingData.tileIterator, surface);
+
+    // Apply Direct Lighting
+    ApplyDirectLighting(surface, lightingData);
+
+    // Apply Image Based Lighting (IBL)
+    ApplyIBL(surface, lightingData);
+
+    // Finalize Lighting
+    lightingData.FinalizeLighting(surface.transmission.tint);
+
+    PbrLightingOutput lightingOutput = GetPbrLightingOutput(surface, lightingData, alpha);
+
+    // ------- Output -------
+
+    ForwardPassOutput OUT;
+
+    OUT.m_diffuseColor = lightingOutput.m_diffuseColor;
+    OUT.m_diffuseColor.w = -1; // Subsurface scattering is disabled
+    OUT.m_specularColor = lightingOutput.m_specularColor;
+    OUT.m_specularF0 = lightingOutput.m_specularF0;
+    OUT.m_albedo = lightingOutput.m_albedo;
+    OUT.m_normal = lightingOutput.m_normal;
+
+    return OUT;
+}

@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QListView>
+#include <QItemSelectionModel>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QAbstractItemModel)
@@ -22,7 +23,11 @@ namespace O3DE::ProjectManager
         Q_OBJECT // AUTOMOC
 
     public:
-        explicit GemRepoListView(QAbstractItemModel* model, QWidget* parent = nullptr);
+        explicit GemRepoListView(QAbstractItemModel* model, QItemSelectionModel* selectionModel, QWidget* parent = nullptr);
         ~GemRepoListView() = default;
+
+    signals:
+        void RemoveRepo(const QModelIndex& modelIndex);
+        void RefreshRepo(const QModelIndex& modelIndex);
     };
 } // namespace O3DE::ProjectManager

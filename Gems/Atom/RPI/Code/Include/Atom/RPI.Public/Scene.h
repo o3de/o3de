@@ -29,6 +29,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Script/ScriptTimePoint.h>
+#include <AzCore/Task/TaskGraph.h>
 
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
@@ -194,6 +195,9 @@ namespace AZ
             // This function is called every time scene's render pipelines change.
             void RebuildPipelineStatesLookup();
 
+            // Helper function to wait for end of TaskGraph
+            void WaitTGEvent(AZ::TaskGraphEvent& completionTGEvent, AZStd::atomic_bool* workToWaitOn = nullptr);
+
             // Helper function for wait and clean up a completion job
             void WaitAndCleanCompletionJob(AZ::JobCompletion*& completionJob);
 
@@ -204,11 +208,25 @@ namespace AZ
             // This happens in UpdateSrgs()
             void PrepareSceneSrg();
 
+            // Implementation functions that allow scene to switch between using Jobs or TaskGraphs
+            void SimulateTaskGraph();
+            void SimulateJobs();
+
+            void CollectDrawPacketsTaskGraph();
+            void CollectDrawPacketsJobs();
+
+            void FinalizeDrawListsTaskGraph();
+            void FinalizeDrawListsJobs();
+
             // List of feature processors that are active for this scene
             AZStd::vector<FeatureProcessorPtr> m_featureProcessors;
 
             // List of pipelines of this scene. Each pipeline has an unique pipeline Id.
             AZStd::vector<RenderPipelinePtr> m_pipelines;
+
+            // CPU simulation TaskGraphEvent to wait for completion of all the simulation tasks
+            AZ::TaskGraphEvent m_simulationFinishedTGEvent;
+            AZStd::atomic_bool m_simulationFinishedWorkActive = false;
 
             // CPU simulation job completion for track all feature processors' simulation jobs
             AZ::JobCompletion* m_simulationCompletion = nullptr;
@@ -228,6 +246,7 @@ namespace AZ
             SceneId m_id;
 
             bool m_activated = false;
+            bool m_taskGraphActive = false; // update during tick, to ensure it only changes on frame boundaries
 
             RenderPipelinePtr m_defaultPipeline;
 

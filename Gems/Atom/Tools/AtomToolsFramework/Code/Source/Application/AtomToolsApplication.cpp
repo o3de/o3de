@@ -36,6 +36,8 @@
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
 
+#include "AtomToolsFramework_Traits_Platform.h"
+
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QMessageBox>
 #include <QObject>
@@ -173,7 +175,7 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
             &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
 
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@assets@/assetcatalog.xml");
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@products@/assetcatalog.xml");
 
         if (!AZ::RPI::RPISystemInterface::Get()->IsInitialized())
         {
@@ -216,7 +218,11 @@ namespace AtomToolsFramework
         AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
         AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
 
+#if AZ_TRAIT_ATOMTOOLSFRAMEWORK_SKIP_APP_DESTROY
+        ::_exit(0);
+#else
         Base::Destroy();
+#endif
     }
 
     AZStd::vector<AZStd::string> AtomToolsApplication::GetCriticalAssetFilters() const
@@ -289,7 +295,7 @@ namespace AtomToolsFramework
             ExitMainLoop();
         }
     }
-    
+
     void AtomToolsApplication::SaveSettings()
     {
         if (m_activatedLocalUserSettings)
@@ -378,7 +384,7 @@ namespace AtomToolsFramework
             ExitMainLoop();
         }
     }
-    
+
     bool AtomToolsApplication::LaunchLocalServer()
     {
         // Determine if this is the first launch of the tool by attempting to connect to a running server

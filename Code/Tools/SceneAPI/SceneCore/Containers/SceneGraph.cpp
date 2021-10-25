@@ -97,7 +97,7 @@ namespace AZ
                                 GraphObjectProxy* proxy = aznew GraphObjectProxy(graphObject);
                                 return proxy;
                             }
-                            return nullptr;
+                            return aznew GraphObjectProxy(nullptr);
                         });
                 }
             }

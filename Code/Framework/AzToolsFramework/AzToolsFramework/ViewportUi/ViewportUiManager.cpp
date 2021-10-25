@@ -50,6 +50,16 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
+    void ViewportUiManager::ClearClusterActiveButton(ClusterId clusterId)
+    {
+        if (auto clusterIt = m_clusterButtonGroups.find(clusterId); clusterIt != m_clusterButtonGroups.end())
+        {
+            auto cluster = clusterIt->second;
+            cluster->ClearHighlightedButton();
+            UpdateButtonGroupUi(cluster.get());
+        }
+    }
+
     void ViewportUiManager::SetSwitcherActiveButton(const SwitcherId switcherId, const ButtonId buttonId)
     {
         if (auto switcherIt = m_switcherButtonGroups.find(switcherId); switcherIt != m_switcherButtonGroups.end())
@@ -230,14 +240,14 @@ namespace AzToolsFramework::ViewportUi
         }
     }
 
-    void ViewportUiManager::CreateComponentModeBorder(const AZStd::string& borderTitle)
+    void ViewportUiManager::CreateViewportBorder(const AZStd::string& borderTitle)
     {
-        m_viewportUi->CreateComponentModeBorder(borderTitle);
+        m_viewportUi->CreateViewportBorder(borderTitle);
     }
 
-    void ViewportUiManager::RemoveComponentModeBorder()
+    void ViewportUiManager::RemoveViewportBorder()
     {
-        m_viewportUi->RemoveComponentModeBorder();
+        m_viewportUi->RemoveViewportBorder();
     }
 
     void ViewportUiManager::PressButton(ClusterId clusterId, ButtonId buttonId)
