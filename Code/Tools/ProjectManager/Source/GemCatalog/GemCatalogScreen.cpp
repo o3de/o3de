@@ -166,6 +166,10 @@ namespace O3DE::ProjectManager
                 {
                     notification += " " + tr("and") + " ";
                 }
+                if (added && GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded)
+                {
+                    m_downloadController->AddGemDownload(GemModel::GetName(modelIndex));
+                }
             }
 
             if (numChangedDependencies == 1 )
