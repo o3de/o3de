@@ -1,5 +1,5 @@
 {
-    "Source": "ContrastAdaptiveSharpening",
+    "Source": "ContrastAdaptiveSharpening.azsl",
     "ProgramSettings": {
         "EntryPoints": [
             {

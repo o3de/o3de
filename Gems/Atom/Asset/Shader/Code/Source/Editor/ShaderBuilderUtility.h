@@ -33,12 +33,12 @@ namespace AZ
         {
             Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile);
 
-            void GetAbsolutePathToAzslFile(const AZStd::string& shaderTemplatePathAndFile, AZStd::string specifiedShaderPathAndName, AZStd::string& absoluteShaderPath);
+            void GetAbsolutePathToAzslFile(const AZStd::string& shaderSourceFileFullPath, AZStd::string specifiedShaderPathAndName, AZStd::string& absoluteShaderPath);
 
             //! Opens and read the .shader, returns expanded file paths
             AZStd::shared_ptr<ShaderFiles> PrepareSourceInput(
                 const char* builderName,
-                const AZStd::string& shaderAssetSourcePath,
+                const AZStd::string& shaderSourceFileFullPath,
                 RPI::ShaderSourceData& sourceAsset);
 
             namespace AzslSubProducts

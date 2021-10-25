@@ -1,5 +1,5 @@
 {
-    "Source": "DownsampleMinAvgMaxCS",
+    "Source": "DownsampleMinAvgMaxCS.azsl",
 
     "ProgramSettings":
     {

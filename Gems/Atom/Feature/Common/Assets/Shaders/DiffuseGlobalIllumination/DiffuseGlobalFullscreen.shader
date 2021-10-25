@@ -1,5 +1,5 @@
 {
-    "Source" : "DiffuseGlobalFullscreen",
+    "Source" : "DiffuseGlobalFullscreen.azsl",
 
     "RasterState" :
     {

@@ -1,0 +1,400 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "HairParentShortCutPassTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "RenderTargetInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                },
+                { 
+                    // used for copy from MSAA to regular RT
+                    "Name": "RenderTargetInputOnly",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                // This is the depth stencil buffer that is to be used by the fill pass
+                // to early reject pixels by depth and in the resolve pass to write the 
+                // the hair depth 
+                {
+                    "Name": "Depth",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                // Keep DepthLinear as input - used to set the size of the Head PPLL image buffer.
+                // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
+                {
+                    "Name": "DepthLinearInput",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "DepthLinear",
+                    "SlotType": "Output"
+                },
+
+                // Lights & Shadows resources
+                {
+                    "Name": "DirectionalShadowmap",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "DirectionalESM",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "ProjectedShadowmap",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "ProjectedESM",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "TileLightData",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "LightListRemapped",
+                    "SlotType": "Input"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "DepthLinear",
+                    "AttachmentRef": {
+                        "Pass": "DepthToDepthLinearPass",
+                        "Attachment": "Output"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input": "DepthLinearInput",
+                    "Output": "DepthLinear"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "HairGlobalShapeConstraintsComputePass",
+                    "TemplateName": "HairGlobalShapeConstraintsComputePassTemplate",
+                    "Enabled": true
+                },
+                {
+                    "Name": "HairCalculateStrandLevelDataComputePass",
+                    "TemplateName": "HairCalculateStrandLevelDataComputePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairGlobalShapeConstraintsComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HairVelocityShockPropagationComputePass",
+                    "TemplateName": "HairVelocityShockPropagationComputePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairCalculateStrandLevelDataComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HairLocalShapeConstraintsComputePass",
+                    "TemplateName": "HairLocalShapeConstraintsComputePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairVelocityShockPropagationComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HairLengthConstraintsWindAndCollisionComputePass",
+                    "TemplateName": "HairLengthConstraintsWindAndCollisionComputePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairLocalShapeConstraintsComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "HairUpdateFollowHairComputePass",
+                    "TemplateName": "HairUpdateFollowHairComputePassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairLengthConstraintsWindAndCollisionComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        }
+                    ]
+                },
+
+                // Render Target Copy from MS to Regular
+                {
+                    "Name": "RenderTargetCopyPass",
+                    "TemplateName": "FullscreenCopyTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "RenderTargetInputOnly"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "This",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ],
+                    "ImageAttachments": [
+                        {
+                            "Name": "Output",
+                            "SizeSource": {
+                                "Source": {
+                                    "Pass": "This",
+                                    "Attachment": "Input"
+                                }
+                            },
+                            "FormatSource": {
+                                "Pass": "This",
+                                "Attachment": "Input"
+                            },
+                            "GenerateFullMipChain": false
+                        }
+                    ]
+                },
+
+                // Rendering Passes
+                {
+                    "Name": "HairShortCutGeometryDepthAlphaPass",
+                    "TemplateName": "HairShortCutGeometryDepthAlphaPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairUpdateFollowHairComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InverseAlphaRTOutput",
+                            "AttachmentRef": {
+                                "Pass": "This",
+                                "Attachment": "InverseAlphaRTOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "HairDepthsTextureArray",
+                            "AttachmentRef": {
+                                "Pass": "This",
+                                "Attachment": "HairDepthsTextureArray"
+                            }
+                        }
+                    ]
+                },
+
+                {
+                    "Name": "HairShortCutResolveDepthPass",
+                    "TemplateName": "HairShortCutResolveDepthPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "HairDepthsTextureArray",
+                            "AttachmentRef": {
+                                "Pass": "HairShortCutGeometryDepthAlphaPass",
+                                "Attachment": "HairDepthsTextureArray"
+                            }
+                        }
+                    ]
+                },
+
+                {
+                    "Name": "HairShortCutGeometryShadingPass",
+                    "TemplateName": "HairShortCutGeometryShadingPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "HairColorRenderTarget",
+                            "AttachmentRef": {
+                                "Pass": "This",
+                                "Attachment": "HairColorRenderTarget"
+                            }
+                        },
+                        { 
+                            // The final render target - this is MSAA mode RT - would it be cheaper to
+                            // use non-MSAA and then copy?
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "RenderTargetInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthLinear",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthLinearInput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "SkinnedHairSharedBuffer",
+                            "AttachmentRef": {
+                                "Pass": "HairUpdateFollowHairComputePass",
+                                "Attachment": "SkinnedHairSharedBuffer"
+                            }
+                        },
+
+                        // Shadows resources
+                        {
+                            "LocalSlot": "DirectionalShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DirectionalESM",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DirectionalESM"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ProjectedShadowmap",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "ProjectedShadowmap"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ProjectedESM",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "ProjectedESM"
+                            }
+                        },
+
+                        // Lights Resources
+                        {
+                            "LocalSlot": "TileLightData",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "TileLightData"
+                            }
+                        },
+                        {
+                            "LocalSlot": "LightListRemapped",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightListRemapped"
+                            }
+                        }
+                    ]
+                },
+
+                {
+                    "Name": "HairShortCutResolveColorPass",
+                    "TemplateName": "HairShortCutResolveColorPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        { 
+                            // The final render target - this is MSAA mode RT - would it be cheaper to
+                            // use non-MSAA and then copy?
+                            "LocalSlot": "RenderTargetInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "RenderTargetInputOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "AccumulatedInverseAlpha",
+                            "AttachmentRef": {
+                                "Pass": "HairShortCutGeometryDepthAlphaPass",
+                                "Attachment": "InverseAlphaRTOutput"
+                            }
+                        },
+                        {
+                            "LocalSlot": "HairColorTexture",
+                            "AttachmentRef": {
+                                "Pass": "HairShortCutGeometryShadingPass",
+                                "Attachment": "HairColorRenderTarget"
+                            }
+                        }
+                    ]
+                },
+
+                {
+                    // This pass copies the updated depth buffer (now contains hair depth) to linear depth texture
+                    // for downstream passes to use. This can be optimized even further by writing into the stencil 
+                    // buffer pixels that were touched by HairPPLLResolvePass hence preventing depth update unless
+                    // it is hair.
+                    "Name": "DepthToDepthLinearPass",
+                    "TemplateName": "DepthToLinearTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "HairShortCutResolveDepthPass",
+                                "Attachment": "Depth"
+                            }
+                        }
+                    ]
+                }
+
+            ]
+        }
+    }
+}
+
