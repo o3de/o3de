@@ -1,0 +1,176 @@
+/*
+* Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
+* For complete copyright and license terms please see the LICENSE at the root of this distribution.
+* 
+* SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+*
+*/
+
+//------------------------------------------------------------------------------
+// Shader code related to lighting and shadowing for TressFX
+//------------------------------------------------------------------------------
+//
+// Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <HairRenderingSrgs.azsli>
+
+#define AMD_TRESSFX_MAX_HAIR_GROUP_RENDER 16
+
+//!------------------------------ SRG Structure --------------------------------
+//! Per pass SRG that holds the dynamic shared read-write buffer shared 
+//! across all dispatches and draw calls. It is used for all the dynamic buffers
+//! that can change between passes due to the application of skinning, simulation 
+//! and physics affect. 
+//! Once the compute pases are done, it is read by the rendering shaders.  
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{
+    //! This shared buffer needs to match the SharedBuffer structure  
+    //! shared between all draw calls / dispatches for the hair skinning
+    StructuredBuffer<int>   m_skinnedHairSharedBuffer;
+
+    //! Per hair object material array used by the PPLL resolve pass
+    //! Originally in TressFXRendering.hlsl this is space 0 
+    HairObjectShadeParams   m_hairParams[AMD_TRESSFX_MAX_HAIR_GROUP_RENDER];
+
+    // Linear depth is used for getting the screen to world transform
+    Texture2D<float>        m_linearDepth;
+
+    //------------------------------
+    //        Lighting Data
+    //------------------------------
+    Sampler LinearSampler
+    {   // Required by LightingData.azsli
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    Texture2DArray<float>   m_directionalLightShadowmap;
+    Texture2DArray<float>   m_directionalLightExponentialShadowmap;
+    Texture2DArray<float>   m_projectedShadowmaps;
+    Texture2DArray<float>   m_projectedExponentialShadowmap;
+    Texture2D               m_brdfMap;   
+    Texture2D<uint4>        m_tileLightData;
+    StructuredBuffer<uint>  m_lightListRemapped;
+}
+
+//------------------------------------------------------------------------------
+//! The hair objects' material array buffer used by the rendering resolve pass
+#define HairParams          PassSrg::m_hairParams
+//==============================================================================
+
+//!------------------------------ SRG Structure --------------------------------
+//! Per instance/draw SRG representing dynamic read-write set of buffers
+//!  that are unique per instance and are shared and changed between passes due 
+//!  to the application of skinning, simulation and physics affect.
+//! It is then also read by the rendering shaders. 
+//! This Srg is NOT shared by the passes since it requires having barriers between
+//!  both passes and draw calls, instead, all buffers are allocated from a single 
+//!  shared buffer (through BufferViews) and that buffer is then shared between 
+//!  the passes via the PerPass Srg frequency. 
+ShaderResourceGroup HairDynamicDataSrg : SRG_PerObject // space 1 - per instance / object
+{
+    Buffer<float4>      m_hairVertexPositions;
+    Buffer<float4>      m_hairVertexTangents;
+
+    //! Per hair object offset to the start location of each buffer within 
+    //! 'm_skinnedHairSharedBuffer'. The offset is in bytes!
+    uint m_positionBufferOffset;
+    uint m_tangentBufferOffset;
+};
+//------------------------------------------------------------------------------
+// Allow for the code to run with minimal changes - skinning / simulation compute passes
+// Usage of per-instance buffer
+#define g_GuideHairVertexPositions  HairDynamicDataSrg::m_hairVertexPositions
+#define g_GuideHairVertexTangents   HairDynamicDataSrg::m_hairVertexTangents
+//------------------------------------------------------------------------------
+
+#include <HairStrands.azsli>            // VS resides here
+#include <HairFullScreenUtils.azsli>    // Required for world coordinates calculation
+#include <HairLighting.azsli>
+
+//!=============================================================================
+//!             Geometry Shading - Third Pass of ShortCut Render
+//! Geometry pass that shades pixels that passes the early depth test. Due to this, it
+//! is limited to the stored K near fragments due to previous depth write pass that 
+//! wrote the furthest depth of the K stored depths.
+//! Colors are accumulated in the render target for a weighted average in final pass.
+//! [To Do] - in the original short cut, the alpha is taken from the depth alpha pass 
+//!=============================================================================
+[earlydepthstencil]
+float4 HairShortCutGeometryColorPS(PS_INPUT_HAIR input) : SV_Target
+{
+    // Strand Color read in is either the BaseMatColor, or BaseMatColor modulated with a color read from texture 
+    // on vertex shader for base color along with modulation by the tip color  
+    float4 strandColor = float4(input.StrandColor.rgb, MatBaseColor.a);
+
+    // If we are supporting strand UV texturing, further blend in the texture color/alpha
+    // Do this while computing NDC and coverage to hide latency from texture lookup
+    if (EnableStrandUV)
+    {
+        // Grab the uv in case we need it
+        float2 uv = float2(input.Tangent.w, input.StrandColor.w);
+
+        // Apply StrandUVTiling
+        float2 strandUV = float2(uv.x, (uv.y * StrandUVTilingFactor) - floor(uv.y * StrandUVTilingFactor));
+
+        strandColor.rgb *= StrandAlbedoTexture.Sample(LinearWrapSampler, strandUV).rgb;
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    // [To Do] Hair: anti aliasing via coverage requires work and is disabled for now
+//    float3 vNDC = ScreenPosToNDC(PassSrg::m_linearDepth, input.Position.xy, input.Position.z);
+//    uint2  dimensions;
+//    PassSrg::m_linearDepth.GetDimensions(dimensions.x, dimensions.y);
+//    float2 screenCoords = saturate(pixelCoord / dimensions.xy);
+//    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, float2(dimensions.x, dimensions.y));
+// original:    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, g_vViewport.zw - g_vViewport.xy);
+    float coverage = 1.0;  
+    /////////////////////////////////////////////////////////////////////
+    
+    float alpha = coverage;
+
+    // Update the alpha to have proper value (accounting for coverage, base alpha, and strand alpha)
+    alpha *= strandColor.w;
+
+    // Early out
+    if (alpha < SHORTCUT_MIN_ALPHA)
+    {
+        return float4(0, 0, 0, 0);
+    }
+
+    float2 pixelCoord = input.Position.xy;
+    float depth = input.Position.z;
+    // [To Do] - the thickness will need to be corrected somehow since this technique doesn't 
+    // keeps track of the accumulated alpha / thickness
+    float thickness = alpha;  
+    float3 shadedFragment = TressFXShading(pixelCoord, depth, input.Tangent.xyz, strandColor.rgb, thickness, RenderParamsIndex);
+
+    // Color channel: Pre-multiply with alpha to create non-normalized weighted sum.
+    // Alpha Channel: Sum up all the hair alphas - this will be used to normalize the color
+    // per fragment at the next pass.
+    return float4(shadedFragment * alpha, alpha);
+}

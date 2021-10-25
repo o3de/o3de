@@ -386,9 +386,39 @@ namespace AZ
             return m_currentChangeId;
         }
 
-        MaterialPropertyIndex Material::FindPropertyIndex(const Name& propertyId) const
+        MaterialPropertyIndex Material::FindPropertyIndex(const Name& propertyId, bool* wasRenamed, Name* newName) const
         {
-            return m_layout->FindPropertyIndex(propertyId);
+            if (wasRenamed)
+            {
+                *wasRenamed = false;
+            }
+
+            MaterialPropertyIndex index = m_layout->FindPropertyIndex(propertyId);
+            if (!index.IsValid())
+            {
+                Name renamedId = propertyId;
+                
+                if (m_materialAsset->GetMaterialTypeAsset()->ApplyPropertyRenames(renamedId))
+                {                                
+                    index = m_layout->FindPropertyIndex(renamedId);
+
+                    if (wasRenamed)
+                    {
+                        *wasRenamed = true;
+                    }
+
+                    if (newName)
+                    {
+                        *newName = renamedId;
+                    }
+
+                    AZ_Warning("Material", false,
+                        "Material property '%s' has been renamed to '%s'. Consider updating the corresponding source data.",
+                        propertyId.GetCStr(),
+                        renamedId.GetCStr());
+                }
+            }
+            return index;
         }
 
         template<typename Type>

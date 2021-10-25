@@ -73,6 +73,7 @@ def create_screenshots_archive(screenshot_path):
 class TestAllComponentsIndepthTests(object):
 
     @pytest.mark.parametrize("screenshot_name", ["AtomBasicLevelSetup.ppm"])
+    @pytest.mark.test_case_id("C34603773")
     def test_BasicLevelSetup_SetsUpLevel(
             self, request, editor, workspace, project, launcher_platform, level, screenshot_name):
         """
@@ -88,7 +89,7 @@ class TestAllComponentsIndepthTests(object):
 
         level_creation_expected_lines = [
             "Viewport is set to the expected size: True",
-            "Basic level created"
+            "Exited game mode"
         ]
         unexpected_lines = [
             "Trace::Assert",
@@ -115,6 +116,7 @@ class TestAllComponentsIndepthTests(object):
 
         create_screenshots_archive(screenshot_directory)
 
+    @pytest.mark.test_case_id("C34525095")
     def test_LightComponent_ScreenshotMatchesGoldenImage(
             self, request, editor, workspace, project, launcher_platform, level):
         """
@@ -146,7 +148,7 @@ class TestAllComponentsIndepthTests(object):
             golden_image_path = os.path.join(golden_images_directory(), golden_image)
             golden_images.append(golden_image_path)
 
-        expected_lines = ["Light component tests completed."]
+        expected_lines = ["spot_light Controller|Configuration|Shadows|Shadowmap size: SUCCESS"]
         unexpected_lines = [
             "Trace::Assert",
             "Trace::Error",
@@ -187,8 +189,8 @@ class TestPerformanceBenchmarkSuite(object):
             "Benchmark metadata captured.",
             "Pass timestamps captured.",
             "CPU frame time captured.",
-            "Capturing complete.",
-            "Captured data successfully."
+            "Captured data successfully.",
+            "Exited game mode"
         ]
 
         unexpected_lines = [
@@ -225,6 +227,8 @@ class TestMaterialEditor(object):
         pytest.param("-rhi=Vulkan", ["Registering vulkan RHI"])
     ])
     @pytest.mark.parametrize("exe_file_name", ["MaterialEditor"])
+    @pytest.mark.test_case_id("C30973986")  # Material Editor Launching in Dx12
+    @pytest.mark.test_case_id("C30973987")  # Material Editor Launching in Vulkan
     def test_MaterialEditorLaunch_AllRHIOptionsSucceed(
             self, request, workspace, project, launcher_platform, generic_launcher, exe_file_name, cfg_args,
             expected_lines):

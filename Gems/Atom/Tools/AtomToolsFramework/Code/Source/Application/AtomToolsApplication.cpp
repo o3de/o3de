@@ -36,6 +36,8 @@
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
 
+#include "AtomToolsFramework_Traits_Platform.h"
+
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QMessageBox>
 #include <QObject>
@@ -216,7 +218,11 @@ namespace AtomToolsFramework
         AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
         AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
 
+#if AZ_TRAIT_ATOMTOOLSFRAMEWORK_SKIP_APP_DESTROY
+        ::_exit(0);
+#else
         Base::Destroy();
+#endif
     }
 
     AZStd::vector<AZStd::string> AtomToolsApplication::GetCriticalAssetFilters() const

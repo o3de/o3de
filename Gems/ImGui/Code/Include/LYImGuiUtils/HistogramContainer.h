@@ -18,8 +18,7 @@ namespace ImGui
     namespace LYImGuiUtils
     {
         /**
-        * A small class to help manage values for an ImGui Histogram ( ImGui doesn't want to manage the values itself ).
-        *   Nothing crazy, just helps reduce boiler plate if you are ImGui::PlotHistogram()'ing
+        * A small class to help manage values for an ImGui Histogram (ImGui is not managing values itself).
         */
         class HistogramContainer
         {
@@ -40,18 +39,30 @@ namespace ImGui
             // Static Type to String function
             static const char* ViewTypeToString(ViewType viewType);
 
+            //! Horizontal move direction of the histogram when pushing new values.
+            enum MoveDirection : AZ::u8
+            {
+                PushLeftMoveRight = 0, //! Push new values to the front of the buffer, which corresponds to the left side, and make the histogram move to the right.
+                PushRightMoveLeft = 1, //! Push new values to the back of the buffer, which corresponds to the right side, and make the histogram move to the left.
+            };
+
+            //! Mode determining the min and max values for the visible range of the vertical axis for the histogram.
+            enum ScaleMode : AZ::u8
+            {
+                NoAutoScale = 0, //! Use the min and max values given by Init() as visible range.
+                AutoExpand = 1, //! Expand scale in case a sample is out of the current bounds. Does only expand the scale but not decrease it back again.
+                AutoScale = 2, //! Use a running average to expand and shrink the visible range.
+            };
+
             // Do all of the set up via Init
-            void Init(const char* histogramName, int maxValueCountSize, ViewType viewType, bool displayOverlays, float minScale, float maxScale
-                , bool autoExpandScale, bool startCollapsed = false, bool drawMostRecentValue = true);
+            void Init(const char* histogramName, int maxValueCountSize, ViewType viewType, bool displayOverlays, float minScale, float maxScale,
+                ScaleMode scaleMode = AutoScale, bool startCollapsed = false, bool drawMostRecentValue = true);
 
             // How many values are in the container currently
             int GetSize() { return static_cast<int>(m_values.size()); }
 
             // What is the max size of the container
             int GetMaxSize() { return m_maxSize; }
-
-            // Set the Max Size and clear the container
-            void SetMaxSize(int size) { m_values.clear();  m_maxSize = size; }
 
             // Push a value to this histogram container
             void PushValue(float val);
@@ -65,7 +76,22 @@ namespace ImGui
             // Draw this histogram with ImGui
             void Draw(float histogramWidth, float histogramHeight);
 
+            //! Adjust the scale mode to determine the min and max values for the visible range of the vertical axis for the histogram.
+            void SetScaleMode(ScaleMode scaleMode) { m_scaleMode = scaleMode; }
+
+            //! Adjust the horizontal move direction of the histogram when pushing new values.
+            void SetMoveDirection(MoveDirection moveDirection) { m_moveDirection = moveDirection; }
+
+            //! Calculate the min and maximum values for the present samples.
+            void CalcMinMaxValues(float& outMin, float& outMax);
+
+            //! Set/get color used by either the lines in case ViewType is Lines or bars in case or Histogram.
+            void SetBarLineColor(const ImColor& color) { m_barLineColor = color; }
+            ImColor GetBarLineColor() const  { return m_barLineColor; }
+
         private:
+            // Set the Max Size and clear the container
+            void SetMaxSize(int size);
 
             AZStd::string m_histogramName;
             AZStd::deque<float> m_values;
@@ -73,8 +99,11 @@ namespace ImGui
             ViewType m_viewType = ViewType::Histogram;
             float m_minScale;
             float m_maxScale;
+            MoveDirection m_moveDirection = PushLeftMoveRight; //! Specify if values will be added on the left and the histogram moves right or the other way around.
             bool m_dispalyOverlays;
-            bool m_autoExpandScale;
+            ScaleMode m_scaleMode; //! Determines if the vertical range of the histogram will be manually specified, auto-expanded or automatically scaled based on the samples.
+            float m_autoScaleSpeed = 0.05f; //! Indicates how fast the min max values and the visible vertical range are adapting to new samples.
+            ImColor m_barLineColor = ImColor(66, 166, 178); //! Color used by either the lines in case ViewType is Lines or bars in case or Histogram.
             bool m_collapsed;
             bool m_drawMostRecentValueText;
         };

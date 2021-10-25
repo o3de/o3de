@@ -11,10 +11,12 @@
 #include <QApplication>
 #include <QBitmap>
 #include <QCheckBox>
+#include <QEvent>
 #include <QFontMetrics>
 #include <QGuiApplication>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QMouseEvent>
 #include <QPainter>
 #include <QPainterPath>
 #include <QStyle>
@@ -119,6 +121,12 @@ namespace AzToolsFramework
 
     int EntityOutlinerListModel::rowCount(const QModelIndex& parent) const
     {
+        // For QTreeView models, non-0 columns shouldn't have children
+        if (parent.isValid() && parent.column() != 0)
+        {
+            return 0;
+        }
+
         auto parentId = GetEntityFromIndex(parent);
 
         AZStd::size_t childCount = 0;
@@ -133,17 +141,13 @@ namespace AzToolsFramework
 
     QModelIndex EntityOutlinerListModel::index(int row, int column, const QModelIndex& parent) const
     {
-        // sanity check
-        if (!hasIndex(row, column, parent) || (parent.isValid() && parent.column() != 0) || (row < 0 || row >= rowCount(parent)))
-        {
-            return QModelIndex();
-        }
-
         auto parentId = GetEntityFromIndex(parent);
 
+        // We have the row and column, so we just need the child ID to construct our index
         AZ::EntityId childId;
         EditorEntityInfoRequestBus::EventResult(childId, parentId, &EditorEntityInfoRequestBus::Events::GetChild, row);
-        return GetIndexFromEntity(childId, column);
+        AZ_Assert(childId.IsValid(), "No child found for parent");
+        return createIndex(row, column, static_cast<AZ::u64>(childId));
     }
 
     QVariant EntityOutlinerListModel::data(const QModelIndex& index, int role) const
@@ -517,13 +521,18 @@ namespace AzToolsFramework
         {
             AZ::EntityId parentId;
             EditorEntityInfoRequestBus::EventResult(parentId, id, &EditorEntityInfoRequestBus::Events::GetParent);
-            return GetIndexFromEntity(parentId, index.column());
+            return GetIndexFromEntity(parentId, 0);
         }
         return QModelIndex();
     }
 
     Qt::ItemFlags EntityOutlinerListModel::flags(const QModelIndex& index) const
     {
+        if (!index.isValid())
+        {
+            return Qt::ItemIsDropEnabled;
+        }
+
         Qt::ItemFlags itemFlags = QAbstractItemModel::flags(index);
         switch (index.column())
         {
@@ -1208,6 +1217,10 @@ namespace AzToolsFramework
     void EntityOutlinerListModel::ProcessEntityUpdates()
     {
         AZ_PROFILE_FUNCTION(Editor);
+        if (!m_entityChangeQueued)
+        {
+            return;
+        }
         m_entityChangeQueued = false;
         if (m_layoutResetQueued)
         {
@@ -1236,31 +1249,14 @@ namespace AzToolsFramework
         {
             AZ_PROFILE_SCOPE(Editor, "EntityOutlinerListModel::ProcessEntityUpdates:ChangeQueue");
 
-            // its faster to just do a bulk data change than to carefully pick out indices
-            // so we'll just merge all ranges into a single range rather than try to make gaps
-            QModelIndex firstChangeIndex;
-            QModelIndex lastChangeIndex;
-
             for (auto entityId : m_entityChangeQueue)
             {
-                auto myIndex = GetIndexFromEntity(entityId, ColumnName);
-                if ((!firstChangeIndex.isValid())||(firstChangeIndex.row() > myIndex.row()))
+                if (entityId.IsValid())
                 {
-                    firstChangeIndex = myIndex;
+                    const QModelIndex beginIndex = GetIndexFromEntity(entityId, ColumnName);
+                    const QModelIndex endIndex = createIndex(beginIndex.row(), VisibleColumnCount - 1, beginIndex.internalId());
+                    emit dataChanged(beginIndex, endIndex);
                 }
-            
-                if ((!lastChangeIndex.isValid())||(lastChangeIndex.row() < myIndex.row()))
-                {
-                    // expand it to be the last column:
-                    lastChangeIndex = myIndex;
-                }
-            }
-
-            if (firstChangeIndex.isValid())
-            {
-                // expand to cover all visible columns:
-                lastChangeIndex = createIndex(lastChangeIndex.row(), VisibleColumnCount - 1, lastChangeIndex.internalPointer());
-                emit dataChanged(firstChangeIndex, lastChangeIndex);
             }
         
             m_entityChangeQueue.clear();
@@ -1382,6 +1378,9 @@ namespace AzToolsFramework
         m_isFilterDirty = true;
         QueueAncestorUpdate(parentId);
         emit EnableSelectionUpdates(true);
+
+        // Remove any pending updates for this removed entity.
+        m_entityChangeQueue.erase(childId);
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedOrderBegin(AZ::EntityId parentId, AZ::EntityId childId, AZ::u64 index)
@@ -2290,7 +2289,14 @@ namespace AzToolsFramework
         // Now we setup a Text Document so it can draw the rich text
         QTextDocument textDoc;
         textDoc.setDefaultFont(optionV4.font);
-        textDoc.setDefaultStyleSheet("body {color: white}");
+        if (option.state & QStyle::State_Enabled)
+        {
+            textDoc.setDefaultStyleSheet("body {color: white}");
+        }
+        else
+        {
+            textDoc.setDefaultStyleSheet("body {color: #7C7C7C}");
+        }
         textDoc.setHtml("<body>" + entityNameRichText + "</body>");
         painter->translate(textRect.topLeft());
         textDoc.setTextWidth(textRect.width());
@@ -2327,6 +2333,23 @@ namespace AzToolsFramework
             // Do not propagate click to TreeView if the user clicks the visibility or lock toggles
             // This prevents selection from changing if a toggle is clicked
             return true;
+        }
+
+        if (event->type() == QEvent::MouseButtonPress)
+        {
+            AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+
+            if (auto editorEntityUiInterface = AZ::Interface<EditorEntityUiInterface>::Get(); editorEntityUiInterface != nullptr)
+            {
+                auto mouseEvent = static_cast<QMouseEvent*>(event);
+
+                auto entityUiHandler = editorEntityUiInterface->GetHandler(entityId);
+
+                if (entityUiHandler && entityUiHandler->OnOutlinerItemClick(mouseEvent->pos(), option, index))
+                {                
+                    return true;
+                }
+            }
         }
 
         return QStyledItemDelegate::editorEvent(event, model, option, index);

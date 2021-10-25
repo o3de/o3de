@@ -148,11 +148,13 @@ namespace AZ
             BaseClass::Activate();
             MaterialReceiverNotificationBus::Handler::BusConnect(GetEntityId());
             MaterialComponentNotificationBus::Handler::BusConnect(GetEntityId());
+            EditorMaterialSystemComponentNotificationBus::Handler::BusConnect();
             UpdateMaterialSlots();
         }
 
         void EditorMaterialComponent::Deactivate()
         {
+            EditorMaterialSystemComponentNotificationBus::Handler::BusDisconnect();
             MaterialReceiverNotificationBus::Handler::BusDisconnect();
             MaterialComponentNotificationBus::Handler::BusDisconnect();
             BaseClass::Deactivate();
@@ -238,6 +240,19 @@ namespace AZ
                 UpdateMaterialSlots();
             });
             action->setToolTip("Repair materials that reference missing assets by assigning the default asset.");
+            
+            action = menu->addAction("Apply Automatic Property Updates", [this]() {
+                AzToolsFramework::ScopedUndoBatch undoBatch("Applying automatic property updates.");
+                SetDirty();
+
+                uint32_t propertiesUpdated = 0;
+                MaterialComponentRequestBus::EventResult(propertiesUpdated, GetEntityId(), &MaterialComponentRequestBus::Events::ApplyAutomaticPropertyUpdates);
+
+                AZ_Printf("EditorMaterialComponent", "Updated %u property(s).", propertiesUpdated);
+
+                UpdateMaterialSlots();
+            });
+            action->setToolTip("Repair material property overrides that reference missing properties by auto-renaming them where possible.");
         }
 
         void EditorMaterialComponent::SetPrimaryAsset(const AZ::Data::AssetId& assetId)
@@ -257,6 +272,18 @@ namespace AZ
             if (materialAssignment.m_materialInstance)
             {
                 materialAssignment.m_materialInstance->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
+            }
+        }
+
+        void EditorMaterialComponent::OnRenderMaterialPreviewComplete(
+            [[maybe_unused]] const AZ::EntityId& entityId,
+            [[maybe_unused]] const AZ::Render::MaterialAssignmentId& materialAssignmentId,
+            [[maybe_unused]] const QPixmap& pixmap)
+        {
+            if (entityId == GetEntityId())
+            {
+                AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
             }
         }
 
