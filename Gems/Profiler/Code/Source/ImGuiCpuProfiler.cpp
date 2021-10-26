@@ -12,7 +12,6 @@
 
 #include <CpuProfilerImpl.h>
 
-#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/JSON/filereadstream.h>
@@ -24,11 +23,6 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/time.h>
-
-namespace AZ::Debug
-{
-    AZ_CVAR_EXTERNED(AZ::CVarFixedString, bg_profilerCaptureLocation);
-}
 
 namespace Profiler
 {
@@ -226,7 +220,7 @@ namespace Profiler
             // Only update the cached file list when opened so that we aren't making IO calls on every frame.
             m_cachedCapturePaths.clear();
 
-            AZ::CVarFixedString captureOutput = static_cast<AZ::CVarFixedString>(AZ::Debug::bg_profilerCaptureLocation);
+            AZ::IO::FixedMaxPathString captureOutput = AZ::Debug::GetProfilerCaptureLocation();
 
             auto* base = AZ::IO::FileIOBase::GetInstance();
             base->FindFiles(captureOutput.c_str(), "*.json",
@@ -416,7 +410,7 @@ namespace Profiler
         AZStd::string timeString;
         AZStd::to_string(timeString, AZStd::GetTimeNowSecond());
 
-        AZ::CVarFixedString captureOutput = static_cast<AZ::CVarFixedString>(AZ::Debug::bg_profilerCaptureLocation);
+        AZ::IO::FixedMaxPathString captureOutput = AZ::Debug::GetProfilerCaptureLocation();
 
         const AZ::IO::FixedMaxPathString frameDataFilePath =
             AZ::IO::FixedMaxPathString::format("%s/cpu_%s_%s.json", captureOutput.c_str(), nameHint, timeString.c_str());

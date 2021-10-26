@@ -10,12 +10,19 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/string/string.h>
 
 namespace AZ
 {
     namespace Debug
     {
+        //! settings registry entry for specifying where to output profiler captures
+        static constexpr const char* RegistryKey_ProfilerCaptureLocation = "/O3DE/AzCore/Debug/Profiler/CaptureLocation";
+
+        //! fallback value in the event the settings registry isn't ready or doesn't contain the key
+        static constexpr const char* ProfilerCaptureLocationFallback = "@user@/Profiler";
+
         /**
          * ProfilerNotifications provides a profiler event interface that can be used to update listeners on profiler status
          */
@@ -60,5 +67,9 @@ namespace AZ
             virtual bool EndCapture() = 0;
         };
         using ProfilerRequestBus = AZ::EBus<ProfilerRequests>;
+
+        //! helper function for getting the profiler capture location from the settings registry that
+        //! includes fallback handing in the event the registry value can't be determined
+        AZ::IO::FixedMaxPathString GetProfilerCaptureLocation();
     } // namespace Debug
 } // namespace AZ

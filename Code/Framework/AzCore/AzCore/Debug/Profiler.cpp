@@ -10,18 +10,16 @@
 #include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 namespace AZ::Debug
 {
-    AZ_CVAR(AZ::CVarFixedString, bg_profilerCaptureLocation, "@user@/Profiler", nullptr, ConsoleFunctorFlags::Null,
-        "Specify where to save profiler capture data");
-
     AZStd::string GenerateOutputFile(const char* nameHint)
     {
         AZStd::string timeString;
         AZStd::to_string(timeString, AZStd::GetTimeNowSecond());
 
-        AZ::CVarFixedString captureOutput = static_cast<AZ::CVarFixedString>(bg_profilerCaptureLocation);
+        AZ::IO::FixedMaxPathString captureOutput = GetProfilerCaptureLocation();
 
         return AZStd::string::format("%s/capture_%s_%s.json", captureOutput.c_str(), nameHint, timeString.c_str());
     }
@@ -47,4 +45,20 @@ namespace AZ::Debug
         AZ::Debug::ProfilerRequestBus::Broadcast(&AZ::Debug::ProfilerRequestBus::Events::EndCapture);
     }
     AZ_CONSOLEFREEFUNC(ProfilerEndCapture, AZ::ConsoleFunctorFlags::DontReplicate, "End and dump an in-progress continuous capture");
+
+    AZ::IO::FixedMaxPathString GetProfilerCaptureLocation()
+    {
+        AZ::IO::FixedMaxPathString captureOutput;
+        if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
+        {
+            settingsRegistry->Get(captureOutput, RegistryKey_ProfilerCaptureLocation);
+        }
+
+        if (captureOutput.empty())
+        {
+            captureOutput = ProfilerCaptureLocationFallback;
+        }
+
+        return captureOutput;
+    }
 } // namespace AZ::Debug
