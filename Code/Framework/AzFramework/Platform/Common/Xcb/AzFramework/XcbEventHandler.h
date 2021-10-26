@@ -23,9 +23,6 @@ namespace AzFramework
         virtual ~XcbEventHandler() = default;
 
         virtual void HandleXcbEvent(xcb_generic_event_t* event) = 0;
-
-        // ATTN This is used as a workaround for RAW Input events when using the Editor.
-        virtual void PollSpecialEvents(){};
     };
 
     class XcbEventHandlerBusTraits : public AZ::EBusTraits

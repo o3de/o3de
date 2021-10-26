@@ -64,7 +64,7 @@ namespace AzFramework
             return nullptr;
         }
 
-        s_xcbConnection = AzFramework::XcbConnectionManagerInterface::Get()->GetXcbConnection();
+        s_xcbConnection = interface->GetXcbConnection();
         if (!s_xcbConnection)
         {
             AZ_Warning("XcbInput", false, "XCB connection not available");
@@ -268,33 +268,6 @@ namespace AzFramework
         return m_xInputInitialized;
     }
 
-    void XcbInputDeviceMouse::SetEnableXInput(bool enable)
-    {
-        struct
-        {
-            xcb_input_event_mask_t head;
-            int mask;
-        } mask;
-
-        mask.head.deviceid = XCB_INPUT_DEVICE_ALL;
-        mask.head.mask_len = 1;
-
-        if (enable)
-        {
-            mask.mask = XCB_INPUT_XI_EVENT_MASK_RAW_MOTION | XCB_INPUT_XI_EVENT_MASK_RAW_BUTTON_PRESS |
-                XCB_INPUT_XI_EVENT_MASK_RAW_BUTTON_RELEASE | XCB_INPUT_XI_EVENT_MASK_MOTION | XCB_INPUT_XI_EVENT_MASK_BUTTON_PRESS |
-                XCB_INPUT_XI_EVENT_MASK_BUTTON_RELEASE;
-        }
-        else
-        {
-            mask.mask = XCB_NONE;
-        }
-
-        xcb_input_xi_select_events(s_xcbConnection, s_xcbScreen->root, 1, &mask.head);
-
-        xcb_flush(s_xcbConnection);
-    }
-
     void XcbInputDeviceMouse::SetSystemCursorState(SystemCursorState systemCursorState)
     {
         if (systemCursorState != m_systemCursorState)
@@ -353,8 +326,6 @@ namespace AzFramework
             // Remember the window we used to modify cursor and barrier states.
             m_prevConstraintWindow = window;
         }
-
-        SetEnableXInput(!cursorShown);
 
         CreateBarriers(window, confined);
         ShowCursor(window, cursorShown);
@@ -500,14 +471,6 @@ namespace AzFramework
         }
     }
 
-    void XcbInputDeviceMouse::HandlePointerMotionEvents(const xcb_generic_event_t* event)
-    {
-        const xcb_input_motion_event_t* mouseMotionEvent = reinterpret_cast<const xcb_input_motion_event_t*>(event);
-
-        m_systemCursorPosition[0] = mouseMotionEvent->event_x;
-        m_systemCursorPosition[1] = mouseMotionEvent->event_y;
-    }
-
     void XcbInputDeviceMouse::HandleRawInputEvents(const xcb_ge_generic_event_t* event)
     {
         const xcb_ge_generic_event_t* genericEvent = reinterpret_cast<const xcb_ge_generic_event_t*>(event);
@@ -552,78 +515,20 @@ namespace AzFramework
         }
     }
 
-    void XcbInputDeviceMouse::PollSpecialEvents()
-    {
-        while (xcb_generic_event_t* genericEvent = xcb_poll_for_queued_event(s_xcbConnection))
-        {
-            // TODO Is the following correct? If we are showing the cursor, don't poll RAW Input events.
-            switch (genericEvent->response_type & ~0x80)
-            {
-            case XCB_GE_GENERIC:
-                {
-                    const xcb_ge_generic_event_t* geGenericEvent = reinterpret_cast<const xcb_ge_generic_event_t*>(genericEvent);
-
-                    // Only handle raw inputs if we have focus.
-                    // Handle Raw Input events first.
-                    if ((geGenericEvent->event_type == XCB_INPUT_RAW_BUTTON_PRESS) ||
-                        (geGenericEvent->event_type == XCB_INPUT_RAW_BUTTON_RELEASE) ||
-                        (geGenericEvent->event_type == XCB_INPUT_RAW_MOTION))
-                    {
-                        HandleRawInputEvents(geGenericEvent);
-
-                        free(genericEvent);
-                    }
-                }
-                break;
-            }
-        }
-    }
-
     void XcbInputDeviceMouse::HandleXcbEvent(xcb_generic_event_t* event)
     {
         switch (event->response_type & ~0x80)
         {
-        // QT5 is using by default XInput which means we do need to check for XCB_GE_GENERIC event to parse all mouse related events.
+        // XInput raw events are sent from the server as a XCB_GE_GENERIC
+        // event. A XCB_GE_GENERIC event is typecast to a
+        // xcb_ge_generic_event_t, which is distinct from a
+        // xcb_generic_event_t, and exists so that X11 extensions can extend
+        // the event emission beyond the size that a normal X11 event could
+        // contain.
         case XCB_GE_GENERIC:
             {
                 const xcb_ge_generic_event_t* genericEvent = reinterpret_cast<const xcb_ge_generic_event_t*>(event);
-
-                // Handling RAW Inputs here works in GameMode but not in Editor mode because QT is
-                // not handling RAW input events and passing to.
-                if (!m_cursorShown)
-                {
-                    // Handle Raw Input events first.
-                    if ((genericEvent->event_type == XCB_INPUT_RAW_BUTTON_PRESS) ||
-                        (genericEvent->event_type == XCB_INPUT_RAW_BUTTON_RELEASE) || (genericEvent->event_type == XCB_INPUT_RAW_MOTION))
-                    {
-                        HandleRawInputEvents(genericEvent);
-                    }
-                }
-                else
-                {
-                    switch (genericEvent->event_type)
-                    {
-                    case XCB_INPUT_BUTTON_PRESS:
-                        {
-                            const xcb_input_button_press_event_t* mouseButtonEvent =
-                                reinterpret_cast<const xcb_input_button_press_event_t*>(genericEvent);
-                            HandleButtonPressEvents(mouseButtonEvent->detail, true);
-                        }
-                        break;
-                    case XCB_INPUT_BUTTON_RELEASE:
-                        {
-                            const xcb_input_button_release_event_t* mouseButtonEvent =
-                                reinterpret_cast<const xcb_input_button_release_event_t*>(genericEvent);
-                            HandleButtonPressEvents(mouseButtonEvent->detail, false);
-                        }
-                        break;
-                    case XCB_INPUT_MOTION:
-                        {
-                            HandlePointerMotionEvents(event);
-                        }
-                        break;
-                    }
-                }
+                HandleRawInputEvents(genericEvent);
             }
             break;
         case XCB_FOCUS_IN:
@@ -634,6 +539,9 @@ namespace AzFramework
                     m_focusWindow = focusInEvent->event;
                     HandleCursorState(m_focusWindow, m_systemCursorState);
                 }
+
+                auto* interface = AzFramework::XcbConnectionManagerInterface::Get();
+                interface->SetEnableXInput(interface->GetXcbConnection(), true);
             }
             break;
         case XCB_FOCUS_OUT:
@@ -645,6 +553,9 @@ namespace AzFramework
                 ResetInputChannelStates();
 
                 m_focusWindow = XCB_NONE;
+
+                auto* interface = AzFramework::XcbConnectionManagerInterface::Get();
+                interface->SetEnableXInput(interface->GetXcbConnection(), false);
             }
             break;
         }
