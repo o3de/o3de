@@ -952,7 +952,7 @@ namespace EMotionFX
             }
         }
 
-        void EditorActorComponent::SetRenderFlag(ActorRenderFlagMask renderFlags)
+        void EditorActorComponent::SetRenderFlag(ActorRenderFlagBitset renderFlags)
         {
             m_debugRenderFlags = renderFlags;
         }

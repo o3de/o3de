@@ -111,4 +111,16 @@ namespace EMStudio
 
         m_actions[actionIndex] = action;
     }
+
+    void AnimViewportToolBar::SetRenderFlags(EMotionFX::ActorRenderFlagBitset renderFlags)
+    {
+        for (size_t i = 0; i < renderFlags.size(); ++i)
+        {
+            QAction* action = m_actions[i];
+            if (action)
+            {
+                action->setChecked(renderFlags[i]);
+            }
+        }
+    }
 } // namespace EMStudio

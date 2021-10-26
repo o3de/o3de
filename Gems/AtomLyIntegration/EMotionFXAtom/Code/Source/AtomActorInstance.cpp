@@ -79,7 +79,7 @@ namespace AZ
             UpdateBounds();
         }
 
-        void AtomActorInstance::DebugDraw(const EMotionFX::ActorRenderFlagMask& renderFlags)
+        void AtomActorInstance::DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags)
         {
             m_atomActorDebugDraw->DebugDraw(renderFlags, m_actorInstance);
         }

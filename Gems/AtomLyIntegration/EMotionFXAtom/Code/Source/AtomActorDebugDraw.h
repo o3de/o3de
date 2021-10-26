@@ -33,7 +33,7 @@ namespace AZ::Render
     public:
         AtomActorDebugDraw(AZ::EntityId entityId);
 
-        void DebugDraw(const EMotionFX::ActorRenderFlagMask& renderFlags, EMotionFX::ActorInstance* instance);
+        void DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags, EMotionFX::ActorInstance* instance);
 
     private:
 

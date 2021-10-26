@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <QSettings>
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <EMStudio/AnimViewportRequestBus.h>
@@ -26,10 +27,14 @@ namespace EMStudio
         AnimViewportRenderer* GetAnimViewportRenderer() { return m_renderer.get(); }
 
         void Reinit(bool resetCamera = true);
+        EMotionFX::ActorRenderFlagBitset GetRenderFlags() const;
 
     private:
         void SetupCameras();
         void SetupCameraController();
+
+        void LoadRenderFlags();
+        void SaveRenderFlags();
 
         // AnimViewportRequestBus::Handler overrides
         void ResetCamera();
@@ -42,6 +47,6 @@ namespace EMStudio
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_rotateCamera;
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_translateCamera;
         AZStd::shared_ptr<AzFramework::OrbitDollyScrollCameraInput> m_orbitDollyScrollCamera;
-        EMotionFX::ActorRenderFlagMask m_renderFlags;
+        EMotionFX::ActorRenderFlagBitset m_renderFlags;
     };
 }

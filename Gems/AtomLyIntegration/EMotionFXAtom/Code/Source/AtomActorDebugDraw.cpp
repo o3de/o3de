@@ -27,7 +27,7 @@ namespace AZ::Render
         m_auxGeomFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<RPI::AuxGeomFeatureProcessorInterface>(entityId);
     }
 
-    void AtomActorDebugDraw::DebugDraw(const EMotionFX::ActorRenderFlagMask& renderFlags, EMotionFX::ActorInstance* instance)
+    void AtomActorDebugDraw::DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags, EMotionFX::ActorInstance* instance)
     {
         if (!m_auxGeomFeatureProcessor || !instance)
         {
@@ -47,7 +47,7 @@ namespace AZ::Render
         }
 
         // Render skeleton
-        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_SKELETON])
+        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_LINESKELETON])
         {
             RenderSkeleton(instance);
         }
@@ -345,7 +345,7 @@ namespace AZ::Render
         const AZ::Color colorTangents = AZ::Colors::Red;
         const AZ::Color mirroredBitangentColor = AZ::Colors::Yellow;
         const AZ::Color colorBitangents = AZ::Colors::White;
-        const float scale = 1.0f;
+        const float scale = 0.01f;
 
         // Get the tangents and check if this mesh actually has tangents
         AZ::Vector4* tangents = static_cast<AZ::Vector4*>(mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_TANGENTS));

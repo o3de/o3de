@@ -34,7 +34,7 @@ namespace EMotionFX
             virtual ~RenderActorInstance() = default;
 
             virtual void OnTick(float timeDelta) = 0;
-            virtual void DebugDraw(const EMotionFX::ActorRenderFlagMask& renderFlags) = 0;
+            virtual void DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags) = 0;
 
             SkinningMethod GetSkinningMethod() const;
             virtual void SetSkinningMethod(SkinningMethod skinningMethod);

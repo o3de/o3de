@@ -180,7 +180,7 @@ namespace EMotionFX
             bool IsPhysicsSceneSimulationFinishEventConnected() const;
             AZ::Data::Asset<ActorAsset> GetActorAsset() const { return m_configuration.m_actorAsset; }
 
-            void SetRenderFlag(ActorRenderFlagMask renderFlags);
+            void SetRenderFlag(ActorRenderFlagBitset renderFlags);
 
         private:
             // AZ::TransformNotificationBus::MultiHandler
@@ -202,7 +202,7 @@ namespace EMotionFX
             AZStd::vector<AZ::EntityId>                     m_attachments;
 
             AZStd::unique_ptr<RenderActorInstance>          m_renderActorInstance;
-            ActorRenderFlagMask                             m_debugRenderFlags;         ///< Actor debug render flag
+            ActorRenderFlagBitset                             m_debugRenderFlags;         ///< Actor debug render flag
 
             AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
         };

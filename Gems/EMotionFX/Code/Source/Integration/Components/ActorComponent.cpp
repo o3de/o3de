@@ -394,7 +394,7 @@ namespace EMotionFX
             return m_sceneFinishSimHandler.IsConnected();
         }
 
-        void ActorComponent::SetRenderFlag(ActorRenderFlagMask renderFlags)
+        void ActorComponent::SetRenderFlag(ActorRenderFlagBitset renderFlags)
         {
             m_debugRenderFlags = renderFlags;
         }

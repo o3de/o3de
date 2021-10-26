@@ -37,8 +37,8 @@ namespace EMotionFX
         RENDER_SIMULATEDOBJECT_COLLIDERS = 21,
         RENDER_SIMULATEJOINTS = 22,
         RENDER_EMFX_DEBUG = 23,
-        NUM_RENDER_OPTIONS = 24
+        NUM_RENDERFLAGS = 24
     };
 
-    using ActorRenderFlagMask = AZStd::bitset<ActorRenderFlag::NUM_RENDER_OPTIONS>;
+    using ActorRenderFlagBitset = AZStd::bitset<ActorRenderFlag::NUM_RENDERFLAGS>;
 }
