@@ -32,6 +32,7 @@ namespace AzToolsFramework
         void DuplicateEntities(const EntityIdList& entities) override;
 
     private:
+        bool AreEntitiesValidForDuplication(const EntityIdList& entityIds) const;
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
     };
 

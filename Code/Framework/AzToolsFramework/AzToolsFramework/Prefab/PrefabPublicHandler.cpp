@@ -1106,6 +1106,12 @@ namespace AzToolsFramework
                         oldInstance->GetTemplateId(), commonOwningInstance->get().GetTemplateId(),
                         AZStd::move(linkPatchesCopy), newInstanceAlias, undoBatch.GetUndoBatch());
                 }
+
+                // Select the duplicated entities/instances
+                auto selectionUndo = aznew SelectionCommand(duplicatedEntityAndInstanceIds, "Select Duplicated Entities/Instances");
+                selectionUndo->SetParent(undoBatch.GetUndoBatch());
+                ToolsApplicationRequestBus::Broadcast(
+                    &ToolsApplicationRequestBus::Events::SetSelectedEntities, duplicatedEntityAndInstanceIds);
             }
 
             return AZ::Success(AZStd::move(duplicatedEntityAndInstanceIds));
