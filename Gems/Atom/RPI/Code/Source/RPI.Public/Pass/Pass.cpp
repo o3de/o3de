@@ -238,6 +238,11 @@ namespace AZ
             return m_attachmentBindings[bindingIndex];
         }
 
+        const PassTemplate* Pass::GetPassTemplate() const
+        {
+            return m_template.get();
+        }
+
         void Pass::AddAttachmentBinding(PassAttachmentBinding attachmentBinding)
         {
             // Add the index of the binding to the input, output or input/output list based on the slot type

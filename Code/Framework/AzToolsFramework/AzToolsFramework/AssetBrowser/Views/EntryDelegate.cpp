@@ -225,29 +225,36 @@ namespace AzToolsFramework
                         const QModelIndex indexBelow = viewModel->index(index.row() + 1, index.column());
                         const QModelIndex indexAbove = viewModel->index(index.row() - 1, index.column());
 
-                        auto aboveEntry = qvariant_cast<const AssetBrowserEntry*>(indexBelow.data(AssetBrowserModel::Roles::EntryRole));
-                        auto belowEntry = qvariant_cast<const AssetBrowserEntry*>(indexAbove.data(AssetBrowserModel::Roles::EntryRole));
+                        auto belowEntry = qvariant_cast<const AssetBrowserEntry*>(indexBelow.data(AssetBrowserModel::Roles::EntryRole));
+                        auto aboveEntry = qvariant_cast<const AssetBrowserEntry*>(indexAbove.data(AssetBrowserModel::Roles::EntryRole));
 
-                        auto aboveSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(aboveEntry);
                         auto belowSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(belowEntry);
+                        auto aboveSourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(aboveEntry);
 
-                        // if current index is the last entry in the view
-                        // or the index above it is a Source Entry and
-                        // the index below is invalid or is valid but it is also a source entry
-                        // then the current index is the only child.
-                        if (index.row() == viewModel->rowCount() - 1 ||
-                            (indexBelow.isValid() && aboveSourceEntry &&
-                             (!indexAbove.isValid() || (indexAbove.isValid() && belowSourceEntry))))
+                        // Last item and the above entry is a source entry
+                        // or indexBelow is a source entry and the index above is not
+                        if (viewModel->rowCount() > 0 && index.row() == viewModel->rowCount() - 1)
+                        {
+                            if (aboveSourceEntry)
+                            {
+                                DrawBranchPixMap(EntryBranchType::OneChild, painter, branchIconTopLeft, iconSize);
+                            }
+                            else
+                            {
+                                DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize);
+                            }
+                        }
+                        else if (belowSourceEntry && aboveSourceEntry)
                         {
                             DrawBranchPixMap(EntryBranchType::OneChild, painter, branchIconTopLeft, iconSize); // Draw One Child Icon
                         }
-                        else if (indexBelow.isValid() && aboveSourceEntry) // The index above is a source entry
+                        else if (belowSourceEntry && !aboveSourceEntry)
                         {
-                            DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize); // Draw First child Icon
+                            DrawBranchPixMap(EntryBranchType::Last, painter, branchIconTopLeft, iconSize);
                         }
-                        else if (indexAbove.isValid() && belowSourceEntry) // The index below is a source entry
+                        else if (aboveSourceEntry) // The index above is a source entry
                         {
-                            DrawBranchPixMap(EntryBranchType::First, painter, branchIconTopLeft, iconSize); // Draw Last Child Icon
+                            DrawBranchPixMap(EntryBranchType::First, painter, branchIconTopLeft, iconSize); // Draw First Child Icon
                         }
                         else //the index above and below are also child entries
                         {
@@ -286,7 +293,6 @@ namespace AzToolsFramework
                     absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathLast;
                     break;
                 case AzToolsFramework::AssetBrowser::EntryBranchType::OneChild:
-                default:
                     absoluteIconPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / TreeIconPathOneChild;
                     break;
                 }
@@ -311,5 +317,4 @@ namespace AzToolsFramework
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
-
 #include "AssetBrowser/Views/moc_EntryDelegate.cpp"

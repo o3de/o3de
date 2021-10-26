@@ -8,23 +8,22 @@
 
 #pragma once
 
-#include <AzCore/std/function/function_fwd.h>
-
 #if !defined(Q_MOC_RUN)
+#include <AzCore/std/function/function_fwd.h>
 #include <AzQtComponents/Components/SearchLineEdit.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <TagWidget.h>
-#include <DownloadController.h>
-
 #include <QFrame>
-#include <QLabel>
-#include <QDialog>
-#include <QMoveEvent>
-#include <QHideEvent>
-#include <QVBoxLayout>
-#include <QAction>
+#include <DownloadController.h>
 #endif
+
+QT_FORWARD_DECLARE_CLASS(QPushButton)
+QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QHBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QHideEvent)
+QT_FORWARD_DECLARE_CLASS(QMoveEvent)
 
 namespace O3DE::ProjectManager
 {
@@ -42,6 +41,7 @@ namespace O3DE::ProjectManager
         using GetTagIndicesCallback = AZStd::function<QVector<QModelIndex>()>;
         void CreateGemSection(const QString& singularTitle, const QString& pluralTitle, GetTagIndicesCallback getTagIndices);
         void CreateDownloadSection();
+        void OnCancelDownloadActivated(const QString& link);
 
         QVBoxLayout* m_layout = nullptr;
         GemModel* m_gemModel = nullptr;
@@ -87,12 +87,11 @@ namespace O3DE::ProjectManager
         void ReinitForProject();
 
     signals:
+        void AddGem();
         void OpenGemsRepo();
-
+        
     private:
         AzQtComponents::SearchLineEdit* m_filterLineEdit = nullptr;
         inline constexpr static int s_height = 60;
-
-        QAction* m_openGemReposAction = nullptr;
     };
 } // namespace O3DE::ProjectManager
