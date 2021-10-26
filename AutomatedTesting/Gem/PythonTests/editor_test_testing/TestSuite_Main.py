@@ -26,16 +26,13 @@ import ly_test_tools.environment.process_utils as process_utils
 
 import argparse, sys
 
-if ly_test_tools.WINDOWS:
-    pytestmark = pytest.mark.SUITE_main
-else:
-    pytestmark = pytest.mark.skipif(not ly_test_tools.WINDOWS, reason="Only runs on Windows")
-
 def get_editor_launcher_platform():
     if ly_test_tools.WINDOWS:
         return "windows_editor"
-    else:
+    elif ly_test_tools.LINUX:
         return "linux_editor"
+    else:
+        return None
 
 @pytest.mark.parametrize("launcher_platform", [get_editor_launcher_platform()])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])

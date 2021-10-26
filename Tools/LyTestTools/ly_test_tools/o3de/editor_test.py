@@ -3,6 +3,27 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
+
+This file provides editor testing functionality to easily write automated editor tests for O3DE.
+For using these utilities, you can subclass your test suite from EditorTestSuite, this allows an easy way of
+specifying python test scripts that the editor will run without needing to write any boilerplace code.
+It supports out of the box parallelization(running multiple editor instances at once), batching(running multiple tests
+in the same editor instance) and crash detection.
+Usage example:
+   class MyTestSuite(EditorTestSuite):
+
+       class MyFirstTest(EditorSingleTest):
+           from . import script_to_be_run_by_editor as test_module
+
+       class MyTestInParallel_1(EditorParallelTest):
+           from . import another_script_to_be_run_by_editor as test_module
+
+       class MyTestInParallel_2(EditorParallelTest):
+           from . import yet_another_script_to_be_run_by_editor as test_module
+
+
+EditorTestSuite does introspection of the defined classes inside of it and automatically prepares the tests,
+parallelizing/batching as required
 """
 
 import pytest
@@ -29,27 +50,6 @@ import ly_test_tools.o3de.editor_test_utils as editor_utils
 
 from ly_test_tools.o3de.asset_processor import AssetProcessor
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
-
-# This file provides editor testing functionality to easily write automated editor tests for O3DE.
-# For using these utilities, you can subclass your test suite from EditorTestSuite, this allows an easy way of
-# specifying python test scripts that the editor will run without needing to write any boilerplace code.
-# It supports out of the box parallelization(running multiple editor instances at once), batching(running multiple tests
-# in the same editor instance) and crash detection.
-# Usage example:
-#    class MyTestSuite(EditorTestSuite):
-#   
-#        class MyFirstTest(EditorSingleTest):
-#            from . import script_to_be_run_by_editor as test_module
-#   
-#        class MyTestInParallel_1(EditorParallelTest):
-#            from . import another_script_to_be_run_by_editor as test_module
-#        
-#        class MyTestInParallel_2(EditorParallelTest):
-#            from . import yet_another_script_to_be_run_by_editor as test_module
-#
-#
-# EditorTestSuite does introspection of the defined classes inside of it and automatically prepares the tests,
-# parallelizing/batching as required
 
 # This file contains no tests, but with this we make sure it won't be picked up by the runner since the file ends with _test
 __test__ = False
@@ -212,7 +212,7 @@ class Result:
             return r
             
         def __str__(self):
-            stacktrace_str = "-- No stacktrace data found --\n" if not self.stacktrace else self.stacktrace
+            stacktrace_str = "-- No stacktrace data found --" if not self.stacktrace else self.stacktrace
             output = (
                 f"Test CRASHED, return code {hex(self.ret_code)}\n"
                 f"---------------\n"
@@ -675,7 +675,7 @@ class EditorTestSuite():
             try:
                 elem = json.loads(m.groups()[0])
                 found_jsons[elem["name"]] = elem
-            except Exception as e:
+            except Exception:
                 continue # Avoid to fail if the output data is corrupt
         
         # Try to find the element in the log, this is used for cutting the log contents later
