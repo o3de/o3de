@@ -162,7 +162,7 @@ namespace Terrain
             // Flags
             DetailTextureFlags m_flags{ 0 };
 
-            AZStd::array<float, 1> m_padding; // 16 byte aligned
+            float m_padding; // 16 byte aligned
         };
 
         struct DetailMaterialData
@@ -184,7 +184,7 @@ namespace Terrain
         struct DetailMaterialSurface
         {
             AZ::Crc32 m_surfaceTag;
-            uint16_t m_detailMaterailId;
+            uint16_t m_detailMaterialId;
         };
 
         struct DetailMaterialListRegion
@@ -194,27 +194,27 @@ namespace Terrain
             AZStd::vector<DetailMaterialSurface> m_materialsForSurfaces;
         };
         
-        struct Int2DPoint
+        struct Vector2i
         {
             int32_t m_x{ 0 };
             int32_t m_y{ 0 };
 
-            Int2DPoint operator+(const Int2DPoint& rhs) const;
-            Int2DPoint& operator+=(const Int2DPoint& rhs);
-            Int2DPoint operator-(const Int2DPoint& rhs) const;
-            Int2DPoint& operator-=(const Int2DPoint& rhs);
-            Int2DPoint operator-() const;
+            Vector2i operator+(const Vector2i& rhs) const;
+            Vector2i& operator+=(const Vector2i& rhs);
+            Vector2i operator-(const Vector2i& rhs) const;
+            Vector2i& operator-=(const Vector2i& rhs);
+            Vector2i operator-() const;
         };
 
-        struct Int2DAabb
+        struct Aabb2i
         {
-            Int2DPoint m_min;
-            Int2DPoint m_max;
+            Vector2i m_min;
+            Vector2i m_max;
 
-            Int2DAabb operator+(const Int2DPoint& offset) const;
-            Int2DAabb operator-(const Int2DPoint& offset) const;
+            Aabb2i operator+(const Vector2i& offset) const;
+            Aabb2i operator-(const Vector2i& offset) const;
 
-            Int2DAabb GetClamped(Int2DAabb rhs) const;
+            Aabb2i GetClamped(Aabb2i rhs) const;
             bool IsValid() const;
         };
 
@@ -250,11 +250,11 @@ namespace Terrain
 
         uint16_t CreateOrUpdateDetailMaterial(MaterialInstance material);
         void UpdateDetailMaterialData(DetailMaterialData& materialData, MaterialInstance material);
-        void CheckUpdateDetailTexture(const Int2DAabb& newBounds, const Int2DPoint& newCenter);
-        void UpdateDetailTexture(const Int2DAabb& updateArea, const Int2DAabb& textureBounds, const Int2DPoint& centerPixel);
+        void CheckUpdateDetailTexture(const Aabb2i& newBounds, const Vector2i& newCenter);
+        void UpdateDetailTexture(const Aabb2i& updateArea, const Aabb2i& textureBounds, const Vector2i& centerPixel);
         uint16_t GetDetailMaterialForSurfaceTypeAndPosition(AZ::Crc32 surfaceType, const AZ::Vector2& position);
-        uint8_t CalculateUpdateRegions(const Int2DAabb& updateArea, const Int2DAabb& textureBounds, const Int2DPoint& centerPixel,
-            AZStd::array<Int2DAabb, 4>& textureSpaceAreas, AZStd::array<Int2DAabb, 4>& scaledWorldSpaceAreas);
+        uint8_t CalculateUpdateRegions(const Aabb2i& updateArea, const Aabb2i& textureBounds, const Vector2i& centerPixel,
+            AZStd::array<Aabb2i, 4>& textureSpaceAreas, AZStd::array<Aabb2i, 4>& scaledWorldSpaceAreas);
 
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
 
@@ -317,8 +317,8 @@ namespace Terrain
         AZ::Aabb m_dirtyRegion{ AZ::Aabb::CreateNull() };
         AZ::Aabb m_dirtyDetailRegion{ AZ::Aabb::CreateNull() };
 
-        Int2DAabb m_detailTextureBounds;
-        Int2DPoint m_detailTextureCenter;
+        Aabb2i m_detailTextureBounds;
+        Vector2i m_detailTextureCenter;
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailTextureImage;
         AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
         bool m_forceRebuildDrawPackets = false;

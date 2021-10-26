@@ -125,6 +125,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     float3 blendedColor = BlendBaseColor(lerp(detailColor, TerrainMaterialSrg::m_baseColor.rgb, detailFactor), macroColor, TerrainMaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
 
     // ------- Debug detail materials using random colors -------
+    // This assigns a random color to each material, turns off any kind of distance fading, and draws a black line at the texture edges.
     if (o_debugDetailMaterialIds) 
     {
         float2 detailRegionMin = TerrainMaterialSrg::m_detailAabb.xy;
@@ -160,6 +161,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
                 seamBlend = 1.0;
             }
             blendedColor = lerp(blendedColor, float3(0.0, 0.0, 0.0), seamBlend); // draw texture seams
+            blendedColor = pow(blendedColor , 2.2);
         }
     }
 

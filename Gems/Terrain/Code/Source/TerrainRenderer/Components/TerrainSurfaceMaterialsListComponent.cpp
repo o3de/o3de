@@ -127,7 +127,7 @@ namespace Terrain
             }
         }
 
-        // Announce inntial shape using OnShapeChanged
+        // Announce initial shape using OnShapeChanged
         OnShapeChanged(LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
