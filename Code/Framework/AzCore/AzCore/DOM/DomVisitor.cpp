@@ -32,7 +32,7 @@ namespace AZ::DOM
 
     VisitorError::VisitorError(VisitorErrorCode code, AZStd::string additionalInfo)
         : m_code(code)
-        , m_additionalInfo(additionalInfo)
+        , m_additionalInfo(AZStd::move(additionalInfo))
     {
     }
 
@@ -62,7 +62,7 @@ namespace AZ::DOM
 
     Visitor::Result Visitor::VisitorFailure(VisitorErrorCode code, AZStd::string additionalInfo)
     {
-        return AZ::Failure(VisitorError(code, additionalInfo));
+        return AZ::Failure(VisitorError(code, AZStd::move(additionalInfo)));
     }
 
     Visitor::Result Visitor::VisitorFailure(VisitorError error)

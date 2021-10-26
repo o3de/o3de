@@ -21,13 +21,10 @@ namespace AZ::DOM
     //! Specifies the semantics under which a reference type is safe to store.
     enum class StorageSemantics
     {
-        //! StoreByReference guarantees that the underlying value shall remain allocated
-        //! and immutable for the duration of the consumer's lifetime.
-        //! StoreByReference data can be stored as a reference without incurring a copy.
+        //! Specifies that this value can be safely and durably stored as a reference.
+        //! This implies that the value will not be mutated for the duration of this storage.
         StoreByReference,
-        //! StoreByCopy only guarantees that the data will be safe to read at the time
-        //! the reference type is passed, after which it may be deallocated or otherwise mutated.
-        //! StoreByCopy data may not be stored as a reference and must be copied if storage is needed.
+        //! Specifies that this value must be copied to be stored safely.
         StoreByCopy,
     };
 
