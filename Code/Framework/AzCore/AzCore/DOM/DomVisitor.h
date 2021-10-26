@@ -91,18 +91,18 @@ namespace AZ::DOM
         Null = 0,
         //! If set, this Visitor interface supports raw strings in place of specific value types.
         //! Visitors with this flag accept RawValue calls in lieu of more specific value calls such as Int64 or String.
-        SupportsRawValues = (0 << 1),
+        SupportsRawValues = (1 << 1),
         //! If set, this Visitor interface supports raw strings in place of Name types for keys and Node names.
         //! Visitors with this flag accept RawKey and RawStartNode in lieu of Key and StartNode calls.
-        SupportsRawKeys = (0 << 2),
+        SupportsRawKeys = (1 << 2),
         //! If set, this Visitor interface supports Object types described via BeginObject and EndObject.
-        SupportsObjects = (0 << 3),
+        SupportsObjects = (1 << 3),
         //! If set, this Visitor interface supports Array types described via BeginArray and EndArray.
-        SupportsArrays = (0 << 4),
+        SupportsArrays = (1 << 4),
         //! If set, this Visitor interface supports Node types described BeginNode and EndNode.
-        SupportsNodes = (0 << 4),
+        SupportsNodes = (1 << 4),
         //! If set, this Visitor interface supports opaque values described via OpaqueValue.
-        SupportsOpaqueValues = (0 << 5),
+        SupportsOpaqueValues = (1 << 5),
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(VisitorFlags);
