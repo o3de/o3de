@@ -47,6 +47,7 @@ namespace O3DE::ProjectManager
 
     public slots:
         void OnGemStatusChanged(const QModelIndex& modelIndex, uint32_t numChangedDependencies);
+        void OnAddGemClicked();
 
     protected:
         void hideEvent(QHideEvent* event) override;
