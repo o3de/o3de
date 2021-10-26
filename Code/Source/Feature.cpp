@@ -157,6 +157,13 @@ namespace EMotionFX
             posePool.FreePose(currentPose);
         }
 
+        float Feature::GetNormalizedDirectionDifference(const AZ::Vector3& directionA, const AZ::Vector3& directionB) const
+        {
+            const float dotProduct = directionA.GetNormalized().Dot(directionB.GetNormalized());
+            const float normalizedDirectionDifference = (2.0f - (1.0f + dotProduct)) * 0.5f;
+            return AZ::GetAbs(normalizedDirectionDifference);
+        }
+
         void Feature::Reflect(AZ::ReflectContext* context)
         {
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
