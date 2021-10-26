@@ -30,6 +30,9 @@ namespace EMStudio
         EMotionFX::ActorRenderFlagBitset GetRenderFlags() const;
 
     private:
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
+        void CalculateCameraProjection();
         void SetupCameras();
         void SetupCameraController();
 
