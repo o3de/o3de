@@ -230,7 +230,7 @@ namespace Terrain
 
     void TerrainFeatureProcessor::OnTerrainMacroMaterialCreated(AZ::EntityId entityId, const MacroMaterialData& newMaterialData)
     {
-        MacroMaterialData& materialData = FindOrCreateMaterial(entityId, m_macroMaterials);
+        MacroMaterialData& materialData = FindOrCreateByEntityId(entityId, m_macroMaterials);
 
         UpdateMacroMaterialData(materialData, newMaterialData);
 
@@ -247,13 +247,13 @@ namespace Terrain
 
     void TerrainFeatureProcessor::OnTerrainMacroMaterialChanged(AZ::EntityId entityId, const MacroMaterialData& newMaterialData)
     {
-        MacroMaterialData& data = FindOrCreateMaterial(entityId, m_macroMaterials);
+        MacroMaterialData& data = FindOrCreateByEntityId(entityId, m_macroMaterials);
         UpdateMacroMaterialData(data, newMaterialData);    }
     
     void TerrainFeatureProcessor::OnTerrainMacroMaterialRegionChanged(
         AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
     {
-        MacroMaterialData& materialData = FindOrCreateMaterial(entityId, m_macroMaterials);
+        MacroMaterialData& materialData = FindOrCreateByEntityId(entityId, m_macroMaterials);
         for (SectorData& sectorData : m_sectorData)
         {
             bool overlapsOld = sectorData.m_aabb.Overlaps(materialData.m_bounds);
@@ -285,7 +285,7 @@ namespace Terrain
 
     void TerrainFeatureProcessor::OnTerrainMacroMaterialDestroyed(AZ::EntityId entityId)
     {
-        const MacroMaterialData* materialData = FindMaterial(entityId, m_macroMaterials);
+        const MacroMaterialData* materialData = FindByEntityId(entityId, m_macroMaterials);
 
         if (materialData)
         {
@@ -304,12 +304,12 @@ namespace Terrain
         }
         
         m_areaData.m_macroMaterialsUpdated = true;
-        RemoveMacroMaterial(entityId);
+        RemoveByEntityId(entityId, m_macroMaterials);
     }
 
     void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingCreated(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material)
     {
-        DetailMaterialListRegion& materialRegion = FindOrCreateMaterial(entityId, m_detailMaterialRegions);
+        DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
 
         // Validate that the surface tag is new
         for (DetailMaterialSurface& surface : materialRegion.m_materialsForSurfaces)
@@ -328,13 +328,16 @@ namespace Terrain
 
     void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingDestroyed(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag)
     {
-        DetailMaterialListRegion& materialRegion = FindOrCreateMaterial(entityId, m_detailMaterialRegions);
+        DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
 
         for (DetailMaterialSurface& surface : materialRegion.m_materialsForSurfaces)
         {
             if (surface.m_surfaceTag == surfaceTag)
             {
-                AZStd::swap(surface, materialRegion.m_materialsForSurfaces.back());
+                if (surface.m_surfaceTag != materialRegion.m_materialsForSurfaces.back().m_surfaceTag)
+                {
+                    AZStd::swap(surface, materialRegion.m_materialsForSurfaces.back());
+                }
                 materialRegion.m_materialsForSurfaces.pop_back();
                 m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
                 return;
@@ -345,7 +348,7 @@ namespace Terrain
 
     void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material)
     {
-        DetailMaterialListRegion& materialRegion = FindOrCreateMaterial(entityId, m_detailMaterialRegions);
+        DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
 
         bool found = false;
         uint16_t materialId = CreateOrUpdateDetailMaterial(material);
@@ -368,7 +371,7 @@ namespace Terrain
 
     void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
     {
-        DetailMaterialListRegion& materialRegion = FindOrCreateMaterial(entityId, m_detailMaterialRegions);
+        DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
         materialRegion.m_region = newRegion;
         m_dirtyDetailRegion.AddAabb(oldRegion);
         m_dirtyDetailRegion.AddAabb(newRegion);
@@ -668,7 +671,7 @@ namespace Terrain
                 for (int xPos = quadrantWorldArea.m_min.m_x; xPos < quadrantWorldArea.m_max.m_x; ++xPos)
                 {
                     AZ::Vector2 position = AZ::Vector2(xPos * DetailTextureScale, yPos * DetailTextureScale);
-                    AzFramework::SurfaceData::OrderedSurfaceTagWeightSet surfaceWeights;
+                    AzFramework::SurfaceData::SurfaceTagWeightList surfaceWeights;
                     AzFramework::Terrain::TerrainDataRequestBus::Broadcast(&AzFramework::Terrain::TerrainDataRequests::GetSurfaceWeightsFromVector2, position, surfaceWeights, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, nullptr);
 
                     bool foundFirst = false;
@@ -695,6 +698,10 @@ namespace Terrain
                                     break;
                                 }
                             }
+                        }
+                        else
+                        {
+                            break; // since the list is ordered, no other materials are in the list with positive weights.
                         }
                     }
                     ++index;
@@ -878,7 +885,7 @@ namespace Terrain
                 const AZStd::vector<TerrainSurfaceMaterialMapping> materialMappings = handler->GetSurfaceMaterialMappings();
                 AZ::EntityId entityId = *(Terrain::TerrainAreaMaterialRequestBus::GetCurrentBusId());
                 
-                DetailMaterialListRegion& materialRegion = FindOrCreateMaterial(entityId, m_detailMaterialRegions);
+                DetailMaterialListRegion& materialRegion = FindOrCreateByEntityId(entityId, m_detailMaterialRegions);
                 materialRegion.m_region = bounds;
 
                 for (const auto& materialMapping : materialMappings)
@@ -1314,7 +1321,7 @@ namespace Terrain
     }
     
     template <typename T>
-    T* TerrainFeatureProcessor::FindMaterial(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container)
+    T* TerrainFeatureProcessor::FindByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container)
     {
         for (T& data : container.GetDataVector())
         {
@@ -1327,7 +1334,7 @@ namespace Terrain
     }
     
     template <typename T>
-    T& TerrainFeatureProcessor::FindOrCreateMaterial(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container)
+    T& TerrainFeatureProcessor::FindOrCreateByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container)
     {
         T* dataPtr = FindMaterial(entityId, container);
         if (dataPtr != nullptr)
@@ -1344,7 +1351,7 @@ namespace Terrain
     }
     
     template <typename T>
-    void TerrainFeatureProcessor::RemoveMaterial(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container)
+    void TerrainFeatureProcessor::RemoveByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container)
     {
         for (T& data : container.GetDataVector())
         {

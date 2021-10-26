@@ -134,12 +134,12 @@ namespace Terrain
     void TerrainSurfaceMaterialsListComponent::Deactivate()
     {
         TerrainAreaMaterialRequestBus::Handler::BusDisconnect();
+        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
 
         for (auto& surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
         {
             if (surfaceMaterialMapping.m_materialAsset.GetId().IsValid())
             {
-                AZ::Data::AssetBus::MultiHandler::BusDisconnect(surfaceMaterialMapping.m_materialAsset.GetId());
                 surfaceMaterialMapping.m_materialAsset.Release();
                 surfaceMaterialMapping.m_materialInstance.reset();
                 surfaceMaterialMapping.m_activeMaterialAssetId = AZ::Data::AssetId();

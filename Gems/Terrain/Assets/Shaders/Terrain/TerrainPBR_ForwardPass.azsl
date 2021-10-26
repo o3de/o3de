@@ -137,8 +137,8 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
             uint material2 = TerrainMaterialSrg::m_detailMaterialIdImage.GatherGreen(TerrainMaterialSrg::m_detailSampler, detailRegionUv, 0).r;
             float blend = float(TerrainMaterialSrg::m_detailMaterialIdImage.GatherBlue(TerrainMaterialSrg::m_detailSampler, detailRegionUv, 0).r) / 0xFF;
             
-            float3 material1Color = float3(0.5, 0.1, 0.1);
-            float3 material2Color = float3(0.1, 0.5, 0.1);
+            float3 material1Color = float3(0.1, 0.1, 0.1);
+            float3 material2Color = float3(0.1, 0.1, 0.1);
 
             // Get a reasonably random hue for the material id
             if (material1 != 255)

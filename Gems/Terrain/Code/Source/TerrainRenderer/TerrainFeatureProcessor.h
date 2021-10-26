@@ -258,11 +258,11 @@ namespace Terrain
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
 
         template <typename T>
-        T* FindMaterial(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container);
+        T* FindByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container);
         template <typename T>
-        T& FindOrCreateMaterial(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container);
+        T& FindOrCreateByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container);
         template <typename T>
-        void RemoveMaterial(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container);
+        void RemoveByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container);
 
         template<typename Callback>
         void ForOverlappingSectors(const AZ::Aabb& bounds, Callback callback);
