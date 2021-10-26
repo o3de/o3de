@@ -26,7 +26,7 @@ def ap_fast_scan_setting_backup_fixture(request, workspace) -> PlatformSetting:
     PyTest Fixture for backing up and restoring the system entry for "Fast Scan Enabled"
     :return: A PlatformSetting object targeting the system setting for AP Fast Scan
     """
-    if workspace.asset_processor_platform == 'mac':
+    if workspace.asset_processor_platform == 'mac' or workspace.asset_processor_platform == 'linux':
         pytest.skip("Mac plist file editing not implemented yet")
 
     key = fast_scan_key
