@@ -303,18 +303,11 @@ namespace AzFramework
     AZ::Entity* SpawnableEntitiesManager::CloneSingleEntity(const AZ::Entity& entityTemplate,
         EntityIdMap& templateToCloneMap, AZ::SerializeContext& serializeContext)
     {
-        if (!entityTemplate.GetComponents().empty())
-        {
-            // If the same ID gets remapped more than once, preserve the original remapping instead of overwriting it.
-            constexpr bool allowDuplicateIds = false;
+        // If the same ID gets remapped more than once, preserve the original remapping instead of overwriting it.
+        constexpr bool allowDuplicateIds = false;
 
-            return AZ::IdUtils::Remapper<AZ::EntityId, allowDuplicateIds>::CloneObjectAndGenerateNewIdsAndFixRefs(
-                &entityTemplate, templateToCloneMap, &serializeContext);
-        }
-        else
-        {
-            return nullptr;
-        }
+        return AZ::IdUtils::Remapper<AZ::EntityId, allowDuplicateIds>::CloneObjectAndGenerateNewIdsAndFixRefs(
+            &entityTemplate, templateToCloneMap, &serializeContext);
     }
 
     AZ::Entity* SpawnableEntitiesManager::CloneSingleAliasedEntity(
@@ -468,9 +461,8 @@ namespace AzFramework
 
                         if (aliasIt == aliasEnd || aliasIt->m_sourceIndex != i)
                         {
-                            AZ::Entity* clone =
-                                CloneSingleEntity(*entitiesToSpawn[i], ticket.m_entityIdReferenceMap, *request.m_serializeContext);
-                            spawnedEntities.emplace_back(clone);
+                            spawnedEntities.emplace_back(
+                                CloneSingleEntity(*entitiesToSpawn[i], ticket.m_entityIdReferenceMap, *request.m_serializeContext));
                             spawnedEntityIndices.push_back(i);
                         }
                         else
@@ -483,21 +475,9 @@ namespace AzFramework
                                 AZ::Entity* clone = CloneSingleAliasedEntity(
                                     *entitiesToSpawn[i], *aliasIt, ticket.m_entityIdReferenceMap, previousEntity,
                                     *request.m_serializeContext);
-                                // Not all alias operations create a new instance. It's also possible for an empty entity to be left behind,
-                                // in which case it's also filtered out as the entity component framework doesn't handle these gracefully.
-                                if (clone)
-                                {
-                                    if (!clone->GetComponents().empty())
-                                    {
-                                        previousEntity = clone;
-                                        spawnedEntities.emplace_back(clone);
-                                        spawnedEntityIndices.push_back(i);
-                                    }
-                                    else
-                                    {
-                                        delete clone;
-                                    }
-                                }
+                               previousEntity = clone;
+                               spawnedEntities.emplace_back(clone);
+                               spawnedEntityIndices.push_back(i);
                                 ++aliasIt;
                             } while (aliasIt != aliasEnd && aliasIt->m_sourceIndex == i);
                         }
@@ -519,8 +499,13 @@ namespace AzFramework
                 // Add to the game context, now the entities are active
                 for (auto it = newEntitiesBegin; it != newEntitiesEnd; ++it)
                 {
-                (*it)->SetSpawnTicketId(request.m_ticketId);
-                    GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
+                    AZ::Entity* clone = (*it);
+                    // The entity component framework doesn't handle entities without TransformComponent safely.
+                    if (!clone->GetComponents().empty())
+                    {
+                        clone->SetSpawnTicketId(request.m_ticketId);
+                        GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
+                    }
                 }
 
                 // Let other systems know about newly spawned entities for any post-processing after adding to the scene/game context.
@@ -585,10 +570,8 @@ namespace AzFramework
                             RefreshEntityIdMapping(
                                 entitiesToSpawn[index].get()->GetId(), ticket.m_entityIdReferenceMap, ticket.m_previouslySpawned);
 
-                            AZ::Entity* clone =
-                                CloneSingleEntity(*entitiesToSpawn[index], ticket.m_entityIdReferenceMap, *request.m_serializeContext);
-                            AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
-                            spawnedEntities.push_back(clone);
+                            spawnedEntities.push_back(
+                                CloneSingleEntity(*entitiesToSpawn[index], ticket.m_entityIdReferenceMap, *request.m_serializeContext));
                             spawnedEntityIndices.push_back(index);
                         }
                     }
@@ -612,9 +595,8 @@ namespace AzFramework
 
                             if (aliasIt == aliasEnd)
                             {
-                                AZ::Entity* clone =
-                                    CloneSingleEntity(*entitiesToSpawn[index], ticket.m_entityIdReferenceMap, *request.m_serializeContext);
-                                spawnedEntities.emplace_back(clone);
+                                spawnedEntities.emplace_back(
+                                    CloneSingleEntity(*entitiesToSpawn[index], ticket.m_entityIdReferenceMap, *request.m_serializeContext));
                                 spawnedEntityIndices.push_back(index);
                             }
                             else
@@ -627,22 +609,10 @@ namespace AzFramework
                                     AZ::Entity* clone = CloneSingleAliasedEntity(
                                         *entitiesToSpawn[index], *aliasIt, ticket.m_entityIdReferenceMap, previousEntity,
                                         *request.m_serializeContext);
-                                    // Not all alias operations create a new instance. It's also possible for an empty entity to be left
-                                    // behind, in which case it's also filtered out as the entity component framework doesn't handle these
-                                    // gracefully.
-                                    if (clone)
-                                    {
-                                        if (!clone->GetComponents().empty())
-                                        {
-                                            previousEntity = clone;
-                                            spawnedEntities.emplace_back(clone);
-                                            spawnedEntityIndices.push_back(index);
-                                        }
-                                        else
-                                        {
-                                            delete clone;
-                                        }
-                                    }
+                                    previousEntity = clone;
+                                    spawnedEntities.emplace_back(clone);
+                                    spawnedEntityIndices.push_back(index);
+
                                     ++aliasIt;
                                 } while (aliasIt != aliasEnd && aliasIt->m_sourceIndex == index);
                             }
@@ -663,8 +633,13 @@ namespace AzFramework
                 // Add to the game context, now the entities are active
                 for (auto it = ticket.m_spawnedEntities.begin() + spawnedEntitiesInitialCount; it != ticket.m_spawnedEntities.end(); ++it)
                 {
-                (*it)->SetSpawnTicketId(request.m_ticketId);
-                    GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
+                    AZ::Entity* clone = (*it);
+                    // The entity component framework doesn't handle entities without TransformComponent safely.
+                    if (!clone->GetComponents().empty())
+                    {
+                        clone->SetSpawnTicketId(request.m_ticketId);
+                        GameEntityContextRequestBus::Broadcast(&GameEntityContextRequestBus::Events::AddGameEntity, *it);
+                    }
                 }
 
                 if (request.m_completionCallback)
@@ -965,12 +940,17 @@ namespace AzFramework
         {
             for (AZ::Entity* entity : request.m_ticket->m_spawnedEntities)
             {
-                if (entity != nullptr)
+                if (entity != nullptr && !entity->GetComponents().empty())
                 {
-                    // Setting it to 0 is needed to avoid the infite loop between GameEntityContext and SpawnableEntitiesManager.
+                    // Setting it to 0 is needed to avoid the infinite loop between GameEntityContext and SpawnableEntitiesManager.
                     entity->SetSpawnTicketId(0);
                     GameEntityContextRequestBus::Broadcast(
                         &GameEntityContextRequestBus::Events::DestroyGameEntity, entity->GetId());
+                }
+                else
+                {
+                    // Entities without components wouldn't have been send to the GameEntityContext.
+                    delete entity;
                 }
             }
             delete request.m_ticket;

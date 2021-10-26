@@ -403,7 +403,7 @@ namespace UnitTest
         static constexpr size_t NumEntities = 4;
         FillSpawnable(NumEntities);
 
-        AZStd::vector<size_t> indices = { 0, 2, 3, 1 };
+        AZStd::vector<uint32_t> indices = { 0, 2, 3, 1 };
 
         size_t spawnedEntitiesCount = 0;
         auto callback = [&spawnedEntitiesCount](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
@@ -423,7 +423,7 @@ namespace UnitTest
         static constexpr size_t NumEntities = 1;
         FillSpawnable(NumEntities);
 
-        AZStd::vector<size_t> indices = { 0, 0 };
+        AZStd::vector<uint32_t> indices = { 0, 0 };
 
         size_t spawnedEntitiesCount = 0;
         auto callback =
@@ -444,7 +444,7 @@ namespace UnitTest
         static constexpr size_t NumEntities = 4;
         FillSpawnable(NumEntities);
 
-        AZStd::vector<size_t> indices = { 0, 2, 3, 1 };
+        AZStd::vector<uint32_t> indices = { 0, 2, 3, 1 };
 
         size_t spawnedEntitiesCount = 0;
         auto callback =
@@ -467,7 +467,7 @@ namespace UnitTest
         FillSpawnable(NumEntities);
         CreateSingleParent();
 
-        AZStd::vector<size_t> indices = { 0, 1, 2, 3 };
+        AZStd::vector<uint32_t> indices = { 0, 1, 2, 3 };
         AZStd::vector<AZ::EntityId> parents;
 
         auto callback = [&parents](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
@@ -499,7 +499,7 @@ namespace UnitTest
         FillSpawnable(NumEntities);
         CreateSingleParent();
 
-        AZStd::vector<size_t> indices = { 0, 1, 2, 3 };
+        AZStd::vector<uint32_t> indices = { 0, 1, 2, 3 };
         AZStd::vector<AZ::EntityId> parents;
 
         auto callback =
