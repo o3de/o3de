@@ -1336,7 +1336,7 @@ namespace Terrain
     template <typename T>
     T& TerrainFeatureProcessor::FindOrCreateByEntityId(AZ::EntityId entityId, AZ::Render::IndexedDataVector<T>& container)
     {
-        T* dataPtr = FindMaterial(entityId, container);
+        T* dataPtr = FindByEntityId(entityId, container);
         if (dataPtr != nullptr)
         {
             return *dataPtr;
