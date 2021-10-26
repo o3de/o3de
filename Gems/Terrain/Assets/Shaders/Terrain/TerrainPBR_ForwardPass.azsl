@@ -60,6 +60,7 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
         DirectionalLightShadow::GetShadowCoords(
             shadowIndex,
             worldPosition,
+            OUT.m_normal,
             OUT.m_shadowCoords);
     }
     

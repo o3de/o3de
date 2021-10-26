@@ -196,12 +196,8 @@ namespace AtomToolsFramework
 
     bool RenderViewportWidget::event(QEvent* event)
     {
-        // On some types of QEvents, a resize event is needed to make sure that the current viewport window
-        // needs to be updated based on a potential new surface dimensions.
         switch (event->type()) 
         {
-            case QEvent::ScreenChangeInternal:
-            case QEvent::UpdateLater:
             case QEvent::Resize:
                 SendWindowResizeEvent();
                 break;
@@ -373,6 +369,16 @@ namespace AtomToolsFramework
     void RenderViewportWidget::EndCursorCapture()
     {
         m_inputChannelMapper->SetCursorCaptureEnabled(false);
+    }
+
+    void RenderViewportWidget::SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride)
+    {
+        m_inputChannelMapper->SetOverrideCursor(cursorStyleOverride);
+    }
+
+    void RenderViewportWidget::ClearOverrideCursor()
+    {
+        m_inputChannelMapper->ClearOverrideCursor();
     }
 
     void RenderViewportWidget::SetWindowTitle(const AZStd::string& title)

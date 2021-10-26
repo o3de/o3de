@@ -57,13 +57,6 @@ namespace Terrain
         static const char* const DetailCenter("settings.detailMaterialIdCenter");
         static const char* const DetailAabb("settings.detailAabb");
         static const char* const DetailHalfPixelUv("settings.detailHalfPixelUv");
-
-        // Macro material
-        static const char* const MacroColorTextureMap("baseColor.textureMap");
-        static const char* const MacroNormalTextureMap("normal.textureMap");
-        static const char* const MacroNormalFlipX("normal.flipX");
-        static const char* const MacroNormalFlipY("normal.flipY");
-        static const char* const MacroNormalFactor("normal.factor");
     }
 
     namespace DetailMaterialInputs
@@ -235,12 +228,11 @@ namespace Terrain
         m_dirtyDetailRegion.AddAabb(dirtyRegion);
     }
 
-    void TerrainFeatureProcessor::OnTerrainMacroMaterialCreated(AZ::EntityId entityId, MaterialInstance material, const AZ::Aabb& region)
+    void TerrainFeatureProcessor::OnTerrainMacroMaterialCreated(AZ::EntityId entityId, const MacroMaterialData& newMaterialData)
     {
         MacroMaterialData& materialData = FindOrCreateMaterial(entityId, m_macroMaterials);
-        materialData.m_bounds = region;
 
-        UpdateMacroMaterialData(materialData, material);
+        UpdateMacroMaterialData(materialData, newMaterialData);
 
         // Update all sectors in region.
         ForOverlappingSectors(materialData.m_bounds,
@@ -253,20 +245,13 @@ namespace Terrain
         );
     }
 
-    void TerrainFeatureProcessor::OnTerrainMacroMaterialChanged(AZ::EntityId entityId, MaterialInstance macroMaterial)
+    void TerrainFeatureProcessor::OnTerrainMacroMaterialChanged(AZ::EntityId entityId, const MacroMaterialData& newMaterialData)
     {
-        if (macroMaterial)
-        {
-            MacroMaterialData& data = FindOrCreateMaterial(entityId, m_macroMaterials);
-            UpdateMacroMaterialData(data, macroMaterial);
-        }
-        else
-        {
-            RemoveMaterial(entityId, m_macroMaterials);
-        }
-    }
+        MacroMaterialData& data = FindOrCreateMaterial(entityId, m_macroMaterials);
+        UpdateMacroMaterialData(data, newMaterialData);    }
     
-    void TerrainFeatureProcessor::OnTerrainMacroMaterialRegionChanged(AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
+    void TerrainFeatureProcessor::OnTerrainMacroMaterialRegionChanged(
+        AZ::EntityId entityId, [[maybe_unused]] const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion)
     {
         MacroMaterialData& materialData = FindOrCreateMaterial(entityId, m_macroMaterials);
         for (SectorData& sectorData : m_sectorData)
@@ -319,6 +304,7 @@ namespace Terrain
         }
         
         m_areaData.m_macroMaterialsUpdated = true;
+        RemoveMacroMaterial(entityId);
     }
 
     void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingCreated(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material)
@@ -877,11 +863,9 @@ namespace Terrain
         TerrainMacroMaterialRequestBus::EnumerateHandlers(
             [&](TerrainMacroMaterialRequests* handler)
             {
-                MaterialInstance macroMaterial;
-                AZ::Aabb bounds;
-                handler->GetTerrainMacroMaterialData(macroMaterial, bounds);
+                MacroMaterialData macroMaterial = handler->GetTerrainMacroMaterialData();
                 AZ::EntityId entityId = *(Terrain::TerrainMacroMaterialRequestBus::GetCurrentBusId());
-                OnTerrainMacroMaterialCreated(entityId, macroMaterial, bounds);
+                OnTerrainMacroMaterialCreated(entityId, macroMaterial);
                 return true;
             }
         );
@@ -908,31 +892,9 @@ namespace Terrain
 
     }
 
-    void TerrainFeatureProcessor::UpdateMacroMaterialData(MacroMaterialData& macroMaterialData, MaterialInstance material)
+    void TerrainFeatureProcessor::UpdateMacroMaterialData(MacroMaterialData& macroMaterialData, const MacroMaterialData& newMaterialData)
     {
-        // Since we're using an actual macro material instance for now, get the values from it that we care about.
-        const auto materialLayout = material->GetMaterialPropertiesLayout();
-
-        const AZ::RPI::MaterialPropertyIndex macroColorTextureMapIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroColorTextureMap));
-        AZ_Error(TerrainFPName, macroColorTextureMapIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroColorTextureMap);
-            
-        const AZ::RPI::MaterialPropertyIndex macroNormalTextureMapIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalTextureMap));
-        AZ_Error(TerrainFPName, macroNormalTextureMapIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalTextureMap);
-
-        const AZ::RPI::MaterialPropertyIndex macroNormalFlipXIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalFlipX));
-        AZ_Error(TerrainFPName, macroNormalFlipXIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalFlipX);
-
-        const AZ::RPI::MaterialPropertyIndex macroNormalFlipYIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalFlipY));
-        AZ_Error(TerrainFPName, macroNormalFlipYIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalFlipY);
-
-        const AZ::RPI::MaterialPropertyIndex macroNormalFactorIndex = materialLayout->FindPropertyIndex(AZ::Name(MaterialInputs::MacroNormalFactor));
-        AZ_Error(TerrainFPName, macroNormalFactorIndex.IsValid(), "Failed to find shader input constant %s.", MaterialInputs::MacroNormalFactor);
-
-        macroMaterialData.m_colorImage = material->GetPropertyValue(macroColorTextureMapIndex).GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
-        macroMaterialData.m_normalImage = material->GetPropertyValue(macroNormalTextureMapIndex).GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
-        macroMaterialData.m_normalFlipX = material->GetPropertyValue(macroNormalFlipXIndex).GetValue<bool>();
-        macroMaterialData.m_normalFlipY = material->GetPropertyValue(macroNormalFlipYIndex).GetValue<bool>();
-        macroMaterialData.m_normalFactor = material->GetPropertyValue(macroNormalFactorIndex).GetValue<float>();
+        macroMaterialData = newMaterialData;
 
         if (macroMaterialData.m_bounds.IsValid())
         {

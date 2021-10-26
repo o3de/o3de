@@ -56,7 +56,7 @@ import maya.mel as mel
 
 # -------------------------------------------------------------------------
 #  global space
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 #_DCCSI_DEV_MODE = True  # force true for debugger testing
 
@@ -69,7 +69,7 @@ _MODULENAME = str('{0}.{1}'.format(_APP_TAG, _TOOL_TAG))
 
 _LOGGER = azpy.initialize_logger(_MODULENAME, default_log_level=int(20))
 _LOGGER.info('Initializing: {0}.'.format({_MODULENAME}))
-_LOGGER.info('DCCSI_GDEBUG: {0}.'.format({_G_DEBUG}))
+_LOGGER.info('DCCSI_GDEBUG: {0}.'.format({_DCCSI_GDEBUG}))
 _LOGGER.info('DCCSI_DEV_MODE: {0}.'.format({_DCCSI_DEV_MODE}))
 
 # flag to turn off setting up callbacks, until they are fully implemented
@@ -175,17 +175,17 @@ try:
 except Exception as e:
     _LOGGER.critical(_STR_ERROR_ENVAR.format(_BASE_ENVVAR_DICT[ENVAR_DCCSI_SDK_PATH]))
 
-_LY_PROJECT_PATH = None
+_O3DE_PROJECT_PATH = None
 try:
-    _LY_PROJECT_PATH = _BASE_ENVVAR_DICT[ENVAR_LY_PROJECT_PATH]
+    _O3DE_PROJECT_PATH = _BASE_ENVVAR_DICT[ENVAR_O3DE_PROJECT_PATH]
 except Exception as e:
-    _LOGGER.critical(_STR_ERROR_ENVAR.format(_BASE_ENVVAR_DICT[ENVAR_LY_PROJECT_PATH]))
+    _LOGGER.critical(_STR_ERROR_ENVAR.format(_BASE_ENVVAR_DICT[ENVAR_O3DE_PROJECT_PATH]))
 
 # check some env var tags (fail if no, likely means no proper code access)
-_LY_DEV = _BASE_ENVVAR_DICT[ENVAR_LY_DEV]
-_LY_DCCSIG_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSIG_PATH]
-_LY_DCCSI_LOG_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_LOG_PATH]
-_LY_AZPY_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_AZPY_PATH]
+_O3DE_DEV = _BASE_ENVVAR_DICT[ENVAR_O3DE_DEV]
+_O3DE_DCCSIG_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSIG_PATH]
+_O3DE_DCCSI_LOG_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_LOG_PATH]
+_O3DE_AZPY_PATH = _BASE_ENVVAR_DICT[ENVAR_DCCSI_AZPY_PATH]
 # -------------------------------------------------------------------------
 
 
@@ -270,18 +270,18 @@ def post_startup():
     install_fix_paths()    
 
     # set the project workspace
-    #_LY_PROJECT_PATH = _BASE_ENVVAR_DICT[ENVAR_LY_PROJECT_PATH]
-    _project_workspace = os.path.join(_LY_PROJECT_PATH, TAG_MAYA_WORKSPACE)
+    #_O3DE_PROJECT_PATH = _BASE_ENVVAR_DICT[ENVAR_O3DE_PROJECT_PATH]
+    _project_workspace = os.path.join(_O3DE_PROJECT_PATH, TAG_MAYA_WORKSPACE)
     if os.path.isfile(_project_workspace):
         try:
             # load workspace
-            maya.cmds.workspace(_LY_PROJECT_PATH, openWorkspace=True)
+            maya.cmds.workspace(_O3DE_PROJECT_PATH, openWorkspace=True)
             _LOGGER.info('Loaded workspace file: {0}'.format(_project_workspace))
-            maya.cmds.workspace(_LY_PROJECT_PATH, update=True)
+            maya.cmds.workspace(_O3DE_PROJECT_PATH, update=True)
         except Exception as e:
             _LOGGER.error(e)
     else:
-        _LOGGER.warning('Workspace file not found: {1}'.format(_LY_PROJECT_PATH))
+        _LOGGER.warning('Workspace file not found: {1}'.format(_O3DE_PROJECT_PATH))
 
     # Set up Lumberyard, maya default setting
     from set_defaults import set_defaults
@@ -292,7 +292,7 @@ def post_startup():
         _LOGGER.info('Add UI dependent tools')
         # wrap in a try, because we haven't implmented it yet
         try:
-            mel.eval(str(r'source "{}"'.format(TAG_LY_DCC_MAYA_MEL)))
+            mel.eval(str(r'source "{}"'.format(TAG_O3DE_DCC_MAYA_MEL)))
         except Exception as e:
             _LOGGER.error(e)
 

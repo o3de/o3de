@@ -1,7 +1,7 @@
 {
     "description": "A material for rendering terrain with a physically-based rendering (PBR) material shading model.",
+    "version": 1,
     "propertyLayout": {
-        "version": 1,
         "groups": [
             {
                 "id": "settings",
