@@ -186,7 +186,7 @@ namespace AZ
             void UpdateWrinkleMasks();
 
             // Debug geometry rendering
-            AZStd::unique_ptr<AtomActorDebugDraw> m_atomActorDebugDraw = nullptr;
+            AZStd::unique_ptr<AtomActorDebugDraw> m_atomActorDebugDraw;
 
             AZStd::intrusive_ptr<AZ::Render::SkinnedMeshInputBuffers> m_skinnedMeshInputBuffers = nullptr;
             AZStd::intrusive_ptr<SkinnedMeshInstance> m_skinnedMeshInstance;
