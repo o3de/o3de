@@ -17,97 +17,37 @@
 #include <RigidBodyStatic.h>
 #include <PhysX/PhysXLocks.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
+#include <PhysX/MockPhysXHeightfieldProviderComponent.h>
 
-namespace UnitTest
-{
-    class MockTerrainPhysicsColliderComponent
-        : public AZ::Component
-        , protected Physics::HeightfieldProviderRequestsBus::Handler
-    {
-    public:
-        AZ_COMPONENT(MockTerrainPhysicsColliderComponent, "{C5F7CCCF-FDB2-40DF-992D-CF028F4A1B59}");
-
-        static void Reflect([[maybe_unused]] AZ::ReflectContext* context)
-        {
-            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<MockTerrainPhysicsColliderComponent, AZ::Component>()
-                    ->Version(1)
-                    ;
-            }
-        }
-
-        void Activate() override
-        {
-            Physics::HeightfieldProviderRequestsBus::Handler::BusConnect(GetEntityId());
-        }
-
-        void Deactivate() override
-        {
-            Physics::HeightfieldProviderRequestsBus::Handler::BusDisconnect();
-        }
-
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-        {
-            provided.push_back(AZ_CRC_CE("PhysicsHeightfieldProviderService"));
-        }
-
-        // HeightfieldProviderRequestsBus
-        AZ::Vector2 GetHeightfieldGridSpacing() const override
-        {
-            return AZ::Vector2(1, 1);
-        }
-        void GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const override
-        {
-            numColumns = 3;
-            numRows = 3;
-        }
-        AZStd::vector<Physics::HeightMaterialPoint> GetHeightsAndMaterials() const override
-        {
-            AZStd::vector<Physics::HeightMaterialPoint> samples{ { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                                 { 2.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                                 { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                                 { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                                 { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                                 { -1.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                                 { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                                 { 0.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                                 { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight } };
-            return samples;
-        }
-
-        void GetHeightfieldHeightBounds(float& x, float &y) const
-        {
-            x = 0;
-            y = 0;
-        }
-
-        AZ::Transform GetHeightfieldTransform(void) const
-        {
-            return AZ::Transform::CreateTranslation({ 0, 0, 0 });
-        }
-
-        MOCK_CONST_METHOD0(GetMaterialList, AZStd::vector<Physics::MaterialId>());
-        MOCK_CONST_METHOD0(GetHeights, AZStd::vector<float>());
-        MOCK_CONST_METHOD1(UpdateHeights, AZStd::vector<float>(const AZ::Aabb& dirtyRegion));
-        MOCK_CONST_METHOD1(UpdateHeightsAndMaterials, AZStd::vector<Physics::HeightMaterialPoint>(const AZ::Aabb& dirtyRegion));
-        MOCK_CONST_METHOD0(GetHeightfieldAabb, AZ::Aabb());
-    };
-}
-
+using ::testing::NiceMock;
+using ::testing::Return;
 
 namespace PhysXEditorTests
 {
+    AZStd::vector<Physics::HeightMaterialPoint> GetSamples()
+    {
+        AZStd::vector<Physics::HeightMaterialPoint> samples{ { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 2.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { -1.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 0.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight } };
+        return samples;
+    }
+
     EntityPtr SetupHeightfieldComponent()
     {
         // create an editor entity with a shape collider component and a box shape component
         EntityPtr editorEntity = CreateInactiveEditorEntity("HeightfieldColliderComponentEditorEntity");
-        editorEntity->CreateComponent<UnitTest::MockTerrainPhysicsColliderComponent>();
+        editorEntity->CreateComponent<UnitTest::MockPhysXHeightfieldProviderComponent>();
         editorEntity->CreateComponent(LmbrCentral::EditorAxisAlignedBoxShapeComponentTypeId);
         editorEntity->CreateComponent<PhysX::EditorHeightfieldColliderComponent>();
         AZ::ComponentApplicationBus::Broadcast(
             &AZ::ComponentApplicationRequests::RegisterComponentDescriptor,
-            UnitTest::MockTerrainPhysicsColliderComponent::CreateDescriptor());
+            UnitTest::MockPhysXHeightfieldProviderComponent::CreateDescriptor());
         return editorEntity;
     }
 
@@ -115,15 +55,44 @@ namespace PhysXEditorTests
     {
         AZ::ComponentApplicationBus::Broadcast(
             &AZ::ComponentApplicationRequests::UnregisterComponentDescriptor,
-            UnitTest::MockTerrainPhysicsColliderComponent::CreateDescriptor());
+            UnitTest::MockPhysXHeightfieldProviderComponent::CreateDescriptor());
     }
+
+    EntityPtr TestCreateActiveGameEntityFromEditorEntity(AZ::Entity* editorEntity)
+    {
+        EntityPtr gameEntity = AZStd::make_unique<AZ::Entity>();
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::PreExportEntity, *editorEntity, *gameEntity);
+        gameEntity->Init();
+        NiceMock<UnitTest::MockPhysXHeightfieldProvider> mockShapeRequests2(gameEntity->GetId());
+        ON_CALL(mockShapeRequests2, GetHeightfieldTransform).WillByDefault(Return(AZ::Transform::CreateTranslation({ 1, 2, 0 })));
+        ON_CALL(mockShapeRequests2, GetHeightfieldGridSpacing).WillByDefault(Return(AZ::Vector2(1, 1)));
+        ON_CALL(mockShapeRequests2, GetHeightsAndMaterials).WillByDefault(Return(GetSamples()));
+        ON_CALL(mockShapeRequests2, GetHeightfieldGridSize)
+            .WillByDefault(
+                [](int32_t& numColumns, int32_t& numRows)
+                {
+                    numColumns = 3;
+                    numRows = 3;
+                });
+        ON_CALL(mockShapeRequests2, GetHeightfieldHeightBounds)
+            .WillByDefault(
+                [](float& x, float& y)
+                {
+                    x = 0.0f;
+                    y = 0.0f;
+                });
+        gameEntity->Activate();
+        return gameEntity;
+    }
+
 
     TEST_F(PhysXEditorFixture, EditorHeightfieldColliderComponentDependenciesSatisfiedEntityIsValid)
     {
         EntityPtr entity = CreateInactiveEditorEntity("HeightfieldColliderComponentEditorEntity");
         entity->CreateComponent<PhysX::EditorHeightfieldColliderComponent>();
         entity->CreateComponent(LmbrCentral::EditorAxisAlignedBoxShapeComponentTypeId);
-        entity->CreateComponent<UnitTest::MockTerrainPhysicsColliderComponent>()->CreateDescriptor();
+        entity->CreateComponent<UnitTest::MockPhysXHeightfieldProviderComponent>()->CreateDescriptor();
 
         // the entity should be in a valid state because the shape component and
         // the Terrain Physics Collider Component requirement is satisfied.
@@ -160,12 +129,30 @@ namespace PhysXEditorTests
     TEST_F(PhysXEditorFixture, EditorHeightfieldColliderComponentHeightfieldColliderWithCorrectComponentsCorrectRuntimeComponents)
     {
         EntityPtr editorEntity = SetupHeightfieldComponent();
+        NiceMock<UnitTest::MockPhysXHeightfieldProvider> mockShapeRequests(editorEntity->GetId());
+        ON_CALL(mockShapeRequests, GetHeightfieldTransform).WillByDefault(Return(AZ::Transform::CreateTranslation({ 1, 2, 0 })));
+        ON_CALL(mockShapeRequests, GetHeightfieldGridSpacing).WillByDefault(Return(AZ::Vector2(1, 1)));
+        ON_CALL(mockShapeRequests, GetHeightsAndMaterials).WillByDefault(Return(GetSamples()));
+        ON_CALL(mockShapeRequests, GetHeightfieldGridSize)
+            .WillByDefault(
+                [](int32_t& numColumns, int32_t& numRows)
+                {
+                    numColumns = 3;
+                    numRows = 3;
+                });
+        ON_CALL(mockShapeRequests, GetHeightfieldHeightBounds)
+            .WillByDefault(
+                [](float& x, float& y)
+                {
+                    x = 0.0f;
+                    y = 0.0f;
+                });
         editorEntity->Activate();
 
-        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+        EntityPtr gameEntity = TestCreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
         // check that the runtime entity has the expected components
-        EXPECT_TRUE(gameEntity->FindComponent<UnitTest::MockTerrainPhysicsColliderComponent>() != nullptr);
+        EXPECT_TRUE(gameEntity->FindComponent<UnitTest::MockPhysXHeightfieldProviderComponent>() != nullptr);
         EXPECT_TRUE(gameEntity->FindComponent<PhysX::HeightfieldColliderComponent>() != nullptr);
         EXPECT_TRUE(gameEntity->FindComponent(LmbrCentral::AxisAlignedBoxShapeComponentTypeId) != nullptr);
 
@@ -175,9 +162,27 @@ namespace PhysXEditorTests
     TEST_F(PhysXEditorFixture, EditorHeightfieldColliderComponentHeightfieldColliderWithAABoxCorrectRuntimeGeometry)
     {
         EntityPtr editorEntity = SetupHeightfieldComponent();
+        NiceMock<UnitTest::MockPhysXHeightfieldProvider> mockShapeRequests(editorEntity->GetId());
+        ON_CALL(mockShapeRequests, GetHeightfieldTransform).WillByDefault(Return(AZ::Transform::CreateTranslation({ 1, 2, 0 })));
+        ON_CALL(mockShapeRequests, GetHeightfieldGridSpacing).WillByDefault(Return(AZ::Vector2(1, 1)));
+        ON_CALL(mockShapeRequests, GetHeightsAndMaterials).WillByDefault(Return(GetSamples()));
+        ON_CALL(mockShapeRequests, GetHeightfieldGridSize)
+            .WillByDefault(
+                [](int32_t& numColumns, int32_t& numRows)
+                {
+                    numColumns = 3;
+                    numRows = 3;
+                });
+        ON_CALL(mockShapeRequests, GetHeightfieldHeightBounds)
+            .WillByDefault(
+                [](float& x, float& y)
+                {
+                    x = 0.0f;
+                    y = 0.0f;
+                });
         editorEntity->Activate();
 
-        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+        EntityPtr gameEntity = TestCreateActiveGameEntityFromEditorEntity(editorEntity.get());
 
         AzPhysics::SimulatedBody* staticBody = nullptr;
         AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
