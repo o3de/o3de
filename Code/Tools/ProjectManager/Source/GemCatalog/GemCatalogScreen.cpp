@@ -75,7 +75,7 @@ namespace O3DE::ProjectManager
 
         m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC("GemCatalogNotificationsView"));
         m_notificationsView->SetOffset(QPoint(10, 70));
-        m_notificationsView->SetMaxQueuedNotifications(3);
+        m_notificationsView->SetMaxQueuedNotifications(1);
     }
 
     void GemCatalogScreen::ReinitForProject(const QString& projectPath)
