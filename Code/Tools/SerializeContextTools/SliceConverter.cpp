@@ -81,8 +81,6 @@ namespace AZ
 
             // Load the asset catalog so that we can find any nested assets successfully.  We also need to tick the tick bus
             // so that the OnCatalogLoaded event gets processed now, instead of during application shutdown.
-            AZ::Data::AssetCatalogRequestBus::Broadcast(
-                &AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@products@/assetcatalog.xml");
             application.Tick();
 
             AZStd::string logggingScratchBuffer;
