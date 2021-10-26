@@ -203,37 +203,36 @@ AZ::Data::AssetType AssetCatalogModel::GetAssetType(QString filename) const
 
     //  Compare file extensions with the map created from the asset database.
     int dotIndex = filename.lastIndexOf('.');
-    if (dotIndex >= 0)
+    if (dotIndex < 0)
     {
-        QString extension = filename.mid(dotIndex);
-        for (auto pair : m_extensionToAssetType)
-        {
-            QString qExtensions = pair.first.c_str();
-            if (qExtensions.indexOf(extension) >= 0)
-            {
-                if (pair.second.size() > 1)
-                {
-                    //  There are multiple types with this extension. Check each handler to see if they can handle this data type.
-                    AZStd::string azFilename = filename.toStdString().c_str();
-                    EBUS_EVENT(AzFramework::ApplicationRequests::Bus, MakePathAssetRootRelative, azFilename);
-                    AZ::Data::AssetId assetId;
-                    EBUS_EVENT_RESULT(assetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, azFilename.c_str(), AZ::Data::s_invalidAssetType, false);
+        return returnType;
+    }
 
-                    for (AZ::Uuid type : pair.second)
-                    {
-                        const AZ::Data::AssetHandler* handler = AZ::Data::AssetManager::Instance().GetHandler(type);
-                        if (handler && handler->CanHandleAsset(assetId))
-                        {
-                            returnType = type;
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    returnType = pair.second[0];
-                    break;
-                }
+    QString extension = filename.mid(dotIndex);
+    for (auto pair : m_extensionToAssetType)
+    {
+        QString qExtensions = pair.first.c_str();
+        if (qExtensions.indexOf(extension) < 0 || pair.second.empty())
+        {
+            continue;
+        }
+        if (pair.second.size() == 1)
+        {
+            return pair.second[0];
+        }
+
+        //  There are multiple types with this extension. Search for a handler that can handle this data type.
+        AZStd::string azFilename = filename.toStdString().c_str();
+        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, MakePathAssetRootRelative, azFilename);
+        AZ::Data::AssetId assetId;
+        EBUS_EVENT_RESULT(assetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, azFilename.c_str(), AZ::Data::s_invalidAssetType, false);
+
+        for (AZ::Uuid type : pair.second)
+        {
+            const AZ::Data::AssetHandler* handler = AZ::Data::AssetManager::Instance().GetHandler(type);
+            if (handler && handler->CanHandleAsset(assetId))
+            {
+                return type;
             }
         }
     }
