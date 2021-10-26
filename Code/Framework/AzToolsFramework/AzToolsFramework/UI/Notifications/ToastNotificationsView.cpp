@@ -85,7 +85,7 @@ namespace AzToolsFramework
         return toastId;
     }
 
-    bool ToastNotificationsView::DuplicateNotificationInQueue([[maybe_unused]] const AzQtComponents::ToastConfiguration& toastConfiguration)
+    bool ToastNotificationsView::DuplicateNotificationInQueue(const AzQtComponents::ToastConfiguration& toastConfiguration)
     {
         for (auto iter : m_notifications)
         {
