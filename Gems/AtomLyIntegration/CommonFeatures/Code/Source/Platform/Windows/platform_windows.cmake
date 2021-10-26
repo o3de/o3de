@@ -5,3 +5,11 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
+
+if(LY_MONOLITHIC_GAME) # Do not use OpenImageIO in monolithic game
+    return()
+endif()
+
+set(LY_RUNTIME_DEPENDENCIES
+    3rdParty::OpenImageIO
+)
