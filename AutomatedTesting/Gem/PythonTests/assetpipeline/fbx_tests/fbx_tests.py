@@ -73,7 +73,12 @@ blackbox_fbx_tests = [
                                 asset_db_utils.DBProduct(
                                     product_name='onemeshonematerial/onemeshonematerial.dbgsg',
                                     sub_id=1918494907,
-                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b')
+                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='onemeshonematerial/onemeshonematerial.dbgsg.xml',
+                                    sub_id=556355570,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'
+                                )
                             ]
                         ),
                     ]
@@ -105,7 +110,12 @@ blackbox_fbx_tests = [
                                 asset_db_utils.DBProduct(
                                     product_name='softnaminglod/lodtest.dbgsg',
                                     sub_id=-632012261,
-                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b')
+                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='softnaminglod/lodtest.dbgsg.xml',
+                                    sub_id=-2036095434,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'
+                                )
                             ]
                         ),
                     ]
@@ -140,10 +150,15 @@ blackbox_fbx_tests = [
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'
                                 ),
                                 asset_db_utils.DBProduct(
+                                    product_name='softnamingphysics/physicstest.dbgsg.xml',
+                                    sub_id=330338417,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'
+                                ),
+                                asset_db_utils.DBProduct(
                                     product_name="softnamingphysics/physicstest.pxmesh",
                                     sub_id=640975857,
                                     asset_type=b"7a2871b95eab4de0a901b0d2c6920ddb"
-                                ),
+                                )
                             ]
                         ),
                     ]
@@ -171,7 +186,11 @@ blackbox_fbx_tests = [
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshonematerial/multiple_mesh_one_material.dbgsg',
                                     sub_id=2077268018,
-                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b')
+                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='twomeshonematerial/multiple_mesh_one_material.dbgsg.xml',
+                                    sub_id=1321067730,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868')
                             ]
                         ),
                     ]
@@ -204,6 +223,11 @@ blackbox_fbx_tests = [
                                     product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.dbgsg',
                                     sub_id=-1898461950,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'
+                                ),
+                                asset_db_utils.DBProduct(
+                                    product_name='twomeshlinkedmaterials/multiple_mesh_linked_materials.dbgsg.xml',
+                                    sub_id=-772341513,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'
                                 )
                             ]
                         ),
@@ -236,7 +260,12 @@ blackbox_fbx_tests = [
                                 asset_db_utils.DBProduct(
                                     product_name='onemeshmultiplematerials/single_mesh_multiple_materials.dbgsg',
                                     sub_id=-262822238,
-                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b')
+                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='onemeshmultiplematerials/single_mesh_multiple_materials.dbgsg.xml',
+                                    sub_id=1462358160,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'
+                                )
                             ]
                         ),
                     ]
@@ -266,7 +295,12 @@ blackbox_fbx_tests = [
                                 asset_db_utils.DBProduct(
                                     product_name='vertexcolor/vertexcolor.dbgsg',
                                     sub_id=-1543877170,
-                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b')
+                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='vertexcolor/vertexcolor.dbgsg.xml',
+                                    sub_id=1743516586,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'
+                                )
                             ]
                         ),
                     ]
@@ -297,6 +331,11 @@ blackbox_fbx_tests = [
                                     product_name='motion/jack_idle_aim_zup.dbgsg',
                                     sub_id=-517610290,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='motion/jack_idle_aim_zup.dbgsg.xml',
+                                    sub_id=-817863914,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'
+                                ),
                                 asset_db_utils.DBProduct(
                                     product_name='motion/jack_idle_aim_zup.motion',
                                     sub_id=186392073,
@@ -329,6 +368,10 @@ blackbox_fbx_tests = [
                                     product_name='shaderball/shaderball.dbgsg',
                                     sub_id=-1607815784,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='shaderball/shaderball.dbgsg.xml',
+                                    sub_id=-1153118555,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                             ]
                         ),
                     ]
@@ -361,7 +404,12 @@ blackbox_fbx_special_tests = [
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg',
                                     sub_id=896980093,
-                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b')
+                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.xml',
+                                    sub_id=-1556988544,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'
+                                )
                             ]
                         ),
                     ]
@@ -382,7 +430,12 @@ blackbox_fbx_special_tests = [
                                 asset_db_utils.DBProduct(
                                     product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg',
                                     sub_id=896980093,
-                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b')
+                                    asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.xml',
+                                    sub_id=-1556988544,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'
+                                )
                             ]
                         ),
                     ]
@@ -454,6 +507,19 @@ class TestsFBX_AllPlatforms(object):
                     product.product_name = job.platform + "/" \
                                            + product.product_name
 
+    def compare_scene_debug_file(self, asset_processor, expected_file_path, actual_file_path):
+        debug_graph_path = os.path.join(asset_processor.project_test_cache_folder(), actual_file_path)
+        expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug", expected_file_path)
+
+        logger.info(f"Parsing scene graph: {debug_graph_path}")
+        with open(debug_graph_path, "r") as scene_file:
+            actual_lines = scene_file.readlines()
+
+        logger.info(f"Parsing scene graph: {expected_debug_graph_path}")
+        with open(expected_debug_graph_path, "r") as scene_file:
+            expected_lines = scene_file.readlines()
+
+        assert utils.compare_lists(actual_lines, expected_lines), "Scene mismatch"
     def run_fbx_test(self, workspace, ap_setup_fixture, asset_processor,
                      project, blackbox_params: BlackboxAssetTest, overrideAsset=False):
         """
@@ -509,19 +575,12 @@ class TestsFBX_AllPlatforms(object):
             scene_debug_file = blackbox_params.override_scene_debug_file if overrideAsset \
                 else blackbox_params.scene_debug_file
 
-            debug_graph_path = os.path.join(asset_processor.project_test_cache_folder(),
-                                            blackbox_params.scene_debug_file)
-            expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), scene_debug_file)
+            self.compare_scene_debug_file(asset_processor, scene_debug_file, blackbox_params.scene_debug_file)
 
-            logger.info(f"Parsing scene graph: {debug_graph_path}")
-            with open(debug_graph_path, "r") as scene_file:
-                actual_lines = scene_file.readlines()
-
-            logger.info(f"Parsing scene graph: {expected_debug_graph_path}")
-            with open(expected_debug_graph_path, "r") as scene_file:
-                expected_lines = scene_file.readlines()
-
-            assert utils.compare_lists(actual_lines, expected_lines), "Scene mismatch"
+            # Run again for the .dbgsg.xml file
+            self.compare_scene_debug_file(asset_processor,
+                                          scene_debug_file + ".xml",
+                                          blackbox_params.scene_debug_file + ".xml")
 
         # Check that each given source asset resulted in the expected jobs and products.
         self.populateAssetInfo(workspace, project, assetsToValidate)
