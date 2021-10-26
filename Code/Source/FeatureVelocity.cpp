@@ -103,13 +103,16 @@ namespace EMotionFX
         float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
         {
             const Velocity& frameVelocity = GetFeatureData(context.m_featureMatrix, frameIndex);
-            const float dotResult = frameVelocity.m_direction.Dot(context.m_direction);
-            //const float speedDiff = AZ::GetAbs(frameVelocity.m_speed - context.m_speed);
 
-            float totalCost = 0.0f;
-            totalCost += 2.0f - (1.0f + dotResult);
-            //totalCost *= speedDiff;
-            return AZ::GetAbs(totalCost);
+            // Direction difference
+            const float directionDifferenceCost = GetNormalizedDirectionDifference(frameVelocity.m_direction, context.m_direction);
+
+            // Speed difference
+            // TODO: This needs to be normalized later on, else wise it could be that the direction difference is weights
+            // too heavily or too less compared to what the speed values are
+            const float speedDifferenceCost = AZ::GetAbs(frameVelocity.m_speed - context.m_speed);
+
+            return directionDifferenceCost + speedDifferenceCost;
         }
 
         void FeatureVelocity::Reflect(AZ::ReflectContext* context)

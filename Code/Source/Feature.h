@@ -107,6 +107,18 @@ namespace EMotionFX
             static void CalculateVelocity(size_t jointIndex, size_t relativeToJointIndex, MotionInstance* motionInstance, AZ::Vector3& outDirection, float& outSpeed);
 
         protected:
+            /**
+             * Calculate a normalized direction vector difference between the two given vectors.
+             * A dot product of the two vectors is taken and the result in range [-1, 1] is scaled to [0, 1].
+             * @result Normalized, absolute difference between the vectors. 
+             * Angle difference     dot result      cost
+             * 0.0 degrees          1.0             0.0
+             * 90.0 degrees         0.0             0.5
+             * 180.0 degrees        -1.0            1.0
+             * 270.0 degrees        0.0             0.5
+             **/
+            float GetNormalizedDirectionDifference(const AZ::Vector3& directionA, const AZ::Vector3& directionB) const;
+
             AZ::TypeId m_id = AZ::TypeId::CreateRandom(); /**< The frame data id. Use this instead of the RTTI class Id. This is because we can have multiple of the same types. */
             FrameDatabase* m_data = nullptr; /**< The data we point into. This class does not own the data. */
             size_t m_relativeToNodeIndex = 0; /**< Make the data relative to this node (default=0). */
