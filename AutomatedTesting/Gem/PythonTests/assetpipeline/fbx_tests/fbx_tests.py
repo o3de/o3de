@@ -368,6 +368,10 @@ blackbox_fbx_tests = [
                                     product_name='shaderball/shaderball.dbgsg',
                                     sub_id=-1607815784,
                                     asset_type=b'07f289d14dc74c4094b40a53bbcb9f0b'),
+                                asset_db_utils.DBProduct(
+                                    product_name='shaderball/shaderball.dbgsg.xml',
+                                    sub_id=-1153118555,
+                                    asset_type=b'51f376140d774f369ac67ed70a0ac868'),
                             ]
                         ),
                     ]
@@ -505,7 +509,7 @@ class TestsFBX_AllPlatforms(object):
 
     def compare_scene_debug_file(self, asset_processor, expected_file_path, actual_file_path):
         debug_graph_path = os.path.join(asset_processor.project_test_cache_folder(), actual_file_path)
-        expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), expected_file_path)
+        expected_debug_graph_path = os.path.join(asset_processor.project_test_source_folder(), "SceneDebug", expected_file_path)
 
         logger.info(f"Parsing scene graph: {debug_graph_path}")
         with open(debug_graph_path, "r") as scene_file:
@@ -575,8 +579,8 @@ class TestsFBX_AllPlatforms(object):
 
             # Run again for the .dbgsg.xml file
             self.compare_scene_debug_file(asset_processor,
-                                          os.path.join(scene_debug_file, ".xml"),
-                                          os.path.join(blackbox_params.scene_debug_file, ".xml"))
+                                          scene_debug_file + ".xml",
+                                          blackbox_params.scene_debug_file + ".xml")
 
         # Check that each given source asset resulted in the expected jobs and products.
         self.populateAssetInfo(workspace, project, assetsToValidate)
