@@ -38,9 +38,8 @@ namespace Multiplayer
             uint16_t editorsv_port = DefaultServerEditorPort;
             const auto console = AZ::Interface<AZ::IConsole>::Get();
 
-            AZ_Warning(
-                "MultiplayerEditorConnection", console->GetCvarValue("editorsv_port", editorsv_port) == AZ::GetValueResult::Success,
-                "MultiplayerEditorConnection failed! Could not find the editorsv_port cvar; we may not be able to connect to the editor's port!")
+            AZ_Assert( console->GetCvarValue("editorsv_port", editorsv_port) == AZ::GetValueResult::Success,
+                "MultiplayerEditorConnection failed! Could not find the editorsv_port cvar; we may not be able to connect to the editor's port! Please update this code to use a valid cvar!")
 
             AZ_Assert(m_networkEditorInterface, "MP Editor Network Interface was unregistered before Editor Server could start listening.")
 
@@ -127,8 +126,8 @@ namespace Multiplayer
             INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName));
 
             uint16_t sv_port = DefaultServerPort;
-            AZ_Warning("MultiplayerEditorConnection", console->GetCvarValue("sv_port", sv_port) == AZ::GetValueResult::Success,
-                "MultiplayerEditorConnection::HandleRequest for EditorServerInit failed! Could not find the sv_port cvar; we won't be able to listen on the correct port for incoming network messages!")
+            AZ_Assert(console->GetCvarValue("sv_port", sv_port) == AZ::GetValueResult::Success,
+                "MultiplayerEditorConnection::HandleRequest for EditorServerInit failed! Could not find the sv_port cvar; we won't be able to listen on the correct port for incoming network messages! Please update this code to use a valid cvar!")
             networkInterface->Listen(sv_port);
 
             AZLOG_INFO("Editor Server completed asset receive, responding to Editor...");
@@ -160,15 +159,13 @@ namespace Multiplayer
         AZ::CVarFixedString editorsv_serveraddr = AZ::CVarFixedString(LocalHost);
         uint16_t sv_port = DefaultServerEditorPort;
 
-        AZ_Warning(
-            "MultiplayerEditorConnection", console->GetCvarValue("sv_port", sv_port) == AZ::GetValueResult::Success,
+        AZ_Assert(console->GetCvarValue("sv_port", sv_port) == AZ::GetValueResult::Success,
             "MultiplayerEditorConnection::HandleRequest for EditorServerReady failed! Could not find the sv_port cvar; we may not be able to "
-            "connect to the correct port for incoming network messages!")
+            "connect to the correct port for incoming network messages! Please update this code to use a valid cvar!")
 
-        AZ_Warning(
-            "MultiplayerEditorConnection", console->GetCvarValue("editorsv_serveraddr", editorsv_serveraddr) == AZ::GetValueResult::Success,
+        AZ_Assert(console->GetCvarValue("editorsv_serveraddr", editorsv_serveraddr) == AZ::GetValueResult::Success,
             "MultiplayerEditorConnection::HandleRequest for EditorServerReady failed! Could not find the editorsv_serveraddr cvar; we may not be able to "
-            "connect to the correct port for incoming network messages!")
+            "connect to the correct port for incoming network messages! Please update this code to use a valid cvar!")
         
         // Connect the Editor to the editor server for Multiplayer simulation
         AZ::Interface<IMultiplayer>::Get()->Connect(editorsv_serveraddr.c_str(), sv_port);
@@ -205,9 +202,8 @@ namespace Multiplayer
     {
         const auto console = AZ::Interface<AZ::IConsole>::Get();
         bool editorsv_launch = false;
-        AZ_Warning(
-            "MultiplayerEditorConnection", console->GetCvarValue("editorsv_launch", editorsv_launch) == AZ::GetValueResult::Success,
-            "MultiplayerEditorConnection::OnDisconnect failed! Could not find the editorsv_launch cvar.")
+        AZ_Assert(console->GetCvarValue("editorsv_launch", editorsv_launch) == AZ::GetValueResult::Success,
+            "MultiplayerEditorConnection::OnDisconnect failed! Could not find the editorsv_launch cvar. Please update this code to use a valid cvar!")
 
         if (editorsv_isDedicated && editorsv_launch && m_networkEditorInterface->GetConnectionSet().GetConnectionCount() == 1)
         {
