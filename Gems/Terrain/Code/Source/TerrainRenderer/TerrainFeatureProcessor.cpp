@@ -890,7 +890,10 @@ namespace Terrain
 
                 for (const auto& materialMapping : materialMappings)
                 {
-                    OnTerrainSurfaceMaterialMappingCreated(entityId, materialMapping.m_surfaceTag, materialMapping.m_materialInstance);
+                    if (materialMapping.m_materialInstance)
+                    {
+                        OnTerrainSurfaceMaterialMappingCreated(entityId, materialMapping.m_surfaceTag, materialMapping.m_materialInstance);
+                    }
                 }
                 return true;
             }
