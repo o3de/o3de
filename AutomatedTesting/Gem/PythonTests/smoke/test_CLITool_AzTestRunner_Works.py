@@ -13,12 +13,20 @@ import os
 import pytest
 import subprocess
 
+import ly_test_tools
+
 
 @pytest.mark.SUITE_smoke
 class TestCLIToolAzTestRunnerWorks(object):
-    def test_CLITool_AzTestRunner_Works(self, build_directory):
+    def test_CLITool_AzTestRunner_ListSelfTests(self, build_directory):
         file_path = os.path.join(build_directory, "AzTestRunner")
         help_message = "OKAY Symbol found: AzRunUnitTests"
+
+        if ly_test_tools.WINDOWS:
+            target_lib = "AzTestRunner.Tests"
+        else:
+            target_lib = "libAzTestRunner.Tests"
+
         # Launch AzTestRunner
         output = subprocess.run(
             [file_path, "AzTestRunner.Tests", "AzRunUnitTests", "--gtest_list_tests"], capture_output=True, timeout=10
