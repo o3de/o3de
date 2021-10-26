@@ -565,7 +565,7 @@ namespace AzFramework
 
             if (!bytes.empty())
             {
-                AZStd::shared_ptr < AzFramework::AssetRegistry> prevRegistry;
+                AZStd::shared_ptr<AzFramework::AssetRegistry> prevRegistry;
                 if (!m_initialized)
                 {
                     // First time initialization may have updates already processed which we want to apply
@@ -589,7 +589,6 @@ namespace AzFramework
                 AZ_TracePrintf("AssetCatalog", "Loaded registry containing %u assets.\n", m_registry->m_assetIdToInfo.size());
 
                 // It's currently possible in tools for us to have received updates from AP which were applied before the catalog was ready to load
-                // due to CryPak and CrySystem coming online later than our components
                 if (!m_initialized)
                 {
                     ApplyDeltaCatalog(prevRegistry);
@@ -611,12 +610,13 @@ namespace AzFramework
             // the mutex.  If the listener tries to perform a blocking asset load via GetAsset() / BlockUntilLoadComplete(), the spawned asset
             // thread will make a call to the AssetCatalogRequestBus and block on the held mutex.  This would cause a deadlock, since the listener
             // won't free the mutex until the load is complete.
-            // So instead, queue the notification until the next tick, so that it doesn't occur within the AssetCatalogRequestBus mutex, and also
+            // So instead, queue the notification until after the AssetCatalogRequestBus mutex is unlocked for the current thread, and also
             // so that the entire AssetCatalog initialization is complete.
-            AZ::TickBus::QueueFunction([catalogRegistryString = AZStd::string(catalogRegistryFile)]()
-                {
-                    AssetCatalogEventBus::Broadcast(&AssetCatalogEventBus::Events::OnCatalogLoaded, catalogRegistryString.c_str());
-                });
+            auto OnCatalogLoaded = [catalogRegistryString = AZStd::string(catalogRegistryFile)]()
+            {
+                AssetCatalogEventBus::Broadcast(&AssetCatalogEventBus::Events::OnCatalogLoaded, catalogRegistryString.c_str());
+            };
+            AZ::Data::AssetCatalogRequestBus::QueueFunction(AZStd::move(OnCatalogLoaded));
         }
     }
 
@@ -978,6 +978,7 @@ namespace AzFramework
         AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
 
         m_registry->Clear();
+        m_initialized = false;
     }
 
 
