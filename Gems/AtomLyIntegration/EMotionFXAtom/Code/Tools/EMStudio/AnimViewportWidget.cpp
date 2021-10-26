@@ -6,10 +6,11 @@
  *
  */
 
-#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Math/MatrixUtils.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/View.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
@@ -19,6 +20,9 @@
 
 namespace EMStudio
 {
+    static constexpr float DepthNear = 0.01f;
+    static constexpr float DepthFar = 100.0f;
+
     AnimViewportWidget::AnimViewportWidget(QWidget* parent)
         : AtomToolsFramework::RenderViewportWidget(parent)
     {
@@ -164,6 +168,24 @@ namespace EMStudio
             break;
         }
         GetViewportContext()->SetCameraTransform(AZ::Transform::CreateLookAt(cameraPosition, targetPosition));
+    }
+
+    void AnimViewportWidget::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+    {
+        RenderViewportWidget::OnTick(deltaTime, time);
+        CalculateCameraProjection();
+    }
+
+    void AnimViewportWidget::CalculateCameraProjection()
+    {
+        auto viewportContext = GetViewportContext();
+        auto windowSize = viewportContext->GetViewportSize();
+        const float aspectRatio = aznumeric_cast<float>(windowSize.m_width) / aznumeric_cast<float>(windowSize.m_height);
+
+        AZ::Matrix4x4 viewToClipMatrix;
+        AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::Constants::HalfPi, aspectRatio, DepthNear, DepthFar, true);
+
+        viewportContext->GetDefaultView()->SetViewToClipMatrix(viewToClipMatrix);
     }
 
     void AnimViewportWidget::ToggleRenderFlag(EMotionFX::ActorRenderFlag flag)
