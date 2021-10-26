@@ -24,9 +24,6 @@ namespace AzFramework
             return XCB_NONE;
         }
 
-        // TODO Clang compile error because cast .... loses information. On GNU/Linux HWND is void* and on 64-bit
-        // machines its obviously 64 bit but we receive the window id from m_renderOverlay.winId() which is xcb_window_t 32-bit.
-
         return static_cast<xcb_window_t>(reinterpret_cast<uint64_t>(systemCursorFocusWindow));
     }
 
@@ -57,7 +54,7 @@ namespace AzFramework
 
     InputDeviceMouse::Implementation* XcbInputDeviceMouse::Create(InputDeviceMouse& inputDevice)
     {
-        auto* interface = AzFramework::XcbConnectionManagerInterface::Get();
+        const auto* interface = AzFramework::XcbConnectionManagerInterface::Get();
         if (!interface)
         {
             AZ_Warning("XcbInput", false, "XCB interface not available");
@@ -126,7 +123,7 @@ namespace AzFramework
 
             // Get window information.
             const XcbStdFreePtr<xcb_get_geometry_reply_t> xcbGeometryReply{ xcb_get_geometry_reply(
-                s_xcbConnection, xcb_get_geometry(s_xcbConnection, window), NULL) };
+                s_xcbConnection, xcb_get_geometry(s_xcbConnection, window), nullptr) };
 
             if (!xcbGeometryReply)
             {
@@ -137,7 +134,7 @@ namespace AzFramework
                 xcb_translate_coordinates(s_xcbConnection, window, s_xcbScreen->root, 0, 0);
 
             const XcbStdFreePtr<xcb_translate_coordinates_reply_t> xkbTranslateCoordReply{ xcb_translate_coordinates_reply(
-                s_xcbConnection, translate_coord, NULL) };
+                s_xcbConnection, translate_coord, nullptr) };
 
             if (!xkbTranslateCoordReply)
             {
@@ -173,11 +170,11 @@ namespace AzFramework
             for (const auto& barrier : m_activeBarriers)
             {
                 xcb_void_cookie_t cookie = xcb_xfixes_create_pointer_barrier_checked(
-                    s_xcbConnection, barrier.id, window, barrier.x0, barrier.y0, barrier.x1, barrier.y1, barrier.direction, 0, NULL);
-                const XcbStdFreePtr<xcb_generic_error_t> xkbError{ xcb_request_check(s_xcbConnection, cookie) };
+                    s_xcbConnection, barrier.id, window, barrier.x0, barrier.y0, barrier.x1, barrier.y1, barrier.direction, 0, nullptr);
+                const XcbStdFreePtr<xcb_generic_error_t> xcbError{ xcb_request_check(s_xcbConnection, cookie) };
 
                 AZ_Warning(
-                    "XcbInput", !xkbError, "XFixes, failed to create barrier %d at (%d %d %d %d)", barrier.id, barrier.x0, barrier.y0,
+                    "XcbInput", !xcbError, "XFixes, failed to create barrier %d at (%d %d %d %d)", barrier.id, barrier.x0, barrier.y0,
                     barrier.x1, barrier.y1);
             }
         }
@@ -207,7 +204,7 @@ namespace AzFramework
 
         const xcb_xfixes_query_version_cookie_t query_cookie = xcb_xfixes_query_version(s_xcbConnection, 5, 0);
 
-        xcb_generic_error_t* error = NULL;
+        xcb_generic_error_t* error = nullptr;
         const XcbStdFreePtr<xcb_xfixes_query_version_reply_t> xkbQueryRequestReply{ xcb_xfixes_query_version_reply(
             s_xcbConnection, query_cookie, &error) };
 
@@ -244,7 +241,7 @@ namespace AzFramework
 
         const xcb_input_xi_query_version_cookie_t query_version_cookie = xcb_input_xi_query_version(s_xcbConnection, 2, 2);
 
-        xcb_generic_error_t* error = NULL;
+        xcb_generic_error_t* error = nullptr;
         const XcbStdFreePtr<xcb_input_xi_query_version_reply_t> xkbQueryRequestReply{ xcb_input_xi_query_version_reply(
             s_xcbConnection, query_version_cookie, &error) };
 
@@ -340,7 +337,7 @@ namespace AzFramework
     {
         // TODO Basically not done at all. Added only the basic functions needed.
         const XcbStdFreePtr<xcb_get_geometry_reply_t> xkbGeometryReply{ xcb_get_geometry_reply(
-            s_xcbConnection, xcb_get_geometry(s_xcbConnection, window), NULL) };
+            s_xcbConnection, xcb_get_geometry(s_xcbConnection, window), nullptr) };
 
         if (!xkbGeometryReply)
         {
@@ -372,7 +369,7 @@ namespace AzFramework
 
         const xcb_query_pointer_cookie_t pointer = xcb_query_pointer(s_xcbConnection, window);
 
-        const XcbStdFreePtr<xcb_query_pointer_reply_t> xkbQueryPointerReply{ xcb_query_pointer_reply(s_xcbConnection, pointer, NULL) };
+        const XcbStdFreePtr<xcb_query_pointer_reply_t> xkbQueryPointerReply{ xcb_query_pointer_reply(s_xcbConnection, pointer, nullptr) };
 
         if (!xkbQueryPointerReply)
         {
@@ -380,7 +377,7 @@ namespace AzFramework
         }
 
         const XcbStdFreePtr<xcb_get_geometry_reply_t> xkbGeometryReply{ xcb_get_geometry_reply(
-            s_xcbConnection, xcb_get_geometry(s_xcbConnection, window), NULL) };
+            s_xcbConnection, xcb_get_geometry(s_xcbConnection, window), nullptr) };
 
         if (!xkbGeometryReply)
         {
@@ -426,11 +423,11 @@ namespace AzFramework
             cookie = xcb_xfixes_hide_cursor_checked(s_xcbConnection, window);
         }
 
-        const XcbStdFreePtr<xcb_generic_error_t> xkbError{ xcb_request_check(s_xcbConnection, cookie) };
+        const XcbStdFreePtr<xcb_generic_error_t> xcbError{ xcb_request_check(s_xcbConnection, cookie) };
 
-        if (xkbError)
+        if (xcbError)
         {
-            AZ_Warning("XcbInput", false, "ShowCursor failed: %d", xkbError->error_code);
+            AZ_Warning("XcbInput", false, "ShowCursor failed: %d", xcbError->error_code);
 
             return;
         }
