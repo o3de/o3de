@@ -440,7 +440,8 @@ namespace Terrain
                 const auto index = getIndex(indexName);
                 if (index.IsValid())
                 {
-                    ref = material->GetPropertyValue(index).GetValue<AZStd::remove_reference<decltype(ref)>::type>();
+                    using TypeRefRemoved = AZStd::remove_cvref_t<decltype(ref)>;
+                    ref = material->GetPropertyValue(index).GetValue<TypeRefRemoved>();
                 }
             };
             
