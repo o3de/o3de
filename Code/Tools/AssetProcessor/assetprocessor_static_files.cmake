@@ -105,6 +105,8 @@ set(FILES
     native/utilities/PlatformConfiguration.cpp
     native/utilities/PlatformConfiguration.h
     native/utilities/PotentialDependencies.h
+    native/utilities/SimpleStatsCapture.cpp
+    native/utilities/SimpleStatsCapture.h
     native/utilities/SpecializedDependencyScanner.h
     native/utilities/ThreadHelper.cpp
     native/utilities/ThreadHelper.h

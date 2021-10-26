@@ -10,9 +10,10 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/Sha1.h>
 
-#include "native/utilities/PlatformConfiguration.h"
-#include "native/AssetManager/FileStateCache.h"
-#include "native/AssetDatabase/AssetDatabase.h"
+#include <native/utilities/PlatformConfiguration.h>
+#include <native/utilities/SimpleStatsCapture.h>
+#include <native/AssetManager/FileStateCache.h>
+#include <native/AssetDatabase/AssetDatabase.h>
 #include <utilities/ThreadHelper.h>
 #include <QCoreApplication>
 #include <QElapsedTimer>
