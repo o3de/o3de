@@ -25,8 +25,7 @@ namespace AZ
         {
             static AZ::Name GetMapName(const DecalMapType mapType)
             {
-                // Using local static to avoid cost of creating AZ::Name. Also so that this can be called from other static functions
-                static AZStd::array<AZ::Name, DecalMapType_Num> mapNames =
+                const AZStd::array<AZ::Name, DecalMapType_Num> mapNames =
                 {
                     AZ::Name("baseColor.textureMap"),
                     AZ::Name("normal.textureMap")
