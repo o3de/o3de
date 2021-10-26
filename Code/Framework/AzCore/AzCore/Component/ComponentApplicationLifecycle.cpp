@@ -70,7 +70,7 @@ namespace AZ::ComponentApplicationLifecycle
             {
                 AZ_Warning(
                     "ComponentApplicationLifecycle", false,
-                    R"(Cannot register event %.*s. Name does is not a field of object "%.*s".)"
+                    R"(Cannot register event %.*s. Name is not a field of object "%.*s".)"
                     R"( Please make sure the entry exists in the '<engine-root>/Registry/application_lifecycle_events.setreg")"
                     " or in *.setreg within the project",
                     AZ_STRING_ARG(eventName), AZ_STRING_ARG(ApplicationLifecycleEventRegistrationKey));
