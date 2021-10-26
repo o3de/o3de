@@ -259,8 +259,6 @@ namespace AZ::Render
 
                 m_auxVertices.clear();
                 m_auxVertices.reserve(numTriangles * 2);
-                m_auxColors.clear();
-                m_auxColors.reserve(m_auxVertices.size());
 
                 for (uint32 triangleIndex = 0; triangleIndex < numTriangles; ++triangleIndex)
                 {
@@ -279,17 +277,15 @@ namespace AZ::Render
                     const AZ::Vector3 normalPos = (posA + posB + posC) * (1.0f / 3.0f);
 
                     m_auxVertices.emplace_back(normalPos);
-                    m_auxColors.emplace_back(colorFaceNormals);
                     m_auxVertices.emplace_back(normalPos + (normalDir * faceNormalsScale));
-                    m_auxColors.emplace_back(colorFaceNormals);
                 }
             }
 
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
             lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
-            lineArgs.m_colors = m_auxColors.data();
-            lineArgs.m_colorCount = static_cast<uint32_t>(m_auxColors.size());
+            lineArgs.m_colors = &colorFaceNormals;
+            lineArgs.m_colorCount = 1;
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
             auxGeom->DrawLines(lineArgs);
         }
@@ -306,8 +302,6 @@ namespace AZ::Render
 
                 m_auxVertices.clear();
                 m_auxVertices.reserve(numVertices * 2);
-                m_auxColors.clear();
-                m_auxColors.reserve(m_auxVertices.size());
 
                 for (uint32 j = 0; j < numVertices; ++j)
                 {
@@ -316,17 +310,15 @@ namespace AZ::Render
                     const AZ::Vector3 normal = worldTM.TransformVector(normals[vertexIndex]).GetNormalizedSafe() * vertexNormalsScale;
 
                     m_auxVertices.emplace_back(position);
-                    m_auxColors.emplace_back(colorFaceNormals);
                     m_auxVertices.emplace_back(position + normal);
-                    m_auxColors.emplace_back(colorFaceNormals);
                 }
             }
 
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
             lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
-            lineArgs.m_colors = m_auxColors.data();
-            lineArgs.m_colorCount = static_cast<uint32_t>(m_auxColors.size());
+            lineArgs.m_colors = &colorVertexNormals;
+            lineArgs.m_colorCount = 1;
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
             auxGeom->DrawLines(lineArgs);
         }
@@ -417,7 +409,6 @@ namespace AZ::Render
         auxGeom->DrawLines(lineArgs);
     }
 
-    // Render wireframe mesh
     void AtomActorDebugDraw::RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM)
     {
         // Check if the mesh is valid and skip the node in case it's not
@@ -436,7 +427,7 @@ namespace AZ::Render
 
         const float scale = 0.01f;
 
-        AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
+        const AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
         const AZ::Color vertexColor = AZ::Color(0.8f, 0.24f, 0.88f, 1.0f);
 
         const size_t numSubMeshes = mesh->GetNumSubMeshes();
@@ -449,8 +440,6 @@ namespace AZ::Render
 
             m_auxVertices.clear();
             m_auxVertices.reserve(numTriangles * 6);
-            m_auxColors.clear();
-            m_auxColors.reserve(m_auxVertices.size());
 
             for (uint32 triangleIndex = 0; triangleIndex < numTriangles; ++triangleIndex)
             {
@@ -464,28 +453,22 @@ namespace AZ::Render
                 const AZ::Vector3 posC = m_worldSpacePositions[indexC] + normals[indexC] * scale;
 
                 m_auxVertices.emplace_back(posA);
-                m_auxColors.emplace_back(vertexColor);
                 m_auxVertices.emplace_back(posB);
-                m_auxColors.emplace_back(vertexColor);
 
                 m_auxVertices.emplace_back(posB);
-                m_auxColors.emplace_back(vertexColor);
                 m_auxVertices.emplace_back(posC);
-                m_auxColors.emplace_back(vertexColor);
 
                 m_auxVertices.emplace_back(posC);
-                m_auxColors.emplace_back(vertexColor);
                 m_auxVertices.emplace_back(posA);
-                m_auxColors.emplace_back(vertexColor);
             }
-        }
 
-        RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
-        lineArgs.m_verts = m_auxVertices.data();
-        lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
-        lineArgs.m_colors = m_auxColors.data();
-        lineArgs.m_colorCount = static_cast<uint32_t>(m_auxColors.size());
-        lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
-        auxGeom->DrawLines(lineArgs);
+            RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
+            lineArgs.m_verts = m_auxVertices.data();
+            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+            lineArgs.m_colors = &vertexColor;
+            lineArgs.m_colorCount = 1;
+            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+            auxGeom->DrawLines(lineArgs);
+        }
     }
 } // namespace AZ::Render
