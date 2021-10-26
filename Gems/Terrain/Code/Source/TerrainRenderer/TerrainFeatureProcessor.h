@@ -18,6 +18,7 @@
 #include <Atom/RPI.Public/Image/AttachmentImage.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
+#include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <Atom/Feature/Utils/IndexedDataVector.h>
 
 namespace AZ::RPI
@@ -319,6 +320,8 @@ namespace Terrain
         Int2DAabb m_detailTextureBounds;
         Int2DPoint m_detailTextureCenter;
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailTextureImage;
+        AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
+        bool m_forceRebuildDrawPackets = false;
 
         AZStd::vector<SectorData> m_sectorData;
 

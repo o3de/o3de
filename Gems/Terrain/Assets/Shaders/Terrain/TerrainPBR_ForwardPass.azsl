@@ -30,6 +30,8 @@ struct VSOutput
     float2 m_uv : UV1;
 };
 
+option bool o_debugDetailMaterialIds = false;
+
 VSOutput TerrainPBR_MainPassVS(VertexInput IN)
 {
     VSOutput OUT;
@@ -123,8 +125,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     float3 blendedColor = BlendBaseColor(lerp(detailColor, TerrainMaterialSrg::m_baseColor.rgb, detailFactor), macroColor, TerrainMaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
 
     // ------- Debug detail materials using random colors -------
-    bool debugDetailMaterailIds = false;
-    if (debugDetailMaterailIds) 
+    if (o_debugDetailMaterialIds) 
     {
         float2 detailRegionMin = TerrainMaterialSrg::m_detailAabb.xy;
         float2 detailRegionMax = TerrainMaterialSrg::m_detailAabb.zw;
@@ -154,7 +155,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
 
             blendedColor = lerp(material1Color, material2Color, blend);
             float seamBlend = 0.0;
-            if (abs(detailRegionUv.x) % 1.0 < 1.0 / 1024.0 || abs(detailRegionUv.y) % 1.0 < 1.0 / 1024.0)
+            if (any(abs(detailRegionUv) % 1.0 < 1.0 / 1024.0))
             {
                 seamBlend = 1.0;
             }

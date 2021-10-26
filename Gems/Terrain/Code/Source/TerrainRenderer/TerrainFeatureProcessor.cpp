@@ -9,10 +9,11 @@
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
 #include <TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h>
 
+#include <AzCore/Console/Console.h>
+#include <AzCore/Math/Frustum.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/math.h>
-#include <AzCore/Math/Frustum.h>
 
 #include <Atom/Utils/Utils.h>
 
@@ -100,6 +101,17 @@ namespace Terrain
         static const char* const MacroColorMap("m_macroColorMap");
         static const char* const MacroNormalMap("m_macroNormalMap");
     }
+    
+    AZ_CVAR(bool,
+        r_terrainDebugDetailMaterials,
+        false,
+        [](const bool& value)
+        {
+            AZ::RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(AZ::Name{ "o_debugDetailMaterialIds" }, AZ::RPI::ShaderOptionValue{ value });
+        },
+        AZ::ConsoleFunctorFlags::Null,
+        "Turns on debugging for detail material ids for terrain."
+    );
 
 
     void TerrainFeatureProcessor::Reflect(AZ::ReflectContext* context)
@@ -116,6 +128,12 @@ namespace Terrain
     {
         Initialize();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
+        
+        m_handleGlobalShaderOptionUpdate = AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler
+        {
+            [this](const AZ::Name&, AZ::RPI::ShaderOptionValue) { m_forceRebuildDrawPackets = true; }
+        };
+        AZ::RPI::ShaderSystemInterface::Get()->Connect(m_handleGlobalShaderOptionUpdate);
     }
 
     void TerrainFeatureProcessor::Initialize()
@@ -998,6 +1016,17 @@ namespace Terrain
                     }
                 }
             }
+            else if (m_forceRebuildDrawPackets)
+            {
+                for (auto& sectorData : m_sectorData)
+                {
+                    for (auto& drawPacket : sectorData.m_drawPackets)
+                    {
+                        drawPacket.Update(*GetParentScene(), true);
+                    }
+                }
+            }
+            m_forceRebuildDrawPackets = false;
 
             if (m_areaData.m_heightmapUpdated)
             {

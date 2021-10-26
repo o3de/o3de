@@ -92,7 +92,7 @@
                 {
                     "id": "heightmapImage",
                     "displayName": "Heightmap Image",
-                    "description": "Heightmap of the terrain, controlled by the runtime.",
+                    "description": "Heightmap of the terrain. Controlled by the runtime.",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
@@ -102,7 +102,7 @@
                 {
                     "id": "detailMaterialIdImage",
                     "displayName": "Detail Material Id Image",
-                    "description": "Texture containing detail material Ids and weights, controlled by the runtime.",
+                    "description": "Texture containing detail material Ids and weights. Controlled by the runtime.",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
@@ -112,7 +112,7 @@
                 {
                     "id": "detailMaterialIdCenter",
                     "displayName": "Detail Material Id Image Center",
-                    "description": "The center position of the detail mateiral Id image, controlled by the runtime.",
+                    "description": "The center position of the detail material Id image. Controlled by the runtime.",
                     "type": "Vector2",
                     "connection": {
                         "type": "ShaderInput",
@@ -122,7 +122,7 @@
                 {
                     "id": "detailAabb",
                     "displayName": "Detail material bounds in 2d",
-                    "description": "The 2d world space bounds of the detail id material.",
+                    "description": "The 2d world space bounds of the detail id material. Controlled by the runtime.",
                     "type": "Vector4",
                     "connection": {
                         "type": "ShaderInput",
