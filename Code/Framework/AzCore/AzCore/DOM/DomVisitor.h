@@ -16,16 +16,16 @@
 namespace AZ::DOM
 {
     //
-    // StorageSemantics enum
+    // Lifetime enum
     // 
-    //! Specifies the semantics under which a reference type is safe to store.
-    enum class StorageSemantics
+    //! Specifies the period in which a reference value will still be alive and safe to read.
+    enum class Lifetime
     {
-        //! Specifies that this value can be safely and durably stored as a reference.
+        //! Specifies that the value is safe to read and will remain so indefinitely.
         //! This implies that the value will not be mutated for the duration of this storage.
-        StoreByReference,
-        //! Specifies that this value must be copied to be stored safely.
-        StoreByCopy,
+        Persistent,
+        //! Specifies that the value may change or be deallocated, and must be copied to be safely stored.
+        Temporary,
     };
 
     //
@@ -169,19 +169,19 @@ namespace AZ::DOM
         virtual Result Double(double value);
         //! Operates on a string value. As strings are a reference type.
         //! Storage semantics are provided to indicate where the value may be stored persistently or requires a copy.
-        virtual Result String(AZStd::string_view value, StorageSemantics storageSemantics);
+        virtual Result String(AZStd::string_view value, Lifetime lifetime);
         //! Operates on an opaque value. As opaque values are a reference type, storage semantics are provided to
         //! indicate where the value may be stored persistently or requires a copy.
         //! The base implementation of OpaqueValue rejects the operation, as opaque values are meant for special
         //! cases with specific implementations, not generic usage.
         //! Storage semantics are provided to indicate where the value may be stored persistently or requires a copy.
-        virtual Result OpaqueValue(const OpaqueType& value, StorageSemantics storageSemantics);
+        virtual Result OpaqueValue(const OpaqueType& value, Lifetime lifetime);
         //! Operates on a raw value encoded as a UTF-8 string that hasn't had its type deduced.
         //! Visitors that support raw values (\see VisitorFlags::SupportsRawValues) may parse the raw value and
         //! forward it to the corresponding value call or calls of their choice.
         //! The base implementation of RawValue rejects the operation, as raw values are meant to be handled on
         //! a per-implementation basis.
-        virtual Result RawValue(AZStd::string_view value, StorageSemantics storageSemantics);
+        virtual Result RawValue(AZStd::string_view value, Lifetime lifetime);
 
         //! Operates on an Object.
         //! Callers may make any number of Key calls, followed by calls representing a value (including a nested
@@ -198,7 +198,7 @@ namespace AZ::DOM
         virtual Result Key(AZ::Name key);
         //! Specifies a key for a key/value pair using a raw string instead of \ref AZ::Name.
         //! \see Key
-        virtual Result RawKey(AZStd::string_view key, StorageSemantics storageSemantics);
+        virtual Result RawKey(AZStd::string_view key, Lifetime lifetime);
 
         //! Operates on an Array.
         //! Callers may make any number of subsequent value calls to represent the elements of the array, and then must
@@ -216,7 +216,7 @@ namespace AZ::DOM
         virtual Result StartNode(AZ::Name name);
         //! Operates on a Node using a raw string instead of \ref AZ::Name.
         //! \see StartNode
-        virtual Result RawStartNode(AZStd::string_view name, StorageSemantics storageSemantics);
+        virtual Result RawStartNode(AZStd::string_view name, Lifetime lifetime);
         //! Finishes operating on a Node.
         //! Callers must provide both the number of attributes the were provided and the number of elements that were
         //! provided to the node, attributes being values prefaced by a call to Key.

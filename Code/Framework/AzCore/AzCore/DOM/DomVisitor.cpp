@@ -100,12 +100,12 @@ namespace AZ::DOM
         return VisitorSuccess();
     }
 
-    Visitor::Result Visitor::String([[maybe_unused]] AZStd::string_view value, [[maybe_unused]] StorageSemantics storageSemantics)
+    Visitor::Result Visitor::String([[maybe_unused]] AZStd::string_view value, [[maybe_unused]] Lifetime lifetime)
     {
         return VisitorSuccess();
     }
 
-    Visitor::Result Visitor::OpaqueValue([[maybe_unused]] const OpaqueType& value, [[maybe_unused]] StorageSemantics storageSemantics)
+    Visitor::Result Visitor::OpaqueValue([[maybe_unused]] const OpaqueType& value, [[maybe_unused]] Lifetime lifetime)
     {
         if (!SupportsOpaqueValues())
         {
@@ -114,7 +114,7 @@ namespace AZ::DOM
         return VisitorSuccess();
     }
 
-    Visitor::Result Visitor::RawValue([[maybe_unused]]AZStd::string_view value, [[maybe_unused]]StorageSemantics storageSemantics)
+    Visitor::Result Visitor::RawValue([[maybe_unused]] AZStd::string_view value, [[maybe_unused]] Lifetime lifetime)
     {
         if (!SupportsRawValues())
         {
@@ -150,7 +150,7 @@ namespace AZ::DOM
         return VisitorSuccess();
     }
 
-    Visitor::Result Visitor::RawKey(AZStd::string_view key, [[maybe_unused]]StorageSemantics storageSemantics)
+    Visitor::Result Visitor::RawKey(AZStd::string_view key, [[maybe_unused]] Lifetime lifetime)
     {
         if (!SupportsRawKeys())
         {
@@ -186,7 +186,7 @@ namespace AZ::DOM
         return VisitorSuccess();
     }
 
-    Visitor::Result Visitor::RawStartNode(AZStd::string_view name, [[maybe_unused]]StorageSemantics storageSemantics)
+    Visitor::Result Visitor::RawStartNode(AZStd::string_view name, [[maybe_unused]] Lifetime lifetime)
     {
         return StartNode(AZ::Name(name));
     }
