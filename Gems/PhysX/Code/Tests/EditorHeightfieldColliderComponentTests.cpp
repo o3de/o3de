@@ -58,30 +58,35 @@ namespace PhysXEditorTests
             UnitTest::MockPhysXHeightfieldProviderComponent::CreateDescriptor());
     }
 
-    EntityPtr TestCreateActiveGameEntityFromEditorEntity(AZ::Entity* editorEntity)
+    void SetupMockMethods(NiceMock<UnitTest::MockPhysXHeightfieldProvider>& mockShapeRequests)
     {
-        EntityPtr gameEntity = AZStd::make_unique<AZ::Entity>();
-        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequests::PreExportEntity, *editorEntity, *gameEntity);
-        gameEntity->Init();
-        NiceMock<UnitTest::MockPhysXHeightfieldProvider> mockShapeRequests2(gameEntity->GetId());
-        ON_CALL(mockShapeRequests2, GetHeightfieldTransform).WillByDefault(Return(AZ::Transform::CreateTranslation({ 1, 2, 0 })));
-        ON_CALL(mockShapeRequests2, GetHeightfieldGridSpacing).WillByDefault(Return(AZ::Vector2(1, 1)));
-        ON_CALL(mockShapeRequests2, GetHeightsAndMaterials).WillByDefault(Return(GetSamples()));
-        ON_CALL(mockShapeRequests2, GetHeightfieldGridSize)
+        ON_CALL(mockShapeRequests, GetHeightfieldTransform).WillByDefault(Return(AZ::Transform::CreateTranslation({ 1, 2, 0 })));
+        ON_CALL(mockShapeRequests, GetHeightfieldGridSpacing).WillByDefault(Return(AZ::Vector2(1, 1)));
+        ON_CALL(mockShapeRequests, GetHeightsAndMaterials).WillByDefault(Return(GetSamples()));
+        ON_CALL(mockShapeRequests, GetHeightfieldGridSize)
             .WillByDefault(
                 [](int32_t& numColumns, int32_t& numRows)
                 {
                     numColumns = 3;
                     numRows = 3;
                 });
-        ON_CALL(mockShapeRequests2, GetHeightfieldHeightBounds)
+        ON_CALL(mockShapeRequests, GetHeightfieldHeightBounds)
             .WillByDefault(
                 [](float& x, float& y)
                 {
                     x = 0.0f;
                     y = 0.0f;
                 });
+    }
+
+    EntityPtr TestCreateActiveGameEntityFromEditorEntity(AZ::Entity* editorEntity)
+    {
+        EntityPtr gameEntity = AZStd::make_unique<AZ::Entity>();
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequests::PreExportEntity, *editorEntity, *gameEntity);
+        gameEntity->Init();
+        NiceMock<UnitTest::MockPhysXHeightfieldProvider> mockShapeRequests(gameEntity->GetId());
+        SetupMockMethods(mockShapeRequests);
         gameEntity->Activate();
         return gameEntity;
     }
@@ -130,23 +135,7 @@ namespace PhysXEditorTests
     {
         EntityPtr editorEntity = SetupHeightfieldComponent();
         NiceMock<UnitTest::MockPhysXHeightfieldProvider> mockShapeRequests(editorEntity->GetId());
-        ON_CALL(mockShapeRequests, GetHeightfieldTransform).WillByDefault(Return(AZ::Transform::CreateTranslation({ 1, 2, 0 })));
-        ON_CALL(mockShapeRequests, GetHeightfieldGridSpacing).WillByDefault(Return(AZ::Vector2(1, 1)));
-        ON_CALL(mockShapeRequests, GetHeightsAndMaterials).WillByDefault(Return(GetSamples()));
-        ON_CALL(mockShapeRequests, GetHeightfieldGridSize)
-            .WillByDefault(
-                [](int32_t& numColumns, int32_t& numRows)
-                {
-                    numColumns = 3;
-                    numRows = 3;
-                });
-        ON_CALL(mockShapeRequests, GetHeightfieldHeightBounds)
-            .WillByDefault(
-                [](float& x, float& y)
-                {
-                    x = 0.0f;
-                    y = 0.0f;
-                });
+        SetupMockMethods(mockShapeRequests);
         editorEntity->Activate();
 
         EntityPtr gameEntity = TestCreateActiveGameEntityFromEditorEntity(editorEntity.get());
@@ -163,23 +152,7 @@ namespace PhysXEditorTests
     {
         EntityPtr editorEntity = SetupHeightfieldComponent();
         NiceMock<UnitTest::MockPhysXHeightfieldProvider> mockShapeRequests(editorEntity->GetId());
-        ON_CALL(mockShapeRequests, GetHeightfieldTransform).WillByDefault(Return(AZ::Transform::CreateTranslation({ 1, 2, 0 })));
-        ON_CALL(mockShapeRequests, GetHeightfieldGridSpacing).WillByDefault(Return(AZ::Vector2(1, 1)));
-        ON_CALL(mockShapeRequests, GetHeightsAndMaterials).WillByDefault(Return(GetSamples()));
-        ON_CALL(mockShapeRequests, GetHeightfieldGridSize)
-            .WillByDefault(
-                [](int32_t& numColumns, int32_t& numRows)
-                {
-                    numColumns = 3;
-                    numRows = 3;
-                });
-        ON_CALL(mockShapeRequests, GetHeightfieldHeightBounds)
-            .WillByDefault(
-                [](float& x, float& y)
-                {
-                    x = 0.0f;
-                    y = 0.0f;
-                });
+        SetupMockMethods(mockShapeRequests);
         editorEntity->Activate();
 
         EntityPtr gameEntity = TestCreateActiveGameEntityFromEditorEntity(editorEntity.get());
