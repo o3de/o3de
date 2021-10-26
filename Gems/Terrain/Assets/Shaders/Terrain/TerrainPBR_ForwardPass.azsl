@@ -156,7 +156,8 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
 
             blendedColor = lerp(material1Color, material2Color, blend);
             float seamBlend = 0.0;
-            if (any(abs(detailRegionUv) % 1.0 < 1.0 / 1024.0))
+            const float halfLineWidth = 1.0 / 2048.0;
+            if (any(abs(detailRegionUv) % 1.0 < halfLineWidth) || any(abs(detailRegionUv) % 1.0 > 1.0 - halfLineWidth))
             {
                 seamBlend = 1.0;
             }
