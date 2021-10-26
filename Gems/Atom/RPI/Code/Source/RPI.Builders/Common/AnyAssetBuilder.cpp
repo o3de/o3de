@@ -186,6 +186,21 @@ namespace AZ
             auto destClassId = (sourceFileExtension == AnyAssetBuilderDefaultExtension) ? AnyAsset::RTTI_Type() : loadedClassId;
             AssetBuilderSDK::JobProduct jobProduct(destPath, destClassId, 0);
 
+            AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
+            AssetBuilderSDK::ProductPathDependencySet productPathDependencies;
+            bool dependencyResult =
+                AssetBuilderSDK::GatherProductDependencies(*context, outputData, outputTypeId, productDependencies, productPathDependencies);
+            if (dependencyResult)
+            {
+                jobProduct.m_dependencies = AZStd::move(productDependencies);
+                jobProduct.m_dependenciesHandled = true; // We've output the dependencies immediately above so it's OK to tell the AP we've handled dependencies
+            }
+            else
+            {
+                AZ_Error(AnyAssetBuilderName, false, "Dependency gathering for %s failed.", request.m_fullPath.c_str());
+                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                return;
+            }
 
             if (AssetBuilderSDK::OutputObject(outputData, outputTypeId, destPath, destClassId, 0, jobProduct))
             {
