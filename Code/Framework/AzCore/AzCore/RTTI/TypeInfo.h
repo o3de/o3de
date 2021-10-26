@@ -679,10 +679,16 @@ namespace AZ
 #define AZ_TYPE_INFO_INTERNAL_CLASS_VARARGS__NAME(A) AZ::Internal::AggregateTypes< A... >::TypeName(typeName, AZ_ARRAY_SIZE(typeName));
 
 // Once C++17 has been introduced size_t can be replaced with auto for all integer non-type arguments
-#define AZ_TYPE_INFO_INTERNAL_AUTO__TYPE auto
+#define AZ_TYPE_INFO_INTERNAL_AUTO__TYPE AZStd::size_t
 #define AZ_TYPE_INFO_INTERNAL_AUTO__ARG(A) A
 #define AZ_TYPE_INFO_INTERNAL_AUTO__UUID(Tag, A) AZ::Internal::GetTypeId< A , Tag >()
 #define AZ_TYPE_INFO_INTERNAL_AUTO__NAME(A) AZ::Internal::AzTypeInfoSafeCat(typeName, AZ_ARRAY_SIZE(typeName), AZ::Internal::GetTypeName< A >())
+
+// Once C++17 has been introduced size_t can be replaced with auto for all integer non-type arguments
+#define AZ_TYPE_INFO_INTERNAL_AUTO_SIGNED__TYPE AZStd::ptrdiff_t
+#define AZ_TYPE_INFO_INTERNAL_AUTO_SIGNED__ARG(A) A
+#define AZ_TYPE_INFO_INTERNAL_AUTO_SIGNED__UUID(Tag, A) AZ::Internal::GetTypeId< A , Tag >()
+#define AZ_TYPE_INFO_INTERNAL_AUTO_SIGNED__NAME(A) AZ::Internal::AzTypeInfoSafeCat(typeName, AZ_ARRAY_SIZE(typeName), AZ::Internal::GetTypeName< A >())
 
 #define AZ_TYPE_INFO_INTERNAL_EXPAND_I(NAME, TARGET)     NAME##__##TARGET
 #define AZ_TYPE_INFO_INTERNAL_EXPAND(NAME, TARGET)       AZ_TYPE_INFO_INTERNAL_EXPAND_I(NAME, TARGET)
@@ -1067,6 +1073,8 @@ namespace AZ
 #define AZ_TYPE_INFO_CLASS_VARARGS AZ_TYPE_INFO_INTERNAL_CLASS_VARARGS
 // Used to declare that a template argument is a number such as size_t with AZ_TYPE_INFO_TEMPLATE.
 #define AZ_TYPE_INFO_AUTO AZ_TYPE_INFO_INTERNAL_AUTO
+// Used to declare that a template argument is a number such as size_t with AZ_TYPE_INFO_TEMPLATE.
+#define AZ_TYPE_INFO_AUTO_SIGNED AZ_TYPE_INFO_INTERNAL_AUTO_SIGNED
 
 /**
 * The same as AZ_TYPE_INFO_TEMPLATE, but allows the name to explicitly set. This was added for backwards compatibility.

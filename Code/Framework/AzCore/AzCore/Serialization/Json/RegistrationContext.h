@@ -70,31 +70,31 @@ namespace AZ
                 return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
             }
 
-            template<template<AZStd::size_t...> class T>
+            template<template<auto...> class T>
             SerializerBuilder* HandlesType(bool overwriteExisting = false)
             {
                 return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
             }
 
-            template<template<typename, AZStd::size_t> class T>
+            template<template<typename, auto> class T>
             SerializerBuilder* HandlesType(bool overwriteExisting = false)
             {
                 return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
             }
 
-            template<template<typename, typename, AZStd::size_t> class T>
+            template<template<typename, typename, auto> class T>
             SerializerBuilder* HandlesType(bool overwriteExisting = false)
             {
                 return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
             }
 
-            template<template<typename, typename, typename, AZStd::size_t> class T>
+            template<template<typename, typename, typename, auto> class T>
             SerializerBuilder* HandlesType(bool overwriteExisting = false)
             {
                 return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
             }
 
-            template<template<typename, AZStd::size_t, typename> class T>
+            template<template<typename, auto, typename> class T>
             SerializerBuilder* HandlesType(bool overwriteExisting = false)
             {
                 return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);

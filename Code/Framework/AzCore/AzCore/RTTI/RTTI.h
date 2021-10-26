@@ -978,25 +978,25 @@ namespace AZ
         return AzGenericTypeInfo::Uuid<U>();
     }
     
-    template<template<AZStd::size_t...> class U, typename = void>
+    template<template<auto...> class U, typename = void>
     inline const AZ::TypeId& RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
     
-    template<template<typename, AZStd::size_t> class U, typename = void>
+    template<template<typename, auto> class U, typename = void>
     inline const AZ::TypeId& RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
     
-    template<template<typename, typename, AZStd::size_t> class U, typename = void>
+    template<template<typename, typename, auto> class U, typename = void>
     inline const AZ::TypeId& RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
     
-    template<template<typename, typename, typename, AZStd::size_t> class U, typename = void>
+    template<template<typename, typename, typename, auto> class U, typename = void>
     inline const AZ::TypeId& RttiTypeId()
     {
         return AzGenericTypeInfo::Uuid<U>();
