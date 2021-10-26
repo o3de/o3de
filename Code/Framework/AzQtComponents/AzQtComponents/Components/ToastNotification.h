@@ -45,6 +45,8 @@ namespace AzQtComponents
         void ShowToastAtPoint(const QPoint& screenPosition, const QPointF& anchorPoint);
 
         void UpdatePosition(const QPoint& screenPosition, const QPointF& anchorPoint);
+
+        bool IsDuplicate(const ToastConfiguration& toastConfiguration);
         
         // QDialog
         void showEvent(QShowEvent* showEvent) override;
@@ -64,7 +66,7 @@ namespace AzQtComponents
         
     private:
         QPropertyAnimation* m_fadeAnimation;
-
+        ToastConfiguration m_configuration;
         bool   m_closeOnClick;
         QTimer m_lifeSpan;
         uint32_t m_borderRadius = 0;
