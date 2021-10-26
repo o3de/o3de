@@ -27,12 +27,12 @@ class TestCLIToolAzTestRunnerWorks(object):
         else:
             target_lib = "libAzTestRunner.Tests"
 
-        # Launch AzTestRunner
+        # Launch AzTestRunner, load self-tests, print test names
         output = subprocess.run(
-            [file_path, "AzTestRunner.Tests", "AzRunUnitTests", "--gtest_list_tests"], capture_output=True, timeout=10
+            [file_path, target_lib, "AzRunUnitTests", "--gtest_list_tests"], capture_output=True, timeout=10
         )
         assert (
             len(output.stderr) == 0 and output.returncode == 0
         ), f"Error occurred while launching {file_path}: {output.stderr}"
         # Verify help message
-        assert help_message in str(output.stdout), f"Help Message: {help_message} is not present"
+        assert help_message in str(output.stdout), f"Help Message: '{help_message}' unexpectedly not present"
