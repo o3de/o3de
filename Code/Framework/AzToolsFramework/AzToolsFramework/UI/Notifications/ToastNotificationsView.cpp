@@ -63,6 +63,12 @@ namespace AzToolsFramework
 
     ToastId ToastNotificationsView::ShowToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration)
     {
+        // reject duplicate messages
+        if (m_rejectDuplicates && DuplicateNotificationInQueue(toastConfiguration))
+        {
+            return ToastId();
+        }
+
         ToastId toastId = CreateToastNotification(toastConfiguration); 
         m_queuedNotifications.emplace_back(toastId);
 
@@ -70,8 +76,26 @@ namespace AzToolsFramework
         {
             DisplayQueuedNotification();
         }
+        else if (m_queuedNotifications.size() >= m_maxQueuedNotifications)
+        {
+            // hiding the active toast will cause the next toast to be displayed
+            HideToastNotification(m_activeNotification);
+        }
 
         return toastId;
+    }
+
+    bool ToastNotificationsView::DuplicateNotificationInQueue(const AzQtComponents::ToastConfiguration& toastConfiguration)
+    {
+        for (auto iter : m_notifications)
+        {
+            if (iter.second && iter.second->IsDuplicate(toastConfiguration))
+            {
+                return true; 
+            }
+        }
+
+        return false;
     }
 
     ToastId ToastNotificationsView::ShowToastAtCursor(const AzQtComponents::ToastConfiguration& toastConfiguration)
@@ -186,5 +210,15 @@ namespace AzToolsFramework
     void ToastNotificationsView::SetAnchorPoint(const QPointF& anchorPoint)
     {
         m_anchorPoint = anchorPoint;
+    }
+
+    void ToastNotificationsView::SetMaxQueuedNotifications(AZ::u32 maxQueuedNotifications)
+    {
+        m_maxQueuedNotifications = maxQueuedNotifications;
+    }
+
+    void ToastNotificationsView::SetRejectDuplicates(bool rejectDuplicates)
+    {
+        m_rejectDuplicates = rejectDuplicates;
     }
 }

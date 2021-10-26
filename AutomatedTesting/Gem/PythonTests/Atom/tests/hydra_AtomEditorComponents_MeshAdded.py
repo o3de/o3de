@@ -81,7 +81,7 @@ def AtomEditorComponents_Mesh_AddedToEntity():
     from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
-    from Atom.atom_utils.atom_constants import AtomComponentProperties as Atom
+    from Atom.atom_utils.atom_constants import AtomComponentProperties
 
     with Tracer() as error_tracer:
         # Test setup begins.
@@ -91,14 +91,14 @@ def AtomEditorComponents_Mesh_AddedToEntity():
 
         # Test steps begin.
         # 1. Create a Mesh entity with no components.
-        mesh_entity = EditorEntity.create_editor_entity(Atom.mesh())
+        mesh_entity = EditorEntity.create_editor_entity(AtomComponentProperties.mesh())
         Report.critical_result(Tests.mesh_entity_creation, mesh_entity.exists())
 
         # 2. Add a Mesh component to Mesh entity.
-        mesh_component = mesh_entity.add_component(Atom.mesh())
+        mesh_component = mesh_entity.add_component(AtomComponentProperties.mesh())
         Report.critical_result(
             Tests.mesh_component_added,
-            mesh_entity.has_component(Atom.mesh()))
+            mesh_entity.has_component(AtomComponentProperties.mesh()))
 
         # 3. UNDO the entity creation and component addition.
         # -> UNDO component addition.
@@ -127,9 +127,9 @@ def AtomEditorComponents_Mesh_AddedToEntity():
         # 5. Set Mesh component asset property
         model_path = os.path.join('Objects', 'shaderball', 'shaderball_default_1m.azmodel')
         model = Asset.find_asset_by_path(model_path)
-        mesh_component.set_component_property_value(Atom.mesh('Mesh Asset'), model.id)
+        mesh_component.set_component_property_value(AtomComponentProperties.mesh('Mesh Asset'), model.id)
         Report.result(Tests.mesh_asset_specified,
-                      mesh_component.get_component_property_value(Atom.mesh('Mesh Asset')) == model.id)
+                      mesh_component.get_component_property_value(AtomComponentProperties.mesh('Mesh Asset')) == model.id)
 
         # 6. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
