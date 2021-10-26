@@ -217,7 +217,7 @@ namespace Profiler
         AZStd::vector<CpuTimingEntry> m_cpuTimingStatisticsWhenPause;
         AZStd::sys_time_t m_frameToFrameTime{};
 
-        AZStd::string m_lastCapturedFilePath;
+        AZ::IO::FixedMaxPath m_lastCapturedFilePath;
 
         bool m_showFilePicker = false;
 

@@ -418,13 +418,12 @@ namespace Profiler
 
         AZ::CVarFixedString captureOutput = static_cast<AZ::CVarFixedString>(AZ::Debug::bg_profilerCaptureLocation);
 
-        const AZStd::string frameDataFilePath = AZStd::string::format("%s/cpu_%s_%s.json", captureOutput.c_str(), nameHint, timeString.c_str());
+        const AZ::IO::FixedMaxPathString frameDataFilePath =
+            AZ::IO::FixedMaxPathString::format("%s/cpu_%s_%s.json", captureOutput.c_str(), nameHint, timeString.c_str());
 
-        char resolvedPath[AZ::IO::MaxPathLength];
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
-        m_lastCapturedFilePath = resolvedPath;
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(m_lastCapturedFilePath, frameDataFilePath.c_str());
 
-        return frameDataFilePath;
+        return m_lastCapturedFilePath.String();
     }
 
     void ImGuiCpuProfiler::LoadFile()
