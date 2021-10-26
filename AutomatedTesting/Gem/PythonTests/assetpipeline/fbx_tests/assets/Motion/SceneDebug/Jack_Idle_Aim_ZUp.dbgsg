@@ -242,7 +242,7 @@ Node Type: BoneData
 		BasisX: < 1.000000, -0.000000,  0.000000>
 		BasisY: < 0.000000,  1.000000,  0.000000>
 		BasisZ: <-0.000000, -0.000000,  1.000000>
-		Transl: < 0.152547,  0.043345,  0.090955>
+		Transl: < 0.152547,  0.043345,  0.090954>
 
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.animation
@@ -544,7 +544,7 @@ Node Type: BoneData
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_upArmRoll.animation
 Node Type: AnimationData
-	KeyFrames: Count 195. Hash: 15529789169672670472
+	KeyFrames: Count 195. Hash: 8781707605519483934
 	TimeStepBetweenFrames: 0.033333
 
 Node Name: transform
@@ -710,7 +710,7 @@ Node Type: BoneData
 		BasisX: < 0.514369,  0.855813,  0.054857>
 		BasisY: < 0.088153,  0.010863, -0.996047>
 		BasisZ: <-0.853026,  0.517172, -0.069855>
-		Transl: <-0.247306, -0.062325,  0.878373>
+		Transl: <-0.247306, -0.062325,  0.878372>
 
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_loArmRoll.animation
@@ -857,7 +857,7 @@ Node Type: BoneData
 		BasisX: < 0.329257,  0.944038, -0.019538>
 		BasisY: < 0.465563, -0.180309, -0.866452>
 		BasisZ: <-0.821487,  0.276189, -0.498877>
-		Transl: <-0.255124, -0.049696,  0.794467>
+		Transl: <-0.255124, -0.049696,  0.794466>
 
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.l_shldr.l_upArm.l_loArm.l_hand.l_metacarpal.animation
@@ -939,7 +939,6 @@ Node Type: AnimationData
 
 Node Name: transform
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_index1.transform
-
 Node Type: TransformData
 	Matrix:
 		BasisX: < 0.939162,  0.133704, -0.316383>
@@ -954,7 +953,7 @@ Node Type: BoneData
 		BasisX: <-0.102387, -0.418082, -0.902621>
 		BasisY: < 0.928150,  0.286271, -0.237880>
 		BasisZ: < 0.357847, -0.862123,  0.358732>
-		Transl: < 0.187367,  0.698324,  1.467209>
+		Transl: < 0.187367,  0.698323,  1.467209>
 
 Node Name: animation
 Node Path: RootNode.jack_root.Bip01__pelvis.spine1.spine2.spine3.r_shldr.r_upArm.r_loArm.r_hand.r_mid1.animation
@@ -1513,3 +1512,4 @@ Node Type: TransformData
 		BasisY: < 0.000000,  0.229519, -0.973304>
 		BasisZ: < 0.000000,  0.973304,  0.229519>
 		Transl: < 0.000000, -0.023770,  0.000000>
+

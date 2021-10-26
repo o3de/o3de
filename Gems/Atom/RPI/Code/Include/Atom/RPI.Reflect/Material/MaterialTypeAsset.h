@@ -129,6 +129,10 @@ namespace AZ
  
             const AZStd::vector<MaterialVersionUpdate>& GetMaterialVersionUpdateList() const { return m_materialVersionUpdates; }
 
+            //! Possibly renames @propertyId based on the material version update steps.
+            //! @return true if the property was renamed
+            bool ApplyPropertyRenames(AZ::Name& propertyId) const;
+
         private:
             bool PostLoadInit() override;
 

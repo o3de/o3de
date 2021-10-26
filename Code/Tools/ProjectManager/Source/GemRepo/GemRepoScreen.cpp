@@ -126,6 +126,36 @@ namespace O3DE::ProjectManager
         }
     }
 
+    void GemRepoScreen::HandleRefreshAllButton()
+    {
+        bool refreshResult = PythonBindingsInterface::Get()->RefreshAllGemRepos();
+        Reinit();
+
+        if (!refreshResult)
+        {
+            QMessageBox::critical(
+                this, tr("Operation failed"), QString("Some repos failed to refresh."));
+        }
+    }
+
+    void GemRepoScreen::HandleRefreshRepoButton(const QModelIndex& modelIndex)
+    {
+        const QString repoUri = m_gemRepoModel->GetRepoUri(modelIndex);
+
+        AZ::Outcome<void, AZStd::string> refreshResult = PythonBindingsInterface::Get()->RefreshGemRepo(repoUri);
+        if (refreshResult.IsSuccess())
+        {
+            Reinit();
+        }
+        else
+        {
+            QMessageBox::critical(
+                this, tr("Operation failed"),
+                QString("Failed to refresh gem repo %1<br>Error:<br>%2")
+                    .arg(m_gemRepoModel->GetName(modelIndex), refreshResult.GetError().c_str()));
+        }
+    }
+
     void GemRepoScreen::FillModel()
     {
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> allGemRepoInfosResult = PythonBindingsInterface::Get()->GetAllGemRepoInfos();
@@ -237,6 +267,8 @@ namespace O3DE::ProjectManager
         m_AllUpdateButton->setObjectName("gemRepoHeaderRefreshButton");
         topMiddleHLayout->addWidget(m_AllUpdateButton);
 
+        connect(m_AllUpdateButton, &QPushButton::clicked, this, &GemRepoScreen::HandleRefreshAllButton);
+
         topMiddleHLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
         QPushButton* addRepoButton = new QPushButton(tr("Add Repository"), this);
@@ -280,6 +312,7 @@ namespace O3DE::ProjectManager
         middleVLayout->addWidget(m_gemRepoListView);
 
         connect(m_gemRepoListView, &GemRepoListView::RemoveRepo, this, &GemRepoScreen::HandleRemoveRepoButton);
+        connect(m_gemRepoListView, &GemRepoListView::RefreshRepo, this, &GemRepoScreen::HandleRefreshRepoButton);
 
         hLayout->addLayout(middleVLayout);
 

@@ -11,10 +11,9 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Aabb.h>
-#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <TerrainRenderer/TerrainMacroMaterialBus.h>
-
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 
 namespace LmbrCentral
 {
@@ -32,23 +31,20 @@ namespace Terrain
         AZ_RTTI(TerrainMacroMaterialConfig, "{9DBAFFF0-FD20-4594-8884-E3266D8CCAC8}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
+        bool NormalMapAttributesAreReadOnly() const;
 
-        static AZ::Data::AssetId GetTerrainMacroMaterialTypeAssetId();
-        static bool IsMaterialTypeCorrect(const AZ::Data::AssetId&);
-        AZ::Outcome<void, AZStd::string> ValidateMaterialAsset(void* newValue, const AZ::Uuid& valueType);
-
-    private:
-        static inline constexpr const char* TerrainMacroMaterialTypeAsset = "materials/terrain/terrainmacromaterial.azmaterialtype";
-        static AZ::Data::AssetId s_macroMaterialTypeAssetId;
-
+        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_macroColorAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
+        AZ::Data::Asset<AZ::RPI::StreamingImageAsset> m_macroNormalAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
+        bool m_normalFlipX = false;
+        bool m_normalFlipY = false;
+        float m_normalFactor = 1.0f;
     };
 
     class TerrainMacroMaterialComponent
         : public AZ::Component
         , public TerrainMacroMaterialRequestBus::Handler
         , private LmbrCentral::ShapeComponentNotificationsBus::Handler
-        , private AZ::Data::AssetBus::Handler
+        , private AZ::Data::AssetBus::MultiHandler
     {
     public:
         template<typename, typename>
@@ -70,7 +66,7 @@ namespace Terrain
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-        void GetTerrainMacroMaterialData(AZ::Data::Instance<AZ::RPI::Material>& macroMaterial, AZ::Aabb& macroMaterialRegion) override;
+        MacroMaterialData GetTerrainMacroMaterialData() override;
 
     private:
         ////////////////////////////////////////////////////////////////////////
@@ -86,7 +82,8 @@ namespace Terrain
 
         TerrainMacroMaterialConfig m_configuration;
         AZ::Aabb m_cachedShapeBounds;
-        AZ::Data::Instance<AZ::RPI::Material> m_macroMaterialInstance;
         bool m_macroMaterialActive{ false };
+        AZ::Data::Instance<AZ::RPI::Image> m_colorImage;
+        AZ::Data::Instance<AZ::RPI::Image> m_normalImage;
     };
 }

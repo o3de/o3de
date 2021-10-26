@@ -90,12 +90,14 @@ namespace EMStudio
         verticalLayout->setSpacing(1);
         verticalLayout->setMargin(0);
 
-        // Add the tool bar
-        AnimViewportToolBar* toolBar = new AnimViewportToolBar(m_innerWidget);
-        verticalLayout->addWidget(toolBar);
-
         // Add the viewport widget
         m_animViewportWidget = new AnimViewportWidget(m_innerWidget);
+
+        // Add the tool bar
+        AnimViewportToolBar* toolBar = new AnimViewportToolBar(m_innerWidget);
+        toolBar->SetRenderFlags(m_animViewportWidget->GetRenderFlags());
+
+        verticalLayout->addWidget(toolBar);
         verticalLayout->addWidget(m_animViewportWidget);
 
         // Register command callbacks.

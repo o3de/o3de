@@ -943,13 +943,15 @@ namespace AzToolsFramework
         {
             return false;
         }
-
+        
+        const int count = rowCount(parent);
         AZ::EntityId newParentId = GetEntityFromIndex(parent);
-        AZ::EntityId beforeEntityId = GetEntityFromIndex(index(row, 0, parent));
+        AZ::EntityId beforeEntityId = (row >= 0 && row < count) ? GetEntityFromIndex(index(row, 0, parent)) : AZ::EntityId();
         EntityIdList topLevelEntityIds;
         topLevelEntityIds.reserve(entityIdListContainer.m_entityIds.size());
         ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::FindTopLevelEntityIdsInactive, entityIdListContainer.m_entityIds, topLevelEntityIds);
-        if (!ReparentEntities(newParentId, topLevelEntityIds, beforeEntityId))
+        const auto appendActionForInvalid = newParentId.IsValid() && (row >= count) ? AppendEnd : AppendBeginning;
+        if (!ReparentEntities(newParentId, topLevelEntityIds, beforeEntityId, appendActionForInvalid))
         {
             return false;
         }
@@ -1046,7 +1048,7 @@ namespace AzToolsFramework
         return true;
     }
 
-    bool EntityOutlinerListModel::ReparentEntities(const AZ::EntityId& newParentId, const EntityIdList &selectedEntityIds, const AZ::EntityId& beforeEntityId)
+    bool EntityOutlinerListModel::ReparentEntities(const AZ::EntityId& newParentId, const EntityIdList &selectedEntityIds, const AZ::EntityId& beforeEntityId, ReparentForInvalid forInvalid)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (!CanReparentEntities(newParentId, selectedEntityIds))
@@ -1056,10 +1058,18 @@ namespace AzToolsFramework
 
         m_isFilterDirty = true;
 
-        ScopedUndoBatch undo("Reparent Entities");
         //capture child entity order before re-parent operation, which will automatically add order info if not present
         EntityOrderArray entityOrderArray = GetEntityChildOrder(newParentId);
 
+        //search for the insertion entity in the order array
+        const auto beforeEntityItr = AZStd::find(entityOrderArray.begin(), entityOrderArray.end(), beforeEntityId);
+        const bool hasInvalidIndex = beforeEntityItr == entityOrderArray.end();
+        if (hasInvalidIndex && forInvalid == None) 
+        {
+            return false;
+        }
+
+        ScopedUndoBatch undo("Reparent Entities");
         // The new parent is dirty due to sort change(s)
         undo.MarkEntityDirty(GetEntityIdForSortInfo(newParentId));
 
@@ -1088,9 +1098,7 @@ namespace AzToolsFramework
             }
         }
 
-        //search for the insertion entity in the order array
-        auto beforeEntityItr = AZStd::find(entityOrderArray.begin(), entityOrderArray.end(), beforeEntityId);
-
+    
         //replace order info matching selection with bad values rather than remove to preserve layout
         for (auto& id : entityOrderArray)
         {
@@ -1100,17 +1108,25 @@ namespace AzToolsFramework
             }
         }
 
-        if (newParentId.IsValid())
+        //if adding to a valid parent entity, insert at the found entity location or at the head/tail depending on placeAtTail flag
+        if (hasInvalidIndex) 
         {
-            //if adding to a valid parent entity, insert at the found entity location or at the head of the container
-            auto insertItr = beforeEntityItr != entityOrderArray.end() ? beforeEntityItr : entityOrderArray.begin();
-            entityOrderArray.insert(insertItr, processedEntityIds.begin(), processedEntityIds.end());
-        }
-        else
+            switch(forInvalid)
+            {
+                case AppendEnd:
+                    entityOrderArray.insert(entityOrderArray.end(), processedEntityIds.begin(), processedEntityIds.end());
+                    break;
+                case AppendBeginning:
+                    entityOrderArray.insert(entityOrderArray.begin(), processedEntityIds.begin(), processedEntityIds.end());
+                    break;
+                default:
+                    AZ_Assert(false, "Unexpected type for ReparentForInvalid");
+                    break;
+            }
+        } 
+        else 
         {
-            //if adding to an invalid parent entity (the root), insert at the found entity location or at the tail of the container
-            auto insertItr = beforeEntityItr != entityOrderArray.end() ? beforeEntityItr : entityOrderArray.end();
-            entityOrderArray.insert(insertItr, processedEntityIds.begin(), processedEntityIds.end());
+            entityOrderArray.insert(beforeEntityItr, processedEntityIds.begin(), processedEntityIds.end());
         }
 
         //remove placeholder entity ids
