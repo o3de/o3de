@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Component/TickBus.h>
 
@@ -44,7 +45,6 @@ namespace AZ
                 , public AzFramework::WindowSystemRequestBus::Handler
                 , public Render::Bootstrap::DefaultWindowBus::Handler
                 , public Render::Bootstrap::RequestBus::Handler
-                , public CryHooksModule
             {
             public:
                 AZ_COMPONENT(BootstrapSystemComponent, "{1EAFD87D-A64A-4612-93D8-B3AFFA70F09B}");
@@ -69,8 +69,6 @@ namespace AZ
                 // Render::Bootstrap::RequestBus::Handler overrides ...
                 AZ::RPI::ScenePtr GetOrCreateAtomSceneFromAzScene(AzFramework::Scene* scene) override;
                 bool EnsureDefaultRenderPipelineInstalledForScene(AZ::RPI::ScenePtr scene, AZ::RPI::ViewportContextPtr viewportContext) override;
-
-                void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
 
             protected:
                 // Component overrides ...
@@ -120,6 +118,8 @@ namespace AZ
 
                 // Maps AZ scenes to RPI scene weak pointers to allow looking up a ScenePtr instead of a raw Scene*
                 AZStd::unordered_map<AzFramework::Scene*, AZStd::weak_ptr<AZ::RPI::Scene>> m_azSceneToAtomSceneMap;
+
+                AZ::SettingsRegistryInterface::NotifyEventHandler m_componentApplicationLifecycleHandler;
             };
         } // namespace Bootstrap
     } // namespace Render

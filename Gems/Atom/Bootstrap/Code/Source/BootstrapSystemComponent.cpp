@@ -10,6 +10,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -139,6 +140,20 @@ namespace AZ
 
                 Render::Bootstrap::DefaultWindowBus::Handler::BusConnect();
                 Render::Bootstrap::RequestBus::Handler::BusConnect();
+
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    // Automatically register the event if it's not registered, because
+                    // this system is initialized before the settings registry has loaded the event list.
+                    AZ::ComponentApplicationLifecycle::RegisterHandler(
+                        *settingsRegistry, m_componentApplicationLifecycleHandler,
+                        [this](AZStd::string_view /*path*/, AZ::SettingsRegistryInterface::Type /*type*/)
+                        {
+                            Initialize();
+                        },
+                        "SystemInterfaceCreated",
+                        /*autoRegisterEvent*/ true);
+                }
             }
 
             void BootstrapSystemComponent::Deactivate()
@@ -157,18 +172,6 @@ namespace AZ
                 m_viewportContext.reset();
                 m_nativeWindow = nullptr;
                 m_windowHandle = nullptr;
-            }
-
-            void BootstrapSystemComponent::OnSystemEvent(ESystemEvent event, UINT_PTR /*wparam*/, UINT_PTR /*lparam*/)
-            {
-                switch (event)
-                {
-                case ESYSTEM_EVENT_GAME_POST_INIT:
-                    {
-                        Initialize();
-                        break;
-                    }
-                }
             }
 
             void BootstrapSystemComponent::Initialize()
