@@ -43,16 +43,9 @@ namespace AZ
         * ProfilerRequests provides an interface for making profiling system requests
         */
         class ProfilerRequests
-            : public AZ::EBusTraits
         {
         public:
-            // EBusTraits overrides
-            static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-            static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-
-            // Allow multiple threads to concurrently make requests
-            using MutexType = AZStd::mutex;
-
+            AZ_RTTI(ProfilerRequests, "{90AEC117-14C1-4BAE-9704-F916E49EF13F}");
             virtual ~ProfilerRequests() = default;
 
             //! Getter/setter for the profiler active state
@@ -66,7 +59,21 @@ namespace AZ
             virtual bool StartCapture(AZStd::string outputFilePath) = 0;
             virtual bool EndCapture() = 0;
         };
-        using ProfilerRequestBus = AZ::EBus<ProfilerRequests>;
+
+        class ProfilerRequestsTraits
+            : public AZ::EBusTraits
+        {
+        public:
+            // EBusTraits overrides
+            static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+            static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+
+            // Allow multiple threads to concurrently make requests
+            using MutexType = AZStd::mutex;
+        };
+
+        using ProfilerSystemInterface = AZ::Interface<ProfilerRequests>;
+        using ProfilerRequestBus = AZ::EBus<ProfilerRequests, ProfilerRequestsTraits>;
 
         //! helper function for getting the profiler capture location from the settings registry that
         //! includes fallback handing in the event the registry value can't be determined

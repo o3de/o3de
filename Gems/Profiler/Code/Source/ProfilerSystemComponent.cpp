@@ -128,10 +128,18 @@ namespace Profiler
 
     ProfilerSystemComponent::ProfilerSystemComponent()
     {
+        if (AZ::Debug::ProfilerSystemInterface::Get() == nullptr)
+        {
+            AZ::Debug::ProfilerSystemInterface::Register(this);
+        }
     }
 
     ProfilerSystemComponent::~ProfilerSystemComponent()
     {
+        if (AZ::Debug::ProfilerSystemInterface::Get() == this)
+        {
+            AZ::Debug::ProfilerSystemInterface::Unregister(this);
+        }
     }
 
     void ProfilerSystemComponent::Activate()

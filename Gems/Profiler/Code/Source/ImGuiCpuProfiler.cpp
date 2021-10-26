@@ -154,10 +154,7 @@ namespace Profiler
 
         if (m_captureToFile)
         {
-            AZ::Debug::ProfilerRequestBus::Broadcast(
-                &AZ::Debug::ProfilerRequestBus::Events::CaptureFrame,
-                GenerateOutputFile("single")
-            );
+            AZ::Debug::ProfilerSystemInterface::Get()->CaptureFrame(GenerateOutputFile("single"));
         }
         m_captureToFile = false;
 
@@ -198,17 +195,15 @@ namespace Profiler
         bool isInProgress = CpuProfiler::Get()->IsContinuousCaptureInProgress();
         if (ImGui::Button(isInProgress ? "End" : "Begin"))
         {
+            auto profilerSystem = AZ::Debug::ProfilerSystemInterface::Get();
             if (isInProgress)
             {
-                AZ::Debug::ProfilerRequestBus::Broadcast(&AZ::Debug::ProfilerRequestBus::Events::EndCapture);
+                profilerSystem->EndCapture();
                 m_paused = true;
             }
             else
             {
-                AZ::Debug::ProfilerRequestBus::Broadcast(
-                    &AZ::Debug::ProfilerRequestBus::Events::StartCapture,
-                    GenerateOutputFile("multi")
-                );
+                profilerSystem->StartCapture(GenerateOutputFile("multi"));
             }
         }
 

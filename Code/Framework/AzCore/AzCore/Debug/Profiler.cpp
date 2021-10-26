@@ -26,23 +26,32 @@ namespace AZ::Debug
 
     void ProfilerCaptureFrame([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        AZStd::string captureFile = GenerateOutputFile("single");
-        AZLOG_INFO("Setting capture file to %s", captureFile.c_str());
-        AZ::Debug::ProfilerRequestBus::Broadcast(&AZ::Debug::ProfilerRequestBus::Events::CaptureFrame, captureFile);
+        if (auto profilerSystem = ProfilerSystemInterface::Get(); profilerSystem)
+        {
+            AZStd::string captureFile = GenerateOutputFile("single");
+            AZLOG_INFO("Setting capture file to %s", captureFile.c_str());
+            profilerSystem->CaptureFrame(captureFile);
+        }
     }
     AZ_CONSOLEFREEFUNC(ProfilerCaptureFrame, AZ::ConsoleFunctorFlags::DontReplicate, "Capture a single frame of profiling data");
 
     void ProfilerStartCapture([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        AZStd::string captureFile = GenerateOutputFile("multi");
-        AZLOG_INFO("Setting capture file to %s", captureFile.c_str());
-        ProfilerRequestBus::Broadcast(&ProfilerRequestBus::Events::StartCapture, captureFile);
+        if (auto profilerSystem = ProfilerSystemInterface::Get(); profilerSystem)
+        {
+            AZStd::string captureFile = GenerateOutputFile("multi");
+            AZLOG_INFO("Setting capture file to %s", captureFile.c_str());
+            profilerSystem->StartCapture(captureFile);
+        }
     }
     AZ_CONSOLEFREEFUNC(ProfilerStartCapture, AZ::ConsoleFunctorFlags::DontReplicate, "Start a multi-frame capture of profiling data");
 
     void ProfilerEndCapture([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        AZ::Debug::ProfilerRequestBus::Broadcast(&AZ::Debug::ProfilerRequestBus::Events::EndCapture);
+        if (auto profilerSystem = ProfilerSystemInterface::Get(); profilerSystem)
+        {
+            profilerSystem->EndCapture();
+        }
     }
     AZ_CONSOLEFREEFUNC(ProfilerEndCapture, AZ::ConsoleFunctorFlags::DontReplicate, "End and dump an in-progress continuous capture");
 
