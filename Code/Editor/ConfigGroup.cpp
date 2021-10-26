@@ -32,7 +32,7 @@ namespace Config
 
     AZ::u32 CConfigGroup::GetVarCount()
     {
-        return static_cast<uint32>(m_vars.size());
+        return aznumeric_cast<AZ::u32>(m_vars.size());
     }
 
     IConfigVar* CConfigGroup::GetVar(const char* szName)
