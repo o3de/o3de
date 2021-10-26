@@ -551,6 +551,7 @@ void TerrainSystem::RegisterArea(AZ::EntityId areaId)
     m_registeredAreas[areaId] = aabb;
     m_dirtyRegion.AddAabb(aabb);
     m_terrainHeightDirty = true;
+    m_terrainSurfacesDirty = true;
 }
 
 void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
@@ -569,13 +570,14 @@ void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
             {
                 m_dirtyRegion.AddAabb(aabb);
                 m_terrainHeightDirty = true;
+                m_terrainSurfacesDirty = true;
                 return true;
             }
             return false;
         });
 }
 
-void TerrainSystem::RefreshArea(AZ::EntityId areaId)
+void TerrainSystem::RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask)
 {
     AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
@@ -590,18 +592,16 @@ void TerrainSystem::RefreshArea(AZ::EntityId areaId)
     expandedAabb.AddAabb(newAabb);
 
     m_dirtyRegion.AddAabb(expandedAabb);
-}
 
-void TerrainSystem::RefreshAreaHeights(AZ::EntityId areaId)
-{
-    RefreshArea(areaId);
-    m_terrainHeightDirty = true;
-}
+    // Keep track of which types of data have changed so that we can send out the appropriate notifications later.
 
-void TerrainSystem::RefreshAreaSurfaces(AZ::EntityId areaId)
-{
-    RefreshArea(areaId);
-    m_terrainSurfacesDirty = true;
+    m_terrainHeightDirty = m_terrainHeightDirty ||
+        ((changeMask & AzFramework::Terrain::TerrainDataNotifications::HeightData) ==
+         AzFramework::Terrain::TerrainDataNotifications::HeightData);
+
+    m_terrainSurfacesDirty = m_terrainSurfacesDirty ||
+        ((changeMask & AzFramework::Terrain::TerrainDataNotifications::SurfaceData) ==
+         AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
 }
 
 void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)

@@ -47,8 +47,8 @@ namespace Terrain
 
         void RegisterArea(AZ::EntityId areaId) override;
         void UnregisterArea(AZ::EntityId areaId) override;
-        void RefreshAreaHeights(AZ::EntityId areaId) override;
-        void RefreshAreaSurfaces(AZ::EntityId areaId) override;
+        void RefreshArea(
+            AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask) override;
 
         ///////////////////////////////////////////
         // TerrainDataRequestBus::Handler Impl
@@ -137,7 +137,6 @@ namespace Terrain
 
 
     private:
-        void RefreshArea(AZ::EntityId entityId);
         void ClampPosition(float x, float y, AZ::Vector2& outPosition, AZ::Vector2& normalizedDelta) const;
 
         AZ::EntityId FindBestAreaEntityAtPosition(float x, float y, AZ::Aabb& bounds) const;
