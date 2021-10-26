@@ -228,7 +228,7 @@ namespace Multiplayer
                 {
                     AZ_Warning(
                         "MultiplayerEditor", false,
-                        "Editor multiplayer game-mode failed! Could not connect to an editor-server. editorsv_launch is false so we're assuming you're running your own editor-server at editorsv_serveraddr(%s) on editorsv_port(%i)."
+                        "Editor multiplayer game-mode failed! Could not connect to an editor-server. editorsv_launch is false so we're assuming you're running your own editor-server at editorsv_serveraddr(%s) on editorsv_port(%i). "
                         "Either set editorsv_launch=true so the editor launches an editor-server for you, or launch your own editor-server by hand before entering game-mode. Remember editor-servers must use editorsv_isDedicated=true.",
                         remoteAddress.c_str(),
                         static_cast < uint16_t>(editorsv_port))
