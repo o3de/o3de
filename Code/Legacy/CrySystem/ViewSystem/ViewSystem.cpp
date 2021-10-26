@@ -168,10 +168,17 @@ CViewSystem::~CViewSystem()
         m_pSystem->GetILevelSystem()->RemoveListener(this);
     }
 
+#if !defined(_RELEASE) && !defined(DEDICATED_SERVER)
+    UNREGISTER_COMMAND("debugCameraToggle");
+    UNREGISTER_COMMAND("debugCameraInvertY");
+    UNREGISTER_COMMAND("debugCameraMove");
+
     if (s_debugCamera)
     {
         delete s_debugCamera;
+        s_debugCamera = nullptr;
     }
+#endif
 }
 
 //------------------------------------------------------------------------
