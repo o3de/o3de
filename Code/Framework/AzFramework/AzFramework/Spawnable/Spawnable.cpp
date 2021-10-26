@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/sort.h>
@@ -138,9 +139,9 @@ namespace AzFramework
             Optimize();
 
             AZ_Assert(
-                m_owner.m_lockState == LockState::Locked, "Attempting to unlock a spawnable that's not in the locked state (%i).",
-                m_owner.m_lockState.load());
-            m_owner.m_lockState = LockState::Unlocked;
+                m_owner.m_shareState == ShareState::ReadWrite, "Attempting to unlock a spawnable that's not in the locked state (%i).",
+                m_owner.m_shareState.load());
+            m_owner.m_shareState = ShareState::NotShared;
         }
     }
 
@@ -397,9 +398,9 @@ namespace AzFramework
         if (HasLock())
         {
             AZ_Assert(
-                m_owner.m_lockState < 0, "Attempting to unlock a read shared spawnable that was not in a read shared mode (%i).",
-                m_owner.m_lockState.load());
-            m_owner.m_lockState++;
+                m_owner.m_shareState <= ShareState::Read, "Attempting to unlock a read shared spawnable that was not in a read shared mode (%i).",
+                m_owner.m_shareState.load());
+            m_owner.m_shareState++;
         }
     }
 
@@ -471,15 +472,15 @@ namespace AzFramework
 
     auto Spawnable::TryGetAliasesConst() const -> EntityAliasConstVisitor
     {
-        int32_t expected = LockState::Unlocked;
+        int32_t expected = ShareState::NotShared;
         do
         {
             // Try to set the lock to a negative number to indicate a shared read.
-            if (m_lockState.compare_exchange_strong(expected, expected - 1))
+            if (m_shareState.compare_exchange_strong(expected, expected - 1))
             {
                 return EntityAliasConstVisitor(*this, &m_entityAliases);
             }
-        // as long as the value is negative keep trying to get a shared read lock.
+        // as long as the value is negative or not shared then keep trying to get a shared read lock.
         } while (expected <= 0);
         return EntityAliasConstVisitor(*this, nullptr);
     }
@@ -491,32 +492,14 @@ namespace AzFramework
 
     auto Spawnable::TryGetAliases() -> EntityAliasVisitor
     {
-        int32_t expected = LockState::Unlocked;
-        return m_lockState.compare_exchange_strong(expected, LockState::Locked) ? EntityAliasVisitor(*this, &m_entityAliases)
-                                                                                : EntityAliasVisitor(*this, nullptr);
+        int32_t expected = ShareState::NotShared;
+        return m_shareState.compare_exchange_strong(expected, ShareState::ReadWrite) ? EntityAliasVisitor(*this, &m_entityAliases)
+                                                                                     : EntityAliasVisitor(*this, nullptr);
     }
 
     bool Spawnable::IsEmpty() const
     {
         return m_entities.empty();
-    }
-
-    bool Spawnable::IsPermanentlyLocked() const
-    {
-        return m_lockState == LockState::PermanentLock;
-    }
-
-    bool Spawnable::LockPermanently()
-    {
-        if (!IsPermanentlyLocked())
-        {
-            int32_t expected = LockState::Unlocked;
-            return m_lockState.compare_exchange_strong(expected, LockState::PermanentLock);
-        }
-        else
-        {
-            return true;
-        }
     }
 
     SpawnableMetaData& Spawnable::GetMetaData()

@@ -41,11 +41,11 @@ namespace AzFramework
                         //!< maintaining a valid component list.
         };
 
-        enum LockState : int32_t
+        enum ShareState : int32_t
         {
-            Unlocked,
-            Locked,
-            PermanentLock
+            Read = -1,
+            NotShared = 0,
+            ReadWrite = 1
         };
 
         //! An entity alias redirects the spawning of an entity to another entity, possibly in another spawnable.
@@ -183,13 +183,6 @@ namespace AzFramework
         EntityAliasVisitor TryGetAliases();
         bool IsEmpty() const;
 
-        //! Whether or not the spawnable is permanently locked. If so then parts of the spawnable can no longer be modified.
-        bool IsPermanentlyLocked() const;
-        //! Permanently locks access to parts of the spawnable from being modified.
-        //! @return True if the spawnable could be locked. If false is returned another operation is still making modifications. In this case
-        //!     call this again at a later point in time.
-        bool LockPermanently();
-
         SpawnableMetaData& GetMetaData();
         const SpawnableMetaData& GetMetaData() const;
 
@@ -204,6 +197,6 @@ namespace AzFramework
         // Includes both direct and nested entities of the prefab.
         EntityList m_entities;
 
-        mutable AZStd::atomic<int32_t> m_lockState{ LockState::Unlocked };
+        mutable AZStd::atomic<int32_t> m_shareState{ ShareState::NotShared };
     };
 } // namespace AzFramework

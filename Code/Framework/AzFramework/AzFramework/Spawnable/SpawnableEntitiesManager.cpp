@@ -857,13 +857,6 @@ namespace AzFramework
                 ticket.m_currentRequestId++;
                 return CommandResult::Executed;
             }
-            else
-            {
-                AZ_Assert(
-                    ticket.m_spawnable->IsPermanentlyLocked(),
-                    "An request to UpdateEntityAliasTypes on the Spawnables Entities Manager was processed on a spawnable that's permanently "
-                    "locked.");
-            }
         }
         return CommandResult::Requeue;
     }
