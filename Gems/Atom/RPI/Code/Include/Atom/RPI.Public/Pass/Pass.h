@@ -139,6 +139,10 @@ namespace AZ
             //! Returns the number of output attachment bindings
             uint32_t GetOutputCount() const;
 
+            //! Returns the pass template which was used for create this pass.
+            //! It may return nullptr if the pass wasn't create from a template
+            const PassTemplate* GetPassTemplate() const;
+
             //! Enable/disable this pass
             //! If the pass is disabled, it (and any children if it's a ParentPass) won't be rendered.  
             void SetEnabled(bool enabled);
