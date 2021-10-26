@@ -88,6 +88,10 @@ namespace AZ::Render
                 {
                     RenderTangents(mesh, globalTM);
                 }
+                if (renderWireframe)
+                {
+                    RenderWireframe(mesh, globalTM);
+                }
             }
         }
     }
@@ -401,6 +405,78 @@ namespace AZ::Render
                 m_auxColors.emplace_back(colorBitangents);
                 m_auxVertices.emplace_back(m_worldSpacePositions[i] + (bitangent * scale));
                 m_auxColors.emplace_back(colorBitangents);
+            }
+        }
+
+        RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
+        lineArgs.m_verts = m_auxVertices.data();
+        lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+        lineArgs.m_colors = m_auxColors.data();
+        lineArgs.m_colorCount = static_cast<uint32_t>(m_auxColors.size());
+        lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+        auxGeom->DrawLines(lineArgs);
+    }
+
+    // Render wireframe mesh
+    void AtomActorDebugDraw::RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM)
+    {
+        // Check if the mesh is valid and skip the node in case it's not
+        if (!mesh)
+        {
+            return;
+        }
+
+        RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
+        if (!auxGeom)
+        {
+            return;
+        }
+
+        PrepareForMesh(mesh, worldTM);
+
+        const float scale = 0.01f;
+
+        AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
+        const AZ::Color vertexColor = AZ::Color(0.8f, 0.24f, 0.88f, 1.0f);
+
+        const size_t numSubMeshes = mesh->GetNumSubMeshes();
+        for (uint32 subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
+        {
+            EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
+            const uint32 numTriangles = subMesh->GetNumPolygons();
+            const uint32 startVertex = subMesh->GetStartVertex();
+            const uint32* indices = subMesh->GetIndices();
+
+            m_auxVertices.clear();
+            m_auxVertices.reserve(numTriangles * 6);
+            m_auxColors.clear();
+            m_auxColors.reserve(m_auxVertices.size());
+
+            for (uint32 triangleIndex = 0; triangleIndex < numTriangles; ++triangleIndex)
+            {
+                const uint32 triangleStartIndex = triangleIndex * 3;
+                const uint32 indexA = indices[triangleStartIndex + 0] + startVertex;
+                const uint32 indexB = indices[triangleStartIndex + 1] + startVertex;
+                const uint32 indexC = indices[triangleStartIndex + 2] + startVertex;
+
+                const AZ::Vector3 posA = m_worldSpacePositions[indexA] + normals[indexA] * scale;
+                const AZ::Vector3 posB = m_worldSpacePositions[indexB] + normals[indexB] * scale;
+                const AZ::Vector3 posC = m_worldSpacePositions[indexC] + normals[indexC] * scale;
+
+                m_auxVertices.emplace_back(posA);
+                m_auxColors.emplace_back(vertexColor);
+                m_auxVertices.emplace_back(posB);
+                m_auxColors.emplace_back(vertexColor);
+
+                m_auxVertices.emplace_back(posB);
+                m_auxColors.emplace_back(vertexColor);
+                m_auxVertices.emplace_back(posC);
+                m_auxColors.emplace_back(vertexColor);
+
+                m_auxVertices.emplace_back(posC);
+                m_auxColors.emplace_back(vertexColor);
+                m_auxVertices.emplace_back(posA);
+                m_auxColors.emplace_back(vertexColor);
             }
         }
 
