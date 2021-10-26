@@ -6,9 +6,10 @@
  *
  */
 
+#include <AzCore/AzCore_Traits_Platform.h>
 
 // Description : Linux/Mac port support for Win32API calls
-#if !defined(WIN32)
+#if AZ_TRAIT_LEGACY_CRYCOMMON_USE_WINDOWS_STUBS
 
 #include "platform.h" // Note: This should be first to get consistent debugging definitions
 
@@ -86,10 +87,6 @@ typedef struct stat FS_STAT_TYPE;
 #else
 typedef struct stat64 FS_STAT_TYPE;
 #endif
-static const int FS_O_RDWR = O_RDWR;
-static const int FS_O_RDONLY = O_RDONLY;
-static const int FS_O_WRONLY = O_WRONLY;
-static const FS_ERRNO_TYPE FS_EISDIR = EISDIR;
 
 #include <mutex>
 
@@ -814,22 +811,7 @@ void replaceDoublePathFilename(char* szFileName)
     azstrcpy((char*)szFileName, AZ_MAX_PATH_LEN, s.c_str());
 }
 
-const int comparePathNames(const char* cpFirst, const char* cpSecond, unsigned int len)
-{
-    //create two strings and replace the \\ by / and /./ by /
-    AZStd::string first(cpFirst);
-    AZStd::string second(cpSecond);
-    adaptFilenameToLinux(first);
-    adaptFilenameToLinux(second);
-    if (strlen(cpFirst) < len || strlen(cpSecond) < len)
-    {
-        return -1;
-    }
-    unsigned int length = std::min(std::min(first.size(), second.size()), (size_t)len);    //make sure not to access invalid memory
-    return memicmp(first.c_str(), second.c_str(), length);
-}
-
-#if defined(LINUX) || defined(APPLE) || defined(DEFINE_FIX_ONE_PATH_ELEMENT)
+#if FIX_FILENAME_CASE
 static bool FixOnePathElement(char* path)
 {
     if (*path == '\0')
@@ -1193,9 +1175,7 @@ DLL_EXPORT void OutputDebugString(const char* outputString)
 typedef DIR* FS_DIR_TYPE;
 typedef dirent FS_DIRENT_TYPE;
 static const FS_ERRNO_TYPE FS_ENOENT = ENOENT;
-static const FS_ERRNO_TYPE FS_EINVAL = EINVAL;
 static const FS_DIR_TYPE FS_DIR_NULL = NULL;
-static const unsigned char FS_TYPE_DIRECTORY = DT_DIR;
 
 typedef int FS_ERRNO_TYPE;
 
@@ -1305,13 +1285,8 @@ const bool GetFilenameNoCase
     char* slash;
     const char* dirname;
     char* name;
-    FS_ERRNO_TYPE fsErr = 0;
-    FS_DIRENT_TYPE dirent;
-    uint64_t direntSize = 0;
-    FS_DIR_TYPE fd = FS_DIR_NULL;
 
-    if (
-        (pAdjustedFilename) == (char*)-1)
+    if ((pAdjustedFilename) == (char*)-1)
     {
         return false;
     }
@@ -1343,9 +1318,6 @@ const bool GetFilenameNoCase
 #endif
 
     // Scan for the file.
-    bool found = false;
-    bool skipScan = false;
-
     if (slash)
     {
         *slash = '/';
@@ -1420,4 +1392,4 @@ __finddata64_t::~__finddata64_t()
 }
 #endif //defined(APPLE) || defined(LINUX)
 
-#endif // !defined(WIN32)
+#endif // AZ_TRAIT_LEGACY_CRYCOMMON_USE_WINDOWS_STUBS

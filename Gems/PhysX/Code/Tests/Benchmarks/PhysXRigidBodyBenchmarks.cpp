@@ -136,8 +136,8 @@ namespace PhysX::Benchmarks
     class PhysXRigidbodyBenchmarkFixture
         : public PhysXBaseBenchmarkFixture
     {
-    public:
-        virtual void SetUp([[maybe_unused]] const ::benchmark::State &state) override
+    protected:
+        virtual void internalSetUp()
         {
             PhysXBaseBenchmarkFixture::SetUpInternal();
             //need to get the Physics::System to be able to spawn the rigid bodies
@@ -146,10 +146,28 @@ namespace PhysX::Benchmarks
             m_terrainEntity = PhysX::TestUtils::CreateFlatTestTerrain(m_testSceneHandle, RigidBodyConstants::TerrainSize, RigidBodyConstants::TerrainSize);
         }
 
-        virtual void TearDown([[maybe_unused]] const ::benchmark::State &state) override
+        virtual void internalTearDown()
         {
             m_terrainEntity = nullptr;
             PhysXBaseBenchmarkFixture::TearDownInternal();
+        }
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
+        }
+
+        void TearDown(const benchmark::State&) override
+        {
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
     protected:
@@ -175,7 +193,6 @@ namespace PhysX::Benchmarks
         const int numRigidBodies = static_cast<int>(state.range(0));
 
         //common settings for each rigid body
-        const float boxSize = 5.0f;
         const float boxSizeWithSpacing = RigidBodyConstants::RigidBodys::BoxSize + 2.0f;
         const int boxesPerCol = static_cast<const int>(RigidBodyConstants::TerrainSize / boxSizeWithSpacing) - 1;
         int spawnColIdx = 0;
@@ -313,10 +330,9 @@ namespace PhysX::Benchmarks
     class PhysXRigidbodyCollisionsBenchmarkFixture
         : public PhysXRigidbodyBenchmarkFixture
     {
-    public:
-        void SetUp(const ::benchmark::State& state) override
+        void internalSetUp() override
         {
-            PhysXRigidbodyBenchmarkFixture::SetUp(state);
+            PhysXRigidbodyBenchmarkFixture::internalSetUp();
 
             m_collisionBeginCount = 0;
             m_collisionPersistCount = 0;
@@ -347,11 +363,30 @@ namespace PhysX::Benchmarks
             m_defaultScene->RegisterSceneCollisionEventHandler(m_onSceneCollisionHandler);
         }
 
-        void TearDown(const ::benchmark::State& state) override
+        void internalTearDown() override
         {
             m_onSceneCollisionHandler.Disconnect();
 
-            PhysXRigidbodyBenchmarkFixture::TearDown(state);
+            PhysXRigidbodyBenchmarkFixture::internalTearDown();
+        }
+
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
+        }
+
+        void TearDown(const benchmark::State&) override
+        {
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
     protected:
@@ -399,7 +434,7 @@ namespace PhysX::Benchmarks
             return rand.GetRandomFloat() * 25.0f + 5.0f;
         };
         
-        Utils::GenerateEntityIdFuncPtr entityIdGenerator = [&rand](int idx) -> AZ::EntityId {
+        Utils::GenerateEntityIdFuncPtr entityIdGenerator = [](int idx) -> AZ::EntityId {
             return AZ::EntityId(static_cast<AZ::u64>(idx) + RigidBodyConstants::RigidBodys::RigidBodyEntityIdStart);
         };
         auto boxShapeConfiguration = AZStd::make_shared<Physics::BoxShapeConfiguration>(AZ::Vector3(RigidBodyConstants::RigidBodys::BoxSize));

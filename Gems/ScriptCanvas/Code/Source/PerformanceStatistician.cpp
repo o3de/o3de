@@ -104,7 +104,6 @@ namespace ScriptCanvas
         void PerformanceStatistician::OnStartTrackingRequested()
         {
             m_accumulatedStats.tickCount = 0;
-            m_accumulatedTickCountRemaining;
             m_accumulatedStartTime = AZStd::chrono::system_clock::now();
         }
 

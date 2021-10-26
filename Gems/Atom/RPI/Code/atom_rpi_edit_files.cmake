@@ -18,6 +18,8 @@ set(FILES
     Include/Atom/RPI.Edit/Material/MaterialTypeSourceData.h
     Include/Atom/RPI.Edit/Material/MaterialConverterBus.h
     Include/Atom/RPI.Edit/Material/MaterialPropertyId.h
+    Include/Atom/RPI.Edit/Material/MaterialPropertyConnectionSerializer.h
+    Include/Atom/RPI.Edit/Material/MaterialPropertyGroupSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialPropertySerializer.h
     Include/Atom/RPI.Edit/Material/MaterialPropertyValueSerializer.h
     Include/Atom/RPI.Edit/Material/MaterialPropertyValueSourceData.h
@@ -36,6 +38,8 @@ set(FILES
     Source/RPI.Edit/Material/LuaMaterialFunctorSourceData.cpp
     Source/RPI.Edit/Material/MaterialTypeSourceData.cpp
     Source/RPI.Edit/Material/MaterialPropertyId.cpp
+    Source/RPI.Edit/Material/MaterialPropertyGroupSerializer.cpp
+    Source/RPI.Edit/Material/MaterialPropertyConnectionSerializer.cpp
     Source/RPI.Edit/Material/MaterialPropertySerializer.cpp
     Source/RPI.Edit/Material/MaterialPropertyValueSerializer.cpp
     Source/RPI.Edit/Material/MaterialPropertyValueSourceData.cpp

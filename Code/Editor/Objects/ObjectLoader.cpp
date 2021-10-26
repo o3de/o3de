@@ -126,7 +126,7 @@ void CObjectArchive::ResolveObjects()
         //////////////////////////////////////////////////////////////////////////
         // Serialize All Objects from XML.
         //////////////////////////////////////////////////////////////////////////
-        int numObj = m_loadedObjects.size();
+        int numObj = static_cast<int>(m_loadedObjects.size());
         for (i = 0; i < numObj; i++)
         {
             if (m_bProgressBarEnabled)
@@ -143,7 +143,7 @@ void CObjectArchive::ResolveObjects()
             m_pCurrentErrorReport->SetCurrentValidatorObject(nullptr);
 
             // Objects can be added to the list here (from Groups).
-            numObj = m_loadedObjects.size();
+            numObj = static_cast<int>(m_loadedObjects.size());
         }
         m_pCurrentErrorReport->SetCurrentValidatorObject(nullptr);
         //////////////////////////////////////////////////////////////////////////
@@ -221,7 +221,7 @@ void CObjectArchive::ResolveObjects()
         //////////////////////////////////////////////////////////////////////////
         // Serialize All Objects from XML.
         //////////////////////////////////////////////////////////////////////////
-        int numObj = m_loadedObjects.size();
+        int numObj = static_cast<int>(m_loadedObjects.size());
         for (i = 0; i < numObj; i++)
         {
             if (m_bProgressBarEnabled)
@@ -246,7 +246,7 @@ void CObjectArchive::ResolveObjects()
     // Call PostLoad on all these objects.
     //////////////////////////////////////////////////////////////////////////
     {
-        int numObj = m_loadedObjects.size();
+        int numObj = static_cast<int>(m_loadedObjects.size());
         for (i = 0; i < numObj; i++)
         {
             SLoadedObjectInfo& obj = m_loadedObjects[i];

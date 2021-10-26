@@ -232,8 +232,8 @@ namespace ScriptCanvasEditor
         ScriptEventsEventNodePaletteTreeItem(const AZ::Data::AssetId& m_assetId, const ScriptEvents::Method& methodDefinition, const ScriptCanvas::EBusEventId& eventId);
         ~ScriptEventsEventNodePaletteTreeItem() = default;
 
-        GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const;
-        QVariant OnData(const QModelIndex& index, int role) const;
+        GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
+        QVariant OnData(const QModelIndex& index, int role) const override;
 
         ScriptCanvas::EBusBusId GetBusIdentifier() const;
         ScriptCanvas::EBusEventId GetEventIdentifier() const;

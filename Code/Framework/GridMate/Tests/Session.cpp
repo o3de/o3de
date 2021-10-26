@@ -40,7 +40,7 @@ namespace UnitTest
         }
     }
 
-    class Integ_LANSessionMatchmakingParamsTest
+    class DISABLED_LANSessionMatchmakingParamsTest
         : public GridMateMPTestFixture
         , public SessionEventBus::MultiHandler
     {
@@ -52,7 +52,7 @@ namespace UnitTest
         }
 
     public:
-        Integ_LANSessionMatchmakingParamsTest(bool useIPv6 = false)
+        DISABLED_LANSessionMatchmakingParamsTest(bool useIPv6 = false)
             : m_hostSession(nullptr)
             , m_clientGridMate(nullptr)
         {
@@ -71,7 +71,7 @@ namespace UnitTest
             AZ_TEST_ASSERT(GridMate::LANSessionServiceBus::FindFirstHandler(m_clientGridMate) != nullptr);
             //////////////////////////////////////////////////////////////////////////
         }
-        virtual ~Integ_LANSessionMatchmakingParamsTest()
+        ~DISABLED_LANSessionMatchmakingParamsTest() override
         {
             SessionEventBus::MultiHandler::BusDisconnect(m_gridMate);
             SessionEventBus::MultiHandler::BusDisconnect(m_clientGridMate);
@@ -192,7 +192,7 @@ namespace UnitTest
         IGridMate* m_clientGridMate;
     };
 
-    class Integ_LANSessionTest
+    class DISABLED_LANSessionTest
         : public GridMateMPTestFixture
     {
         class TestPeerInfo
@@ -264,7 +264,7 @@ namespace UnitTest
         };
 
     public:
-        Integ_LANSessionTest(bool useIPv6 = false)
+        DISABLED_LANSessionTest(bool useIPv6 = false)
         {
             m_driverType = useIPv6 ? Driver::BSD_AF_INET6 : Driver::BSD_AF_INET;
             m_doSessionParamsTest = k_numMachines > 1;
@@ -290,7 +290,7 @@ namespace UnitTest
                 AZ_TEST_ASSERT(LANSessionServiceBus::FindFirstHandler(m_peers[i].m_gridMate) != nullptr);
             }
         }
-        virtual ~Integ_LANSessionTest()
+        ~DISABLED_LANSessionTest() override
         {
             StopGridMateService<LANSessionService>(m_peers[0].m_gridMate);
 
@@ -555,15 +555,15 @@ namespace UnitTest
         bool m_doSessionParamsTest;
     };
 
-    class Integ_LANSessionTestIPv6
-        : public Integ_LANSessionTest
+    class DISABLED_LANSessionTestIPv6
+        : public DISABLED_LANSessionTest
     {
     public:
-        Integ_LANSessionTestIPv6()
-            : Integ_LANSessionTest(true) {}
+        DISABLED_LANSessionTestIPv6()
+            : DISABLED_LANSessionTest(true) {}
     };
 
-    class Integ_LANMultipleSessionTest
+    class DISABLED_LANMultipleSessionTest
         : public GridMateMPTestFixture
         , public SessionEventBus::Handler
     {
@@ -620,7 +620,7 @@ namespace UnitTest
             m_sessions[i] = nullptr;
         }
 
-        Integ_LANMultipleSessionTest()
+        DISABLED_LANMultipleSessionTest()
             : GridMateMPTestFixture(200 * 1024 * 1024)
         {
             //////////////////////////////////////////////////////////////////////////
@@ -645,7 +645,7 @@ namespace UnitTest
             }
         }
 
-        virtual ~Integ_LANMultipleSessionTest()
+        ~DISABLED_LANMultipleSessionTest() override
         {
             GridMate::StopGridMateService<GridMate::LANSessionService>(m_gridMates[0]);
 
@@ -799,7 +799,7 @@ namespace UnitTest
      * Testing session with low latency. This is special mode usually used by tools and communication channels
      * where we try to response instantly on messages.
      */
-    class Integ_LANLatencySessionTest
+    class DISABLED_LANLatencySessionTest
         : public GridMateMPTestFixture
         , public SessionEventBus::Handler
     {
@@ -857,7 +857,7 @@ namespace UnitTest
             m_sessions[i] = nullptr;
         }
 
-        Integ_LANLatencySessionTest()
+        DISABLED_LANLatencySessionTest()
 #ifdef AZ_TEST_LANLATENCY_ENABLE_MONSTER_BUFFER
             : GridMateMPTestFixture(50 * 1024 * 1024)
 #endif
@@ -884,7 +884,7 @@ namespace UnitTest
             }
         }
 
-        virtual ~Integ_LANLatencySessionTest()
+        ~DISABLED_LANLatencySessionTest() override
         {
             StopGridMateService<LANSessionService>(m_gridMates[0]);
 
@@ -1162,7 +1162,7 @@ namespace UnitTest
      * 5. After host migration we drop the new host again. (after migration we have 3 members).
      * Session should be fully operational at the end with 3 members left.
      */
-    class Integ_LANSessionMigarationTestTest
+    class LANSessionMigarationTestTest
         : public SessionEventBus::Handler
         , public GridMateMPTestFixture
     {
@@ -1257,7 +1257,7 @@ namespace UnitTest
             }
         }
 
-        Integ_LANSessionMigarationTestTest()
+        LANSessionMigarationTestTest()
         {
             //////////////////////////////////////////////////////////////////////////
             // Create all grid mates
@@ -1283,7 +1283,7 @@ namespace UnitTest
             //StartDrilling("lanmigration");
         }
 
-        virtual ~Integ_LANSessionMigarationTestTest()
+        ~LANSessionMigarationTestTest() override
         {
             StopGridMateService<LANSessionService>(m_gridMates[0]);
 
@@ -1476,7 +1476,7 @@ namespace UnitTest
      * 5. We join a 2 new members to the session.
      * Session should be fully operational at the end with 4 members in it.
      */
-    class Integ_LANSessionMigarationTestTest2
+    class LANSessionMigarationTestTest2
         : public SessionEventBus::Handler
         , public GridMateMPTestFixture
     {
@@ -1571,7 +1571,7 @@ namespace UnitTest
                 }
             }
         }
-        Integ_LANSessionMigarationTestTest2()
+        LANSessionMigarationTestTest2()
         {
             //////////////////////////////////////////////////////////////////////////
             // Create all grid mates
@@ -1597,7 +1597,7 @@ namespace UnitTest
 
             //StartDrilling("lanmigration2");
         }
-        virtual ~Integ_LANSessionMigarationTestTest2()
+        ~LANSessionMigarationTestTest2() override
         {
             StopGridMateService<LANSessionService>(m_gridMates[0]);
 
@@ -1816,7 +1816,7 @@ namespace UnitTest
      * 3. Add 2 new joins to the original session.
      * Original session should remain fully operational with 4 members in it.
      */
-    class Integ_LANSessionMigarationTestTest3
+    class LANSessionMigarationTestTest3
         : public SessionEventBus::Handler
         , public GridMateMPTestFixture
     {
@@ -1910,7 +1910,7 @@ namespace UnitTest
                 }
             }
         }
-        Integ_LANSessionMigarationTestTest3()
+        LANSessionMigarationTestTest3()
         {
             //////////////////////////////////////////////////////////////////////////
             // Create all grid mates
@@ -1936,7 +1936,7 @@ namespace UnitTest
             //StartDrilling("lanmigration2");
         }
 
-        ~Integ_LANSessionMigarationTestTest3() override
+        ~LANSessionMigarationTestTest3() override
         {
             StopGridMateService<LANSessionService>(m_gridMates[0]);
 
@@ -2122,13 +2122,13 @@ namespace UnitTest
 }
 
 GM_TEST_SUITE(SessionSuite)
-GM_TEST(Integ_LANSessionMatchmakingParamsTest)
-GM_TEST(Integ_LANSessionTest)
+GM_TEST(DISABLED_LANSessionMatchmakingParamsTest)
+GM_TEST(DISABLED_LANSessionTest)
 #if (AZ_TRAIT_GRIDMATE_TEST_SOCKET_IPV6_SUPPORT_ENABLED)
-GM_TEST(Integ_LANSessionTestIPv6)
+GM_TEST(DISABLED_LANSessionTestIPv6)
 #endif
-GM_TEST(Integ_LANMultipleSessionTest)
-GM_TEST(Integ_LANLatencySessionTest)
+GM_TEST(DISABLED_LANMultipleSessionTest)
+GM_TEST(DISABLED_LANLatencySessionTest)
 
 // Manually enabled tests (require 2+ machines and online services)
 //GM_TEST(LANSessionMigarationTestTest)

@@ -10,12 +10,16 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+#include <AzToolsFramework/UI/Notifications/ToastNotificationsView.h>
 #include <GemCatalog/GemCatalogHeaderWidget.h>
 #include <GemCatalog/GemFilterWidget.h>
 #include <GemCatalog/GemListView.h>
 #include <GemCatalog/GemInspector.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
+#include <QSet>
+#include <QString>
 #endif
 
 namespace O3DE::ProjectManager
@@ -29,12 +33,36 @@ namespace O3DE::ProjectManager
         ProjectManagerScreen GetScreenEnum() override;
 
         void ReinitForProject(const QString& projectPath);
-        bool EnableDisableGemsForProject(const QString& projectPath);
+
+        enum class EnableDisableGemsResult 
+        {
+            Failed = 0,
+            Success,
+            Cancel
+        };
+        EnableDisableGemsResult EnableDisableGemsForProject(const QString& projectPath);
 
         GemModel* GetGemModel() const { return m_gemModel; }
+        DownloadController* GetDownloadController() const { return m_downloadController; }
+
+    public slots:
+        void OnGemStatusChanged(const QModelIndex& modelIndex, uint32_t numChangedDependencies);
+        void OnAddGemClicked();
+
+    protected:
+        void hideEvent(QHideEvent* event) override;
+        void showEvent(QShowEvent* event) override;
+        void resizeEvent(QResizeEvent* event) override;
+        void moveEvent(QMoveEvent* event) override;
+
+    private slots:
+        void HandleOpenGemRepo();
+
 
     private:
         void FillModel(const QString& projectPath);
+
+        AZStd::unique_ptr<AzToolsFramework::ToastNotificationsView> m_notificationsView;
 
         GemListView* m_gemListView = nullptr;
         GemInspector* m_gemInspector = nullptr;
@@ -43,5 +71,8 @@ namespace O3DE::ProjectManager
         GemSortFilterProxyModel* m_proxModel = nullptr;
         QVBoxLayout* m_filterWidgetLayout = nullptr;
         GemFilterWidget* m_filterWidget = nullptr;
+        DownloadController* m_downloadController = nullptr;
+        bool m_notificationsEnabled = true;
+        QSet<QString> m_gemsToRegisterWithProject;
     };
 } // namespace O3DE::ProjectManager

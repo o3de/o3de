@@ -10,6 +10,7 @@
 #include "KeyboardShortcutManager.h"
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/IDGenerator.h>

@@ -124,7 +124,7 @@ public:
     virtual void SetAsViewCamera();
 
     // Name setter/getter
-    virtual const char* GetName() const override { return m_animNode->GetName(); }
+    AZStd::string GetName() const override { return m_animNode->GetName(); }
     virtual bool SetName(const char* pName) override;
     virtual bool CanBeRenamed() const override;
 
@@ -187,7 +187,7 @@ public:
     // Param
     unsigned int GetParamCount() const;
     CAnimParamType GetParamType(unsigned int index) const;
-    const char* GetParamName(const CAnimParamType& paramType) const;
+    AZStd::string GetParamName(const CAnimParamType& paramType) const;
     bool IsParamValid(const CAnimParamType& param) const;
     IAnimNode::ESupportedParamFlags GetParamFlags(const CAnimParamType& paramType) const;
     AnimValueType GetParamValueType(const CAnimParamType& paramType) const;

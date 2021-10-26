@@ -31,8 +31,12 @@ namespace AzToolsFramework
             void Connect();
             void Disconnect();
 
-            bool CreatePrefabInMemory(const AZStd::vector<AZ::EntityId>& entityIds, AZStd::string_view filePath) override;
-            AZ::EntityId InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
+            CreatePrefabResult CreatePrefabInMemory(const EntityIdList& entityIds, AZStd::string_view filePath) override;
+            InstantiatePrefabResult InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) override;
+            PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
+            PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
+            DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
+            AZStd::string GetOwningInstancePrefabPath(AZ::EntityId entityId) const override;
 
         private:
             PrefabPublicInterface* m_prefabPublicInterface = nullptr;

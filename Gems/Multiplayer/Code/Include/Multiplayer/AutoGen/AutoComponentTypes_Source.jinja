@@ -1,0 +1,59 @@
+#include <AzCore/Component/Component.h>
+#include <Multiplayer/Components/MultiplayerComponentRegistry.h>
+#include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
+{% for Component in dataFiles %}
+{% set ComponentDerived = Component.attrib['OverrideComponent']|booleanTrue %}
+{% set ControllerDerived = Component.attrib['OverrideController']|booleanTrue %}
+{% if ComponentDerived or ControllerDerived %}
+#include <{{ Component.attrib['OverrideInclude'] }}>
+{% else %}
+#include <Source/AutoGen/{{ Component.attrib['Name'] }}.AutoComponent.h>
+{% endif %}
+{% endfor %}
+
+{% set Namespace = dataFiles[0].attrib['Namespace'] %}
+{% for Component in dataFiles %}
+{%     if Component.attrib['Namespace'] != Namespace %}
+#error "mismatched component namespaces detected in declared multiplayer components, expected {{ Namespace }} but {{ Component.attrib['Name'] }} is using {{ Component.attrib['Namespace'] }} namespace."
+{%     endif %}
+{% endfor %}
+namespace {{ Namespace }}
+{
+    void RegisterMultiplayerComponents()
+    {
+        Multiplayer::MultiplayerComponentRegistry* multiplayerComponentRegistry = Multiplayer::GetMultiplayerComponentRegistry();
+        Multiplayer::MultiplayerStats& stats = Multiplayer::GetMultiplayer()->GetStats();
+{% for Component in dataFiles %}
+{%      set ComponentName = Component.attrib['Name'] %}
+{%      set ComponentBaseName = ComponentName %}
+{%          if Component.attrib['OverrideComponent']|booleanTrue %}
+{%              set ComponentBaseName = ComponentName + "Base" %}
+{%          endif %}
+{%      set NetworkInputCount = Component.findall('NetworkInput') | len %}
+{%      set NetworkPropertyCount = Component.findall('NetworkProperty') | len %}
+{%      set RpcCount = Component.findall('RemoteProcedure') | len %}
+        {
+            Multiplayer::MultiplayerComponentRegistry::ComponentData componentData;
+            componentData.m_gemName = AZ::Name("{{ Namespace }}");
+            componentData.m_componentName = AZ::Name("{{ Component.attrib['Name'] }}");
+            componentData.m_componentPropertyNameLookupFunction = {{ ComponentBaseName }}::GetNetworkPropertyName;
+            componentData.m_componentRpcNameLookupFunction = {{ ComponentBaseName }}::GetRpcName;
+            componentData.m_allocComponentInputFunction = {{ ComponentBaseName }}::AllocateComponentInput;
+            {{ ComponentBaseName }}::s_netComponentId = multiplayerComponentRegistry->RegisterMultiplayerComponent(componentData);
+{% if NetworkInputCount > 0 %}
+            {{ ComponentName }}NetworkInput::s_netComponentId = {{ ComponentBaseName }}::s_netComponentId;
+{% endif %}
+            stats.ReserveComponentStats({{ ComponentBaseName }}::s_netComponentId, static_cast<uint16_t>({{ NetworkPropertyCount }}), static_cast<uint16_t>({{ RpcCount }}));
+        }
+{% endfor %}
+    }
+
+    void CreateComponentDescriptors(AZStd::list<AZ::ComponentDescriptor*>& descriptors)
+    {
+        descriptors.insert(descriptors.end(), {
+{% for Component in dataFiles %}
+            {{ Component.attrib['Name'] }}::CreateDescriptor(),
+{% endfor %}
+        });
+    }
+}

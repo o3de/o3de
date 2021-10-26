@@ -395,12 +395,6 @@ namespace AzToolsFramework
     AzQtComponents::CardNotification* ComponentEditor::CreateNotificationForWarningComponents(const QString& message)
     {
         AzQtComponents::CardNotification * notification = CreateNotification(message);
-        const QPushButton * featureButton = notification->addButtonFeature(tr("Continue"));
-
-        connect(featureButton, &QPushButton::clicked, this, [this, notification]()
-        {
-            notification->close();
-        });
 
         return notification;
     }
@@ -527,7 +521,7 @@ namespace AzToolsFramework
 
     void ComponentEditor::SetComponentOverridden(const bool overridden)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const auto entityId = m_components[0]->GetEntityId();
         AZ::SliceComponent::SliceInstanceAddress sliceInstanceAddress;

@@ -30,7 +30,7 @@ namespace AZ
             while (maxAttempts > 0)
             {
                 // Use the system's tick count to base the folder name
-                DWORD currentTick = GetTickCount64();
+                ULONGLONG currentTick = GetTickCount64();
                 azsnprintf(workingTempPathBuffer, bufferSize, "%sUnitTest-%X", tempDir, aznumeric_cast<unsigned int>(currentTick));
 
                 // Check if the requested directory name is available and re-generate if it already exists

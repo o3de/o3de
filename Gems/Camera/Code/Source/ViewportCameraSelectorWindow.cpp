@@ -7,17 +7,14 @@
  */
 #include "ViewportCameraSelectorWindow.h"
 #include "ViewportCameraSelectorWindow_Internals.h"
-#include <IEditor.h>
 #include <qmetatype.h>
 #include <QScopedValueRollback>
 #include <QListView>
 #include <QSortFilterProxyModel>
 #include <QVBoxLayout>
 #include <QLabel>
-#include <ViewManager.h>
-#include <Maestro/Bus/EditorSequenceBus.h>
-#include <Maestro/Bus/SequenceComponentBus.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/API/ViewPaneOptions.h>
 
 namespace Qt
 {
@@ -125,7 +122,7 @@ namespace Camera
                 });
             if (cameraIt != m_cameraItems.end())
             {
-                int listIndex = cameraIt - m_cameraItems.begin();
+                int listIndex = static_cast<int>(cameraIt - m_cameraItems.begin());
                 beginRemoveRows(QModelIndex(), listIndex, listIndex);
                 m_cameraItems.erase(cameraIt);
                 endRemoveRows();
@@ -308,7 +305,7 @@ namespace Camera
 
     void RegisterViewportCameraSelectorWindow()
     {
-        QtViewOptions viewOptions;
+        AzToolsFramework::ViewPaneOptions viewOptions;
         viewOptions.isPreview = true;
         viewOptions.showInMenu = true;
         viewOptions.preferedDockingArea = Qt::DockWidgetArea::LeftDockWidgetArea;

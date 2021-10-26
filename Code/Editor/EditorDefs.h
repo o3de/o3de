@@ -8,8 +8,6 @@
 
 
 #pragma once
-#ifndef CRYINCLUDE_EDITOR_EDITORDEFS_H
-#define CRYINCLUDE_EDITOR_EDITORDEFS_H
 
 #include <AzCore/PlatformDef.h>
 
@@ -32,18 +30,6 @@
 
 #include <Include/SandboxAPI.h>
 #include <Include/EditorCoreAPI.h>
-
-// Warnings in STL
-#pragma warning (disable : 4786) // identifier was truncated to 'number' characters in the debug information.
-#pragma warning (disable : 4244) // conversion from 'long' to 'float', possible loss of data
-#pragma warning (disable : 4018) // signed/unsigned mismatch
-
-// Disable warning when a function returns a value inside an __asm block
-#pragma warning (disable : 4035)
-
-//////////////////////////////////////////////////////////////////////////
-// 64-bits related warnings.
-#pragma warning (disable : 4267) // conversion from 'size_t' to 'int', possible loss of data
 
 //////////////////////////////////////////////////////////////////////////
 // Simple type definitions.
@@ -198,5 +184,3 @@
 #endif
 #endif
 
-
-#endif // CRYINCLUDE_EDITOR_EDITORDEFS_H

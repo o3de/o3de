@@ -56,15 +56,8 @@ namespace AssetProcessor
         // cache this up front.  Note that it can fail here, and will retry later.
         InitializeCacheRoot();
 
-        m_absoluteDevFolderPath[0] = 0;
-        m_absoluteDevGameFolderPath[0] = 0;
-
         QDir assetRoot;
-        if (AssetUtilities::ComputeAssetRoot(assetRoot))
-        {
-            azstrcpy(m_absoluteDevFolderPath, AZ_MAX_PATH_LEN, assetRoot.absolutePath().toUtf8().constData());
-            azstrcpy(m_absoluteDevGameFolderPath, AZ_MAX_PATH_LEN, AssetUtilities::ComputeProjectPath().toUtf8().constData());
-        }
+        AssetUtilities::ComputeAssetRoot(assetRoot);
 
         using namespace AZStd::placeholders;
 
@@ -3580,19 +3573,62 @@ namespace AssetProcessor
                     QString knownPathBeforeWildcard = encodedFileData.left(slashBeforeWildcardIndex + 1); // include the slash
                     QString relativeSearch = encodedFileData.mid(slashBeforeWildcardIndex + 1); // skip the slash
 
-                    for (int i = 0; i < m_platformConfig->GetScanFolderCount(); ++i)
+                    // Absolute path, just check the 1 scan folder
+                    if (AZ::IO::PathView(encodedFileData.toUtf8().constData()).IsAbsolute())
                     {
-                        const ScanFolderInfo* scanFolderInfo = &m_platformConfig->GetScanFolderAt(i);
+                        auto scanFolderInfo = m_platformConfig->GetScanFolderForFile(encodedFileData);
 
-                        if (!scanFolderInfo->RecurseSubFolders() && encodedFileData.contains("/"))
+                        if (!m_platformConfig->ConvertToRelativePath(encodedFileData, scanFolderInfo, resultDatabaseSourceName))
                         {
-                            continue;
+                            AZ_Warning(
+                                AssetProcessor::ConsoleChannel, false,
+                                "'%s' does not appear to be in any input folder.  Use relative paths instead.",
+                                sourceDependency.m_sourceFileDependencyPath.c_str());
                         }
+                        else
+                        {
+                            // Make an absolute path that is ScanFolderPath + Part of search path before the wildcard
+                            QDir rooted(scanFolderInfo->ScanPath());
+                            QString scanFolderAndKnownSubPath = rooted.absoluteFilePath(knownPathBeforeWildcard);
 
-                        QDir rooted(scanFolderInfo->ScanPath());
-                        QString absolutePath = rooted.absoluteFilePath(knownPathBeforeWildcard);
+                            resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(
+                                scanFolderAndKnownSubPath, relativeSearch, false, scanFolderInfo->RecurseSubFolders()));
+                        }
+                    }
+                    else // Relative path, check every scan folder
+                    {
+                        for (int i = 0; i < m_platformConfig->GetScanFolderCount(); ++i)
+                        {
+                            const ScanFolderInfo* scanFolderInfo = &m_platformConfig->GetScanFolderAt(i);
 
-                        resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(absolutePath, relativeSearch, false, scanFolderInfo->RecurseSubFolders()));
+                            if (!scanFolderInfo->RecurseSubFolders() && encodedFileData.contains("/"))
+                            {
+                                continue;
+                            }
+
+                            QDir rooted(scanFolderInfo->ScanPath());
+                            QString absolutePath = rooted.absoluteFilePath(knownPathBeforeWildcard);
+
+                            resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(
+                                absolutePath, relativeSearch, false, scanFolderInfo->RecurseSubFolders()));
+                        }
+                    }
+
+                    // Convert to relative paths
+                    for (auto dependencyItr = resolvedDependencyList.begin(); dependencyItr != resolvedDependencyList.end();) 
+                    {
+                        QString relativePath, scanFolder;
+                        if (m_platformConfig->ConvertToRelativePath(*dependencyItr, relativePath, scanFolder))
+                        {
+                            *dependencyItr = relativePath;
+                            ++dependencyItr;
+                        }
+                        else
+                        {
+                            AZ_Warning("AssetProcessor", false, "Failed to get relative path for wildcard dependency file %s.  Is the file within a scan folder?",
+                                dependencyItr->toUtf8().constData());
+                            dependencyItr = resolvedDependencyList.erase(dependencyItr);
+                        }
                     }
 
                     resultDatabaseSourceName = encodedFileData.replace('\\', '/');

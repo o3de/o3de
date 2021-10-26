@@ -6,6 +6,7 @@
  *
  */
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Interface/Interface.h>
@@ -52,7 +53,7 @@ namespace UnitTest
                 AssetLoadBus::Handler::BusConnect(m_assetId);
             }
         }
-        ~OnAssetReadyListener()
+        ~OnAssetReadyListener() override
         {
             m_assetId.SetInvalid();
             m_latest = {};
@@ -109,7 +110,7 @@ namespace UnitTest
         {
             BusConnect(assetId);
         }
-        ~ContainerReadyListener()
+        ~ContainerReadyListener() override
         {
             BusDisconnect();
         }
@@ -364,6 +365,42 @@ namespace UnitTest
         }
 
     };
+
+    static constexpr AZStd::chrono::seconds MaxDispatchTimeoutSeconds = BaseAssetManagerTest::DefaultTimeoutSeconds * 12;
+    
+    template <typename Pred>
+    bool DispatchEventsUntilCondition(AZ::Data::AssetManager& assetManager, Pred&& conditionPredicate,
+        AZStd::chrono::seconds logIntervalSeconds = BaseAssetManagerTest::DefaultTimeoutSeconds,
+        AZStd::chrono::seconds maxTimeoutSeconds = MaxDispatchTimeoutSeconds)
+    {
+        // If the Max Timeout is hit the test will be marked as a failure
+
+        AZStd::chrono::time_point dispatchEventTimeStart = AZStd::chrono::system_clock::now();
+        AZStd::chrono::seconds dispatchEventNextLogTime = logIntervalSeconds;
+
+        while (!conditionPredicate())
+        {
+            AZStd::chrono::time_point currentTime = AZStd::chrono::system_clock::now();
+            if (AZStd::chrono::seconds elapsedTime{ currentTime - dispatchEventTimeStart };
+                elapsedTime >= dispatchEventNextLogTime)
+            {
+                const testing::TestInfo* test_info = ::testing::UnitTest::GetInstance()->current_test_info();
+                AZ_Printf("AssetManagerLoadingTest", "The DispatchEventsUntiTimeout function has been waiting for %llu seconds"
+                    " in test %s.%s", elapsedTime.count(), test_info->test_case_name(), test_info->name());
+                // Update the next log time to be the next multiple of DefaultTimeout Seconds
+                // after current elapsed time
+                dispatchEventNextLogTime = elapsedTime + logIntervalSeconds - ((elapsedTime + logIntervalSeconds) % logIntervalSeconds);
+                if (elapsedTime >= maxTimeoutSeconds)
+                {
+                    return false;
+                }
+            }
+            assetManager.DispatchEvents();
+            AZStd::this_thread::yield();
+        }
+
+        return true;
+    }
 
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_ASSET_MANAGER_FLOOD_TEST
     TEST_F(AssetJobsFloodTest, DISABLED_FloodTest)
@@ -699,7 +736,10 @@ namespace UnitTest
         auto& assetManager = AssetManager::Instance();
 
         AssetBusCallbacks callbacks{};
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                  // capture. Newer versions issue unused warning
         callbacks.SetOnAssetReadyCallback([&, AssetNoRefB](const Asset<AssetData>&, AssetBusCallbacks&)
+        AZ_POP_DISABLE_WARNING
             {
                 // This callback should run inside the "main thread" dispatch events loop
                 auto loadAsset = assetManager.GetAsset<AssetWithSerializedData>(AZ::Uuid(AssetNoRefB), AssetLoadBehavior::Default);
@@ -1357,42 +1397,74 @@ namespace UnitTest
         m_assetHandlerAndCatalog->m_numCreations = 0;
         m_assetHandlerAndCatalog->m_numDestructions = 0;
         {
+            ContainerReadyListener containerLoadingCompleteListener(NoLoadAssetId);
             OnAssetReadyListener readyListener(NoLoadAssetId, azrtti_typeid<AssetWithAssetReference>());
-            OnAssetReadyListener depenencyListener(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>());
+            OnAssetReadyListener dependencyListener(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>());
+
+            SCOPED_TRACE("LoadDependencies_BehaviorObeyed");
+
+            auto AssetOnlyReady = [&readyListener]() -> bool
+            {
+                return readyListener.m_ready;
+            };
+            auto AssetAndDependencyReady = [&readyListener, &dependencyListener]() -> bool
+            {
+                return readyListener.m_ready && dependencyListener.m_ready;
+            };
+            auto AssetContainerReady = [&containerLoadingCompleteListener]() -> bool
+            {
+                return containerLoadingCompleteListener.m_ready;
+            };
 
             auto noLoadRef = m_testAssetManager->GetAsset(NoLoadAssetId, azrtti_typeid<AssetWithAssetReference>(),
                 AZ::Data::AssetLoadBehavior::Default);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            // Dispatch AssetBus events until the NoLoadAssetId has signaled an OnAssetReady
+            // event or the timeout has been reached
+            EXPECT_TRUE(DispatchEventsUntilCondition(*m_testAssetManager, AssetOnlyReady))
+                << "The DispatchEventsUntiTimeout function has not completed in "
+                << MaxDispatchTimeoutSeconds.count() << " seconds. The test will be marked as a failure\n";
 
-            while (!readyListener.m_ready)
-            {
-                m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
-                {
-                    break;
-                }
-                AZStd::this_thread::yield();
-            }
-            EXPECT_EQ(readyListener.m_ready, 1);
-            EXPECT_EQ(depenencyListener.m_ready, 0);
-            
+            // Dispatch AssetBus events until the asset container used to load
+            // NoLoadAssetId has signaled an OnAssetContainerReady event
+            // or the timeout has been reached
+            // Wait until the current asset container has finished loading the NoLoadAssetId
+            // before trigger another load
+            // If the wait does not occur here, most likely what would occur is
+            // the AssetManager::m_ownedAssetContainers object is still loading the NoLoadAssetId
+            // using the default AssetLoadParameters
+            // If a call to GetAsset occurs at this point while the Asset is still loading
+            // it will ignore the new loadParams below and instead just re-use the existing
+            // AssetContainerReader instance, resulting in the dependent MyAsset2Id not
+            // being loaded
+            // The function that can return an existing AssetContainer instance is the
+            // AssetManager::GetAssetContainer. Since it can be in the middle of a load,
+            // updating the AssetLoadParams would have an effect on the current in progress
+            // load
+            EXPECT_TRUE(DispatchEventsUntilCondition(*m_testAssetManager, AssetContainerReady))
+                << "The DispatchEventsUntiTimeout function has not completed in "
+                << MaxDispatchTimeoutSeconds.count() << " seconds. The test will be marked as a failure\n";
+
+            // Reset the ContainerLoadingComplete ready status back to 0
+            containerLoadingCompleteListener.m_ready = 0;
+
             AZ::Data::AssetLoadParameters loadParams(nullptr, AZ::Data::AssetDependencyLoadRules::LoadAll);
             loadParams.m_reloadMissingDependencies = true;
             auto loadDependencyRef = m_testAssetManager->GetAsset(NoLoadAssetId, azrtti_typeid<AssetWithAssetReference>(),
                 AZ::Data::AssetLoadBehavior::Default, loadParams);
 
-            while (!depenencyListener.m_ready || !readyListener.m_ready)
-            {
-                m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
-                {
-                    break;
-                }
-                AZStd::this_thread::yield();
-            }
+            // Dispatch AssetBus events until the NoLoadAssetId and the MyAsset2Id has signaled
+            // an OnAssetReady event or the timeout has been reached
+            EXPECT_TRUE(DispatchEventsUntilCondition(*m_testAssetManager, AssetAndDependencyReady))
+                << "The DispatchEventsUntiTimeout function has not completed in "
+                << MaxDispatchTimeoutSeconds.count() << " seconds. The test will be marked as a failure\n";
+
             EXPECT_EQ(readyListener.m_ready, 1);
-            EXPECT_EQ(depenencyListener.m_ready, 1);
+            EXPECT_EQ(dependencyListener.m_ready, 1);
+
+            EXPECT_TRUE(DispatchEventsUntilCondition(*m_testAssetManager, AssetContainerReady))
+                << "The DispatchEventsUntiTimeout function has not completed in "
+                << MaxDispatchTimeoutSeconds.count() << " seconds. The test will be marked as a failure\n";
         }
 
         CheckFinishedCreationsAndDestructions();
@@ -2658,7 +2730,7 @@ namespace UnitTest
             m_canceled = true;
         }
 
-        ~CancelListener()
+        ~CancelListener() override
         {
             BusDisconnect();
         }

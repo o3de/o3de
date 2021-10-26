@@ -68,46 +68,13 @@ ly_create_alias(NAME ${Name}.Servers  NAMESPACE Gem TARGETS Gem::${Name})
 # Gem dependencies
 ################################################################################
 
-# The GameLauncher uses "Clients" gem variants:
-ly_enable_gems(
-    PROJECT_NAME ${Name} GEM_FILE enabled_gems.cmake
-    TARGETS 
-        ${Name}.GameLauncher
-    VARIANTS 
-        Clients)
+# Enable the specified list of gems from GEM_FILE or GEMS list for this specific project:
+ly_enable_gems(PROJECT_NAME ${Name} GEM_FILE enabled_gems.cmake)
 
-if(PAL_TRAIT_BUILD_HOST_TOOLS)
-
-    # the builder type applications use the "Builders" variants of the enabled gems.
-    ly_enable_gems(
-        PROJECT_NAME ${Name} GEM_FILE enabled_gems.cmake
-        TARGETS
-            AssetBuilder
-            AssetProcessor
-            AssetProcessorBatch
-        VARIANTS 
-            Builders)
-    
-    # the Editor applications use the "Tools" variants of the enabled gems.
-    ly_enable_gems(
-        PROJECT_NAME ${Name} GEM_FILE enabled_gems.cmake
-        TARGETS
-            Editor
-        VARIANTS 
-            Tools)
-endif()
 
 if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
     # this property causes it to actually make a ServerLauncher.
     # if you don't want a Server application, you can remove this and the
     # following ly_enable_gems lines.
     set_property(GLOBAL APPEND PROPERTY LY_LAUNCHER_SERVER_PROJECTS ${Name})
-    
-    # The ServerLauncher uses the "Servers" variants of enabled gems:
-    ly_enable_gems(
-        PROJECT_NAME ${Name} GEM_FILE enabled_gems.cmake
-        TARGETS
-            ${Name}.ServerLauncher
-        VARIANTS 
-            Servers)
 endif()

@@ -411,7 +411,6 @@ typename VectorMap<K, V, T, A>::iterator VectorMap<K, V, T, A>::lower_bound(cons
 {
     int count = static_cast<int>(m_entries.size());
     iterator first = m_entries.begin();
-    iterator last = m_entries.end();
     for (; 0 < count; )
     {   // divide and conquer, find half that contains answer
         int count2 = count / 2;
@@ -434,7 +433,6 @@ typename VectorMap<K, V, T, A>::const_iterator VectorMap<K, V, T, A>::lower_boun
 {
     int count = static_cast<int>(m_entries.size());
     const_iterator first = m_entries.begin();
-    const_iterator last = m_entries.end();
     for (; 0 < count; )
     {   // divide and conquer, find half that contains answer
         int count2 = count / 2;

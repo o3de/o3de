@@ -70,7 +70,7 @@ namespace ScriptCanvasDeveloper
         FindViewCenterState(AutomationStateModelId outputId);
         ~FindViewCenterState() override = default;
 
-        void OnCustomAction();
+        void OnCustomAction() override;
 
     private:
 

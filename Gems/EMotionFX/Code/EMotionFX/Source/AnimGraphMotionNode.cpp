@@ -394,6 +394,8 @@ namespace EMotionFX
     // the main process method of the final node
     void AnimGraphMotionNode::Output(AnimGraphInstance* animGraphInstance)
     {
+        AZ_PROFILE_SCOPE(Animation, "AnimGraphMotionNode::Output");
+
         // if this motion is disabled, output the bind pose
         if (m_disabled)
         {
@@ -537,6 +539,8 @@ namespace EMotionFX
 
     void AnimGraphMotionNode::UniqueData::Update()
     {
+        AZ_PROFILE_SCOPE(Animation, "AnimGraphMotionNode::Update");
+
         AnimGraphMotionNode* motionNode = azdynamic_cast<AnimGraphMotionNode*>(m_object);
         AZ_Assert(motionNode, "Unique data linked to incorrect node type.");
 
@@ -593,7 +597,7 @@ namespace EMotionFX
         // reset several settings to rewind the motion instance
         motionInstance->ResetTimes();
         motionInstance->SetIsFrozen(false);
-        SetSyncIndex(animGraphInstance, MCORE_INVALIDINDEX32);
+        SetSyncIndex(animGraphInstance, InvalidIndex);
         uniqueData->SetCurrentPlayTime(motionInstance->GetCurrentTime());
         uniqueData->SetDuration(motionInstance->GetDuration());
         uniqueData->SetPreSyncTime(uniqueData->GetCurrentPlayTime());

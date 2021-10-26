@@ -32,7 +32,7 @@ namespace EMotionFX
         AZ_RTTI(AnimGraphMotionNode, "{B8B8AAE6-E532-4BF8-898F-3D40AA41BC82}", AnimGraphNode)
         AZ_CLASS_ALLOCATOR_DECL
 
-        enum
+        enum : uint16
         {
             INPUTPORT_PLAYSPEED                 = 0,
             INPUTPORT_INPLACE                   = 1,
@@ -41,7 +41,7 @@ namespace EMotionFX
             OUTPUTPORT_MOTION                   = 1
         };
 
-        enum
+        enum : uint16
         {
             PORTID_INPUT_PLAYSPEED              = 0,
             PORTID_INPUT_INPLACE                = 1,

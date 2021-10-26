@@ -10,9 +10,10 @@
     ],
     "user_tags": [
         "DCC",
-	"Digital",
-	"Content",
-	"Creation"
+        "Digital",
+        "Content",
+        "Creation"
     ],
-    "requirements": ""
+    "requirements": "",
+    "dependencies": []
 }

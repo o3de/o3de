@@ -7,11 +7,11 @@
 #
 
 set(FILES
-    Include/Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h
-    Include/Atom/Document/ShaderManagementConsoleDocumentNotificationBus.h
+    Include/Atom/Document/ShaderManagementConsoleDocumentModule.h
     Include/Atom/Document/ShaderManagementConsoleDocumentRequestBus.h
-    Source/Document/ShaderManagementConsoleDocumentSystemComponent.cpp
-    Source/Document/ShaderManagementConsoleDocumentSystemComponent.h
     Source/Document/ShaderManagementConsoleDocument.cpp
     Source/Document/ShaderManagementConsoleDocument.h
+    Source/Document/ShaderManagementConsoleDocumentModule.cpp
+    Source/Document/ShaderManagementConsoleDocumentSystemComponent.cpp
+    Source/Document/ShaderManagementConsoleDocumentSystemComponent.h
 )

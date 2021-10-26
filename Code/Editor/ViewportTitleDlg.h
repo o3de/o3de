@@ -14,13 +14,12 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/Component/Component.h>
 
-#include <IAudioSystem.h>
-
 #include <functional>
 #include <QSharedPointer>
 #include <QWidgetAction>
 #include <QComboBox>
 
+#include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
 #include <AzQtComponents/Components/Widgets/SpinBox.h>
 
 #include <HMDBus.h>
@@ -79,7 +78,7 @@ Q_SIGNALS:
 protected:
     virtual void OnInitDialog();
 
-    virtual void OnEditorNotifyEvent(EEditorNotifyEvent event);
+    void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
     void OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_PTR lparam) override;
 
     void OnMaximize();
@@ -178,11 +177,7 @@ protected:
     QWidgetAction* m_gridSizeActionWidget = nullptr;
     QWidgetAction* m_angleSizeActionWidget = nullptr;
 
-    Audio::SAudioRequest m_oMuteAudioRequest;
-    Audio::SAudioManagerRequestData<Audio::eAMRT_MUTE_ALL> m_oMuteAudioRequestData;
-    Audio::SAudioRequest m_oUnmuteAudioRequest;
-    Audio::SAudioManagerRequestData<Audio::eAMRT_UNMUTE_ALL> m_oUnmuteAudioRequestData;
-
+    AzToolsFramework::Prefab::PrefabViewportFocusPathHandler* m_prefabViewportFocusPathHandler = nullptr;
 
     QScopedPointer<Ui::ViewportTitleDlg> m_ui;
 };

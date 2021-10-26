@@ -8,6 +8,8 @@
 
 #include "MultiplayerDebugByteReporter.h"
 
+#include <AzCore/Casting/numeric_cast.h>
+
 #include <iomanip> // for std::setfill
 #include <sstream>
 #include <AzCore/std/sort.h>

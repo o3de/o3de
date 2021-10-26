@@ -117,9 +117,6 @@ namespace UnitTest
             EXPECT_TRUE(AZ::ShapeIntersection::Classify(frustum, s2) == AZ::IntersectResult::Exterior);
         }
 
-        AZ::Vector3 axisX = AZ::Vector3::CreateAxisX();
-        AZ::Vector3 axisY = AZ::Vector3::CreateAxisY();
-        AZ::Vector3 axisZ = AZ::Vector3::CreateAxisZ();
         {
             AZ::Obb obb = AZ::Obb::CreateFromPositionRotationAndHalfLengths(
                 AZ::Vector3(0.0f, -3.9f, 0.0f), AZ::Quaternion::CreateIdentity(), AZ::Vector3::CreateOne());

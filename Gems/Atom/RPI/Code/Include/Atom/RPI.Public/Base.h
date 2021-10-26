@@ -14,9 +14,13 @@
 #include <Atom/RHI.Reflect/Limits.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/containers/fixed_vector.h>
+
+AZ_DECLARE_BUDGET(AzRender);
+AZ_DECLARE_BUDGET(RPI);
 
 namespace AZ
 {
@@ -66,4 +70,5 @@ namespace AZ
         using FeatureProcessorId = AZ::Name;
     }   // namespace RPI
 }   // namespace AZ
+
 

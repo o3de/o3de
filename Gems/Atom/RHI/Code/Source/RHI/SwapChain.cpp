@@ -55,7 +55,7 @@ namespace AZ
             if (resultCode == ResultCode::Success)
             {
                 m_descriptor = descriptor;
-                // Ovewrite descriptor dimensions with the native ones (the ones assigned by the platform) returned by InitInternal.
+                // Overwrite descriptor dimensions with the native ones (the ones assigned by the platform) returned by InitInternal.
                 m_descriptor.m_dimensions = nativeDimensions;
 
                 m_images.reserve(m_descriptor.m_dimensions.m_imageCount);
@@ -129,8 +129,8 @@ namespace AZ
                 while (m_images.size() > static_cast<size_t>(m_descriptor.m_dimensions.m_imageCount))
                 {
                     m_images.pop_back();
-                }            
-                
+                }
+
                 InitImageRequest request;
 
                 RHI::ImageDescriptor& imageDescriptor = request.m_descriptor;
@@ -163,10 +163,6 @@ namespace AZ
                 // Reset the current index back to 0 so we match the platform swap chain.
                 m_currentImageIndex = 0;
             }
-
-#if defined(PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
-            m_resized.store(true);
-#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
 
             return resultCode;
         }

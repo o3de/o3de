@@ -135,7 +135,7 @@ namespace LyShine
         passData->m_pipelineViewTag = AZ::Name("MainCamera");
         auto size = attachmentImage->GetRHIImage()->GetDescriptor().m_size;
         passData->m_overrideScissor = AZ::RHI::Scissor(0, 0, size.m_width, size.m_height);
-        passData->m_overrideViewport = AZ::RHI::Viewport(0, size.m_width, 0, size.m_height);
+        passData->m_overrideViewport = AZ::RHI::Viewport(0, static_cast<float>(size.m_width), 0, static_cast<float>(size.m_height));
         passTemplate->m_passData = AZStd::move(passData);
         // Create a pass descriptor for the new child pass
         AZ::RPI::PassDescriptor childDesc;

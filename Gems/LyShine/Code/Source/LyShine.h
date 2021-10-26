@@ -155,8 +155,6 @@ private:  // static member functions
 
 private: // data
 
-    ISystem* m_system;     // store a pointer to system rather than relying on env.pSystem
-
     std::unique_ptr<CDraw2d> m_draw2d;  // using a pointer rather than an instance to avoid including Draw2d.h
     std::unique_ptr<UiRenderer> m_uiRenderer;  // using a pointer rather than an instance to avoid including UiRenderer.h
     AZStd::shared_ptr<UiRenderer> m_uiRendererForEditor;

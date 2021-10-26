@@ -26,7 +26,7 @@ namespace EMStudio
         const size_t numGroupNodes = nodeGroup->GetNumNodes();
         for (size_t j = 0; j < numGroupNodes; ++j)
         {
-            const uint16 nodeIndex = nodeGroup->GetNode(j);
+            const uint16 nodeIndex = nodeGroup->GetNode(static_cast<uint16>(j));
             const EMotionFX::Node* node = actor->GetSkeleton()->GetNode(nodeIndex);
             m_nodes.emplace_back(node->GetNameString());
         }

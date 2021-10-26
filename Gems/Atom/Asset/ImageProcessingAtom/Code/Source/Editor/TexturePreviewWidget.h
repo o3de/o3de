@@ -70,7 +70,7 @@ namespace ImageProcessingAtomEditor
     protected:
         ////////////////////////////////////////////////////////////////////////
         //EditorInternalNotificationBus
-        void OnEditorSettingsChanged(bool needRefresh, const AZStd::string& platform);
+        void OnEditorSettingsChanged(bool needRefresh, const AZStd::string& platform) override;
         ////////////////////////////////////////////////////////////////////////
         void resizeEvent(QResizeEvent* event) override;
         bool eventFilter(QObject* obj, QEvent* event) override;

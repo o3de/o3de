@@ -16,7 +16,7 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabInstantiate, InstantiatePrefab_SingleEntityInstance)(::benchmark::State& state)
     {
-        const unsigned int numInstances = state.range();
+        const unsigned int numInstances = static_cast<unsigned int>(state.range());
 
         AZStd::unique_ptr<Instance> firstInstance = m_prefabSystemComponent->CreatePrefab(
             { CreateEntity("Entity1") },

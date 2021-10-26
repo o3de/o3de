@@ -17,26 +17,12 @@
 
 namespace ScriptCanvas
 {
-    void BehaviorContextObject::OnReadBegin()
-    {
-        if (!IsOwned())
-        {
-            Clear();
-        }
-    }
-
-    void BehaviorContextObject::OnWriteEnd()
-    {
-        // Id Remapping invokes this method as well, not just serializing from an ObjectStream
-    }
-
     void BehaviorContextObject::Reflect(AZ::ReflectContext* reflection)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
         {
             serializeContext->Class<BehaviorContextObject>()
                 ->Version(0)
-                ->EventHandler<SerializeContextEventHandler>()
                 ->Field("m_flags", &BehaviorContextObject::m_flags)
                 ->Field("m_object", &BehaviorContextObject::m_object)
                 ;
@@ -55,24 +41,11 @@ namespace ScriptCanvas
         }
     }
 
-    void BehaviorContextObject::SerializeContextEventHandler::OnReadBegin(void* classPtr)
-    {
-        BehaviorContextObject* object = reinterpret_cast<BehaviorContextObject*>(classPtr);
-        object->OnReadBegin();
-    }
-
-    void BehaviorContextObject::SerializeContextEventHandler::OnWriteEnd(void* classPtr)
-    {
-        BehaviorContextObject* object = reinterpret_cast<BehaviorContextObject*>(classPtr);
-        object->OnWriteEnd();
-    }
-
     BehaviorContextObjectPtr BehaviorContextObject::CloneObject(const AZ::BehaviorClass& behaviorClass)
     {
         if (SystemRequestBus::HasHandlers())
         {
             AZStd::vector<char> buffer;
-
             {
                 bool wasOwned = IsOwned();
                 m_flags |= Flags::Owned;
@@ -87,7 +60,6 @@ namespace ScriptCanvas
             }
 
             AZ::IO::ByteContainerStream<AZStd::vector<char>> readStream(&buffer);
-
             BehaviorContextObject* newObject = CreateDefault(behaviorClass);
             AZ::Utils::LoadObjectFromStreamInPlace(readStream, (*newObject));
 
@@ -122,6 +94,12 @@ namespace ScriptCanvas
         return ownedObject
             ? BehaviorContextObjectPtr(ownedObject)
             : BehaviorContextObjectPtr(aznew BehaviorContextObject(reference, GetAnyTypeInfoReference(typeID), referenceFlags));
+    }
+
+    void BehaviorContextObject::Deserialize(BehaviorContextObject& target, const AZ::BehaviorClass& behaviorClass, AZStd::any& source)
+    {
+        target.m_object = AZStd::any(AZStd::any_cast<void>(&source), GetAnyTypeInfoObject(behaviorClass));
+        target.m_flags = Owned;
     }
 
     void BehaviorContextObject::release()

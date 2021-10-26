@@ -304,7 +304,7 @@ unsigned int CAnimScreenFaderNode::GetParamCount() const
 //-----------------------------------------------------------------------------
 CAnimParamType CAnimScreenFaderNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex >= 0 && nIndex < (int)s_screenFaderNodeParams.size())
+    if (nIndex < s_screenFaderNodeParams.size())
     {
         return s_screenFaderNodeParams[nIndex].paramType;
     }

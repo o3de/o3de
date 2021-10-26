@@ -8,9 +8,11 @@
 
 set(FILES
     3rdParty/ACES/ACES/Aces.h
+    Include/Atom/Feature/RenderCommon.h
     Include/Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h
     Include/Atom/Feature/Automation/AtomAutomationBus.h
     Include/Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h
+    Include/Atom/Feature/ColorGrading/LutResolution.h
     Include/Atom/Feature/CoreLights/CoreLightsConstants.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformPass.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h
@@ -25,6 +27,7 @@ set(FILES
     Include/Atom/Feature/ImageBasedLights/ImageBasedLightFeatureProcessor.h
     Include/Atom/Feature/LookupTable/LookupTableAsset.h
     Include/Atom/Feature/Mesh/MeshFeatureProcessor.h
+    Include/Atom/Feature/Mesh/ModelReloaderSystemInterface.h
     Include/Atom/Feature/PostProcessing/PostProcessingConstants.h
     Include/Atom/Feature/PostProcessing/SMAAFeatureProcessorInterface.h
     Include/Atom/Feature/PostProcess/PostFxLayerCategoriesConstants.h
@@ -52,7 +55,6 @@ set(FILES
     Source/FrameCaptureSystemComponent.h
     Source/ProfilingCaptureSystemComponent.cpp
     Source/ProfilingCaptureSystemComponent.h
-    Source/RenderCommon.h
     3rdParty/ACES/ACES/Aces.cpp
     Source/ACES/AcesDisplayMapperFeatureProcessor.cpp
     Source/AuxGeom/AuxGeomBase.h
@@ -65,6 +67,8 @@ set(FILES
     Source/AuxGeom/DynamicPrimitiveProcessor.h
     Source/AuxGeom/FixedShapeProcessor.cpp
     Source/AuxGeom/FixedShapeProcessor.h
+    Source/ColorGrading/LutGenerationPass.cpp
+    Source/ColorGrading/LutGenerationPass.h
     Source/CoreLights/CapsuleLightFeatureProcessor.h
     Source/CoreLights/CapsuleLightFeatureProcessor.cpp
     Source/CoreLights/CascadedShadowmapsPass.h
@@ -169,6 +173,10 @@ set(FILES
     Source/Math/MathFilter.cpp
     Source/Math/MathFilterDescriptor.h
     Source/Mesh/MeshFeatureProcessor.cpp
+    Source/Mesh/ModelReloader.cpp
+    Source/Mesh/ModelReloader.h
+    Source/Mesh/ModelReloaderSystem.cpp
+    Source/Mesh/ModelReloaderSystem.h
     Source/MorphTargets/MorphTargetComputePass.cpp
     Source/MorphTargets/MorphTargetComputePass.h
     Source/MorphTargets/MorphTargetDispatchItem.cpp
@@ -183,6 +191,8 @@ set(FILES
     Source/PostProcess/PostProcessFeatureProcessor.h
     Source/PostProcess/PostProcessSettings.cpp
     Source/PostProcess/PostProcessSettings.h
+    Source/PostProcess/ColorGrading/HDRColorGradingSettings.h
+    Source/PostProcess/ColorGrading/HDRColorGradingSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.cpp
     Source/PostProcess/Bloom/BloomSettings.h
     Source/PostProcess/DepthOfField/DepthOfFieldSettings.cpp
@@ -225,12 +235,16 @@ set(FILES
     Source/PostProcessing/EyeAdaptationPass.h
     Source/PostProcessing/FastDepthAwareBlurPasses.cpp
     Source/PostProcessing/FastDepthAwareBlurPasses.h
+    Source/PostProcessing/HDRColorGradingPass.cpp
+    Source/PostProcessing/HDRColorGradingPass.h
     Source/PostProcessing/LookModificationCompositePass.cpp
     Source/PostProcessing/LookModificationCompositePass.h
     Source/PostProcessing/LookModificationTransformPass.cpp
     Source/PostProcessing/LookModificationTransformPass.h
     Source/PostProcessing/LuminanceHistogramGeneratorPass.h
     Source/PostProcessing/LuminanceHistogramGeneratorPass.cpp
+    Source/PostProcessing/NewDepthOfFieldPasses.cpp
+    Source/PostProcessing/NewDepthOfFieldPasses.h
     Source/PostProcessing/PostProcessingShaderOptionBase.cpp
     Source/PostProcessing/PostProcessingShaderOptionBase.h
     Source/PostProcessing/SMAABasePass.cpp

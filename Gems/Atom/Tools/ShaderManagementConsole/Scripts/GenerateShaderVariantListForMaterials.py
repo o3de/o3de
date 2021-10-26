@@ -135,7 +135,7 @@ def main():
     
     # clean previously generated shader variant list file so they don't clash.
     pre, ext = os.path.splitext(shaderAssetInfo.relativePath)
-    projectShaderVariantListFilePath = os.path.join(azlmbr.paths.devassets, PROJECT_SHADER_VARIANTS_FOLDER, f'{pre}.shadervariantlist')
+    projectShaderVariantListFilePath = os.path.join(azlmbr.paths.projectroot, PROJECT_SHADER_VARIANTS_FOLDER, f'{pre}.shadervariantlist')
     
     pre, ext = os.path.splitext(filename)
     defaultShaderVariantListFilePath = f'{pre}.shadervariantlist'
@@ -153,7 +153,7 @@ def main():
     azlmbr.shader.SaveShaderVariantListSourceData(shaderVariantListFilePath, shaderVariantList)
     
     # Open the document in shader management console
-    result = azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentSystemRequestBus(
+    result = azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
         azlmbr.bus.Broadcast,
         'OpenDocument',
         shaderVariantListFilePath

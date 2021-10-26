@@ -19,10 +19,8 @@
 
 
 ////////////////////////////////////////////////////////////////////////////
-CDirectorNodeAnimator::CDirectorNodeAnimator(CTrackViewAnimNode* pDirectorNode)
-    : m_pDirectorNode(pDirectorNode)
+CDirectorNodeAnimator::CDirectorNodeAnimator([[maybe_unused]] CTrackViewAnimNode* pDirectorNode)
 {
-    assert(m_pDirectorNode != nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -139,7 +137,6 @@ void CDirectorNodeAnimator::ForEachActiveSequence(const SAnimContext& ac, CTrack
     const bool bHandleOtherKeys, std::function<void(CTrackViewSequence*, const SAnimContext&)> animateFunction,
     std::function<void(CTrackViewSequence*, const SAnimContext&)> resetFunction)
 {
-    const float time = ac.time;
     const unsigned int numKeys = pSequenceTrack->GetKeyCount();
 
     if (bHandleOtherKeys)

@@ -53,16 +53,14 @@
         "Gems/Multiplayer",
         "Gems/MultiplayerCompression",
         "Gems/NvCloth",
-        "Gems/PBSreferenceMaterials",
         "Gems/PhysX",
         "Gems/PhysXDebug",
-        "Gems/PhysXSamples",
         "Gems/Prefab",
         "Gems/Presence",
         "Gems/PrimitiveAssets",
+        "Gems/Profiler",
         "Gems/PythonAssetBuilder",
         "Gems/QtForPython",
-        "Gems/RADTelemetry",
         "Gems/SaveData",
         "Gems/SceneLoggingExample",
         "Gems/SceneProcessing",
@@ -77,6 +75,7 @@
         "Gems/StartingPointInput",
         "Gems/StartingPointMovement",
         "Gems/SurfaceData",
+        "Gems/Terrain",
         "Gems/TestAssetBuilder",
         "Gems/TextureAtlas",
         "Gems/TickBusOrderViewer",
@@ -93,6 +92,7 @@
     "templates": [
         "Templates/AssetGem",
         "Templates/DefaultGem",
+        "Templates/CustomTool",
         "Templates/DefaultProject",
         "Templates/MinimalProject"
     ]

@@ -10,6 +10,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Debug/Profiler.h>
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/Utils/Utils.h>
@@ -208,7 +209,7 @@ namespace Platform
 
     bool DeleteDir(const char* dirName)
     {
-        AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "SystemFile::DeleteDir(util) - %s", dirName);
+        AZ_PROFILE_SCOPE(AzCore, "SystemFile::DeleteDir(util) - %s", dirName);
 
         if (dirName)
         {

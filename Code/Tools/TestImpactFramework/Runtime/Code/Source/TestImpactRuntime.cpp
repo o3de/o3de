@@ -323,7 +323,7 @@ namespace TestImpact
     void Runtime::EnumerateMutatedTestTargets(const ChangeDependencyList& changeDependencyList)
     {
         AZStd::vector<const TestTarget*> testTargets;
-        const auto addMutatedTestTargetsToEnumerationList = [this, &testTargets](const AZStd::vector<SourceDependency>& sourceDependencies)
+        const auto addMutatedTestTargetsToEnumerationList = [&testTargets](const AZStd::vector<SourceDependency>& sourceDependencies)
         {
             for (const auto& sourceDependency : sourceDependencies)
             {

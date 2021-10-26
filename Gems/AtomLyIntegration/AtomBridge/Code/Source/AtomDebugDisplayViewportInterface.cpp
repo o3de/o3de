@@ -1353,8 +1353,9 @@ namespace AZ::AtomBridge
         // if 2d draw need to project pos to screen first
         AzFramework::TextDrawParameters params;
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
+        const auto dpiScaleFactor = viewportContext->GetDpiScalingFactor();
         params.m_drawViewportId = viewportContext->GetId(); // get the viewport ID so default viewport works
-        params.m_position = AZ::Vector3(x, y, 1.0f);
+        params.m_position = AZ::Vector3(x * dpiScaleFactor, y * dpiScaleFactor, 1.0f);
         params.m_color = m_rendState.m_color;
         params.m_scale = AZ::Vector2(size);
         params.m_hAlign = center ? AzFramework::TextHorizontalAlignment::Center : AzFramework::TextHorizontalAlignment::Left; //! Horizontal text alignment
@@ -1550,6 +1551,26 @@ namespace AZ::AtomBridge
         {
             m_rendState.m_currentTransform--;
         }
+    }
+
+    void AtomDebugDisplayViewportInterface::PushPremultipliedMatrix(const AZ::Matrix3x4& matrix)
+    {
+        AZ_Assert(m_rendState.m_currentTransform < RenderState::TransformStackSize, "Exceeded AtomDebugDisplayViewportInterface matrix stack size");
+        if (m_rendState.m_currentTransform < RenderState::TransformStackSize)
+        {
+            m_rendState.m_currentTransform++;
+            m_rendState.m_transformStack[m_rendState.m_currentTransform] = matrix;
+        }
+    }
+
+    AZ::Matrix3x4 AtomDebugDisplayViewportInterface::PopPremultipliedMatrix()
+    {
+        AZ_Assert(m_rendState.m_currentTransform > 0, "Underflowed AtomDebugDisplayViewportInterface matrix stack");
+        if (m_rendState.m_currentTransform > 0)
+        {
+            m_rendState.m_currentTransform--;
+        }
+        return m_rendState.m_transformStack[m_rendState.m_currentTransform + 1];
     }
 
     const AZ::Matrix3x4& AtomDebugDisplayViewportInterface::GetCurrentTransform() const

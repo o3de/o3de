@@ -458,7 +458,7 @@ namespace AzToolsFramework
 
     void PropertyRowWidget::OnValuesUpdated()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_sourceNode)
         {
@@ -1102,10 +1102,7 @@ namespace AzToolsFramework
             {
                 m_dropDownArrow->hide();
             }
-            m_indent->changeSize((m_treeDepth * m_treeIndentation) + m_leafIndentation, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
-            m_leftHandSideLayout->invalidate();
-            m_leftHandSideLayout->update();
-            m_leftHandSideLayout->activate();
+            SetIndentSize(m_treeDepth * m_treeIndentation + m_leafIndentation);
         }
         else
         {
@@ -1117,10 +1114,7 @@ namespace AzToolsFramework
                 connect(m_dropDownArrow, &QCheckBox::clicked, this, &PropertyRowWidget::OnClickedExpansionButton);
             }
             m_dropDownArrow->show();
-            m_indent->changeSize((m_treeDepth * m_treeIndentation), 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
-            m_leftHandSideLayout->invalidate();
-            m_leftHandSideLayout->update();
-            m_leftHandSideLayout->activate();
+            SetIndentSize(m_treeDepth * m_treeIndentation);
             m_dropDownArrow->setChecked(m_expanded);
         }
     }
@@ -1720,10 +1714,9 @@ namespace AzToolsFramework
         }
         else
         {
-            m_indicatorButton->setVisible(true);
-
             QPixmap pixmap(imagePath);
             m_indicatorButton->setIcon(pixmap);
+            m_indicatorButton->setVisible(true);
         };
     }
 
@@ -1867,7 +1860,7 @@ namespace AzToolsFramework
         }
 
         const auto dpr = devicePixelRatioF();
-        QPixmap dragImage(width * dpr, height * dpr);
+        QPixmap dragImage(static_cast<int>(width * dpr), static_cast<int>(height * dpr));
         dragImage.setDevicePixelRatio(dpr);
         dragImage.fill(Qt::transparent);
 

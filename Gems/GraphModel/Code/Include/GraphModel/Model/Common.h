@@ -66,6 +66,6 @@ namespace GraphModel
     using ModuleGraphManagerPtr = AZStd::shared_ptr<ModuleGraphManager>;
     using ConstModuleGraphManagerPtr = AZStd::shared_ptr<const ModuleGraphManager>;
 
-    static const AZ::u32 DefaultWrappedNodeLayoutOrder = -1;
+    static const AZ::u32 DefaultWrappedNodeLayoutOrder = std::numeric_limits<AZ::u32>::max();
 
 } // namespace GraphModel

@@ -12,9 +12,7 @@
 #include <AzCore/std/typetraits/aligned_storage.h>
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/Memory/AllocatorBase.h>
-#include <AzCore/Debug/Profiler.h>
-
-#include <AzCore/Memory/AllocatorBase.h>
+#include <AzCore/Debug/MemoryProfiler.h>
 
 namespace AZ
 {
@@ -82,7 +80,7 @@ namespace AZ
 
             if (ProfileAllocations)
             {
-                AZ_PROFILE_MEMORY_ALLOC_EX(AZ::Debug::ProfileCategory::MemoryReserved, fileName, lineNum, ptr, byteSize, name ? name : GetName());
+                AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, ptr, byteSize, name ? name : GetName());
                 AZ_MEMORY_PROFILE(ProfileAllocation(ptr, byteSize, alignment, name, fileName, lineNum, suppressStackRecord));
             }
 
@@ -102,7 +100,7 @@ namespace AZ
 
             if (ProfileAllocations)
             {
-                AZ_PROFILE_MEMORY_FREE(AZ::Debug::ProfileCategory::MemoryReserved, ptr);
+                AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
                 AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
             }
 
@@ -128,7 +126,7 @@ namespace AZ
         {
             if (ProfileAllocations)
             {
-                AZ_PROFILE_MEMORY_FREE(AZ::Debug::ProfileCategory::MemoryReserved, ptr);
+                AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
             }
 
             newSize = MemorySizeAdjustedUp(newSize);
@@ -142,7 +140,7 @@ namespace AZ
 
             if (ProfileAllocations)
             {
-                AZ_PROFILE_MEMORY_ALLOC(AZ::Debug::ProfileCategory::MemoryReserved, newPtr, newSize, GetName());
+                AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newPtr, newSize, GetName());
                 AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newPtr, newSize, newAlignment));
             }
 
@@ -179,6 +177,11 @@ namespace AZ
         size_type GetMaxAllocationSize() const override
         { 
             return m_schema->GetMaxAllocationSize();
+        }
+
+        size_type GetMaxContiguousAllocationSize() const override
+        {
+            return m_schema->GetMaxContiguousAllocationSize();
         }
 
         size_type GetUnAllocatedMemory(bool isPrint = false) const override

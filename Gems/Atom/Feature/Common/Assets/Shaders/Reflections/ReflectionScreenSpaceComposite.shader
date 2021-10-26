@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionScreenSpaceComposite",
+    "Source" : "ReflectionScreenSpaceComposite.azsl",
 
     "RasterState" :
     {

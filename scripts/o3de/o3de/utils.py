@@ -10,9 +10,38 @@ This file contains utility functions
 """
 import sys
 import uuid
+import os
 import pathlib
 import shutil
 import urllib.request
+import logging
+import zipfile
+
+logger = logging.getLogger()
+logging.basicConfig()
+
+COPY_BUFSIZE = 64 * 1024
+
+def copyfileobj(fsrc, fdst, callback, length=0):
+    # This is functionally the same as the python shutil copyfileobj but
+    # allows for a callback to return the download progress in blocks and allows
+    # to early out to cancel the copy.
+    if not length:
+        length = COPY_BUFSIZE
+
+    fsrc_read = fsrc.read
+    fdst_write = fdst.write
+
+    copied = 0
+    while True:
+        buf = fsrc_read(length)
+        if not buf:
+            break
+        fdst_write(buf)
+        copied += len(buf)
+        if callback(copied):
+            return 1
+    return 0
 
 def validate_identifier(identifier: str) -> bool:
     """
@@ -88,20 +117,31 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
-
-def download_file(parsed_uri, download_path: pathlib.Path) -> int:
+def download_file(parsed_uri, download_path: pathlib.Path, download_progress_callback = None) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_path: location path on disk to download file
+    :download_progress_callback: callback called with the download progress as a percentage, returns true to request to cancel the download
     """
     if download_path.is_file():
         logger.warn(f'File already downloaded to {download_path}.')
     elif parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
-        with urllib.request.urlopen(url) as s:
+        with urllib.request.urlopen(parsed_uri.geturl()) as s:
+            download_file_size = 0
+            try:
+                download_file_size = s.headers['content-length']
+            except KeyError:
+                pass
+            def download_progress(blocks):
+                if download_progress_callback and download_file_size:
+                    return download_progress_callback(int(blocks/int(download_file_size) * 100))
+                return False
             with download_path.open('wb') as f:
-                shutil.copyfileobj(s, f)
+                download_cancelled = copyfileobj(s, f, download_progress)
+                if download_cancelled:
+                    return 1
     else:
-        origin_file = pathlib.Path(url).resolve()
+        origin_file = pathlib.Path(parsed_uri.geturl()).resolve()
         if not origin_file.is_file():
             return 1
         shutil.copy(origin_file, download_path)
@@ -109,12 +149,12 @@ def download_file(parsed_uri, download_path: pathlib.Path) -> int:
     return 0
 
 
-def download_zip_file(parsed_uri, download_zip_path: pathlib.Path) -> int:
+def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, download_progress_callback = None) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_zip_path: path to output zip file
     """
-    download_file_result = download_file(parsed_uri, download_zip_path)
+    download_file_result = download_file(parsed_uri, download_zip_path, download_progress_callback)
     if download_file_result != 0:
         return download_file_result
 

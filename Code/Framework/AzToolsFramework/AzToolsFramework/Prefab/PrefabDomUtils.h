@@ -160,9 +160,7 @@ namespace AzToolsFramework
             {
                 AZ_RTTI(LinkIdMetadata, "{8FF7D299-14E3-41D4-90C5-393A240FAE7C}");
 
-                virtual ~LinkIdMetadata()
-                {
-                }
+                virtual ~LinkIdMetadata() {}
             };
         } // namespace PrefabDomUtils
     } // namespace Prefab

@@ -10,6 +10,11 @@
 
 #include <AzCore/Name/Internal/NameData.h>
 
+namespace UnitTest
+{
+    class NameTest;
+}
+
 namespace AZ
 {
     class NameDictionary;
@@ -29,6 +34,7 @@ namespace AZ
     class Name
     {
         friend NameDictionary;
+        friend UnitTest::NameTest;
     public:
         using Hash = Internal::NameData::Hash;
 

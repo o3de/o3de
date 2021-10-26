@@ -36,9 +36,9 @@ namespace ScriptCanvas
                 void OnConfigured() override;
                 void ConfigureVisualExtensions() override;
 
-                bool CanDeleteSlot(const SlotId& slotId) const;
+                bool CanDeleteSlot(const SlotId& slotId) const override;
 
-                SlotId HandleExtension(AZ::Crc32 extensionId);
+                SlotId HandleExtension(AZ::Crc32 extensionId) override;
 
                 AZ::Outcome<DependencyReport, void> GetDependencies() const override;
 

@@ -89,9 +89,49 @@ namespace AZ::IO
         return m_pCache->RemoveDir(fullPath);
     }
 
+    //////////////////////////////////////////////////////////////////////////
     int NestedArchive::RemoveAll()
     {
         return m_pCache->RemoveAll();
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // Helper for 'ListAllFiles' to recursively traverse the FileEntryTree and gather all the files
+    void EnumerateFilesRecursive(AZ::IO::Path currentPath, ZipDir::FileEntryTree* currentTree, AZStd::vector<AZ::IO::Path>& fileList)
+    {
+        // Drill down directories first...
+        for (auto dirIter = currentTree->GetDirBegin(); dirIter != currentTree->GetDirEnd(); ++dirIter)
+        {
+            if (ZipDir::FileEntryTree* subTree = currentTree->GetDirEntry(dirIter);
+                subTree != nullptr)
+            {
+                EnumerateFilesRecursive(currentPath / currentTree->GetDirName(dirIter), subTree, fileList);
+            }
+        }
+
+        // Then enumerate the files in current directory...
+        for (auto fileIter = currentTree->GetFileBegin(); fileIter != currentTree->GetFileEnd(); ++fileIter)
+        {
+            fileList.emplace_back(currentPath / currentTree->GetFileName(fileIter));
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////
+    // lists all files in the archive
+    int NestedArchive::ListAllFiles(AZStd::vector<AZ::IO::Path>& outFileEntries)
+    {
+        AZStd::vector<AZ::IO::Path> filesInArchive;
+
+        ZipDir::FileEntryTree* tree = m_pCache->GetRoot();
+        if (!tree)
+        {
+            return ZipDir::ZD_ERROR_UNEXPECTED;
+        }
+
+        EnumerateFilesRecursive(AZ::IO::Path{ AZ::IO::PosixPathSeparator }, tree, filesInArchive);
+
+        AZStd::swap(outFileEntries, filesInArchive);
+        return ZipDir::ZD_ERROR_SUCCESS;
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -174,7 +214,7 @@ namespace AZ::IO
         return m_pCache->ReadFile(reinterpret_cast<ZipDir::FileEntry*>(fileHandle), nullptr, pBuffer);
     }
 
-    const char* NestedArchive::GetFullPath() const
+    AZ::IO::PathView NestedArchive::GetFullPath() const
     {
         return m_pCache->GetFilePath();
     }
@@ -193,19 +233,9 @@ namespace AZ::IO
         if (nFlagsToSet & FLAGS_RELATIVE_PATHS_ONLY)
         {
             m_nFlags |= FLAGS_RELATIVE_PATHS_ONLY;
-        }
-
-        if (nFlagsToSet & FLAGS_ON_HDD)
-        {
-            m_nFlags |= FLAGS_ON_HDD;
-        }
-
-        if (nFlagsToSet & FLAGS_RELATIVE_PATHS_ONLY ||
-            nFlagsToSet & FLAGS_ON_HDD)
-        {
-            // we don't support changing of any other flags
             return true;
         }
+
         return false;
     }
 
@@ -252,20 +282,12 @@ namespace AZ::IO
             return AZ::IO::FixedMaxPathString{ szRelativePath };
         }
 
-        if ((szRelativePath.size() > 1 && szRelativePath[1] == ':') || (m_nFlags & FLAGS_ABSOLUTE_PATHS))
+        if ((m_nFlags & FLAGS_ABSOLUTE_PATHS) == FLAGS_ABSOLUTE_PATHS)
         {
             // make the normalized full path and try to match it against the binding root of this object
-            auto resolvedPath = AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(szRelativePath);
-
-            // Make sure the resolve path is longer than the bind root and that it starts with the bind root
-            if (!resolvedPath || resolvedPath->Native().size() <= m_strBindRoot.size() || azstrnicmp(resolvedPath->c_str(), m_strBindRoot.c_str(), m_strBindRoot.size()) != 0)
-            {
-                return {};
-            }
-
-            // Remove the bind root prefix from the resolved path
-            resolvedPath->Native().erase(0, m_strBindRoot.size() + 1);
-            return resolvedPath->Native();
+            AZ::IO::FixedMaxPath resolvedPath;
+            AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(resolvedPath, szRelativePath);
+            return resolvedPath.LexicallyProximate(m_strBindRoot).Native();
         }
 
         return AZ::IO::FixedMaxPathString{ szRelativePath };

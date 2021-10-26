@@ -274,7 +274,7 @@ namespace AzToolsFramework
      */
     SliceCompilationResult CompileEditorSlice(const AZ::Data::Asset<AZ::SliceAsset>& sourceSliceAsset, const AZ::PlatformTagSet& platformTags, AZ::SerializeContext& serializeContext, const EditorOnlyEntityHandlers& editorOnlyEntityHandlers)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (!sourceSliceAsset)
         {
             return AZ::Failure(AZStd::string("Source slice is invalid."));
@@ -657,7 +657,7 @@ namespace AzToolsFramework
     // tolerate ALL possible input errors (looping parents, invalid IDs, etc).
     void SortTransformParentsBeforeChildren(AZStd::vector<AZ::Entity*>& entities)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // IDs of those present in 'entities'. Does not include parent ID if parent not found in 'entities'
         AZStd::unordered_set<AZ::EntityId> existingEntityIds;

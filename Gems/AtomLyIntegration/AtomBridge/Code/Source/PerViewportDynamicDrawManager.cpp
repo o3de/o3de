@@ -86,7 +86,7 @@ namespace AZ::AtomBridge
                     context.second->SetOutputScope(pipeline.get());
                 }
             });
-            viewportData.m_viewportDestroyedHandler = AZ::Event<AzFramework::ViewportId>::Handler([this, viewportId](AzFramework::ViewportId id)
+            viewportData.m_viewportDestroyedHandler = AZ::Event<AzFramework::ViewportId>::Handler([this](AzFramework::ViewportId id)
             {
                 AZStd::lock_guard lock(m_mutexDrawContexts);
                 m_viewportData.erase(id);

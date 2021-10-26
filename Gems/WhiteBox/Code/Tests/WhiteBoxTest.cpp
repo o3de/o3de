@@ -1821,7 +1821,6 @@ namespace UnitTest
 
         Api::InitializeAsUnitTriangle(*m_whiteBox);
 
-        const auto vertexCount = Api::MeshVertexCount(*m_whiteBox);
         const auto vertexHandles = Api::MeshVertexHandles(*m_whiteBox);
         const auto vertexPositions = Api::MeshVertexPositions(*m_whiteBox);
 

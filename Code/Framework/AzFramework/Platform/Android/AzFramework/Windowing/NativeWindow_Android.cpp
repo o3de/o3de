@@ -57,6 +57,7 @@ namespace AzFramework
 
     uint32_t NativeWindowImpl_Android::GetDisplayRefreshRate() const
     {
+        // [GFX TODO][GHI - 2678]
         // Using 60 for now until proper support is added
         return 60;
     }

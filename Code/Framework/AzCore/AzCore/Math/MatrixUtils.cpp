@@ -57,7 +57,7 @@ namespace AZ
 
     float GetPerspectiveMatrixFOV(const Matrix4x4& m)
     {
-        return 2.0 * AZStd::atan(1.0f / m.GetElement(1, 1));
+        return 2.0f * AZStd::atan(1.0f / m.GetElement(1, 1));
     }
 
     Matrix4x4* MakeFrustumMatrixRH(Matrix4x4& out, float left, float right, float bottom, float top, float nearDist, float farDist, bool reverseDepth)

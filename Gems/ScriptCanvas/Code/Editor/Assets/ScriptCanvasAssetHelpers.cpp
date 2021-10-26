@@ -41,7 +41,6 @@ namespace ScriptCanvasEditor
             bool sourceInfoFound{};
 
             AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, fullPath.data(), catalogAssetInfo, watchFolder);
-            auto saveAssetId = sourceInfoFound ? catalogAssetInfo.m_assetId : AZ::Data::AssetId(AZ::Uuid::CreateRandom());
             if (sourceInfoFound)
             {
                 outAssetInfo = catalogAssetInfo;

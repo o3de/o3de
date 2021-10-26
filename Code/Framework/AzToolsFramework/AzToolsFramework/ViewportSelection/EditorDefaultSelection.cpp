@@ -9,6 +9,7 @@
 #include "EditorDefaultSelection.h"
 
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
@@ -19,21 +20,35 @@ namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorDefaultSelection, AZ::SystemAllocator, 0)
 
-    EditorDefaultSelection::EditorDefaultSelection(const EditorVisibleEntityDataCache* entityDataCache)
+    EditorDefaultSelection::EditorDefaultSelection(
+        const EditorVisibleEntityDataCache* entityDataCache, ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
         : m_phantomWidget(nullptr)
         , m_entityDataCache(entityDataCache)
+        , m_viewportEditorModeTracker(viewportEditorModeTracker)
+        , m_componentModeCollection(viewportEditorModeTracker)
     {
+        AZ_Assert(
+            AZ::Interface<ComponentModeCollectionInterface>::Get() == nullptr, "Unexpected registration of component mode collection.")
+        AZ::Interface<ComponentModeCollectionInterface>::Register(&m_componentModeCollection);
+
         ActionOverrideRequestBus::Handler::BusConnect(GetEntityContextId());
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusConnect();
 
         m_manipulatorManager = AZStd::make_shared<AzToolsFramework::ManipulatorManager>(AzToolsFramework::g_mainManipulatorManagerId);
         m_transformComponentSelection = AZStd::make_unique<EditorTransformComponentSelection>(entityDataCache);
+        m_viewportEditorModeTracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Default);
     }
 
     EditorDefaultSelection::~EditorDefaultSelection()
     {
         ComponentModeFramework::ComponentModeSystemRequestBus::Handler::BusDisconnect();
         ActionOverrideRequestBus::Handler::BusDisconnect();
+        m_viewportEditorModeTracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Default);
+
+        AZ_Assert(
+            AZ::Interface<ComponentModeCollectionInterface>::Get() != nullptr,
+            "Unexpected unregistration of component mode collection.")
+        AZ::Interface<ComponentModeCollectionInterface>::Unregister(&m_componentModeCollection);
     }
 
     void EditorDefaultSelection::SetOverridePhantomWidget(QWidget* phantomOverrideWidget)
@@ -188,7 +203,7 @@ namespace AzToolsFramework
             return false;
         }
 
-        using namespace AzToolsFramework::ViewportInteraction;
+        using AzToolsFramework::ViewportInteraction::MouseEvent;
         const auto& mouseInteraction = mouseInteractionEvent.m_mouseInteraction;
         // store the current interaction for use in DrawManipulators
         m_currentInteraction = mouseInteraction;
@@ -196,28 +211,19 @@ namespace AzToolsFramework
         switch (mouseInteractionEvent.m_mouseEvent)
         {
         case MouseEvent::Down:
-            {
-                return m_manipulatorManager->ConsumeViewportMousePress(mouseInteraction);
-            }
+            return m_manipulatorManager->ConsumeViewportMousePress(mouseInteraction);
         case MouseEvent::DoubleClick:
-            {
-                return false;
-            }
+            return false;
         case MouseEvent::Move:
             {
-                AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult mouseMoveResult =
-                    AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult::None;
-                mouseMoveResult = m_manipulatorManager->ConsumeViewportMouseMove(mouseInteraction);
+                const AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult mouseMoveResult =
+                    m_manipulatorManager->ConsumeViewportMouseMove(mouseInteraction);
                 return mouseMoveResult == AzToolsFramework::ManipulatorManager::ConsumeMouseMoveResult::Interacting;
             }
         case MouseEvent::Up:
-            {
-                return m_manipulatorManager->ConsumeViewportMouseRelease(mouseInteraction);
-            }
+            return m_manipulatorManager->ConsumeViewportMouseRelease(mouseInteraction);
         case MouseEvent::Wheel:
-            {
-                return m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction);
-            }
+            return m_manipulatorManager->ConsumeViewportMouseWheel(mouseInteraction);
         default:
             return false;
         }
@@ -302,8 +308,8 @@ namespace AzToolsFramework
         }
 
         // poll and set the keyboard modifiers to ensure the mouse interaction is up to date
-        m_currentInteraction.m_keyboardModifiers =
-            AzToolsFramework::ViewportInteraction::BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers());
+        m_currentInteraction.m_keyboardModifiers = AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
+
         // draw the manipulators
         const AzFramework::CameraState cameraState = GetCameraState(viewportInfo.m_viewportId);
         debugDisplay.DepthTestOff();

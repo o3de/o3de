@@ -66,6 +66,7 @@ namespace EMStudio
         m_jointSelectionWindow = new NodeSelectionWindow(this, m_singleJointSelection);
         connect(m_jointSelectionWindow, &NodeSelectionWindow::rejected, this, &ActorJointBrowseEdit::OnSelectionRejected);
         connect(m_jointSelectionWindow->GetNodeHierarchyWidget()->GetTreeWidget(), &QTreeWidget::itemSelectionChanged, this, &ActorJointBrowseEdit::OnSelectionChanged);
+        connect(m_jointSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnSelectionDone, this, &ActorJointBrowseEdit::OnSelectionDone);
 
         NodeSelectionWindow::connect(m_jointSelectionWindow, &QDialog::finished, [=]([[maybe_unused]] int resultCode)
             {

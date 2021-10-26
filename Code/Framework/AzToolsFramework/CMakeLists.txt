@@ -20,7 +20,6 @@ ly_add_target(
         AzToolsFramework/aztoolsframework_files.cmake
         AzToolsFramework/aztoolsframework_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
         Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-        Platform/Common/${PAL_TRAIT_COMPILER_ID}/aztoolsframework_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             .
@@ -60,6 +59,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PUBLIC
                 AZ::AzTestShared
             PRIVATE
+                3rdParty::Qt::Test
                 3rdParty::googletest::GMock
                 3rdParty::GoogleBenchmark
                 AZ::AzToolsFramework
@@ -76,8 +76,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 Tests
         BUILD_DEPENDENCIES
-            PRIVATE
+            PUBLIC
                 AZ::AzTestShared
+            PRIVATE
                 3rdParty::Qt::Test
                 AZ::AzFrameworkTestShared
                 AZ::AzToolsFramework

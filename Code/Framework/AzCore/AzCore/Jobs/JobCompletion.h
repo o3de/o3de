@@ -33,7 +33,7 @@ namespace AZ
          */
         void StartAndWaitForCompletion()
         {
-            AZ_PROFILE_FUNCTION_STALL(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             // start the job
             Start();

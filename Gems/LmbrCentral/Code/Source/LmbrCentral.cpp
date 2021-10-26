@@ -72,6 +72,7 @@
 // Shape components
 #include "Shape/SphereShapeComponent.h"
 #include "Shape/DiskShapeComponent.h"
+#include "Shape/AxisAlignedBoxShapeComponent.h"
 #include "Shape/BoxShapeComponent.h"
 #include "Shape/QuadShapeComponent.h"
 #include "Shape/CylinderShapeComponent.h"
@@ -83,8 +84,6 @@
 
 namespace LmbrCentral
 {
-    static const char* s_assetCatalogFilename = "assetcatalog.xml";
-
     using LmbrCentralAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator>;
 
     // This component boots the required allocators for LmbrCentral everywhere but AssetBuilders
@@ -202,6 +201,7 @@ namespace LmbrCentral
             SphereShapeComponent::CreateDescriptor(),
             DiskShapeComponent::CreateDescriptor(),
             BoxShapeComponent::CreateDescriptor(),
+            AxisAlignedBoxShapeComponent::CreateDescriptor(),
             QuadShapeComponent::CreateDescriptor(),
             CylinderShapeComponent::CreateDescriptor(),
             CapsuleShapeComponent::CreateDescriptor(),
@@ -215,6 +215,7 @@ namespace LmbrCentral
             SphereShapeDebugDisplayComponent::CreateDescriptor(),
             DiskShapeDebugDisplayComponent::CreateDescriptor(),
             BoxShapeDebugDisplayComponent::CreateDescriptor(),
+            AxisAlignedBoxShapeDebugDisplayComponent::CreateDescriptor(),
             QuadShapeDebugDisplayComponent::CreateDescriptor(),
             CapsuleShapeDebugDisplayComponent::CreateDescriptor(),
             CylinderShapeDebugDisplayComponent::CreateDescriptor(),
@@ -351,8 +352,7 @@ namespace LmbrCentral
         AZ_Assert(AZ::Data::AssetManager::IsReady(), "Asset manager isn't ready!");
 
         // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
-        auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler();
-        if (assetCatalog)
+        if (auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler(); assetCatalog)
         {
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid());
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<MaterialAsset>::Uuid());
@@ -373,7 +373,6 @@ namespace LmbrCentral
             assetCatalog->AddExtension("cax");
         }
 
-        CrySystemEventBus::Handler::BusConnect();
         AZ::Data::AssetManagerNotificationBus::Handler::BusConnect();
 
 
@@ -445,7 +444,6 @@ namespace LmbrCentral
         m_unhandledAssetInfo.clear();
 
         AZ::Data::AssetManagerNotificationBus::Handler::BusDisconnect();
-        CrySystemEventBus::Handler::BusDisconnect();
 
         // AssetHandler's destructor calls Unregister()
         m_assetHandlers.clear();
@@ -455,42 +453,6 @@ namespace LmbrCentral
             (*allocatorIt)();
         }
         m_allocatorShutdowns.clear();
-    }
-
-    void LmbrCentralSystemComponent::OnCrySystemPreInitialize([[maybe_unused]] ISystem& system, [[maybe_unused]] const SSystemInitParams& systemInitParams)
-    {
-        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, StartMonitoringAssets);
-    }
-
-    void LmbrCentralSystemComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams)
-    {
-#if !defined(AZ_MONOLITHIC_BUILD)
-        // When module is linked dynamically, we must set our gEnv pointer.
-        // When module is linked statically, we'll share the application's gEnv pointer.
-        gEnv = system.GetGlobalEnvironment();
-#endif
-
-        // Enable catalog now that application's asset root is set.
-        if (system.GetGlobalEnvironment()->IsEditor())
-        {
-            // In the editor, we build the catalog by scanning the disk.
-            if (systemInitParams.pUserCallback)
-            {
-                systemInitParams.pUserCallback->OnInitProgress("Refreshing asset catalog...");
-            }
-        }
-
-        // load the catalog from disk (supported over VFS).
-        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, LoadCatalog, AZStd::string::format("@assets@/%s", s_assetCatalogFilename).c_str());
-    }
-
-    void LmbrCentralSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
-    {
-        EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, StopMonitoringAssets);
-
-#if !defined(AZ_MONOLITHIC_BUILD)
-        gEnv = nullptr;
-#endif
     }
 } // namespace LmbrCentral
 

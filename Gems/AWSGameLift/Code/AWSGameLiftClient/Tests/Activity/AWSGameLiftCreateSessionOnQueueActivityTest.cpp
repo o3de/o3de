@@ -40,7 +40,7 @@ TEST_F(AWSGameLiftCreateSessionOnQueueActivityTest, ValidateCreateSessionOnQueue
 TEST_F(AWSGameLiftCreateSessionOnQueueActivityTest, ValidateCreateSessionOnQueueRequest_CallWithNegativeMaxPlayer_GetFalseResult)
 {
     AWSGameLiftCreateSessionOnQueueRequest request;
-    request.m_maxPlayer = -1;
+    request.m_maxPlayer = std::numeric_limits<uint64_t>::max();
 
     auto result = CreateSessionOnQueueActivity::ValidateCreateSessionOnQueueRequest(request);
     EXPECT_FALSE(result);

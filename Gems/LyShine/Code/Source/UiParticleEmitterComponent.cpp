@@ -785,7 +785,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
     AZ::Data::Instance<AZ::RPI::Image> image;
     if (m_sprite)
     {
-        CSprite* sprite = dynamic_cast<CSprite*>(m_sprite);
+        CSprite* sprite = static_cast<CSprite*>(m_sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
         if (sprite)
         {
             image = sprite->GetImage();
@@ -843,7 +843,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     m_cachedPrimitive.m_numVertices = totalVerticesInserted;
     m_cachedPrimitive.m_numIndices = totalParticlesInserted * indicesPerParticle;
-    LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+    LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting - GHI #3570
     if (lyRenderGraph)
     {
         lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
@@ -1825,8 +1825,8 @@ void UiParticleEmitterComponent::ResetParticleBuffers()
     }
     m_cachedPrimitive.m_indices = new uint16[numIndices];
 
-    const int verticesPerParticle = 4;
-    int baseIndex = 0;
+    const uint16 verticesPerParticle = 4;
+    uint16 baseIndex = 0;
     for (AZ::u32 i = 0; i < numIndices; i += indicesPerParticle)
     {
         m_cachedPrimitive.m_indices[i + 0] = 0 + baseIndex;

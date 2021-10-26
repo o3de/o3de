@@ -107,7 +107,7 @@ namespace TestImpact
         }
 
         // Wrapper around low-level process launch callback to gather job meta-data and present a simplified callback interface to the client
-        const ProcessLaunchCallback processLaunchCallback = [&jobCallback, &jobInfos, &metas](
+        const ProcessLaunchCallback processLaunchCallback = [&jobCallback, &metas](
             TestImpact::ProcessId pid,
             TestImpact::LaunchResult launchResult,
             AZStd::chrono::high_resolution_clock::time_point createTime)
@@ -126,7 +126,7 @@ namespace TestImpact
         };
 
         // Wrapper around low-level process exit callback to gather job meta-data and present a simplified callback interface to the client
-        const ProcessExitCallback processExitCallback = [&jobCallback, &jobInfos, &metas](
+        const ProcessExitCallback processExitCallback = [&jobCallback, &metas](
             TestImpact::ProcessId pid,
             TestImpact::ExitCondition exitCondition,
             TestImpact::ReturnCode returnCode,

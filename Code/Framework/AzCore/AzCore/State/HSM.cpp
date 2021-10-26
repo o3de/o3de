@@ -187,7 +187,7 @@ void
 HSM::ClearStateHandler(StateId id)
 {
     m_states[id].handler.clear();
-    m_states[id].name = NULL;
+    m_states[id].name = nullptr;
     m_states[id].superId = InvalidStateId;
 }
 

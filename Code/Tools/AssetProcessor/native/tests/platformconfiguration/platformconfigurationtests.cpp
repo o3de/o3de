@@ -405,6 +405,8 @@ TEST_F(PlatformConfigurationUnitTests, TestFailReadConfigFile_RegularExcludes)
     auto configRoot = AZ::IO::FileIOBase::GetInstance()->ResolvePath("@exefolder@/testdata/config_regular");
     ASSERT_TRUE(configRoot);
     UnitTestPlatformConfiguration config;
+    
+    config.AddScanFolder(ScanFolderInfo("blahblah", "Blah ScanFolder", "sf2", true, true), true);
     m_absorber.Clear();
     ASSERT_TRUE(config.InitializeFromConfigFiles(configRoot->c_str(), testExeFolder->c_str(), EmptyDummyProjectName, false, false));
     ASSERT_EQ(m_absorber.m_numErrorsAbsorbed, 0);
@@ -590,20 +592,22 @@ TEST_F(PlatformConfigurationUnitTests, Test_GemHandling)
 
     AssetUtilities::ResetAssetRoot();
 
-    ASSERT_EQ(2, config.GetScanFolderCount());
+    ASSERT_EQ(4, config.GetScanFolderCount());
     EXPECT_FALSE(config.GetScanFolderAt(0).IsRoot());
     EXPECT_TRUE(config.GetScanFolderAt(0).RecurseSubFolders());
     // the first one is a game gem, so its order should be above 1 but below 100.
     EXPECT_GE(config.GetScanFolderAt(0).GetOrder(), 100);
     EXPECT_EQ(0, config.GetScanFolderAt(0).ScanPath().compare(expectedScanFolder, Qt::CaseInsensitive));
 
-    // for each gem, there are currently 1 scan folder, the gem assets folder, with no output prefix
+    // for each gem, there are currently 2 scan folders:
+    // The Gem's 'Assets' folder
+    // The Gem's 'Registry' folder
 
     expectedScanFolder = tempPath.absoluteFilePath("Gems/LmbrCentral/v2/Assets");
-    EXPECT_FALSE(config.GetScanFolderAt(1).IsRoot() );
-    EXPECT_TRUE(config.GetScanFolderAt(1).RecurseSubFolders());
-    EXPECT_GT(config.GetScanFolderAt(1).GetOrder(), config.GetScanFolderAt(0).GetOrder());
-    EXPECT_EQ(0, config.GetScanFolderAt(1).ScanPath().compare(expectedScanFolder, Qt::CaseInsensitive));
+    EXPECT_FALSE(config.GetScanFolderAt(2).IsRoot() );
+    EXPECT_TRUE(config.GetScanFolderAt(2).RecurseSubFolders());
+    EXPECT_GT(config.GetScanFolderAt(2).GetOrder(), config.GetScanFolderAt(0).GetOrder());
+    EXPECT_EQ(0, config.GetScanFolderAt(2).ScanPath().compare(expectedScanFolder, Qt::CaseInsensitive));
 }
 
 TEST_F(PlatformConfigurationUnitTests, Test_MetaFileTypes)

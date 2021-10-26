@@ -27,6 +27,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzQtComponents/Components/ToastNotification.h>
 
 #include <GraphCanvas/Components/Connections/ConnectionBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
@@ -51,8 +52,7 @@
 
 #include <Editor/View/Widgets/AssetGraphSceneDataBus.h>
 
-#include <Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.h>
-#include <Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/Controller.h>
 
 #if SCRIPTCANVAS_EDITOR
 #include <Include/EditorCoreAPI.h>
@@ -99,29 +99,24 @@ namespace ScriptCanvasEditor
 
     class ScriptCanvasAssetBrowserModel
         : public AzToolsFramework::AssetBrowser::AssetBrowserFilterModel
-        , private UpgradeNotifications::Bus::Handler
+        , private UpgradeNotificationsBus::Handler
     {
     public:
 
         explicit ScriptCanvasAssetBrowserModel(QObject* parent = nullptr)
             : AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent)
         {
-            UpgradeNotifications::Bus::Handler::BusConnect();
+            UpgradeNotificationsBus::Handler::BusConnect();
         }
 
         ~ScriptCanvasAssetBrowserModel() override
         {
-            UpgradeNotifications::Bus::Handler::BusDisconnect();
+            UpgradeNotificationsBus::Handler::BusDisconnect();
         }
 
         void OnUpgradeStart() override
         {
             AzToolsFramework::AssetBrowser::AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
-        }
-        
-        void OnUpgradeComplete() override
-        {
-            AzToolsFramework::AssetBrowser::AssetBrowserComponentNotificationBus::Handler::BusConnect();
         }
     };
 
@@ -130,7 +125,7 @@ namespace ScriptCanvasEditor
     public:
         OnSaveToast(AZStd::string_view tabName, AZ::EntityId graphCanvasGraphId, bool saveSuccessful)
         {
-            GraphCanvas::ToastType toastType = GraphCanvas::ToastType::Information;
+            AzQtComponents::ToastType toastType = AzQtComponents::ToastType::Information;
             AZStd::string titleLabel = "Notification";
 
             AZStd::string description;
@@ -142,15 +137,12 @@ namespace ScriptCanvasEditor
             else
             {
                 description = AZStd::string::format("Failed to save %s", tabName.data());
-                toastType = GraphCanvas::ToastType::Error;
+                toastType = AzQtComponents::ToastType::Error;
             }
 
-            GraphCanvas::ToastConfiguration toastConfiguration(toastType, titleLabel, description);
+            AzQtComponents::ToastConfiguration toastConfiguration(toastType, titleLabel.c_str(), description.c_str());
 
-            toastConfiguration.SetCloseOnClick(true);
-            toastConfiguration.SetDuration(AZStd::chrono::milliseconds(5000));
-
-            GraphCanvas::ToastId validationToastId;
+            AzToolsFramework::ToastId validationToastId;
 
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, graphCanvasGraphId, &GraphCanvas::SceneRequests::GetViewId);
@@ -272,7 +264,7 @@ namespace ScriptCanvasEditor
     private:
         // UIRequestBus
         QMainWindow* GetMainWindow() override { return qobject_cast<QMainWindow*>(this); }
-        void OpenValidationPanel();
+        void OpenValidationPanel() override;
         //
 
         // Undo Handlers
@@ -299,9 +291,9 @@ namespace ScriptCanvasEditor
         bool ContainsGraph(const GraphCanvas::GraphId& graphId) const override;
         bool CloseGraph(const GraphCanvas::GraphId& graphId) override;
 
-        void CustomizeConnectionEntity(AZ::Entity* connectionEntity);
+        void CustomizeConnectionEntity(AZ::Entity* connectionEntity) override;
 
-        void ShowAssetPresetsMenu(GraphCanvas::ConstructType constructType);
+        void ShowAssetPresetsMenu(GraphCanvas::ConstructType constructType) override;
 
         GraphCanvas::ContextMenuAction::SceneReaction ShowSceneContextMenuWithGroup(const QPoint& screenPoint, const QPointF& scenePoint, AZ::EntityId groupTarget) override;
 
@@ -327,8 +319,8 @@ namespace ScriptCanvasEditor
         ////
 
         //! ScriptCanvas::BatchOperationsNotificationBus
-        void OnCommandStarted(AZ::Crc32 commandTag);
-        void OnCommandFinished(AZ::Crc32 commandTag);        
+        void OnCommandStarted(AZ::Crc32 commandTag) override;
+        void OnCommandFinished(AZ::Crc32 commandTag) override;
 
         // File menu
         void OnFileNew();
@@ -427,7 +419,7 @@ namespace ScriptCanvasEditor
         QVariant GetTabData(const AZ::Data::AssetId& assetId);
 
         //! GeneralRequestBus
-        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const AZ::Data::AssetId& assetId);
+        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const AZ::Data::AssetId& assetId) override;
         AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(AZ::Data::AssetId scriptCanvasAssetId, int tabIndex = -1) override;
         AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(const ScriptCanvasMemoryAsset& scriptCanvasAsset, int tabIndex = -1);
         int CloseScriptCanvasAsset(const AZ::Data::AssetId& assetId) override;
@@ -497,7 +489,7 @@ namespace ScriptCanvasEditor
         float GetEdgePanningScrollSpeed() const override;        
 
         GraphCanvas::EditorConstructPresets* GetConstructPresets() const override;
-        const GraphCanvas::ConstructTypePresetBucket* GetConstructTypePresetBucket(GraphCanvas::ConstructType constructType) const;
+        const GraphCanvas::ConstructTypePresetBucket* GetConstructTypePresetBucket(GraphCanvas::ConstructType constructType) const override;
 
         GraphCanvas::Styling::ConnectionCurveType GetConnectionCurveType() const override;
         GraphCanvas::Styling::ConnectionCurveType GetDataConnectionCurveType() const override;
@@ -673,7 +665,7 @@ namespace ScriptCanvasEditor
             AZStd::array<char, AZ::IO::MaxPathLength> assetRootArray;
             if (!AZ::IO::FileIOBase::GetInstance()->ResolvePath(ScriptCanvas::AssetDescription::GetSuggestedSavePath<GraphAssetType>(), assetRootArray.data(), assetRootArray.size()))
             {
-                AZ_ErrorOnce("Script Canvas", false, "Unable to resolve @devassets@ path");
+                AZ_ErrorOnce("Script Canvas", false, "Unable to resolve @projectroot@ path");
             }
 
             AZStd::string assetPath;
@@ -806,7 +798,5 @@ namespace ScriptCanvasEditor
         Workspace* m_workspace;
 
         void OnSaveCallback(bool saveSuccess, AZ::Data::AssetPtr, AZ::Data::AssetId previousFileAssetId);
-
-        void PromptForUpgrade();
     };
 }

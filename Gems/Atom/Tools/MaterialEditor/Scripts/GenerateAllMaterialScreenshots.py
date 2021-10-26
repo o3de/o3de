@@ -16,10 +16,10 @@ import sys
 import os.path
 import filecmp
 
-g_devroot = azlmbr.paths.devroot
-sys.path.append(os.path.join(g_devroot, 'Tests', 'Atom', 'Automated'))
+g_engroot = azlmbr.paths.engroot
+sys.path.append(os.path.join(g_engroot, 'Tests', 'Atom', 'Automated'))
 
-g_materialTestFolder = os.path.join(g_devroot,'Gems','Atom','TestData','TestData','Materials','StandardPbrTestCases')
+g_materialTestFolder = os.path.join(g_engroot,'Gems','Atom','TestData','TestData','Materials','StandardPbrTestCases')
 
 # Change this to True to replace the expected screenshot images
 g_replaceExpectedScreenshots = False
@@ -93,11 +93,11 @@ def ToRadians(degrees):
     return 3.14159 * degrees / 180.0;
 
 def OpenMaterial(filename):
-    documentId = azlmbr.materialeditor.MaterialDocumentSystemRequestBus(azlmbr.bus.Broadcast, 'OpenDocument', os.path.join(g_materialTestFolder, filename))
+    documentId = azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(azlmbr.bus.Broadcast, 'OpenDocument', os.path.join(g_materialTestFolder, filename))
     return documentId
     
 def CloseMaterial(documentId):
-    azlmbr.materialeditor.MaterialDocumentSystemRequestBus(azlmbr.bus.Broadcast, 'CloseDocument', documentId)
+    azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(azlmbr.bus.Broadcast, 'CloseDocument', documentId)
 
 def SelectLightingPreset(presetName):
     azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, 'SelectLightingPresetByName', presetName)

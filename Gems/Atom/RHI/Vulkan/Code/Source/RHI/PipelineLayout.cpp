@@ -134,7 +134,7 @@ namespace AZ
 
                 uint32_t bindingSlot = srgLayout->GetBindingSlot();
                 m_indexToSlot[bindingInfo.m_spaceId].set(bindingSlot);
-                m_slotToIndex[bindingSlot] = bindingInfo.m_spaceId;
+                m_slotToIndex[bindingSlot] = static_cast<uint8_t>(bindingInfo.m_spaceId);
             }
 
             m_descriptorSetLayouts.reserve(srgCount);

@@ -17,6 +17,11 @@ namespace UnitTest
         m_descriptor.m_description = "UnitTest Fake Device";
     }
 
+    Device::Device()
+    {
+        m_descriptor.m_platformLimitsDescriptor = aznew RHI::PlatformLimitsDescriptor;
+    }
+
     RHI::PhysicalDeviceList PhysicalDevice::Enumerate()
     {
         return RHI::PhysicalDeviceList{aznew PhysicalDevice};
@@ -29,7 +34,6 @@ namespace UnitTest
 
         RHI::Ptr<RHI::Device> device = RHI::Factory::Get().CreateDevice();
         device->Init(*physicalDevices[0]);
-        device->PostInit(RHI::DeviceDescriptor{});
 
         return device;
     }

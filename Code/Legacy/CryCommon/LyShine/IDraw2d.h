@@ -12,9 +12,6 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/std/string/string.h>
 
-// Forward declarations
-struct IFFont;
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! Class for 2D drawing in screen space
 //
@@ -56,55 +53,6 @@ public: // types
     {
         //! Limit imposed by FFont. This is the max number of characters including the null terminator.
         MAX_TEXT_STRING_LENGTH = 1024,
-    };
-
-    enum : int
-    {
-        //! Constant that indicates the built-in default value should be used
-        UseDefault = -1
-    };
-
-    //! Struct used to pass additional image options.
-    //
-    //! If this is not passed then the defaults below are used
-    struct ImageOptions
-    {
-        int         blendMode;      //!< default is GS_BLSRC_SRCALPHA|GS_BLDST_ONEMINUSSRCALPHA
-        AZ::Vector3 color;          //!< default is (1,1,1)
-        Rounding    pixelRounding;  //!< default is Rounding::Nearest
-        int         baseState;      //!< Additional flags for SetState. Default is GS_NODEPTHTEST
-    };
-
-    //! Struct used to pass additional text options - mostly ones that do not change from call to call.
-    //
-    //! If this is not passed then the defaults below are used
-    struct TextOptions
-    {
-        AZStd::string   fontName;               //!< default is "default"
-        unsigned int    effectIndex;            //!< default is 0
-        AZ::Vector3     color;                  //!< default is (1,1,1)
-        HAlign          horizontalAlignment;    //!< default is HAlign::Left
-        VAlign          verticalAlignment;      //!< default is VAlign::Top
-        AZ::Vector2     dropShadowOffset;       //!< default is (0,0), zero offset means no drop shadow is drawn
-        AZ::Color       dropShadowColor;        //!< default is (0,0,0,0), zero alpha means no drop shadow is drawn
-        float           rotation;               //!< default is 0
-        int             baseState;              //!< Additional flags for SetState. Default is GS_NODEPTHTEST
-    };
-
-    //! Used to pass in arrays of vertices (e.g. to DrawQuad)
-    struct VertexPosColUV
-    {
-        VertexPosColUV(){}
-        VertexPosColUV(const AZ::Vector2& inPos, const AZ::Color& inColor, const AZ::Vector2& inUV)
-        {
-            position = inPos;
-            color = inColor;
-            uv = inUV;
-        }
-
-        AZ::Vector2         position;   //!< 2D position of vertex
-        AZ::Color           color;      //!< Float color
-        AZ::Vector2         uv;         //!< Texture coordinate
     };
 
 public: // member functions

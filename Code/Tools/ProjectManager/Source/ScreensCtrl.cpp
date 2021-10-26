@@ -30,6 +30,7 @@ namespace O3DE::ProjectManager
 
         // add a tab widget at the bottom of the stack
         m_tabWidget = new QTabWidget();
+        m_tabWidget->tabBar()->setFocusPolicy(Qt::TabFocus);
         m_screenStack->addWidget(m_tabWidget);
         connect(m_tabWidget, &QTabWidget::currentChanged, this, &ScreensCtrl::TabChanged);
     }
@@ -82,11 +83,28 @@ namespace O3DE::ProjectManager
 
     bool ScreensCtrl::ForceChangeToScreen(ProjectManagerScreen screen, bool addVisit)
     {
+        ScreenWidget* newScreen = nullptr;
+
         const auto iterator = m_screenMap.find(screen);
         if (iterator != m_screenMap.end())
         {
+            newScreen = iterator.value();
+        }
+        else
+        {
+            // Check if screen is contained by another screen
+            for (ScreenWidget* checkingScreen : m_screenMap)
+            {
+                if (checkingScreen->ContainsScreen(screen))
+                {
+                    newScreen = checkingScreen;
+                    break;
+                }
+            }
+        }
+        if (newScreen)
+        {
             ScreenWidget* currentScreen = GetCurrentScreen();
-            ScreenWidget* newScreen = iterator.value();
 
             if (currentScreen != newScreen)
             {
@@ -108,6 +126,11 @@ namespace O3DE::ProjectManager
 
                 newScreen->NotifyCurrentScreen();
 
+                if (iterator == m_screenMap.end())
+                {
+                    newScreen->GoToScreen(screen);
+                }
+
                 return true;
             }
         }
@@ -115,7 +138,7 @@ namespace O3DE::ProjectManager
         return false;
     }
 
-    bool ScreensCtrl::GotoPreviousScreen()
+    bool ScreensCtrl::GoToPreviousScreen()
     {
         if (!m_screenVisitOrder.isEmpty())
         {
@@ -170,7 +193,7 @@ namespace O3DE::ProjectManager
         m_screenMap.insert(screen, newScreen);
 
         connect(newScreen, &ScreenWidget::ChangeScreenRequest, this, &ScreensCtrl::ChangeToScreen);
-        connect(newScreen, &ScreenWidget::GotoPreviousScreenRequest, this, &ScreensCtrl::GotoPreviousScreen);
+        connect(newScreen, &ScreenWidget::GoToPreviousScreenRequest, this, &ScreensCtrl::GoToPreviousScreen);
         connect(newScreen, &ScreenWidget::ResetScreenRequest, this, &ScreensCtrl::ResetScreen);
         connect(newScreen, &ScreenWidget::NotifyCurrentProject, this, &ScreensCtrl::NotifyCurrentProject);
         connect(newScreen, &ScreenWidget::NotifyBuildProject, this, &ScreensCtrl::NotifyBuildProject);

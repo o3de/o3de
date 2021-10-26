@@ -162,7 +162,7 @@ namespace Vegetation
 
     bool SurfaceSlopeFilterComponent::Evaluate(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         const bool useOverrides = m_configuration.m_allowOverrides && instanceData.m_descriptorPtr && instanceData.m_descriptorPtr->m_slopeFilterOverrideEnabled;
         const float min = useOverrides ? instanceData.m_descriptorPtr->m_slopeFilterMin : m_configuration.m_slopeMin;

@@ -7,8 +7,8 @@
  */
 
 #include <Atom/Document/ShaderManagementConsoleDocumentModule.h>
-#include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
 #include <Atom/Window/ShaderManagementConsoleWindowModule.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <ShaderManagementConsoleApplication.h>
 #include <ShaderManagementConsole_Traits_Platform.h>
@@ -66,8 +66,8 @@ namespace ShaderManagementConsole
             const AZStd::string openDocumentPath = commandLine.GetMiscValue(openDocumentIndex);
 
             AZ_Printf(GetBuildTargetName().c_str(), "Opening document: %s", openDocumentPath.c_str());
-            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(
-                &ShaderManagementConsoleDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(
+                &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
         }
 
         Base::ProcessCommandLine(commandLine);

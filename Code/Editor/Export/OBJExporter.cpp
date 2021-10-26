@@ -227,7 +227,7 @@ QString COBJExporter::MakeRelativePath(const char* pMainFileName, const char* pF
     const char* ch = strrchr(pMainFileName, '\\');
     if (ch)
     {
-        if (strlen(pFileName) > ch - pMainFileName && !_strnicmp(pMainFileName, pFileName, ch - pMainFileName))
+        if (strlen(pFileName) > static_cast<size_t>(ch - pMainFileName) && !_strnicmp(pMainFileName, pFileName, ch - pMainFileName))
         {
             return QString(pFileName + (ch - pMainFileName) + 1);
         }
@@ -256,7 +256,7 @@ const char* COBJExporter::TrimFloat(float fValue) const
     ++nCurBuf;
     sprintf_s(pBuf, bufSize, "%f", fValue);
 
-    for (int i = strlen(pBuf) - 1; i > 0; --i)
+    for (int i = static_cast<int>(strlen(pBuf)) - 1; i > 0; --i)
     {
         if (pBuf[i] == '0')
         {

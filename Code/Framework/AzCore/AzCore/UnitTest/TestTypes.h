@@ -11,6 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/UnitTest/UnitTest.h>
 
+#include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Driller/Driller.h>
 #include <AzCore/Memory/MemoryDriller.h>
@@ -44,7 +45,7 @@ namespace UnitTest
 
         virtual ~AllocatorsBase() = default;
 
-        void SetupAllocator()
+        void SetupAllocator(const AZ::SystemAllocator::Descriptor& allocatorDesc = {})
         {
             m_drillerManager = AZ::Debug::DrillerManager::Create();
             m_drillerManager->Register(aznew AZ::Debug::MemoryDriller);
@@ -53,7 +54,7 @@ namespace UnitTest
             // Only create the SystemAllocator if it s not ready
             if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
             {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+                AZ::AllocatorInstance<AZ::SystemAllocator>::Create(allocatorDesc);
                 m_ownsAllocator = true;
             }
         }
@@ -84,6 +85,7 @@ namespace UnitTest
     {
     public:
         ScopedAllocatorSetupFixture() { SetupAllocator(); }
+        explicit ScopedAllocatorSetupFixture(const AZ::SystemAllocator::Descriptor& allocatorDesc) { SetupAllocator(allocatorDesc); }
         ~ScopedAllocatorSetupFixture() { TeardownAllocator(); }
     };
 
@@ -129,17 +131,23 @@ namespace UnitTest
         , public AllocatorsBase
     {
     public:
-        // Bring in both const and non-const SetUp and TearDown function into scope to resolve warning 4266
-        // no override available for virtual member function from base 'benchmark::Fixture'; function is hidden
-        using ::benchmark::Fixture::SetUp, ::benchmark::Fixture::TearDown;
-
         //Benchmark interface
+        void SetUp(const ::benchmark::State& st) override
+        {
+            AZ_UNUSED(st);
+            SetupAllocator();
+        }
         void SetUp(::benchmark::State& st) override
         {
             AZ_UNUSED(st);
             SetupAllocator();
         }
 
+        void TearDown(const ::benchmark::State& st) override
+        {
+            AZ_UNUSED(st);
+            TeardownAllocator();
+        }
         void TearDown(::benchmark::State& st) override
         {
             AZ_UNUSED(st);
@@ -162,7 +170,7 @@ namespace UnitTest
     struct CreationCounter
     {
         AZ_TYPE_INFO(CreationCounter, "{E9E35486-4366-4066-86E5-1A8CEB44198B}");
-        AZ_ALIGN(int test[size / sizeof(int)], alignment);
+        alignas(alignment) int test[size / sizeof(int)];
 
         static int s_count;
         static int s_copied;

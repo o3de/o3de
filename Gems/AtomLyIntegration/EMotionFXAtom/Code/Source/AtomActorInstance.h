@@ -53,6 +53,7 @@ namespace AZ
         class SkinnedMeshInputBuffers;
         class MeshFeatureProcessorInterface;
         class AtomActor;
+        class AtomActorDebugDraw;
 
         //! Render node for managing and rendering actor instances. Each Actor Component
         //! creates an ActorRenderNode. The render node is responsible for drawing meshes and
@@ -85,10 +86,10 @@ namespace AZ
 
             // RenderActorInstance overrides ...
             void OnTick(float timeDelta) override;
+            void DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags);
             void UpdateBounds() override;
-            void DebugDraw(const DebugOptions& debugOptions) override;
             void SetMaterials(const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD) override { AZ_UNUSED(materialPerLOD); };
-            void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod);
+            void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod) override;
             SkinningMethod GetAtomSkinningMethod() const;
             void SetIsVisible(bool isVisible) override;
 
@@ -120,7 +121,7 @@ namespace AZ
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // MaterialReceiverRequestBus::Handler overrides...
-            virtual MaterialAssignmentId FindMaterialAssignmentId(
+            MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
             RPI::ModelMaterialSlotMap GetModelMaterialSlots() const override;
             MaterialAssignmentMap GetMaterialAssignments() const override;
@@ -141,8 +142,14 @@ namespace AZ
             AZ::Data::Instance<RPI::Model> GetModel() const override;
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
+            void SetLodType(RPI::Cullable::LodType lodType) override;
+            RPI::Cullable::LodType GetLodType() const override;
             void SetLodOverride(RPI::Cullable::LodOverride lodOverride) override;
             RPI::Cullable::LodOverride GetLodOverride() const override;
+            void SetMinimumScreenCoverage(float minimumScreenCoverage) override;
+            float GetMinimumScreenCoverage() const override;
+            void SetQualityDecayRate(float qualityDecayRate) override;
+            float GetQualityDecayRate() const override;
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
             // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
@@ -178,12 +185,8 @@ namespace AZ
             void InitWrinkleMasks();
             void UpdateWrinkleMasks();
 
-            // Helper and debug geometry rendering
-            void RenderSkeleton(RPI::AuxGeomDraw* auxGeom);
-            void RenderEMFXDebugDraw(RPI::AuxGeomDraw* auxGeom);
-            RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
-            AZStd::vector<AZ::Vector3> m_auxVertices;
-            AZStd::vector<AZ::Color> m_auxColors;
+            // Debug geometry rendering
+            AZStd::unique_ptr<AtomActorDebugDraw> m_atomActorDebugDraw;
 
             AZStd::intrusive_ptr<AZ::Render::SkinnedMeshInputBuffers> m_skinnedMeshInputBuffers = nullptr;
             AZStd::intrusive_ptr<SkinnedMeshInstance> m_skinnedMeshInstance;

@@ -21,9 +21,14 @@ namespace AZ
     {
 
         AssImpMaterialWrapper::AssImpMaterialWrapper(aiMaterial* aiMaterial)
-            :SDKMaterial::MaterialWrapper(aiMaterial)
+            :m_assImpMaterial(aiMaterial)
         {
             AZ_Assert(aiMaterial, "Asset Importer Material cannot be null");
+        }
+
+        aiMaterial* AssImpMaterialWrapper::GetAssImpMaterial() const
+        {
+            return m_assImpMaterial;
         }
 
         AZStd::string AssImpMaterialWrapper::GetName() const

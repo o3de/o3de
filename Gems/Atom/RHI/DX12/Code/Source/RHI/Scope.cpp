@@ -18,6 +18,7 @@
 #include <Atom/RHI/ResourcePool.h>
 #include <Atom/RHI/ImageScopeAttachment.h>
 #include <Atom/RHI/BufferScopeAttachment.h>
+#include <Atom/RHI/Factory.h>
 #include <Atom/RHI/ResolveScopeAttachment.h>
 #include <AzCore/Debug/EventTrace.h>
 
@@ -309,8 +310,11 @@ namespace AZ
             commandList.GetValidator().BeginScope(*this);
 
             PIXBeginEvent(0xFFFF00FF, GetId().GetCStr());
-            PIXBeginEvent(commandList.GetCommandList(), 0xFFFF00FF, GetId().GetCStr());
 
+            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            {
+                PIXBeginEvent(commandList.GetCommandList(), 0xFFFF00FF, GetId().GetCStr());
+            }
 
             commandList.SetAftermathEventMarker(GetId().GetCStr());
             
@@ -424,7 +428,10 @@ namespace AZ
                 }
             }
 
-            PIXEndEvent(commandList.GetCommandList());
+            if (RHI::Factory::Get().IsPixModuleLoaded() || RHI::Factory::Get().IsRenderDocModuleLoaded())
+            {
+                PIXEndEvent(commandList.GetCommandList());
+            }
             PIXEndEvent();
 
             commandList.GetValidator().EndScope();

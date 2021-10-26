@@ -42,6 +42,7 @@ namespace EMStudio
         /**
          * update the actor instance.
          */
+        using MCommon::ManipulatorCallback::Update;
         void Update(const AZ::Vector3& value) override;
 
         /**
@@ -85,6 +86,7 @@ namespace EMStudio
         /**
          * update the actor instance.
          */
+        using MCommon::ManipulatorCallback::Update;
         void Update(const AZ::Quaternion& value) override;
 
         /**
@@ -125,6 +127,7 @@ namespace EMStudio
         /**
          * update the actor instance.
          */
+        using MCommon::ManipulatorCallback::Update;
         void Update(const AZ::Vector3& value) override;
 
         /**

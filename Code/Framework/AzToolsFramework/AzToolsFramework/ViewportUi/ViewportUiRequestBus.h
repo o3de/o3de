@@ -59,6 +59,8 @@ namespace AzToolsFramework::ViewportUi
         virtual const SwitcherId CreateSwitcher(Alignment align) = 0;
         //! Sets the active button of the cluster. This is the button which will display as highlighted.
         virtual void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) = 0;
+        //! Clears the active button of the cluster if one is active. The button will no longer display as highlighted.
+        virtual void ClearClusterActiveButton(ClusterId clusterId) = 0;
         //! Sets the active button of the switcher. This is the button which has a text label.
         virtual void SetSwitcherActiveButton(SwitcherId clusterId, ButtonId buttonId) = 0;
         //! Adds a locked overlay to the cluster button's icon.
@@ -76,7 +78,7 @@ namespace AzToolsFramework::ViewportUi
         virtual void RegisterSwitcherEventHandler(SwitcherId switcherId, AZ::Event<ButtonId>::Handler& handler) = 0;
         //! Removes a cluster from the Viewport UI system.
         virtual void RemoveCluster(ClusterId clusterId) = 0;
-        //!
+        //! Removes a switcher from the Viewport UI system.
         virtual void RemoveSwitcher(SwitcherId switcherId) = 0;
         //! Sets the visibility of the cluster.
         virtual void SetClusterVisible(ClusterId clusterId, bool visible) = 0;
@@ -94,12 +96,12 @@ namespace AzToolsFramework::ViewportUi
         //! Sets the visibility of the text field.
         virtual void SetTextFieldVisible(TextFieldId textFieldId, bool visible) = 0;
         //! Create the highlight border for Component Mode.
-        virtual void CreateComponentModeBorder(const AZStd::string& borderTitle) = 0;
+        virtual void CreateViewportBorder(const AZStd::string& borderTitle) = 0;
         //! Remove the highlight border for Component Mode.
-        virtual void RemoveComponentModeBorder() = 0;
-        //! Invoke a button press in a cluster.
+        virtual void RemoveViewportBorder() = 0;
+        //! Invoke a button press on a cluster.
         virtual void PressButton(ClusterId clusterId, ButtonId buttonId) = 0;
-        //!
+        //! Invoke a button press on a switcher.
         virtual void PressButton(SwitcherId switcherId, ButtonId buttonId) = 0;
     };
 

@@ -26,8 +26,8 @@ namespace AssetBuilder
         void EnableDebugMode(bool enable);
 
         bool OnAssert(const char* message) override;
-        bool OnPreError(const char* window, const char* fileName, int line, const char* func, const char* message);
-        bool OnPreWarning(const char* window, const char* fileName, int line, const char* func, const char* message);
+        bool OnPreError(const char* window, const char* fileName, int line, const char* func, const char* message) override;
+        bool OnPreWarning(const char* window, const char* fileName, int line, const char* func, const char* message) override;
         bool OnException(const char* message) override;
         bool OnPrintf(const char* window, const char* message) override;
         bool OnOutput(const char* window, const char* message) override;

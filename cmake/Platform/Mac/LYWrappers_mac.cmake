@@ -6,6 +6,16 @@
 #
 #
 
+set(LY_ENABLE_HARDENED_RUNTIME OFF CACHE BOOL "Enable hardened runtime capability for Mac builds. This should be ON when building the engine for notarization/distribution.")
+
+define_property(TARGET PROPERTY ENTITLEMENT_FILE_PATH
+    BRIEF_DOCS "Path to the entitlement file"
+    FULL_DOCS [[
+        On MacOS, entitlements are used to grant certain privileges
+        to applications at runtime. Use this propery to specify the
+        path to a .plist file containing entitlements.
+    ]]
+)
 
 function(ly_apply_platform_properties target)
 
@@ -13,6 +23,18 @@ function(ly_apply_platform_properties target)
         BUILD_RPATH "@executable_path/;@executable_path/../Frameworks"
         INSTALL_RPATH "@executable_path/;@executable_path/../Frameworks"
     )
+
+    get_property(is_imported TARGET ${target} PROPERTY IMPORTED)
+    if((NOT is_imported) AND (LY_ENABLE_HARDENED_RUNTIME))
+        get_property(target_type TARGET ${target} PROPERTY TYPE)
+        set(runtime_types_list "MODULE_LIBRARY" "SHARED_LIBRARY" "EXECUTABLE")
+        if (target_type IN_LIST runtime_types_list)
+            set_target_properties(${target} PROPERTIES
+                XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME YES
+                XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS NO
+            )
+        endif()
+    endif()
 
 endfunction()
 

@@ -74,7 +74,7 @@ namespace ScriptCanvasEditor
         ////
 
         // ScriptEventReceiveNodeDescriptorNotifications
-        void OnScriptEventReloaded(const AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>& asset);
+        void OnScriptEventReloaded(const AZ::Data::Asset<ScriptEvents::ScriptEventsAsset>& asset) override;
         ////
 
     protected:

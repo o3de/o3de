@@ -83,7 +83,7 @@ namespace AzFramework::ProjectManager
         return ProjectPathCheckResult::ProjectManagerLaunchFailed;
     }
 
-    bool LaunchProjectManager(const AZStd::string& commandLineArgs)
+    bool LaunchProjectManager([[maybe_unused]]const AZStd::string& commandLineArgs)
     {
         bool launchSuccess = false;
 #if (AZ_TRAIT_AZFRAMEWORK_USE_PROJECT_MANAGER)

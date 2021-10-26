@@ -77,14 +77,13 @@ namespace AZ
             void RenderImguiDrawData(const ImDrawData& drawData);
 
             // TickBus::Handler overrides...
-            void OnTick(float deltaTime, AZ::ScriptTimePoint timePoint);
+            void OnTick(float deltaTime, AZ::ScriptTimePoint timePoint) override;
 
             // AzFramework::InputTextEventListener overrides...
             bool OnInputTextEventFiltered(const AZStd::string& textUTF8) override;
 
             // AzFramework::InputChannelEventListener overrides...
             bool OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel) override;
-            AZ::s32 GetPriority() const override;
 
         protected:
             explicit ImGuiPass(const RPI::PassDescriptor& descriptor);

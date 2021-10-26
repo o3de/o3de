@@ -5,9 +5,18 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Tool",
     "summary": "The Immediate Mode GUI Gem provides the 3rdParty library IMGUI which can be used to create run time immediate mode overlays for debugging and profiling information in Open 3D Engine.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Debug", "Rendering", "Framework"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Debug",
+        "Rendering",
+        "Framework"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/debug/imgui/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/debug/imgui/",
+    "dependencies": [
+        "LmbrCentral"
+    ]
 }

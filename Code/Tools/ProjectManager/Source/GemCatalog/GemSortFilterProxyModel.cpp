@@ -28,16 +28,43 @@ namespace O3DE::ProjectManager
             return false;
         }
 
-        if (!m_sourceModel->GetName(sourceIndex).contains(m_searchString, Qt::CaseInsensitive))
+        // Search Bar
+        if (!m_sourceModel->GetDisplayName(sourceIndex).contains(m_searchString, Qt::CaseInsensitive) &&
+            !m_sourceModel->GetName(sourceIndex).contains(m_searchString, Qt::CaseInsensitive) &&
+            !m_sourceModel->GetCreator(sourceIndex).contains(m_searchString, Qt::CaseInsensitive) &&
+            !m_sourceModel->GetSummary(sourceIndex).contains(m_searchString, Qt::CaseInsensitive))
         {
-            return false;
+            bool foundFeature = false;
+            for (const QString& feature : m_sourceModel->GetFeatures(sourceIndex))
+            {
+                if (feature.contains(m_searchString, Qt::CaseInsensitive))
+                {
+                    foundFeature = true;
+                    break;
+                }
+            }
+
+            if (!foundFeature)
+            {
+                return false;
+            }
         }
 
-        // Gem status
-        if (m_gemStatusFilter != GemStatus::NoFilter)
+        // Gem selected 
+        if (m_gemSelectedFilter != GemSelected::NoFilter)
         {
-            const GemStatus sourceGemStatus = static_cast<GemStatus>(GemModel::IsAdded(sourceIndex));
-            if (m_gemStatusFilter != sourceGemStatus)
+            const GemSelected sourceGemStatus = static_cast<GemSelected>(GemModel::IsAdded(sourceIndex));
+            if (m_gemSelectedFilter != sourceGemStatus)
+            {
+                return false;
+            }
+        }
+
+        // Gem enabled
+        if (m_gemActiveFilter != GemActive::NoFilter)
+        {
+            const GemActive sourceGemStatus = static_cast<GemActive>(GemModel::IsAdded(sourceIndex) || GemModel::IsAddedDependency(sourceIndex));
+            if (m_gemActiveFilter != sourceGemStatus)
             {
                 return false;
             }
@@ -131,19 +158,31 @@ namespace O3DE::ProjectManager
         return true;
     }
 
-    QString GemSortFilterProxyModel::GetGemStatusString(GemStatus status)
+    QString GemSortFilterProxyModel::GetGemSelectedString(GemSelected status)
     {
         switch (status)
         {
-        case Unselected:
+        case GemSelected::Unselected:
             return "Unselected";
-        case Selected:
+        case GemSelected::Selected:
             return "Selected";
         default:
-            return "<Unknown Gem Status>";
+            return "<Unknown Selection Status>";
         }
     }
 
+    QString GemSortFilterProxyModel::GetGemActiveString(GemActive status)
+    {
+        switch (status)
+        {
+        case GemActive::Inactive:
+            return "Inactive";
+        case GemActive::Active:
+            return "Active";
+        default:
+            return "<Unknown Active Status>";
+        }
+    }
     void GemSortFilterProxyModel::InvalidateFilter()
     {
         invalidate();

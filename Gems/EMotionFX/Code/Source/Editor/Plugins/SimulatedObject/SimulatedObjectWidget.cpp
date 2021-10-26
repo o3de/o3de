@@ -495,7 +495,6 @@ namespace EMotionFX
         if (renderSimulatedJoints && !selectedJointIndices.empty())
         {
             // Render the joint radius.
-            const MCore::RGBAColor defaultColor = renderPlugin->GetRenderOptions()->GetSelectedSimulatedObjectColliderColor();
             const size_t actorInstanceCount = GetActorManager().GetNumActorInstances();
             for (size_t actorInstanceIndex = 0; actorInstanceIndex < actorInstanceCount; ++actorInstanceIndex)
             {

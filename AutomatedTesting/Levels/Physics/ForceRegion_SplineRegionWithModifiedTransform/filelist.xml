@@ -1,0 +1,6 @@
+<download name="ForceRegion_SplineRegionWithModifiedTransform" type="Map">
+ <index src="filelist.xml" dest="filelist.xml"/>
+ <files>
+  <file src="level.pak" dest="level.pak" size="9907" md5="5ab5b69149f77a764c554e0e98624bf3"/>
+ </files>
+</download>

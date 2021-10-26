@@ -172,8 +172,8 @@ ReflectedPropertyItem::ReflectedPropertyItem(ReflectedPropertyControl *control, 
     if (parent)
         parent->AddChild(this);
 
-    m_onSetCallback = AZStd::bind(&ReflectedPropertyItem::OnVariableChange, this, AZStd::placeholders::_1);
-    m_onSetEnumCallback = AZStd::bind(&ReflectedPropertyItem::OnVariableEnumChange, this, AZStd::placeholders::_1);
+    m_onSetCallback = [this](IVariable* var) { OnVariableChange(var); };
+    m_onSetEnumCallback = [this](IVariable* var) { OnVariableEnumChange(var); };
 }
 
 ReflectedPropertyItem::~ReflectedPropertyItem()

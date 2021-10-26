@@ -51,6 +51,20 @@ namespace AZ::Utils
         return executableDirectory;
     }
 
+    AZStd::optional<AZ::IO::FixedMaxPathString> ConvertToAbsolutePath(AZStd::string_view path)
+    {
+        AZ::IO::FixedMaxPathString absolutePath;
+        AZ::IO::FixedMaxPathString srcPath{ path };
+        if (ConvertToAbsolutePath(srcPath.c_str(), absolutePath.data(), absolutePath.capacity()))
+        {
+            // Fix the size value of the fixed string by calculating the c-string length using char traits
+            absolutePath.resize_no_construct(AZStd::char_traits<char>::length(absolutePath.data()));
+            return srcPath;
+        }
+
+        return AZStd::nullopt;
+    }
+
     AZ::IO::FixedMaxPathString GetEngineManifestPath()
     {
         AZ::IO::FixedMaxPath o3deManifestPath = GetO3deManifestDirectory();
@@ -106,7 +120,7 @@ namespace AZ::Utils
     AZ::Outcome<void, AZStd::string> WriteFile(AZStd::string_view content, AZStd::string_view filePath)
     {
         AZ::IO::FixedMaxPath filePathFixed = filePath; // Because FileIOStream requires a null-terminated string
-        AZ::IO::FileIOStream stream(filePathFixed.c_str(), AZ::IO::OpenMode::ModeWrite);
+        AZ::IO::FileIOStream stream(filePathFixed.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath);
 
         bool success = false;
 

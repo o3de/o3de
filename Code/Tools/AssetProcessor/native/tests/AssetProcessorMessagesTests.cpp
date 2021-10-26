@@ -10,7 +10,9 @@
 #include <utilities/BatchApplicationManager.h>
 #include <utilities/ApplicationServer.h>
 #include <AzFramework/Asset/AssetSystemComponent.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Utils/Utils.h>
 #include <connection/connectionManager.h>
 #include <QCoreApplication>
 #include <QTemporaryDir>
@@ -98,10 +100,26 @@ namespace AssetProcessorMessagesTests
 
             int argC = 0;
             m_batchApplicationManager = AZStd::make_unique<UnitTestBatchApplicationManager>(&argC, nullptr, nullptr);
-            m_batchApplicationManager->BeforeRun();
 
-            // Override Game Name to be "AutomatedTesting"
-            AssetUtilities::ComputeProjectName("AutomatedTesting", true);
+            auto registry = AZ::SettingsRegistry::Get();
+            EXPECT_NE(registry, nullptr);
+            constexpr AZ::SettingsRegistryInterface::FixedValueString bootstrapKey{
+                AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey
+            };
+            constexpr AZ::SettingsRegistryInterface::FixedValueString projectPathKey{ bootstrapKey + "/project_path" };
+            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+
+            // Force the branch token into settings registry before starting the application manager.
+            // This avoids writing the asset_processor.setreg file which can cause fileIO errors.
+            const AZ::IO::FixedMaxPathString enginePath = AZ::Utils::GetEnginePath();
+            constexpr AZ::SettingsRegistryInterface::FixedValueString branchTokenKey{ bootstrapKey + "/assetProcessor_branch_token" };
+            AZStd::string token;
+            AZ::StringFunc::AssetPath::CalculateBranchToken(enginePath.c_str(), token);
+            registry->Set(branchTokenKey, token.c_str());
+
+            auto status = m_batchApplicationManager->BeforeRun();
+            ASSERT_EQ(status, ApplicationManager::BeforeRunStatus::Status_Success);
 
             m_batchApplicationManager->m_platformConfiguration = new PlatformConfiguration();
             m_batchApplicationManager->InitAssetProcessorManager();
@@ -159,21 +177,25 @@ namespace AssetProcessorMessagesTests
 
                     ASSERT_TRUE(result);
                 });
-
-            
         }
 
         void TearDown() override
         {
-            QEventLoop eventLoop;
+            if (m_batchApplicationManager->m_connectionManager)
+            {
+                QEventLoop eventLoop;
 
-            QObject::connect(m_batchApplicationManager->m_connectionManager, &ConnectionManager::ReadyToQuit, &eventLoop, &QEventLoop::quit);
+                QObject::connect(m_batchApplicationManager->m_connectionManager, &ConnectionManager::ReadyToQuit, &eventLoop, &QEventLoop::quit);
 
-            m_batchApplicationManager->m_connectionManager->QuitRequested();
+                m_batchApplicationManager->m_connectionManager->QuitRequested();
 
-            eventLoop.exec();
+                eventLoop.exec();
+            }
 
-            m_assetSystemComponent->Deactivate();
+            if (m_assetSystemComponent)
+            {
+                m_assetSystemComponent->Deactivate();
+            }
             m_batchApplicationManager->Destroy();
         }
 

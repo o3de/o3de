@@ -149,12 +149,13 @@ bool CFileUtil::ExtractFile(QString& file, bool bMsgBoxAskForExtraction, const c
         // Check if in pack.
         if (cryfile.IsInPak())
         {
-            const char* sPakName = cryfile.GetPakPath();
-
             if (bMsgBoxAskForExtraction)
             {
+                AZ::IO::FixedMaxPath sPakName{ cryfile.GetPakPath() };
                 // Cannot edit file in pack, suggest to extract it for editing.
-                if (QMessageBox::critical(QApplication::activeWindow(), QString(), QObject::tr("File %1 is inside a PAK file %2\r\nDo you want it to be extracted for editing ?").arg(file, sPakName), QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+                if (QMessageBox::critical(QApplication::activeWindow(), QString(),
+                    QObject::tr("File %1 is inside a PAK file %2\r\nDo you want it to be extracted for editing ?").arg(file, sPakName.c_str()),
+                    QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
                 {
                     return false;
                 }
@@ -173,10 +174,9 @@ bool CFileUtil::ExtractFile(QString& file, bool bMsgBoxAskForExtraction, const c
             if (diskFile.open(QFile::WriteOnly))
             {
                 // Copy data from packed file to disk file.
-                char* data = new char[cryfile.GetLength()];
-                cryfile.ReadRaw(data, cryfile.GetLength());
-                diskFile.write(data, cryfile.GetLength());
-                delete []data;
+                auto data = AZStd::make_unique<char[]>(cryfile.GetLength());
+                cryfile.ReadRaw(data.get(), cryfile.GetLength());
+                diskFile.write(data.get(), cryfile.GetLength());
             }
             else
             {
@@ -185,7 +185,14 @@ bool CFileUtil::ExtractFile(QString& file, bool bMsgBoxAskForExtraction, const c
         }
         else
         {
-            file = cryfile.GetAdjustedFilename();
+
+            if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
+            {
+                if (AZ::IO::FixedMaxPath resolvedFilePath; fileIoBase->ResolvePath(resolvedFilePath, cryfile.GetFilename()))
+                {
+                    file = QString::fromUtf8(resolvedFilePath.c_str(), static_cast<int>(resolvedFilePath.Native().size()));
+                }
+            }
         }
 
         return true;
@@ -455,7 +462,7 @@ bool CFileUtil::ExtractDccFilenameUsingNamingConventions(const QString& assetFil
 //////////////////////////////////////////////////////////////////////////
 void CFileUtil::FormatFilterString(QString& filter)
 {
-    const int numPipeChars = std::count(filter.begin(), filter.end(), '|');
+    const int numPipeChars = static_cast<int>(std::count(filter.begin(), filter.end(), '|'));
     if (numPipeChars == 1)
     {
         filter = QStringLiteral("%1||").arg(filter);
@@ -1188,7 +1195,7 @@ bool   CFileUtil::IsFileExclusivelyAccessable(const QString& strFilePath)
 //////////////////////////////////////////////////////////////////////////
 bool   CFileUtil::CreatePath(const QString& strPath)
 {
-#if defined(AZ_PLATFORM_MAC)
+#if !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
     bool pathCreated = true;
 
     QString cleanPath = QDir::cleanPath(strPath);
@@ -1221,15 +1228,14 @@ bool   CFileUtil::CreatePath(const QString& strPath)
     if (!strDriveLetter.isEmpty())
     {
         strCurrentDirectoryPath = strDriveLetter;
-        strCurrentDirectoryPath += "\\";
+        strCurrentDirectoryPath += AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING;
     }
-
 
     nTotalPathQueueElements = cstrDirectoryQueue.size();
     for (nCurrentPathQueue = 0; nCurrentPathQueue < nTotalPathQueueElements; ++nCurrentPathQueue)
     {
-        strCurrentDirectoryPath += cstrDirectoryQueue[nCurrentPathQueue];
-        strCurrentDirectoryPath += "\\";
+        strCurrentDirectoryPath += cstrDirectoryQueue[static_cast<int>(nCurrentPathQueue)];
+        strCurrentDirectoryPath += AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING;
         // The value which will go out of this loop is the result of the attempt to create the
         // last directory, only.
 
@@ -1246,7 +1252,7 @@ bool   CFileUtil::CreatePath(const QString& strPath)
     }
 
     return true;
-#endif
+#endif // !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1368,8 +1374,8 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
             return eCopyResult;
         }
 
-        QString sourceName = sourceDir.absoluteFilePath(cFiles[nCurrent]);
-        QString targetName = targetDir.absoluteFilePath(cFiles[nCurrent]);
+        QString sourceName = sourceDir.absoluteFilePath(cFiles[static_cast<int>(nCurrent)]);
+        QString targetName = targetDir.absoluteFilePath(cFiles[static_cast<int>(nCurrent)]);
 
         if (boConfirmOverwrite)
         {
@@ -1387,7 +1393,7 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
                         const int ret = QMessageBox::question(AzToolsFramework::GetActiveWindow(),
                             QObject::tr("Confirm file overwrite?"),
                             QObject::tr("There is already a file named \"%1\" in the target folder. Do you want to move this file anyway replacing the old one?")
-                                .arg(cFiles[nCurrent]),
+                                .arg(cFiles[static_cast<int>(nCurrent)]),
                             QMessageBox::YesToAll | QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 
                         switch (ret) {
@@ -1448,8 +1454,8 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
 
         bool        bnLastDirectoryWasCreated(false);
 
-        QString sourceName = sourceDir.absoluteFilePath(cDirectories[nCurrent]);
-        QString targetName = targetDir.absoluteFilePath(cDirectories[nCurrent]);
+        QString sourceName = sourceDir.absoluteFilePath(cDirectories[static_cast<int>(nCurrent)]);
+        QString targetName = targetDir.absoluteFilePath(cDirectories[static_cast<int>(nCurrent)]);
 
         bnLastDirectoryWasCreated = QDir().mkpath(targetName);
 
@@ -1473,7 +1479,7 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
                         const int ret = QMessageBox::question(AzToolsFramework::GetActiveWindow(),
                             QObject::tr("Confirm directory overwrite?"),
                             QObject::tr("There is already a folder named \"%1\" in the target folder. Do you want to move this folder anyway?")
-                                .arg(cDirectories[nCurrent]),
+                                .arg(cDirectories[static_cast<int>(nCurrent)]),
                             QMessageBox::YesToAll | QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 
                         switch (ret) {
@@ -1742,8 +1748,8 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
         }
 
         bool    bnLastFileWasCopied(false);
-        QString sourceName(sourceDir.absoluteFilePath(cFiles[nCurrent]));
-        QString targetName(targetDir.absoluteFilePath(cFiles[nCurrent]));
+        QString sourceName(sourceDir.absoluteFilePath(cFiles[static_cast<int>(nCurrent)]));
+        QString targetName(targetDir.absoluteFilePath(cFiles[static_cast<int>(nCurrent)]));
 
         if (boConfirmOverwrite)
         {
@@ -1761,7 +1767,7 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
                         const int ret = QMessageBox::question(AzToolsFramework::GetActiveWindow(),
                             QObject::tr("Confirm file overwrite?"),
                             QObject::tr("There is already a file named \"%1\" in the target folder. Do you want to move this file anyway replacing the old one?")
-                                .arg(cFiles[nCurrent]),
+                                .arg(cFiles[static_cast<int>(nCurrent)]),
                             QMessageBox::YesToAll | QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 
                         switch (ret) {
@@ -1822,8 +1828,8 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
             return eCopyResult;
         }
 
-        QString sourceName(sourceDir.absoluteFilePath(cDirectories[nCurrent]));
-        QString targetName(targetDir.absoluteFilePath(cDirectories[nCurrent]));
+        QString sourceName(sourceDir.absoluteFilePath(cDirectories[static_cast<int>(nCurrent)]));
+        QString targetName(targetDir.absoluteFilePath(cDirectories[static_cast<int>(nCurrent)]));
 
         bnLastDirectoryWasCreated = QDir().mkdir(targetName);
 
@@ -1847,7 +1853,7 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
                         const int ret = QMessageBox::question(AzToolsFramework::GetActiveWindow(),
                             QObject::tr("Confirm directory overwrite?"),
                             QObject::tr("There is already a folder named \"%1\" in the target folder. Do you want to move this folder anyway?")
-                                .arg(cDirectories[nCurrent]),
+                                .arg(cDirectories[static_cast<int>(nCurrent)]),
                             QMessageBox::YesToAll | QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 
                         switch (ret) {
@@ -2158,14 +2164,13 @@ uint32 CFileUtil::GetAttributes(const char* filename, bool bUseSourceControl /*=
         return SCC_FILE_ATTRIBUTE_READONLY | SCC_FILE_ATTRIBUTE_INPAK;
     }
 
-    
-    const char* adjustedFile = file.GetAdjustedFilename();
-    if (!AZ::IO::SystemFile::Exists(adjustedFile))
+    auto fileIoBase = AZ::IO::FileIOBase::GetInstance();
+    if (!fileIoBase->Exists(file.GetFilename()))
     {
         return SCC_FILE_ATTRIBUTE_INVALID;
     }
 
-    if (!AZ::IO::SystemFile::IsWritable(adjustedFile))
+    if (fileIoBase->IsReadOnly(file.GetFilename()))
     {
         return SCC_FILE_ATTRIBUTE_NORMAL | SCC_FILE_ATTRIBUTE_READONLY;
     }

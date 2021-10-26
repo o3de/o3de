@@ -77,7 +77,7 @@ namespace GraphCanvas
         ////
 
         // SystemTick
-        void OnSystemTick();
+        void OnSystemTick() override;
         ////
 
         // TickBus
@@ -86,7 +86,7 @@ namespace GraphCanvas
 
         // GeometryNotificationBus::Handler
         void OnPositionChanged(const AZ::EntityId& /*targetEntity*/, const AZ::Vector2& /*position*/) override;
-        void OnBoundsChanged();
+        void OnBoundsChanged() override;
         ////
 
         // ViewNotificationBus

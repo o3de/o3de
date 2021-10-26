@@ -31,8 +31,8 @@ namespace Multiplayer
         : m_byteStream(&m_buffer)
     {
         m_networkEditorInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
-            AZ::Name(MPEditorInterfaceName), ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
-        m_networkEditorInterface->SetTimeoutEnabled(false);
+            AZ::Name(MpEditorInterfaceName), ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
+        m_networkEditorInterface->SetTimeoutMs(AZ::TimeMs{ 0 }); // Disable timeouts on this network interface
         if (editorsv_isDedicated)
         {
             uint16_t editorServerPort = DefaultServerEditorPort;
@@ -109,7 +109,7 @@ namespace Multiplayer
 
             // Setup the normal multiplayer connection
             AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
-            INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPNetworkInterfaceName));
+            INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName));
 
             uint16_t serverPort = DefaultServerPort;
             if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
@@ -146,7 +146,6 @@ namespace Multiplayer
                     {
                         // Connect the Editor to the editor server for Multiplayer simulation
                         AZ::Interface<IMultiplayer>::Get()->Connect(remoteAddress.c_str(), remotePort);
-                        AZ::Interface<IMultiplayer>::Get()->SendReadyForEntityUpdates(true);
                     }
             }
         }
@@ -168,7 +167,7 @@ namespace Multiplayer
         ;
     }
 
-    bool MultiplayerEditorConnection::OnPacketReceived(AzNetworking::IConnection* connection, const IPacketHeader& packetHeader, ISerializer& serializer)
+    AzNetworking::PacketDispatchResult MultiplayerEditorConnection::OnPacketReceived(AzNetworking::IConnection* connection, const IPacketHeader& packetHeader, ISerializer& serializer)
     {
         return MultiplayerEditorPackets::DispatchPacket(connection, packetHeader, serializer, *this);
     }

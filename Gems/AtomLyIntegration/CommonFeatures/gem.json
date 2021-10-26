@@ -8,7 +8,15 @@
     "canonical_tags": [
         "Gem"
     ],
-    "user_tags": [
-    ],
-    "requirements": ""
+    "user_tags": [],
+    "requirements": "",
+    "dependencies": [
+        "Atom_Feature_Common",
+        "LmbrCentral",
+        "GradientSignal",
+        "SurfaceData",
+        "Atom_Bootstrap",
+        "Atom_RPI",
+        "AtomToolsFramework"
+    ]
 }

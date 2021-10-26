@@ -40,10 +40,9 @@ namespace AZ
             : public UnitTest::AssetTester<StreamingImageAsset>
         {
         public:
-            StreamingImageAssetTester()
-            {
+            StreamingImageAssetTester() = default;
+            ~StreamingImageAssetTester() override = default;
 
-            }
             void SetAssetReady(Data::Asset<StreamingImageAsset>& asset) override
             {
                 asset->SetReady();
@@ -54,7 +53,8 @@ namespace AZ
             : public UnitTest::AssetTester<ImageMipChainAsset>
         {
         public:
-            ImageMipChainAssetTester() {}
+            ImageMipChainAssetTester() = default;
+            ~ImageMipChainAssetTester() override = default;
 
             void SetAssetReady(Data::Asset<ImageMipChainAsset>& asset) override
             {
@@ -490,7 +490,6 @@ namespace UnitTest
 
         const uint16_t mipLevels = 1;
         const uint16_t arraySize = 1;
-        const uint16_t pixelSize = 4;
 
         Data::Asset<RPI::ImageMipChainAsset> mipChain;
 

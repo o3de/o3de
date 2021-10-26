@@ -29,14 +29,15 @@ namespace AzToolsFramework
             bool Changed() const override { return m_changed; }
 
         protected:
-            TemplateId m_templateId;
+            TemplateId m_templateId = InvalidTemplateId;
 
             PrefabDom m_redoPatch;
             PrefabDom m_undoPatch;
 
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
 
-            bool m_changed;
+            bool m_changed = true;
+            bool m_useImmediatePropagation = true;
         };
 
         //! handles the addition and removal of entities from instances
@@ -44,12 +45,12 @@ namespace AzToolsFramework
             : public PrefabUndoBase
         {
         public:
-            explicit PrefabUndoInstance(const AZStd::string& undoOperationName);
+            explicit PrefabUndoInstance(const AZStd::string& undoOperationName, bool useImmediatePropagation = true);
 
             void Capture(
                 const PrefabDom& initialState,
                 const PrefabDom& endState,
-                const TemplateId& templateId);
+                TemplateId templateId);
 
             void Undo() override;
             void Redo() override;
@@ -95,8 +96,8 @@ namespace AzToolsFramework
 
             //capture for add/remove
             void Capture(
-                const TemplateId& targetId,
-                const TemplateId& sourceId,
+                TemplateId targetId,
+                TemplateId sourceId,
                 const InstanceAlias& instanceAlias,
                 PrefabDom linkPatches = PrefabDom(),
                 const LinkId linkId = InvalidLinkId);

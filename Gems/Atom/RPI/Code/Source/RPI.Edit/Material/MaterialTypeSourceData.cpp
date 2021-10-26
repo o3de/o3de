@@ -9,11 +9,14 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertySerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertyConnectionSerializer.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertyGroupSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
+#include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -46,28 +49,33 @@ namespace AZ
             if (JsonRegistrationContext* jsonContext = azrtti_cast<JsonRegistrationContext*>(context))
             {
                 jsonContext->Serializer<JsonMaterialPropertySerializer>()->HandlesType<MaterialTypeSourceData::PropertyDefinition>();
+                jsonContext->Serializer<JsonMaterialPropertyConnectionSerializer>()->HandlesType<MaterialTypeSourceData::PropertyConnection>();
+                jsonContext->Serializer<JsonMaterialPropertyGroupSerializer>()->HandlesType<MaterialTypeSourceData::GroupDefinition>();
             }
             else if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
-                serializeContext->Class<PropertyConnection>()
-                    ->Version(1)
-                    ->Field("type", &PropertyConnection::m_type)
-                    ->Field("id", &PropertyConnection::m_nameId)
-                    ->Field("shaderIndex", &PropertyConnection::m_shaderIndex)
-                    ;
+                serializeContext->Class<PropertyConnection>()->Version(3);
+                serializeContext->Class<GroupDefinition>()->Version(4);
+                serializeContext->Class<PropertyDefinition>()->Version(1);
 
                 serializeContext->RegisterGenericType<PropertyConnectionList>();
 
-                serializeContext->Class<GroupDefinition>()
+                serializeContext->Class<VersionUpdatesRenameOperationDefinition>()
                     ->Version(1)
-                    ->Field("id", &GroupDefinition::m_nameId)
-                    ->Field("displayName", &GroupDefinition::m_displayName)
-                    ->Field("description", &GroupDefinition::m_description)
+                    ->Field("op", &VersionUpdatesRenameOperationDefinition::m_operation)
+                    ->Field("from", &VersionUpdatesRenameOperationDefinition::m_renameFrom)
+                    ->Field("to", &VersionUpdatesRenameOperationDefinition::m_renameTo)
                     ;
 
-                serializeContext->Class<PropertyDefinition>()
+                serializeContext->RegisterGenericType<VersionUpdateActions>();
+
+                serializeContext->Class<VersionUpdateDefinition>()
                     ->Version(1)
+                    ->Field("toVersion", &VersionUpdateDefinition::m_toVersion)
+                    ->Field("actions", &VersionUpdateDefinition::m_actions)
                     ;
+
+                serializeContext->RegisterGenericType<VersionUpdates>();
 
                 serializeContext->Class<ShaderVariantReferenceData>()
                     ->Version(2)
@@ -77,8 +85,8 @@ namespace AZ
                     ;
 
                 serializeContext->Class<PropertyLayout>()
-                    ->Version(1)
-                    ->Field("version", &PropertyLayout::m_version)
+                    ->Version(2) // Material Version Update
+                    ->Field("version", &PropertyLayout::m_versionOld)
                     ->Field("groups", &PropertyLayout::m_groups)
                     ->Field("properties", &PropertyLayout::m_properties)
                     ;
@@ -86,8 +94,10 @@ namespace AZ
                 serializeContext->RegisterGenericType<UvNameMap>();
 
                 serializeContext->Class<MaterialTypeSourceData>()
-                    ->Version(3)
+                    ->Version(4) // Material Version Update
                     ->Field("description", &MaterialTypeSourceData::m_description)
+                    ->Field("version", &MaterialTypeSourceData::m_version)
+                    ->Field("versionUpdates", &MaterialTypeSourceData::m_versionUpdates)
                     ->Field("propertyLayout", &MaterialTypeSourceData::m_propertyLayout)
                     ->Field("shaders", &MaterialTypeSourceData::m_shaderCollection)
                     ->Field("functors", &MaterialTypeSourceData::m_materialFunctorSourceData)
@@ -96,9 +106,9 @@ namespace AZ
             }
         }
 
-        MaterialTypeSourceData::PropertyConnection::PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view nameId, int32_t shaderIndex)
+        MaterialTypeSourceData::PropertyConnection::PropertyConnection(MaterialPropertyOutputType type, AZStd::string_view fieldName, int32_t shaderIndex)
             : m_type(type)
-            , m_nameId(nameId)
+            , m_fieldName(fieldName)
             , m_shaderIndex(shaderIndex)
         {
         }
@@ -107,11 +117,11 @@ namespace AZ
         const float MaterialTypeSourceData::PropertyDefinition::DefaultMax = std::numeric_limits<float>::max();
         const float MaterialTypeSourceData::PropertyDefinition::DefaultStep = 0.1f;
 
-        const MaterialTypeSourceData::GroupDefinition* MaterialTypeSourceData::FindGroup(AZStd::string_view groupNameId) const
+        const MaterialTypeSourceData::GroupDefinition* MaterialTypeSourceData::FindGroup(AZStd::string_view groupName) const
         {
             for (const GroupDefinition& group : m_propertyLayout.m_groups)
             {
-                if (group.m_nameId == groupNameId)
+                if (group.m_name == groupName)
                 {
                     return &group;
                 }
@@ -120,9 +130,40 @@ namespace AZ
             return nullptr;
         }
 
-        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupNameId, AZStd::string_view propertyNameId) const
+        bool MaterialTypeSourceData::ApplyPropertyRenames(MaterialPropertyId& propertyId, uint32_t materialTypeVersion) const
         {
-            auto groupIter = m_propertyLayout.m_properties.find(groupNameId);
+            bool renamed = false;
+
+            for (const VersionUpdateDefinition& versionUpdate : m_versionUpdates)
+            {
+                if (materialTypeVersion >= versionUpdate.m_toVersion)
+                {
+                    continue;
+                }
+
+                for (const VersionUpdatesRenameOperationDefinition& action : versionUpdate.m_actions)
+                {
+                    if (action.m_operation == "rename")
+                    {
+                        if (action.m_renameFrom == propertyId.GetFullName().GetStringView())
+                        {
+                            propertyId = MaterialPropertyId::Parse(action.m_renameTo);
+                            renamed = true;
+                        }
+                    }
+                    else
+                    {
+                        AZ_Warning("Material source data", false, "Unsupported material version update operation '%s'", action.m_operation.c_str());
+                    }
+                }
+            }
+
+            return renamed;
+        }
+
+        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName, uint32_t materialTypeVersion) const
+        {
+            auto groupIter = m_propertyLayout.m_properties.find(groupName);
             if (groupIter == m_propertyLayout.m_properties.end())
             {
                 return nullptr;
@@ -130,7 +171,28 @@ namespace AZ
 
             for (const PropertyDefinition& property : groupIter->second)
             {
-                if (property.m_nameId == propertyNameId)
+                if (property.m_name == propertyName)
+                {
+                    return &property;
+                }
+            }
+
+            // Property has not been found, try looking for renames in the version history
+
+            MaterialPropertyId propertyId = MaterialPropertyId{groupName, propertyName};
+            ApplyPropertyRenames(propertyId, materialTypeVersion);
+
+            // Do the search again with the new names
+
+            groupIter = m_propertyLayout.m_properties.find(propertyId.GetGroupName().GetStringView());
+            if (groupIter == m_propertyLayout.m_properties.end())
+            {
+                return nullptr;
+            }
+
+            for (const PropertyDefinition& property : groupIter->second)
+            {
+                if (property.m_name == propertyId.GetPropertyName().GetStringView())
                 {
                     return &property;
                 }
@@ -169,24 +231,24 @@ namespace AZ
             AZStd::unordered_set<AZStd::string> foundGroups;
             for (const auto& groupDefinition : m_propertyLayout.m_groups)
             {
-                if (foundGroups.insert(groupDefinition.m_nameId).second)
+                if (foundGroups.insert(groupDefinition.m_name).second)
                 {
                     groupDefinitions.push_back(groupDefinition);
                 }
                 else
                 {
-                    AZ_Warning("Material source data", false, "Duplicate group '%s' found.", groupDefinition.m_nameId.c_str());
+                    AZ_Warning("Material source data", false, "Duplicate group '%s' found.", groupDefinition.m_name.c_str());
                 }
             }
 
             // Some groups are defined implicitly, in the "properties" section where a group name is used but not explicitly defined in the "groups" section.
             for (const auto& propertyListPair : m_propertyLayout.m_properties)
             {
-                const AZStd::string& groupNameId = propertyListPair.first;
-                if (foundGroups.insert(groupNameId).second)
+                const AZStd::string& groupName = propertyListPair.first;
+                if (foundGroups.insert(groupName).second)
                 {
                     MaterialTypeSourceData::GroupDefinition groupDefinition;
-                    groupDefinition.m_nameId = groupNameId;
+                    groupDefinition.m_name = groupName;
                     groupDefinitions.push_back(groupDefinition);
                 }
             }
@@ -203,12 +265,12 @@ namespace AZ
 
             for (const auto& propertyListPair : m_propertyLayout.m_properties)
             {
-                const AZStd::string& groupNameId = propertyListPair.first;
+                const AZStd::string& groupName = propertyListPair.first;
                 const auto& propertyList = propertyListPair.second;
                 for (const auto& propertyDefinition : propertyList)
                 {
-                    const AZStd::string& propertyNameId = propertyDefinition.m_nameId;
-                    if (!callback(groupNameId, propertyNameId, propertyDefinition))
+                    const AZStd::string& propertyName = propertyDefinition.m_name;
+                    if (!callback(groupName, propertyName, propertyDefinition))
                     {
                         return;
                     }
@@ -225,15 +287,15 @@ namespace AZ
 
             for (const auto& groupDefinition : GetGroupDefinitionsInDisplayOrder())
             {
-                const AZStd::string& groupNameId = groupDefinition.m_nameId;
-                const auto propertyListItr = m_propertyLayout.m_properties.find(groupNameId);
+                const AZStd::string& groupName = groupDefinition.m_name;
+                const auto propertyListItr = m_propertyLayout.m_properties.find(groupName);
                 if (propertyListItr != m_propertyLayout.m_properties.end())
                 {
                     const auto& propertyList = propertyListItr->second;
                     for (const auto& propertyDefinition : propertyList)
                     {
-                        const AZStd::string& propertyNameId = propertyDefinition.m_nameId;
-                        if (!callback(groupNameId, propertyNameId, propertyDefinition))
+                        const AZStd::string& propertyName = propertyDefinition.m_name;
+                        if (!callback(groupName, propertyName, propertyDefinition))
                         {
                             return;
                         }
@@ -249,7 +311,7 @@ namespace AZ
                 const uint32_t index = propertyValue.GetValue<uint32_t>();
                 if (index >= propertyDefinition.m_enumValues.size())
                 {
-                    AZ_Error("Material source data", false, "Invalid value for material enum property: '%s'.", propertyDefinition.m_nameId.c_str());
+                    AZ_Error("Material source data", false, "Invalid value for material enum property: '%s'.", propertyDefinition.m_name.c_str());
                     return false;
                 }
 
@@ -272,7 +334,7 @@ namespace AZ
                         imageAsset.GetId(), imageAsset.GetType(), platformName, imageAssetInfo, rootFilePath);
                     if (!result)
                     {
-                        AZ_Error("Material source data", false, "Image asset could not be found for property: '%s'.", propertyDefinition.m_nameId.c_str());
+                        AZ_Error("Material source data", false, "Image asset could not be found for property: '%s'.", propertyDefinition.m_name.c_str());
                         return false;
                     }
                 }
@@ -289,6 +351,41 @@ namespace AZ
             MaterialTypeAssetCreator materialTypeAssetCreator;
             materialTypeAssetCreator.SetElevateWarnings(elevateWarnings);
             materialTypeAssetCreator.Begin(assetId);
+
+            if (m_propertyLayout.m_versionOld != 0)
+            {
+                materialTypeAssetCreator.ReportError(
+                    "The field '/propertyLayout/version' is deprecated and moved to '/version'. "
+                    "Please edit this material type source file and move the '\"version\": %u' setting up one level.",
+                    m_propertyLayout.m_versionOld);
+                return Failure();
+            }
+
+            // Set materialtype version and add each version update object into MaterialTypeAsset.
+            materialTypeAssetCreator.SetVersion(m_version);
+            {
+                const AZ::Name rename = AZ::Name{ "rename" };
+
+                for (const auto& versionUpdate : m_versionUpdates)
+                {
+                    MaterialVersionUpdate materialVersionUpdate{versionUpdate.m_toVersion};
+                    for (const auto& action : versionUpdate.m_actions)
+                    {
+                        if (action.m_operation == rename.GetStringView())
+                        {
+                            materialVersionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction{
+                                    AZ::Name{ action.m_renameFrom },
+                                    AZ::Name{ action.m_renameTo }
+                                });
+                        }
+                        else
+                        {
+                            materialTypeAssetCreator.ReportWarning("Unsupported material version update operation '%s'", action.m_operation.c_str());
+                        }
+                    }
+                    materialTypeAssetCreator.AddVersionUpdate(materialVersionUpdate);
+                }
+            }
 
             // Used to gather all the UV streams used in this material type from its shaders in alphabetical order.
             auto semanticComp = [](const RHI::ShaderSemantic& lhs, const RHI::ShaderSemantic& rhs) -> bool
@@ -340,13 +437,13 @@ namespace AZ
 
             for (auto& groupIter : m_propertyLayout.m_properties)
             {
-                const AZStd::string& groupNameId = groupIter.first;
+                const AZStd::string& groupName = groupIter.first;
 
                 for (const PropertyDefinition& property : groupIter.second)
                 {
                     // Register the property...
 
-                    MaterialPropertyId propertyId{ groupNameId, property.m_nameId };
+                    MaterialPropertyId propertyId{ groupName, property.m_name };
 
                     if (!propertyId.IsValid())
                     {
@@ -366,16 +463,16 @@ namespace AZ
                         switch (output.m_type)
                         {
                         case MaterialPropertyOutputType::ShaderInput:
-                            materialTypeAssetCreator.ConnectMaterialPropertyToShaderInput(Name{ output.m_nameId.data() });
+                            materialTypeAssetCreator.ConnectMaterialPropertyToShaderInput(Name{ output.m_fieldName.data() });
                             break;
                         case MaterialPropertyOutputType::ShaderOption:
                             if (output.m_shaderIndex >= 0)
                             {
-                                materialTypeAssetCreator.ConnectMaterialPropertyToShaderOption(Name{ output.m_nameId.data() }, output.m_shaderIndex);
+                                materialTypeAssetCreator.ConnectMaterialPropertyToShaderOption(Name{ output.m_fieldName.data() }, output.m_shaderIndex);
                             }
                             else
                             {
-                                materialTypeAssetCreator.ConnectMaterialPropertyToShaderOptions(Name{ output.m_nameId.data() });
+                                materialTypeAssetCreator.ConnectMaterialPropertyToShaderOptions(Name{ output.m_fieldName.data() });
                             }
                             break;
                         case MaterialPropertyOutputType::Invalid:

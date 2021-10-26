@@ -23,7 +23,7 @@ namespace AzToolsFramework
 {
     void EditorContextMenuUpdate(EditorContextMenu& contextMenu, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // could potentially show the context menu
         if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Right() &&
@@ -41,7 +41,8 @@ namespace AzToolsFramework
                 ViewportInteraction::QPointFromScreenPoint(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
 
             // if the mouse hasn't moved, open the pop-up menu
-            if ((currentScreenCoords - contextMenu.m_clickPoint).manhattanLength() < ed_contextMenuDisplayThreshold)
+            if ((currentScreenCoords - contextMenu.m_clickPoint).manhattanLength() < ed_contextMenuDisplayThreshold &&
+                !mouseInteraction.m_captured)
             {
                 QWidget* parent = nullptr;
                 ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(

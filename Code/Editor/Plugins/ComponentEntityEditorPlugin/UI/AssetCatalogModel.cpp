@@ -472,7 +472,7 @@ void AssetCatalogModel::LoadDatabase()
         {
             m_fileCacheCurrentIndex = 0;
             Q_EMIT UpdateProgress(0);
-            Q_EMIT SetTotalProgress(m_fileCache.size());
+            Q_EMIT SetTotalProgress(static_cast<int>(m_fileCache.size()));
         };
 
     EBUS_EVENT(AZ::Data::AssetCatalogRequestBus, EnumerateAssets, startCB, enumerateCB, endCB);

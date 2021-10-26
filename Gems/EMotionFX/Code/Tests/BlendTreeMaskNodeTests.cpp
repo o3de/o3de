@@ -173,7 +173,7 @@ namespace EMotionFX
             m_blendTree->AddChildNode(m_basePoseNode);
             m_maskNode->AddConnection(m_basePoseNode, BlendTreeTestInputNode::OUTPUTPORT_RESULT, BlendTreeMaskNode::INPUTPORT_BASEPOSE);
 
-            for (AZ::u32 i = 0; i < m_numMaskInputNodes; ++i)
+            for (uint16 i = 0; i < m_numMaskInputNodes; ++i)
             {
                 BlendTreeTestInputNode* inputNode = aznew BlendTreeTestInputNode(static_cast<float>(i));
                 m_blendTree->AddChildNode(inputNode);

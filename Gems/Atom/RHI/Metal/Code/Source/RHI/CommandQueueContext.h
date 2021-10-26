@@ -40,7 +40,7 @@ namespace AZ
             /// Fences across all queues that are compiled by the frame graph compilation phase
             const FenceSet& GetCompiledFences();
 
-            void UpdateCpuTimingStatistics(RHI::CpuTimingStatistics& cpuTimingStatistics) const;
+            void UpdateCpuTimingStatistics() const;
         private:
             AZStd::array<RHI::Ptr<CommandQueue>, RHI::HardwareQueueClassCount> m_commandQueues;
             FenceSet m_compiledFences;

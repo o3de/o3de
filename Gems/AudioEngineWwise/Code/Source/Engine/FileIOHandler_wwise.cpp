@@ -12,15 +12,14 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/IStreamer.h>
+#include <AzCore/Debug/Profiler.h>
 
 #include <IAudioInterfacesCommonData.h>
 #include <AkPlatformFuncs_Platform.h>
 #include <AudioEngineWwise_Traits_Platform.h>
 #include <cinttypes>
 
-#define MAX_NUMBER_STRING_SIZE      (10)    // 4G
-#define ID_TO_STRING_FORMAT_BANK    AKTEXT("%u.bnk")
-#define ID_TO_STRING_FORMAT_WEM     AKTEXT("%u.wem")
+#define MAX_NUMBER_STRING_SIZE      (10)    // max digits in u32 base-10 number
 #define MAX_EXTENSION_SIZE          (4)     // .xxx
 #define MAX_FILETITLE_SIZE          (MAX_NUMBER_STRING_SIZE + MAX_EXTENSION_SIZE + 1)   // null-terminated
 
@@ -265,7 +264,7 @@ namespace Audio
 
         auto callback = [&transferInfo](AZ::IO::FileRequestHandle request)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+            AZ_PROFILE_FUNCTION(Audio);
             AZ::IO::IStreamerTypes::RequestStatus status = AZ::Interface<AZ::IO::IStreamer>::Get()->GetRequestStatus(request);
             switch (status)
             {
@@ -441,11 +440,16 @@ namespace Audio
                 }
             }
 
-            AkOSChar fileName[MAX_FILETITLE_SIZE] = { '\0' };
+            AkOSChar fileName[MAX_FILETITLE_SIZE] = { 0 };
 
-            const AkOSChar* const filenameFormat = (flags->uCodecID == AKCODECID_BANK ? ID_TO_STRING_FORMAT_BANK : ID_TO_STRING_FORMAT_WEM);
-
-            AK_OSPRINTF(fileName, MAX_FILETITLE_SIZE, filenameFormat, static_cast<int unsigned>(fileID));
+            if (flags->uCodecID == AKCODECID_BANK)
+            {
+                AK_OSPRINTF(fileName, MAX_FILETITLE_SIZE, AKTEXT("%u.bnk"), static_cast<unsigned int>(fileID));
+            }
+            else
+            {
+                AK_OSPRINTF(fileName, MAX_FILETITLE_SIZE, AKTEXT("%u.wem"), static_cast<unsigned int>(fileID));
+            }
 
             AKPLATFORM::SafeStrCat(finalFilePath, fileName, AK_MAX_PATH);
 

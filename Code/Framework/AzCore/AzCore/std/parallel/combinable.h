@@ -164,7 +164,7 @@ namespace AZStd
         //enough.
         struct Node
         {
-            AZ_ALIGN(T m_value, 64); //alignment to avoid cache line sharing
+            alignas(64) T m_value; //alignment to avoid cache line sharing
             thread::id m_threadId;
             Node* m_next;
         };

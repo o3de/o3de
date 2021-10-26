@@ -8,11 +8,12 @@
 
 #pragma once
 
+#include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
+#include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentNotificationBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentConstants.h>
-#include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
-#include <Material/MaterialComponent.h>
 #include <Material/EditorMaterialComponentSlot.h>
+#include <Material/MaterialComponent.h>
 
 namespace AZ
 {
@@ -21,8 +22,9 @@ namespace AZ
         //! In-editor material component for displaying and editing material assignments.
         class EditorMaterialComponent final
             : public EditorRenderComponentAdapter<MaterialComponentController, MaterialComponent, MaterialComponentConfig>
-            , private MaterialReceiverNotificationBus::Handler
-            , private MaterialComponentNotificationBus::Handler
+            , public MaterialReceiverNotificationBus::Handler
+            , public MaterialComponentNotificationBus::Handler
+            , public EditorMaterialSystemComponentNotificationBus::Handler
         {
         public:
             using BaseClass = EditorRenderComponentAdapter<MaterialComponentController, MaterialComponent, MaterialComponentConfig>;
@@ -50,23 +52,17 @@ namespace AZ
             void OnMaterialAssignmentsChanged() override;
 
             //! MaterialComponentNotificationBus::Handler overrides...
-            void OnMaterialsEdited(const MaterialAssignmentMap& materials) override;
+            void OnMaterialInstanceCreated(const MaterialAssignment& materialAssignment) override;
 
-            // Apply a material component configuration to the active controller
-            void UpdateConfiguration(const MaterialComponentConfig& config);
-
-            // Converts the editor components material slots to the material component
-            // configuration and updates the controller
-            void UpdateController();
+            //! EditorMaterialSystemComponentNotificationBus::Handler overrides...
+            void OnRenderMaterialPreviewComplete(
+                const AZ::EntityId& entityId, const AZ::Render::MaterialAssignmentId& materialAssignmentId, const QPixmap& pixmap) override;
 
             // Regenerates the editor component material slots based on the material and
             // LOD mapping from the model or other consumer of materials.
             // If any corresponding material assignments are found in the component
             // controller configuration then those values will be assigned to the editor component slots.
             void UpdateMaterialSlots();
-
-            // Clears all values related to the material component and regenerates the editor slots
-            AZ::u32 ResetMaterialSlots();
 
             // Opens the source material export dialog and updates editor material slots based on
             // selected actions
@@ -89,10 +85,6 @@ namespace AZ
             // Evaluate if materials can be edited
             bool IsEditingAllowed() const;
 
-            template<typename ComponentType, typename ContainerType>
-            static void BuildMaterialSlotMap(ComponentType& component, ContainerType& materialSlots);
-            AZStd::unordered_map<MaterialAssignmentId, EditorMaterialComponentSlot*> GetMaterialSlots();
-            AZStd::unordered_map<MaterialAssignmentId, const EditorMaterialComponentSlot*> GetMaterialSlots() const;
             AZStd::string GetLabelForLod(int lodIndex) const;
 
             AZStd::string m_message;
@@ -100,8 +92,6 @@ namespace AZ
             EditorMaterialComponentSlotContainer m_materialSlots;
             EditorMaterialComponentSlotsByLodContainer m_materialSlotsByLod;
             bool m_materialSlotsByLodEnabled = false;
-
-            bool m_configurationChangeInProgress = false; // when true, model changes are ignored
 
             static const char* GenerateMaterialsButtonText;
             static const char* GenerateMaterialsToolTipText;

@@ -68,7 +68,6 @@ namespace EMStudio
 
         // general
         MotionWindowPlugin*             m_motionWindowPlugin;
-        QCheckBox*                      m_autoMode;
 
         // flags widget
         QWidget*                        m_flagsWidget;

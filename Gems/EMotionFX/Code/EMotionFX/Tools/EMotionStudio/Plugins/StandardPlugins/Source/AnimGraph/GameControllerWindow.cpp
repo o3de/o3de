@@ -1176,7 +1176,7 @@ namespace EMStudio
             }
             else
             {
-                settingsInfo->m_axis = elementID;
+                settingsInfo->m_axis = static_cast<uint8>(elementID);
             }
         }
         else
@@ -1188,7 +1188,7 @@ namespace EMStudio
             }
             else
             {
-                settingsInfo->m_axis = value - 1;
+                settingsInfo->m_axis = static_cast<uint8>(value - 1);
             }
         }
     #else
@@ -1619,7 +1619,7 @@ namespace EMStudio
         const uint32 numButtons = m_gameController->GetNumButtons();
         for (uint32 i = 0; i < numButtons; ++i)
         {
-            const bool isPressed = m_gameController->GetIsButtonPressed(i);
+            const bool isPressed = m_gameController->GetIsButtonPressed(static_cast<uint8>(i));
 
             // get the game controller settings info for the given button
             EMotionFX::AnimGraphGameControllerSettings::ButtonInfo* settingsInfo = activePreset->FindButtonInfo(i);
@@ -1792,7 +1792,7 @@ namespace EMStudio
             m_string.clear();
             for (uint32 i = 0; i < numButtons; ++i)
             {
-                if (m_gameController->GetIsButtonPressed(i))
+                if (m_gameController->GetIsButtonPressed(static_cast<uint8>(i)))
                 {
                     m_string += AZStd::string::format("%s%d ", (i < 10) ? "0" : "", i);
                 }

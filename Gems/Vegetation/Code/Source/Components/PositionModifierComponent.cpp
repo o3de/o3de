@@ -281,7 +281,7 @@ namespace Vegetation
 
     void PositionModifierComponent::Execute(InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         const GradientSignal::GradientSampleParams sampleParams(instanceData.m_position);
         float factorX = m_configuration.m_gradientSamplerX.GetValue(sampleParams);

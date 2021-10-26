@@ -10,9 +10,6 @@
 #include <Range.h>
 #include <AnimKey.h>
 #include <ITimer.h>
-#include <IPhysics.h>
-#include <VectorSet.h>
-#include <CryName.h>
 #include <LyShine/ILyShine.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
@@ -191,7 +188,7 @@ public:
 
 private:
     EUiAnimParamType m_type;
-    CCryName m_name;
+    AZStd::string m_name;
 };
 
 // The data required to identify a specific parameter/property on an AZ component on an AZ entity
@@ -442,7 +439,7 @@ struct IUiAnimTrack
     virtual int GetSubTrackCount() const = 0;
     // Retrieve pointer the specfied sub track.
     virtual IUiAnimTrack* GetSubTrack(int nIndex) const = 0;
-    virtual const char* GetSubTrackName(int nIndex) const = 0;
+    virtual AZStd::string GetSubTrackName(int nIndex) const = 0;
     virtual void SetSubTrackName(int nIndex, const char* name) = 0;
     //////////////////////////////////////////////////////////////////////////
 
@@ -634,7 +631,7 @@ public:
     virtual void SetName(const char* name) = 0;
 
     //! Get node name.
-    virtual const char* GetName() = 0;
+    virtual AZStd::string GetName() = 0;
 
     // Get Type of this node.
     virtual EUiAnimNodeType GetType() const = 0;
@@ -710,13 +707,13 @@ public:
     //      Returns name of supported parameter of this animation node or NULL if not available
     // Arguments:
     //          paramType - parameter id
-    virtual const char* GetParamName(const CUiAnimParamType& paramType) const = 0;
+    virtual AZStd::string GetParamName(const CUiAnimParamType& paramType) const = 0;
 
     // Description:
     //      Returns name of supported parameter of this animation node or NULL if not available
     // Arguments:
     //          paramType - parameter id
-    virtual const char* GetParamNameForTrack(const CUiAnimParamType& paramType, [[maybe_unused]] const IUiAnimTrack* track) const { return GetParamName(paramType); }
+    virtual AZStd::string GetParamNameForTrack(const CUiAnimParamType& paramType, [[maybe_unused]] const IUiAnimTrack* track) const { return GetParamName(paramType); }
 
     // Description:
     //      Returns the params value type

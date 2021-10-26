@@ -12,6 +12,7 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
+#include <Atom/RPI.Edit/Material/MaterialConverterBus.h>
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
@@ -22,7 +23,7 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -71,8 +72,64 @@ namespace AZ
                 materialAssetCreator.SetPropertyValue(propertyId, entry.second);
             }
         }
+        
+        MaterialSourceData::ApplyVersionUpdatesResult MaterialSourceData::ApplyVersionUpdates(AZStd::string_view materialSourceFilePath)
+        {
+            AZStd::string materialTypeFullPath = AssetUtils::ResolvePathReference(materialSourceFilePath, m_materialType);
+            auto materialTypeSourceDataOutcome = MaterialUtils::LoadMaterialTypeSourceData(materialTypeFullPath);
+            if (!materialTypeSourceDataOutcome.IsSuccess())
+            {
+                return ApplyVersionUpdatesResult::Failed;
+            }
+            
+            MaterialTypeSourceData materialTypeSourceData = materialTypeSourceDataOutcome.TakeValue();
 
-        Outcome<Data::Asset<MaterialAsset> > MaterialSourceData::CreateMaterialAsset(Data::AssetId assetId, AZStd::string_view materialSourceFilePath, bool elevateWarnings) const
+            if (m_materialTypeVersion == materialTypeSourceData.m_version)
+            {
+                return ApplyVersionUpdatesResult::NoUpdates;
+            }
+
+            bool changesWereApplied = false;
+
+            // Note that the only kind of property update currently supported is rename...
+
+            for (auto& groupPair : m_properties)
+            {
+                PropertyMap& propertyMap = groupPair.second;
+
+                PropertyMap newPropertyMap;
+
+                for (auto& propertyPair : propertyMap)
+                {
+                    MaterialPropertyId propertyId{groupPair.first, propertyPair.first};
+                    if (materialTypeSourceData.ApplyPropertyRenames(propertyId, m_materialTypeVersion))
+                    {
+                        newPropertyMap[propertyId.GetPropertyName().GetStringView()] = propertyPair.second;
+                        changesWereApplied = true;
+                    }
+                    else
+                    {
+                        newPropertyMap[propertyPair.first] = propertyPair.second;
+                    }
+                }
+
+                propertyMap = newPropertyMap;
+            }
+
+            if (changesWereApplied)
+            {
+                AZ_Warning("MaterialSourceData", false,
+                    "This material is based on version '%u' of '%s', but the material type is now at version '%u'. "
+                    "Automatic updates are available. Consider updating the .material source file.",
+                    m_materialTypeVersion, m_materialType.c_str(), materialTypeSourceData.m_version);
+            }
+
+            m_materialTypeVersion = materialTypeSourceData.m_version;
+            
+            return changesWereApplied ? ApplyVersionUpdatesResult::UpdatesApplied : ApplyVersionUpdatesResult::NoUpdates;
+        }
+
+        Outcome<Data::Asset<MaterialAsset> > MaterialSourceData::CreateMaterialAsset(Data::AssetId assetId, AZStd::string_view materialSourceFilePath, bool elevateWarnings, bool includeMaterialPropertyNames) const
         {
             MaterialAssetCreator materialAssetCreator;
             materialAssetCreator.SetElevateWarnings(elevateWarnings);
@@ -85,7 +142,7 @@ namespace AZ
                     return Failure();
                 }
 
-                materialAssetCreator.Begin(assetId, *materialTypeAsset.GetValue().Get());
+                materialAssetCreator.Begin(assetId, *materialTypeAsset.GetValue().Get(), includeMaterialPropertyNames);
             }
             else
             {
@@ -115,7 +172,7 @@ namespace AZ
                     }
                 }
 
-                materialAssetCreator.Begin(assetId, *parentMaterialAsset.GetValue().Get());
+                materialAssetCreator.Begin(assetId, *parentMaterialAsset.GetValue().Get(), includeMaterialPropertyNames);
             }
 
             for (auto& group : m_properties)

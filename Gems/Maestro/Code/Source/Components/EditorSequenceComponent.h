@@ -78,7 +78,7 @@ namespace Maestro
 
         //////////////////////////////////////////////////////////////////////////
         // TickBus - used to refresh property displays when values are animated
-        virtual void OnTick(float deltaTime, AZ::ScriptTimePoint time);
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
         //////////////////////////////////////////////////////////////////////////
 
         // TODO - this should be on a Bus, right?
@@ -110,6 +110,6 @@ namespace Maestro
 
         static AZ::ScriptTimePoint       s_lastPropertyRefreshTime;
         static const double              s_refreshPeriodMilliseconds;       // property refresh period for SetAnimatedPropertyValue events
-        static const int                 s_invalidSequenceId;
+        static const uint32              s_invalidSequenceId;
     };
 } // namespace Maestro

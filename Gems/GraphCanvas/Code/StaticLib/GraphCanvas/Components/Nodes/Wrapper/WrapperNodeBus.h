@@ -34,14 +34,14 @@ namespace GraphCanvas
         AZ_CLASS_ALLOCATOR(WrappedNodeConfiguration, AZ::SystemAllocator, 0);
 
         WrappedNodeConfiguration()
-            : m_layoutOrder(-1)
-            , m_elementOrdering(-1)
+            : m_layoutOrder(std::numeric_limits<AZ::u32>::max())
+            , m_elementOrdering(std::numeric_limits<AZ::u32>::max())
         {
         }
 
         WrappedNodeConfiguration(AZ::u32 layoutOrder)
             : m_layoutOrder(layoutOrder)
-            , m_elementOrdering(-1)
+            , m_elementOrdering(std::numeric_limits<AZ::u32>::max())
         {
         }
 

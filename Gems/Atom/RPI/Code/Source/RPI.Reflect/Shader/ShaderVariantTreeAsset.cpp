@@ -72,8 +72,6 @@ namespace AZ
 
         ShaderVariantSearchResult ShaderVariantTreeAsset::FindVariantStableId(const ShaderOptionGroupLayout* shaderOptionGroupLayout, const ShaderVariantId& shaderVariantId) const
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-
             struct NodeToVisit
             {
                 uint32_t m_branchCount; // Number of static branches
@@ -199,7 +197,6 @@ namespace AZ
                 if ((shaderVariantId.m_mask & option.GetBitMask()).any())
                 {
                     optionValues.push_back(option.DecodeBits(shaderVariantId.m_key));
-                    AZ_Assert(optionValues.back() >= 0, "Invalid shader variant key");
                 }
                 else
                 {

@@ -8,6 +8,7 @@
 
 #include <AtomActorInstance.h>
 #include <AtomActor.h>
+#include <AtomActorDebugDraw.h>
 #include <ActorAsset.h>
 
 #include <Atom/Feature/SkinnedMesh/SkinnedMeshInputBuffers.h>
@@ -59,7 +60,7 @@ namespace AZ
                 AzFramework::BoundsRequestBus::Handler::BusConnect(m_entityId);
             }
 
-            m_auxGeomFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<RPI::AuxGeomFeatureProcessorInterface>(m_entityId);
+            m_atomActorDebugDraw = AZStd::make_unique<AtomActorDebugDraw>(entityId);
         }
 
         AtomActorInstance::~AtomActorInstance()
@@ -76,6 +77,11 @@ namespace AZ
         void AtomActorInstance::OnTick([[maybe_unused]] float timeDelta)
         {
             UpdateBounds();
+        }
+
+        void AtomActorInstance::DebugDraw(const EMotionFX::ActorRenderFlagBitset& renderFlags)
+        {
+            m_atomActorDebugDraw->DebugDraw(renderFlags, m_actorInstance);
         }
 
         void AtomActorInstance::UpdateBounds()
@@ -97,116 +103,6 @@ namespace AZ
             }
 
             AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
-        }
-
-        void AtomActorInstance::DebugDraw(const DebugOptions& debugOptions)
-        {
-            if (m_auxGeomFeatureProcessor)
-            {
-                if (RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue())
-                {
-                    if (debugOptions.m_drawAABB)
-                    {
-                        const AZ::Aabb& aabb = m_actorInstance->GetAabb();
-                        auxGeom->DrawAabb(aabb, AZ::Color(0.0f, 1.0f, 1.0f, 1.0f), RPI::AuxGeomDraw::DrawStyle::Line);
-                    }
-
-                    if (debugOptions.m_drawSkeleton)
-                    {
-                        RenderSkeleton(auxGeom.get());
-                    }
-
-                    if (debugOptions.m_emfxDebugDraw)
-                    {
-                        RenderEMFXDebugDraw(auxGeom.get());
-                    }
-                }
-            }
-        }
-
-        void AtomActorInstance::RenderSkeleton(RPI::AuxGeomDraw* auxGeom)
-        {
-            AZ_Assert(m_actorInstance, "Valid actor instance required.");
-            const EMotionFX::TransformData* transformData = m_actorInstance->GetTransformData();
-            const EMotionFX::Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
-            const EMotionFX::Pose* pose = transformData->GetCurrentPose();
-
-            const size_t lodLevel = m_actorInstance->GetLODLevel();
-            const size_t numJoints = skeleton->GetNumNodes();
-
-            m_auxVertices.clear();
-            m_auxVertices.reserve(numJoints * 2);
-
-            for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
-            {
-                const EMotionFX::Node* joint = skeleton->GetNode(jointIndex);
-                if (!joint->GetSkeletalLODStatus(lodLevel))
-                {
-                    continue;
-                }
-
-                const size_t parentIndex = joint->GetParentIndex();
-                if (parentIndex == InvalidIndex)
-                {
-                    continue;
-                }
-
-                const AZ::Vector3 parentPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
-                m_auxVertices.emplace_back(parentPos);
-
-                const AZ::Vector3 bonePos = pose->GetWorldSpaceTransform(jointIndex).m_position;
-                m_auxVertices.emplace_back(bonePos);
-            }
-
-            const AZ::Color skeletonColor(0.604f, 0.804f, 0.196f, 1.0f);
-            RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
-            lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = aznumeric_caster(m_auxVertices.size());
-            lineArgs.m_colors = &skeletonColor;
-            lineArgs.m_colorCount = 1;
-            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
-            auxGeom->DrawLines(lineArgs);
-        }
-
-        void AtomActorInstance::RenderEMFXDebugDraw(RPI::AuxGeomDraw* auxGeom)
-        {
-            EMotionFX::DebugDraw& debugDraw = EMotionFX::GetDebugDraw();
-            debugDraw.Lock();
-            EMotionFX::DebugDraw::ActorInstanceData* actorInstanceData = debugDraw.GetActorInstanceData(m_actorInstance);
-            actorInstanceData->Lock();
-            const AZStd::vector<EMotionFX::DebugDraw::Line>& lines = actorInstanceData->GetLines();
-            if (lines.empty())
-            {
-                actorInstanceData->Unlock();
-                debugDraw.Unlock();
-                return;
-            }
-
-            m_auxVertices.clear();
-            m_auxVertices.reserve(lines.size() * 2);
-            m_auxColors.clear();
-            m_auxColors.reserve(m_auxVertices.size());
-
-            for (const EMotionFX::DebugDraw::Line& line : actorInstanceData->GetLines())
-            {
-                m_auxVertices.emplace_back(line.m_start);
-                m_auxColors.emplace_back(line.m_startColor);
-                m_auxVertices.emplace_back(line.m_end);
-                m_auxColors.emplace_back(line.m_endColor);
-            }
-
-            AZ_Assert(m_auxVertices.size() == m_auxColors.size(),
-                "Number of vertices and number of colors need to match.");
-            actorInstanceData->Unlock();
-            debugDraw.Unlock();
-
-            RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
-            lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = aznumeric_caster(m_auxVertices.size());
-            lineArgs.m_colors = m_auxColors.data();
-            lineArgs.m_colorCount = aznumeric_caster(m_auxColors.size());
-            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
-            auxGeom->DrawLines(lineArgs);
         }
 
         AZ::Aabb AtomActorInstance::GetWorldBounds()
@@ -426,15 +322,53 @@ namespace AZ
         {
             return m_meshFeatureProcessor->GetSortKey(*m_meshHandle);
         }
+
+        void AtomActorInstance::SetLodType(RPI::Cullable::LodType lodType)
+        {
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_lodType = lodType;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
+        }
+
+        RPI::Cullable::LodType AtomActorInstance::GetLodType() const
+        {
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_lodType;
+        }
         
         void AtomActorInstance::SetLodOverride(RPI::Cullable::LodOverride lodOverride)
         {
-            m_meshFeatureProcessor->SetLodOverride(*m_meshHandle, lodOverride);
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_lodOverride = lodOverride;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
         }
 
         RPI::Cullable::LodOverride AtomActorInstance::GetLodOverride() const
         {
-            return m_meshFeatureProcessor->GetLodOverride(*m_meshHandle);
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_lodOverride;
+        }
+
+        void AtomActorInstance::SetMinimumScreenCoverage(float minimumScreenCoverage)
+        {
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_minimumScreenCoverage = minimumScreenCoverage;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
+        }
+
+        float AtomActorInstance::GetMinimumScreenCoverage() const
+        {
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_minimumScreenCoverage;
+        }
+
+        void AtomActorInstance::SetQualityDecayRate(float qualityDecayRate)
+        {
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_qualityDecayRate = qualityDecayRate;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
+        }
+
+        float AtomActorInstance::GetQualityDecayRate() const
+        {
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_qualityDecayRate;
         }
 
         void AtomActorInstance::SetVisibility(bool visible)
@@ -773,7 +707,7 @@ namespace AZ
                     const uint64_t inputByteOffset = aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementOffset) * aznumeric_cast<uint64_t>(inputBufferViewDescriptor.m_elementSize);
 
                     const uint32_t outputElementSize = SkinnedMeshVertexStreamPropertyInterface::Get()->GetOutputStreamInfo(outputStream).m_elementSize;
-                    const uint64_t outputByteCount = aznumeric_cast<uint64_t>(lodVertexCount) * aznumeric_cast<uint64_t>(outputElementSize);
+                    [[maybe_unused]] const uint64_t outputByteCount = aznumeric_cast<uint64_t>(lodVertexCount) * aznumeric_cast<uint64_t>(outputElementSize);
                     const uint64_t outputByteOffset = aznumeric_cast<uint64_t>(outputBufferOffsetsInBytes[static_cast<uint8_t>(outputStream)]);
 
                     // The byte count from input and output buffers doesn't have to match necessarily.
@@ -861,7 +795,7 @@ namespace AZ
                             // Set the weights for any active masks
                             for (size_t i = 0; i < m_wrinkleMaskWeights.size(); ++i)
                             {
-                                wrinkleMaskObjectSrg->SetConstant(wrinkleMaskWeightsIndex, m_wrinkleMaskWeights[i], aznumeric_caster(i));
+                                wrinkleMaskObjectSrg->SetConstant(wrinkleMaskWeightsIndex, m_wrinkleMaskWeights[i], static_cast<uint32_t>(i));
                             }
                             AZ_Error("AtomActorInstance", m_wrinkleMaskWeights.size() <= s_maxActiveWrinkleMasks, "The skinning shader supports no more than %d active morph targets with wrinkle masks.", s_maxActiveWrinkleMasks);
                         }

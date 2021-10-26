@@ -13,6 +13,7 @@
 
 // CryCommon
 #include <CryCommon/Maestro/Types/AnimParamType.h>
+#include <CryCommon/IFont.h>
 
 // Editor
 #include "Settings.h"

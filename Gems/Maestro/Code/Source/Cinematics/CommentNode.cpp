@@ -120,7 +120,7 @@ unsigned int CCommentNode::GetParamCount() const
 //-----------------------------------------------------------------------------
 CAnimParamType CCommentNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex >= 0 && nIndex < (int)s_nodeParameters.size())
+    if (nIndex < s_nodeParameters.size())
     {
         return s_nodeParameters[nIndex].paramType;
     }

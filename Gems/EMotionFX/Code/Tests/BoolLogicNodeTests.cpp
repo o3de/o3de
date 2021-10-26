@@ -53,8 +53,8 @@ namespace EMotionFX
             m_blendTree->AddChildNode(finalNode);
             finalNode->AddConnection(m_blendNNode, BlendTreeBlendNNode::PORTID_OUTPUT_POSE, BlendTreeFinalNode::PORTID_INPUT_POSE);
 
-            const int motionNodeCount = 2;
-            for (int i = 0; i < motionNodeCount; ++i)
+            const uint16 motionNodeCount = 2;
+            for (uint16 i = 0; i < motionNodeCount; ++i)
             {
                 AnimGraphMotionNode* motionNode = aznew AnimGraphMotionNode();
                 m_blendTree->AddChildNode(motionNode);

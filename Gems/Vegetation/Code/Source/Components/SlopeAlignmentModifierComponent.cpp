@@ -159,7 +159,7 @@ namespace Vegetation
 
     void SlopeAlignmentModifierComponent::Execute(InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         const bool useOverrides = m_configuration.m_allowOverrides && instanceData.m_descriptorPtr && instanceData.m_descriptorPtr->m_surfaceAlignmentOverrideEnabled;
         const float min = useOverrides ? instanceData.m_descriptorPtr->m_surfaceAlignmentMin : m_configuration.m_rangeMin;

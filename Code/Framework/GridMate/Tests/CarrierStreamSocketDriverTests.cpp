@@ -65,7 +65,7 @@ public:
     {
     }
 
-    ~CarrierStreamCallbacksHandler()
+    ~CarrierStreamCallbacksHandler() override
     {
         if (m_active)
         {
@@ -172,7 +172,7 @@ public:
 
 namespace UnitTest
 {
-    class Integ_CarrierStreamBasicTest
+    class DISABLED_CarrierStreamBasicTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
     {
@@ -330,7 +330,7 @@ namespace UnitTest
         }
     };
 
-    class Integ_CarrierStreamAsyncHandshakeTest
+    class DISABLED_CarrierStreamAsyncHandshakeTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
     {
@@ -462,7 +462,7 @@ namespace UnitTest
         }
     };
 
-    class Integ_CarrierStreamStressTest
+    class CarrierStreamStressTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
         , public ::testing::Test
@@ -470,7 +470,7 @@ namespace UnitTest
     public:
     };
 
-    TEST_F(Integ_CarrierStreamStressTest, Stress_Test)
+    TEST_F(CarrierStreamStressTest, DISABLED_Stress_Test)
     {
         CarrierStreamCallbacksHandler clientCB, serverCB;
         UnitTest::TestCarrierDesc serverCarrierDesc, clientCarrierDesc;
@@ -581,7 +581,7 @@ namespace UnitTest
         //////////////////////////////////////////////////////////////////////////
     }
 
-    class Integ_CarrierStreamTest
+    class DISABLED_CarrierStreamTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
     {
@@ -783,7 +783,7 @@ namespace UnitTest
         }
     };
 
-    class Integ_CarrierStreamDisconnectDetectionTest
+    class DISABLED_CarrierStreamDisconnectDetectionTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
     {
@@ -873,7 +873,7 @@ namespace UnitTest
         }
     };
 
-    class Integ_CarrierStreamMultiChannelTest
+    class DISABLED_CarrierStreamMultiChannelTest
         : public GridMateMPTestFixture
         , protected SocketDriverSupplier
     {
@@ -999,8 +999,8 @@ namespace UnitTest
 }
 
 GM_TEST_SUITE(CarrierStreamSuite)
-    GM_TEST(Integ_CarrierStreamBasicTest)
-    GM_TEST(Integ_CarrierStreamTest)
-    GM_TEST(Integ_CarrierStreamAsyncHandshakeTest)
-    GM_TEST(Integ_CarrierStreamMultiChannelTest)
+    GM_TEST(DISABLED_CarrierStreamBasicTest)
+    GM_TEST(DISABLED_CarrierStreamTest)
+    GM_TEST(DISABLED_CarrierStreamAsyncHandshakeTest)
+    GM_TEST(DISABLED_CarrierStreamMultiChannelTest)
 GM_TEST_SUITE_END()

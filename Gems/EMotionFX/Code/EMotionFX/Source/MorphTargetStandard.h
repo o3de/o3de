@@ -98,15 +98,14 @@ namespace EMotionFX
          * Please keep in mind that the rotation is stored as non-delta value, while the position and scale are
          * stored as delta values.
          */
-        struct EMFX_API MCORE_ALIGN_PRE(16) Transformation
+        struct EMFX_API alignas(16) Transformation
         {
             AZ::Quaternion      m_rotation;          /**< The rotation as absolute value. So not a delta value, but a target (absolute) rotation. */
             AZ::Quaternion      m_scaleRotation;     /**< The scale rotation, as absolute value. */
             AZ::Vector3         m_position;          /**< The position as a delta, so the difference between the original and target position. */
             AZ::Vector3         m_scale;             /**< The scale as a delta, so the difference between the original and target scale. */
             size_t              m_nodeIndex;         /**< The node number to apply this on. */
-        }
-        MCORE_ALIGN_POST(16);
+        };
 
         /**
          * The constructor.

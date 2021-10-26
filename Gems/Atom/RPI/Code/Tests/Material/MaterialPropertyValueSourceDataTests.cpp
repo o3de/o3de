@@ -142,6 +142,7 @@ namespace UnitTest
             AZStd::string m_propertyName;
             MaterialPropertyValueSourceData m_propertyValue;
 
+            using MaterialFunctorSourceData::CreateFunctor;
             FunctorResult CreateFunctor(const RuntimeContext& context) const override
             {
                 Ptr<ValueFunctor> functor = aznew ValueFunctor;

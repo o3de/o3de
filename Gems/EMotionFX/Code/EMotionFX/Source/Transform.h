@@ -20,7 +20,7 @@ namespace EMotionFX
     enum EMotionExtractionFlags : uint8;
 
 
-    class EMFX_API MCORE_ALIGN_PRE(16) Transform
+    class EMFX_API alignas(16) Transform
     {
         MCORE_MEMORYOBJECTCATEGORY(Transform, MCore::MCORE_SIMD_ALIGNMENT, EMFX_MEMCATEGORY_TRANSFORM);
 
@@ -142,6 +142,5 @@ namespace EMotionFX
         #ifndef EMFX_SCALE_DISABLED
             AZ::Vector3  m_scale;                /**< The scale. */
         #endif
-    }
-    MCORE_ALIGN_POST(16);
+    };
 }   // namespace EMotionFX

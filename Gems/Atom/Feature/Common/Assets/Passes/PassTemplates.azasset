@@ -185,14 +185,34 @@
                 "Path": "Passes/DepthOfFieldWriteFocusDepthFromGpu.pass"
             },
             {
-                "Name": "FilterDepthHorizontalTemplate",
-                "Path": "Passes/FilterDepthHorizontal.pass"
+                "Name": "NewDepthOfFieldTemplate",
+                "Path": "Passes/NewDepthOfField.pass"
             },
             {
-                "Name": "FilterDepthVerticalTemplate",
-                "Path": "Passes/FilterDepthVertical.pass"
+                "Name": "NewDepthOfFieldDownsampleTemplate",
+                "Path": "Passes/NewDepthOfFieldDownsample.pass"
             },
             {
+                "Name": "NewDepthOfFieldTileReduceTemplate",
+                "Path": "Passes/NewDepthOfFieldTileReduce.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldTile3x3Template",
+                "Path": "Passes/NewDepthOfFieldTile3x3.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldFilterLargeTemplate",
+                "Path": "Passes/NewDepthOfFieldFilterLarge.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldFilterSmallTemplate",
+                "Path": "Passes/NewDepthOfFieldFilterSmall.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldCompositeTemplate",
+                "Path": "Passes/NewDepthOfFieldComposite.pass"
+            },
+			{
                 "Name": "EsmShadowmapsTemplate",
                 "Path": "Passes/EsmShadowmaps.pass"
             },
@@ -477,6 +497,14 @@
                 "Path": "Passes/OpaqueParent.pass"
             },
             {
+                "Name": "ToolsPipeline",
+                "Path": "Passes/ToolsPipeline.pass"
+            },
+            {
+                "Name": "ToolsPipelineRenderToTexture",
+                "Path": "Passes/ToolsPipelineRenderToTexture.pass"
+            },
+            {
                 "Name": "TransparentParentTemplate",
                 "Path": "Passes/TransparentParent.pass"
             },
@@ -503,6 +531,18 @@
             {
                 "Name": "LowEndPipelineTemplate",
                 "Path": "Passes/LowEndPipeline.pass"
+            },
+            {
+                "Name": "KawaseShadowBlurTemplate",
+                "Path": "Passes/KawaseShadowBlur.pass"
+            },
+            {
+                "Name": "HDRColorGradingTemplate",
+                "Path": "Passes/HDRColorGrading.pass"
+            },
+            {
+                "Name": "LutGenerationTemplate",
+                "Path": "Passes/LutGeneration.pass"
             }
         ]
     }

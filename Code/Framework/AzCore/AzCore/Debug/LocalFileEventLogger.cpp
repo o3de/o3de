@@ -242,7 +242,9 @@ namespace AZ::Debug
         ThreadData* threadData = threadStorage.m_data;
 
         // Set to nullptr so other threads doing a flush can't pick this up.
-        while (!threadStorage.m_data.compare_exchange_strong(threadData, nullptr));
+        while (!threadStorage.m_data.compare_exchange_strong(threadData, nullptr))
+        {
+        }
 
         uint32_t writeSize = AZ_SIZE_ALIGN_UP(sizeof(EventHeader) + size, EventBoundary);
         if (threadData->m_usedBytes + writeSize >= ThreadData::BufferSize)
@@ -270,7 +272,9 @@ namespace AZ::Debug
         // swap the pending data to commit the event
         ThreadStorage& threadStorage = GetThreadStorage();
         ThreadData* expectedData = nullptr;
-        while (!threadStorage.m_data.compare_exchange_strong(expectedData, threadStorage.m_pendingData));
+        while (!threadStorage.m_data.compare_exchange_strong(expectedData, threadStorage.m_pendingData))
+        {
+        }
         threadStorage.m_pendingData = nullptr;
     }
 

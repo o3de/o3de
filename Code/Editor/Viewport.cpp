@@ -19,6 +19,7 @@
 
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 // Editor
 #include "ViewManager.h"
@@ -43,12 +44,7 @@
 void QtViewport::BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const QPoint& pt)
 {
     context.m_hitLocation = AZ::Vector3::CreateZero();
-
-    PreWidgetRendering(); // required so that the current render cam is set.
-
     context.m_hitLocation = GetHitLocation(pt);
-
-    PostWidgetRendering();
 }
 
 
@@ -178,8 +174,6 @@ QtViewport::QtViewport(QWidget* parent)
 
     m_bAdvancedSelectMode = false;
 
-    m_pVisibleObjectsCache = new CBaseObjectsCache;
-
     m_constructionPlane.SetPlane(Vec3_OneZ, Vec3_Zero);
     m_constructionPlaneAxisX = Vec3_Zero;
     m_constructionPlaneAxisY = Vec3_Zero;
@@ -209,8 +203,6 @@ QtViewport::QtViewport(QWidget* parent)
 //////////////////////////////////////////////////////////////////////////
 QtViewport::~QtViewport()
 {
-    delete m_pVisibleObjectsCache;
-
     GetIEditor()->GetViewManager()->UnregisterViewport(this);
 }
 
@@ -381,11 +373,6 @@ void QtViewport::OnDeactivate()
 void QtViewport::ResetContent()
 {
     m_pMouseOverObject = nullptr;
-
-    // Need to clear visual object cache.
-    // Right after loading new level, some code(e.g. OnMouseMove) access invalid
-    // previous level object before cache updated.
-    GetVisibleObjectsCache()->ClearObjects();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -400,15 +387,11 @@ void QtViewport::UpdateContent(int flags)
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::Update()
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
     m_viewportUi.Update();
 
     m_bAdvancedSelectMode = false;
-    bool bSpaceClick = false;
-    {
-        bSpaceClick = CheckVirtualKey(Qt::Key_Space) & !CheckVirtualKey(Qt::Key_Shift) /*& !CheckVirtualKey(Qt::Key_Control)*/;
-    }
-    if (bSpaceClick && hasFocus())
+
+    if (CheckVirtualKey(Qt::Key_Space) && !CheckVirtualKey(Qt::Key_Shift) && hasFocus())
     {
         m_bAdvancedSelectMode = true;
     }
@@ -419,7 +402,7 @@ void QtViewport::Update()
 //////////////////////////////////////////////////////////////////////////
 QPoint QtViewport::WorldToView(const Vec3& wp) const
 {
-    return QPoint(wp.x, wp.y);
+    return QPoint(static_cast<int>(wp.x), static_cast<int>(wp.y));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -427,8 +410,8 @@ Vec3 QtViewport::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nFlags) cons
 {
     QPoint p = WorldToView(wp);
     Vec3 out;
-    out.x = p.x();
-    out.y = p.y();
+    out.x = static_cast<f32>(p.x());
+    out.y = static_cast<f32>(p.y());
     out.z = wp.z;
     return out;
 }
@@ -437,8 +420,8 @@ Vec3 QtViewport::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nFlags) cons
 Vec3    QtViewport::ViewToWorld(const QPoint& vp, bool* pCollideWithTerrain, [[maybe_unused]] bool onlyTerrain, [[maybe_unused]] bool bSkipVegetation, [[maybe_unused]] bool bTestRenderMesh, [[maybe_unused]] bool* collideWithObject) const
 {
     Vec3 wp;
-    wp.x = vp.x();
-    wp.y = vp.y();
+    wp.x = static_cast<f32>(vp.x());
+    wp.y = static_cast<f32>(vp.y());
     wp.z = 0;
     if (pCollideWithTerrain)
     {
@@ -520,7 +503,7 @@ void QtViewport::mouseMoveEvent(QMouseEvent* event)
 
 void QtViewport::wheelEvent(QWheelEvent* event)
 {
-    OnMouseWheel(event->modifiers(), event->angleDelta().y(), event->position().toPoint());
+    OnMouseWheel(event->modifiers(), static_cast<short>(event->angleDelta().y()), event->position().toPoint());
     event->accept();
 }
 
@@ -969,7 +952,7 @@ void QtViewport::MakeConstructionPlane(int axis)
 //////////////////////////////////////////////////////////////////////////
 Vec3 QtViewport::MapViewToCP(const QPoint& point, int axis)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     if (axis == AXIS_TERRAIN)
     {
@@ -1093,9 +1076,8 @@ bool QtViewport::HitTest(const QPoint& point, HitContext& hitInfo)
     const int viewportId = GetViewportId();
 
     AzToolsFramework::EntityIdList visibleEntityIds;
-    AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Event(
-        viewportId,
-        &AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequests::FindVisibleEntities,
+    AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Event(
+        viewportId, &AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Events::FindVisibleEntities,
         visibleEntityIds);
 
     // Look through all visible entities to find the closest one to the specified mouse point
@@ -1276,9 +1258,9 @@ float QtViewport::GetDistanceToLine(const Vec3& lineP1, const Vec3& lineP2, cons
     QPoint p2 = WorldToView(lineP2);
 
     return PointToLineDistance2D(
-        Vec3(p1.x(), p1.y(), 0), 
-        Vec3(p2.x(), p2.y(), 0), 
-        Vec3(point.x(), point.y(), 0));
+        Vec3(static_cast<f32>(p1.x()), static_cast<f32>(p1.y()), 0.0f),
+        Vec3(static_cast<f32>(p2.x()), static_cast<f32>(p2.y()), 0.0f),
+        Vec3(static_cast<f32>(point.x()), static_cast<f32>(point.y()), 0.0f));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1336,7 +1318,7 @@ bool QtViewport::GetAdvancedSelectModeFlag()
 //////////////////////////////////////////////////////////////////////////
 bool QtViewport::MouseCallback(EMouseEvent event, const QPoint& point, Qt::KeyboardModifiers modifiers, Qt::MouseButtons buttons)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     // Ignore any mouse events in game mode.
     if (GetIEditor()->IsInGameMode())
@@ -1353,28 +1335,6 @@ bool QtViewport::MouseCallback(EMouseEvent event, const QPoint& point, Qt::Keybo
     {
         return true;
     }
-
-    // RAII wrapper for Pre / PostWidgetRendering calls.
-    // It also tracks the times a mouse callback potentially created a new viewport context.
-    struct ScopedProcessingMouseCallback
-    {
-        explicit ScopedProcessingMouseCallback(QtViewport* viewport)
-            : m_viewport(viewport)
-        {
-            m_viewport->m_processingMouseCallbacksCounter++;
-            m_viewport->PreWidgetRendering();
-        }
-
-        ~ScopedProcessingMouseCallback()
-        {
-            m_viewport->PostWidgetRendering();
-            m_viewport->m_processingMouseCallbacksCounter--;
-        }
-
-        QtViewport* m_viewport;
-    };
-
-    ScopedProcessingMouseCallback scopedProcessingMouseCallback(this);
 
     //////////////////////////////////////////////////////////////////////////
     // Hit test gizmo objects.
@@ -1436,9 +1396,6 @@ bool QtViewport::MouseCallback(EMouseEvent event, const QPoint& point, Qt::Keybo
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::ProcessRenderLisneters(DisplayContext& rstDisplayContext)
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
-
     size_t nCount(0);
     size_t nTotal(0);
 
@@ -1495,7 +1452,7 @@ void QtViewport::OnRawInput([[maybe_unused]] UINT wParam, HRAWINPUT lParam)
                     float as = 0.001f * gSettings.cameraMoveSpeed;
                     Ang3 ypr = CCamera::CreateAnglesYPR(Matrix33(viewTM));
                     ypr.x += -all6DOFs[5] * as * fScaleYPR;
-                    ypr.y = CLAMP(ypr.y + all6DOFs[3] * as * fScaleYPR, -1.5f, 1.5f); // to keep rotation in reasonable range
+                    ypr.y = AZStd::clamp(ypr.y + all6DOFs[3] * as * fScaleYPR, -1.5f, 1.5f); // to keep rotation in reasonable range
                     ypr.z = 0;                                                  // to have camera always upward
 
                     viewTM = Matrix34(CCamera::CreateOrientationYPR(ypr), viewTM.GetTranslation());

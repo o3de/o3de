@@ -1,0 +1,216 @@
+{
+    "template_name": "PythonGem",
+    "restricted_name": "o3de",
+    "restricted_platform_relative_path": "Templates",
+    "origin": "The primary repo for PythonGem goes here: i.e. http://www.mydomain.com",
+    "license": "What license PythonGem uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "display_name": "PythonGem",
+    "summary": "A short description of PythonGem.",
+    "canonical_tags": [],
+    "user_tags": [
+        "PythonGem"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": "CMakeLists.txt",
+            "origin": "CMakeLists.txt",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/${NameLower}_editor_files.cmake",
+            "origin": "Code/${NameLower}_editor_files.cmake",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/${NameLower}_editor_shared_files.cmake",
+            "origin": "Code/${NameLower}_editor_shared_files.cmake",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/${NameLower}_editor_tests_files.cmake",
+            "origin": "Code/${NameLower}_editor_tests_files.cmake",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/CMakeLists.txt",
+            "origin": "Code/CMakeLists.txt",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Include/${Name}/${Name}Bus.h",
+            "origin": "Code/Include/${Name}/${Name}Bus.h",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_linux_files.cmake",
+            "origin": "Code/Platform/Linux/${NameLower}_linux_files.cmake",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_shared_linux_files.cmake",
+            "origin": "Code/Platform/Linux/${NameLower}_shared_linux_files.cmake",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Platform/Linux/PAL_linux.cmake",
+            "origin": "Code/Platform/Linux/PAL_linux.cmake",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_mac_files.cmake",
+            "origin": "Code/Platform/Mac/${NameLower}_mac_files.cmake",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_shared_mac_files.cmake",
+            "origin": "Code/Platform/Mac/${NameLower}_shared_mac_files.cmake",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Platform/Mac/PAL_mac.cmake",
+            "origin": "Code/Platform/Mac/PAL_mac.cmake",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_shared_windows_files.cmake",
+            "origin": "Code/Platform/Windows/${NameLower}_shared_windows_files.cmake",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_windows_files.cmake",
+            "origin": "Code/Platform/Windows/${NameLower}_windows_files.cmake",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Platform/Windows/PAL_windows.cmake",
+            "origin": "Code/Platform/Windows/PAL_windows.cmake",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Source/${Name}EditorModule.cpp",
+            "origin": "Code/Source/${Name}EditorModule.cpp",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Source/${Name}EditorSystemComponent.cpp",
+            "origin": "Code/Source/${Name}EditorSystemComponent.cpp",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Source/${Name}EditorSystemComponent.h",
+            "origin": "Code/Source/${Name}EditorSystemComponent.h",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Source/${Name}ModuleInterface.h",
+            "origin": "Code/Source/${Name}ModuleInterface.h",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Tests/${Name}EditorTest.cpp",
+            "origin": "Code/Tests/${Name}EditorTest.cpp",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Editor/Scripts/__init__.py",
+            "origin": "Editor/Scripts/__init__.py",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Editor/Scripts/bootstrap.py",
+            "origin": "Editor/Scripts/bootstrap.py",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Editor/Scripts/${NameLower}_dialog.py",
+            "origin": "Editor/Scripts/${NameLower}_dialog.py",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "gem.json",
+            "origin": "gem.json",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "preview.png",
+            "origin": "preview.png",
+            "isTemplated": false,
+            "isOptional": false
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Assets",
+            "origin": "Assets"
+        },
+        {
+            "dir": "Code",
+            "origin": "Code"
+        },
+        {
+            "dir": "Editor",
+            "origin": "Editor"
+        },
+        {
+            "dir": "Editor/Scripts",
+            "origin": "Editor/Scripts"
+        },
+        {
+            "dir": "Code/Include",
+            "origin": "Code/Include"
+        },
+        {
+            "dir": "Code/Include/${Name}",
+            "origin": "Code/Include/${Name}"
+        },
+        {
+            "dir": "Code/Platform",
+            "origin": "Code/Platform"
+        },
+        {
+            "dir": "Code/Platform/Linux",
+            "origin": "Code/Platform/Linux"
+        },
+        {
+            "dir": "Code/Platform/Mac",
+            "origin": "Code/Platform/Mac"
+        },
+        {
+            "dir": "Code/Platform/Windows",
+            "origin": "Code/Platform/Windows"
+        },
+        {
+            "dir": "Code/Source",
+            "origin": "Code/Source"
+        },
+        {
+            "dir": "Code/Tests",
+            "origin": "Code/Tests"
+        }
+    ]
+}

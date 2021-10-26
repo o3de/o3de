@@ -18,10 +18,10 @@ include(${pal_dir}/PAL_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 add_subdirectory(assetpipeline)
 
 ## Atom Renderer ##
-add_subdirectory(atom_renderer)
+add_subdirectory(Atom)
 
 ## Physics ##
-add_subdirectory(physics)
+add_subdirectory(Physics)
 
 ## ScriptCanvas ##
 add_subdirectory(scripting)
@@ -33,7 +33,7 @@ add_subdirectory(WhiteBox)
 add_subdirectory(NvCloth)
 
 ## Prefab ##
-add_subdirectory(prefab)
+add_subdirectory(Prefab)
 
 ## Editor Python Bindings ##
 add_subdirectory(EditorPythonBindings)
@@ -58,3 +58,6 @@ add_subdirectory(smoke)
 
 ## AWS ##
 add_subdirectory(AWS)
+
+## Integration tests for editor testing framework ##
+add_subdirectory(editor_test_testing)

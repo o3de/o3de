@@ -11,6 +11,12 @@ set(FILES
     Include/AtomToolsFramework/Communication/LocalServer.h
     Include/AtomToolsFramework/Communication/LocalSocket.h
     Include/AtomToolsFramework/Debug/TraceRecorder.h
+    Include/AtomToolsFramework/Document/AtomToolsDocument.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentMainWindow.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentSystemSettings.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h
+    Include/AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h
     Include/AtomToolsFramework/DynamicProperty/DynamicProperty.h
     Include/AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h
     Include/AtomToolsFramework/Inspector/InspectorWidget.h
@@ -32,6 +38,11 @@ set(FILES
     Source/Communication/LocalServer.cpp
     Source/Communication/LocalSocket.cpp
     Source/Debug/TraceRecorder.cpp
+    Source/Document/AtomToolsDocument.cpp
+    Source/Document/AtomToolsDocumentMainWindow.cpp
+    Source/Document/AtomToolsDocumentSystemSettings.cpp
+    Source/Document/AtomToolsDocumentSystemComponent.cpp
+    Source/Document/AtomToolsDocumentSystemComponent.h
     Source/DynamicProperty/DynamicProperty.cpp
     Source/DynamicProperty/DynamicPropertyGroup.cpp
     Source/Inspector/InspectorWidget.cpp
@@ -47,4 +58,20 @@ set(FILES
     Source/Window/AtomToolsMainWindow.cpp
     Source/Window/AtomToolsMainWindowSystemComponent.cpp
     Source/Window/AtomToolsMainWindowSystemComponent.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewContent.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewRendererCaptureRequest.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewRendererInterface.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewRendererSystemRequestBus.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewerFeatureProcessorProviderBus.h
+    Source/PreviewRenderer/PreviewRenderer.cpp
+    Source/PreviewRenderer/PreviewRenderer.h
+    Source/PreviewRenderer/PreviewRendererState.h
+    Source/PreviewRenderer/PreviewRendererIdleState.cpp
+    Source/PreviewRenderer/PreviewRendererIdleState.h
+    Source/PreviewRenderer/PreviewRendererLoadState.cpp
+    Source/PreviewRenderer/PreviewRendererLoadState.h
+    Source/PreviewRenderer/PreviewRendererCaptureState.cpp
+    Source/PreviewRenderer/PreviewRendererCaptureState.h
+    Source/PreviewRenderer/PreviewRendererSystemComponent.cpp
+    Source/PreviewRenderer/PreviewRendererSystemComponent.h
 )

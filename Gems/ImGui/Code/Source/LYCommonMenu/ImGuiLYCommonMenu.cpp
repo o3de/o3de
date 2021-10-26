@@ -199,20 +199,6 @@ namespace ImGui
                         }
                     }
 
-                    // Lod Min
-                    static ICVar* eLodMinCVAR = gEnv->pConsole->GetCVar("e_LodMin");
-                    if (eLodMinCVAR)
-                    {
-                        int minLodValue = eLodMinCVAR->GetIVal();
-                        int dragIntVal = minLodValue;
-                        ImGui::Text("e_LodMin: %d ( Force a lowest LOD level )", minLodValue);
-                        ImGui::SliderInt("##LodMin", &dragIntVal, 0, 5);
-                        if (dragIntVal != minLodValue)
-                        {
-                            eLodMinCVAR->Set(dragIntVal);
-                        }
-                    }
-
                     // Texel Density
                     static ICVar* eTexelDensityCVAR = gEnv->pConsole->GetCVar("e_texeldensity");
                     if (eTexelDensityCVAR)

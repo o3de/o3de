@@ -274,7 +274,7 @@ Matrix34 CAxisGizmo::GetTransformation(RefCoordSys coordSys, IDisplayViewport* v
 //////////////////////////////////////////////////////////////////////////
 bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point, [[maybe_unused]] int nFlags)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     if (event == eMouseLDown)
     {

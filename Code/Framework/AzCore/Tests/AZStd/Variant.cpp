@@ -318,8 +318,6 @@ namespace UnitTest
         using TestVariant2 = AZStd::variant<TestAlignedStorage, float, bool, int>;
         static_assert(sizeof(TestVariant1) == sizeof(TestVariant2), "with different permutations variants of same types should be the same size");
         using UnorderedVariant3 = AZStd::variant<AZStd::unordered_map<AZStd::string, AZStd::string>, TestAlignedStorage>;
-        constexpr size_t testVariant1Size = sizeof(TestVariant1);
-        constexpr size_t unorderedVariant3Size = sizeof(UnorderedVariant3);
         static_assert(sizeof(TestVariant1) == sizeof(UnorderedVariant3), "with different permutations variants of same types should be the same size");
     }
 

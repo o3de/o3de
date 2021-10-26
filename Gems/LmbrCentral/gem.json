@@ -5,10 +5,16 @@
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The O3DE Core (LmbrCentral) Gem provides required code and assets for running Open 3D Engine Editor.",
-    "canonical_tags": ["Gem"],
-    "user_tags": ["Core", "Framework", "Assets"],
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "Core",
+        "Framework",
+        "Assets"
+    ],
     "icon_path": "preview.png",
     "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/core/lmbr-central/"
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/o3de-core/",
+    "dependencies": []
 }
-

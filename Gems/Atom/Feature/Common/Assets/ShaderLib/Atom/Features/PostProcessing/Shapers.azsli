@@ -1,0 +1,52 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/Features/PostProcessing/Aces.azsli>
+
+// Perceptual quantizer coefficients
+static const float PqM1 = 1305.0 / 8192.0;
+static const float PqM2 = 2533.0 / 32.0;
+static const float PqC1 = 102.0 / 128.0;
+static const float PqC2 = 2413.0 / 128.0;
+static const float PqC3 = 2392.0 / 128.0;
+static const float PqMaxNits = 10000.0;
+
+float3 ShaperToLinear(float3 shaperColor, ShaperType shaperType, float shaperBias, float shaperScale)
+{
+    // Apply the inverse of the shaper function to give the color in the working color space
+    switch (shaperType)
+    {
+        case ShaperType::ShaperLinear:
+            return (shaperColor - shaperBias) / shaperScale;
+        case ShaperType::ShaperLog2:
+            return pow(2.0, (shaperColor - shaperBias) / shaperScale);
+        case ShaperType::PqSmpteSt2084:
+            shaperColor = min(shaperColor, 1.0);
+            return PqMaxNits * pow(max(pow(shaperColor, 1.0 / PqM2) - PqC1, 0.0) / (PqC2 - PqC3 * pow(shaperColor, 1.0 / PqM2)), 1.0 / PqM1);
+    }
+    return shaperColor;
+}
+
+float3 LinearToShaper(float3 linearColor, ShaperType shaperType, float shaperBias, float shaperScale)
+{
+    // Convert from working color space to lut coordinates by applying the shaper function
+    switch (shaperType)
+    {
+        case ShaperType::ShaperLinear:
+            return linearColor * shaperScale + shaperBias;
+        case ShaperType::ShaperLog2:
+            return log2(linearColor) * shaperScale + shaperBias;
+        case ShaperType::PqSmpteSt2084:
+            linearColor = min(linearColor, PqMaxNits);
+            linearColor = linearColor / PqMaxNits;
+            return pow((PqC1 + PqC2 * pow(linearColor, PqM1)) / (1.0 + PqC3 * pow(linearColor, PqM1)), PqM2);
+    }
+    return linearColor;
+}

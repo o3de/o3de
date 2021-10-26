@@ -290,7 +290,6 @@ set(FILES
     Include/IPreferencesPage.h
     Include/IRenderListener.h
     Include/ISourceControl.h
-    Include/ISubObjectSelectionReferenceFrameCalculator.h
     Include/ITextureDatabaseUpdater.h
     Include/ITransformManipulator.h
     Include/IViewPane.h
@@ -331,8 +330,6 @@ set(FILES
     Commands/CommandManager.h
     Controls/BitmapToolTip.cpp
     Controls/BitmapToolTip.h
-    Controls/ColorGradientCtrl.cpp
-    Controls/ColorGradientCtrl.h
     Controls/ConsoleSCB.cpp
     Controls/ConsoleSCB.h
     Controls/ConsoleSCB.ui
@@ -460,8 +457,6 @@ set(FILES
     Dialogs/PythonScriptsDialog.ui
     Dialogs/Generic/UserOptions.cpp
     Dialogs/Generic/UserOptions.h
-    EditMode/SubObjectSelectionReferenceFrameCalculator.cpp
-    EditMode/SubObjectSelectionReferenceFrameCalculator.h
     Export/ExportManager.cpp
     Export/ExportManager.h
     Export/OBJExporter.cpp
@@ -503,6 +498,7 @@ set(FILES
     LogFileImpl.h
     Objects/ClassDesc.cpp
     Objects/ClassDesc.h
+    Objects/DisplayContextShared.inl
     Objects/IEntityObjectListener.h
     Objects/SelectionGroup.cpp
     Objects/SelectionGroup.h
@@ -556,10 +552,10 @@ set(FILES
     EditorPreferencesPageFiles.cpp
     EditorPreferencesPageViewportGeneral.h
     EditorPreferencesPageViewportGeneral.cpp
-    EditorPreferencesPageViewportGizmo.h
-    EditorPreferencesPageViewportGizmo.cpp
-    EditorPreferencesPageViewportMovement.h
-    EditorPreferencesPageViewportMovement.cpp
+    EditorPreferencesPageViewportManipulator.h
+    EditorPreferencesPageViewportManipulator.cpp
+    EditorPreferencesPageViewportCamera.h
+    EditorPreferencesPageViewportCamera.cpp
     EditorPreferencesPageViewportDebug.h
     EditorPreferencesPageViewportDebug.cpp
     EditorPreferencesPageExperimentalLighting.h
@@ -789,6 +785,9 @@ set(FILES
     EditorViewportSettings.h
     EditorViewportCamera.cpp
     EditorViewportCamera.h
+    EditorModularViewportCameraComposer.cpp
+    EditorModularViewportCameraComposer.h
+    EditorModularViewportCameraComposerBus.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
     TopRendererWnd.cpp

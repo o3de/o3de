@@ -23,11 +23,6 @@ namespace PhysX
             configuration.m_collisionGroups.CreateGroup("All", AzPhysics::CollisionGroup::All, AzPhysics::CollisionGroups::Id(), true);
             configuration.m_collisionGroups.CreateGroup("None", AzPhysics::CollisionGroup::None, AzPhysics::CollisionGroups::Id::Create(), true);
 
-#ifdef TOUCHBENDING_LAYER_BIT
-            configuration.m_collisionLayers.SetName(AzPhysics::CollisionLayer::TouchBend, "TouchBend");
-            configuration.m_collisionGroups.CreateGroup("All_NoTouchBend", AzPhysics::CollisionGroup::All_NoTouchBend, AzPhysics::CollisionGroups::Id::Create(), true);
-#endif
-
             return configuration;
         }
 
@@ -59,17 +54,17 @@ namespace PhysX
 
             if (AZ::EditContext* editContext = serialize->GetEditContext())
             {
-                editContext->Class<PhysX::WindConfiguration>("Wind Configuration", "Wind settings for PhysX")
+                editContext->Class<PhysX::WindConfiguration>("Wind Configuration", "Wind force entity tags.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &WindConfiguration::m_globalWindTag,
                         "Global wind tag",
-                        "Tag value that will be used to mark entities that provide global wind value.\n"
-                        "Global wind has no bounds and affects objects across entire level.")
+                        "Global wind provider tags.\n"
+                        "Global winds apply to entire world.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &WindConfiguration::m_localWindTag,
                         "Local wind tag",
-                        "Tag value that will be used to mark entities that provide local wind value.\n"
-                        "Local wind is only applied within bounds defined by PhysX collider.")
+                        "Local wind provider tags.\n"
+                        "Local winds are constrained to a PhysX collider's boundaries.")
                     ;
             }
         }

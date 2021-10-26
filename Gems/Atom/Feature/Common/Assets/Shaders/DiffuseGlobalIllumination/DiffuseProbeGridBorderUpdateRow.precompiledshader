@@ -7,7 +7,7 @@
         "ShaderAssetFileName": "diffuseprobegridborderupdaterow.azshader",
         "PlatformIdentifiers": 
         [
-            "pc"
+            "pc", "linux"
         ],
         "RootShaderVariantAssets":
         [

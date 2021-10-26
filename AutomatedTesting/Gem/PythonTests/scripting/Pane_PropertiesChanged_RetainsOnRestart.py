@@ -52,7 +52,7 @@ def Pane_PropertiesChanged_RetainsOnRestart():
     from utils import TestHelper as helper
     import pyside_utils
 
-    # Lumberyard Imports
+    # O3DE Imports
     import azlmbr.legacy.general as general
 
     # Pyside imports

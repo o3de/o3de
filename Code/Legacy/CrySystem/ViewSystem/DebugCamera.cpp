@@ -115,12 +115,6 @@ void DebugCamera::Update()
 
     m_view = Matrix33(Ang3(DEG2RAD(m_cameraPitch), 0.0f, DEG2RAD(m_cameraYaw)));
     UpdatePosition(m_moveInput);
-
-    // update the listener of the active view
-    if (IView* view = gEnv->pSystem->GetIViewSystem()->GetActiveView())
-    {
-        view->UpdateAudioListener(Matrix34(m_view, m_position));
-    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
