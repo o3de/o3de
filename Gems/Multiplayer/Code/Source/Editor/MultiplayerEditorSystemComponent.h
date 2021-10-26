@@ -76,7 +76,7 @@ namespace Multiplayer
 
         //! MultiplayerEditorServerRequestBus::Handler
         //! @{
-        void SendEditorServerInitPacket(AzNetworking::IConnection* connection) override;
+        void SendEditorServerLevelDataPacket(AzNetworking::IConnection* connection) override;
         //! @}
 
         IEditor* m_editor = nullptr;

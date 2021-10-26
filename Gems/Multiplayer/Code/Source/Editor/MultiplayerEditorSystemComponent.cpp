@@ -206,7 +206,7 @@ namespace Multiplayer
                 }
                 
                 // Begin listening for MPEditor packets before we launch the editor-server.
-                // The editor-server will send us (the editor) an "EditorServerReadyForInit" packet to let us know it's ready to receive data.
+                // The editor-server will send us (the editor) an "EditorServerReadyForLevelData" packet to let us know it's ready to receive data.
                 INetworkInterface* editorNetworkInterface =
                     AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
                 AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.");
@@ -218,7 +218,7 @@ namespace Multiplayer
             else
             {
                 // Editorsv_launch=false, so we're expecting an editor-server already exists.
-                // Connect to the editor-server and then send the EditorServerInit packet.
+                // Connect to the editor-server and then send the EditorServerLevelData packet.
                 INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName));
                 AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.")
                 
@@ -235,7 +235,7 @@ namespace Multiplayer
                     return;
                 }
 
-                SendEditorServerInitPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
+                SendEditorServerLevelDataPacket(editorNetworkInterface->GetConnectionSet().GetConnection(m_editorConnId));
             }
         }
     }
@@ -252,7 +252,7 @@ namespace Multiplayer
         AZ::Interface<IMultiplayer>::Get()->SendReadyForEntityUpdates(true);
     }
 
-    void MultiplayerEditorSystemComponent::SendEditorServerInitPacket(AzNetworking::IConnection* connection)
+    void MultiplayerEditorSystemComponent::SendEditorServerLevelDataPacket(AzNetworking::IConnection* connection)
     {
         const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
         if (!prefabEditorEntityOwnershipInterface)
@@ -282,13 +282,13 @@ namespace Multiplayer
         // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
         AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
-        // Read the buffer into EditorServerInit packets until we've flushed the whole thing
+        // Read the buffer into EditorServerLevelData packets until we've flushed the whole thing
         byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
 
         while (byteStream.GetCurPos() < byteStream.GetLength())
         {
-            MultiplayerEditorPackets::EditorServerInit editorServerInitPacket;
-            auto& outBuffer = editorServerInitPacket.ModifyAssetData();
+            MultiplayerEditorPackets::EditorServerLevelData editorServerLevelDataPacket;
+            auto& outBuffer = editorServerLevelDataPacket.ModifyAssetData();
 
             // Size the packet's buffer appropriately
             size_t readSize = outBuffer.GetCapacity();
@@ -304,10 +304,10 @@ namespace Multiplayer
             // If we've run out of buffer, mark that we're done
             if (byteStream.GetCurPos() == byteStream.GetLength())
             {
-                editorServerInitPacket.SetLastUpdate(true);
+                editorServerLevelDataPacket.SetLastUpdate(true);
             }
 
-            connection->SendReliablePacket(editorServerInitPacket);
+            connection->SendReliablePacket(editorServerLevelDataPacket);
         }
     }
 

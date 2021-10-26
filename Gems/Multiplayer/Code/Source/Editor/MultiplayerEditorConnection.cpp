@@ -55,7 +55,7 @@ namespace Multiplayer
             }
             else
             {
-                m_networkEditorInterface->SendReliablePacket(editorServerToEditorConnectionId, MultiplayerEditorPackets::EditorServerReadyForInit());
+                m_networkEditorInterface->SendReliablePacket(editorServerToEditorConnectionId, MultiplayerEditorPackets::EditorServerReadyForLevelData());
             }
         }
     }
@@ -64,7 +64,7 @@ namespace Multiplayer
     (
         [[maybe_unused]] AzNetworking::IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
-        [[maybe_unused]] MultiplayerEditorPackets::EditorServerInit& packet
+        [[maybe_unused]] MultiplayerEditorPackets::EditorServerLevelData& packet
     )
     {
         // Editor Server Init is intended for non-release targets
@@ -91,7 +91,7 @@ namespace Multiplayer
                 AZ::Data::AssetData* assetDatum = AZ::Utils::LoadObjectFromStream<AZ::Data::AssetData>(m_byteStream, nullptr);
                 if (!assetDatum)
                 {
-                    AZLOG_ERROR("EditorServerInit packet contains no asset data. Asset: %s", assetHint.c_str());
+                    AZLOG_ERROR("EditorServerLevelData packet contains no asset data. Asset: %s", assetHint.c_str())
                     return false;
                 }
                 assetSize = m_byteStream.GetCurPos() - assetSize;
@@ -131,7 +131,7 @@ namespace Multiplayer
             if (console->GetCvarValue("sv_port", sv_port) != AZ::GetValueResult::Success)
             {
                 AZ_Assert(false,
-                    "MultiplayerEditorConnection::HandleRequest for EditorServerInit failed! Could not find the sv_port cvar; we won't be able to listen on the correct port for incoming network messages! Please update this code to use a valid cvar!")
+                    "MultiplayerEditorConnection::HandleRequest for EditorServerLevelData failed! Could not find the sv_port cvar; we won't be able to listen on the correct port for incoming network messages! Please update this code to use a valid cvar!")
             }
             
             networkInterface->Listen(sv_port);
@@ -146,9 +146,9 @@ namespace Multiplayer
     bool MultiplayerEditorConnection::HandleRequest(
         [[maybe_unused]] AzNetworking::IConnection* connection,
         [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
-        [[maybe_unused]] MultiplayerEditorPackets::EditorServerReadyForInit& packet)
+        [[maybe_unused]] MultiplayerEditorPackets::EditorServerReadyForLevelData& packet)
     {
-        MultiplayerEditorServerRequestBus::Broadcast(&MultiplayerEditorServerRequestBus::Events::SendEditorServerInitPacket, connection);
+        MultiplayerEditorServerRequestBus::Broadcast(&MultiplayerEditorServerRequestBus::Events::SendEditorServerLevelDataPacket, connection);
         return true;
     }
 
