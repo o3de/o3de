@@ -461,7 +461,7 @@ void ApplicationManagerBase::InitFileMonitor()
             m_fileProcessor.get(), &AssetProcessor::FileProcessor::AssessDeletedFile);
 
         m_folderWatches.push_back(AZStd::unique_ptr<FolderWatchCallbackEx>(newFolderWatch));
-        m_watchHandles.push_back(m_fileWatcher.AddFolderWatch(newFolderWatch));
+        m_watchHandles.push_back(m_fileWatcher.AddFolderWatch(newFolderWatch, info.RecurseSubFolders()));
     }
 
     // also hookup monitoring for the cache (output directory)

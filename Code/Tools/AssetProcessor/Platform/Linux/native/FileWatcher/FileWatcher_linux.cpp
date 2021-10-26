@@ -63,7 +63,7 @@ struct FolderRootWatch::PlatformImplementation
         }
     }
 
-    void AddWatchFolder(QString folder)
+    void AddWatchFolder(QString folder, bool recursive)
     {
         if (m_iNotifyHandle >= 0)
         {
@@ -75,6 +75,11 @@ struct FolderRootWatch::PlatformImplementation
                                                 cleanPath.toUtf8().constData(),
                                                 IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
             
+            if (watchHandle < 0)
+            {
+                AZ_Error("FileWatcher", false, "inotify_add_watch failed for path %s", cleanPath.toUtf8().constData());
+                return;
+            }
             if (!m_handleToFolderMapLock.tryLock(s_handleToFolderMapLockTimeout))
             {
                 AZ_Error("FileWatcher", false, "Unable to obtain inotify handle lock on thread");
@@ -82,6 +87,11 @@ struct FolderRootWatch::PlatformImplementation
             }
             m_handleToFolderMap[watchHandle] = cleanPath;
             m_handleToFolderMapLock.unlock();
+
+            if (!recursive)
+            {
+                return;
+            }
 
             // Add all the subfolders to watch and track them
             QDirIterator dirIter(folder, QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
@@ -97,6 +107,11 @@ struct FolderRootWatch::PlatformImplementation
                 int watchHandle = inotify_add_watch(m_iNotifyHandle, 
                                                     dirName.toUtf8().constData(),
                                                     IN_CREATE | IN_CLOSE_WRITE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVE);
+                if (watchHandle < 0)
+                {
+                    AZ_Error("FileWatcher", false, "inotify_add_watch failed for path %s", dirName.toUtf8().constData());
+                    return;
+                }
 
                 if (!m_handleToFolderMapLock.tryLock(s_handleToFolderMapLockTimeout))
                 {
@@ -133,10 +148,11 @@ struct FolderRootWatch::PlatformImplementation
 
 //////////////////////////////////////////////////////////////////////////////
 /// FolderWatchRoot
-FolderRootWatch::FolderRootWatch(const QString rootFolder)
+FolderRootWatch::FolderRootWatch(const QString rootFolder, bool recursive)
     : m_root(rootFolder)
     , m_shutdownThreadSignal(false)
     , m_fileWatcher(nullptr)
+    , m_recursive(recursive)
     , m_platformImpl(new PlatformImplementation())
 {
 }
@@ -156,10 +172,13 @@ bool FolderRootWatch::Start()
     {
         return false;
     }
-    m_platformImpl->AddWatchFolder(m_root);
+    m_platformImpl->AddWatchFolder(m_root, m_recursive);
 
     m_shutdownThreadSignal = false;
-    m_thread = std::thread([this]() { WatchFolderLoop(); });
+    if (m_platformImpl->m_iNotifyHandle >= 0)
+    {
+        m_thread = std::thread([this]() { WatchFolderLoop(); });
+    }
     return true;
 }
 
@@ -200,10 +219,10 @@ void FolderRootWatch::WatchFolderLoop()
 
                     if (event->mask & (IN_CREATE | IN_MOVED_TO)) 
                     {
-                        if ( event->mask & IN_ISDIR ) 
+                        if ( event->mask & IN_ISDIR && m_recursive) 
                         {
                             // New Directory, add it to the watch
-                            m_platformImpl->AddWatchFolder(pathStr);
+                            m_platformImpl->AddWatchFolder(pathStr, true);
                         }
                         else 
                         {

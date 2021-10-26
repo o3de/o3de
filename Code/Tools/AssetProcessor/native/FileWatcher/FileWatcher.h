@@ -33,7 +33,7 @@ class FolderRootWatch
 
     friend class FileWatcher;
 public:
-    FolderRootWatch(const QString rootFolder);
+    FolderRootWatch(const QString rootFolder, bool recursive = true);
     virtual ~FolderRootWatch();
 
     void ProcessNewFileEvent(const QString& file);
@@ -54,6 +54,7 @@ private:
     QMap<int, FolderWatchBase*> m_subFolderWatchesMap;
     volatile bool m_shutdownThreadSignal;
     FileWatcher* m_fileWatcher;
+    bool m_recursive;
 
     // Can't use unique_ptr because this is a QObject and Qt's magic sauce is
     // unable to determine the size of the unique_ptr and so fails to compile
@@ -76,7 +77,7 @@ public:
     virtual ~FileWatcher();
 
     //////////////////////////////////////////////////////////////////////////
-    virtual int AddFolderWatch(FolderWatchBase* pFolderWatch);
+    virtual int AddFolderWatch(FolderWatchBase* pFolderWatch, bool recursive = true);
     virtual void RemoveFolderWatch(int handle);
     //////////////////////////////////////////////////////////////////////////
     

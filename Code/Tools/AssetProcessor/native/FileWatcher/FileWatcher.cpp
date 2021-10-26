@@ -49,7 +49,7 @@ FileWatcher::~FileWatcher()
 {
 }
 
-int FileWatcher::AddFolderWatch(FolderWatchBase* pFolderWatch)
+int FileWatcher::AddFolderWatch(FolderWatchBase* pFolderWatch, bool recursive)
 {
     if (!pFolderWatch)
     {
@@ -72,7 +72,7 @@ int FileWatcher::AddFolderWatch(FolderWatchBase* pFolderWatch)
     if (!pFolderRootWatch)
     {
         //create a new root and start listening for changes
-        pFolderRootWatch = new FolderRootWatch(pFolderWatch->m_folder);
+        pFolderRootWatch = new FolderRootWatch(pFolderWatch->m_folder, recursive);
 
         //make sure the folder watcher(s) get deleted before this
         pFolderRootWatch->setParent(this);
@@ -93,7 +93,7 @@ int FileWatcher::AddFolderWatch(FolderWatchBase* pFolderWatch)
         //of other roots, if it is then then fold those roots into the new super root
         for (auto rootsIter = m_folderWatchRoots.begin(); rootsIter != m_folderWatchRoots.end(); )
         {
-            if (FolderWatchBase::IsSubfolder((*rootsIter)->m_root, pFolderWatch->m_folder))
+            if (pFolderWatch->m_watchSubtree && FolderWatchBase::IsSubfolder((*rootsIter)->m_root, pFolderWatch->m_folder))
             {
                 //union the sub folder map over to the new root
                 pFolderRootWatch->m_subFolderWatchesMap.insert((*rootsIter)->m_subFolderWatchesMap);
