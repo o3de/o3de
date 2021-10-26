@@ -184,7 +184,7 @@ namespace Terrain
 
     void TerrainSurfaceGradientListComponent::OnCompositionChanged()
     {
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId());
+        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshAreaSurfaces, GetEntityId());
     }
 
 } // namespace Terrain

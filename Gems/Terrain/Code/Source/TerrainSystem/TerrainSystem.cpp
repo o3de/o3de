@@ -76,6 +76,7 @@ void TerrainSystem::Activate()
     m_dirtyRegion = AZ::Aabb::CreateNull();
     m_terrainHeightDirty = true;
     m_terrainSettingsDirty = true;
+    m_terrainSurfacesDirty = true;
     m_requestedSettings.m_systemActive = true;
 
     {
@@ -115,6 +116,7 @@ void TerrainSystem::Deactivate()
     m_dirtyRegion = AZ::Aabb::CreateNull();
     m_terrainHeightDirty = true;
     m_terrainSettingsDirty = true;
+    m_terrainSurfacesDirty = true;
     m_requestedSettings.m_systemActive = false;
 
     AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(
@@ -588,7 +590,18 @@ void TerrainSystem::RefreshArea(AZ::EntityId areaId)
     expandedAabb.AddAabb(newAabb);
 
     m_dirtyRegion.AddAabb(expandedAabb);
+}
+
+void TerrainSystem::RefreshAreaHeights(AZ::EntityId areaId)
+{
+    RefreshArea(areaId);
     m_terrainHeightDirty = true;
+}
+
+void TerrainSystem::RefreshAreaSurfaces(AZ::EntityId areaId)
+{
+    RefreshArea(areaId);
+    m_terrainSurfacesDirty = true;
 }
 
 void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
@@ -607,6 +620,7 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
             m_dirtyRegion = m_currentSettings.m_worldBounds;
             m_dirtyRegion.AddAabb(m_requestedSettings.m_worldBounds);
             m_terrainHeightDirty = true;
+            m_terrainSurfacesDirty = true;
             m_currentSettings.m_worldBounds = m_requestedSettings.m_worldBounds;
         }
 
@@ -614,12 +628,13 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
         {
             m_dirtyRegion = AZ::Aabb::CreateNull();
             m_terrainHeightDirty = true;
+            m_terrainSurfacesDirty = true;
         }
 
         m_currentSettings = m_requestedSettings;
     }
 
-    if (terrainSettingsChanged || m_terrainHeightDirty)
+    if (terrainSettingsChanged || m_terrainHeightDirty || m_terrainSurfacesDirty)
     {
         // Block other threads from accessing the surface data bus while we are in GetValue (which may call into the SurfaceData bus).
         // We lock our surface data mutex *before* checking / setting "isRequestInProgress" so that we prevent race conditions
@@ -643,10 +658,17 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
                 changeMask | AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData);
         }
 
+        if (m_terrainSurfacesDirty)
+        {
+            changeMask = static_cast<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                changeMask | AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData);
+        }
+
         // Make sure to set these *before* calling OnTerrainDataChanged, since it's possible that subsystems reacting to that call will
         // cause the data to become dirty again.
         AZ::Aabb dirtyRegion = m_dirtyRegion;
         m_terrainHeightDirty = false;
+        m_terrainSurfacesDirty = false;
         m_dirtyRegion = AZ::Aabb::CreateNull();
 
         AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(

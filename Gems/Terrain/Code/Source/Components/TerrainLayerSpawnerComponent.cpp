@@ -157,6 +157,6 @@ namespace Terrain
 
     void TerrainLayerSpawnerComponent::RefreshArea()
     {
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId());
+        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshAreaHeights, GetEntityId());
     }
 }
