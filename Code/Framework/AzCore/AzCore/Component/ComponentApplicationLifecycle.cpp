@@ -66,12 +66,7 @@ namespace AZ::ComponentApplicationLifecycle
         {
             // Some systems may attempt to register a handler before the settings registry has been loaded
             // If so, this flag lets them automatically register an event if it hasn't yet been registered.
-            if (autoRegisterEvent)
-            {
-                RegisterEvent(settingsRegistry, eventName);
-            }
-
-            if (!autoRegisterEvent || !ValidateEvent(settingsRegistry, eventName))
+            if (!autoRegisterEvent || !RegisterEvent(settingsRegistry, eventName))
             {
                 AZ_Warning(
                     "ComponentApplicationLifecycle", false,
