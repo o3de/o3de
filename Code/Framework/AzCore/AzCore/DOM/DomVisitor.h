@@ -133,12 +133,19 @@ namespace AZ::DOM
     class Visitor
     {
     public:
+        virtual ~Visitor() = default;
+
         //! The result of a Visitor operation.
         //! A failure indicates a non-recoverable issue and signals that no further visit calls may be made in the
         //! current state.
         using Result = AZ::Outcome<void, VisitorError>;
 
         //! Returns a set of flags representing the operations this Visitor supports.
+        //! The base implementation supports raw keys (\see VisitorFlags::SupportsRawKeys) and
+        //! arrays (\see VisitorFlags::SupportsArrays), objects (\see VisitorFlags::SupportsObjects), and
+        //! nodes (\see VisitorFlags::SupportsNodes).
+        //! Raw (\see VisitorFlags::SupportsRawValues) and opaque values (\see VisitorFlags::SupportsOpaqueValues)
+        //! are disallowed by default, as their handling is intended to be implementation-specific.
         virtual VisitorFlags GetVisitorFlags() const;
         //! /see VisitorFlags::SupportsRawValues
         bool SupportsRawValues() const;
@@ -168,12 +175,15 @@ namespace AZ::DOM
         virtual Result String(AZStd::string_view value, StorageSemantics storageSemantics);
         //! Operates on an opaque value. As opaque values are a reference type, storage semantics are provided to
         //! indicate where the value may be stored persistently or requires a copy.
-        //! The default implementation of OpaqueValue rejects the operation, as opaque values are meant for special
+        //! The base implementation of OpaqueValue rejects the operation, as opaque values are meant for special
         //! cases with specific implementations, not generic usage.
         //! Storage semantics are provided to indicate where the value may be stored persistently or requires a copy.
         virtual Result OpaqueValue(const OpaqueType& value, StorageSemantics storageSemantics);
         //! Operates on a raw value encoded as a UTF-8 string that hasn't had its type deduced.
-        //! Visitors that support raw values 
+        //! Visitors that support raw values (\see VisitorFlags::SupportsRawValues) may parse the raw value and
+        //! forward it to the corresponding value call or calls of their choice.
+        //! The base implementation of RawValue rejects the operation, as raw values are meant to be handled on
+        //! a per-implementation basis.
         virtual Result RawValue(AZStd::string_view value, StorageSemantics storageSemantics);
 
         //! Operates on an Object.

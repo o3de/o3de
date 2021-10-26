@@ -107,46 +107,82 @@ namespace AZ::DOM
 
     Visitor::Result Visitor::OpaqueValue([[maybe_unused]] const OpaqueType& value, [[maybe_unused]] StorageSemantics storageSemantics)
     {
-        return VisitorFailure(VisitorErrorCode::UnsupportedOperation, "Opaque values are not supported by this visitor");
+        if (!SupportsOpaqueValues())
+        {
+            return VisitorFailure(VisitorErrorCode::UnsupportedOperation, "Opaque values are not supported by this visitor");
+        }
+        return VisitorSuccess();
     }
 
     Visitor::Result Visitor::RawValue([[maybe_unused]]AZStd::string_view value, [[maybe_unused]]StorageSemantics storageSemantics)
     {
-        return VisitorFailure(VisitorErrorCode::UnsupportedOperation, "Raw values are not supported by this visitor");
+        if (!SupportsRawValues())
+        {
+            return VisitorFailure(VisitorErrorCode::UnsupportedOperation, "Raw values are not supported by this visitor");
+        }
+        return VisitorSuccess();
     }
 
     Visitor::Result Visitor::StartObject()
     {
+        if (!SupportsObjects())
+        {
+            return VisitorFailure(VisitorErrorCode::UnsupportedOperation, "Objects are not supported by this visitor");
+        }
         return VisitorSuccess();
     }
 
     Visitor::Result Visitor::EndObject([[maybe_unused]] AZ::u64 attributeCount)
     {
+        if (!SupportsObjects())
+        {
+            return VisitorFailure(VisitorErrorCode::UnsupportedOperation, "Objects are not supported by this visitor");
+        }
         return VisitorSuccess();
     }
 
     Visitor::Result Visitor::Key([[maybe_unused]] AZ::Name key)
     {
+        if (!SupportsObjects() && !SupportsNodes())
+        {
+            return VisitorFailure(VisitorErrorCode::UnsupportedOperation, "Keys are not supported by this visitor");
+        }
         return VisitorSuccess();
     }
 
     Visitor::Result Visitor::RawKey(AZStd::string_view key, [[maybe_unused]]StorageSemantics storageSemantics)
     {
+        if (!SupportsRawKeys())
+        {
+            return VisitorFailure(VisitorErrorCode::UnsupportedOperation, "Raw keys are not supported by this visitor");
+        }
         return Key(AZ::Name(key));
     }
 
     Visitor::Result Visitor::StartArray()
     {
+        if (!SupportsArrays())
+        {
+            return VisitorFailure(VisitorErrorCode::UnsupportedOperation, "Arrays are not supported by this visitor");
+        }
         return VisitorSuccess();
     }
 
     Visitor::Result Visitor::EndArray([[maybe_unused]] AZ::u64 elementCount)
     {
+        if (!SupportsArrays())
+        {
+            return VisitorFailure(VisitorErrorCode::UnsupportedOperation, "Arrays are not supported by this visitor");
+        }
         return VisitorSuccess();
     }
 
     Visitor::Result Visitor::StartNode([[maybe_unused]] AZ::Name name)
     {
+        if (!SupportsNodes())
+        {
+            return VisitorFailure(VisitorErrorCode::UnsupportedOperation, "Nodes are not supported by this visitor");
+        }
         return VisitorSuccess();
     }
 
@@ -157,11 +193,17 @@ namespace AZ::DOM
 
     Visitor::Result Visitor::EndNode([[maybe_unused]] AZ::u64 attributeCount, [[maybe_unused]] AZ::u64 elementCount)
     {
+        if (!SupportsNodes())
+        {
+            return VisitorFailure(VisitorErrorCode::UnsupportedOperation, "Nodes are not supported by this visitor");
+        }
         return VisitorSuccess();
     }
 
     VisitorFlags Visitor::GetVisitorFlags() const
     {
+        // By default support raw keys (promoting them to AZ::Name) and support Array / Object / Node
+        // We leave Opaque type support and Raw Values to more specialized, implementation-specific cases
         return VisitorFlags::SupportsRawKeys | VisitorFlags::SupportsArrays | VisitorFlags::SupportsObjects | VisitorFlags::SupportsNodes;
     }
 
