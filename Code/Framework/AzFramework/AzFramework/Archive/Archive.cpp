@@ -12,6 +12,7 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Interface/Interface.h>
@@ -363,6 +364,22 @@ namespace AZ::IO
         , m_mainThreadId{ AZStd::this_thread::get_id() }
     {
         CompressionBus::Handler::BusConnect();
+
+        // If the settings registry is not available at this point,
+        // then something catastrophic has happened in the application startup.
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            // Automatically register the event if it's not registered, because
+            // this system is initialized before the settings registry has loaded the event list.
+            AZ::ComponentApplicationLifecycle::RegisterHandler(*settingsRegistry,
+                m_componentApplicationLifecycleHandler,
+                [this](AZStd::string_view /*path*/, AZ::SettingsRegistryInterface::Type /*type*/)
+                {
+                    OnSystemEntityActivated();
+                },
+                "SystemEntityActivated",
+                /*autoRegisterEvent*/ true);
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -2184,11 +2201,10 @@ namespace AZ::IO
         return catalogInfo;
     }
 
-    void Archive::OnSerializerAvailable()
+    void Archive::OnSystemEntityActivated()
     {
         for (const auto& archiveInfo : m_archivesWithCatalogsToLoad)
         {
-            
             AZStd::intrusive_ptr<INestedArchive> archive = OpenArchive(archiveInfo.m_fullPath, archiveInfo.m_bindRoot, archiveInfo.m_flags, nullptr);
             if (!archive)
             {

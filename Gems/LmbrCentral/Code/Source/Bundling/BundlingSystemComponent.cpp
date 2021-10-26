@@ -35,8 +35,6 @@ namespace LmbrCentral
     {
         BundlingSystemRequestBus::Handler::BusConnect();
         AZ::IO::ArchiveNotificationBus::Handler::BusConnect();
-
-        AZ::IO::CompressionBus::Broadcast(&AZ::IO::CompressionBus::Events::OnSerializerAvailable);
     }
 
     void BundlingSystemComponent::Deactivate()

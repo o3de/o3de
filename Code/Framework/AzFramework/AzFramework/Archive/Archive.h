@@ -15,10 +15,10 @@
 
 #pragma once
 
-
 #include <AzCore/IO/CompressionBus.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/lock.h>
@@ -150,7 +150,6 @@ namespace AZ::IO
 
         //! CompressionBus Handler implementation.
         void FindCompressionInfo(bool& found, AZ::IO::CompressionInfo& info, const AZStd::string_view filename) override;
-        void OnSerializerAvailable() override;
 
         // Set the localization folder
         void SetLocalizationFolder(AZStd::string_view sLocalizationFolder) override;
@@ -272,6 +271,11 @@ namespace AZ::IO
             ZipDir::CachePtr* pZip = {}) const;
     private:
 
+        // Archives can't be fully mounted until the system entity has been activated,
+        // because mounting them requires the BundlingSystemComponent and the serialization system
+        // to both be available.
+        void OnSystemEntityActivated();
+
         bool OpenPackCommon(AZStd::string_view szBindRoot, AZStd::string_view pName, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = nullptr, bool addLevels = true);
         bool OpenPacksCommon(AZStd::string_view szDir, AZStd::string_view pWildcardIn, AZStd::vector<AZ::IO::FixedMaxPathString>* pFullPaths = nullptr, bool addLevels = true);
 
@@ -313,6 +317,8 @@ namespace AZ::IO
 
         mutable AZStd::shared_mutex m_csZips;
         ZipArray m_arrZips;
+
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_componentApplicationLifecycleHandler;
 
         //////////////////////////////////////////////////////////////////////////
         // Opened files collector.
