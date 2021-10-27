@@ -192,16 +192,15 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     endif()
 
     # Includes need additional processing to add the install root
-    if(include_directories)
-        foreach(include ${include_directories})
-            string(GENEX_STRIP ${include} include_genex_expr)
-            if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
-                # Make the include path relative to the source dir where the target will be declared
-                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
-                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${target_include}\n")
-            endif()
-        endforeach()
-    endif()
+    foreach(include IN LISTS include_directories)
+        string(GENEX_STRIP ${include} include_genex_expr)
+        if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
+            # Make the include path relative to the source dir where the target will be declared
+            cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
+            list(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${target_include}")
+        endif()
+    endforeach()
+    list(JOIN INCLUDE_DIRECTORIES_PLACEHOLDER "\n" INCLUDE_DIRECTORIES_PLACEHOLDER)
 
     string(REPEAT " " 8 PLACEHOLDER_INDENT)
     get_target_property(RUNTIME_DEPENDENCIES_PLACEHOLDER ${TARGET_NAME} MANUALLY_ADDED_DEPENDENCIES)
@@ -217,12 +216,23 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     unset(INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
     if(inteface_build_dependencies_props)
         cmake_parse_arguments(build_deps "" "" "PRIVATE;PUBLIC;INTERFACE" ${inteface_build_dependencies_props})
-        foreach(build_dependency IN LISTS build_deps_INTERFACE build_deps_PUBLIC)
+        # Interface and public dependencies should always be exposed
+        set(build_deps_target ${build_deps_INTERFACE})
+        if(build_deps_PUBLIC)
+            set(build_deps_target "${build_deps_target};${build_deps_PUBLIC}")
+        endif()
+        # Private dependencies should only be exposed if it is a static library, since in those cases, link 
+        # dependencies are transfered to the downstream dependencies
+        if("${target_type}" STREQUAL "STATIC_LIBRARY")
+            set(build_deps_target "${build_deps_target};${build_deps_PRIVATE}")
+        endif()
+        foreach(build_dependency IN LISTS build_deps_target)
             # Skip wrapping produced when targets are not created in the same directory
-            list(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${build_dependency}")
+            if(build_dependency)
+                list(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${build_dependency}")
+            endif()
         endforeach()
     endif()
-    list(REMOVE_DUPLICATES INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
     list(JOIN INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "\n" INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
 
     string(REPEAT " " 8 PLACEHOLDER_INDENT)
