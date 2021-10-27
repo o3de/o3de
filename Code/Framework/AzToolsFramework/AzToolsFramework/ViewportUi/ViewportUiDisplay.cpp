@@ -428,6 +428,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         QPoint offset = m_renderOverlay->mapToGlobal(QPoint());
         m_uiMainWindow.setGeometry(offset.x(), offset.y(), m_renderOverlay->width(), m_renderOverlay->height());
+        m_uiOverlay.setGeometry(m_uiMainWindow.rect());
         UpdateUiOverlayGeometry();
     }
 
