@@ -8,11 +8,6 @@
 
 set(LY_INSTALL_ENABLED TRUE CACHE BOOL "Indicates if the install process is enabled")
 
-if(LY_INSTALL_ENABLED)
-    ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})
-    include(${pal_dir}/Install_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-endif()
-
 #! ly_install: wrapper to install that handles common functionality
 #
 # \notes: 
@@ -21,6 +16,10 @@ endif()
 #      have multiple build permutations
 #
 function(ly_install)
+
+    if(NOT LY_INSTALL_ENABLED)
+        return()
+    endif()
 
     cmake_parse_arguments(ly_install "" "COMPONENT" "" ${ARGN})
     if (NOT ly_install_COMPONENT OR "${ly_install_COMPONENT}" STREQUAL "${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}")
@@ -194,3 +193,8 @@ function(ly_install_run_script SCRIPT)
     )
 
 endfunction()
+
+if(LY_INSTALL_ENABLED)
+    ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})
+    include(${pal_dir}/Install_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+endif()
