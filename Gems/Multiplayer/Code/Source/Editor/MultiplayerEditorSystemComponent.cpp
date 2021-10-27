@@ -57,7 +57,7 @@ namespace Multiplayer
             return networkEntityManager->GetEntityCount() > 0;
         }
 
-        AZ_Warning("MultiplayerEditorSystemComponent", false, "PyIsInGameMode returning false; no NetworkEntityManager has not been created yet.");
+        AZ_Warning("MultiplayerEditorSystemComponent", false, "PyIsInGameMode returning false; NetworkEntityManager has not been created yet.")
         return false;
     }
 
