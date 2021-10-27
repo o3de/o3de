@@ -5,9 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#pragma optimize("", off)
-
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
@@ -30,15 +27,15 @@ namespace PhysXEditorTests
 {
     AZStd::vector<Physics::HeightMaterialPoint> GetSamples()
     {
-        AZStd::vector<Physics::HeightMaterialPoint> samples{ { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                             { 2.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                             { 1.5, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                             { 1.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                             { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                             { 1.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                             { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                             { 0.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                             { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight } };
+        AZStd::vector<Physics::HeightMaterialPoint> samples{ { 3.0f, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 2.0f, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 1.5f, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 1.0f, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 3.0f, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 1.0f, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 3.0f, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 0.0f, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 3.0f, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight } };
         return samples;
     }
 
