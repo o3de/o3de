@@ -122,7 +122,6 @@ namespace JsonSerializationTests
     };
 
     template<typename, typename> struct Template2Typename {};
-    template<size_t, size_t> struct Template2Int {};
     template<typename, size_t> struct Template1TypenameInt {};
     template<typename, typename, size_t> struct Template2TypenameInt {};
     template<typename, typename, typename, size_t> struct Template3TypenameInt {};
@@ -131,7 +130,6 @@ namespace JsonSerializationTests
 namespace AZ
 {
     AZ_TYPE_INFO_TEMPLATE(JsonSerializationTests::Template2Typename,    "{1409AAD3-C34E-4B81-BB7B-E968C44EBD2D}", AZ_TYPE_INFO_TYPENAME, AZ_TYPE_INFO_TYPENAME);
-    AZ_TYPE_INFO_TEMPLATE(JsonSerializationTests::Template2Int,         "{91E223F5-4FFF-456B-B0C0-A4646AFACD67}", AZ_TYPE_INFO_AUTO, AZ_TYPE_INFO_AUTO);
     AZ_TYPE_INFO_TEMPLATE(JsonSerializationTests::Template1TypenameInt, "{8D607A55-3BBB-4C29-AA58-7714F49FC8C0}", AZ_TYPE_INFO_TYPENAME, AZ_TYPE_INFO_AUTO);
     AZ_TYPE_INFO_TEMPLATE(JsonSerializationTests::Template2TypenameInt, "{637DA26D-249D-421A-819F-012237CD416F}", AZ_TYPE_INFO_TYPENAME, AZ_TYPE_INFO_TYPENAME, AZ_TYPE_INFO_AUTO);
     AZ_TYPE_INFO_TEMPLATE(JsonSerializationTests::Template3TypenameInt, "{818683B1-0F48-4F0B-B57C-169CF0ED850F}", AZ_TYPE_INFO_TYPENAME, AZ_TYPE_INFO_TYPENAME, AZ_TYPE_INFO_TYPENAME, AZ_TYPE_INFO_AUTO);
@@ -189,16 +187,6 @@ namespace JsonSerializationTests
         
         m_jsonRegistrationContext->EnableRemoveReflection();
         m_jsonRegistrationContext->Serializer<JsonSerializerMock>()->HandlesType<Template2Typename>(); 
-        m_jsonRegistrationContext->DisableRemoveReflection();
-    }
-
-    TEST_F(JsonRegistrationContextTests, RegisterForTemplateAutoVarArg_Succeeds)
-    {
-        m_jsonRegistrationContext->Serializer<JsonSerializerMock>()->HandlesType<Template2Int>();
-        ASSERT_NE(nullptr, m_jsonRegistrationContext->GetSerializerForType(azrtti_typeid<Template2Int>()));
-
-        m_jsonRegistrationContext->EnableRemoveReflection();
-        m_jsonRegistrationContext->Serializer<JsonSerializerMock>()->HandlesType<Template2Int>();
         m_jsonRegistrationContext->DisableRemoveReflection();
     }
 
