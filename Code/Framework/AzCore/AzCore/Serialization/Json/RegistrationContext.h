@@ -76,6 +76,12 @@ namespace AZ
                 return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
             }
 
+            template<template<AZStd::size_t...> class T>
+            SerializerBuilder* HandlesType(bool overwriteExisting = false)
+            {
+                return HandlesTypeId(azrtti_typeid<T>(), overwriteExisting);
+            }
+
             template<template<typename, auto> class T>
             SerializerBuilder* HandlesType(bool overwriteExisting = false)
             {

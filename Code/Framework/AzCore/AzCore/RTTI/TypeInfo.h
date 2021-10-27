@@ -154,7 +154,8 @@ namespace AZ
         template <template <typename, typename, auto> class> constexpr bool false_v4 = false;
         template <template <typename, typename, typename, auto> class> constexpr bool false_v5 = false;
         template <template <typename, auto, typename> class> constexpr bool false_v6 = false;
-        template <template <AZStd::size_t, AZStd::size_t, AZStd::ptrdiff_t, AZStd::ptrdiff_t> class> constexpr bool false_v7 = false;
+        template <template <AZStd::size_t, AZStd::size_t> class> constexpr bool false_v7 = false;
+        template <template <AZStd::size_t, AZStd::size_t, AZStd::ptrdiff_t, AZStd::ptrdiff_t> class> constexpr bool false_v8 = false;
 
         template<typename T>
         inline const AZ::TypeId& Uuid()
@@ -210,10 +211,18 @@ namespace AZ
             return s_uuid;
         }
 
-        template<template<AZStd::size_t, AZStd::size_t, AZStd::ptrdiff_t, AZStd::ptrdiff_t> class T>
+        template<template<AZStd::size_t, AZStd::size_t> class T>
         inline const AZ::TypeId& Uuid()
         {
             static_assert(false_v7<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
+            static const AZ::TypeId s_uuid = AZ::TypeId::CreateNull();
+            return s_uuid;
+        }
+
+        template<template<AZStd::size_t, AZStd::size_t, AZStd::ptrdiff_t, AZStd::ptrdiff_t> class T>
+        inline const AZ::TypeId& Uuid()
+        {
+            static_assert(false_v8<T>, "Missing specialization for this template. Make sure it's registered for type info support.");
             static const AZ::TypeId s_uuid = AZ::TypeId::CreateNull();
             return s_uuid;
         }
