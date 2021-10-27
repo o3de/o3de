@@ -9,7 +9,7 @@
 #import <AppKit/NSEvent.h>
 
 #include "EditorDefs.h"
-#include "QtEditorApplication.h"
+#include "QtEditorApplication_mac.h"
 
 // AzFramework
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
