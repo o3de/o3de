@@ -203,6 +203,16 @@ namespace AZ
 
             return InvalidEnumValue;
         }
+        
+        const AZ::Name& MaterialPropertyDescriptor::GetEnumName(uint32_t enumValue) const
+        {
+            if (enumValue < m_enumNames.size())
+            {
+                return m_enumNames.at(enumValue);
+            }
+            static AZ::Name EmptyName = AZ::Name();
+            return EmptyName;
+        }
 
     } // namespace RPI
 } // namespace AZ

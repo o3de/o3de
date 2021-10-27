@@ -53,7 +53,7 @@ namespace Terrain
     class TerrainSurfaceMaterialsListComponent
         : public AZ::Component
         , private TerrainAreaMaterialRequestBus::Handler
-        , private AZ::Data::AssetBus::Handler
+        , private AZ::Data::AssetBus::MultiHandler
         , private LmbrCentral::ShapeComponentNotificationsBus::Handler
     {
     public:
@@ -86,7 +86,8 @@ namespace Terrain
 
         //////////////////////////////////////////////////////////////////////////
         // TerrainAreaMaterialRequestBus
-        const AZStd::vector<TerrainSurfaceMaterialMapping>& GetSurfaceMaterialMappings(AZ::Aabb& region) const override;
+        const AZ::Aabb& GetTerrainSurfaceMaterialRegion() const override;
+        const AZStd::vector<TerrainSurfaceMaterialMapping>& GetSurfaceMaterialMappings() const override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Data::AssetBus::Handler
