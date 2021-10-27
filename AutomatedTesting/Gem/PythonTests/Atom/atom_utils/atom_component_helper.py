@@ -1,5 +1,6 @@
 """
-Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
@@ -8,12 +9,19 @@ import datetime
 import os
 import zipfile
 
+from ly_test_tools.image.screenshot_compare_qssim import qssim as compare_screenshots
+
+
+class ImageComparisonTestFailure(Exception):
+    """Custom test failure for failed image comparisons."""
+    pass
+
 
 def create_screenshots_archive(screenshot_path):
     """
     Creates a new zip file archive at archive_path containing all files listed within archive_path.
     :param screenshot_path: location containing the files to archive, the zip archive file will also be saved here.
-    :return: None, but creates a new zip file archive inside path containing all of the files inside archive_path.
+    :return: path to the created .zip file archive.
     """
     files_to_archive = []
 
@@ -27,13 +35,15 @@ def create_screenshots_archive(screenshot_path):
     # Setup variables for naming the zip archive file.
     timestamp = datetime.datetime.now().timestamp()
     formatted_timestamp = datetime.datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d_%H-%M-%S")
-    screenshots_file = os.path.join(screenshot_path, f'screenshots_{formatted_timestamp}.zip')
+    screenshots_zip_file = os.path.join(screenshot_path, f'screenshots_{formatted_timestamp}.zip')
 
     # Write all of the valid .png and .ppm files to the archive file.
-    with zipfile.ZipFile(screenshots_file, 'w', compression=zipfile.ZIP_DEFLATED, allowZip64=True) as zip_archive:
+    with zipfile.ZipFile(screenshots_zip_file, 'w', compression=zipfile.ZIP_DEFLATED, allowZip64=True) as zip_archive:
         for file_path in files_to_archive:
             file_name = os.path.basename(file_path)
             zip_archive.write(file_path, file_name)
+
+    return screenshots_zip_file
 
 
 def golden_images_directory():
@@ -51,6 +61,36 @@ def golden_images_directory():
         )
 
     return golden_images_dir
+
+
+def compare_screenshot_similarity(
+        test_screenshot, golden_image, similarity_threshold, create_zip_archive=False, screenshot_directory=""):
+    """
+    Compares the similarity between a test screenshot and a golden image.
+    It returns a "Screenshots match" string if the comparison mean value is higher than the similarity threshold.
+    Otherwise, it returns an error string.
+    :param test_screenshot: path to the test screenshot to compare.
+    :param golden_image: path to the golden image to compare.
+    :param similarity_threshold: value for the comparison mean value to be asserted against.
+    :param create_zip_archive: toggle to create a zip archive containing the screenshots if the assert check fails.
+    :param screenshot_directory: directory containing screenshots to create zip archive from.
+    :return: Error string if compared mean value < similarity threshold or screenshot_directory is missing for .zip,
+        otherwise it returns a "Screenshots match" string.
+    """
+    error = "Screenshots match"
+    if create_zip_archive and not screenshot_directory:
+        error = 'You must specify a screenshot_directory in order to create a zip archive.\n'
+
+    mean_similarity = compare_screenshots(test_screenshot, golden_image)
+    if not mean_similarity > similarity_threshold:
+        if create_zip_archive:
+            create_screenshots_archive(screenshot_directory)
+        error = (
+            f"When comparing the test_screenshot: '{test_screenshot}' "
+            f"to golden_image: '{golden_image}' the mean similarity of '{mean_similarity}' "
+            f"was lower than the similarity threshold of '{similarity_threshold}'. ")
+
+    return error
 
 
 def create_basic_atom_level(level_name):

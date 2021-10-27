@@ -6,18 +6,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import os
-import sys
-
-import azlmbr.asset as asset
-import azlmbr.bus as bus
-import azlmbr.camera
-import azlmbr.entity as entity
-import azlmbr.legacy.general as general
-import azlmbr.math as math
-import azlmbr.paths
-import azlmbr.editor as editor
-
-sys.path.append(os.path.join(azlmbr.paths.projectroot, "Gem", "PythonTests"))
 
 import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.editor_test_helper import EditorTestHelper
@@ -48,6 +36,15 @@ def run():
     12. Finally enters game mode, takes a screenshot, exits game mode, & saves the level.
     :return: None
     """
+    import azlmbr.asset as asset
+    import azlmbr.bus as bus
+    import azlmbr.camera as camera
+    import azlmbr.entity as entity
+    import azlmbr.legacy.general as general
+    import azlmbr.math as math
+    import azlmbr.paths
+    import azlmbr.editor as editor
+
     def initial_viewport_setup(screen_width, screen_height):
         general.set_viewport_size(screen_width, screen_height)
         general.update_viewport()
@@ -147,21 +144,24 @@ def run():
         parent_id=default_level.id
     )
     azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalUniformScale", ground_plane.id, 32.0)
-    ground_plane_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_chrome.azmaterial")
-    ground_plane_material_asset = asset.AssetCatalogRequestBus(
-        bus.Broadcast, "GetAssetIdByPath", ground_plane_material_asset_path, math.Uuid(), False)
-    ground_plane.get_set_test(0, "Default Material|Material Asset", ground_plane_material_asset)
-    # Work around to add the correct Atom Mesh component
+
+    # Work around to add the correct Atom Mesh component and asset.
     mesh_type_id = azlmbr.globals.property.EditorMeshComponentTypeId
     ground_plane.components.append(
         editor.EditorComponentAPIBus(
             bus.Broadcast, "AddComponentsOfType", ground_plane.id, [mesh_type_id]
         ).GetValue()[0]
     )
-    ground_plane_mesh_asset_path = os.path.join("Objects", "plane.azmodel")
+    ground_plane_mesh_asset_path = os.path.join("TestData", "Objects", "plane.azmodel")
     ground_plane_mesh_asset = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", ground_plane_mesh_asset_path, math.Uuid(), False)
     hydra.get_set_test(ground_plane, 1, "Controller|Configuration|Mesh Asset", ground_plane_mesh_asset)
+
+    # Add Atom Material component and asset.
+    ground_plane_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_chrome.azmaterial")
+    ground_plane_material_asset = asset.AssetCatalogRequestBus(
+        bus.Broadcast, "GetAssetIdByPath", ground_plane_material_asset_path, math.Uuid(), False)
+    ground_plane.get_set_test(0, "Default Material|Material Asset", ground_plane_material_asset)
 
     # Create directional_light entity and set the properties
     directional_light = hydra.Entity("directional_light")
@@ -180,11 +180,8 @@ def run():
         components=["Material"],
         parent_id=default_level.id
     )
-    sphere_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_brass_polished.azmaterial")
-    sphere_material_asset = asset.AssetCatalogRequestBus(
-        bus.Broadcast, "GetAssetIdByPath", sphere_material_asset_path, math.Uuid(), False)
-    sphere.get_set_test(0, "Default Material|Material Asset", sphere_material_asset)
-    # Work around to add the correct Atom Mesh component
+
+    # Work around to add the correct Atom Mesh component and asset.
     sphere.components.append(
         editor.EditorComponentAPIBus(
             bus.Broadcast, "AddComponentsOfType", sphere.id, [mesh_type_id]
@@ -195,6 +192,12 @@ def run():
         bus.Broadcast, "GetAssetIdByPath", sphere_mesh_asset_path, math.Uuid(), False)
     hydra.get_set_test(sphere, 1, "Controller|Configuration|Mesh Asset", sphere_mesh_asset)
 
+    # Add Atom Material component and asset.
+    sphere_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_brass_polished.azmaterial")
+    sphere_material_asset = asset.AssetCatalogRequestBus(
+        bus.Broadcast, "GetAssetIdByPath", sphere_material_asset_path, math.Uuid(), False)
+    sphere.get_set_test(0, "Default Material|Material Asset", sphere_material_asset)
+
     # Create camera component and set the properties
     camera_entity = hydra.Entity("camera")
     position = math.Vector3(5.5, -12.0, 9.0)
@@ -204,10 +207,9 @@ def run():
     )
     azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalRotation", camera_entity.id, rotation)
     camera_entity.get_set_test(0, "Controller|Configuration|Field of view", 60.0)
-    azlmbr.camera.EditorCameraViewRequestBus(azlmbr.bus.Event, "ToggleCameraAsActiveView", camera_entity.id)
+    camera.EditorCameraViewRequestBus(azlmbr.bus.Event, "ToggleCameraAsActiveView", camera_entity.id)
 
-    # Save level, enter game mode, take screenshot, & exit game mode.
-    general.save_level()
+    # Enter game mode, take screenshot, & exit game mode.
     general.idle_wait(0.5)
     general.enter_game_mode()
     general.idle_wait(1.0)
