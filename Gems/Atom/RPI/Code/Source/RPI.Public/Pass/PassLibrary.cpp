@@ -236,6 +236,15 @@ namespace AZ
             return true;
         }
 
+        void PassLibrary::RemovePassTemplate(const Name& name)
+        {
+            auto itr = m_templateEntries.find(name);
+            if (itr != m_templateEntries.end())
+            {
+                m_templateEntries.erase(itr);
+            }
+        }
+
         void PassLibrary::RemovePassFromLibrary(Pass* pass)
         {
             if (m_isShuttingDown)

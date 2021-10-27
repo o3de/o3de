@@ -77,6 +77,11 @@ namespace AZ
             const AZStd::shared_ptr<PassTemplate> GetPassTemplate(const Name& name) const;
             const AZStd::vector<Pass*>& GetPassesForTemplate(const Name& templateName) const;
 
+            //! Removes a PassTemplete by name, does nothing if such template doesn't exist.
+            //! This function should be used judiciously, and under rare circumstances. For example,
+            //! Applications that iteratively create and need to delete templates at runtime.
+            void RemovePassTemplate(const Name& name);
+
             //! Removes a pass from both it's associated template (if it has one) and from the pass name mapping
             void RemovePassFromLibrary(Pass* pass);
 
