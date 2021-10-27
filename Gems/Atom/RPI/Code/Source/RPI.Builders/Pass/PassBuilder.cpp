@@ -124,7 +124,7 @@ namespace AZ
         {            
             AZStd::string extension;
             StringFunc::Path::GetExtension(filePath.c_str(), extension);
-            for (const auto& [dependencyExtension, jobKey] : PassBuilderNamespace::DependencyExtensionJobKeyTable)
+            for (const auto [dependencyExtension, jobKey] : PassBuilderNamespace::DependencyExtensionJobKeyTable)
             {
                 if (extension == dependencyExtension)
                 {
