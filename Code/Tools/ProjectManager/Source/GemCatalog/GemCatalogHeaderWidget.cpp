@@ -8,14 +8,13 @@
 
 #include <GemCatalog/GemCatalogHeaderWidget.h>
 #include <AzCore/std/functional.h>
-#include <TagWidget.h>
-
 #include <QHBoxLayout>
 #include <QMouseEvent>
 #include <QLabel>
 #include <QPushButton>
-#include <QMenu>
 #include <QProgressBar>
+#include <TagWidget.h>
+#include <QMenu>
 
 namespace O3DE::ProjectManager
 {
@@ -156,6 +155,11 @@ namespace O3DE::ProjectManager
         update();
     }
 
+    void CartOverlayWidget::OnCancelDownloadActivated(const QString& gemName)
+    {
+        m_downloadController->CancelGemDownload(gemName);
+    }
+
     void CartOverlayWidget::CreateDownloadSection()
     {
         QWidget* widget = new QWidget();
@@ -236,7 +240,9 @@ namespace O3DE::ProjectManager
                     nameProgressLayout->addWidget(progress);
                     QSpacerItem* spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
                     nameProgressLayout->addSpacerItem(spacer);
-                    QLabel* cancelText = new QLabel(tr("Cancel"));
+                    QLabel* cancelText = new QLabel(QString("<a href=\"%1\">Cancel</a>").arg(downloadQueue[downloadingGemNumber]));
+                    cancelText->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+                    connect(cancelText, &QLabel::linkActivated, this, &CartOverlayWidget::OnCancelDownloadActivated);
                     nameProgressLayout->addWidget(cancelText);
                     downloadingItemLayout->addLayout(nameProgressLayout);
                     QProgressBar* downloadProgessBar = new QProgressBar();
@@ -406,7 +412,6 @@ namespace O3DE::ProjectManager
 
         CartButton* cartButton = new CartButton(gemModel, downloadController);
         hLayout->addWidget(cartButton);
-
         hLayout->addSpacing(16);
 
         // Separating line
@@ -418,9 +423,9 @@ namespace O3DE::ProjectManager
         hLayout->addSpacing(16);
 
         QMenu* gemMenu = new QMenu(this);
-        m_openGemReposAction = gemMenu->addAction(tr("Show Gem Repos"));
-
-        connect(m_openGemReposAction, &QAction::triggered, this,[this](){ emit OpenGemsRepo(); });
+        gemMenu->addAction( tr("Show Gem Repos"), [this]() { emit OpenGemsRepo(); });
+        gemMenu->addSeparator();
+        gemMenu->addAction( tr("Add Existing Gem"), [this]() { emit AddGem(); });
 
         QPushButton* gemMenuButton = new QPushButton(this);
         gemMenuButton->setObjectName("gemCatalogMenuButton");

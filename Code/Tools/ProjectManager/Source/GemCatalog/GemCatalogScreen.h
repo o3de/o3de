@@ -18,6 +18,8 @@
 #include <GemCatalog/GemInspector.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
+#include <QSet>
+#include <QString>
 #endif
 
 namespace O3DE::ProjectManager
@@ -45,6 +47,7 @@ namespace O3DE::ProjectManager
 
     public slots:
         void OnGemStatusChanged(const QModelIndex& modelIndex, uint32_t numChangedDependencies);
+        void OnAddGemClicked();
 
     protected:
         void hideEvent(QHideEvent* event) override;
@@ -70,5 +73,6 @@ namespace O3DE::ProjectManager
         GemFilterWidget* m_filterWidget = nullptr;
         DownloadController* m_downloadController = nullptr;
         bool m_notificationsEnabled = true;
+        QSet<QString> m_gemsToRegisterWithProject;
     };
 } // namespace O3DE::ProjectManager

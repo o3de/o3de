@@ -9,7 +9,7 @@ QMainWindow {
 
 #ScreensCtrl {
     min-width:1200px;
-    min-height:800px;
+    min-height:700px;
 }
 
 QPushButton:focus {
@@ -521,6 +521,14 @@ QProgressBar::chunk {
     margin:0;
     padding: 0px;
     background-color: #444444;
+}
+
+#gemCatalogMenuButton {
+    qproperty-flat: true;
+    max-width:36px;
+    min-width:36px;
+    max-height:24px;
+    min-height:24px;
 }
 
 #GemCatalogHeaderLabel {
