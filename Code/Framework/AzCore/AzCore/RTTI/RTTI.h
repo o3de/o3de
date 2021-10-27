@@ -977,12 +977,6 @@ namespace AZ
     {
         return AzGenericTypeInfo::Uuid<U>();
     }
-    
-    template<template<auto...> class U, typename = void>
-    inline const AZ::TypeId& RttiTypeId()
-    {
-        return AzGenericTypeInfo::Uuid<U>();
-    }
 
     template<template<AZStd::size_t...> class U, typename = void>
     inline const AZ::TypeId& RttiTypeId()
