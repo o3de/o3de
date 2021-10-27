@@ -659,11 +659,11 @@ bool SpinBoxWatcher::handleMouseDragStepping(QAbstractSpinBox* spinBox, QEvent* 
                     int newXPos = xPos;
                     if (xPos >= screenRect.right())
                     {
-                        newXPos = screenRect.right() - 1;
+                        newXPos = screenRect.left() + 1;
                     }
                     else if (xPos <= screenRect.left())
                     {
-                        newXPos = screenRect.left() + 1;
+                        newXPos = screenRect.right() - 1;
                     }
 
                     if (newXPos != xPos)
