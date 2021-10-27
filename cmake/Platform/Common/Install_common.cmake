@@ -85,6 +85,16 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                     continue()
                 endif()
 
+                # For some cases (e.g. codegen) we generate headers that end up in the BUILD_DIR. Since the BUILD_DIR
+                # is per-permutation, we need to install such headers per permutation. For the other cases, we can install
+                # under the default component since they are shared across permutations/configs.
+                cmake_path(IS_PREFIX CMAKE_BINARY_DIR ${include_directory} NORMALIZE include_directory_child_of_build)
+                if(NOT include_directory_child_of_build)
+                    set(include_directory_component ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
+                else()
+                    set(include_directory_component ${LY_INSTALL_PERMUTATION_COMPONENT})
+                endif()
+
                 unset(rel_include_dir)
                 cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
                 cmake_path(APPEND rel_include_dir "..")
@@ -92,7 +102,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                 
                 ly_install(DIRECTORY ${include_directory}
                     DESTINATION ${destination_dir}
-                    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+                    COMPONENT ${include_directory_component}
                     FILES_MATCHING
                         PATTERN *.h
                         PATTERN *.hpp
@@ -203,24 +213,13 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     endif()
 
     string(REPEAT " " 12 PLACEHOLDER_INDENT)
-    get_target_property(inteface_build_dependencies_props ${TARGET_NAME} INTERFACE_LINK_LIBRARIES)
+    get_property(inteface_build_dependencies_props TARGET ${TARGET_NAME} PROPERTY LY_DELAYED_LINK)
     unset(INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
     if(inteface_build_dependencies_props)
-        foreach(build_dependency ${inteface_build_dependencies_props})
+        cmake_parse_arguments(build_deps "" "" "PRIVATE;PUBLIC;INTERFACE" ${inteface_build_dependencies_props})
+        foreach(build_dependency IN LISTS build_deps_INTERFACE build_deps_PUBLIC)
             # Skip wrapping produced when targets are not created in the same directory
-            if(NOT ${build_dependency} MATCHES "^::@")
-                list(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${build_dependency}")
-            endif()
-        endforeach()
-    endif()
-    # We also need to pass the private link libraries since we will use that to generate the runtime dependencies
-    get_target_property(private_build_dependencies_props ${TARGET_NAME} LINK_LIBRARIES)
-    if(private_build_dependencies_props)
-        foreach(build_dependency ${private_build_dependencies_props})
-            # Skip wrapping produced when targets are not created in the same directory
-            if(NOT ${build_dependency} MATCHES "^::@")
-                list(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${build_dependency}")
-            endif()
+            list(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${build_dependency}")
         endforeach()
     endif()
     list(REMOVE_DUPLICATES INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
@@ -353,7 +352,7 @@ include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cm
     file(CONFIGURE OUTPUT "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake" CONTENT [[
 @cmake_copyright_comment@
 if(LY_MONOLITHIC_GAME)
-    include(Platform/${PAL_PLATFORM_NAME}/Monolithic/permutation.cmake)
+    include(Platform/${PAL_PLATFORM_NAME}/Monolithic/permutation.cmake OPTIONAL)
 else()
     include(Platform/${PAL_PLATFORM_NAME}/Default/permutation.cmake)
 endif()
@@ -394,6 +393,7 @@ function(ly_setup_cmake_install)
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         PATTERN "__pycache__" EXCLUDE
         PATTERN "Findo3de.cmake" EXCLUDE
+        PATTERN "cmake/ConfigurationTypes.cmake" EXCLUDE
         REGEX "3rdParty/Platform\/.*\/BuiltInPackages_.*\.cmake" EXCLUDE
     )
 
@@ -739,7 +739,7 @@ function(ly_setup_o3de_install)
 
     # Misc
     ly_install(FILES
-        ${LY_ROOT_FOLDER}/ctest_pytest.ini
+        ${LY_ROOT_FOLDER}/pytest.ini
         ${LY_ROOT_FOLDER}/LICENSE.txt
         ${LY_ROOT_FOLDER}/README.md
         DESTINATION .
@@ -750,7 +750,8 @@ function(ly_setup_o3de_install)
     foreach(external_dir ${LY_INSTALL_EXTERNAL_BUILD_DIRS})
         ly_install(CODE 
 "set(LY_CORE_COMPONENT_ALREADY_INCLUDED TRUE)
-include(${external_dir}/cmake_install.cmake)"
+include(${external_dir}/cmake_install.cmake)
+set(LY_CORE_COMPONENT_ALREADY_INCLUDED FALSE)"
             ALL_COMPONENTS
         )
     endforeach()
