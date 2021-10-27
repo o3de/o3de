@@ -1,6 +1,14 @@
 {
     "description": "Material Type with properties used to define Enhanced PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model, with advanced features like subsurface scattering, transmission, and anisotropy.",
-    "version": 3,
+    "version": 4,
+    "versionUpdates": [
+        {
+            "toVersion": 4,
+            "actions": [
+                {"op": "rename", "from": "opacity.doubleSided", "to": "general.doubleSided"}
+            ]
+        }
+    ],
     "propertyLayout": {
         "groups": [
             {
@@ -92,6 +100,12 @@
         ],
         "properties": {
             "general": [
+                {
+                    "name": "doubleSided",
+                    "displayName": "Double-sided",
+                    "description": "Whether to render back-faces or just front-faces.",
+                    "type": "Bool"
+                },
                 {
                     "name": "applySpecularAA",
                     "displayName": "Apply Specular AA",
@@ -708,12 +722,6 @@
                         "type": "ShaderInput",
                         "name": "m_opacityFactor"
                     }
-                },
-                {
-                    "name": "doubleSided",
-                    "displayName": "Double-sided",
-                    "description": "Whether to render back-faces or just front-faces.",
-                    "type": "Bool"
                 },
                 {
                     "name": "alphaAffectsSpecular",
