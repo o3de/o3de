@@ -24,7 +24,7 @@ namespace Multiplayer
         virtual void EnterGameMode() = 0;
 
         /*
-        * Queries if it's in the game mode and the server has finished connecting and the default network player has spawned.
+        * Queries if the Editor is in game mode, the editor-server has finished connecting, and the default network player has spawned.
         */
         virtual bool IsInGameMode() = 0;
     };
