@@ -167,7 +167,7 @@ namespace AZ
 
         bool ShaderPlatformInterface::BuildHasDebugInfo(const RHI::ShaderCompilerArguments& shaderCompilerArguments) const
         {
-            return shaderCompilerArguments.m_dxcGenerateDebugInfo;
+            return shaderCompilerArguments.m_generateDebugInfo;
         }
 
         const char* ShaderPlatformInterface::GetAzslHeader(const AssetBuilderSDK::PlatformInfo& platform) const

@@ -108,7 +108,7 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallWithoutClientSe
     MatchmakingNotificationsHandlerMock matchmakingHandlerMock;
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish([](){ return ::UnitTest::TestRunner::Instance().m_numAssertsFailed == 1; });
+    WaitForProcessFinish([&](){ return matchmakingHandlerMock.m_numMatchError == 1; });
     AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     ASSERT_TRUE(matchmakingHandlerMock.m_numMatchError == 1);
     ASSERT_FALSE(m_gameliftClientTicketTracker->IsTrackerIdle());
@@ -122,7 +122,7 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_MultipleCallsWithou
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish([](){ return ::UnitTest::TestRunner::Instance().m_numAssertsFailed == 1; });
+    WaitForProcessFinish([&](){ return matchmakingHandlerMock.m_numMatchError == 1; });
     AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     ASSERT_TRUE(matchmakingHandlerMock.m_numMatchError == 1);
     ASSERT_FALSE(m_gameliftClientTicketTracker->IsTrackerIdle());
@@ -140,7 +140,7 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallButWithFailedOu
     MatchmakingNotificationsHandlerMock matchmakingHandlerMock;
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish([](){ return ::UnitTest::TestRunner::Instance().m_numAssertsFailed == 1; });
+    WaitForProcessFinish([&](){ return matchmakingHandlerMock.m_numMatchError == 1; });
     AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     ASSERT_TRUE(matchmakingHandlerMock.m_numMatchError == 1);
     ASSERT_FALSE(m_gameliftClientTicketTracker->IsTrackerIdle());
@@ -160,7 +160,7 @@ TEST_F(AWSGameLiftClientLocalTicketTrackerTest, StartPolling_CallWithMoreThanOne
     MatchmakingNotificationsHandlerMock matchmakingHandlerMock;
     AZ_TEST_START_TRACE_SUPPRESSION;
     m_gameliftClientTicketTracker->StartPolling("ticket1", "player1");
-    WaitForProcessFinish([](){ return ::UnitTest::TestRunner::Instance().m_numAssertsFailed == 1; });
+    WaitForProcessFinish([&](){ return matchmakingHandlerMock.m_numMatchError == 1; });
     AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     ASSERT_TRUE(matchmakingHandlerMock.m_numMatchError == 1);
     ASSERT_FALSE(m_gameliftClientTicketTracker->IsTrackerIdle());
