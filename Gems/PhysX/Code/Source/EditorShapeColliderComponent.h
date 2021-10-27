@@ -90,12 +90,15 @@ namespace PhysX
         void UpdateBoxConfig(const AZ::Vector3& scale);
         void UpdateCapsuleConfig(const AZ::Vector3& scale);
         void UpdateSphereConfig(const AZ::Vector3& scale);
+        void UpdateCylinderConfig(const AZ::Vector3& scale);
         void UpdatePolygonPrismDecomposition();
         void UpdatePolygonPrismDecomposition(const AZ::PolygonPrismPtr polygonPrismPtr);
 
-        void RefreshUiProperties();
+        // Helper function to set a specific shape configuration
+        template<class T>
+        void SetShapeConfig(ShapeType shapeType, const T& shapeConfig);
 
-        void UpdateCylinderConfig(const AZ::Vector3& scale);
+        void RefreshUiProperties();
 
         AZ::u32 OnSubdivisionCountChange();
         AZ::Crc32 SubdivisionCountVisibility();
@@ -154,4 +157,28 @@ namespace PhysX
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.
         AZ::Vector3 m_currentNonUniformScale = AZ::Vector3::CreateOne(); //!< Caches the current non-uniform scale.
     };
+
+    template<class T>
+    void EditorShapeColliderComponent::SetShapeConfig(ShapeType shapeType, const T& shapeConfig)
+    {
+        if (m_shapeType != shapeType)
+        {
+            m_shapeConfigs.clear();
+            m_shapeType = shapeType;
+        }
+
+        if (m_shapeConfigs.empty())
+        {
+            m_shapeConfigs.emplace_back(AZStd::make_shared<T>(shapeConfig));
+        }
+        else
+        {
+            AZ_Assert(m_shapeConfigs.back()->GetShapeType() == shapeConfig.GetShapeType(),
+                "Expected Physics shape configuration with shape type %d but found one with shape type %d.",
+                static_cast<int>(shapeConfig.GetShapeType()), static_cast<int>(m_shapeConfigs.back()->GetShapeType()));
+            T& configuration =
+                static_cast<T&>(*m_shapeConfigs.back());
+            configuration = shapeConfig;
+        }
+    }
 } // namespace PhysX
