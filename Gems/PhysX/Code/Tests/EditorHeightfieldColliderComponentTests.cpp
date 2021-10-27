@@ -5,6 +5,9 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
+#pragma optimize("", off)
+
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
@@ -18,6 +21,7 @@
 #include <PhysX/PhysXLocks.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <PhysX/MockPhysXHeightfieldProviderComponent.h>
+#include <AzCore/Casting/lossy_cast.h>
 
 using ::testing::NiceMock;
 using ::testing::Return;
@@ -28,10 +32,10 @@ namespace PhysXEditorTests
     {
         AZStd::vector<Physics::HeightMaterialPoint> samples{ { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
                                                              { 2.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 1.5, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 1.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
                                                              { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                             { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                             { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
-                                                             { -1.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
+                                                             { 1.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
                                                              { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
                                                              { 0.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight },
                                                              { 3.0, Physics::QuadMeshType::SubdivideUpperLeftToBottomRight } };
@@ -74,8 +78,8 @@ namespace PhysXEditorTests
             .WillByDefault(
                 [](float& x, float& y)
                 {
-                    x = 0.0f;
-                    y = 0.0f;
+                    x = -3.0f;
+                    y = 3.0f;
                 });
     }
 
@@ -85,9 +89,6 @@ namespace PhysXEditorTests
         AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
             &AzToolsFramework::ToolsApplicationRequests::PreExportEntity, *editorEntity, *gameEntity);
         gameEntity->Init();
-        NiceMock<UnitTest::MockPhysXHeightfieldProvider> mockShapeRequests(gameEntity->GetId());
-        SetupMockMethods(mockShapeRequests);
-        gameEntity->Activate();
         return gameEntity;
     }
 
@@ -139,6 +140,9 @@ namespace PhysXEditorTests
         editorEntity->Activate();
 
         EntityPtr gameEntity = TestCreateActiveGameEntityFromEditorEntity(editorEntity.get());
+        NiceMock<UnitTest::MockPhysXHeightfieldProvider> mockShapeRequests2(gameEntity->GetId());
+        SetupMockMethods(mockShapeRequests2);
+        gameEntity->Activate();
 
         // check that the runtime entity has the expected components
         EXPECT_TRUE(gameEntity->FindComponent<UnitTest::MockPhysXHeightfieldProviderComponent>() != nullptr);
@@ -156,6 +160,9 @@ namespace PhysXEditorTests
         editorEntity->Activate();
 
         EntityPtr gameEntity = TestCreateActiveGameEntityFromEditorEntity(editorEntity.get());
+        NiceMock<UnitTest::MockPhysXHeightfieldProvider> mockShapeRequests2(gameEntity->GetId());
+        SetupMockMethods(mockShapeRequests2);
+        gameEntity->Activate();
 
         AzPhysics::SimulatedBody* staticBody = nullptr;
         AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(
@@ -171,6 +178,39 @@ namespace PhysXEditorTests
         pxRigidStatic->getShapes(&shape, 1, 0);
         EXPECT_EQ(shape->getGeometryType(), physx::PxGeometryType::eHEIGHTFIELD);
 
+        physx::PxHeightFieldGeometry heightfieldGeometry;
+        shape->getHeightFieldGeometry(heightfieldGeometry);
+
+        physx::PxHeightField* heightfield = heightfieldGeometry.heightField;
+
+        int32_t numRows{ 0 };
+        int32_t numColumns{ 0 };
+        Physics::HeightfieldProviderRequestsBus::Event(
+            gameEntity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize, numColumns, numRows);
+        EXPECT_EQ(numColumns, heightfield->getNbColumns());
+        EXPECT_EQ(numRows, heightfield->getNbRows());
+
+        for (int sampleRow = 0; sampleRow < numRows; ++sampleRow)
+        {
+            for (int sampleColumn = 0; sampleColumn < numColumns; ++sampleColumn)
+            {
+                float minHeightBounds{ 0.0f };
+                float maxHeightBounds{ 0.0f };
+                Physics::HeightfieldProviderRequestsBus::Event(
+                    gameEntity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldHeightBounds, minHeightBounds,
+                    maxHeightBounds);
+
+                AZStd::vector<Physics::HeightMaterialPoint> samples;
+                Physics::HeightfieldProviderRequestsBus::EventResult(
+                    samples, gameEntity->GetId(), &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials);
+                const float halfBounds{ (maxHeightBounds - minHeightBounds) / 2.0f };
+                const float scaleFactor = (maxHeightBounds <= minHeightBounds) ? 1.0f : AZStd::numeric_limits<int16_t>::max() / halfBounds;
+
+                physx::PxHeightFieldSample samplePhysX = heightfield->getSample(sampleRow, sampleColumn);
+                Physics::HeightMaterialPoint samplePhysics = samples[sampleRow * numColumns + sampleColumn];
+                EXPECT_EQ(samplePhysX.height, azlossy_cast<physx::PxI16>(samplePhysics.m_height * scaleFactor));
+            }
+        }
         CleanupHeightfieldComponent();
     }
 
