@@ -459,7 +459,7 @@ function(ly_delayed_target_link_libraries)
                 endforeach()
             endforeach()
 
-            endif()
+        endif()
 
     endforeach()
     set_property(GLOBAL PROPERTY LY_DELAYED_LINK_TARGETS)

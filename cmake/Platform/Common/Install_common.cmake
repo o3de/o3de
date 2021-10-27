@@ -212,10 +212,10 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     endif()
 
     string(REPEAT " " 12 PLACEHOLDER_INDENT)
-    get_property(inteface_build_dependencies_props TARGET ${TARGET_NAME} PROPERTY LY_DELAYED_LINK)
+    get_property(interface_build_dependencies_props TARGET ${TARGET_NAME} PROPERTY LY_DELAYED_LINK)
     unset(INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
-    if(inteface_build_dependencies_props)
-        cmake_parse_arguments(build_deps "" "" "PRIVATE;PUBLIC;INTERFACE" ${inteface_build_dependencies_props})
+    if(interface_build_dependencies_props)
+        cmake_parse_arguments(build_deps "" "" "PRIVATE;PUBLIC;INTERFACE" ${interface_build_dependencies_props})
         # Interface and public dependencies should always be exposed
         set(build_deps_target ${build_deps_INTERFACE})
         if(build_deps_PUBLIC)
@@ -309,7 +309,7 @@ set_property(TARGET ${NAME_PLACEHOLDER}
         ly_install(FILES "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/${NAME_PLACEHOLDER}_${conf}.cmake"
             DESTINATION ${relative_target_source_dir}/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
             COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
-            CONFIGURATIONS  ${conf}
+            CONFIGURATIONS ${conf}
         )
     endforeach()  
 
