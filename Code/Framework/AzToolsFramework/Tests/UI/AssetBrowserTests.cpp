@@ -24,6 +24,7 @@
 #include <AzToolsFramework/AssetBrowser/Search/SearchWidget.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <Prefab/PrefabTestFixture.h>
 #include <QAbstractItemModelTester>
 
@@ -58,7 +59,6 @@ namespace UnitTest
 
         void SetUpEditorFixtureImpl() override
         {
-            ToolsApplicationFixture::SetUpEditorFixtureImpl();
             GetApplication()->RegisterComponentDescriptor(AzToolsFramework::EditorEntityContextComponent::CreateDescriptor());
 
             m_assetBrowserComponent = AZStd::make_unique<AzToolsFramework::AssetBrowser::AssetBrowserComponent>();
@@ -86,41 +86,63 @@ namespace UnitTest
             m_tableModel.reset();
             m_filterModel.reset();
 
-            m_assetBrowserComponent->GetAssetBrowserModel()->GetRootEntry().reset();
             m_assetBrowserComponent->Deactivate();
             m_assetBrowserComponent.reset();
             m_searchWidget.reset();
-
-
-            ToolsApplicationFixture::TearDownEditorFixtureImpl();
         }
 
-        AzToolsFramework::AssetBrowser::AssetBrowserEntry* CreateAssetBrowserEntry(
-            AssetEntryType entryType, AzToolsFramework::AssetBrowser::AssetBrowserEntry* parent = nullptr, QString name = QString())
+        void CreateScanFolder(AZ::s64 folderID, AZStd::string folderPath, AZStd::string displayName, bool isRoot = false)
         {
-            AzToolsFramework::AssetBrowser::AssetBrowserEntry* newEntry = nullptr;
-            switch (entryType)
+            AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolder = AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry();
+            scanFolder.m_scanFolderID = folderID;
+            scanFolder.m_scanFolder = folderPath;
+            scanFolder.m_displayName = "Assets";
+            scanFolder.m_isRoot = isRoot;
+            GetRootEntry()->AddScanFolder(scanFolder);
+        }
+
+        AZ::Uuid CreateSourceEntry(AZ::s64 fileID, AZ::s64 parentFolderID, AZStd::string filename, bool isFolder = false)
+        {
+            AzToolsFramework::AssetDatabase::FileDatabaseEntry entry = AzToolsFramework::AssetDatabase::FileDatabaseEntry();
+            entry.m_scanFolderPK = parentFolderID;
+            entry.m_fileID = fileID;
+            entry.m_fileName = filename;
+            entry.m_isFolder = isFolder;
+            GetRootEntry()->AddFile(entry);
+
+            if (!isFolder)
             {
-            case AssetEntryType::Root:
-                newEntry = aznew AzToolsFramework::AssetBrowser::RootAssetBrowserEntry();
-                break;
-            case AssetEntryType::Folder:
-                newEntry = aznew AzToolsFramework::AssetBrowser::FolderAssetBrowserEntry();
-                break;
-            case AssetEntryType::Source:
-                newEntry = aznew AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry();
-                break;
-            case AssetEntryType::Product:
-                newEntry = aznew AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry();
-                break;
+                AzToolsFramework::AssetBrowser::SourceWithFileID entrySource = AzToolsFramework::AssetBrowser::SourceWithFileID();
+                entrySource.first = entry.m_fileID;
+                entrySource.second = AzToolsFramework::AssetDatabase::SourceDatabaseEntry();
+                entrySource.second.m_scanFolderPK = parentFolderID;
+                entrySource.second.m_sourceName = filename;
+                entrySource.second.m_sourceID = fileID;
+                entrySource.second.m_sourceGuid = AZ::Uuid::CreateRandom();
+
+                GetRootEntry()->AddSource(entrySource);
+
+                return entrySource.second.m_sourceGuid;
             }
 
-            if (parent)
-            {
-                reinterpret_cast<PublicAssetBrowserEntry*>(parent)->AddChild(newEntry);
-            }
-            reinterpret_cast<PublicAssetBrowserEntry*>(newEntry)->setDisplayName(name);
-            return newEntry;
+            return AZ::Uuid::CreateNull();
+        }
+
+        void CreateProduct(AZ::s64 productID, AZ::Uuid sourceUuid, AZStd::string productName)
+        {
+            AzToolsFramework::AssetBrowser::ProductWithUuid product = AzToolsFramework::AssetBrowser::ProductWithUuid();
+            product.first = sourceUuid;
+            product.second = AzToolsFramework::AssetDatabase::ProductDatabaseEntry();
+            product.second.m_productID = productID;
+            product.second.m_subID = productID;
+            product.second.m_productName = productName;
+
+            GetRootEntry()->AddProduct(product);
+        }
+
+        AZStd::shared_ptr<AzToolsFramework::AssetBrowser::RootAssetBrowserEntry> GetRootEntry()
+        {
+            return m_assetBrowserComponent->GetAssetBrowserModel()->GetRootEntry();
         }
 
         void SetupAssetBrowser()
@@ -134,63 +156,70 @@ namespace UnitTest
              *
              *RootEntry
              *|
-             *|-ProjectFolder
+             *|-D:/dev/o3de/GameProject
              *| |
-             *| |-Folder_0
+             *| |-Assets (folder)
              *| | |
-             *| | |-Source_0_0
+             *| | |-Source_0
              *| | | |
-             *| | | |-product_0_0_0
-             *| | | |-product_0_0_1
-             *| | | |-product_0_0_2
-             *| | | |-product_0_0_3
-             *| | |-Source_0_1
+             *| | | |-product_0_0
+             *| | | |-product_0_1
+             *| | | |-product_0_2
+             *| | | |-product_0_3
+             *| | | 
+             *| | |-Source_1
              *| | | |
-             *| | | |-product_0_1_0
-             *| | | |-product_0_1_1
+             *| | | |-product_1_0
+             *| | | |-product_1_1
              *| |
              *| |
-             *| |-Folder_1
+             *| |-Scripts (Folder)
              *| | | |
-             *| | | |-Source_1_0
+             *| | | |-Source_2
              *| | | | |
-             *| | | | |-product_1_1_0
-             *| | | | |-product_1_1_1
-             *| | | | |-product_1_1_2
+             *| | | | |-Product_2_0
+             *| | | | |-Product_2_1
+             *| | | | |-Product_2_2
              *| | | |
-             *| | | |-Source_1_1
+             *| | | |-Source_3
              *| | | |
-             *| | | |-Source_1_2
              *| |
-             *| |-Folder_2
+             *| |-Misc (folder)
+             *| | | |-Source_4
+             *| | | | |
+             *| | | | |-Product_4_0
+             *| | | | |-Product_4_1
+             *| | | | |-Product_4_2
              */
 
             namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 
-            AzAssetBrowser::RootAssetBrowserEntry* rootEntry = m_assetBrowserComponent->GetAssetBrowserModel()->GetRootEntry().get();
+            CreateScanFolder(15, "D:/dev/o3de/GameProject/Misc", "Misc");
+            AZ::Uuid sourceUuid_4 = CreateSourceEntry(5, 15, "Source_4");
+            CreateProduct(1, sourceUuid_4, "Product_4_0");
+            CreateProduct(2, sourceUuid_4, "Product_4_1");
+            CreateProduct(3, sourceUuid_4, "Product_4_2");
 
-            AzAssetBrowser::AssetBrowserEntry* projectFolder = CreateAssetBrowserEntry(AssetEntryType::Folder, rootEntry, QString("projectFolder"));
+            CreateScanFolder(14, "D:/dev/o3de/GameProject/Scripts", "Scripts");
 
-            AzAssetBrowser::AssetBrowserEntry* folder_0 = CreateAssetBrowserEntry(AssetEntryType::Folder, projectFolder, QString("folder_0"));
-            AzAssetBrowser::AssetBrowserEntry* source_0_0 = CreateAssetBrowserEntry(AssetEntryType::Source, folder_0, QString("source_0_0"));
-            CreateAssetBrowserEntry(AssetEntryType::Product, source_0_0, QString("product_0_0_0"));
-            CreateAssetBrowserEntry(AssetEntryType::Product, source_0_0, QString("product_0_0_1"));
-            CreateAssetBrowserEntry(AssetEntryType::Product, source_0_0, QString("product_0_0_2"));
-            CreateAssetBrowserEntry(AssetEntryType::Product, source_0_0, QString("product_0_0_3"));
+            AZ::Uuid sourceUuid_2 = CreateSourceEntry(3, 14, "Source_2");
+            CreateProduct(1, sourceUuid_2, "Product_2_0");
+            CreateProduct(2, sourceUuid_2, "Product_2_1");
+            CreateProduct(3, sourceUuid_2, "Product_2_2");
 
-            AzAssetBrowser::AssetBrowserEntry* source_0_1 = CreateAssetBrowserEntry(AssetEntryType::Source, folder_0, QString("source_0_1"));
-            CreateAssetBrowserEntry(AssetEntryType::Product, source_0_1, QString("product_0_1_0"));
-            CreateAssetBrowserEntry(AssetEntryType::Product, source_0_1, QString("product_0_1_1"));
+            CreateSourceEntry(4, 14, "Source_3");
 
-            AzAssetBrowser::AssetBrowserEntry* folder_1 = CreateAssetBrowserEntry(AssetEntryType::Folder, projectFolder, QString("folder_1"));
-            AzAssetBrowser::AssetBrowserEntry* source_1_0 = CreateAssetBrowserEntry(AssetEntryType::Source, folder_1, QString("source_1_0"));
-            CreateAssetBrowserEntry(AssetEntryType::Product, source_1_0, QString("product_1_0_0"));
-            CreateAssetBrowserEntry(AssetEntryType::Product, source_1_0, QString("product_1_0_1"));
-            CreateAssetBrowserEntry(AssetEntryType::Product, source_1_0, QString("product_1_0_2"));
+            CreateScanFolder(13, "D:/dev/o3de/GameProject/Assets", "Assets");
 
-            CreateAssetBrowserEntry(AssetEntryType::Source, folder_1, QString("source_1_1"));
-            CreateAssetBrowserEntry(AssetEntryType::Source, folder_1, QString("source_1_2"));
-            CreateAssetBrowserEntry(AssetEntryType::Folder, projectFolder, QString("folder_2"));
+            AZ::Uuid sourceUuid_0 = CreateSourceEntry(1, 13, "Source_0");
+            CreateProduct(1, sourceUuid_0, "Product_0_0");
+            CreateProduct(2, sourceUuid_0, "Product_0_1");
+            CreateProduct(3, sourceUuid_0, "Product_0_2");
+            CreateProduct(4, sourceUuid_0, "Product_0_3");
+
+            AZ::Uuid sourceUuid_1 = CreateSourceEntry(2, 13, "Source_1");
+            CreateProduct(1, sourceUuid_1, "Product_1_0");
+            CreateProduct(2, sourceUuid_1, "Product_1_1");
 
             // Setup String filters
             m_searchWidget->Setup(true, true);
@@ -239,7 +268,7 @@ namespace UnitTest
         AZStd::unique_ptr<QAbstractItemModelTester> m_modelTesterTableModel;
     };
 
-    TEST_F(AssetBrowserTest, TestCheckCorrectNumberOfEntriesInTableView)
+    TEST_F(AssetBrowserTest, CheckCorrectNumberOfEntriesInTableView)
     {
         m_filterModel->FilterUpdatedSlotImmediate();
         int tableViewRowcount = m_tableModel->rowCount();
@@ -248,7 +277,7 @@ namespace UnitTest
         EXPECT_EQ(tableViewRowcount, 14);
     }
 
-    TEST_F(AssetBrowserTest, TestCheckCorrectNumberOfEntriesInTableViewAfterStringFilter)
+    TEST_F(AssetBrowserTest, CheckCorrectNumberOfEntriesInTableViewAfterStringFilter)
     {
         /*
         *|-Source_1_0
