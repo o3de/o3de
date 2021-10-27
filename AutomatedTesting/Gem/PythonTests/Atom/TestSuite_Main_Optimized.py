@@ -37,6 +37,10 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C32078115")
     class AtomEditorComponents_GlobalSkylightIBLAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_GlobalSkylightIBLAdded as test_module
+        
+    @pytest.mark.test_case_id("C32078122")
+    class AtomEditorComponents_GridAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_GridAdded as test_module
 
     @pytest.mark.test_case_id("C32078117")
     class AtomEditorComponents_LightAdded(EditorSharedTest):
