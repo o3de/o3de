@@ -76,8 +76,6 @@ namespace Multiplayer
         AZ::EntityActivatedEvent::Handler m_entityActivatedEventHandler;
         AZ::EntityDeactivatedEvent::Handler m_entityDeactivatedEventHandler;
 
-        //NetBindComponent* m_controlledNetBindComponent = nullptr;
-
         AzNetworking::IConnection* m_connection = nullptr;
 
         // Cached values to detect a poor network connection

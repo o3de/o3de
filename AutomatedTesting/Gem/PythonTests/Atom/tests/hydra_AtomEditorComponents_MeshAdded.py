@@ -80,25 +80,25 @@ def AtomEditorComponents_Mesh_AddedToEntity():
 
     from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.utils import Report, Tracer, TestHelper as helper
+    from editor_python_test_tools.utils import Report, Tracer, TestHelper
+    from Atom.atom_utils.atom_constants import AtomComponentProperties
 
     with Tracer() as error_tracer:
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
-        helper.init_idle()
-        helper.open_level("", "Base")
+        TestHelper.init_idle()
+        TestHelper.open_level("", "Base")
 
         # Test steps begin.
         # 1. Create a Mesh entity with no components.
-        mesh_name = "Mesh"
-        mesh_entity = EditorEntity.create_editor_entity(mesh_name)
+        mesh_entity = EditorEntity.create_editor_entity(AtomComponentProperties.mesh())
         Report.critical_result(Tests.mesh_entity_creation, mesh_entity.exists())
 
         # 2. Add a Mesh component to Mesh entity.
-        mesh_component = mesh_entity.add_component(mesh_name)
+        mesh_component = mesh_entity.add_component(AtomComponentProperties.mesh())
         Report.critical_result(
             Tests.mesh_component_added,
-            mesh_entity.has_component(mesh_name))
+            mesh_entity.has_component(AtomComponentProperties.mesh()))
 
         # 3. UNDO the entity creation and component addition.
         # -> UNDO component addition.
@@ -125,17 +125,16 @@ def AtomEditorComponents_Mesh_AddedToEntity():
         Report.result(Tests.creation_redo, mesh_entity.exists())
 
         # 5. Set Mesh component asset property
-        mesh_property_asset = 'Controller|Configuration|Mesh Asset'
         model_path = os.path.join('Objects', 'shaderball', 'shaderball_default_1m.azmodel')
         model = Asset.find_asset_by_path(model_path)
-        mesh_component.set_component_property_value(mesh_property_asset, model.id)
+        mesh_component.set_component_property_value(AtomComponentProperties.mesh('Mesh Asset'), model.id)
         Report.result(Tests.mesh_asset_specified,
-                      mesh_component.get_component_property_value(mesh_property_asset) == model.id)
+                      mesh_component.get_component_property_value(AtomComponentProperties.mesh('Mesh Asset')) == model.id)
 
         # 6. Enter/Exit game mode.
-        helper.enter_game_mode(Tests.enter_game_mode)
+        TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
-        helper.exit_game_mode(Tests.exit_game_mode)
+        TestHelper.exit_game_mode(Tests.exit_game_mode)
 
         # 7. Test IsHidden.
         mesh_entity.set_visibility_state(False)
@@ -159,7 +158,7 @@ def AtomEditorComponents_Mesh_AddedToEntity():
         Report.result(Tests.deletion_redo, not mesh_entity.exists())
 
         # 12. Look for errors or asserts.
-        helper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
+        TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
         for assert_info in error_tracer.asserts:

@@ -364,7 +364,7 @@ function(ly_setup_o3de_install)
 
     # Misc
     install(FILES
-        ${LY_ROOT_FOLDER}/ctest_pytest.ini
+        ${LY_ROOT_FOLDER}/pytest.ini
         ${LY_ROOT_FOLDER}/LICENSE.txt
         ${LY_ROOT_FOLDER}/README.md
         DESTINATION .

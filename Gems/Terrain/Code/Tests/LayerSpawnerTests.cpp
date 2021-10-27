@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Memory/MemoryComponent.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
@@ -195,8 +196,10 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerTransformChangedUpdatesTerrainSyst
 
     m_entity->Activate();
 
-    AZ::TransformNotificationBus::Event(
-        m_entity->GetId(), &AZ::TransformNotificationBus::Events::OnTransformChanged, AZ::Transform(), AZ::Transform());
+    // The component gets transform change notifications via the shape bus.
+    LmbrCentral::ShapeComponentNotificationsBus::Event(
+        m_entity->GetId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
+        LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
 
     m_entity->Deactivate();
 }

@@ -465,7 +465,7 @@ void ApplyLighting(inout Surface surface, inout LightingData lightingData)
     const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
     if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
     {
-        DirectionalLightShadow::GetShadowCoords(shadowIndex, surface.position, lightingData.shadowCoords);
+        DirectionalLightShadow::GetShadowCoords(shadowIndex, surface.position, surface.vertexNormal, lightingData.shadowCoords);
     }
 
     // Light loops application.

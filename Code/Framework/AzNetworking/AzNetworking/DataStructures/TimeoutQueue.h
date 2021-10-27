@@ -64,6 +64,12 @@ namespace AzNetworking
         //! @param timeoutId the identifier of the item to remove
         void RemoveItem(TimeoutId timeoutId);
 
+        //! Updates timeouts for all items, invokes the provided timeout functor if required.
+        //! @param timeoutHandler lambda to invoke for all timeouts
+        //! @param maxTimeouts    the maximum number of timeouts to process before breaking iteration
+        using TimeoutHandler = AZStd::function<TimeoutResult(TimeoutQueue::TimeoutItem&)>;
+        void UpdateTimeouts(const TimeoutHandler& timeoutHandler, int32_t maxTimeouts = -1);
+
         //! Updates timeouts for all items, invokes timeout handlers if required.
         //! @param timeoutHandler listener instance to call back on for timeouts
         //! @param maxTimeouts   the maximum number of timeouts to process before breaking iteration

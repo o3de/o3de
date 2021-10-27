@@ -9,6 +9,7 @@
 
     <Packet Name="Connect" HandshakePacket="true" Desc="Client connection packet, on success the server will reply with an Accept">
         <Member Type="uint16_t" Name="networkProtocolVersion" Init="0" />
+        <Member Type="uint64_t" Name="temporaryUserId" Init="0" />
         <Member Type="Multiplayer::LongNetworkString" Name="ticket" />
     </Packet>
 

@@ -50,9 +50,15 @@ namespace AzToolsFramework
         void OnShow();
         void UpdateToastPosition();
 
+        void SetOffset(const QPoint& offset);
+        void SetAnchorPoint(const QPointF& anchorPoint);
+        void SetMaxQueuedNotifications(AZ::u32 maxQueuedNotifications);
+        void SetRejectDuplicates(bool rejectDuplicates);
+
     private:
         ToastId CreateToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration);
         void DisplayQueuedNotification();
+        bool DuplicateNotificationInQueue(const AzQtComponents::ToastConfiguration& toastConfiguration);
         QPoint GetGlobalPoint();
 
         ToastId m_activeNotification;
@@ -61,5 +67,7 @@ namespace AzToolsFramework
 
         QPoint m_offset = QPoint(10, 10);
         QPointF m_anchorPoint = QPointF(1, 0);
+        AZ::u32 m_maxQueuedNotifications = 5;
+        bool m_rejectDuplicates = true;
     };
 } // AzToolsFramework
