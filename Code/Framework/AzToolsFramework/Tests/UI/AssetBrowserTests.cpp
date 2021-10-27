@@ -30,19 +30,6 @@
 
 namespace UnitTest
 {
-    class PublicAssetBrowserEntry : public AzToolsFramework::AssetBrowser::AssetBrowserEntry
-    {
-    public:
-        void AddChild(AssetBrowserEntry* child) override
-        {
-            AzToolsFramework::AssetBrowser::AssetBrowserEntry::AddChild(child);
-        }
-
-        void setDisplayName(QString name)
-        {
-            m_displayName = name;
-        }
-    };
 
     // Test fixture for the AssetBrowser model that uses a QAbstractItemModelTester to validate the state of the model
     // when QAbstractItemModel signals fire. Tests will exit with a fatal error if an invalid state is detected.
@@ -273,30 +260,26 @@ namespace UnitTest
         m_filterModel->FilterUpdatedSlotImmediate();
         int tableViewRowcount = m_tableModel->rowCount();
 
-        // RowCount should be 14 -> 5 SourceEntries + 9 ProductEntries)
-        EXPECT_EQ(tableViewRowcount, 14);
+        // RowCount should be 17 -> 5 SourceEntries + 12 ProductEntries)
+        EXPECT_EQ(tableViewRowcount, 17);
     }
 
     TEST_F(AssetBrowserTest, CheckCorrectNumberOfEntriesInTableViewAfterStringFilter)
     {
         /*
-        *|-Source_1_0
-        *| |
-        *| |-product_1_1_0
-        *| |-product_1_1_1
-        *| |-product_1_1_2
-        *|
-        *|-Source_1_1
-        *|
-        *|-Source_1_2
-        *
-        *Total matching entries 6.
-        */
+         *-Source_1
+         * |
+         * |-product_1_0
+         * |-product_1_1
+         *
+         *
+         * Matching entries = 3
+         */
 
         // Apply string filter
-        m_searchWidget->SetTextFilter(QString("source_1_"));
+        m_searchWidget->SetTextFilter(QString("source_1"));
         m_filterModel->FilterUpdatedSlotImmediate();
         int tableViewRowcount = m_tableModel->rowCount();
-        EXPECT_EQ(tableViewRowcount, 6);
+        EXPECT_EQ(tableViewRowcount, 3);
     }
 } // namespace UnitTest
