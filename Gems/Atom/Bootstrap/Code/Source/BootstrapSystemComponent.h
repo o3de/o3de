@@ -29,8 +29,6 @@
 #include <Atom/Bootstrap/DefaultWindowBus.h>
 #include <Atom/Bootstrap/BootstrapRequestBus.h>
 
-#include <IGem.h>
-
 namespace AZ
 {
     namespace Render
