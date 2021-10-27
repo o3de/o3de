@@ -311,17 +311,17 @@ namespace AZ
                 m_forceClearRenderData = true;
             }
 
-            bool HairFeatureProcessor::HasHairParentPass()
+            bool HairFeatureProcessor::HasHairParentPass(RPI::RenderPipeline* renderPipeline)
             {
-                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(HairParentPassName, GetParentScene());
+                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(HairParentPassName, renderPipeline);
                 RPI::Pass* pass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
-                return pass;
+                return pass ? true : false;
             }
 
             void HairFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline)
             {
                 // Proceed only if this is the main pipeline that contains the parent pass
-                if (!HasHairParentPass())
+                if (!HasHairParentPass(renderPipeline.get()))
                 {
                     return;
                 }
@@ -335,7 +335,7 @@ namespace AZ
             void HairFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
             {
                 // Proceed only if this is the main pipeline that contains the parent pass
-                if (!HasHairParentPass())
+                if (!HasHairParentPass(renderPipeline))
                 {
                     return;
                 }
@@ -347,7 +347,7 @@ namespace AZ
             void HairFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
             {
                 // Proceed only if this is the main pipeline that contains the parent pass
-                if (!HasHairParentPass())
+                if (!HasHairParentPass(renderPipeline))
                 {
                     return;
                 }
@@ -623,3 +623,4 @@ namespace AZ
         } // namespace Hair
     } // namespace Render
 } // namespace AZ
+
