@@ -9,11 +9,16 @@
 #include <AzCore/Debug/ProfilerBus.h>
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/RTTI/BehaviorInterfaceProxy.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 
 namespace AZ::Debug
 {
+    static constexpr const char* ProfilerScriptCategory = "Profiler";
+    static constexpr const char* ProfilerScriptModule = "debug";
+    static constexpr AZ::Script::Attributes::ScopeFlags ProfilerScriptScope = AZ::Script::Attributes::ScopeFlags::Automation;
+
     class ProfilerNotificationBusHandler final
         : public ProfilerNotificationBus::Handler
         , public AZ::BehaviorEBusHandler
@@ -33,38 +38,46 @@ namespace AZ::Debug
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->EBus<ProfilerNotificationBus>("ProfilerNotificationBus")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Module, "debug")
+                    ->Attribute(AZ::Script::Attributes::Category, ProfilerScriptCategory)
+                    ->Attribute(AZ::Script::Attributes::Module, ProfilerScriptModule)
+                    ->Attribute(AZ::Script::Attributes::Scope, ProfilerScriptScope)
                     ->Handler<ProfilerNotificationBusHandler>();
             }
         }
     };
 
+    class ProfilerSystemScriptProxy
+        : public BehaviorInterfaceProxy<ProfilerRequests>
+    {
+    public:
+        AZ_RTTI(ProfilerSystemScriptProxy, "{D671FB70-8B09-4C3A-96CD-06A339F3138E}", BehaviorInterfaceProxy<ProfilerRequests>);
+    };
+
     void ProfilerReflect(AZ::ReflectContext* context)
     {
-        if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            if (AZ::EditContext* ec = serialize->GetEditContext())
-            {
-                ProfilerNotificationBusHandler::Reflect(context);
-            }
-        }
-
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<ProfilerRequestBus>("ProfilerRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Module, "debug")
+            behaviorContext->ConstantProperty("g_ProfilerSystem", ProfilerSystemScriptProxy::GetInstance)
+                ->Attribute(AZ::Script::Attributes::Category, ProfilerScriptCategory)
+                ->Attribute(AZ::Script::Attributes::Module, ProfilerScriptModule)
+                ->Attribute(AZ::Script::Attributes::Scope, ProfilerScriptScope);
 
-                ->Event("IsActive", &ProfilerRequestBus::Events::IsActive)
-                ->Event("SetActive", &ProfilerRequestBus::Events::SetActive)
+            behaviorContext->Class<ProfilerSystemScriptProxy>("ProfilerSystemInterface")
+                ->Attribute(AZ::Script::Attributes::Category, ProfilerScriptCategory)
+                ->Attribute(AZ::Script::Attributes::Module, ProfilerScriptModule)
+                ->Attribute(AZ::Script::Attributes::Scope, ProfilerScriptScope)
 
-                ->Event("CaptureFrame", &ProfilerRequestBus::Events::CaptureFrame)
+                ->Method("IsValid", &ProfilerSystemScriptProxy::IsValid)
 
-                ->Event("StartCapture", &ProfilerRequestBus::Events::StartCapture)
-                ->Event("EndCapture", &ProfilerRequestBus::Events::EndCapture);
+                ->Method("IsActive", ProfilerSystemScriptProxy::WrapMethod<&ProfilerRequests::IsActive>())
+                ->Method("SetActive", ProfilerSystemScriptProxy::WrapMethod<&ProfilerRequests::SetActive>())
 
-            ProfilerNotificationBusHandler::Reflect(context);
+                ->Method("CaptureFrame", ProfilerSystemScriptProxy::WrapMethod<&ProfilerRequests::CaptureFrame>())
+
+                ->Method("StartCapture", ProfilerSystemScriptProxy::WrapMethod<&ProfilerRequests::StartCapture>())
+                ->Method("EndCapture", ProfilerSystemScriptProxy::WrapMethod<&ProfilerRequests::EndCapture>());
         }
+
+        ProfilerNotificationBusHandler::Reflect(context);
     }
 } // namespace AZ::Debug
