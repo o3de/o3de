@@ -135,6 +135,7 @@ struct WildcardSourceDependencyTest
     :  AssetProcessorManagerTest
 {
     bool Test(const AZStd::string& dependencyPath, AZStd::vector<AZStd::string>& resolvedPaths);
+    AZStd::vector<AZStd::string> FileAddedTest(const QString& path);
 
     void SetUp() override;
 };

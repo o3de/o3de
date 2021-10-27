@@ -5318,6 +5318,18 @@ TEST_F(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase)
     ASSERT_EQ(jobDetails.m_jobEntry.m_pathRelativeToWatchFolder, relFileName);
 }
 
+AZStd::vector<AZStd::string> QStringListToVector(const QStringList& qstringList)
+{
+    AZStd::vector<AZStd::string> azVector;
+    // Convert to a vector of AZStd::strings because GTest handles this type better when displaying errors
+    for (const QString& resolvedPath : qstringList)
+    {
+        azVector.emplace_back(resolvedPath.toUtf8().constData());
+    }
+
+    return azVector;
+}
+
 bool WildcardSourceDependencyTest::Test(
     const AZStd::string& dependencyPath, AZStd::vector<AZStd::string>& resolvedPaths)
 {
@@ -5326,13 +5338,16 @@ bool WildcardSourceDependencyTest::Test(
     AssetBuilderSDK::SourceFileDependency dependency(dependencyPath, AZ::Uuid::CreateNull(), AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
     bool result = m_assetProcessorManager->ResolveSourceFileDependencyPath(dependency, resolvedName, stringlistPaths);
 
-    // Convert to a vector of AZStd::strings because GTest handles this type better when displaying errors
-    for (const QString& resolvedPath : stringlistPaths)
-    {
-        resolvedPaths.emplace_back(resolvedPath.toUtf8().constData());
-    }
+    resolvedPaths = QStringListToVector(stringlistPaths);
 
     return result;
+}
+
+AZStd::vector<AZStd::string> WildcardSourceDependencyTest::FileAddedTest(const QString& path)
+{
+    auto result = m_assetProcessorManager->GetSourceFilesWhichDependOnSourceFile(path);
+
+    return QStringListToVector(result);
 }
 
 void WildcardSourceDependencyTest::SetUp()
@@ -5357,6 +5372,29 @@ void WildcardSourceDependencyTest::SetUp()
 
     // Add a file in the non-recursive scanfolder.  Since its not directly in the scan folder, it should always be ignored
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("no_recurse/one/two/three/f.foo"));
+
+    AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer dependencies;
+
+    // Relative path wildcard dependency
+    dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
+        AZ::Uuid::CreateRandom(), "a.foo", "%a.foo",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+
+    // Absolute path wildcard dependency
+    dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
+        AZ::Uuid::CreateRandom(), "b.foo", tempPath.absoluteFilePath("%b.foo").toUtf8().constData(),
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+
+    // Test what happens when we have 2 dependencies on the same file
+    dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
+        AZ::Uuid::CreateRandom(), "folder/one/d.foo", tempPath.absoluteFilePath("%c.foo").toUtf8().constData(),
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+
+    dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
+        AZ::Uuid::CreateRandom(), "folder/one/d.foo", tempPath.absoluteFilePath("%c.foo").toUtf8().constData(),
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+
+    ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependencies(dependencies));
 }
 
 TEST_F(WildcardSourceDependencyTest, Relative_Broad)
@@ -5454,4 +5492,31 @@ TEST_F(WildcardSourceDependencyTest, Absolute_NoWildcard)
 
     ASSERT_FALSE(Test(tempPath.absoluteFilePath("subfolder1/1a.foo").toUtf8().constData(), resolvedPaths));
     ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, NewFile_MatchesSavedRelativeDependency)
+{
+    QDir tempPath(m_tempDir.path());
+
+    auto matches = FileAddedTest(tempPath.absoluteFilePath("subfolder1/1a.foo"));
+
+    ASSERT_THAT(matches, ::testing::UnorderedElementsAre(tempPath.absoluteFilePath("subfolder2/redirected/a.foo").toUtf8().constData()));
+}
+
+TEST_F(WildcardSourceDependencyTest, NewFile_MatchesSavedAbsoluteDependency)
+{
+    QDir tempPath(m_tempDir.path());
+
+    auto matches = FileAddedTest(tempPath.absoluteFilePath("subfolder1/1b.foo"));
+
+    ASSERT_THAT(matches, ::testing::UnorderedElementsAre(tempPath.absoluteFilePath("subfolder2/redirected/b.foo").toUtf8().constData()));
+}
+
+TEST_F(WildcardSourceDependencyTest, NewFile_MatchesDuplicatedDependenciesOnce)
+{
+    QDir tempPath(m_tempDir.path());
+
+    auto matches = FileAddedTest(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/c.foo"));
+
+    ASSERT_THAT(matches, ::testing::UnorderedElementsAre(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/d.foo").toUtf8().constData()));
 }

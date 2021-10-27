@@ -4027,7 +4027,7 @@ namespace AssetProcessor
         // It is generally called when a source file modified in any way, including when it is added or deleted.
         // note that this is a "reverse" dependency query - it looks up what depends on a file, not what the file depends on
         using namespace AzToolsFramework::AssetDatabase;
-        QStringList absoluteSourceFilePathQueue;
+        QSet<QString> absoluteSourceFilePathQueue;
         QString databasePath;
         QString scanFolder;
  
@@ -4037,7 +4037,7 @@ namespace AssetProcessor
             QString absolutePath = m_platformConfig->FindFirstMatchingFile(relativeDatabaseName);
             if (!absolutePath.isEmpty())
             {
-                absoluteSourceFilePathQueue.push_back(absolutePath);
+                absoluteSourceFilePathQueue.insert(absolutePath);
             }
             return true;
         };
@@ -4047,10 +4047,13 @@ namespace AssetProcessor
         if (m_platformConfig->ConvertToRelativePath(sourcePath, databasePath, scanFolder))
         {
            m_stateData->QuerySourceDependencyByDependsOnSource(databasePath.toUtf8().constData(), nullptr, SourceFileDependencyEntry::DEP_Any, callbackFunction);
-
         }
 
-        return absoluteSourceFilePathQueue;
+        // We'll also check with the absolute path, because we support absolute path dependencies
+        m_stateData->QuerySourceDependencyByDependsOnSource(
+            sourcePath.toUtf8().constData(), nullptr, SourceFileDependencyEntry::DEP_Any, callbackFunction);
+
+        return absoluteSourceFilePathQueue.values();
     }
 
     void AssetProcessorManager::AddSourceToDatabase(AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceDatabaseEntry, const ScanFolderInfo* scanFolder, QString relativeSourceFilePath)
