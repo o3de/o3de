@@ -20,9 +20,6 @@
 
 namespace EMStudio
 {
-    static constexpr float DepthNear = 0.01f;
-    static constexpr float DepthFar = 100.0f;
-
     AnimViewportWidget::AnimViewportWidget(QWidget* parent)
         : AtomToolsFramework::RenderViewportWidget(parent)
     {
@@ -180,7 +177,9 @@ namespace EMStudio
     {
         auto viewportContext = GetViewportContext();
         auto windowSize = viewportContext->GetViewportSize();
-        const float aspectRatio = aznumeric_cast<float>(windowSize.m_width) / aznumeric_cast<float>(windowSize.m_height);
+        // Prevent devided by zero
+        const float height = AZStd::max<float>(aznumeric_cast<float>(windowSize.m_height), 1.0f);
+        const float aspectRatio = aznumeric_cast<float>(windowSize.m_width) / height;
 
         AZ::Matrix4x4 viewToClipMatrix;
         AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::Constants::HalfPi, aspectRatio, DepthNear, DepthFar, true);
