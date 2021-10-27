@@ -241,6 +241,10 @@ namespace AZ
             auto itr = m_templateEntries.find(name);
             if (itr != m_templateEntries.end())
             {
+                AZ_Assert(itr->second.m_passes.empty(), "Can not delete PassTemplate '%s' because there are %zu Passes referencing it",
+                    name.GetCStr(), itr->second.m_passes.size());
+                AZ_Assert(!itr->second.m_mappingAssetId.IsValid(), "Can not delete PassTemplate '%s' because it was created from an asset",
+                    name.GetCStr());
                 m_templateEntries.erase(itr);
             }
         }
