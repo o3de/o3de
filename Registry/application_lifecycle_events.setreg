@@ -18,12 +18,14 @@
                     "SystemAllocatorPendingDestruction": {},
                     "SettingsRegistryAvailable": {},
                     "SettingsRegistryUnavailable": {},
-                    "ConsoleAvailable": {},
+                    "ConsoleAvailable": {}, 
                     "ConsoleUnavailable": {},
                     "GemsLoaded": {},
                     "GemsUnloaded": {},
                     "FileIOAvailable": {},
-                    "FileIOUnavailable": {}
+                    "FileIOUnavailable": {},
+                    "SystemEntityActivated": {},
+                    "SystemInterfaceCreated": {}
                 }
             }
         }
