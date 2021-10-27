@@ -139,7 +139,7 @@ ComponentDataModel::ComponentDataModel(QObject* parent)
                 if (element.m_elementId == AZ::Edit::ClassElements::EditorData)
                 {
                     AZStd::string iconPath;
-                    EBUS_EVENT_RESULT(iconPath, AzToolsFramework::EditorRequests::Bus, GetComponentEditorIcon, classData->m_typeId, nullptr);
+                    AzToolsFramework::EditorRequestBus::BroadcastResult(iconPath, &AzToolsFramework::EditorRequests::GetComponentTypeEditorIcon, classData->m_typeId);
                     if (!iconPath.empty())
                     {
                         m_componentIcons[classData->m_typeId] = QIcon(iconPath.c_str());
