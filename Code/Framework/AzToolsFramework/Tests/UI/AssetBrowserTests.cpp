@@ -62,6 +62,11 @@ namespace UnitTest
             m_modelTesterTableModel = AZStd::make_unique<QAbstractItemModelTester>(m_tableModel.get());
             m_searchWidget = AZStd::make_unique<AzToolsFramework::AssetBrowser::SearchWidget>();
 
+            
+            // Setup String filters
+            m_searchWidget->Setup(true, true);
+            m_filterModel->SetFilter(m_searchWidget->GetFilter());
+
             SetupAssetBrowser();
         }
 
@@ -70,8 +75,12 @@ namespace UnitTest
             m_modelTesterAssetBrowser.reset();
             m_modelTesterFilterModel.reset();
             m_modelTesterTableModel.reset();
+
+            m_assetBrowserComponent->GetAssetBrowserModel()->GetRootEntry().reset();
+
             m_tableModel.reset();
             m_filterModel.reset();
+            delete m_assetBrowserComponent->GetAssetBrowserModel();
 
             m_assetBrowserComponent->Deactivate();
             m_assetBrowserComponent.reset();
@@ -208,10 +217,6 @@ namespace UnitTest
             CreateProduct(1, sourceUuid_1, "Product_1_0");
             CreateProduct(2, sourceUuid_1, "Product_1_1");
 
-            // Setup String filters
-            m_searchWidget->Setup(true, true);
-            m_filterModel->SetFilter(m_searchWidget->GetFilter());
-
             qDebug() << "\n-------------Asset Browser Model------------\n";
             PrintModel(m_assetBrowserComponent->GetAssetBrowserModel());
 
@@ -255,6 +260,8 @@ namespace UnitTest
         AZStd::unique_ptr<QAbstractItemModelTester> m_modelTesterTableModel;
     };
 
+    
+    
     TEST_F(AssetBrowserTest, CheckCorrectNumberOfEntriesInTableView)
     {
         m_filterModel->FilterUpdatedSlotImmediate();
@@ -279,7 +286,9 @@ namespace UnitTest
         // Apply string filter
         m_searchWidget->SetTextFilter(QString("source_1"));
         m_filterModel->FilterUpdatedSlotImmediate();
+
         int tableViewRowcount = m_tableModel->rowCount();
         EXPECT_EQ(tableViewRowcount, 3);
     }
+
 } // namespace UnitTest
