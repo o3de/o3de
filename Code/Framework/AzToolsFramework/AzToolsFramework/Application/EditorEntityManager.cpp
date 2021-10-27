@@ -63,11 +63,11 @@ namespace AzToolsFramework
         EntityIdList selectedEntities;
         ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
 
-        if (!AreEntitiesValidForDuplication(selectedEntities))
+        if (AreEntitiesValidForDuplication(selectedEntities))
         {
-            return;
+            m_prefabPublicInterface->DuplicateEntitiesInInstance(selectedEntities);
         }
-        m_prefabPublicInterface->DuplicateEntitiesInInstance(selectedEntities);
+
     }
 
     void EditorEntityManager::DuplicateEntityById(AZ::EntityId entityId)
@@ -77,11 +77,10 @@ namespace AzToolsFramework
 
     void EditorEntityManager::DuplicateEntities(const EntityIdList& entities)
     {
-        if (!AreEntitiesValidForDuplication(entities))
+        if (AreEntitiesValidForDuplication(entities))
         {
-            return;
+            m_prefabPublicInterface->DuplicateEntitiesInInstance(entities);
         }
-        m_prefabPublicInterface->DuplicateEntitiesInInstance(entities);
     }
 
     bool EditorEntityManager::AreEntitiesValidForDuplication(const EntityIdList& entityIds) const
