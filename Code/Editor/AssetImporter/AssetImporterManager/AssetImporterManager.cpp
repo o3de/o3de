@@ -140,7 +140,7 @@ bool AssetImporterManager::OnBrowseFiles()
     bool encounteredCrate = false;
     QStringList invalidFiles;
 
-    for (QString path : fileDialog.selectedFiles())
+    for (const QString& path : fileDialog.selectedFiles())
     {
         QString fileName = GetFileName(path);
         QFileInfo info(path);
