@@ -151,8 +151,7 @@ namespace AZ
                         {
                             Initialize();
                         },
-                        "SystemInterfaceCreated",
-                        /*autoRegisterEvent*/ true);
+                        "SystemInterfaceCreated");
                 }
             }
 
