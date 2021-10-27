@@ -13,6 +13,23 @@
 
 namespace AzToolsFramework
 {
+    static bool AreEntitiesValidForDuplication(const EntityIdList& entityIds)
+    {
+        for (AZ::EntityId entityId : entityIds)
+        {
+            if (GetEntityById(entityId) == nullptr)
+            {
+                AZ_Error(
+                    "Entity", false,
+                    "Entity with id '%llu' is not found. This can happen when you try to duplicate the entity before it is created. Please "
+                    "ensure entities are created before trying to duplicate them.",
+                    static_cast<AZ::u64>(entityId));
+                return false;
+            }
+        }
+        return true;
+    }
+
     void EditorEntityManager::Start()
     {
         m_prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
@@ -81,23 +98,6 @@ namespace AzToolsFramework
         {
             m_prefabPublicInterface->DuplicateEntitiesInInstance(entities);
         }
-    }
-
-    bool EditorEntityManager::AreEntitiesValidForDuplication(const EntityIdList& entityIds) const
-    {
-        for (AZ::EntityId entityId : entityIds)
-        {
-            if (GetEntityById(entityId) == nullptr)
-            {
-                AZ_Error(
-                    "Entity", false,
-                    "Entity with id '%llu' is not found. This can happen when you try to duplicate the entity before it is created. Please "
-                    "ensure entities are created before trying to duplicate them.",
-                    static_cast<AZ::u64>(entityId));
-                return false;
-            }
-        }
-        return true;
     }
 }
 
