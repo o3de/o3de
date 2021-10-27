@@ -175,7 +175,7 @@ namespace AzToolsFramework
             , public AZ::BehaviorEBusHandler
         {
             AZ_EBUS_BEHAVIOR_BINDER(ToolsApplicationNotificationBusHandler, "{7EB67956-FF86-461A-91E2-7B08279CFACF}", AZ::SystemAllocator,
-                EntityRegistered, EntityDeregistered);
+                EntityRegistered, EntityDeregistered, AfterEntitySelectionChanged);
 
             void EntityRegistered(AZ::EntityId entityId) override
             {
@@ -185,6 +185,11 @@ namespace AzToolsFramework
             void EntityDeregistered(AZ::EntityId entityId) override
             {
                 Call(FN_EntityDeregistered, entityId);
+            }
+
+            void AfterEntitySelectionChanged(const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override
+            {
+                Call(FN_AfterEntitySelectionChanged, newlySelectedEntities, newlyDeselectedEntities);
             }
         };
 
@@ -408,6 +413,7 @@ namespace AzToolsFramework
                 ->Handler<Internal::ToolsApplicationNotificationBusHandler>()
                 ->Event("EntityRegistered", &ToolsApplicationEvents::EntityRegistered)
                 ->Event("EntityDeregistered", &ToolsApplicationEvents::EntityDeregistered)
+                ->Event("AfterEntitySelectionChanged", &ToolsApplicationEvents::AfterEntitySelectionChanged)
                 ;
 
             behaviorContext->Class<ViewPaneOptions>()
@@ -426,6 +432,7 @@ namespace AzToolsFramework
                 ->Attribute(AZ::Script::Attributes::Module, "editor")
                 ->Event("RegisterCustomViewPane", &EditorRequests::RegisterCustomViewPane)
                 ->Event("UnregisterViewPane", &EditorRequests::UnregisterViewPane)
+                ->Event("GetComponentTypeEditorIcon", &EditorRequests::GetComponentTypeEditorIcon)
                 ;
 
             behaviorContext->EBus<EditorEventsBus>("EditorEventBus")
