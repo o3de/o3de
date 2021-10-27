@@ -62,17 +62,16 @@ namespace AZ::ComponentApplicationLifecycle
         using Type = AZ::SettingsRegistryInterface::Type;
         using NotifyEventHandler = AZ::SettingsRegistryInterface::NotifyEventHandler;
 
-        if (!ValidateEvent(settingsRegistry, eventName))
+        // Some systems may attempt to register a handler before the settings registry has been loaded
+        // If so, this flag lets them automatically register an event if it hasn't yet been registered.
+        // RegisterEvent calls validate event.
+        if ((!autoRegisterEvent && !ValidateEvent(settingsRegistry, eventName)) ||
+            (autoRegisterEvent && !RegisterEvent(settingsRegistry, eventName)))
         {
-            // Some systems may attempt to register a handler before the settings registry has been loaded
-            // If so, this flag lets them automatically register an event if it hasn't yet been registered.
-            if (!autoRegisterEvent || !RegisterEvent(settingsRegistry, eventName))
-            {
-                AZ_Warning("ComponentApplicationLifecycle", false, R"(Cannot register event %.*s. Name is not a field of object "%.*s".)"
-                    R"( Please make sure the entry exists in the '<engine-root>/Registry/application_lifecycle_events.setreg")"
-                    " or in *.setreg within the project", AZ_STRING_ARG(eventName), AZ_STRING_ARG(ApplicationLifecycleEventRegistrationKey));
-                return false;
-            }
+            AZ_Warning("ComponentApplicationLifecycle", false, R"(Cannot register event %.*s. Name is not a field of object "%.*s".)"
+                R"( Please make sure the entry exists in the '<engine-root>/Registry/application_lifecycle_events.setreg")"
+                " or in *.setreg within the project", AZ_STRING_ARG(eventName), AZ_STRING_ARG(ApplicationLifecycleEventRegistrationKey));
+            return false;
         }
         auto eventNameRegistrationKey = FixedValueString::format("%.*s/%.*s", AZ_STRING_ARG(ApplicationLifecycleEventRegistrationKey),
             AZ_STRING_ARG(eventName));
