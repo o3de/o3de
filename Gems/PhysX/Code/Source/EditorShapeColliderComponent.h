@@ -95,8 +95,8 @@ namespace PhysX
         void UpdatePolygonPrismDecomposition(const AZ::PolygonPrismPtr polygonPrismPtr);
 
         // Helper function to set a specific shape configuration
-        template<class T>
-        void SetShapeConfig(ShapeType shapeType, const T& shapeConfig);
+        template<typename ConfigType>
+        void SetShapeConfig(ShapeType shapeType, const ConfigType& shapeConfig);
 
         void RefreshUiProperties();
 
@@ -158,8 +158,8 @@ namespace PhysX
         AZ::Vector3 m_currentNonUniformScale = AZ::Vector3::CreateOne(); //!< Caches the current non-uniform scale.
     };
 
-    template<class T>
-    void EditorShapeColliderComponent::SetShapeConfig(ShapeType shapeType, const T& shapeConfig)
+    template<typename ConfigType>
+    void EditorShapeColliderComponent::SetShapeConfig(ShapeType shapeType, const ConfigType& shapeConfig)
     {
         if (m_shapeType != shapeType)
         {
@@ -169,15 +169,15 @@ namespace PhysX
 
         if (m_shapeConfigs.empty())
         {
-            m_shapeConfigs.emplace_back(AZStd::make_shared<T>(shapeConfig));
+            m_shapeConfigs.emplace_back(AZStd::make_shared<ConfigType>(shapeConfig));
         }
         else
         {
             AZ_Assert(m_shapeConfigs.back()->GetShapeType() == shapeConfig.GetShapeType(),
                 "Expected Physics shape configuration with shape type %d but found one with shape type %d.",
                 static_cast<int>(shapeConfig.GetShapeType()), static_cast<int>(m_shapeConfigs.back()->GetShapeType()));
-            T& configuration =
-                static_cast<T&>(*m_shapeConfigs.back());
+            ConfigType& configuration =
+                static_cast<ConfigType&>(*m_shapeConfigs.back());
             configuration = shapeConfig;
         }
     }
