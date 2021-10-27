@@ -210,8 +210,8 @@ namespace AzToolsFramework
         m_enabled = enabled;
         if (!enabled)
         {
-            // Send an internal focus change event to reset our input state to fresh if we're disabled.
-            HandleFocusChange(nullptr);
+            // Clear input channels to reset our input state if we're disabled.
+            ClearInputChannels(nullptr);
         }
     }
 
@@ -246,12 +246,23 @@ namespace AzToolsFramework
 
         if (eventType == QEvent::Type::MouseMove)
         {
-            // clear override cursor when moving outside of the viewport
+            // Clear override cursor when moving outside of the viewport
             const auto* mouseEvent = static_cast<const QMouseEvent*>(event);
             if (m_overrideCursor && !m_sourceWidget->geometry().contains(m_sourceWidget->mapFromGlobal(mouseEvent->globalPos())))
             {
                 qApp->restoreOverrideCursor();
                 m_overrideCursor = false;
+            }
+        }
+
+        // If the application state changes (e.g. we have alt-tabbed or minimized the
+        // main editor window) then ensure all input channels are cleared
+        if (eventType == QEvent::ApplicationStateChange)
+        {
+            if (const auto* applicationStateChange = static_cast<QApplicationStateChangeEvent*>(event);
+                applicationStateChange->applicationState() != Qt::ApplicationState::ApplicationActive)
+            {
+                ClearInputChannels(event);
             }
         }
 
@@ -448,7 +459,7 @@ namespace AzToolsFramework
         NotifyUpdateChannelIfNotIdle(cursorZChannel, wheelEvent);
     }
 
-    void QtEventToAzInputMapper::HandleFocusChange(QEvent* event)
+    void QtEventToAzInputMapper::ClearInputChannels(QEvent* event)
     {
         for (auto& channelData : m_channels)
         {
