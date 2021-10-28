@@ -9,12 +9,8 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
-
 #include <SurfaceData/SurfaceDataTypes.h>
-
 #include <Atom/RPI.Public/Material/Material.h>
-
-#include <TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h>
 
 namespace Terrain
 {
@@ -30,8 +26,11 @@ namespace Terrain
 
         virtual ~TerrainAreaMaterialRequests() = default;
 
+        //! Get the Aabb for the region where a TerrainSurfaceMaterialMapping exists
+        virtual const AZ::Aabb& GetTerrainSurfaceMaterialRegion() const = 0;
+
         //! Get the Material asset assigned to a particular surface tag.
-        virtual const AZStd::vector<struct TerrainSurfaceMaterialMapping>& GetSurfaceMaterialMappings(AZ::Aabb& region) const = 0;
+        virtual const AZStd::vector<struct TerrainSurfaceMaterialMapping>& GetSurfaceMaterialMappings() const = 0;
     };
 
     using TerrainAreaMaterialRequestBus = AZ::EBus<TerrainAreaMaterialRequests>;

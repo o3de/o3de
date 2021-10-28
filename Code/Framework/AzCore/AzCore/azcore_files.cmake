@@ -125,6 +125,8 @@ set(FILES
     Debug/TraceMessagesDrillerBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
+    DOM/DomVisitor.cpp
+    DOM/DomVisitor.h
     Driller/DefaultStringPool.h
     Driller/Driller.cpp
     Driller/Driller.h

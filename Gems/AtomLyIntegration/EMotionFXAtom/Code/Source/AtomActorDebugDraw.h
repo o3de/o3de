@@ -43,6 +43,7 @@ namespace AZ::Render
         void RenderEMFXDebugDraw(EMotionFX::ActorInstance* instance);
         void RenderNormals(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, bool vertexNormals, bool faceNormals);
         void RenderTangents(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM);
+        void RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM);
 
         EMotionFX::Mesh* m_currentMesh = nullptr; /**< A pointer to the mesh whose world space positions are in the pre-calculated positions buffer.
                                            NULL in case we haven't pre-calculated any positions yet. */
