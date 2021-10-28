@@ -60,20 +60,7 @@ namespace AZ
             virtual bool EndCapture() = 0;
         };
 
-        class ProfilerRequestsTraits
-            : public AZ::EBusTraits
-        {
-        public:
-            // EBusTraits overrides
-            static constexpr AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-            static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-
-            // Allow multiple threads to concurrently make requests
-            using MutexType = AZStd::mutex;
-        };
-
         using ProfilerSystemInterface = AZ::Interface<ProfilerRequests>;
-        using ProfilerRequestBus = AZ::EBus<ProfilerRequests, ProfilerRequestsTraits>;
 
         //! helper function for getting the profiler capture location from the settings registry that
         //! includes fallback handing in the event the registry value can't be determined

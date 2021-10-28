@@ -18,7 +18,7 @@ namespace Profiler
 {
     class ProfilerSystemComponent
         : public AZ::Component
-        , protected AZ::Debug::ProfilerRequestBus::Handler
+        , protected AZ::Debug::ProfilerRequests
     {
     public:
         AZ_COMPONENT(ProfilerSystemComponent, "{3f52c1d7-d920-4781-8ed7-88077ec4f305}");
@@ -38,7 +38,7 @@ namespace Profiler
         void Activate() override;
         void Deactivate() override;
 
-        // ProfilerRequestBus interface implementation
+        // ProfilerRequests interface implementation
         bool IsActive() const override;
         void SetActive(bool active) override;
         bool CaptureFrame(const AZStd::string& outputFilePath) override;

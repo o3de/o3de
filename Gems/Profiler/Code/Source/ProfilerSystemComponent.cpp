@@ -144,16 +144,12 @@ namespace Profiler
 
     void ProfilerSystemComponent::Activate()
     {
-        AZ::Debug::ProfilerRequestBus::Handler::BusConnect();
-
         m_cpuProfiler.Init();
     }
 
     void ProfilerSystemComponent::Deactivate()
     {
         m_cpuProfiler.Shutdown();
-
-        AZ::Debug::ProfilerRequestBus::Handler::BusDisconnect();
 
         // Block deactivation until the IO thread has finished serializing the CPU data
         if (m_cpuDataSerializationThread.joinable())
