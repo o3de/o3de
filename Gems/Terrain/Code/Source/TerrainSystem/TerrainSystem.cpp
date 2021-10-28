@@ -579,6 +579,8 @@ void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
 
 void TerrainSystem::RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask)
 {
+    using Terrain = AzFramework::Terrain::TerrainDataNotifications;
+
     AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
     auto areaAabb = m_registeredAreas.find(areaId);
@@ -595,17 +597,15 @@ void TerrainSystem::RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::Terra
 
     // Keep track of which types of data have changed so that we can send out the appropriate notifications later.
 
-    m_terrainHeightDirty = m_terrainHeightDirty ||
-        ((changeMask & AzFramework::Terrain::TerrainDataNotifications::HeightData) ==
-         AzFramework::Terrain::TerrainDataNotifications::HeightData);
+    m_terrainHeightDirty = m_terrainHeightDirty || ((changeMask & Terrain::HeightData) == Terrain::HeightData);
 
-    m_terrainSurfacesDirty = m_terrainSurfacesDirty ||
-        ((changeMask & AzFramework::Terrain::TerrainDataNotifications::SurfaceData) ==
-         AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
+    m_terrainSurfacesDirty = m_terrainSurfacesDirty || ((changeMask & Terrain::SurfaceData) == Terrain::SurfaceData);
 }
 
 void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
 {
+    using Terrain = AzFramework::Terrain::TerrainDataNotifications;
+
     bool terrainSettingsChanged = false;
 
     if (m_terrainSettingsDirty)
@@ -644,24 +644,20 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
         auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
         typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
 
-        AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask =
-            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::None;
+        Terrain::TerrainDataChangedMask changeMask = Terrain::TerrainDataChangedMask::None;
 
         if (terrainSettingsChanged)
         {
-            changeMask = static_cast<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
-                changeMask | AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings);
+            changeMask = static_cast<Terrain::TerrainDataChangedMask>(changeMask | Terrain::TerrainDataChangedMask::Settings);
         }
         if (m_terrainHeightDirty)
         {
-            changeMask = static_cast<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
-                changeMask | AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData);
+            changeMask = static_cast<Terrain::TerrainDataChangedMask>(changeMask | Terrain::TerrainDataChangedMask::HeightData);
         }
 
         if (m_terrainSurfacesDirty)
         {
-            changeMask = static_cast<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
-                changeMask | AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::SurfaceData);
+            changeMask = static_cast<Terrain::TerrainDataChangedMask>(changeMask | Terrain::TerrainDataChangedMask::SurfaceData);
         }
 
         // Make sure to set these *before* calling OnTerrainDataChanged, since it's possible that subsystems reacting to that call will

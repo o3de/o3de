@@ -157,11 +157,12 @@ namespace Terrain
 
     void TerrainLayerSpawnerComponent::RefreshArea()
     {
+        using Terrain = AzFramework::Terrain::TerrainDataNotifications;
+
         // Notify the terrain system that the entire layer has changed, so both height and surface data can be affected.
         TerrainSystemServiceRequestBus::Broadcast(
             &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
-            static_cast<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>
-                (AzFramework::Terrain::TerrainDataNotifications::HeightData | AzFramework::Terrain::TerrainDataNotifications::SurfaceData)
+            static_cast<Terrain::TerrainDataChangedMask>(Terrain::HeightData | Terrain::SurfaceData)
         );
     }
 }
