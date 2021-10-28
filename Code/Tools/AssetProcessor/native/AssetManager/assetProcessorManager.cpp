@@ -4031,7 +4031,7 @@ namespace AssetProcessor
         QString databasePath;
         QString scanFolder;
  
-        auto callbackFunction = [&](AzToolsFramework::AssetDatabase::SourceFileDependencyEntry& entry)
+        auto callbackFunction = [this, &absoluteSourceFilePathQueue](SourceFileDependencyEntry& entry)
         {
             QString relativeDatabaseName = QString::fromUtf8(entry.m_source.c_str());
             QString absolutePath = m_platformConfig->FindFirstMatchingFile(relativeDatabaseName);
@@ -4039,6 +4039,16 @@ namespace AssetProcessor
             {
                 absoluteSourceFilePathQueue.insert(absolutePath);
             }
+            return true;
+        };
+
+        auto callbackFunctionAbsoluteCheck = [&callbackFunction](SourceFileDependencyEntry& entry)
+        {
+            if (AZ::IO::PathView(entry.m_dependsOnSource.c_str()).IsAbsolute())
+            {
+                return callbackFunction(entry);
+            }
+
             return true;
         };
 
@@ -4051,7 +4061,7 @@ namespace AssetProcessor
 
         // We'll also check with the absolute path, because we support absolute path dependencies
         m_stateData->QuerySourceDependencyByDependsOnSource(
-            sourcePath.toUtf8().constData(), nullptr, SourceFileDependencyEntry::DEP_Any, callbackFunction);
+            sourcePath.toUtf8().constData(), nullptr, SourceFileDependencyEntry::DEP_Any, callbackFunctionAbsoluteCheck);
 
         return absoluteSourceFilePathQueue.values();
     }
