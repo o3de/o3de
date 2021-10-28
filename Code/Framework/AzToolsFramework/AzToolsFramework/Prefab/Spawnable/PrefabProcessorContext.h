@@ -42,7 +42,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
         NoLoad,         //!< Don't load the spawnable referenced in the entity alias. Loading will be up to the caller.
         QueueLoad,      //!< Queue the spawnable referenced in the entity alias for loading. This will be an async load because asset
-                        //!<    handlers aren't allowed to start a blocking load as this can lead to deadlocks.
+                        //!<    handlers aren't allowed to start a blocking load as this can lead to deadlocks. This option will allow
+                        //!<    to disable loading the referenced spawnable through the event fired from the spawnables asset handler.
         DependentLoad   //!< The spawnable referenced in the entity alias is made a dependency of the spawnable that holds the entity
                         //!<    alias. This will cause the spawnable to be automatically loaded along with the owning spawnable.
     };

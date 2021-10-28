@@ -220,7 +220,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             if (it == aliasVisitors.end())
             {
                 AzFramework::Spawnable::EntityAliasVisitor visitor = source->m_spawnable.TryGetAliases();
-                AZ_Assert(visitor.HasLock(), "Unable to obtain lock for a newly create spawnable.");
+                AZ_Assert(visitor.IsSet(), "Unable to obtain lock for a newly create spawnable.");
                 it = aliasVisitors.emplace(source->m_spawnable.GetId(), AZStd::move(visitor)).first;
             }
             it->second.AddAlias(

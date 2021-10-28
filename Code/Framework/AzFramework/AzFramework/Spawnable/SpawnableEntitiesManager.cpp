@@ -342,9 +342,6 @@ namespace AzFramework
             return clone;
         case Spawnable::EntityAliasType::Merge:
             AZ_Assert(previouslySpawnedEntity != nullptr, "Merging components but there's no entity to add to yet.");
-            AZ_Assert(
-                previouslySpawnedEntity->GetId() == alias.m_spawnable->GetEntities()[alias.m_targetIndex]->GetId(),
-                "Entity ids for merging spawnables don't match.");
             AppendComponents(
                 *previouslySpawnedEntity, alias.m_spawnable->GetEntities()[alias.m_targetIndex]->GetComponents(), templateToCloneMap, serializeContext);
             return nullptr;
@@ -412,7 +409,7 @@ namespace AzFramework
         if (ticket.m_spawnable.IsReady() && request.m_requestId == ticket.m_currentRequestId)
         {
             if (Spawnable::EntityAliasConstVisitor aliases = ticket.m_spawnable->TryGetAliasesConst();
-                aliases.HasLock() && aliases.AreAllSpawnablesReady())
+                aliases.IsSet() && aliases.AreAllSpawnablesReady())
             {
                 AZStd::vector<AZ::Entity*>& spawnedEntities = ticket.m_spawnedEntities;
                 AZStd::vector<uint32_t>& spawnedEntityIndices = ticket.m_spawnedEntityIndices;
@@ -475,9 +472,12 @@ namespace AzFramework
                                 AZ::Entity* clone = CloneSingleAliasedEntity(
                                     *entitiesToSpawn[i], *aliasIt, ticket.m_entityIdReferenceMap, previousEntity,
                                     *request.m_serializeContext);
-                               previousEntity = clone;
-                               spawnedEntities.emplace_back(clone);
-                               spawnedEntityIndices.push_back(i);
+                                previousEntity = clone;
+                                if (clone)
+                                {
+                                    spawnedEntities.emplace_back(clone);
+                                    spawnedEntityIndices.push_back(i);
+                                }
                                 ++aliasIt;
                             } while (aliasIt != aliasEnd && aliasIt->m_sourceIndex == i);
                         }
@@ -527,7 +527,7 @@ namespace AzFramework
         if (ticket.m_spawnable.IsReady() && request.m_requestId == ticket.m_currentRequestId)
         {
             if (Spawnable::EntityAliasConstVisitor aliases = ticket.m_spawnable->TryGetAliasesConst();
-                aliases.HasLock() && aliases.AreAllSpawnablesReady())
+                aliases.IsSet() && aliases.AreAllSpawnablesReady())
             {
                 AZStd::vector<AZ::Entity*>& spawnedEntities = ticket.m_spawnedEntities;
                 AZStd::vector<uint32_t>& spawnedEntityIndices = ticket.m_spawnedEntityIndices;
@@ -593,7 +593,7 @@ namespace AzFramework
                                     return lhs.m_sourceIndex < rhs;
                                 });
 
-                            if (aliasIt == aliasEnd)
+                            if (aliasIt == aliasEnd || aliasIt->m_sourceIndex != index)
                             {
                                 spawnedEntities.emplace_back(
                                     CloneSingleEntity(*entitiesToSpawn[index], ticket.m_entityIdReferenceMap, *request.m_serializeContext));
@@ -610,8 +610,11 @@ namespace AzFramework
                                         *entitiesToSpawn[index], *aliasIt, ticket.m_entityIdReferenceMap, previousEntity,
                                         *request.m_serializeContext);
                                     previousEntity = clone;
-                                    spawnedEntities.emplace_back(clone);
-                                    spawnedEntityIndices.push_back(index);
+                                    if (clone)
+                                    {
+                                        spawnedEntities.emplace_back(clone);
+                                        spawnedEntityIndices.push_back(index);
+                                    }
 
                                     ++aliasIt;
                                 } while (aliasIt != aliasEnd && aliasIt->m_sourceIndex == index);
@@ -816,7 +819,7 @@ namespace AzFramework
         Ticket& ticket = *request.m_ticket;
         if (ticket.m_spawnable.IsReady() && request.m_requestId == ticket.m_currentRequestId)
         {
-            if (Spawnable::EntityAliasVisitor aliases = ticket.m_spawnable->TryGetAliases(); aliases.HasLock())
+            if (Spawnable::EntityAliasVisitor aliases = ticket.m_spawnable->TryGetAliases(); aliases.IsSet())
             {
                 for (EntityAliasTypeChange& replacement : request.m_entityAliases)
                 {
@@ -918,7 +921,7 @@ namespace AzFramework
             if (request.m_checkAliasSpawnables)
             {
                 if (Spawnable::EntityAliasConstVisitor visitor = ticket.m_spawnable->TryGetAliasesConst();
-                    !visitor.HasLock() || !visitor.AreAllSpawnablesReady())
+                    !visitor.IsSet() || !visitor.AreAllSpawnablesReady())
                 {
                     return CommandResult::Requeue;
                 }

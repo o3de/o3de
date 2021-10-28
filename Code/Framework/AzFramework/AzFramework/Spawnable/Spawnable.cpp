@@ -9,7 +9,9 @@
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/typetraits/typetraits.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 
 namespace AzFramework
@@ -31,7 +33,7 @@ namespace AzFramework
     // EntityAliasVisitorBase
     //
 
-    bool Spawnable::EntityAliasVisitorBase::HasLock(const EntityAliasList* aliases) const
+    bool Spawnable::EntityAliasVisitorBase::IsSet(const EntityAliasList* aliases) const
     {
         return aliases != nullptr;
     }
@@ -92,11 +94,15 @@ namespace AzFramework
         AZStd::unordered_set<AZ::Data::AssetId> spawnableIds;
         for (const Spawnable::EntityAlias& alias : *aliases)
         {
-            auto it = spawnableIds.find(alias.m_spawnable.GetId());
-            if (it == spawnableIds.end())
+            // If the spawnable id is not valid it means that the alias is referencing the spawnable it's stored on.
+            if (alias.m_spawnable.GetId().IsValid())
             {
-                callback(alias.m_spawnable);
-                spawnableIds.emplace(alias.m_spawnable.GetId());
+                auto it = spawnableIds.find(alias.m_spawnable.GetId());
+                if (it == spawnableIds.end())
+                {
+                    callback(alias.m_spawnable);
+                    spawnableIds.emplace(alias.m_spawnable.GetId());
+                }
             }
         }
     }
@@ -108,7 +114,8 @@ namespace AzFramework
         AZStd::unordered_set<AZ::Data::AssetId> spawnableIds;
         for (const Spawnable::EntityAlias& alias : *aliases)
         {
-            if (alias.m_tag == tag)
+            // If the spawnable id is not valid it means that the alias is referencing the spawnable it's stored on.
+            if (alias.m_tag == tag && alias.m_spawnable.GetId().IsValid())
             {
                 auto it = spawnableIds.find(alias.m_spawnable.GetId());
                 if (it == spawnableIds.end())
@@ -134,7 +141,7 @@ namespace AzFramework
 
     Spawnable::EntityAliasVisitor::~EntityAliasVisitor()
     {
-        if (HasLock())
+        if (IsSet())
         {
             Optimize();
 
@@ -169,9 +176,9 @@ namespace AzFramework
         return *this;
     }
 
-    bool Spawnable::EntityAliasVisitor::HasLock() const
+    bool Spawnable::EntityAliasVisitor::IsSet() const
     {
-        return EntityAliasVisitorBase::HasLock(m_entityAliasList);
+        return EntityAliasVisitorBase::IsSet(m_entityAliasList);
     }
 
     bool Spawnable::EntityAliasVisitor::HasAliases() const
@@ -235,7 +242,7 @@ namespace AzFramework
         m_dirty = true;
     }
 
-    void Spawnable::EntityAliasVisitor::ListSpawnablesPendingLoad(const ListSpawnablesPendingLoadCallback& callback)
+    void Spawnable::EntityAliasVisitor::ListSpawnablesRequiringLoad(const ListSpawnablesRequiringLoadCallback& callback)
     {
         AZ_Assert(m_entityAliasList, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
         for (Spawnable::EntityAlias& alias : *m_entityAliasList)
@@ -306,75 +313,92 @@ namespace AzFramework
             // aliases, for instance Networking can decide to disable certain aliases when running on a client. This in turn also requires
             // the aliases to be in their recorded order during building as the ebus handlers may depend on that order to determine what
             // entities need to be updated.
-            Spawnable::EntityAlias* compare = m_entityAliasList->begin();
-            Spawnable::EntityAlias* it = m_entityAliasList->begin() + 1;
+            uint32_t previousIndex = AZStd::numeric_limits<uint32_t>::max();
+            Spawnable::EntityAliasType previousType =
+                static_cast<Spawnable::EntityAliasType>(AZStd::numeric_limits<AZStd::underlying_type_t<Spawnable::EntityAliasType>>::max());
+            Spawnable::EntityAlias* it = m_entityAliasList->begin();
             Spawnable::EntityAlias* end = m_entityAliasList->end();
             while (it < end)
             {
+                // If there's a switch to a new source index and the previous index only had an original it can
+                // be removed.
+                if (previousType == Spawnable::EntityAliasType::Original && previousIndex != it->m_sourceIndex)
+                {
+                    it = m_entityAliasList->erase(it - 1);
+                    end = m_entityAliasList->end();
+                    if (it == end)
+                    {
+                        break;
+                    }
+                }
+
                 switch (it->m_aliasType)
                 {
                 case Spawnable::EntityAliasType::Original:
-                    // If this is the only alias for the entity then the original can be removed.
-                    {
-                        Spawnable::EntityAlias* next = it + 1;
-                        if (next == end || next->m_sourceIndex != it->m_sourceIndex)
-                        {
-                            // Erase instead of a swap-and-pop in order to preserver the order.
-                            m_entityAliasList->erase(compare);
-                            --end;
-                            break;
-                        }
-                    }
                     [[fallthrough]];
                 case Spawnable::EntityAliasType::Disabled:
                     [[fallthrough]];
                 case Spawnable::EntityAliasType::Replace:
                     // If the previous entry was a disabled, original or replace alias then remove it as it will be overwritten by the
                     // current entry.
-                    if (compare->m_sourceIndex == it->m_sourceIndex &&
-                        (compare->m_aliasType == Spawnable::EntityAliasType::Original ||
-                         compare->m_aliasType == Spawnable::EntityAliasType::Disabled ||
-                         compare->m_aliasType == Spawnable::EntityAliasType::Replace))
+                    if (previousIndex == it->m_sourceIndex &&
+                        (previousType == Spawnable::EntityAliasType::Original ||
+                         previousType == Spawnable::EntityAliasType::Disabled ||
+                         previousType == Spawnable::EntityAliasType::Replace))
                     {
+                        previousIndex = it->m_sourceIndex;
+                        previousType = it->m_aliasType;
                         // Erase instead of a swap-and-pop in order to preserver the order.
-                        m_entityAliasList->erase(compare);
-                        --end;
+                        it = m_entityAliasList->erase(it - 1) + 1;
+                        end = m_entityAliasList->end();
                     }
                     else
                     {
-                        ++compare;
+                        previousIndex = it->m_sourceIndex;
+                        previousType = it->m_aliasType;
                         ++it;
                     }
                     break;
                 case Spawnable::EntityAliasType::Additional:
                     [[fallthrough]];
                 case Spawnable::EntityAliasType::Merge:
-                    // If this is the first entry for this type insert an original in front of it so the spawnable entity manager
-                    // does have to check for the case there's a merge and/or addition without a prefix.
-                    if (compare->m_sourceIndex != it->m_sourceIndex)
+                    // If this is the first entry for this index then insert an original in front of it so the spawnable entity manager
+                    // doesn't have to check for the case there's a merge and/or addition without an entity to extend.
+                    if (previousIndex != it->m_sourceIndex)
                     {
                         Spawnable::EntityAlias insert;
                         // No load, as the asset is already loaded.
-                        insert.m_spawnable = AZ::Data::Asset<Spawnable>(&m_owner, AZ::Data::AssetLoadBehavior::NoLoad);
+                        insert.m_spawnable = AZ::Data::Asset<Spawnable>({}, azrtti_typeid<Spawnable>());
                         insert.m_sourceIndex = it->m_sourceIndex;
                         insert.m_targetIndex = it->m_sourceIndex; // Source index as the original entry for this slot is added.
                         insert.m_aliasType = Spawnable::EntityAliasType::Original;
-                        m_entityAliasList->insert(compare, AZStd::move(insert));
-                        compare += 2;
+
+                        previousIndex = it->m_sourceIndex;
+                        previousType = it->m_aliasType;
+
+                        // Insert to maintain the order.
+                        it = m_entityAliasList->insert(it, AZStd::move(insert));
                         it += 2;
-                        ++end;
+                        end = m_entityAliasList->end();
                     }
                     else
                     {
-                        ++compare;
+                        previousType = it->m_aliasType;
                         ++it;
                     }
                     break;
                 default:
-                    AZ_Assert(false, "Invalid Spawnable entity alias type found during asset loading: %i", compare->m_aliasType);
+                    AZ_Assert(false, "Invalid Spawnable entity alias type found during asset loading: %i", it->m_aliasType);
                     break;
                 }
             }
+
+            // Check if the last entry is an "Original" in which case it can be removed.
+            if (!m_entityAliasList->empty() && m_entityAliasList->back().m_aliasType == Spawnable::EntityAliasType::Original)
+            {
+                m_entityAliasList->pop_back();
+            }
+
             // Reclaim memory because after this point the aliases will not change anymore.
             m_entityAliasList->shrink_to_fit();
             m_dirty = false;
@@ -395,7 +419,7 @@ namespace AzFramework
 
     Spawnable::EntityAliasConstVisitor::~EntityAliasConstVisitor()
     {
-        if (HasLock())
+        if (IsSet())
         {
             AZ_Assert(
                 m_owner.m_shareState <= ShareState::Read, "Attempting to unlock a read shared spawnable that was not in a read shared mode (%i).",
@@ -404,9 +428,9 @@ namespace AzFramework
         }
     }
 
-    bool Spawnable::EntityAliasConstVisitor::HasLock() const
+    bool Spawnable::EntityAliasConstVisitor::IsSet() const
     {
-        return EntityAliasVisitorBase::HasLock(m_entityAliasList);
+        return EntityAliasVisitorBase::IsSet(m_entityAliasList);
     }
 
     bool Spawnable::EntityAliasConstVisitor::HasAliases() const

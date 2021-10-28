@@ -71,7 +71,8 @@ namespace AzFramework
         class EntityAliasVisitorBase
         {
         protected:
-            bool HasLock(const EntityAliasList* aliases) const;
+            bool IsSet(const EntityAliasList* aliases) const;
+
             bool HasAliases(const EntityAliasList* aliases) const;
             bool AreAllSpawnablesReady(const EntityAliasList* aliases) const;
 
@@ -98,7 +99,9 @@ namespace AzFramework
             EntityAliasVisitor(const EntityAliasVisitor& rhs) = delete;
             EntityAliasVisitor& operator=(const EntityAliasVisitor& rhs) = delete;
 
-            bool HasLock() const;
+            //! Checks if the visitor was able to retrieve data. This needs to be checked before calling any other functions.
+            bool IsSet() const;
+
             bool HasAliases() const;
             bool AreAllSpawnablesReady() const;
 
@@ -118,8 +121,8 @@ namespace AzFramework
                 Spawnable::EntityAliasType aliasType,
                 bool queueLoad);
 
-            using ListSpawnablesPendingLoadCallback = AZStd::function<void(AZ::Data::Asset<Spawnable>& spawnablePendingLoad)>;
-            void ListSpawnablesPendingLoad(const ListSpawnablesPendingLoadCallback& callback);
+            using ListSpawnablesRequiringLoadCallback = AZStd::function<void(AZ::Data::Asset<Spawnable>& spawnablePendingLoad)>;
+            void ListSpawnablesRequiringLoad(const ListSpawnablesRequiringLoadCallback& callback);
 
             using UpdateCallback = AZStd::function<void(
                 Spawnable::EntityAliasType& aliasType,
@@ -146,7 +149,9 @@ namespace AzFramework
             EntityAliasConstVisitor(const Spawnable& owner, const EntityAliasList* m_entityAliasList);
             ~EntityAliasConstVisitor();
 
-            bool HasLock() const;
+            //! Checks if the visitor was able to retrieve data. This needs to be checked before calling any other functions.
+            bool IsSet() const;
+
             bool HasAliases() const;
             bool AreAllSpawnablesReady() const;
 
@@ -161,7 +166,6 @@ namespace AzFramework
         private:
             const Spawnable& m_owner;
             const EntityAliasList* m_entityAliasList;
-        
         };
 
         inline static constexpr const char* FileExtension = "spawnable";
