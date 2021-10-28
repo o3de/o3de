@@ -70,8 +70,6 @@ def AtomEditorComponents_postfx_layer_AddedToEntity():
     :return: None
     """
 
-    import os
-
     import azlmbr.legacy.general as general
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
