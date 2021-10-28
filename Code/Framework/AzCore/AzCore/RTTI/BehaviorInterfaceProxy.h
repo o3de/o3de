@@ -34,13 +34,14 @@ namespace AZ
      * {
      * public:
      *     AZ_RTTI(MySystemProxy, "{CDCDCDCD-BAAD-BADD-F00D-CDCDCDCDCDCD}", BehaviorInterfaceProxy<MyInterface>);
+     *     AZ_BEHAVIOR_INTERFACE(MySystemProxy, MyInterface);
      * };
      *
      * void Reflect(AZ::ReflectContext* context)
      * {
      *     if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
      *     {
-     *         behaviorContext->ConstantProperty("g_MySystem", MySystemProxy::GetInstance)
+     *         behaviorContext->ConstantProperty("g_MySystem", MySystemProxy::GetProxy)
      *             ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
      *             ->Attribute(AZ::Script::Attributes::Module, "MyModule");
      *
@@ -60,26 +61,6 @@ namespace AZ
         AZ_CLASS_ALLOCATOR(BehaviorInterfaceProxy, AZ::SystemAllocator, 0);
         AZ_RTTI(BehaviorInterfaceProxy<T>, "{E7CC8D27-4499-454E-A7DF-3F72FBECD30D}");
 
-        //! Accessor for use with ConstantProperty
-        static T* GetInstance()
-        {
-            T* interfacePtr = AZ::Interface<T>::Get();
-            AZ_Warning("BehaviorInterfaceProxy", interfacePtr,
-                "There is currently no global %s registered with an AZ Interface<T>",
-                AzTypeInfo<T>::Name()
-            );
-            // Don't delete the global instance, it is not owned by the behavior context
-            return interfacePtr;
-        }
-
-        //! Helper for attaching interface function via ClassBuilder::Method
-        template<auto Method>
-        static auto WrapMethod()
-        {
-            using FuncTraits = AZStd::function_traits<AZStd::remove_cvref_t<decltype(Method)>>;
-            return FuncTraits::template expand_args<MethodWrapper>::template WrapMethod<Method>();
-        }
-
         BehaviorInterfaceProxy() = default;
         virtual ~BehaviorInterfaceProxy() = default;
 
@@ -98,25 +79,48 @@ namespace AZ
         //! Returns if the m_instance shared pointer is non-nullptr
         bool IsValid() const { return m_instance; }
 
-    private:
-        template <typename... Args>
+    protected:
+        //! Internal access for use in the derived GetProxy function
+        static T* GetInstance()
+        {
+            T* interfacePtr = AZ::Interface<T>::Get();
+            AZ_Warning("BehaviorInterfaceProxy", interfacePtr,
+                "There is currently no global %s registered with an AZ Interface<T>",
+                AzTypeInfo<T>::Name()
+            );
+            // Don't delete the global instance, it is not owned by the behavior context
+            return interfacePtr;
+        }
+
+        template<typename... Args>
         struct MethodWrapper
         {
-            template<auto Method>
+            template<typename Proxy, auto Method>
             static auto WrapMethod()
             {
-                using return_type = AZStd::function_traits_get_result_t<AZStd::remove_cvref_t<decltype(Method)>>;
-                return [](BehaviorInterfaceProxy<T>* proxy, Args... params) -> return_type
+                using ReturnType = AZStd::function_traits_get_result_t<AZStd::remove_cvref_t<decltype(Method)>>;
+                return [](Proxy* proxy, Args... params) -> ReturnType
                 {
                     if (proxy && proxy->IsValid())
                     {
                         return AZStd::invoke(Method, proxy->m_instance, AZStd::forward<Args>(params)...);
                     }
-                    return return_type();
+                    return ReturnType();
                 };
             }
         };
 
         AZStd::shared_ptr<T> m_instance;
     };
+
+    #define AZ_BEHAVIOR_INTERFACE(ProxyType, InterfaceType)                                                         \
+        static ProxyType GetProxy() { return GetInstance(); }                                                       \
+        template<auto Method>                                                                                       \
+        static auto WrapMethod() {                                                                                  \
+            using FuncTraits = AZStd::function_traits<AZStd::remove_cvref_t<decltype(Method)>>;                     \
+            return FuncTraits::template expand_args<MethodWrapper>::template WrapMethod<ProxyType, Method>();       \
+        }                                                                                                           \
+        ProxyType() = default;                                                                                      \
+        ProxyType(AZStd::shared_ptr<InterfaceType> sharedInstance) : BehaviorInterfaceProxy(sharedInstance) {}      \
+        ProxyType(InterfaceType* rawIntance) : BehaviorInterfaceProxy(rawIntance) {}
 } // namespace AZ

@@ -51,13 +51,15 @@ namespace AZ::Debug
     {
     public:
         AZ_RTTI(ProfilerSystemScriptProxy, "{D671FB70-8B09-4C3A-96CD-06A339F3138E}", BehaviorInterfaceProxy<ProfilerRequests>);
+
+        AZ_BEHAVIOR_INTERFACE(ProfilerSystemScriptProxy, ProfilerRequests);
     };
 
     void ProfilerReflect(AZ::ReflectContext* context)
     {
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->ConstantProperty("g_ProfilerSystem", ProfilerSystemScriptProxy::GetInstance)
+            behaviorContext->ConstantProperty("g_ProfilerSystem", ProfilerSystemScriptProxy::GetProxy)
                 ->Attribute(AZ::Script::Attributes::Category, ProfilerScriptCategory)
                 ->Attribute(AZ::Script::Attributes::Module, ProfilerScriptModule)
                 ->Attribute(AZ::Script::Attributes::Scope, ProfilerScriptScope);
@@ -68,6 +70,12 @@ namespace AZ::Debug
                 ->Attribute(AZ::Script::Attributes::Scope, ProfilerScriptScope)
 
                 ->Method("IsValid", &ProfilerSystemScriptProxy::IsValid)
+
+                ->Method("GetCaptureLocation",
+                    [](ProfilerSystemScriptProxy*) -> AZStd::string
+                    {
+                        return AZStd::string(GetProfilerCaptureLocation().c_str());
+                    })
 
                 ->Method("IsActive", ProfilerSystemScriptProxy::WrapMethod<&ProfilerRequests::IsActive>())
                 ->Method("SetActive", ProfilerSystemScriptProxy::WrapMethod<&ProfilerRequests::SetActive>())
