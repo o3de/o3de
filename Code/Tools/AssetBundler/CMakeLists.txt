@@ -47,10 +47,9 @@ ly_add_target(
             AZ::AssetBundlerBatch.Static
 )
 
-# Adds a specialized .setreg to identify gems enabled in the active project
-if(TARGET AssetBundlerBatch)
-    ly_set_gem_variant_to_load(TARGETS AssetBundlerBatch VARIANTS Builders)
-endif()
+# Adds a specialized .setreg to identify gems enabled in the active project.
+# This associates the AssetBundlerBatch target with the .Builders gem variants.
+ly_set_gem_variant_to_load(TARGETS AssetBundlerBatch VARIANTS Builders)
 
 # AssetBundler - Qt GUI Application
 ly_add_target(
@@ -78,10 +77,9 @@ ly_add_target(
             ${additional_dependencies}
 )
 
-# Adds a specialized .setreg to identify gems enabled in the active project
-if(TARGET AssetBundler)
-    ly_set_gem_variant_to_load(TARGETS AssetBundler VARIANTS Builders)
-endif()
+# Adds a specialized .setreg to identify gems enabled in the active project.
+# This associates the AssetBundler target with the .Builders gem variants.
+ly_set_gem_variant_to_load(TARGETS AssetBundler VARIANTS Builders)
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
