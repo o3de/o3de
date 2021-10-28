@@ -17,9 +17,9 @@
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/NetworkInput/NetworkInput.h>
 #include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
-#include <NetworkInput/NetworkInputArray.h>
-#include <NetworkInput/NetworkInputHistory.h>
-#include <NetworkInput/NetworkInputMigrationVector.h>
+#include <Multiplayer/NetworkInput/NetworkInputArray.h>
+#include <Multiplayer/NetworkInput/NetworkInputHistory.h>
+#include <Multiplayer/NetworkInput/NetworkInputMigrationVector.h>
 
 namespace Multiplayer
 {

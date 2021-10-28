@@ -49,6 +49,8 @@ namespace O3DE::ProjectManager
         m_stack->addWidget(m_gemCatalogScreen);
         vLayout->addWidget(m_stack);
 
+        connect(m_gemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
+
         // When there are multiple project templates present, we re-gather the gems when changing the selected the project template.
         connect(m_newProjectSettingsScreen, &NewProjectSettingsScreen::OnTemplateSelectionChanged, this, [=](int oldIndex, [[maybe_unused]] int newIndex)
             {
@@ -133,7 +135,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            emit GotoPreviousScreenRequest();
+            emit GoToPreviousScreenRequest();
         }
     }
 

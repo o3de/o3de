@@ -1,9 +1,8 @@
 # 
-# Copyright (c) Contributors to the Open 3D Engine Project.
-# For complete copyright and license terms please see the LICENSE at the root of this distribution.
-#
-# SPDX-License-Identifier: Apache-2.0 OR MIT
-#
+# Copyright (c) Contributors to the Open 3D Engine Project. 
+# For complete copyright and license terms please see the LICENSE at the root of this distribution. 
+# 
+# SPDX-License-Identifier: Apache-2.0 OR MIT 
 # 
 
 set(FILES
@@ -161,8 +160,6 @@ set(FILES
     Passes/LutGeneration.pass
     Passes/MainPipeline.pass
     Passes/MainPipelineRenderToTexture.pass
-    Passes/ThumbnailPipeline.pass
-    Passes/ThumbnailPipelineRenderToTexture.pass
     Passes/MeshMotionVector.pass
     Passes/ModulateTexture.pass
     Passes/MorphTarget.pass
@@ -170,6 +167,13 @@ set(FILES
     Passes/MSAAResolveColor.pass
     Passes/MSAAResolveCustom.pass
     Passes/MSAAResolveDepth.pass
+    Passes/NewDepthOfField.pass
+    Passes/NewDepthOfFieldComposite.pass
+    Passes/NewDepthOfFieldDownsample.pass
+    Passes/NewDepthOfFieldFilterLarge.pass
+    Passes/NewDepthOfFieldFilterSmall.pass
+    Passes/NewDepthOfFieldTile3x3.pass
+    Passes/NewDepthOfFieldTileReduce.pass
     Passes/OpaqueParent.pass
     Passes/PostProcessParent.pass
     Passes/ProjectedShadowmaps.pass
@@ -205,11 +209,17 @@ set(FILES
     Passes/SsaoParent.pass
     Passes/SubsurfaceScattering.pass
     Passes/Taa.pass
+    Passes/ToolsPipeline.pass
+    Passes/ToolsPipelineRenderToTexture.pass
     Passes/Transparent.pass
     Passes/TransparentParent.pass
     Passes/UI.pass
     Passes/UIParent.pass
+    Scripts/material_find_overrides_demo.lua
     Scripts/material_property_overrides_demo.lua
+    ShaderLib/3rdParty/Features/PostProcessing/KelvinToRgb.azsli
+    ShaderLib/3rdParty/Features/PostProcessing/PSstyleColorBlends_NonSeparable.azsli
+    ShaderLib/3rdParty/Features/PostProcessing/PSstyleColorBlends_Separable.azsli
     ShaderLib/Atom/Features/BlendUtility.azsli
     ShaderLib/Atom/Features/IndirectRendering.azsli
     ShaderLib/Atom/Features/MatrixUtility.azsli
@@ -218,6 +228,8 @@ set(FILES
     ShaderLib/Atom/Features/SphericalHarmonicsUtility.azsli
     ShaderLib/Atom/Features/SrgSemantics.azsli
     ShaderLib/Atom/Features/ColorManagement/TransformColor.azsli
+    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCcToAcesCg.azsli
+    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCgToAcesCc.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCg_To_LinearSrgb.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/Aces_To_AcesCg.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/CalculateLuminance_AcesCg.azsli
@@ -225,8 +237,6 @@ set(FILES
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/LinearSrgb_To_AcesCg.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/LinearSrgb_To_Srgb.azsli
     ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/Srgb_To_LinearSrgb.azsli
-    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCcToAcesCg.azsli
-    ShaderLib/Atom/Features/ColorManagement/GeneratedTransforms/AcesCgToAcesCc.azsli
     ShaderLib/Atom/Features/CoreLights/PhotometricValue.azsli
     ShaderLib/Atom/Features/Decals/DecalTextureUtil.azsli
     ShaderLib/Atom/Features/LightCulling/LightCullingShared.azsli
@@ -284,17 +294,23 @@ set(FILES
     ShaderLib/Atom/Features/PostProcessing/GlyphRender.azsli
     ShaderLib/Atom/Features/PostProcessing/HDRColorGradingCommon.azsl
     ShaderLib/Atom/Features/PostProcessing/PostProcessUtil.azsli
+    ShaderLib/Atom/Features/PostProcessing/Shapers.azsli
+    ShaderLib/Atom/Features/RayTracing/RayTracingMaterialSrg.azsli
+    ShaderLib/Atom/Features/RayTracing/RayTracingMaterialUtils.azsli
     ShaderLib/Atom/Features/RayTracing/RayTracingSceneSrg.azsli
+    ShaderLib/Atom/Features/RayTracing/RayTracingSceneUtils.azsli
+    ShaderLib/Atom/Features/RayTracing/RayTracingSrgs.azsl
+    ShaderLib/Atom/Features/RayTracing/RayTracingSrgs.shader
     ShaderLib/Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli
     ShaderLib/Atom/Features/Shadow/BicubicPcfFilters.azsli
     ShaderLib/Atom/Features/Shadow/DirectionalLightShadow.azsli
+    ShaderLib/Atom/Features/Shadow/NormalOffsetShadows.azsli
     ShaderLib/Atom/Features/Shadow/ProjectedShadow.azsli
+    ShaderLib/Atom/Features/Shadow/ReceiverPlaneDepthBias.azsli
     ShaderLib/Atom/Features/Shadow/Shadow.azsli
     ShaderLib/Atom/Features/Shadow/ShadowmapAtlasLib.azsli
+    ShaderLib/Atom/Features/Skin/SkinObjectSrg.azsli
     ShaderLib/Atom/Features/Vertex/VertexHelper.azsli
-    ShaderLib/3rdParty/Features/PostProcessing/KelvinToRgb.azsli
-    ShaderLib/3rdParty/Features/PostProcessing/PSstyleColorBlends_NonSeparable.azsli
-    ShaderLib/3rdParty/Features/PostProcessing/PSstyleColorBlends_Separable.azsli 
     ShaderResourceGroups/SceneSrg.azsli
     ShaderResourceGroups/SceneSrgAll.azsli
     ShaderResourceGroups/ViewSrg.azsli
@@ -305,6 +321,8 @@ set(FILES
     ShaderResourceGroups/PostProcessing/SceneSrg.azsli
     ShaderResourceGroups/PostProcessing/ViewSrg.azsli
     ShaderResourceGroups/SkyBox/SceneSrg.azsli
+    Shaders/ForwardPassSrg.azsl
+    Shaders/ForwardPassSrg.shader
     Shaders/AuxGeom/AuxGeomObject.azsl
     Shaders/AuxGeom/AuxGeomObject.shader
     Shaders/AuxGeom/AuxGeomObjectLit.azsl
@@ -321,14 +339,20 @@ set(FILES
     Shaders/ColorGrading/LutGeneration.shader
     Shaders/Depth/DepthPass.azsl
     Shaders/Depth/DepthPass.shader
+    Shaders/Depth/DepthPassCommon.azsli
+    Shaders/Depth/DepthPassSkin.azsl
+    Shaders/Depth/DepthPassSkin.shader
     Shaders/Depth/DepthPassTransparentMax.shader
     Shaders/Depth/DepthPassTransparentMin.shader
     Shaders/DiffuseGlobalIllumination/DiffuseComposite.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseComposite.shader
+    Shaders/DiffuseGlobalIllumination/DiffuseComposite_nomsaa.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.shader
+    Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen_nomsaa.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.shader
+    Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample_nomsaa.azsl
     Shaders/ImGui/ImGui.azsl
     Shaders/ImGui/ImGui.shader
     Shaders/LightCulling/LightCulling.azsl
@@ -348,6 +372,9 @@ set(FILES
     Shaders/MotionVector/CameraMotionVector.shader
     Shaders/MotionVector/MeshMotionVector.azsl
     Shaders/MotionVector/MeshMotionVector.shader
+    Shaders/MotionVector/MeshMotionVectorCommon.azsli
+    Shaders/MotionVector/MeshMotionVectorSkin.azsl
+    Shaders/MotionVector/MeshMotionVectorSkin.shader
     Shaders/PostProcessing/AcesOutputTransformLut.azsl
     Shaders/PostProcessing/AcesOutputTransformLut.shader
     Shaders/PostProcessing/ApplyShaperLookupTable.azsl
@@ -362,6 +389,8 @@ set(FILES
     Shaders/PostProcessing/BloomCompositeCS.shader
     Shaders/PostProcessing/BloomDownsampleCS.azsl
     Shaders/PostProcessing/BloomDownsampleCS.shader
+    Shaders/PostProcessing/ContrastAdaptiveSharpening.azsl
+    Shaders/PostProcessing/ContrastAdaptiveSharpening.shader
     Shaders/PostProcessing/ConvertToAcescg.azsl
     Shaders/PostProcessing/ConvertToAcescg.shader
     Shaders/PostProcessing/DepthDownsample.azsl
@@ -418,6 +447,19 @@ set(FILES
     Shaders/PostProcessing/MSAAResolveCustom.shader
     Shaders/PostProcessing/MSAAResolveDepth.azsl
     Shaders/PostProcessing/MSAAResolveDepth.shader
+    Shaders/PostProcessing/NewDepthOfFieldCommon.azsli
+    Shaders/PostProcessing/NewDepthOfFieldComposite.azsl
+    Shaders/PostProcessing/NewDepthOfFieldComposite.shader
+    Shaders/PostProcessing/NewDepthOfFieldDownsample.azsl
+    Shaders/PostProcessing/NewDepthOfFieldDownsample.shader
+    Shaders/PostProcessing/NewDepthOfFieldFilterLarge.azsl
+    Shaders/PostProcessing/NewDepthOfFieldFilterLarge.shader
+    Shaders/PostProcessing/NewDepthOfFieldFilterSmall.azsl
+    Shaders/PostProcessing/NewDepthOfFieldFilterSmall.shader
+    Shaders/PostProcessing/NewDepthOfFieldTile3x3.azsl
+    Shaders/PostProcessing/NewDepthOfFieldTile3x3.shader
+    Shaders/PostProcessing/NewDepthOfFieldTileReduce.azsl
+    Shaders/PostProcessing/NewDepthOfFieldTileReduce.shader
     Shaders/PostProcessing/OutputTransform.azsl
     Shaders/PostProcessing/OutputTransform.shader
     Shaders/PostProcessing/ScreenSpaceSubsurfaceScatteringCS.azsl
@@ -434,13 +476,17 @@ set(FILES
     Shaders/PostProcessing/SMAAUtils.azsli
     Shaders/PostProcessing/SsaoCompute.azsl
     Shaders/PostProcessing/SsaoCompute.shader
+    Shaders/PostProcessing/Taa.azsl
+    Shaders/PostProcessing/Taa.shader
     Shaders/PostProcessing/UniformColor.azsl
     Shaders/PostProcessing/UniformColor.shader
     Shaders/Reflections/ReflectionCommon.azsli
     Shaders/Reflections/ReflectionComposite.azsl
     Shaders/Reflections/ReflectionComposite.shader
+    Shaders/Reflections/ReflectionComposite_nomsaa.azsl
     Shaders/Reflections/ReflectionGlobalFullscreen.azsl
     Shaders/Reflections/ReflectionGlobalFullscreen.shader
+    Shaders/Reflections/ReflectionGlobalFullscreen_nomsaa.azsl
     Shaders/Reflections/ReflectionProbeBlendWeight.azsl
     Shaders/Reflections/ReflectionProbeBlendWeight.shader
     Shaders/Reflections/ReflectionProbeRenderCommon.azsli
@@ -469,6 +515,9 @@ set(FILES
     Shaders/Shadow/KawaseShadowBlur.shader
     Shaders/Shadow/Shadowmap.azsl
     Shaders/Shadow/Shadowmap.shader
+    Shaders/Shadow/ShadowmapCommon.azsli
+    Shaders/Shadow/ShadowmapSkin.azsl
+    Shaders/Shadow/ShadowmapSkin.shader
     Shaders/SkinnedMesh/LinearSkinningCS.azsl
     Shaders/SkinnedMesh/LinearSkinningCS.shader
     Shaders/SkinnedMesh/LinearSkinningPassSRG.azsli

@@ -100,9 +100,13 @@ namespace AZ
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_whiteBalanceKelvin, "Temperature", "Temperature in Kelvin")
                             ->Attribute(Edit::Attributes::Min, 1000.0f)
                             ->Attribute(Edit::Attributes::Max, 40000.0f)
+                            ->Attribute(AZ::Edit::Attributes::SliderCurveMidpoint, 0.165f)
                         ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_whiteBalanceTint, "Tint", "Tint Value")
                             ->Attribute(Edit::Attributes::Min, -100.0f)
                             ->Attribute(Edit::Attributes::Max, 100.0f)
+                        ->DataElement(AZ::Edit::UIHandlers::Slider, &HDRColorGradingComponentConfig::m_whiteBalanceLuminancePreservation, "Luminance Preservation", "Modulate the preservation of luminance")
+                            ->Attribute(Edit::Attributes::Min, 0.0f)
+                            ->Attribute(Edit::Attributes::Max, 1.0f)
 
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Split Toning")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)

@@ -41,6 +41,8 @@ set(FILES
     Component/ComponentApplication.cpp
     Component/ComponentApplication.h
     Component/ComponentApplicationBus.h
+    Component/ComponentApplicationLifecycle.cpp
+    Component/ComponentApplicationLifecycle.h
     Component/ComponentBus.cpp
     Component/ComponentBus.h
     Component/ComponentExport.h
@@ -121,6 +123,8 @@ set(FILES
     Debug/TraceMessagesDrillerBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
+    DOM/DomVisitor.cpp
+    DOM/DomVisitor.h
     Driller/DefaultStringPool.h
     Driller/Driller.cpp
     Driller/Driller.h

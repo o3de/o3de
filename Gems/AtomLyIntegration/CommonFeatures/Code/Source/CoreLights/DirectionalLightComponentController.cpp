@@ -86,6 +86,8 @@ namespace AZ
                     ->Event("SetShadowReceiverPlaneBiasEnabled", &DirectionalLightRequestBus::Events::SetShadowReceiverPlaneBiasEnabled)
                     ->Event("GetShadowBias", &DirectionalLightRequestBus::Events::GetShadowBias)
                     ->Event("SetShadowBias", &DirectionalLightRequestBus::Events::SetShadowBias)
+                    ->Event("GetNormalShadowBias", &DirectionalLightRequestBus::Events::GetNormalShadowBias)
+                    ->Event("SetNormalShadowBias", &DirectionalLightRequestBus::Events::SetNormalShadowBias)
                     ->VirtualProperty("Color", "GetColor", "SetColor")
                     ->VirtualProperty("Intensity", "GetIntensity", "SetIntensity")
                     ->VirtualProperty("AngularDiameter", "GetAngularDiameter", "SetAngularDiameter")
@@ -101,7 +103,8 @@ namespace AZ
                     ->VirtualProperty("ShadowFilterMethod", "GetShadowFilterMethod", "SetShadowFilterMethod")
                     ->VirtualProperty("FilteringSampleCount", "GetFilteringSampleCount", "SetFilteringSampleCount")
                     ->VirtualProperty("ShadowReceiverPlaneBiasEnabled", "GetShadowReceiverPlaneBiasEnabled", "SetShadowReceiverPlaneBiasEnabled")
-                    ->VirtualProperty("ShadowBias", "GetShadowBias", "SetShadowBias");
+                    ->VirtualProperty("ShadowBias", "GetShadowBias", "SetShadowBias")
+                    ->VirtualProperty("NormalShadowBias", "GetNormalShadowBias", "SetNormalShadowBias");
                 ;
             }
         }
@@ -423,6 +426,20 @@ namespace AZ
             return m_configuration.m_shadowBias;
         }
 
+        void DirectionalLightComponentController::SetNormalShadowBias(float bias)
+        {
+            m_configuration.m_normalShadowBias = bias;
+            if (m_featureProcessor)
+            {
+                m_featureProcessor->SetNormalShadowBias(m_lightHandle, bias);
+            }
+        }
+
+        float DirectionalLightComponentController::GetNormalShadowBias() const
+        {
+            return m_configuration.m_normalShadowBias;
+        }
+
         void DirectionalLightComponentController::SetFilteringSampleCount(uint32_t count)
         {
             const uint16_t count16 = GetMin(Shadow::MaxPcfSamplingCount, aznumeric_cast<uint16_t>(count));
@@ -517,6 +534,7 @@ namespace AZ
             SetDebugColoringEnabled(m_configuration.m_isDebugColoringEnabled);
             SetShadowFilterMethod(m_configuration.m_shadowFilterMethod);
             SetShadowBias(m_configuration.m_shadowBias);
+            SetNormalShadowBias(m_configuration.m_normalShadowBias);
             SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
             SetShadowReceiverPlaneBiasEnabled(m_configuration.m_receiverPlaneBiasEnabled);
 
