@@ -83,7 +83,7 @@ namespace O3DE::ProjectManager
         }
 
         // Depending and conflicting gems
-        m_dependingGems->Update("Depending Gems", "The following Gems will be automatically enabled with this Gem.", m_model->GetDependingGemNames(modelIndex));
+        m_dependingGems->Update("Required Gems", "The following Gems will be automatically enabled with this Gem.", m_model->GetDependingGemNames(modelIndex));
         m_conflictingGems->Update("Conflicting Gems", "The following Gems will be automatically disabled with this Gem.", m_model->GetConflictingGemNames(modelIndex));
 
         // Additional information
