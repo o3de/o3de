@@ -5394,15 +5394,18 @@ void WildcardSourceDependencyTest::SetUp()
         AZ::Uuid::CreateRandom(), "folder/one/d.foo", tempPath.absoluteFilePath("%c.foo").toUtf8().constData(),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
 
+#ifdef AZ_PLATFORM_WINDOWS
     // Test to make sure a relative wildcard dependency doesn't match an absolute path
     // For example, if the input is C:/project/subfolder1/a.foo
     // This should not match a wildcard of c%.foo
     // Take the first character of the tempPath and append %.foo onto it for this test, which should produce something like c%.foo
+    // This only applies to windows because on other OSes if the dependency starts with /, then its an abs path dependency
     auto test = (tempPath.absolutePath().left(1) + "%.foo");
     dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
         AZ::Uuid::CreateRandom(), "folder/one/d.foo",
         (test).toUtf8().constData(),
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+#endif
 
     ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependencies(dependencies));
 }
