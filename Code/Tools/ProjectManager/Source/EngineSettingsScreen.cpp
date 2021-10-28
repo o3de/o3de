@@ -89,9 +89,6 @@ namespace O3DE::ProjectManager
         connect(m_defaultProjectTemplates->lineEdit(), &QLineEdit::textChanged, this, &EngineSettingsScreen::OnTextChanged);
         layout->addWidget(m_defaultProjectTemplates);
 
-
-
-
         QVBoxLayout* mainLayout = new QVBoxLayout();
         mainLayout->setAlignment(Qt::AlignTop);
         mainLayout->setMargin(0);
