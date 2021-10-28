@@ -15,6 +15,8 @@
 #include "WhiteBoxEdgeTranslationModifier.h"
 #include "WhiteBoxManipulatorViews.h"
 
+#include <AzCore/std/sort.h>
+
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Manipulators/PlanarManipulator.h>
@@ -65,18 +67,15 @@ namespace WhiteBox
     // (ensure to remove duplicates as vertices will be shared across edges)
     static Api::VertexHandles VertexHandlesForEdges(const WhiteBoxMesh& whiteBox, const Api::EdgeHandles& edgeHandles)
     {
-        auto vertexHandles = std::reduce(
-            edgeHandles.cbegin(), edgeHandles.cend(), Api::VertexHandles{},
-            [&whiteBox](Api::VertexHandles vertexHandles, const Api::EdgeHandle edgeHandle)
-            {
-                const auto edgeVertexHandles = Api::EdgeVertexHandles(whiteBox, edgeHandle);
-                vertexHandles.push_back(edgeVertexHandles[0]);
-                vertexHandles.push_back(edgeVertexHandles[1]);
-                return vertexHandles;
-            });
-
-        std::sort(vertexHandles.begin(), vertexHandles.end());
-        vertexHandles.erase(std::unique(vertexHandles.begin(), vertexHandles.end()), vertexHandles.end());
+        Api::VertexHandles vertexHandles;
+        for(auto edgeHandle: edgeHandles) {
+            const auto edgeVertexHandles = Api::EdgeVertexHandles(whiteBox, edgeHandle);
+            vertexHandles.push_back(edgeVertexHandles[0]);
+            vertexHandles.push_back(edgeVertexHandles[1]);
+        }
+        
+        AZStd::sort(vertexHandles.begin(), vertexHandles.end());
+        vertexHandles.erase(AZStd::unique(vertexHandles.begin(), vertexHandles.end()), vertexHandles.end());
 
         return vertexHandles;
     }

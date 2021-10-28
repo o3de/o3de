@@ -2009,7 +2009,6 @@ namespace WhiteBox
                 {
                     const Mesh::HalfedgeHandle heh = *faceHalfedgeIt;
                     const Mesh::VertexHandle vh = mesh.to_vertex_handle(heh);
-                    const Mesh::FaceHandle fh = mesh.face_handle(heh);
 
                     const AZ::Vector3 position = mesh.point(vh);
                     const AZ::Vector3 normal = FaceNormal(whiteBox, faceHandle);
@@ -2975,31 +2974,17 @@ namespace WhiteBox
             using ModifiedFaceHandle = AZStd::pair<Mesh::FaceHandle, Mesh::FaceHandle>;
             using ModifiedFaceHandles = AZStd::vector<ModifiedFaceHandle>;
 
-            // find all face handles that no longer match (where garbage_collect has invalidated the handles)
-            const ModifiedFaceHandles modifiedFaceHandles = std::transform_reduce(
-                faceHandlesCopy.cbegin(), faceHandlesCopy.cend(), faceHandlePtrs.cbegin(), ModifiedFaceHandles{},
-                // reduce
-                [](ModifiedFaceHandles modifiedFaceHandles, const ModifiedFaceHandle& fh)
-                {
-                    if (fh.first.is_valid())
-                    {
-                        modifiedFaceHandles.push_back(fh);
-                    }
-
-                    return modifiedFaceHandles;
-                },
-                // transform
-                [](const Mesh::FaceHandle lhs, const Mesh::FaceHandle* rhs)
-                {
-                    // if any of the faceHandlePtrs differ, we know the handles
-                    // have been invalidated during the garbage collect
-                    if (lhs != *rhs)
-                    {
-                        return ModifiedFaceHandle{lhs, *rhs};
-                    }
-
-                    return ModifiedFaceHandle{};
-                });
+            auto fanceHandleIt = faceHandlesCopy.begin();
+            auto faceHandle2It = faceHandlePtrs.begin();
+            ModifiedFaceHandles modifiedFaceHandles;
+            while(fanceHandleIt != faceHandlesCopy.end() || faceHandle2It != faceHandlePtrs.end()) 
+            {
+                if(*fanceHandleIt != **faceHandle2It && (*fanceHandleIt).is_valid()) {
+                    modifiedFaceHandles.push_back(ModifiedFaceHandle{*fanceHandleIt, **faceHandle2It});
+                }
+                fanceHandleIt++;
+                faceHandle2It++;
+            }
 
             // iterate over all modified face handles
             for (const ModifiedFaceHandle& modifiedFaceHandle : modifiedFaceHandles)
