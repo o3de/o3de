@@ -259,6 +259,11 @@ namespace AssetProcessor
         scratchBuffer.reserve(512 * 1024); // Reserve 512kb to avoid repeatedly resizing the buffer;
         AZStd::fixed_vector<AZStd::string_view, AzFramework::MaxPlatformCodeNames> platformCodes;
         AzFramework::PlatformHelper::AppendPlatformCodeNames(platformCodes, request.m_platformInfo.m_identifier);
+        AZ_Assert(platformCodes.size() <= 1, "A one-to-one mapping of asset type platform identifier"
+            " to platform codename is required in the SettingsRegistryBuilder."
+            " The bootstrap.game is now only produced per build configuration and doesn't take into account"
+            " different platforms names");
+
         const AZStd::string& assetPlatformIdentifier = request.m_jobDescription.GetPlatformIdentifier();
         // Determines the suffix that will be used for the launcher based on processing server vs non-server assets
         const char* launcherType = assetPlatformIdentifier != AzFramework::PlatformHelper::GetPlatformName(AzFramework::PlatformId::SERVER)
@@ -293,9 +298,10 @@ namespace AssetProcessor
         outputBuffer.Reserve(512 * 1024); // Reserve 512kb to avoid repeatedly resizing the buffer;
         SettingsExporter exporter(outputBuffer, excludes);
 
-        for (AZStd::string_view platform : platformCodes)
+        if (!platformCodes.empty())
         {
-            AZ::u32 productSubID = static_cast<AZ::u32>(AZStd::hash<AZStd::string_view>{}(platform)); // Deliberately ignoring half the bits.
+            AZStd::string_view platform = platformCodes.front();
+            constexpr AZ::u32 productSubID = 0;
             for (size_t i = 0; i < AZStd::size(specializations); ++i)
             {
                 const AZ::SettingsRegistryInterface::Specializations& specialization = specializations[i];
@@ -337,7 +343,7 @@ namespace AssetProcessor
                     // The purpose of this section is to copy the Gem's SourcePaths from the Global Settings Registry
                     // the local SettingsRegistry. The reason this is needed is so that the call to
                     // `MergeSettingsToRegistry_GemRegistries` below is able to locate each gem's "<gem-root>/Registry" folder
-                    // that will be merged into the bootstrap.game.<configuration>.<platform>.setreg file
+                    // that will be merged into the bootstrap.game.<configuration>.setreg file
                     // This is used by the GameLauncher applications to read from a single merged .setreg file
                     // containing the settings needed to run a game/simulation without have access to the source code base registry
                     AZStd::vector<AzFramework::GemInfo> gemInfos;
@@ -408,8 +414,6 @@ namespace AssetProcessor
                     }
 
                     outputPath += specialization.GetSpecialization(0); // Append configuration
-                    outputPath += '.';
-                    outputPath += platform;
                     outputPath += ".setreg";
 
                     AZ::IO::SystemFile file;
