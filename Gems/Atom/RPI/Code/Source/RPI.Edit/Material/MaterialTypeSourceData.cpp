@@ -16,6 +16,7 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
+#include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -59,6 +60,23 @@ namespace AZ
 
                 serializeContext->RegisterGenericType<PropertyConnectionList>();
 
+                serializeContext->Class<VersionUpdatesRenameOperationDefinition>()
+                    ->Version(1)
+                    ->Field("op", &VersionUpdatesRenameOperationDefinition::m_operation)
+                    ->Field("from", &VersionUpdatesRenameOperationDefinition::m_renameFrom)
+                    ->Field("to", &VersionUpdatesRenameOperationDefinition::m_renameTo)
+                    ;
+
+                serializeContext->RegisterGenericType<VersionUpdateActions>();
+
+                serializeContext->Class<VersionUpdateDefinition>()
+                    ->Version(1)
+                    ->Field("toVersion", &VersionUpdateDefinition::m_toVersion)
+                    ->Field("actions", &VersionUpdateDefinition::m_actions)
+                    ;
+
+                serializeContext->RegisterGenericType<VersionUpdates>();
+
                 serializeContext->Class<ShaderVariantReferenceData>()
                     ->Version(2)
                     ->Field("file", &ShaderVariantReferenceData::m_shaderFilePath)
@@ -67,8 +85,8 @@ namespace AZ
                     ;
 
                 serializeContext->Class<PropertyLayout>()
-                    ->Version(1)
-                    ->Field("version", &PropertyLayout::m_version)
+                    ->Version(2) // Material Version Update
+                    ->Field("version", &PropertyLayout::m_versionOld)
                     ->Field("groups", &PropertyLayout::m_groups)
                     ->Field("properties", &PropertyLayout::m_properties)
                     ;
@@ -76,8 +94,10 @@ namespace AZ
                 serializeContext->RegisterGenericType<UvNameMap>();
 
                 serializeContext->Class<MaterialTypeSourceData>()
-                    ->Version(3)
+                    ->Version(4) // Material Version Update
                     ->Field("description", &MaterialTypeSourceData::m_description)
+                    ->Field("version", &MaterialTypeSourceData::m_version)
+                    ->Field("versionUpdates", &MaterialTypeSourceData::m_versionUpdates)
                     ->Field("propertyLayout", &MaterialTypeSourceData::m_propertyLayout)
                     ->Field("shaders", &MaterialTypeSourceData::m_shaderCollection)
                     ->Field("functors", &MaterialTypeSourceData::m_materialFunctorSourceData)
@@ -110,19 +130,67 @@ namespace AZ
             return nullptr;
         }
 
-        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName) const
+        bool MaterialTypeSourceData::ApplyPropertyRenames(MaterialPropertyId& propertyId, uint32_t materialTypeVersion) const
         {
-            auto groupIter = m_propertyLayout.m_properties.find(groupName);
-            if (groupIter == m_propertyLayout.m_properties.end())
+            bool renamed = false;
+
+            for (const VersionUpdateDefinition& versionUpdate : m_versionUpdates)
             {
-                return nullptr;
+                if (materialTypeVersion >= versionUpdate.m_toVersion)
+                {
+                    continue;
+                }
+
+                for (const VersionUpdatesRenameOperationDefinition& action : versionUpdate.m_actions)
+                {
+                    if (action.m_operation == "rename")
+                    {
+                        if (action.m_renameFrom == propertyId.GetFullName().GetStringView())
+                        {
+                            propertyId = MaterialPropertyId::Parse(action.m_renameTo);
+                            renamed = true;
+                        }
+                    }
+                    else
+                    {
+                        AZ_Warning("Material source data", false, "Unsupported material version update operation '%s'", action.m_operation.c_str());
+                    }
+                }
             }
 
-            for (const PropertyDefinition& property : groupIter->second)
+            return renamed;
+        }
+
+        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName, uint32_t materialTypeVersion) const
+        {
+            auto groupIter = m_propertyLayout.m_properties.find(groupName);
+            if (groupIter != m_propertyLayout.m_properties.end())
             {
-                if (property.m_name == propertyName)
+                for (const PropertyDefinition& property : groupIter->second)
                 {
-                    return &property;
+                    if (property.m_name == propertyName)
+                    {
+                        return &property;
+                    }
+                }
+            }
+
+            // Property has not been found, try looking for renames in the version history
+
+            MaterialPropertyId propertyId = MaterialPropertyId{groupName, propertyName};
+            ApplyPropertyRenames(propertyId, materialTypeVersion);
+
+            // Do the search again with the new names
+
+            groupIter = m_propertyLayout.m_properties.find(propertyId.GetGroupName().GetStringView());
+            if (groupIter != m_propertyLayout.m_properties.end())
+            {
+                for (const PropertyDefinition& property : groupIter->second)
+                {
+                    if (property.m_name == propertyId.GetPropertyName().GetStringView())
+                    {
+                        return &property;
+                    }
                 }
             }
 
@@ -279,6 +347,41 @@ namespace AZ
             MaterialTypeAssetCreator materialTypeAssetCreator;
             materialTypeAssetCreator.SetElevateWarnings(elevateWarnings);
             materialTypeAssetCreator.Begin(assetId);
+
+            if (m_propertyLayout.m_versionOld != 0)
+            {
+                materialTypeAssetCreator.ReportError(
+                    "The field '/propertyLayout/version' is deprecated and moved to '/version'. "
+                    "Please edit this material type source file and move the '\"version\": %u' setting up one level.",
+                    m_propertyLayout.m_versionOld);
+                return Failure();
+            }
+
+            // Set materialtype version and add each version update object into MaterialTypeAsset.
+            materialTypeAssetCreator.SetVersion(m_version);
+            {
+                const AZ::Name rename = AZ::Name{ "rename" };
+
+                for (const auto& versionUpdate : m_versionUpdates)
+                {
+                    MaterialVersionUpdate materialVersionUpdate{versionUpdate.m_toVersion};
+                    for (const auto& action : versionUpdate.m_actions)
+                    {
+                        if (action.m_operation == rename.GetStringView())
+                        {
+                            materialVersionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction{
+                                    AZ::Name{ action.m_renameFrom },
+                                    AZ::Name{ action.m_renameTo }
+                                });
+                        }
+                        else
+                        {
+                            materialTypeAssetCreator.ReportWarning("Unsupported material version update operation '%s'", action.m_operation.c_str());
+                        }
+                    }
+                    materialTypeAssetCreator.AddVersionUpdate(materialVersionUpdate);
+                }
+            }
 
             // Used to gather all the UV streams used in this material type from its shaders in alphabetical order.
             auto semanticComp = [](const RHI::ShaderSemantic& lhs, const RHI::ShaderSemantic& rhs) -> bool

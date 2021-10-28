@@ -597,7 +597,7 @@ namespace EMotionFX
         // reset several settings to rewind the motion instance
         motionInstance->ResetTimes();
         motionInstance->SetIsFrozen(false);
-        SetSyncIndex(animGraphInstance, MCORE_INVALIDINDEX32);
+        SetSyncIndex(animGraphInstance, InvalidIndex);
         uniqueData->SetCurrentPlayTime(motionInstance->GetCurrentTime());
         uniqueData->SetDuration(motionInstance->GetDuration());
         uniqueData->SetPreSyncTime(uniqueData->GetCurrentPlayTime());

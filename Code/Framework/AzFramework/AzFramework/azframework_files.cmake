@@ -228,6 +228,7 @@ set(FILES
     Physics/Configuration/SimulatedBodyConfiguration.cpp
     Physics/Configuration/SystemConfiguration.h
     Physics/Configuration/SystemConfiguration.cpp
+    Physics/HeightfieldProviderBus.h
     Physics/SimulatedBodies/RigidBody.h
     Physics/SimulatedBodies/RigidBody.cpp
     Physics/SimulatedBodies/StaticRigidBody.h
@@ -299,6 +300,8 @@ set(FILES
     Spawnable/SpawnableMonitor.cpp
     Spawnable/SpawnableSystemComponent.h
     Spawnable/SpawnableSystemComponent.cpp
+    SurfaceData/SurfaceData.h
+    SurfaceData/SurfaceData.cpp
     Terrain/TerrainDataRequestBus.h
     Terrain/TerrainDataRequestBus.cpp
     Thermal/ThermalInfo.h

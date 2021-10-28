@@ -128,10 +128,10 @@ namespace EMStudio
         AZ_Assert(m_gridEntity != nullptr, "Failed to create grid entity.");
 
         AZ::Render::GridComponentConfig gridConfig;
-        gridConfig.m_gridSize = 4.0f;
+        gridConfig.m_gridSize = 20.0f;
         gridConfig.m_axisColor = AZ::Color(0.5f, 0.5f, 0.5f, 1.0f);
         gridConfig.m_primaryColor = AZ::Color(0.3f, 0.3f, 0.3f, 1.0f);
-        gridConfig.m_secondaryColor = AZ::Color(0.5f, 0.1f, 0.1f, 1.0f);
+        gridConfig.m_secondaryColor = AZ::Color(0.5f, 0.5f, 0.5f, 1.0f);
         auto gridComponent = m_gridEntity->CreateComponent(AZ::Render::GridComponentTypeId);
         gridComponent->SetConfiguration(gridConfig);
 
@@ -204,6 +204,20 @@ namespace EMStudio
         }
 
         return result;
+    }
+
+    void AnimViewportRenderer::UpdateActorRenderFlag(EMotionFX::ActorRenderFlagBitset renderFlags)
+    {
+        for (AZ::Entity* entity : m_actorEntities)
+        {
+            EMotionFX::Integration::ActorComponent* actorComponent = entity->FindComponent<EMotionFX::Integration::ActorComponent>();
+            if (!actorComponent)
+            {
+                AZ_Assert(false, "Found entity without actor component in the actor entity list.");
+                continue;
+            }
+            actorComponent->SetRenderFlag(renderFlags);
+        }
     }
 
     void AnimViewportRenderer::ResetEnvironment()

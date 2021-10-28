@@ -85,6 +85,10 @@ namespace ImGui
             //! Calculate the min and maximum values for the present samples.
             void CalcMinMaxValues(float& outMin, float& outMax);
 
+            //! Set/get color used by either the lines in case ViewType is Lines or bars in case or Histogram.
+            void SetBarLineColor(const ImColor& color) { m_barLineColor = color; }
+            ImColor GetBarLineColor() const  { return m_barLineColor; }
+
         private:
             // Set the Max Size and clear the container
             void SetMaxSize(int size);
@@ -99,6 +103,7 @@ namespace ImGui
             bool m_dispalyOverlays;
             ScaleMode m_scaleMode; //! Determines if the vertical range of the histogram will be manually specified, auto-expanded or automatically scaled based on the samples.
             float m_autoScaleSpeed = 0.05f; //! Indicates how fast the min max values and the visible vertical range are adapting to new samples.
+            ImColor m_barLineColor = ImColor(66, 166, 178); //! Color used by either the lines in case ViewType is Lines or bars in case or Histogram.
             bool m_collapsed;
             bool m_drawMostRecentValueText;
         };

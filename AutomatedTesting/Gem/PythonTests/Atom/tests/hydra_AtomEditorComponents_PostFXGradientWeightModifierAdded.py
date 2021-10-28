@@ -86,6 +86,7 @@ def AtomEditorComponents_PostFXGradientWeightModifier_AddedToEntity():
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
+    from Atom.atom_utils.atom_constants import AtomComponentProperties
 
     with Tracer() as error_tracer:
         # Test setup begins.
@@ -95,15 +96,15 @@ def AtomEditorComponents_PostFXGradientWeightModifier_AddedToEntity():
 
         # Test steps begin.
         # 1. Create a PostFX Gradient Weight Modifier entity with no components.
-        postfx_gradient_weight_name = "PostFX Gradient Weight Modifier"
-        postfx_gradient_weight_entity = EditorEntity.create_editor_entity(postfx_gradient_weight_name)
+        postfx_gradient_weight_entity = EditorEntity.create_editor_entity(AtomComponentProperties.postfx_gradient())
         Report.critical_result(Tests.postfx_gradient_weight_creation, postfx_gradient_weight_entity.exists())
 
         # 2. Add a PostFX Gradient Weight Modifier component to PostFX Gradient Weight Modifier entity.
-        postfx_gradient_weight_component = postfx_gradient_weight_entity.add_component(postfx_gradient_weight_name)
+        postfx_gradient_weight_component = postfx_gradient_weight_entity.add_component(
+            AtomComponentProperties.postfx_gradient())
         Report.critical_result(
             Tests.postfx_gradient_weight_component,
-            postfx_gradient_weight_entity.has_component(postfx_gradient_weight_name))
+            postfx_gradient_weight_entity.has_component(AtomComponentProperties.postfx_gradient()))
 
         # 3. UNDO the entity creation and component addition.
         # -> UNDO component addition.
@@ -133,9 +134,10 @@ def AtomEditorComponents_PostFXGradientWeightModifier_AddedToEntity():
         Report.result(Tests.postfx_gradient_weight_disabled, not postfx_gradient_weight_component.is_enabled())
 
         # 6. Add PostFX Layer component since it is required by the PostFX Gradient Weight Modifier component.
-        postfx_layer_name = "PostFX Layer"
-        postfx_gradient_weight_entity.add_component(postfx_layer_name)
-        Report.result(Tests.postfx_layer_component, postfx_gradient_weight_entity.has_component(postfx_layer_name))
+        postfx_gradient_weight_entity.add_component(AtomComponentProperties.postfx_layer())
+        Report.result(
+            Tests.postfx_layer_component,
+            postfx_gradient_weight_entity.has_component(AtomComponentProperties.postfx_layer()))
 
         # 7. Verify PostFX Gradient Weight Modifier component is enabled.
         Report.result(Tests.postfx_gradient_weight_enabled, postfx_gradient_weight_component.is_enabled())

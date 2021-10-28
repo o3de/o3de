@@ -212,7 +212,11 @@
                     // instead of regular Depth as DepthStencil. Specifically, HairResolvePPLL.pass and the associated 
                     // .azsl file will need to be updated.
                     "Name": "HairParentPass",
-                    "TemplateName": "HairParentPassTemplate",
+                    // Note: The following two lines represent the choice of rendering pipeline for the hair.
+                    // You can either choose to use PPLL or ShortCut and accordingly change the flag 
+                    // 'm_usePPLLRenderTechnique' in the class 'HairFeatureProcessor.cpp'
+//                    "TemplateName": "HairParentPassTemplate",
+                    "TemplateName": "HairParentShortCutPassTemplate",
                     "Enabled": true,
                     "Connections": [
                         // Critical to keep DepthLinear as input - used to set the size of the Head PPLL image buffer.

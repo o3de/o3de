@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
@@ -47,9 +48,6 @@ namespace AWSMetrics
             m_localFileIO->SetAlias("@engroot@", engineRoot.c_str());
             m_localFileIO->SetAlias("@products@", productAssetPath.c_str());
             m_localFileIO->SetAlias("@user@", userPath.c_str());
-            // Copy engine.json to the cache
-            EXPECT_TRUE(m_localFileIO->Copy((engineRoot / "engine.json").c_str(), "engine.json"));
-
 
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
             m_registrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
@@ -60,6 +58,8 @@ namespace AWSMetrics
 
             m_settingsRegistry->SetContext(m_serializeContext.get());
             m_settingsRegistry->SetContext(m_registrationContext.get());
+
+            m_settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, engineRoot.c_str());
 
             AZ::SettingsRegistry::Register(m_settingsRegistry.get());
         }

@@ -92,14 +92,17 @@ namespace AZ
             uint32_t m_shadowmapSize = 1; // width and height of shadowmap
             uint32_t m_cascadeCount = 1;
             // Reduce acne by applying a small amount of bias to apply along shadow-space z.
-            float m_shadowBias = 0.0f; 
-            uint32_t m_predictionSampleCount = 0;
+            float m_shadowBias = 0.0f;
+            // Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            float m_normalShadowBias;
             uint32_t m_filteringSampleCount = 0;
             uint32_t m_debugFlags = 0;
             uint32_t m_shadowFilterMethod = 0; 
             float m_far_minus_near = 0;
             float m_padding[3];
         };
+
+        static_assert(sizeof(DirectionalLightShadowData) % 16 == 0); // Structured buffers need alignment to be a multiple of 16 bytes.
 
         class DirectionalLightFeatureProcessor final
             : public DirectionalLightFeatureProcessorInterface
@@ -216,6 +219,7 @@ namespace AZ
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable) override;
             void SetShadowBias(LightHandle handle, float bias) override;
+            void SetNormalShadowBias(LightHandle handle, float normalShadowBias) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const;
             uint32_t GetLightCount() const;

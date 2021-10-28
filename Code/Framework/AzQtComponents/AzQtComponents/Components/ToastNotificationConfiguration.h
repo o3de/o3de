@@ -37,6 +37,7 @@ namespace AzQtComponents
         QString m_title;
         QString m_description;
         QString m_customIconImage;
+        uint32_t m_borderRadius = 0;
 
         AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
         AZStd::chrono::milliseconds m_duration = AZStd::chrono::milliseconds(5000);

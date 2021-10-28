@@ -14,6 +14,7 @@
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
@@ -115,7 +116,9 @@ namespace AZ
                 {
                     // GFX TODO - investigate window creation being part of the GameApplication.
 
-                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>("O3DELauncher", AzFramework::WindowGeometry(0, 0, 1920, 1080));
+                    auto projectTitle = AZ::Utils::GetProjectName();
+
+                    m_nativeWindow = AZStd::make_unique<AzFramework::NativeWindow>(projectTitle.c_str(), AzFramework::WindowGeometry(0, 0, 1920, 1080));
                     AZ_Assert(m_nativeWindow, "Failed to create the game window\n");
 
                     m_nativeWindow->Activate();

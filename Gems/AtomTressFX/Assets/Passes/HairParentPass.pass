@@ -71,6 +71,12 @@
                     }
                 }
             ],
+            "FallbackConnections": [
+                {
+                    "Input": "DepthLinearInput",
+                    "Output": "DepthLinear"
+                }
+            ],
             "PassRequests": [
                 {
                     "Name": "HairGlobalShapeConstraintsComputePass",
