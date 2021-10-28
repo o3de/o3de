@@ -37,19 +37,19 @@ namespace AzPhysics
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &JointConfiguration::m_parentLocalRotation,
                         "Parent local rotation", "Parent joint frame relative to parent body.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &GetParentLocalRotationVisibility)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &JointConfiguration::GetParentLocalRotationVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &JointConfiguration::m_parentLocalPosition,
                         "Parent local position", "Joint position relative to parent body.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &GetParentLocalPositionVisibility)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &JointConfiguration::GetParentLocalPositionVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &JointConfiguration::m_childLocalRotation,
                         "Child local rotation", "Child joint frame relative to child body.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &GetChildLocalRotationVisibility)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &JointConfiguration::GetChildLocalRotationVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &JointConfiguration::m_childLocalPosition,
                         "Child local position", "Joint position relative to child body.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &GetChildLocalPositionVisibility)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &JointConfiguration::GetChildLocalPositionVisibility)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &JointConfiguration::m_startSimulationEnabled,
                         "Start simulation enabled", "When active, the joint will be enabled when the simulation begins.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &GetStartSimulationEnabledVisibility)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &JointConfiguration::GetStartSimulationEnabledVisibility)
                     ;
             }
         }
