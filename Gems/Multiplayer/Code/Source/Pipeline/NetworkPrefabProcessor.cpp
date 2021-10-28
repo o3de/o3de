@@ -105,41 +105,6 @@ namespace Multiplayer
         });
     }
 
-    static bool HasNetHierarchyComponents(const AZ::Entity* entity)
-    {
-        return (entity->FindComponent<NetworkHierarchyRootComponent>() != nullptr)
-            || (entity->FindComponent<NetworkHierarchyChildComponent>() != nullptr); 
-    }
-
-    static void ValidateNetHierarchies(const AZStd::vector<AZ::Entity*>& prefabNetEntities)
-    {
-        AZStd::unordered_map<AZ::EntityId, AZ::Entity*> prefabEntitesMap;
-
-        for (auto* entity : prefabNetEntities)
-        {
-            auto* entityTransform = entity->FindComponent<AzFramework::TransformComponent>();
-            AZ_Assert(entityTransform, "Net entities have to have Transform Component");
-
-            AZ::EntityId parentId = entityTransform->GetParentId();
-
-            // The input entities array is sorted in the parent to children order,
-            // so we only need to check against already iterated entities
-            if (parentId.IsValid() && prefabEntitesMap.contains(parentId))
-            {
-                AZ::Entity* parentEntity = prefabEntitesMap[parentId];
-                bool parentValid = HasNetHierarchyComponents(parentEntity);
-                AZ_Error("NetworkPrefabProcessor", parentValid, "Parent Entity %s must have a Network Hierarchy component assigned",
-                    parentEntity->GetName().c_str());
-
-                bool childValid = HasNetHierarchyComponents(entity);
-                AZ_Error("NetworkPrefabProcessor", childValid, "Child Entity %s must have a Network Hierarchy component assigned",
-                    entity->GetName().c_str());
-            }
-
-            prefabEntitesMap[entity->GetId()] = entity;
-        }
-    }
-
     void NetworkPrefabProcessor::ProcessPrefab(PrefabProcessorContext& context, AZStd::string_view prefabName, PrefabDom& prefab, AZ::DataStream::StreamType serializationFormat)
     {
         using namespace AzToolsFramework::Prefab;
@@ -177,9 +142,6 @@ namespace Multiplayer
 
         // Sort the entities prior to processing. The entities will end up in the net spawnable in this order.
         SpawnableUtils::SortEntitiesByTransformHierarchy(prefabNetEntities);
-
-        // Here we validate the hierarchical net entities have one of Network Hierarchy components.
-        ValidateNetHierarchies(prefabNetEntities);
 
         // Create an asset for our future network spawnable: this allows us to put references to the asset in the components
         AZ::Data::Asset<AzFramework::Spawnable> networkSpawnableAsset;
