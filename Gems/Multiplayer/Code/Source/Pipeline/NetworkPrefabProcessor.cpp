@@ -33,8 +33,10 @@ namespace Multiplayer
             mpTools->SetDidProcessNetworkPrefabs(false);
         }
 
-        context.ListPrefabs([&context](AZStd::string_view prefabName, PrefabDom& prefab) {
-            ProcessPrefab(context, prefabName, prefab);
+        AZ::DataStream::StreamType serializationFormat = GetAzSerializationFormat();
+
+        context.ListPrefabs([&context, serializationFormat](AZStd::string_view prefabName, PrefabDom& prefab) {
+            ProcessPrefab(context, prefabName, prefab, serializationFormat);
         });
 
         if (mpTools && !context.GetProcessedObjects().empty())
@@ -47,7 +49,15 @@ namespace Multiplayer
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
-            serializeContext->Class<NetworkPrefabProcessor, PrefabProcessor>()->Version(2);
+            serializeContext->Enum<SerializationFormats>()
+                ->Value("Binary", SerializationFormats::Binary)
+                ->Value("Text", SerializationFormats::Text)
+            ;
+
+            serializeContext->Class<NetworkPrefabProcessor, PrefabProcessor>()
+                ->Version(3)
+                ->Field("SerializationFormat", &NetworkPrefabProcessor::m_serializationFormat)
+            ;
         }
     }
 
@@ -130,7 +140,7 @@ namespace Multiplayer
         }
     }
 
-    void NetworkPrefabProcessor::ProcessPrefab(PrefabProcessorContext& context, AZStd::string_view prefabName, PrefabDom& prefab)
+    void NetworkPrefabProcessor::ProcessPrefab(PrefabProcessorContext& context, AZStd::string_view prefabName, PrefabDom& prefab, AZ::DataStream::StreamType serializationFormat)
     {
         using namespace AzToolsFramework::Prefab;
 
@@ -144,10 +154,10 @@ namespace Multiplayer
         AZStd::string uniqueName = prefabName;
         uniqueName += ".network.spawnable";
 
-        auto serializer = [](AZStd::vector<uint8_t>& output, const ProcessedObjectStore& object) -> bool {
+        auto serializer = [serializationFormat](AZStd::vector<uint8_t>& output, const ProcessedObjectStore& object) -> bool {
             AZ::IO::ByteContainerStream stream(&output);
             auto& asset = object.GetAsset();
-            return AZ::Utils::SaveObjectToStream(stream, AZ::DataStream::ST_BINARY, &asset, asset.GetType());
+            return AZ::Utils::SaveObjectToStream(stream, serializationFormat, &asset, asset.GetType());
         };
 
         auto&& [object, networkSpawnable] =
@@ -217,5 +227,15 @@ namespace Multiplayer
         }
 
         context.GetProcessedObjects().push_back(AZStd::move(object));
+    }
+
+    AZ::DataStream::StreamType NetworkPrefabProcessor::GetAzSerializationFormat() const
+    {
+        if (m_serializationFormat == SerializationFormats::Text)
+        {
+            return AZ::DataStream::StreamType::ST_JSON;
+        }
+
+        return AZ::DataStream::StreamType::ST_BINARY;
     }
 }
