@@ -27,6 +27,14 @@ namespace O3DE::ProjectManager
 
     void GemModel::AddGem(const GemInfo& gemInfo)
     {
+        if (FindIndexByNameString(gemInfo.m_name).isValid())
+        {
+            // do not add gems with duplicate names
+            // this can happen by mistake or when a gem repo has a gem with the same name as a local gem
+            AZ_TracePrintf("GemModel", "Ignoring duplicate gem: %s", gemInfo.m_name.toUtf8().constData());
+            return;
+        }
+
         QStandardItem* item = new QStandardItem();
 
         item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
