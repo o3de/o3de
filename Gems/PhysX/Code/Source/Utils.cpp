@@ -102,7 +102,7 @@ namespace PhysX
             const float scaleFactor = (maxHeightBounds <= minHeightBounds) ? 1.0f : AZStd::numeric_limits<int16_t>::max() / halfBounds;
             const float heightScale{ 1.0f / scaleFactor };
 
-            const uint8_t physxMaximumMaterialIndex = 0x7f;
+            [[maybe_unused]] const uint8_t physxMaximumMaterialIndex = 0x7f;
 
             // Delete the cached heightfield object if it is there, and create a new one and save in the shape configuration
             heightfieldConfig.SetCachedNativeHeightfield(nullptr);
