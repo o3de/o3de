@@ -72,7 +72,7 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::leaveEvent([[maybe_unused]] QEvent* event)
     {
-        m_mousePosition = QPoint();
+        m_mousePosition = QPoint(-1, -1);
         m_currentHoveredIndex = QModelIndex();
         update();
     }
@@ -200,7 +200,7 @@ namespace AzToolsFramework
         const bool isEnabled = (this->model()->flags(index) & Qt::ItemIsEnabled);
 
         const bool isSelected = selectionModel()->isSelected(index);
-        const bool isHovered = (index == indexAt(m_mousePosition)) && isEnabled;
+        const bool isHovered = (index == indexAt(m_mousePosition).siblingAtColumn(0)) && isEnabled;
 
         // Paint the branch Selection/Hover Rect
         PaintBranchSelectionHoverRect(painter, rect, isSelected, isHovered);

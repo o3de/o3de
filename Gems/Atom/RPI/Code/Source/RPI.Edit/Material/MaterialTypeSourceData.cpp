@@ -164,16 +164,14 @@ namespace AZ
         const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName, uint32_t materialTypeVersion) const
         {
             auto groupIter = m_propertyLayout.m_properties.find(groupName);
-            if (groupIter == m_propertyLayout.m_properties.end())
+            if (groupIter != m_propertyLayout.m_properties.end())
             {
-                return nullptr;
-            }
-
-            for (const PropertyDefinition& property : groupIter->second)
-            {
-                if (property.m_name == propertyName)
+                for (const PropertyDefinition& property : groupIter->second)
                 {
-                    return &property;
+                    if (property.m_name == propertyName)
+                    {
+                        return &property;
+                    }
                 }
             }
 
@@ -185,16 +183,14 @@ namespace AZ
             // Do the search again with the new names
 
             groupIter = m_propertyLayout.m_properties.find(propertyId.GetGroupName().GetStringView());
-            if (groupIter == m_propertyLayout.m_properties.end())
+            if (groupIter != m_propertyLayout.m_properties.end())
             {
-                return nullptr;
-            }
-
-            for (const PropertyDefinition& property : groupIter->second)
-            {
-                if (property.m_name == propertyId.GetPropertyName().GetStringView())
+                for (const PropertyDefinition& property : groupIter->second)
                 {
-                    return &property;
+                    if (property.m_name == propertyId.GetPropertyName().GetStringView())
+                    {
+                        return &property;
+                    }
                 }
             }
 

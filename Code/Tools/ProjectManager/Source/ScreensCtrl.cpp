@@ -133,6 +133,11 @@ namespace O3DE::ProjectManager
 
                 return true;
             }
+            else
+            {
+                // If we are already on this screen still notify we are on this screen to refresh it
+                newScreen->NotifyCurrentScreen();
+            }
         }
 
         return false;
