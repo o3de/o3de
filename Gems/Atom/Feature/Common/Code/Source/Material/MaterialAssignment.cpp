@@ -139,32 +139,59 @@ namespace AZ
             {
                 for (const auto& propertyPair : m_propertyOverrides)
                 {
-                    if (!propertyPair.second.empty())
+                    auto value = propertyPair.second;
+                    if (!value.empty())
                     {
                         bool wasRenamed = false;
                         Name newName;
-                        RPI::MaterialPropertyIndex materialPropertyIndex = m_materialInstance->FindPropertyIndex(propertyPair.first, &wasRenamed, &newName);
+                        RPI::MaterialPropertyIndex materialPropertyIndex =
+                            m_materialInstance->FindPropertyIndex(propertyPair.first, &wasRenamed, &newName);
 
-                        // FindPropertyIndex will have already reported a message about what the old and new names are. Here we just add some extra info to help the user resolve it.
-                        AZ_Warning("MaterialAssignment", !wasRenamed,
+                        // FindPropertyIndex will have already reported a message about what the old and new names are. Here we just add
+                        // some extra info to help the user resolve it.
+                        AZ_Warning(
+                            "MaterialAssignment", !wasRenamed,
                             "Consider running \"Apply Automatic Property Updates\" to use the latest property names.",
-                            propertyPair.first.GetCStr(),
-                            newName.GetCStr());
+                            propertyPair.first.GetCStr(), newName.GetCStr());
 
                         if (wasRenamed && m_propertyOverrides.find(newName) != m_propertyOverrides.end())
                         {
                             materialPropertyIndex.Reset();
-                            
-                            AZ_Warning("MaterialAssignment", false,
-                                "Material property '%s' has been renamed to '%s', and a property override exists for both. The one with the old name will be ignored.",
-                                propertyPair.first.GetCStr(),
-                                newName.GetCStr());
+
+                            AZ_Warning(
+                                "MaterialAssignment", false,
+                                "Material property '%s' has been renamed to '%s', and a property override exists for both. The one with "
+                                "the old name will be ignored.",
+                                propertyPair.first.GetCStr(), newName.GetCStr());
                         }
 
                         if (!materialPropertyIndex.IsNull())
                         {
-                            m_materialInstance->SetPropertyValue(
-                                materialPropertyIndex, AZ::RPI::MaterialPropertyValue::FromAny(propertyPair.second));
+                            const auto propertyDescriptor =
+                                m_materialInstance->GetMaterialPropertiesLayout()->GetPropertyDescriptor(materialPropertyIndex);
+
+                            // Special case handling for enum values that need to be converted from numbers or strings
+                            if (propertyDescriptor->GetDataType() == AZ::RPI::MaterialPropertyDataType::Enum)
+                            {
+                                if (value.is<AZ::Name>())
+                                {
+                                    value = propertyDescriptor->GetEnumValue(AZStd::any_cast<AZ::Name>(value));
+                                }
+                                else if (value.is<AZStd::string>())
+                                {
+                                    value = propertyDescriptor->GetEnumValue(AZ::Name(AZStd::any_cast<AZStd::string>(value)));
+                                }
+                                else if (value.is<float>())
+                                {
+                                    value = aznumeric_cast<uint32_t>(AZStd::any_cast<float>(value));
+                                }
+                                else if (value.is<double>())
+                                {
+                                    value = aznumeric_cast<uint32_t>(AZStd::any_cast<double>(value));
+                                }
+                            }
+
+                            m_materialInstance->SetPropertyValue(materialPropertyIndex, AZ::RPI::MaterialPropertyValue::FromAny(value));
                         }
                     }
                 }
