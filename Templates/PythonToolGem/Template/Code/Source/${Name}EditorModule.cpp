@@ -11,6 +11,12 @@
 #include <${Name}ModuleInterface.h>
 #include <${Name}EditorSystemComponent.h>
 
+void Init${SanitizedCppName}Resources()
+{
+    // We must register our Qt resources (.qrc file) since this is being loaded from a separate module (gem)
+    Q_INIT_RESOURCE(${SanitizedCppName});
+}
+
 namespace ${SanitizedCppName}
 {
     class ${SanitizedCppName}EditorModule
@@ -22,6 +28,8 @@ namespace ${SanitizedCppName}
 
         ${SanitizedCppName}EditorModule()
         {
+            Init${SanitizedCppName}Resources();
+
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
             // Add ALL components descriptors associated with this gem to m_descriptors.
             // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
