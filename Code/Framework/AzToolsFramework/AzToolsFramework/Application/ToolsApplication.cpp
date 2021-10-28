@@ -424,6 +424,8 @@ namespace AzToolsFramework
                 ->Property("showInMenu", BehaviorValueProperty(&ViewPaneOptions::showInMenu))
                 ->Property("canHaveMultipleInstances", BehaviorValueProperty(&ViewPaneOptions::canHaveMultipleInstances))
                 ->Property("isPreview", BehaviorValueProperty(&ViewPaneOptions::isPreview))
+                ->Property("showOnToolsToolbar", BehaviorValueProperty(&ViewPaneOptions::showOnToolsToolbar))
+                ->Property("toolbarIcon", BehaviorValueProperty(&ViewPaneOptions::toolbarIcon))
                 ;
 
             behaviorContext->EBus<EditorRequestBus>("EditorRequestBus")

@@ -26,6 +26,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME ${Name}.Editor.Static STATIC
         NAMESPACE Gem
+        AUTORCC
         FILES_CMAKE
             ${NameLower}_editor_files.cmake
         INCLUDE_DIRECTORIES
