@@ -4137,8 +4137,7 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
     AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
     Editor::EditorQtApplication* app = Editor::EditorQtApplication::newInstance(argc, argv);
 
-    if (app->arguments().contains("-autotest_mode"))
-    QStringList qArgs = app.arguments();
+    QStringList qArgs = app->arguments();
     const bool is_automated_test = AZStd::any_of(qArgs.begin(), qArgs.end(),
         [](const QString& elem)
         {
