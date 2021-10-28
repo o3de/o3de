@@ -17,14 +17,22 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QScrollArea>
 
 namespace O3DE::ProjectManager
 {
     EngineSettingsScreen::EngineSettingsScreen(QWidget* parent)
         : ScreenWidget(parent)
     {
-        auto* layout = new QVBoxLayout();
+        QScrollArea* scrollArea = new QScrollArea(this);
+        scrollArea->setWidgetResizable(true);
+
+        QWidget* scrollWidget = new QWidget(this);
+        scrollArea->setWidget(scrollWidget);
+
+        QVBoxLayout* layout = new QVBoxLayout(scrollWidget);
         layout->setAlignment(Qt::AlignTop);
+        scrollWidget->setLayout(layout);
 
         setObjectName("engineSettingsScreen");
 
@@ -81,7 +89,14 @@ namespace O3DE::ProjectManager
         connect(m_defaultProjectTemplates->lineEdit(), &QLineEdit::textChanged, this, &EngineSettingsScreen::OnTextChanged);
         layout->addWidget(m_defaultProjectTemplates);
 
-        setLayout(layout);
+
+
+
+        QVBoxLayout* mainLayout = new QVBoxLayout();
+        mainLayout->setAlignment(Qt::AlignTop);
+        mainLayout->setMargin(0);
+        mainLayout->addWidget(scrollArea);
+        setLayout(mainLayout);
     }
 
     ProjectManagerScreen EngineSettingsScreen::GetScreenEnum()
