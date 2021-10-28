@@ -107,6 +107,19 @@ class EditorComponent:
         return type_ids
 
 
+
+def convert_to_azvector3(xyz) -> azlmbr.math.Vector3:
+    """
+    Converts a vector3-like element into a azlmbr.math.Vector3
+    """
+    if isinstance(xyz, Tuple) or isinstance(xyz, List):
+        assert len(xyz) == 3, ValueError("vector must be a 3 element list/tuple or azlmbr.math.Vector3")
+        return math.Vector3(float(xyz[0]), float(xyz[1]), float(xyz[2]))
+    elif isinstance(xyz, type(math.Vector3())):
+        return xyz
+    else:
+        raise ValueError("vector must be a 3 element list/tuple or azlmbr.math.Vector3")
+
 class EditorEntity:
     """
     Entity class is used to create and interact with Editor Entities.
@@ -182,15 +195,6 @@ class EditorEntity:
         :Example: test_entity = EditorEntity.create_editor_entity_at([512.0, 512.0, 32.0], "TestEntity")
         :return: EditorEntity class object
         """
-
-        def convert_to_azvector3(xyz) -> math.Vector3:
-            if isinstance(xyz, Tuple) or isinstance(xyz, List):
-                assert len(xyz) == 3, ValueError("vector must be a 3 element list/tuple or azlmbr.math.Vector3")
-                return math.Vector3(*xyz)
-            elif isinstance(xyz, type(math.Vector3())):
-                return xyz
-            else:
-                raise ValueError("vector must be a 3 element list/tuple or azlmbr.math.Vector3")
 
         if parent_id is None:
             parent_id = azlmbr.entity.EntityId()
@@ -382,9 +386,22 @@ class EditorEntity:
         """
         return editor.EditorEntityInfoRequestBus(bus.Event, "IsVisible", self.id)
 
+    def get_world_translation(self) -> azlmbr.math.Vector3:
+        """
+        Gets the world translation of the entity
+        """
+        return azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", self.id)
+
+    def set_world_translation(self, new_translation):
+        """
+        Sets the new world translation of the current entity
+        """
+        new_translation = convert_to_azvector3(new_translation)
+        azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", self.id)
+
     def set_local_uniform_scale(self, scale_float) -> None:
         """
-        Sets the "SetLocalUniformScale" value on the entity.
+        Sets the local uniform scale value(relative to the parent) on the entity.
         :param scale_float: value for "SetLocalUniformScale" to set to.
         :return: None
         """
@@ -392,7 +409,7 @@ class EditorEntity:
 
     def set_local_rotation(self, vector3_rotation) -> None:
         """
-        Sets the "SetLocalRotation" value on the entity.
+        Sets the set the local rotation(relative to the parent) of the current entity.
         :param vector3_rotation: The math.Vector3 value to use for rotation on the entity (uses radians).
         :return: None
         """
