@@ -477,11 +477,11 @@ def register_repo(json_data: dict,
     parsed_uri = urllib.parse.urlparse(url)
 
     if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
-        while repo_uri in json_data['repos']:
+        while repo_uri in json_data.get('repos', []):
             json_data['repos'].remove(repo_uri)
     else:
         repo_uri = pathlib.Path(repo_uri).resolve().as_posix()
-        while repo_uri in json_data['repos']:
+        while repo_uri in json_data.get('repos', []):
             json_data['repos'].remove(repo_uri)
 
     if remove:
@@ -492,7 +492,7 @@ def register_repo(json_data: dict,
 
     result = utils.download_file(parsed_uri, cache_file)
     if result == 0:
-        json_data['repos'].insert(0, repo_uri)
+        json_data.setdefault('repos', []).insert(0, repo_uri)
 
     repo_set = set()
     result = repo.process_add_o3de_repo(cache_file, repo_set)
