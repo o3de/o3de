@@ -231,7 +231,7 @@ namespace EMStudio
                 // add the playspeed
                 if (plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PLAYSPEED))
                 {
-                    m_qtTempString.asprintf("Play Speed = %.2f", emfxNode->GetPlaySpeed(animGraphInstance));
+                    m_qtTempString = AZStd::string::format("Play Speed = %.2f", emfxNode->GetPlaySpeed(animGraphInstance)).c_str();
                     painter.drawText(textPosition, m_qtTempString);
                     textPosition.setY(textPosition.y() + heightSpacing);
                 }
@@ -239,7 +239,7 @@ namespace EMStudio
                 // add the global weight
                 if (plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_GLOBALWEIGHT))
                 {
-                    m_qtTempString.asprintf("Global Weight = %.2f", uniqueData->GetGlobalWeight());
+                    m_qtTempString = AZStd::string::format("Global Weight = %.2f", uniqueData->GetGlobalWeight()).c_str();
                     painter.drawText(textPosition, m_qtTempString);
                     textPosition.setY(textPosition.y() + heightSpacing);
                 }
@@ -247,7 +247,7 @@ namespace EMStudio
                 // add the sync
                 if (plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_SYNCSTATUS))
                 {
-                    m_qtTempString.asprintf("Synced = %s", animGraphInstance->GetIsSynced(emfxNode->GetObjectIndex()) ? "Yes" : "No");
+                    m_qtTempString = AZStd::string::format("Synced = %s", animGraphInstance->GetIsSynced(emfxNode->GetObjectIndex()) ? "Yes" : "No").c_str();
                     painter.drawText(textPosition, m_qtTempString);
                     textPosition.setY(textPosition.y() + heightSpacing);
                 }
@@ -255,7 +255,7 @@ namespace EMStudio
                 // add the play position
                 if (plugin->GetIsDisplayFlagEnabled(AnimGraphPlugin::DISPLAYFLAG_PLAYPOSITION))
                 {
-                    m_qtTempString.asprintf("Play Time = %.3f / %.3f", uniqueData->GetCurrentPlayTime(), uniqueData->GetDuration());
+                    m_qtTempString = AZStd::string::format("Play Time = %.3f / %.3f", uniqueData->GetCurrentPlayTime(), uniqueData->GetDuration()).c_str();
                     painter.drawText(textPosition, m_qtTempString);
                     textPosition.setY(textPosition.y() + heightSpacing);
                 }
