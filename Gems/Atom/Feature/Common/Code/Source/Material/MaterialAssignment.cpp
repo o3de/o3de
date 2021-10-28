@@ -139,8 +139,7 @@ namespace AZ
             {
                 for (const auto& propertyPair : m_propertyOverrides)
                 {
-                    auto value = propertyPair.second;
-                    if (!value.empty())
+                    if (!propertyPair.second.empty())
                     {
                         bool wasRenamed = false;
                         Name newName;
@@ -170,28 +169,8 @@ namespace AZ
                             const auto propertyDescriptor =
                                 m_materialInstance->GetMaterialPropertiesLayout()->GetPropertyDescriptor(materialPropertyIndex);
 
-                            // Special case handling for enum values that need to be converted from numbers or strings
-                            if (propertyDescriptor->GetDataType() == AZ::RPI::MaterialPropertyDataType::Enum)
-                            {
-                                if (value.is<AZ::Name>())
-                                {
-                                    value = propertyDescriptor->GetEnumValue(AZStd::any_cast<AZ::Name>(value));
-                                }
-                                else if (value.is<AZStd::string>())
-                                {
-                                    value = propertyDescriptor->GetEnumValue(AZ::Name(AZStd::any_cast<AZStd::string>(value)));
-                                }
-                                else if (value.is<float>())
-                                {
-                                    value = aznumeric_cast<uint32_t>(AZStd::any_cast<float>(value));
-                                }
-                                else if (value.is<double>())
-                                {
-                                    value = aznumeric_cast<uint32_t>(AZStd::any_cast<double>(value));
-                                }
-                            }
-
-                            m_materialInstance->SetPropertyValue(materialPropertyIndex, AZ::RPI::MaterialPropertyValue::FromAny(value));
+                            m_materialInstance->SetPropertyValue(
+                                materialPropertyIndex, ConvertMaterialPropertyValueFromScript(propertyDescriptor, propertyPair.second));
                         }
                     }
                 }
@@ -310,6 +289,59 @@ namespace AZ
             }
 
             return MaterialAssignmentId();
+        }
+
+        template<typename T>
+        AZ::RPI::MaterialPropertyValue ConvertMaterialPropertyValueNumericType(const AZStd::any& value)
+        {
+            if (value.is<int32_t>())
+            {
+                return aznumeric_cast<T>(AZStd::any_cast<int32_t>(value));
+            }
+            if (value.is<uint32_t>())
+            {
+                return aznumeric_cast<T>(AZStd::any_cast<uint32_t>(value));
+            }
+            if (value.is<float>())
+            {
+                return aznumeric_cast<T>(AZStd::any_cast<float>(value));
+            }
+            if (value.is<double>())
+            {
+                return aznumeric_cast<T>(AZStd::any_cast<double>(value));
+            }
+
+            return AZ::RPI::MaterialPropertyValue::FromAny(value);
+        }
+
+        AZ::RPI::MaterialPropertyValue ConvertMaterialPropertyValueFromScript(
+            const AZ::RPI::MaterialPropertyDescriptor* propertyDescriptor, const AZStd::any& value)
+        {
+            switch (propertyDescriptor->GetDataType())
+            {
+            case AZ::RPI::MaterialPropertyDataType::Enum:
+                if (value.is<AZ::Name>())
+                {
+                    return propertyDescriptor->GetEnumValue(AZStd::any_cast<AZ::Name>(value));
+                }
+                if (value.is<AZStd::string>())
+                {
+                    return propertyDescriptor->GetEnumValue(AZ::Name(AZStd::any_cast<AZStd::string>(value)));
+                }
+                return ConvertMaterialPropertyValueNumericType<uint32_t>(value);
+            case AZ::RPI::MaterialPropertyDataType::Int:
+                return ConvertMaterialPropertyValueNumericType<int32_t>(value);
+            case AZ::RPI::MaterialPropertyDataType::UInt:
+                return ConvertMaterialPropertyValueNumericType<uint32_t>(value);
+            case AZ::RPI::MaterialPropertyDataType::Float:
+                return ConvertMaterialPropertyValueNumericType<float>(value);
+            case AZ::RPI::MaterialPropertyDataType::Bool:
+                return ConvertMaterialPropertyValueNumericType<bool>(value);
+            default:
+                break;
+            }
+
+            return AZ::RPI::MaterialPropertyValue::FromAny(value);
         }
     } // namespace Render
 } // namespace AZ
