@@ -189,7 +189,7 @@ def refresh_repos() -> int:
     # set will stop circular references
     repo_set = set()
 
-    for repo_uri in json_data['repos']:
+    for repo_uri in json_data.get('repos', []):
         if repo_uri not in repo_set:
             repo_set.add(repo_uri)
 
