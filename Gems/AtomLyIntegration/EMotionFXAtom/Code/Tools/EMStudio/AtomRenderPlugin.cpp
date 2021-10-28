@@ -8,6 +8,7 @@
 
 #include <EMStudio/AtomRenderPlugin.h>
 #include <EMStudio/AnimViewportRenderer.h>
+#include <EMStudio/AnimViewportToolBar.h>
 
 #include <Integration/Components/ActorComponent.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
@@ -76,7 +77,7 @@ namespace EMStudio
 
     void AtomRenderPlugin::ReinitRenderer()
     {
-        m_animViewportWidget->GetAnimViewportRenderer()->Reinit();
+        m_animViewportWidget->Reinit();
     }
 
     bool AtomRenderPlugin::Init()
@@ -88,7 +89,15 @@ namespace EMStudio
         verticalLayout->setSizeConstraint(QLayout::SetNoConstraint);
         verticalLayout->setSpacing(1);
         verticalLayout->setMargin(0);
+
+        // Add the viewport widget
         m_animViewportWidget = new AnimViewportWidget(m_innerWidget);
+
+        // Add the tool bar
+        AnimViewportToolBar* toolBar = new AnimViewportToolBar(m_innerWidget);
+        toolBar->SetRenderFlags(m_animViewportWidget->GetRenderFlags());
+
+        verticalLayout->addWidget(toolBar);
         verticalLayout->addWidget(m_animViewportWidget);
 
         // Register command callbacks.

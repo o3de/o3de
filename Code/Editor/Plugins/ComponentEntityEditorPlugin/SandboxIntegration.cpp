@@ -1788,6 +1788,11 @@ AZStd::string SandboxIntegrationManager::GetComponentEditorIcon(const AZ::Uuid& 
     return iconPath;
 }
 
+AZStd::string SandboxIntegrationManager::GetComponentTypeEditorIcon(const AZ::Uuid& componentType)
+{
+    return GetComponentEditorIcon(componentType, nullptr);
+}
+
 AZStd::string SandboxIntegrationManager::GetComponentIconPath(const AZ::Uuid& componentType,
     AZ::Crc32 componentIconAttrib, AZ::Component* component)
 {

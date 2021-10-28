@@ -10,8 +10,8 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 
 #include <AzCore/Asset/AssetManagerBus.h>
-
 #include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>
@@ -33,11 +33,27 @@ namespace AZ
             static const char* PassAssetExtension = "pass";
         }
 
+        namespace PassBuilderNamespace
+        {
+            enum PassDependencies
+            {
+                Shader,
+                AttachmentImage,
+                Count
+            };
+
+            static const AZStd::tuple<const char*, const char*> DependencyExtensionJobKeyTable[PassDependencies::Count] =
+            {
+                {".shader", "Shader Asset"},
+                {".attimage", "Any Asset Builder"}
+            };
+        }
+
         void PassBuilder::RegisterBuilder()
         {
             AssetBuilderSDK::AssetBuilderDesc builder;
             builder.m_name = PassBuilderJobKey;
-            builder.m_version = 13; // antonmic: making .pass files declare dependency on shaders they reference
+            builder.m_version = 14; // making .pass files emit product dependencies for the shaders they reference so they are picked up by the asset bundler
             builder.m_busId = azrtti_typeid<PassBuilder>();
             builder.m_createJobFunction = AZStd::bind(&PassBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
             builder.m_processJobFunction = AZStd::bind(&PassBuilder::ProcessJob, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -104,8 +120,27 @@ namespace AZ
             }
         }
 
+        bool SetJobKeyForExtension(const AZStd::string& filePath, FindPassReferenceAssetParams& params)
+        {            
+            AZStd::string extension;
+            StringFunc::Path::GetExtension(filePath.c_str(), extension);
+            for (const auto& [dependencyExtension, jobKey] : PassBuilderNamespace::DependencyExtensionJobKeyTable)
+            {
+                if (extension == dependencyExtension)
+                {
+                    params.jobKey = jobKey;
+                    return true;
+                }
+            }
+
+            AZ_Error(PassBuilderName, false, "PassBuilder found a dependency with extension '%s', but does not know the corresponding job key. Add the job key for that extension to SetJobKeyForExtension in PassBuilder.cpp", extension.c_str());
+            params.jobKey = "Unknown";
+            return false;
+        }
+
         // Helper function to find all assetId's and object references
-        bool FindReferencedAssets(FindPassReferenceAssetParams& params, AssetBuilderSDK::JobDescriptor* job)
+        bool FindReferencedAssets(
+            FindPassReferenceAssetParams& params, AssetBuilderSDK::JobDescriptor* job, AZStd::vector<AssetBuilderSDK::ProductDependency>* productDependencies)
         {
             SerializeContext::ErrorHandler errorLogger;
             errorLogger.Reset();
@@ -129,8 +164,8 @@ namespace AZ
                         if (job != nullptr) // Create Job Phase
                         {
                             params.dependencySourceFile = path;
-                            bool dependencyAddedSuccessfully = AddDependency(params, job);
-                            success = dependencyAddedSuccessfully && success;
+                            success &= SetJobKeyForExtension(path, params);
+                            success &= AddDependency(params, job);
                         }
                         else // Process Job Phase
                         {
@@ -139,6 +174,9 @@ namespace AZ
                             if (assetIdOutcome)
                             {
                                 assetReference->m_assetId = assetIdOutcome.GetValue();
+                                productDependencies->push_back(
+                                    AssetBuilderSDK::ProductDependency{assetReference->m_assetId, AZ::Data::ProductDependencyInfo::CreateFlags(Data::AssetLoadBehavior::NoLoad)}
+                                );
                             }
                             else
                             {
@@ -223,9 +261,9 @@ namespace AZ
             params.passAssetSourceFile = request.m_sourceFile;
             params.passAssetUuid = passAssetUuid;
             params.serializeContext = serializeContext;
-            params.jobKey = "Shader Asset";
+            params.jobKey = "Unknown";
 
-            if (!FindReferencedAssets(params, &job))
+            if (!FindReferencedAssets(params, &job, nullptr))
             {
                 return;
             }
@@ -287,9 +325,10 @@ namespace AZ
             params.passAssetSourceFile = request.m_sourceFile;
             params.passAssetUuid = passAssetUuid;
             params.serializeContext = serializeContext;
-            params.jobKey = "Shader Asset";
+            params.jobKey = "Unknown";
 
-            if (!FindReferencedAssets(params, nullptr))
+            AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
+            if (!FindReferencedAssets(params, nullptr, &productDependencies))
             {
                 return;
             }
@@ -313,6 +352,7 @@ namespace AZ
             // --- Save output product(s) to response ---
 
             AssetBuilderSDK::JobProduct jobProduct(destPath, PassAsset::RTTI_Type(), 0);
+            jobProduct.m_dependencies = productDependencies;
             jobProduct.m_dependenciesHandled = true;
             response.m_outputProducts.push_back(jobProduct);
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;

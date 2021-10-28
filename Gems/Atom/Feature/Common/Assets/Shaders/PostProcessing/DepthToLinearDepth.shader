@@ -1,5 +1,5 @@
 { 
-    "Source" : "DepthToLinearDepth",
+    "Source" : "DepthToLinearDepth.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

@@ -27,6 +27,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzQtComponents/Components/ToastNotification.h>
 
 #include <GraphCanvas/Components/Connections/ConnectionBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
@@ -124,7 +125,7 @@ namespace ScriptCanvasEditor
     public:
         OnSaveToast(AZStd::string_view tabName, AZ::EntityId graphCanvasGraphId, bool saveSuccessful)
         {
-            GraphCanvas::ToastType toastType = GraphCanvas::ToastType::Information;
+            AzQtComponents::ToastType toastType = AzQtComponents::ToastType::Information;
             AZStd::string titleLabel = "Notification";
 
             AZStd::string description;
@@ -136,15 +137,12 @@ namespace ScriptCanvasEditor
             else
             {
                 description = AZStd::string::format("Failed to save %s", tabName.data());
-                toastType = GraphCanvas::ToastType::Error;
+                toastType = AzQtComponents::ToastType::Error;
             }
 
-            GraphCanvas::ToastConfiguration toastConfiguration(toastType, titleLabel, description);
+            AzQtComponents::ToastConfiguration toastConfiguration(toastType, titleLabel.c_str(), description.c_str());
 
-            toastConfiguration.SetCloseOnClick(true);
-            toastConfiguration.SetDuration(AZStd::chrono::milliseconds(5000));
-
-            GraphCanvas::ToastId validationToastId;
+            AzToolsFramework::ToastId validationToastId;
 
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, graphCanvasGraphId, &GraphCanvas::SceneRequests::GetViewId);

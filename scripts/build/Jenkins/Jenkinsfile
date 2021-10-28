@@ -102,6 +102,10 @@ def IsJobEnabled(branchName, buildTypeMap, pipelineName, platformName) {
     }
 }
 
+def IsAPLogUpload(branchName, jobName) {
+    return !IsPullRequest(branchName) && jobName.toLowerCase().contains('asset') && env.AP_LOGS_S3_BUCKET
+}
+
 def GetRunningPipelineName(JENKINS_JOB_NAME) {
     // If the job name has an underscore
     def job_parts = JENKINS_JOB_NAME.tokenize('/')[0].tokenize('_')
@@ -416,18 +420,41 @@ def ExportTestResults(Map options, String platform, String type, String workspac
     }
 }
 
-def ExportTestScreenshots(Map options, String workspace, String platformName, String jobName, Map params) {
+def ExportTestScreenshots(Map options, String branchName, String platformName, String jobName, String workspace, Map params) {
     catchError(message: "Error exporting test screenshots (this won't fail the build)", buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-        def screenshotsFolder = '${workspace}/${ENGINE_REPOSITORY_NAME}/AutomatedTesting/user/PythonTests/Automated/Screenshots'
-        def s3Uploader = '${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/build/tools/upload_to_s3.py'
-        def command = '${options.PYTHON_DIR}/python.cmd -u ${s3Uploader} --base_dir ${screenshotsFolder} ' +
-                      '--file_regex "(.*zip$)" --bucket ${env.TEST_SCREENSHOT_BUCKET} ' +
-                      '--search_subdirectories True --key_prefix ${branchName}_${env.BUILD_NUMBER}' +
-                      '--extra-args {"ACL": "bucket-owner-full-control"}'
-        bat label: "Uploading test screenshots for ${jobName}",
-            script: command
+        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+            def screenshotsFolder = "AutomatedTesting/user/PythonTests/Automated/Screenshots"
+            def s3Uploader = "scripts/build/tools/upload_to_s3.py"
+            def command = "${options.PYTHON_DIR}/python.cmd -u ${s3Uploader} --base_dir ${screenshotsFolder} " +
+                          '--file_regex \\"(.*zip\$)\\" ' +
+                          "--bucket ${env.TEST_SCREENSHOT_BUCKET} " +
+                          "--search_subdirectories True --key_prefix ${branchName}_${env.BUILD_NUMBER} " +
+                          '--extra_args {\\"ACL\\":\\"bucket-owner-full-control\\"}'
+            palSh(command, "Uploading test screenshots for ${jobName}")
+        }
     }
 }
+
+def UploadAPLogs(Map options, String branchName, String jobName, String workspace, Map params) {
+    dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+        projects = params.CMAKE_LY_PROJECTS.split(",")
+        projects.each{ project ->
+            def apLogsPath = "${project}/user/log"
+            def s3UploadScriptPath = "scripts/build/tools/upload_to_s3.py"
+            if(env.IS_UNIX) {
+                pythonPath = "${options.PYTHON_DIR}/python.sh"
+            }
+            else {
+                pythonPath = "${options.PYTHON_DIR}/python.cmd"
+            }
+            def command = "${pythonPath} -u ${s3UploadScriptPath} --base_dir ${apLogsPath} " +
+                          "--file_regex \".*\" --bucket ${env.AP_LOGS_S3_BUCKET} " +
+                          "--search_subdirectories True --key_prefix ${env.JOB_NAME}/${branchName}/${env.BUILD_NUMBER}/${jobName}" +
+                          "--extra-args {\"ACL\": \"bucket-owner-full-control\"}"
+            palSh(command, "Uploading AP logs for job ${jobName} for branch ${branchName}", false)
+            }
+        }
+    }
 
 def PostBuildCommonSteps(String workspace, boolean mount = true) {
     echo 'Starting post-build common steps...'
@@ -484,10 +511,18 @@ def CreateExportTestResultsStage(Map pipelineConfig, String platformName, String
     }
 }
 
-def CreateExportTestScreenshotsStage(Map pipelineConfig, String platformName, String jobName, Map environmentVars, Map params) {
+def CreateExportTestScreenshotsStage(Map pipelineConfig, String branchName, String platformName, String jobName, Map environmentVars, Map params) {
     return {
         stage("${jobName}_screenshots") {
-            ExportTestScreenshots(pipelineConfig, platformName, jobName, environmentVars['WORKSPACE'], params)
+            ExportTestScreenshots(pipelineConfig, branchName, platformName, jobName, environmentVars['WORKSPACE'], params)
+        }
+    }
+}
+
+def CreateUploadAPLogsStage(Map pipelineConfig, String branchName, String jobName, String workspace, Map params) {
+    return {
+        stage("${jobName}_upload_ap_logs") {
+            UploadAPLogs(pipelineConfig, branchName, jobName, workspace, params)
         }
     }
 }
@@ -541,6 +576,9 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                                 error "Node disconnected during build: ${e}"  // Error raised to retry stage on a new node
                             }
                         }
+                        if (IsAPLogUpload(branchName, build_job_name)) {
+                            CreateUploadAPLogsStage(pipelineConfig, branchName, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
+                        }
                         // All other errors will be raised outside the retry block
                         currentResult = envVars['ON_FAILURE_MARK'] ?: 'FAILURE'
                         currentException = e.toString()
@@ -553,10 +591,10 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                             CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
                         }
                         if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
-                            CreateExportTestResultsStage(pipelineConfig,  platform.key, build_job_name, envVars, params).call()
+                            CreateExportTestResultsStage(pipelineConfig, platform.key, build_job_name, envVars, params).call()
                         }
                         if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
-                            CreateExportTestScreenshotsStage(pipelineConfig,  platform.key, build_job_name, envVars, params).call()
+                            CreateExportTestScreenshotsStage(pipelineConfig, branchName, platform.key, build_job_name, envVars, params).call()
                         }
                         CreateTeardownStage(envVars).call()
                     }

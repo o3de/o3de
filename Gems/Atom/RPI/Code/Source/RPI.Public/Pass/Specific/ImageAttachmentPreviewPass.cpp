@@ -244,7 +244,7 @@ namespace AZ
             m_needsShaderLoad = false;
 
             // Load Shader
-            const char* ShaderPath = "shader/imagepreview.azshader";
+            const char* ShaderPath = "shaders/imagepreview.azshader";
             Data::Asset<ShaderAsset> shaderAsset = RPI::FindShaderAsset(ShaderPath);
             m_shader = Shader::FindOrCreate(shaderAsset);
             if (m_shader == nullptr)

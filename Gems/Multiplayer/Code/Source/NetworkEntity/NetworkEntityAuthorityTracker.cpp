@@ -33,8 +33,8 @@ namespace Multiplayer
             AZLOG
             (
                 NET_AuthTracker,
-                "AuthTracker: Removing timeout for networkEntityId %u from %s, new owner is %s",
-                aznumeric_cast<uint32_t>(entityHandle.GetNetEntityId()),
+                "AuthTracker: Removing timeout for networkEntityId %llu from %s, new owner is %s",
+                aznumeric_cast<AZ::u64>(entityHandle.GetNetEntityId()),
                 timeoutData->second.m_previousOwner.GetString().c_str(),
                 newOwner.GetString().c_str()
             );
@@ -48,8 +48,8 @@ namespace Multiplayer
             AZLOG
             (
                 NET_AuthTracker,
-                "AuthTracker: Assigning networkEntityId %u from %s to %s",
-                aznumeric_cast<uint32_t>(entityHandle.GetNetEntityId()),
+                "AuthTracker: Assigning networkEntityId %llu from %s to %s",
+                aznumeric_cast<AZ::u64>(entityHandle.GetNetEntityId()),
                 iter->second.back().GetString().c_str(),
                 newOwner.GetString().c_str()
             );
@@ -59,8 +59,8 @@ namespace Multiplayer
             AZLOG
             (
                 NET_AuthTracker,
-                "AuthTracker: Assigning networkEntityId %u to %s",
-                aznumeric_cast<uint32_t>(entityHandle.GetNetEntityId()),
+                "AuthTracker: Assigning networkEntityId %llu to %s",
+                aznumeric_cast<AZ::u64>(entityHandle.GetNetEntityId()),
                 newOwner.GetString().c_str()
             );
         }
@@ -87,7 +87,7 @@ namespace Multiplayer
                 }
             }
 
-            AZLOG(NET_AuthTracker, "AuthTracker: Removing networkEntityId %u from %s", aznumeric_cast<uint32_t>(entityHandle.GetNetEntityId()), previousOwner.GetString().c_str());
+            AZLOG(NET_AuthTracker, "AuthTracker: Removing networkEntityId %llu from %s", aznumeric_cast<AZ::u64>(entityHandle.GetNetEntityId()), previousOwner.GetString().c_str());
             if (auto localEnt = entityHandle.GetEntity())
             {
                 if (authorityStack.empty())
@@ -114,14 +114,14 @@ namespace Multiplayer
                     }
                     else
                     {
-                        AZLOG(NET_AuthTracker, "AuthTracker: Skipping timeout for Autonomous networkEntityId %u", aznumeric_cast<uint32_t>(entityHandle.GetNetEntityId()));
+                        AZLOG(NET_AuthTracker, "AuthTracker: Skipping timeout for Autonomous networkEntityId %llu", aznumeric_cast<AZ::u64>(entityHandle.GetNetEntityId()));
                     }
                 }
             }
         }
         else
         {
-            AZLOG(NET_AuthTracker, "AuthTracker: Remove authority called on networkEntityId that was never added %u", aznumeric_cast<uint32_t>(entityHandle.GetNetEntityId()));
+            AZLOG(NET_AuthTracker, "AuthTracker: Remove authority called on networkEntityId that was never added %llu", aznumeric_cast<AZ::u64>(entityHandle.GetNetEntityId()));
             AZ_Assert(false, "AuthTracker: Remove authority called on entity that was never added");
         }
     }
@@ -205,8 +205,8 @@ namespace Multiplayer
                 {
                     AZLOG_ERROR
                     (
-                        "Timed out entity id %u during migration previous owner %s, removing it",
-                        aznumeric_cast<uint32_t>(entityHandle.GetNetEntityId()),
+                        "Timed out entity id %llu during migration previous owner %s, removing it",
+                        aznumeric_cast<AZ::u64>(entityHandle.GetNetEntityId()),
                         timeoutData->second.m_previousOwner.GetString().c_str()
                     );
                     m_networkEntityManager.MarkForRemoval(entityHandle);

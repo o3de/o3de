@@ -51,7 +51,7 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
     logger.debug("Running automated test: {}".format(editor_script))
     editor.args.extend(["--skipWelcomeScreenDialog", "--regset=/Amazon/Settings/EnableSourceControl=false", 
                         "--regset=/Amazon/Preferences/EnablePrefabSystem=false", run_python, test_case,
-                        f"--pythontestcase={request.node.originalname}", "--runpythonargs", " ".join(cfg_args)])
+                        f"--pythontestcase={request.node.name}", "--runpythonargs", " ".join(cfg_args)])
     if auto_test_mode:
         editor.args.extend(["--autotest_mode"])
     if null_renderer:

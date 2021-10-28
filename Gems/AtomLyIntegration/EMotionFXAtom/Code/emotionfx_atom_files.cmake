@@ -17,4 +17,6 @@ set(FILES
     Source/AtomActor.cpp
     Source/AtomActorInstance.h
     Source/AtomActorInstance.cpp
+    Source/AtomActorDebugDraw.h
+    Source/AtomActorDebugDraw.cpp
 )

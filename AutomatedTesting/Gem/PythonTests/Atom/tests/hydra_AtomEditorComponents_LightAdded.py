@@ -5,24 +5,49 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-# fmt: off
 class Tests:
-    camera_creation =          ("Camera Entity successfully created",   "Camera Entity failed to be created")
-    camera_component_added =   ("Camera component was added to entity", "Camera component failed to be added to entity")
-    camera_component_check =   ("Entity has a Camera component",        "Entity failed to find Camera component")
-    creation_undo =            ("UNDO Entity creation success",         "UNDO Entity creation failed")
-    creation_redo =            ("REDO Entity creation success",         "REDO Entity creation failed")
-    light_creation =           ("Light Entity successfully created",    "Light Entity failed to be created")
-    light_component =          ("Entity has a Light component",         "Entity failed to find Light component")
-    enter_game_mode =          ("Entered game mode",                    "Failed to enter game mode")
-    exit_game_mode =           ("Exited game mode",                     "Couldn't exit game mode")
-    is_visible =               ("Entity is visible",                    "Entity was not visible")
-    is_hidden =                ("Entity is hidden",                     "Entity was not hidden")
-    entity_deleted =           ("Entity deleted",                       "Entity was not deleted")
-    deletion_undo =            ("UNDO deletion success",                "UNDO deletion failed")
-    deletion_redo =            ("REDO deletion success",                "REDO deletion failed")
-    no_error_occurred =        ("No errors detected",                   "Errors were detected")
-# fmt: on
+    camera_creation = (
+        "Camera Entity successfully created",
+        "Camera Entity failed to be created")
+    camera_component_added = (
+        "Camera component was added to entity",
+        "Camera component failed to be added to entity")
+    camera_component_check = (
+        "Entity has a Camera component",
+        "Entity failed to find Camera component")
+    creation_undo = (
+        "UNDO Entity creation success",
+        "UNDO Entity creation failed")
+    creation_redo = (
+        "REDO Entity creation success",
+        "REDO Entity creation failed")
+    light_creation = (
+        "Light Entity successfully created",
+        "Light Entity failed to be created")
+    light_component = (
+        "Entity has a Light component",
+        "Entity failed to find Light component")
+    enter_game_mode = (
+        "Entered game mode",
+        "Failed to enter game mode")
+    exit_game_mode = (
+        "Exited game mode",
+        "Couldn't exit game mode")
+    is_visible = (
+        "Entity is visible",
+        "Entity was not visible")
+    is_hidden = (
+        "Entity is hidden",
+        "Entity was not hidden")
+    entity_deleted = (
+        "Entity deleted",
+        "Entity was not deleted")
+    deletion_undo = (
+        "UNDO deletion success",
+        "UNDO deletion failed")
+    deletion_redo = (
+        "REDO deletion success",
+        "REDO deletion failed")
 
 
 def AtomEditorComponents_Light_AddedToEntity():
@@ -55,26 +80,25 @@ def AtomEditorComponents_Light_AddedToEntity():
     """
 
     import azlmbr.legacy.general as general
-    import azlmbr.math as math
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.utils import Report, Tracer, TestHelper as helper
+    from editor_python_test_tools.utils import Report, Tracer, TestHelper
+    from Atom.atom_utils.atom_constants import AtomComponentProperties
 
     with Tracer() as error_tracer:
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
-        helper.init_idle()
-        helper.open_level("", "Base")
+        TestHelper.init_idle()
+        TestHelper.open_level("", "Base")
 
         # Test steps begin.
         # 1. Create a Light entity with no components.
-        light_name = "Light"
-        light_entity = EditorEntity.create_editor_entity_at(math.Vector3(512.0, 512.0, 34.0), light_name)
+        light_entity = EditorEntity.create_editor_entity(AtomComponentProperties.light())
         Report.critical_result(Tests.light_creation, light_entity.exists())
 
         # 2. Add Light component to the Light entity.
-        light_entity.add_component(light_name)
-        Report.critical_result(Tests.light_component, light_entity.has_component(light_name))
+        light_component = light_entity.add_component(AtomComponentProperties.light())
+        Report.critical_result(Tests.light_component, light_entity.has_component(AtomComponentProperties.light()))
 
         # 3. UNDO the entity creation and component addition.
         # -> UNDO component addition.
@@ -101,9 +125,9 @@ def AtomEditorComponents_Light_AddedToEntity():
         Report.result(Tests.creation_redo, light_entity.exists())
 
         # 5. Enter/Exit game mode.
-        helper.enter_game_mode(Tests.enter_game_mode)
+        TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
-        helper.exit_game_mode(Tests.exit_game_mode)
+        TestHelper.exit_game_mode(Tests.exit_game_mode)
 
         # 6. Test IsHidden.
         light_entity.set_visibility_state(False)
@@ -126,9 +150,12 @@ def AtomEditorComponents_Light_AddedToEntity():
         general.redo()
         Report.result(Tests.deletion_redo, not light_entity.exists())
 
-        # 11. Look for errors.
-        helper.wait_for_condition(lambda: error_tracer.has_errors, 1.0)
-        Report.result(Tests.no_error_occurred, not error_tracer.has_errors)
+        # 11. Look for errors asserts.
+        TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
+        for error_info in error_tracer.errors:
+            Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
+        for assert_info in error_tracer.asserts:
+            Report.info(f"Assert: {assert_info.filename} {assert_info.function} | {assert_info.message}")
 
 
 if __name__ == "__main__":

@@ -729,8 +729,7 @@ namespace AZ
 
         void CommandList::SetStencilRef(uint8_t stencilRef)
         {
-            vkCmdSetStencilReference(m_nativeCommandBuffer, VK_STENCIL_FACE_FRONT_BIT, static_cast<uint32_t>(stencilRef));
-            vkCmdSetStencilReference(m_nativeCommandBuffer, VK_STENCIL_FACE_BACK_BIT, static_cast<uint32_t>(stencilRef));
+            vkCmdSetStencilReference(m_nativeCommandBuffer, VK_STENCIL_FACE_FRONT_AND_BACK, aznumeric_cast<uint32_t>(stencilRef));
         }
 
         void CommandList::BindPipeline(const PipelineState* pipelineState)
