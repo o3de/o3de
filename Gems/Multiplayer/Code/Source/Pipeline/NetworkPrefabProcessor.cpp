@@ -17,8 +17,6 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <Prefab/Spawnable/SpawnableUtils.h>
-#include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
-#include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 
 namespace Multiplayer
 {
