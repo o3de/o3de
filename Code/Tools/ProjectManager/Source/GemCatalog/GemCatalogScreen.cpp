@@ -167,6 +167,10 @@ namespace O3DE::ProjectManager
                 {
                     notification += " " + tr("and") + " ";
                 }
+                if (added && GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded)
+                {
+                    m_downloadController->AddGemDownload(GemModel::GetName(modelIndex));
+                }
             }
 
             if (numChangedDependencies == 1 )
@@ -223,6 +227,20 @@ namespace O3DE::ProjectManager
                 m_gemModel->AddGem(gemInfo);
             }
 
+            AZ::Outcome<QVector<GemInfo>, AZStd::string> allRepoGemInfosResult = PythonBindingsInterface::Get()->GetAllGemRepoGemsInfos();
+            if (allRepoGemInfosResult.IsSuccess())
+            {
+                const QVector<GemInfo> allRepoGemInfos = allRepoGemInfosResult.GetValue();
+                for (const GemInfo& gemInfo : allRepoGemInfos)
+                {
+                    m_gemModel->AddGem(gemInfo);
+                }
+            }
+            else
+            {
+                QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve gems from repos.<br><br>Error:<br>%1").arg(allRepoGemInfosResult.GetError().c_str()));
+            }
+
             m_gemModel->UpdateGemDependencies();
             m_notificationsEnabled = false;
 
@@ -249,14 +267,14 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve enabled gems for project %1.\n\nError:\n%2").arg(projectPath, enabledGemNamesResult.GetError().c_str()));
+                QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve enabled gems for project %1.<br><br>Error:<br>%2").arg(projectPath, enabledGemNamesResult.GetError().c_str()));
             }
 
             m_notificationsEnabled = true;
         }
         else
         {
-            QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve gems for %1.\n\nError:\n%2").arg(projectPath, allGemInfosResult.GetError().c_str()));
+            QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve gems for %1.<br><br>Error:<br>%2").arg(projectPath, allGemInfosResult.GetError().c_str()));
         }
     }
 

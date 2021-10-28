@@ -153,6 +153,9 @@ namespace AzToolsFramework
     {
         initEntityOutlinerWidgetResources();
 
+        m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
+        AZ_Assert(m_editorEntityUiInterface != nullptr, "EntityOutlinerWidget requires a EditorEntityUiInterface instance on Initialize.");
+
         m_gui = new Ui::EntityOutlinerWidgetUI();
         m_gui->setupUi(this);
 
@@ -281,12 +284,6 @@ namespace AzToolsFramework
         m_clearIcon = QIcon(":/AssetBrowser/Resources/close.png");
 
         m_listModel->Initialize();
-
-        m_editorEntityUiInterface = AZ::Interface<AzToolsFramework::EditorEntityUiInterface>::Get();
-
-        AZ_Assert(
-            m_editorEntityUiInterface != nullptr,
-            "EntityOutlinerWidget requires a EditorEntityUiInterface instance on Initialize.");
 
         EditorPickModeNotificationBus::Handler::BusConnect(GetEntityContextId());
         EntityHighlightMessages::Bus::Handler::BusConnect();

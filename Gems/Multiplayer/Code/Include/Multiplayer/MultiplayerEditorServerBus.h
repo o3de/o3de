@@ -17,8 +17,11 @@ namespace Multiplayer
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-
-        virtual void SendEditorServerInitPacket(AzNetworking::IConnection* connection) = 0;
+        
+        //! Sends a packet that initializes a local server launched from the editor.
+        //! The editor will package the data required for loading the current editor level on the editor-server; data includes entities and asset data.
+        //! @param connection The connection to the editor-server
+        virtual void SendEditorServerLevelDataPacket(AzNetworking::IConnection* connection) = 0;
     };
     using MultiplayerEditorServerRequestBus = AZ::EBus<MultiplayerEditorServerRequests>;
 } // namespace Multiplayer
