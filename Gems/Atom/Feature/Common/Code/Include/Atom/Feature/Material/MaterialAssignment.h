@@ -79,7 +79,7 @@ namespace AZ
         MaterialAssignmentId FindMaterialAssignmentIdInModel(
             const Data::Instance<AZ::RPI::Model>& model, const MaterialAssignmentLodIndex lodFilter, const AZStd::string& labelFilter);
 
-        // Special case handling to convert script values to suported types
+        //! Special case handling to convert script values to supported types
         AZ::RPI::MaterialPropertyValue ConvertMaterialPropertyValueFromScript(
             const AZ::RPI::MaterialPropertyDescriptor* propertyDescriptor, const AZStd::any& value);
 
