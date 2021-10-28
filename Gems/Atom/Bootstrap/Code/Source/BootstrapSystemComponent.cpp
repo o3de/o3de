@@ -175,12 +175,12 @@ namespace AZ
 
             void BootstrapSystemComponent::Initialize()
             {
-                if (m_isAssetCatalogLoaded)
+                if (m_isInitialized)
                 {
                     return;
                 }
 
-                m_isAssetCatalogLoaded = true;
+                m_isInitialized = true;
 
                 if (!RPI::RPISystemInterface::Get()->IsInitialized())
                 {
@@ -225,7 +225,7 @@ namespace AZ
                 {
                     m_windowHandle = windowHandle;
 
-                    if (m_isAssetCatalogLoaded)
+                    if (m_isInitialized)
                     {
                         CreateWindowContext();
                         if (m_createDefaultScene)

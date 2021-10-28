@@ -102,7 +102,7 @@ namespace AZ
                 RPI::ScenePtr m_defaultScene = nullptr;
                 AZStd::shared_ptr<AzFramework::Scene> m_defaultFrameworkScene = nullptr;
 
-                bool m_isAssetCatalogLoaded = false;
+                bool m_isInitialized = false;
 
                 // The id of the render pipeline created by this component
                 RPI::RenderPipelineId m_renderPipelineId;
