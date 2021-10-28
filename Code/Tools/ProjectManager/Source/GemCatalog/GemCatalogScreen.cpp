@@ -54,6 +54,8 @@ namespace O3DE::ProjectManager
         m_gemInspector = new GemInspector(m_gemModel, this);
         m_gemInspector->setFixedWidth(240);
 
+        connect(m_gemInspector, &GemInspector::TagClicked, m_headerWidget, &GemCatalogHeaderWidget::SetSearchFilter);
+
         QWidget* filterWidget = new QWidget(this);
         filterWidget->setFixedWidth(240);
         m_filterWidgetLayout = new QVBoxLayout();

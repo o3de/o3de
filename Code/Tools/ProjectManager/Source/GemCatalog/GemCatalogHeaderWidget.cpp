@@ -439,4 +439,9 @@ namespace O3DE::ProjectManager
     {
         m_filterLineEdit->setText({});
     }
+
+    void GemCatalogHeaderWidget::SetSearchFilter(const QString& filter)
+    {
+        m_filterLineEdit->setText(filter);
+    }
 } // namespace O3DE::ProjectManager

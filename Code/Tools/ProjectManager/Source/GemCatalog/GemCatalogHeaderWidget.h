@@ -86,6 +86,9 @@ namespace O3DE::ProjectManager
 
         void ReinitForProject();
 
+    public slots:
+        void SetSearchFilter(const QString& filter);
+
     signals:
         void AddGem();
         void OpenGemsRepo();
