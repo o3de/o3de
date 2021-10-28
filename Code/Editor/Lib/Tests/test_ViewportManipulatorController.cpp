@@ -110,7 +110,7 @@ namespace UnitTest
 
     const AzFramework::ViewportId ViewportManipulatorControllerFixture::TestViewportId = AzFramework::ViewportId(0);
 
-    TEST_F(ViewportManipulatorControllerFixture, An_event_is_not_propagated_to_the_viewport_when_a_manipulator_handles_it_first)
+    TEST_F(ViewportManipulatorControllerFixture, AnEventIsNotPropagatedToTheViewportWhenAManipulatorHandlesItFirst)
     {
         // forward input events to our controller list
         QObject::connect(
@@ -150,5 +150,31 @@ namespace UnitTest
         EXPECT_FALSE(viewportInteractionCalled);
 
         editorInteractionViewportFake.Disconnect();
+    }
+
+    TEST_F(ViewportManipulatorControllerFixture, ChangingFocusDoesNotClearInput)
+    {
+        bool endedEvent = false;
+
+        // forward input events to our controller list
+        QObject::connect(
+            m_inputChannelMapper.get(), &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, m_rootWidget.get(),
+            [this, &endedEvent](const AzFramework::InputChannel* inputChannel, [[maybe_unused]] QEvent* event)
+            {
+                if (inputChannel->GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::ModifierAltL &&
+                    inputChannel->IsStateEnded())
+                {
+                    endedEvent = true;
+                }
+            });
+
+        AZStd::unique_ptr<QWidget> separateWidget = AZStd::make_unique<QWidget>();
+        separateWidget->setParent(m_rootWidget.release());
+
+        separateWidget->setFocus();
+
+        QTest::keyPress(separateWidget.get(), Qt::Key_Alt, Qt::KeyboardModifier::AltModifier);
+
+        m_rootWidget->setFocus();
     }
 } // namespace UnitTest
