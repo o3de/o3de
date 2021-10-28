@@ -121,7 +121,12 @@ namespace AZ
             MaterialComponentRequestBus::Handler::BusDisconnect();
             MaterialReceiverNotificationBus::Handler::BusDisconnect();
             TickBus::Handler::BusDisconnect();
+
             ReleaseMaterials();
+
+            // Sending notification to wipe any previously assigned material overrides
+            MaterialComponentNotificationBus::Event(
+                m_entityId, &MaterialComponentNotifications::OnMaterialsUpdated, MaterialAssignmentMap());
 
             m_queuedMaterialUpdateNotification = false;
             m_entityId = AZ::EntityId(AZ::EntityId::InvalidEntityId);
@@ -221,6 +226,11 @@ namespace AZ
             if (!anyQueued)
             {
                 ReleaseMaterials();
+
+                // If no other materials were loaded, the notification must still be sent in case there are externally managed material
+                // instances in the configuration
+                MaterialComponentNotificationBus::Event(
+                    m_entityId, &MaterialComponentNotifications::OnMaterialsUpdated, m_configuration.m_materials);
             }
         }
 
@@ -268,8 +278,6 @@ namespace AZ
             {
                 materialPair.second.Release();
             }
-
-            MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialsUpdated, m_configuration.m_materials);
         }
 
         MaterialAssignmentMap MaterialComponentController::GetOriginalMaterialAssignments() const
