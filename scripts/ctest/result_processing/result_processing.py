@@ -112,7 +112,6 @@ def _merge_xml_results(xml_results_path, prefix, merged_xml_name, parent_element
         temp_dict[attribute.name] = attribute.func(0)
 
     def _aggregate_attributes(nodes):
-        missing_attribs = {}
         for node in nodes:
             for attribute in attributes_to_aggregate:
                 if attribute.name in node.attrib:

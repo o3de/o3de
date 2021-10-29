@@ -247,8 +247,7 @@ def main():
                                                "aggregated and summarized.", type=int)
     parser.add_argument('--only-failed', action='store_true',
                         help='Enable this option with the --repeat option to run all repeats against the intially failed tests.')
-    parser.add_argument('--soft-repeat-timeout', type=int, help='Enable this option with the --repeat option to set a soft timeout in seconds. 
-                        'A repeat iteration will complete its full test run, but will not start the next iteration.')
+    parser.add_argument('--soft-repeat-timeout', type=int, help='Enable this option with the --repeat option to set a soft timeout in seconds. A repeat iteration will complete its full test run, but will not start the next iteration.')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--no-gpu', action='store_true',
