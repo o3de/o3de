@@ -427,8 +427,8 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiDisplay::PositionUiOverlayOverRenderViewport()
     {
         QPoint offset = m_renderOverlay->mapToGlobal(QPoint());
-        m_uiMainWindow.move(offset);
-        m_uiOverlay.setFixedSize(m_renderOverlay->width(), m_renderOverlay->height());
+        m_uiMainWindow.setGeometry(offset.x(), offset.y(), m_renderOverlay->width(), m_renderOverlay->height());
+        m_uiOverlay.setGeometry(m_uiMainWindow.rect());
         UpdateUiOverlayGeometry();
     }
 

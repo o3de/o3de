@@ -22,6 +22,7 @@ namespace AzQtComponents
         , m_closeOnClick(true)
         , m_ui(new Ui::ToastNotification())
         , m_fadeAnimation(nullptr)
+        , m_configuration(toastConfiguration)
     {
         setProperty("HasNoWindowDecorations", true);
 
@@ -80,7 +81,13 @@ namespace AzQtComponents
     }
 
     ToastNotification::~ToastNotification()
-    {        
+    {
+    }
+
+    bool ToastNotification::IsDuplicate(const ToastConfiguration& toastConfiguration)
+    {
+        return toastConfiguration.m_title == m_configuration.m_title 
+            && toastConfiguration.m_description == m_configuration.m_description;
     }
 
     void ToastNotification::paintEvent(QPaintEvent* event)

@@ -240,6 +240,19 @@ namespace AZ
                 UpdateMaterialSlots();
             });
             action->setToolTip("Repair materials that reference missing assets by assigning the default asset.");
+            
+            action = menu->addAction("Apply Automatic Property Updates", [this]() {
+                AzToolsFramework::ScopedUndoBatch undoBatch("Applying automatic property updates.");
+                SetDirty();
+
+                uint32_t propertiesUpdated = 0;
+                MaterialComponentRequestBus::EventResult(propertiesUpdated, GetEntityId(), &MaterialComponentRequestBus::Events::ApplyAutomaticPropertyUpdates);
+
+                AZ_Printf("EditorMaterialComponent", "Updated %u property(s).", propertiesUpdated);
+
+                UpdateMaterialSlots();
+            });
+            action->setToolTip("Repair material property overrides that reference missing properties by auto-renaming them where possible.");
         }
 
         void EditorMaterialComponent::SetPrimaryAsset(const AZ::Data::AssetId& assetId)

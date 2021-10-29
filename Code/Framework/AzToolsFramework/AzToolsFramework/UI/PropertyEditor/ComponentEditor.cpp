@@ -583,7 +583,7 @@ namespace AzToolsFramework
         }
 
         AZStd::string iconPath;
-        EBUS_EVENT_RESULT(iconPath, AzToolsFramework::EditorRequests::Bus, GetComponentEditorIcon, componentType, const_cast<AZ::Component*>(&componentInstance));
+        AzToolsFramework::EditorRequestBus::BroadcastResult(iconPath, &AzToolsFramework::EditorRequests::GetComponentEditorIcon, componentType, const_cast<AZ::Component*>(&componentInstance));
         GetHeader()->SetIcon(QIcon(iconPath.c_str()));
 
         bool isExpanded = true;
