@@ -8,7 +8,6 @@
 #if defined(HAVE_BENCHMARK)
 
 #include <AzToolsFramework/Prefab/Spawnable/SpawnableUtils.h>
-
 #include <Prefab/Benchmark/Spawnable/SpawnableBenchmarkFixture.h>
 
 namespace Benchmark
@@ -58,6 +57,8 @@ namespace Benchmark
 
         AZStd::unique_ptr<Instance> instance = m_prefabSystemComponent->CreatePrefab(AZStd::move(entities), {}, m_pathString);
         const PrefabDom& prefabDom = m_prefabSystemComponent->FindTemplateDom(instance->GetTemplateId());
+
+        // Lifecycle of spawnable is managed by the asset that's created using it.
         AzFramework::Spawnable* spawnable = new AzFramework::Spawnable(
             AZ::Data::AssetId::CreateString("{612F2AB1-30DF-44BB-AFBE-17A85199F09E}:0"), AZ::Data::AssetData::AssetStatus::Ready);
         AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(*spawnable, prefabDom);

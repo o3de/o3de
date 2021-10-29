@@ -18,8 +18,9 @@ namespace Benchmark
     BENCHMARK_DEFINE_F(BM_SpawnAllEntities, SingleEntitySpawnable_SpawnCallVariable)(::benchmark::State& state)
     {
         const unsigned int spawnAllEntitiesCallCount = static_cast<unsigned int>(state.range());
+        const unsigned int entityCountInSourcePrefab = 1;
 
-        CreateSpawnable(1);
+        CreateSpawnable(entityCountInSourcePrefab);
 
         for (auto _ : state)
         {
@@ -52,9 +53,9 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_SpawnAllEntities, SingleSpawnCall_EntityCountVariable)(::benchmark::State& state)
     {
-        const unsigned int entityCountInSpawnable = static_cast<unsigned int>(state.range() * 2);
+        const unsigned int entityCountInSpawnable = static_cast<unsigned int>(state.range());
 
-        CreateSpawnable(entityCountInSpawnable - 1);
+        CreateSpawnable(entityCountInSpawnable);
 
         for (auto _ : state)
         {
@@ -62,9 +63,12 @@ namespace Benchmark
             AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(*m_spawnTicket);
             m_rootSpawnableInterface->ProcessSpawnableQueue();
 
+            // Destroy the ticket so that this queues a request to delete all the entities spawned with this ticket.
             state.PauseTiming();
             delete m_spawnTicket;
             m_spawnTicket = nullptr;
+
+            // This will process the request to delete all entities spawned with the ticket
             m_rootSpawnableInterface->ProcessSpawnableQueue();
             state.ResumeTiming();
         }
@@ -82,7 +86,7 @@ namespace Benchmark
         const unsigned int entityCountInSpawnable = static_cast<unsigned int>(state.range(0));
         const unsigned int spawnCallCount = static_cast<unsigned int>(state.range(1));
 
-        CreateSpawnable(entityCountInSpawnable - 1);
+        CreateSpawnable(entityCountInSpawnable);
 
         for (auto _ : state)
         {

@@ -16,12 +16,11 @@
 namespace AzFramework
 {
     class EntitySpawnTicket;
+    class RootSpawnableDefinition;
 }
 
 namespace Benchmark
 {
-    using namespace UnitTest::PrefabTestUtils;
-
     class BM_Spawnable
         : public Benchmark::BM_Prefab
     {
