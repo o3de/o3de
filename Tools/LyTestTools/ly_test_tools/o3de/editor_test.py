@@ -25,7 +25,7 @@ Usage example:
 EditorTestSuite does introspection of the defined classes inside of it and automatically prepares the tests,
 parallelizing/batching as required
 """
-
+from __future__ import annotations
 import pytest
 from _pytest.skipping import pytest_runtest_setup as skipping_pytest_runtest_setup
 
@@ -46,6 +46,7 @@ import re
 import ly_test_tools.environment.file_system as file_system
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.process_utils as process_utils
+import ly_test_tools.o3de.editor_test
 import ly_test_tools.o3de.editor_test_utils as editor_utils
 
 from ly_test_tools.o3de.asset_processor import AssetProcessor
@@ -133,8 +134,7 @@ class Result:
 
     class Pass(Base):
         @classmethod
-        def create(cls, test_spec, output, editor_log):
-            # type (EditorTestBase, str, str) -> Pass
+        def create(cls, test_spec: EditorTestBase, output: str, editor_log: str) -> Pass:
             """
             Creates a Pass object with a given test spec, output string, and editor log string.
             :test_spec: The type of EditorTestBase
@@ -160,8 +160,7 @@ class Result:
 
     class Fail(Base):       
         @classmethod
-        def create(cls, test_spec, output, editor_log):
-            # type (EditorTestBase, str, str) -> Fail
+        def create(cls, test_spec: EditorTestBase, output: str, editor_log: str) -> Fail:
             """
             Creates a Fail object with a given test spec, output string, and editor log string.
             :test_spec: The type of EditorTestBase
@@ -191,8 +190,7 @@ class Result:
 
     class Crash(Base):
         @classmethod
-        def create(cls, test_spec, output, ret_code, stacktrace, editor_log):
-            # type (EditorTestBase, str, int, str, str) -> Crash
+        def create(cls, test_spec: EditorTestBase, output: str, ret_code: int, stacktrace: str, editor_log: str) -> Crash:
             """
             Creates a Crash object with a given test spec, output string, and editor log string. This also includes the
             return code and stacktrace.
@@ -232,8 +230,7 @@ class Result:
 
     class Timeout(Base):
         @classmethod
-        def create(cls, test_spec, output, time_secs, editor_log):
-            # type (EditorTestBase, str, float, str) -> Timeout
+        def create(cls, test_spec: EditorTestBase, output: str, time_secs: float, editor_log: str) -> Timeout:
             """
             Creates a Timeout object with a given test spec, output string, and editor log string. The timeout time
             should be provided in seconds
@@ -266,8 +263,7 @@ class Result:
 
     class Unknown(Base):
         @classmethod
-        def create(cls, test_spec, output, extra_info, editor_log):
-            # type (EditorTestBase, str, str , str) -> Unknown
+        def create(cls, test_spec: EditorTestBase, output: str, extra_info: str, editor_log: str) -> Unknown:
             """
             Creates an Unknown test results object if something goes wrong.
             :test_spec: The type of EditorTestBase
@@ -318,8 +314,7 @@ class EditorTestSuite():
     _TEST_FAIL_RETCODE = 0xF # Return code for test failure
 
     @pytest.fixture(scope="class")
-    def editor_test_data(self, request):
-        # type (request) -> TestData
+    def editor_test_data(self, request: Request) -> TestData:
         """
         Yields a per-testsuite structure to store the data of each test result and an AssetProcessor object that will be
         re-used on the whole suite
@@ -328,7 +323,7 @@ class EditorTestSuite():
         """
         yield from self._editor_test_data(request)
 
-    def _editor_test_data(self, request):
+    def _editor_test_data(self, request: Request) -> TestData:
         """
         A wrapper function for unit testing to call directly
         """
@@ -513,8 +508,7 @@ class EditorTestSuite():
         return EditorTestSuite.EditorTestClass(name, collector)
 
     @classmethod
-    def pytest_custom_modify_items(cls, session, items, config):
-        # type (Session, List[EditorTestBase], Config) -> None
+    def pytest_custom_modify_items(cls, session: Session, items: list[EditorTestBase], config: Config) -> None:
         """
         Adds the runners' functions and filters the tests that will run. The runners will be added if they have any
         selected tests
@@ -538,8 +532,7 @@ class EditorTestSuite():
         items[:] = items + new_items
 
     @classmethod
-    def get_single_tests(cls):
-        # type () -> List
+    def get_single_tests(cls) -> list[EditorSingleTest]:
         """
         Grabs all of the EditorSingleTests subclassed tests from the EditorTestSuite class
         Usage example:
@@ -552,8 +545,7 @@ class EditorTestSuite():
         return single_tests
         
     @classmethod
-    def get_shared_tests(cls):
-        # type () -> List
+    def get_shared_tests(cls) -> list[EditorSharedTest]:
         """
         Grabs all of the EditorSharedTests from the EditorTestSuite
         Usage example:
@@ -566,8 +558,7 @@ class EditorTestSuite():
         return shared_tests
 
     @classmethod
-    def get_session_shared_tests(cls, session):
-        # type (Session) -> List[EditorTestBase]
+    def get_session_shared_tests(cls, session: Session) -> list[EditorTestBase]:
         """
         Filters and returns all of the shared tests in a given session.
         :session: The test session
@@ -577,8 +568,7 @@ class EditorTestSuite():
         return cls.filter_session_shared_tests(session, shared_tests)
 
     @staticmethod
-    def filter_session_shared_tests(session_items, shared_tests):
-        # type (List[EditorTestBase, List[EditorSharedTest]) -> List[EditorTestBase]
+    def filter_session_shared_tests(session_items: list[EditorTestBase], shared_tests: list[EditorSharedTest]) -> list[EditorTestBase]:
         """
         Retrieve the test sub-set that was collected this can be less than the original set if were overriden via -k
         argument or similars
@@ -599,8 +589,8 @@ class EditorTestSuite():
         return selected_shared_tests
         
     @staticmethod
-    def filter_shared_tests(shared_tests, is_batchable=False, is_parallelizable=False):
-        # type (List[EditorSharedTest], bool, bool) -> List[EditorSharedTest]
+    def filter_shared_tests(shared_tests: list[EditorSharedTest], is_batchable: bool = False,
+                            is_parallelizable: bool = False) -> list[EditorSharedTest]:
         """
         Filters and returns all tests based off of if they are batchable and/or parallelizable
         :shared_tests: All shared tests
@@ -617,8 +607,7 @@ class EditorTestSuite():
         ]
 
     ### Utils ###
-    def _prepare_asset_processor(self, workspace, editor_test_data):
-        # type (AbstractWorkspace, TestData) -> None
+    def _prepare_asset_processor(self, workspace: AbstractWorkspace, editor_test_data: TestData) -> None:
         """
         Prepares the asset processor for the test depending on whether or not the process is open and if the current
         test owns it.
@@ -643,8 +632,7 @@ class EditorTestSuite():
             editor_test_data.asset_processor = None
             raise ex
 
-    def _setup_editor_test(self, editor, workspace, editor_test_data):
-        # type(Editor, AbstractWorkspace, TestData) -> None
+    def _setup_editor_test(self, editor: Editor, workspace: AbstractWorkspace, editor_test_data: TestData) -> None:
         """
         Sets up an editor test by preparing the Asset Processor, killing all other O3DE processes, and configuring
         :editor: The launcher Editor object
@@ -657,8 +645,7 @@ class EditorTestSuite():
         editor.configure_settings()
 
     @staticmethod
-    def _get_results_using_output(test_spec_list, output, editor_log_content):
-        # type(List[EditorTestBase], str, str) -> dict{str: Result}
+    def _get_results_using_output(test_spec_list: list[EditorTestBase], output: str, editor_log_content: str) -> dict[str, Result]:
         """
         Utility function for parsing the output information from the editor. It deserializes the JSON content printed in
         the output for every test and returns that information.
@@ -718,8 +705,7 @@ class EditorTestSuite():
         return results
 
     @staticmethod
-    def _report_result(name, result):
-        # type (str, Result) -> None
+    def _report_result(name: str, result: Result) -> None:
         """
         Fails the test if the test result is not a PASS, specifying the information
         :name: Name of the test
@@ -734,8 +720,8 @@ class EditorTestSuite():
             pytest.fail(error_str)
 
     ### Running tests ###
-    def _exec_editor_test(self, request, workspace, editor, run_id, log_name, test_spec, cmdline_args = []):
-        # type (Request, AbstractWorkspace, Editor, int, str, EditorTestBase, List[str] -> dict{str: Result}
+    def _exec_editor_test(self, request: Request, workspace: AbstractWorkspace, editor: Editor, run_id: int,
+                          log_name: str, test_spec: EditorTestBase, cmdline_args: list[str] = []) -> dict[str, Result]:
         """
         Starts the editor with the given test and retuns an result dict with a single element specifying the result
         :request: The pytest request
@@ -796,8 +782,8 @@ class EditorTestSuite():
         results[test_spec.__name__] = test_result
         return results
 
-    def _exec_editor_multitest(self, request, workspace, editor, run_id, log_name, test_spec_list, cmdline_args=[]):
-        # type (Request, AbstractWorkspace, Editor, int, str, List[EditorTestBase], List[str]) -> dict{str: Result}
+    def _exec_editor_multitest(self, request: Request, workspace: AbstractWorkspace, editor: Editor, run_id: int, log_name: str,
+                               test_spec_list: list[EditorTestBase], cmdline_args: list[str] = []) -> dict[str, Result]:
         """
         Starts an editor executable with a list of tests and returns a dict of the result of every test ran within that
         editor instance. In case of failure this function also parses the editor output to find out what specific tests
@@ -907,8 +893,8 @@ class EditorTestSuite():
 
         return results
     
-    def _run_single_test(self, request, workspace, editor, editor_test_data, test_spec):
-        # type (Request, AbstractWorkspace, Editor, TestData, EditorSingleTest) -> None
+    def _run_single_test(self, request: Request, workspace: AbstractWorkspace, editor: Editor,
+                         editor_test_data: TestData, test_spec: EditorSingleTest) -> None:
         """
         Runs a single test (one editor, one test) with the given specs
         :request: The Pytest Request
@@ -928,8 +914,8 @@ class EditorTestSuite():
         test_name, test_result = next(iter(results.items()))
         self._report_result(test_name, test_result)
 
-    def _run_batched_tests(self, request, workspace, editor, editor_test_data, test_spec_list, extra_cmdline_args=[]):
-        # type (Request, AbstractWorkspace, Editor, TestData, List[EditorSharedTest], List[str]) -> None
+    def _run_batched_tests(self, request: Request, workspace: AbstractWorkspace, editor: Editor, editor_test_data: TestData,
+                           test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = []) -> None:
         """
         Runs a batch of tests in one single editor with the given spec list (one editor, multiple tests)
         :request: The Pytest Request
@@ -949,8 +935,8 @@ class EditorTestSuite():
         assert results is not None
         editor_test_data.results.update(results)
 
-    def _run_parallel_tests(self, request, workspace, editor, editor_test_data, test_spec_list, extra_cmdline_args=[]):
-        # type(Request, AbstractWorkspace, Editor, TestData, List[EditorSharedTest], List[str]) -> None
+    def _run_parallel_tests(self, request: Request, workspace: AbstractWorkspace, editor: Editor, editor_test_data: TestData,
+                            test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = []) -> None:
         """
         Runs multiple editors with one test on each editor (multiple editor, one test each)
         :request: The Pytest Request
@@ -997,9 +983,8 @@ class EditorTestSuite():
             for result in results_per_thread:
                 editor_test_data.results.update(result)
 
-    def _run_parallel_batched_tests(self, request, workspace, editor, editor_test_data, test_spec_list,
-                                    extra_cmdline_args=[]):
-        # type(Request, AbstractWorkspace, Editor, TestData, List[EditorSharedTest], List[str] -> None
+    def _run_parallel_batched_tests(self, request: Request, workspace: AbstractWorkspace, editor: Editor, editor_test_data: TestData,
+                                    test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = []) -> None:
         """
         Runs multiple editors with a batch of tests for each editor (multiple editor, multiple tests each)
         :request: The Pytest Request
@@ -1047,8 +1032,7 @@ class EditorTestSuite():
         for result in results_per_thread:
             editor_test_data.results.update(result)
 
-    def _get_number_parallel_editors(self, request):
-        # type(Request) -> int
+    def _get_number_parallel_editors(self, request: Request) -> int:
         """
         Retrieves the number of parallel preference cmdline overrides
         :request: The Pytest Request
