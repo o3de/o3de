@@ -124,9 +124,9 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         cmake_path(RELATIVE_PATH target_library_output_directory BASE_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY} OUTPUT_VARIABLE target_library_output_subdirectory)
     endif()
 
-    if(COMMAND ly_install_target_override)
+    if(COMMAND ly_setup_target_install_targets_override)
         # Mac needs special handling because of a cmake issue
-        ly_install_target_override(TARGET ${TARGET_NAME}
+        ly_setup_target_install_targets_override(TARGET ${TARGET_NAME}
             ARCHIVE_DIR ${archive_output_directory}
             LIBRARY_DIR ${library_output_directory}
             RUNTIME_DIR ${runtime_output_directory}
