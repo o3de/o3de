@@ -466,6 +466,11 @@ namespace AZ
             return m_passLibrary.GetPassTemplate(name);
         }
 
+        void PassSystem::RemovePassTemplate(const Name& name)
+        {
+            m_passLibrary.RemovePassTemplate(name);
+        }
+
         void PassSystem::RemovePassFromLibrary(Pass* pass)
         {
             m_passLibrary.RemovePassFromLibrary(pass);
