@@ -74,6 +74,9 @@ class TestAutomatedTestingProject(object):
         # Kill processes that may interfere with the test
         process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
+        # Check for running AP
+        assert not process_utils.process_exists("AssetProcessor", ignore_extensions=True), "AssetProcessor unexpectedly already running"
+
         try:
             # Create the Workspace object
             workspace = helpers.create_builtin_workspace(project=project)
