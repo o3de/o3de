@@ -186,7 +186,44 @@ namespace UnitTest
         secondaryWidget->setFocus();
 
         // then
-        // the alt key was not released
+        // the alt key was not released (cleared)
         EXPECT_FALSE(endedEvent);
+    }
+
+    // note: Application State Change includes events such as switching to another application or minimizing
+    // the current application
+    TEST_F(ViewportManipulatorControllerFixture, ApplicationStateChangeDoesClearInput)
+    {
+        bool endedEvent = false;
+        // detect input events and ensure that the Alt key press does not end before the end of the test
+        QObject::connect(
+            m_inputChannelMapper.get(), &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, m_rootWidget.get(),
+            [&endedEvent](const AzFramework::InputChannel* inputChannel, [[maybe_unused]] QEvent* event)
+            {
+                if (inputChannel->GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::ModifierAltL &&
+                    inputChannel->IsStateEnded())
+                {
+                    endedEvent = true;
+                }
+            });
+
+        // given
+        auto* secondaryWidget = new QWidget(m_rootWidget.get());
+
+        m_rootWidget->show();
+        secondaryWidget->show();
+
+        m_rootWidget->setFocus();
+
+        // simulate a key press when root widget has focus
+        QTest::keyPress(m_rootWidget.get(), Qt::Key_Alt, Qt::KeyboardModifier::AltModifier);
+
+        // when
+        // change the window state
+        m_rootWidget->setWindowState(Qt::WindowState::WindowMinimized);
+
+        // then
+        // the alt key was released (cleared)
+        EXPECT_TRUE(endedEvent);
     }
 } // namespace UnitTest
