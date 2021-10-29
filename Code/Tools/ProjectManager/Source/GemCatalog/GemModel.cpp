@@ -276,9 +276,11 @@ namespace O3DE::ProjectManager
 
     void GemModel::SetIsAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)
     {
+        // get the gemName first, because the modelIndex data change after adding because of filters
+        QString gemName = modelIndex.data(RoleName).toString();
         model.setData(modelIndex, isAdded, RoleIsAdded);
 
-        UpdateDependencies(model, modelIndex);
+        UpdateDependencies(model, gemName, isAdded);
     }
 
     bool GemModel::HasDependentGems(const QModelIndex& modelIndex) const
@@ -294,15 +296,17 @@ namespace O3DE::ProjectManager
         return false;
     }
 
-    void GemModel::UpdateDependencies(QAbstractItemModel& model, const QModelIndex& modelIndex)
+    void GemModel::UpdateDependencies(QAbstractItemModel& model, const QString& gemName, bool isAdded)
     {
         GemModel* gemModel = GetSourceModel(&model);
         AZ_Assert(gemModel, "Failed to obtain GemModel");
 
+        QModelIndex modelIndex = gemModel->FindIndexByNameString(gemName);
+
         QVector<QModelIndex> dependencies = gemModel->GatherGemDependencies(modelIndex);
         uint32_t numChangedDependencies = 0;
 
-        if (IsAdded(modelIndex))
+        if (isAdded)
         {
             for (const QModelIndex& dependency : dependencies)
             {
@@ -324,7 +328,7 @@ namespace O3DE::ProjectManager
             bool hasDependentGems = gemModel->HasDependentGems(modelIndex);
             if (IsAddedDependency(modelIndex) != hasDependentGems)
             {
-                SetIsAddedDependency(model, modelIndex, hasDependentGems);
+                SetIsAddedDependency(*gemModel, modelIndex, hasDependentGems);
             }
 
             for (const QModelIndex& dependency : dependencies)
@@ -343,7 +347,7 @@ namespace O3DE::ProjectManager
             }
         }
 
-        gemModel->emit gemStatusChanged(modelIndex, numChangedDependencies);
+        gemModel->emit gemStatusChanged(gemName, numChangedDependencies);
     }
 
     void GemModel::SetIsAddedDependency(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)
