@@ -8,7 +8,6 @@
 
 set(LY_INSTALLER_WIX_ROOT "" CACHE PATH "Path to the WiX install path")
 
-message("LY_INSTALLER_WIX_ROOT ${LY_INSTALLER_WIX_ROOT}")
 if(LY_INSTALLER_WIX_ROOT)
     if(NOT EXISTS ${LY_INSTALLER_WIX_ROOT})
         message(FATAL_ERROR "Invalid path supplied for LY_INSTALLER_WIX_ROOT argument")
@@ -106,9 +105,8 @@ set(_raw_text_license [[
         <Text Name="EulaAcceptance" X="42" Y="-56" Width="-42" Height="18" TabStop="yes" FontId="1" HideWhenDisabled="yes">#(loc.InstallEulaAcceptance)</Text>
 ]])
 
-# if we are doing an offline installer, there is a limit in size the wix tooling can handle and produces
-# issues for our current sizes. If the installer is offline, disable the curstom wix generator generating
-# a msi instead.
+# The offline installer generation will be a single monolithic MSI. The WIX burn tool for the bootstrapper EXE has a size limitation. 
+# So we will exclude the generation of the boostrapper EXE in the offline case.
 if(LY_INSTALLER_DOWNLOAD_URL)
     set(WIX_THEME_WARNING_IMAGE ${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/warning.png)
 
