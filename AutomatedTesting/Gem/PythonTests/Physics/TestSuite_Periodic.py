@@ -403,17 +403,20 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_Collider_SphereShapeEditting(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_SphereShapeEditting as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module,
+                       extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"])
 
     @revert_physics_config
     def test_Collider_BoxShapeEditting(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_BoxShapeEditting as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module,
+                       extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"])
 
     @revert_physics_config
     def test_Collider_CapsuleShapeEditting(self, request, workspace, editor, launcher_platform):
         from .tests.collider import Collider_CapsuleShapeEditting as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module,
+                       extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"])
 
     def test_ForceRegion_WithNonTriggerColliderWarning(self, request, workspace, editor, launcher_platform):
         from .tests.force_region import ForceRegion_WithNonTriggerColliderWarning as test_module

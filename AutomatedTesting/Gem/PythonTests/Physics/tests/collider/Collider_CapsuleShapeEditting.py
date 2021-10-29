@@ -74,7 +74,7 @@ def Collider_CapsuleShapeEditting():
 
     helper.init_idle()
     # 1) Load the empty level
-    helper.open_level("Physics", "Base")
+    helper.open_level("", "Base")
 
     # 2) Create the test entity
     test_entity = Entity.create_editor_entity("Test Entity")
