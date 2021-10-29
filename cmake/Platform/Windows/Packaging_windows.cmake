@@ -8,6 +8,7 @@
 
 set(LY_INSTALLER_WIX_ROOT "" CACHE PATH "Path to the WiX install path")
 
+message("LY_INSTALLER_WIX_ROOT ${LY_INSTALLER_WIX_ROOT}")
 if(LY_INSTALLER_WIX_ROOT)
     if(NOT EXISTS ${LY_INSTALLER_WIX_ROOT})
         message(FATAL_ERROR "Invalid path supplied for LY_INSTALLER_WIX_ROOT argument")
