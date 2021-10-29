@@ -99,7 +99,6 @@ namespace EMotionFX
             float m_rootFutureFactor = 1.0f;
             float m_rootPastFactor = 1.0f;
             float m_differentMotionFactor = 1.0f;
-            float m_rootDirectionFactor = 1.0f;
             float m_pathRadius = 1.0f;
             float m_pathSpeed = 1.0f;
             float m_lowestCostSearchFrequency = 0.1f;
