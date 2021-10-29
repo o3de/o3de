@@ -68,6 +68,7 @@ namespace O3DE::ProjectManager
     void GemModel::Clear()
     {
         clear();
+        m_nameToIndexMap.clear();
     }
 
     void GemModel::UpdateGemDependencies()
