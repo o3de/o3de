@@ -179,7 +179,7 @@ namespace UnitTest
         m_rootWidget->setFocus();
 
         // simulate a key press when root widget has focus
-        QTest::keyPress(secondaryWidget, Qt::Key_Alt, Qt::KeyboardModifier::AltModifier);
+        QTest::keyPress(m_rootWidget.get(), Qt::Key_Alt, Qt::KeyboardModifier::AltModifier);
 
         // when
         // change focus to secondary widget
