@@ -41,13 +41,12 @@ def _regex_matching_any(words):
 
 
 def _get_only_failed(cmake_build_path):
-    # type (str) -> str or None
+    # type (str) -> str
     """
     Read and parse the LastTestsFailed log if possible to build a list of tests to run. A string is returned that is
-    passed to the CTest regex -R option. The string contains all of the failed test modules to run joined with |. If an
-    exception occurs, it will return None and be skipped.
+    passed to the CTest regex -R option. The string contains all of the failed test modules to run joined with '|'.
     :param cmake_build_path: The patch to the CMake build folder as a string
-    :return: A string to pass to CTest regex option, returns None if an exception occured
+    :return: A string to pass to CTest regex option
     """
     failed_tests_list_lines = []
     failed_test_modules = []
