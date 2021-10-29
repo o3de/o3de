@@ -1,12 +1,12 @@
 {
-    "template_name": "CustomTool",
-    "origin": "The primary repo for CustomTool goes here: i.e. http://www.mydomain.com",
-    "license": "What license CustomTool uses goes here: i.e. https://opensource.org/licenses/MIT",
-    "display_name": "CustomTool",
+    "template_name": "CppToolGem",
+    "origin": "The primary repo for CppToolGem goes here: i.e. http://www.mydomain.com",
+    "license": "What license CppToolGem uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "display_name": "CppToolGem",
     "summary": "A gem template for a custom tool in C++ that gets registered with the Editor.",
     "canonical_tags": [],
     "user_tags": [
-        "CustomTool"
+        "CppToolGem"
     ],
     "icon_path": "preview.png",
     "copyFiles": [

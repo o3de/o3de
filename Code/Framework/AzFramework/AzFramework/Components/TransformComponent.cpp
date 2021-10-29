@@ -323,6 +323,13 @@ namespace AzFramework
         return localZ;
     }
 
+    void TransformComponent::SetWorldRotation(const AZ::Vector3& eulerAnglesRadian)
+    {
+        AZ::Transform newWorldTransform = m_worldTM;
+        newWorldTransform.SetRotation(AZ::Quaternion::CreateFromEulerAnglesRadians(eulerAnglesRadian));
+        SetWorldTM(newWorldTransform);
+    }
+
     void TransformComponent::SetWorldRotationQuaternion(const AZ::Quaternion& quaternion)
     {
         AZ::Transform newWorldTransform = m_worldTM;

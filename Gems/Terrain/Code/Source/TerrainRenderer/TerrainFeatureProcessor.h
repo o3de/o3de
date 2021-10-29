@@ -303,10 +303,6 @@ namespace Terrain
             AZ::Transform m_transform{ AZ::Transform::CreateIdentity() };
             AZ::Aabb m_terrainBounds{ AZ::Aabb::CreateNull() };
             AZ::Data::Instance<AZ::RPI::AttachmentImage> m_heightmapImage;
-            uint32_t m_heightmapImageWidth{ 0 };
-            uint32_t m_heightmapImageHeight{ 0 };
-            uint32_t m_updateWidth{ 0 };
-            uint32_t m_updateHeight{ 0 };
             float m_sampleSpacing{ 0.0f };
             bool m_heightmapUpdated{ true };
             bool m_macroMaterialsUpdated{ true };

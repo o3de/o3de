@@ -119,7 +119,9 @@ namespace Terrain
         LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
 
         // Since this height data will no longer exist, notify the terrain system to refresh the area.
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId());
+        TerrainSystemServiceRequestBus::Broadcast(
+            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
+            AzFramework::Terrain::TerrainDataNotifications::HeightData);
     }
 
     bool TerrainHeightGradientListComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -176,7 +178,9 @@ namespace Terrain
     void TerrainHeightGradientListComponent::OnCompositionChanged()
     {
         RefreshMinMaxHeights();
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId());
+        TerrainSystemServiceRequestBus::Broadcast(
+            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
+            AzFramework::Terrain::TerrainDataNotifications::HeightData);
     }
 
     void TerrainHeightGradientListComponent::RefreshMinMaxHeights()

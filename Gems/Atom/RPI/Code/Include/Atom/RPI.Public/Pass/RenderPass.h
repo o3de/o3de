@@ -13,9 +13,7 @@
 #include <Atom/RHI/DrawList.h>
 #include <Atom/RHI/ScopeProducer.h>
 
-#include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
-#include <Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 namespace AZ
@@ -29,7 +27,6 @@ namespace AZ
 
     namespace RPI
     {
-        class ImageAttachmentCopy;
         class RenderPass;
         class Query;
 
@@ -40,8 +37,6 @@ namespace AZ
             public RHI::ScopeProducer
         {
             AZ_RPI_PASS(RenderPass);
-
-            friend class ImageAttachmentPreviewPass;
 
             using ScopeQuery = AZStd::array<RHI::Ptr<Query>, static_cast<size_t>(ScopeQueryType::Count)>;
 
@@ -142,8 +137,6 @@ namespace AZ
 
             // Readback the results from the ScopeQueries
             void ReadbackScopeQueryResults();
-
-            AZStd::weak_ptr<ImageAttachmentCopy> m_attachmentCopy;
 
             // Readback results from the Timestamp queries
             TimestampResult m_timestampResult;
