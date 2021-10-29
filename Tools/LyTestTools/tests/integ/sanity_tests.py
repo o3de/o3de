@@ -105,7 +105,7 @@ class TestAutomatedTestingProject(object):
                           "--platforms=linux", "--quitonidle"]
 
             try:
-                result = subprocess.run(ap_command, capture_output=True, check=True, timeout=60)
+                result = subprocess.run(ap_command, capture_output=True, check=True, timeout=120)
             except subprocess.TimeoutExpired as te:
                 raise RuntimeError(f'AP failed to idle within 60s with output:\n{te.output}')
             raise RuntimeError(result.stdout)
