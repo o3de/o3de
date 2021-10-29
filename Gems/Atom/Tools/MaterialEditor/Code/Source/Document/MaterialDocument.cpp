@@ -375,9 +375,27 @@ namespace MaterialEditor
             return false;
         }
 
+        // The new child material might be saved to a different folder, so we can't just use m_materialSourceData.m_materialType directly
+        // because it might be relative to the original file path.
+        AZStd::string materialTypePath = m_materialSourceData.m_materialType;
+        {
+            AZStd::string materialTypeFullPath = AssetUtils::ResolvePathReference(m_absolutePath, materialTypePath);
+
+            bool materialTypeFound = false;
+            AZ::Data::AssetInfo materialTypeInfo;
+            AZStd::string materialTypeWatchFolder;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(materialTypeFound,
+                &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath,
+                materialTypeFullPath.c_str(), materialTypeInfo, materialTypeWatchFolder);
+            if (materialTypeFound)
+            {
+                materialTypePath = materialTypeInfo.m_relativePath;
+            }
+        }
+
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_materialType = m_materialSourceData.m_materialType;
+        sourceData.m_materialType = materialTypePath;
         
         AZ_Assert(m_materialAsset && m_materialAsset->GetMaterialTypeAsset(), "When IsOpen() is true, these assets should not be null.");
         sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
