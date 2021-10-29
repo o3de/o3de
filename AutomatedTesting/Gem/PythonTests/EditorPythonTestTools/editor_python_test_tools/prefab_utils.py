@@ -145,14 +145,6 @@ class PrefabInstance:
         """
         return self.container_entity.get_children()
 
-    def get_all_entites(self):
-        """
-        Returns all the entities that make up all this prefab, including the entities that are inside children instances
-        """
-        # TBD
-        return self.container_entity.get_children()        
-
-
 
 # This is a helper class which contains some of the useful information about a prefab template.
 class Prefab:

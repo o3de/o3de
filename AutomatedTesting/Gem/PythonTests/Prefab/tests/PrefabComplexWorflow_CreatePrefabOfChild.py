@@ -35,7 +35,6 @@ def PrefabComplexWorflow_CreatePrefabOfChild():
     # Asserts if prefab creation doesn't succeed
     child_prefab, child_instance = Prefab.create_prefab([child_entity], CAR_PREFAB_FILE_NAME)
     child_entity_on_child_instance = child_instance.get_first_level_entities()[0]
-    #assert child_entity.id == child_entity_on_child_instance.id, f"Newly instanced entity content (entity id:{child_entity_on_child_instance.id}) does not match the previous entity id {child_entity.id}. The entity id is inconsistent"
     assert child_instance.container_entity.get_parent_id().IsValid(), "Newly instanced entity has no parent"
     assert child_instance.container_entity.get_parent_id() == parent_entity.id, "Newly instanced entity parent does not match the expected parent"
     assert child_instance.container_entity.get_world_translation().IsClose(parent_entity.get_world_translation()), "Newly instanced entity position is not located at the same position as the parent"
