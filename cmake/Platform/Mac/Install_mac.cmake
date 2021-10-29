@@ -109,7 +109,7 @@ function(ly_setup_target_install_targets_override)
     endif()
 endfunction()
 
-#! ly_install_code_function_override: Mac specific copy function to handle frameworks
+#! ly_setup_runtime_dependencies_copy_function_override: Mac specific copy function to handle frameworks
 function(ly_setup_runtime_dependencies_copy_function_override)
 
     configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/InstallUtils_mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/InstallUtils_mac.cmake @ONLY)
