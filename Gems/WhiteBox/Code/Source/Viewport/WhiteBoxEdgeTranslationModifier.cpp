@@ -66,12 +66,12 @@ namespace WhiteBox
     // (ensure to remove duplicates as vertices will be shared across edges)
     static Api::VertexHandles VertexHandlesForEdges(const WhiteBoxMesh& whiteBox, const Api::EdgeHandles& edgeHandles)
     {
-        Api::VertexHandles vertexHandles = AZStd::accumulate(edgeHandles.begin(), edgeHandles.end(), Api::VertexHandles{}, 
+        Api::VertexHandles vertexHandles = AZStd::accumulate(
+            edgeHandles.begin(), edgeHandles.end(), Api::VertexHandles{},
             [&whiteBox](Api::VertexHandles vertexHandles, const Api::EdgeHandle edgeHandle) 
             {
                 const auto edgeVertexHandles = Api::EdgeVertexHandles(whiteBox, edgeHandle);
-                vertexHandles.push_back(edgeVertexHandles[0]);
-                vertexHandles.push_back(edgeVertexHandles[1]);
+                vertexHandles.insert(vertexHandles.end(), edgeVertexHandles.begin(), edgeVertexHandles.end());
                 return vertexHandles;
             });
             

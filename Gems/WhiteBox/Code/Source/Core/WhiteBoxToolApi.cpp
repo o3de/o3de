@@ -2974,7 +2974,8 @@ namespace WhiteBox
             using ModifiedFaceHandle = AZStd::pair<Mesh::FaceHandle, Mesh::FaceHandle>;
             using ModifiedFaceHandles = AZStd::vector<ModifiedFaceHandle>;
 
-            const ModifiedFaceHandles modifiedFaceHandles = AZStd::inner_product(faceHandlesCopy.begin(), faceHandlesCopy.end(), faceHandlePtrs.begin(), ModifiedFaceHandles{}, 
+            const ModifiedFaceHandles modifiedFaceHandles = AZStd::inner_product(
+                faceHandlesCopy.begin(), faceHandlesCopy.end(), faceHandlePtrs.begin(), ModifiedFaceHandles{}, 
                 [](ModifiedFaceHandles modifiedFaceHandles, const ModifiedFaceHandle& fh)
                 {
                     if (fh.first.is_valid())
