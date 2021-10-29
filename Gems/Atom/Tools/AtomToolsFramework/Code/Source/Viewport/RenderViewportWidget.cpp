@@ -194,13 +194,17 @@ namespace AtomToolsFramework
         m_controllerList->UpdateViewport({GetId(), AzFramework::FloatSeconds(deltaTime), m_time});
     }
 
-    void RenderViewportWidget::resizeEvent([[maybe_unused]] QResizeEvent* event)
-    {
-        SendWindowResizeEvent();
-    }
-
     bool RenderViewportWidget::event(QEvent* event)
     {
+        switch (event->type()) 
+        {
+            case QEvent::Resize:
+                SendWindowResizeEvent();
+                break;
+
+            default:
+                break;
+        }
         return QWidget::event(event);
     }
 
@@ -365,6 +369,16 @@ namespace AtomToolsFramework
     void RenderViewportWidget::EndCursorCapture()
     {
         m_inputChannelMapper->SetCursorCaptureEnabled(false);
+    }
+
+    void RenderViewportWidget::SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride)
+    {
+        m_inputChannelMapper->SetOverrideCursor(cursorStyleOverride);
+    }
+
+    void RenderViewportWidget::ClearOverrideCursor()
+    {
+        m_inputChannelMapper->ClearOverrideCursor();
     }
 
     void RenderViewportWidget::SetWindowTitle(const AZStd::string& title)

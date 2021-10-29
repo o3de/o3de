@@ -320,7 +320,7 @@ namespace PhysXEditorTests
     
     TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithCylinderWithNullHeight_HandledGracefully)
     {
-        ValidateInvalidEditorShapeColliderComponentParams(0.f, 1.f);
+        ValidateInvalidEditorShapeColliderComponentParams(1.f, 0.f);
     }
     
     TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithCylinderWithNullRadiusAndNullHeight_HandledGracefully)
@@ -338,31 +338,42 @@ namespace PhysXEditorTests
         ValidateInvalidEditorShapeColliderComponentParams(0.f, -1.f);
     }
 
-    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithUnsupportedShape_HandledGracefully)
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithCylinderSwitchingFromNullHeightToValidHeight_HandledGracefully)
     {
-        UnitTest::ErrorHandler unsupportedShapeWarningHandler("Unsupported shape");
-        UnitTest::ErrorHandler rigidBodyWarningHandler("No Collider or Shape information found when creating Rigid body");
-
         // create an editor entity with a shape collider component and a cylinder shape component
-        // the cylinder shape is not currently supported by the shape collider component
         EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
         editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
-        editorEntity->CreateComponent(LmbrCentral::EditorCompoundShapeComponentTypeId);
+        editorEntity->CreateComponent(LmbrCentral::EditorCylinderShapeComponentTypeId);
         editorEntity->Activate();
 
-        EXPECT_EQ(unsupportedShapeWarningHandler.GetExpectedWarningCount(), 1);
-        EXPECT_EQ(rigidBodyWarningHandler.GetExpectedWarningCount(), 1);
+        const float validRadius = 1.0f;
+        const float nullHeight = 0.0f;
+        const float validHeight = 1.0f;
 
-        EntityPtr gameEntity = CreateActiveGameEntityFromEditorEntity(editorEntity.get());
+        LmbrCentral::CylinderShapeComponentRequestsBus::Event(editorEntity->GetId(),
+            &LmbrCentral::CylinderShapeComponentRequests::SetRadius, validRadius);
 
-        // since there was no editor rigid body component, the runtime entity should have a static rigid body
-        const auto* staticBody = azdynamic_cast<PhysX::StaticRigidBody*>(gameEntity->FindComponent<PhysX::StaticRigidBodyComponent>()->GetSimulatedBody());
-        const auto* pxRigidStatic = static_cast<const physx::PxRigidStatic*>(staticBody->GetNativePointer());
+        {
+            UnitTest::ErrorHandler dimensionWarningHandler("Negative or zero cylinder dimensions are invalid");
+            UnitTest::ErrorHandler colliderWarningHandler("No Collider or Shape information found when creating Rigid body");
 
-        PHYSX_SCENE_READ_LOCK(pxRigidStatic->getScene());
+            LmbrCentral::CylinderShapeComponentRequestsBus::Event(editorEntity->GetId(),
+                &LmbrCentral::CylinderShapeComponentRequests::SetHeight, nullHeight);
 
-        // there should be no shapes on the rigid body because the cylinder is not supported
-        EXPECT_EQ(pxRigidStatic->getNbShapes(), 0);
+            EXPECT_EQ(dimensionWarningHandler.GetExpectedWarningCount(), 1);
+            EXPECT_EQ(colliderWarningHandler.GetExpectedWarningCount(), 1);
+        }
+
+        {
+            UnitTest::ErrorHandler dimensionWarningHandler("Negative or zero cylinder dimensions are invalid");
+            UnitTest::ErrorHandler colliderWarningHandler("No Collider or Shape information found when creating Rigid body");
+
+            LmbrCentral::CylinderShapeComponentRequestsBus::Event(editorEntity->GetId(),
+                &LmbrCentral::CylinderShapeComponentRequests::SetHeight, validHeight);
+
+            EXPECT_EQ(dimensionWarningHandler.GetExpectedWarningCount(), 0);
+            EXPECT_EQ(colliderWarningHandler.GetExpectedWarningCount(), 0);
+        }
     }
 
     TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithBoxAndRigidBody_CorrectRuntimeComponents)

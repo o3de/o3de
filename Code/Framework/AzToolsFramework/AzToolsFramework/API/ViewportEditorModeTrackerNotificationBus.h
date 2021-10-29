@@ -43,8 +43,9 @@ namespace AzToolsFramework
     };
 
     //! Provides a bus to notify when the different editor modes are entered/exit.
-    class ViewportEditorModeNotifications
-        : public AZ::EBusTraits
+    //! @note The editor modes are not discrete states but rather each progression of mode retain the active the parent
+    //! mode that the new mode progressed from.
+    class ViewportEditorModeNotifications : public AZ::EBusTraits
     {
     public:
         //////////////////////////////////////////////////////////////////////////
@@ -58,14 +59,17 @@ namespace AzToolsFramework
         static void Reflect(AZ::ReflectContext* context);
 
         //! Notifies subscribers of the a given viewport to the activation of the specified editor mode.
-        virtual void OnEditorModeActivated([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
+        virtual void OnEditorModeActivated(
+            [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
         {
         }
 
         //! Notifies subscribers of the a given viewport to the deactivation of the specified editor mode.
-        virtual void OnEditorModeDeactivated([[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
+        virtual void OnEditorModeDeactivated(
+            [[maybe_unused]] const ViewportEditorModesInterface& editorModeState, [[maybe_unused]] ViewportEditorMode mode)
         {
         }
     };
+
     using ViewportEditorModeNotificationsBus = AZ::EBus<ViewportEditorModeNotifications>;
 } // namespace AzToolsFramework

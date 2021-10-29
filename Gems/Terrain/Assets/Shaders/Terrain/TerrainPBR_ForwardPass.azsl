@@ -17,6 +17,7 @@
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
 
 struct VSOutput
 {
@@ -28,6 +29,8 @@ struct VSOutput
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV2;
     float2 m_uv : UV1;
 };
+
+option bool o_debugDetailMaterialIds = false;
 
 VSOutput TerrainPBR_MainPassVS(VertexInput IN)
 {
@@ -59,6 +62,7 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
         DirectionalLightShadow::GetShadowCoords(
             shadowIndex,
             worldPosition,
+            OUT.m_normal,
             OUT.m_shadowCoords);
     }
     
@@ -68,7 +72,6 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
 ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
 {
     // ------- Surface -------
-
     Surface surface;
     
     // Position
@@ -83,12 +86,32 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     
     // ------- Normal -------
     float3 macroNormal = IN.m_normal;
-    if (o_macroNormal_useTexture)
-    {
-        macroNormal = GetNormalInputTS(TerrainMaterialSrg::m_macroNormalMap, TerrainMaterialSrg::m_sampler, 
-            origUv, TerrainMaterialSrg::m_flipMacroNormalX, TerrainMaterialSrg::m_flipMacroNormalY, CreateIdentity3x3(), true, 1.0);
-    }
     
+    // ------- Macro Color / Normal -------
+    float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
+    [unroll] for (uint i = 0; i < 4; ++i)
+    {
+        float2 macroUvMin = ObjectSrg::m_macroMaterialData[i].m_uvMin;
+        float2 macroUvMax = ObjectSrg::m_macroMaterialData[i].m_uvMax;
+        float2 macroUv = lerp(macroUvMin, macroUvMax, IN.m_uv);
+        if (macroUv.x >= 0.0 && macroUv.x <= 1.0 && macroUv.y >= 0.0 && macroUv.y <= 1.0)
+        {
+            if ((ObjectSrg::m_macroMaterialData[i].m_mapsInUse & 1) > 0)
+            {
+                macroColor = GetBaseColorInput(ObjectSrg::m_macroColorMap[i], TerrainMaterialSrg::m_sampler, macroUv, macroColor, true);
+            }
+            if ((ObjectSrg::m_macroMaterialData[i].m_mapsInUse & 2) > 0)
+            {
+                bool flipX = ObjectSrg::m_macroMaterialData[i].m_flipNormalX;
+                bool flipY = ObjectSrg::m_macroMaterialData[i].m_flipNormalY;
+                bool factor = ObjectSrg::m_macroMaterialData[i].m_normalFactor;
+                macroNormal = GetNormalInputTS(ObjectSrg::m_macroNormalMap[i], TerrainMaterialSrg::m_sampler, 
+                    macroUv, flipX, flipY, CreateIdentity3x3(), true, factor);
+            }
+            break;
+        }
+    }
+
     float3 detailNormal = GetNormalInputTS(TerrainMaterialSrg::m_normalMap, TerrainMaterialSrg::m_sampler, 
         detailUv, TerrainMaterialSrg::m_flipNormalX, TerrainMaterialSrg::m_flipNormalY, CreateIdentity3x3(), o_normal_useTexture, TerrainMaterialSrg::m_normalFactor);
 
@@ -97,12 +120,51 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     surface.normal = normalize(surface.normal);
     surface.vertexNormal = normalize(IN.m_normal);
 
-    // ------- Macro Color -------
-    float3 macroColor = GetBaseColorInput(TerrainMaterialSrg::m_macroColorMap, TerrainMaterialSrg::m_sampler, origUv, TerrainMaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
-
     // ------- Base Color -------
     float3 detailColor = GetBaseColorInput(TerrainMaterialSrg::m_baseColorMap, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
     float3 blendedColor = BlendBaseColor(lerp(detailColor, TerrainMaterialSrg::m_baseColor.rgb, detailFactor), macroColor, TerrainMaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
+
+    // ------- Debug detail materials using random colors -------
+    // This assigns a random color to each material, turns off any kind of distance fading, and draws a black line at the texture edges.
+    if (o_debugDetailMaterialIds) 
+    {
+        float2 detailRegionMin = TerrainMaterialSrg::m_detailAabb.xy;
+        float2 detailRegionMax = TerrainMaterialSrg::m_detailAabb.zw;
+        float2 detailRegionUv = (surface.position.xy - detailRegionMin) / (detailRegionMax - detailRegionMin);
+        if (all(detailRegionUv > TerrainMaterialSrg::m_detailHalfPixelUv) && all(detailRegionUv < 1.0 - TerrainMaterialSrg::m_detailHalfPixelUv))
+        {
+            detailRegionUv += TerrainMaterialSrg::m_detailMaterialIdImageCenter - (0.5);
+
+            uint material1 = TerrainMaterialSrg::m_detailMaterialIdImage.GatherRed(TerrainMaterialSrg::m_detailSampler, detailRegionUv, 0).r;
+            uint material2 = TerrainMaterialSrg::m_detailMaterialIdImage.GatherGreen(TerrainMaterialSrg::m_detailSampler, detailRegionUv, 0).r;
+            float blend = float(TerrainMaterialSrg::m_detailMaterialIdImage.GatherBlue(TerrainMaterialSrg::m_detailSampler, detailRegionUv, 0).r) / 0xFF;
+            
+            float3 material1Color = float3(0.1, 0.1, 0.1);
+            float3 material2Color = float3(0.1, 0.1, 0.1);
+
+            // Get a reasonably random hue for the material id
+            if (material1 != 255)
+            {
+                float hue1 = (material1 * 25043 % 256) / 256.0;
+                material1Color = HsvToRgb(float3(hue1, 1.0, 1.0));
+            }
+            if (material2 != 255)
+            {
+                float hue2 = (material2 * 25043 % 256) / 256.0;
+                material2Color = HsvToRgb(float3(hue2, 1.0, 1.0));
+            }
+
+            blendedColor = lerp(material1Color, material2Color, blend);
+            float seamBlend = 0.0;
+            const float halfLineWidth = 1.0 / 2048.0;
+            if (any(abs(detailRegionUv) % 1.0 < halfLineWidth) || any(abs(detailRegionUv) % 1.0 > 1.0 - halfLineWidth))
+            {
+                seamBlend = 1.0;
+            }
+            blendedColor = lerp(blendedColor, float3(0.0, 0.0, 0.0), seamBlend); // draw texture seams
+            blendedColor = pow(blendedColor , 2.2);
+        }
+    }
 
     // ------- Specular -------
     float specularF0Factor = GetSpecularInput(TerrainMaterialSrg::m_specularF0Map, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_specularF0Factor, o_specularF0_useTexture);

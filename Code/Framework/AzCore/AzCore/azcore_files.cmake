@@ -41,6 +41,8 @@ set(FILES
     Component/ComponentApplication.cpp
     Component/ComponentApplication.h
     Component/ComponentApplicationBus.h
+    Component/ComponentApplicationLifecycle.cpp
+    Component/ComponentApplicationLifecycle.h
     Component/ComponentBus.cpp
     Component/ComponentBus.h
     Component/ComponentExport.h
@@ -121,6 +123,8 @@ set(FILES
     Debug/TraceMessagesDrillerBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
+    DOM/DomVisitor.cpp
+    DOM/DomVisitor.h
     Driller/DefaultStringPool.h
     Driller/Driller.cpp
     Driller/Driller.h
@@ -282,6 +286,7 @@ set(FILES
     Math/Internal/VertexContainer.inl
     Math/InterpolationSample.h
     Math/IntersectPoint.h
+    Math/IntersectSegment.inl
     Math/IntersectSegment.cpp
     Math/IntersectSegment.h
     Math/MathIntrinsics.h
@@ -521,6 +526,8 @@ set(FILES
     Serialization/Json/IntSerializer.cpp
     Serialization/Json/JsonDeserializer.h
     Serialization/Json/JsonDeserializer.cpp
+    Serialization/Json/JsonImporter.cpp
+    Serialization/Json/JsonImporter.h
     Serialization/Json/JsonMerger.h
     Serialization/Json/JsonMerger.cpp
     Serialization/Json/JsonSerialization.h

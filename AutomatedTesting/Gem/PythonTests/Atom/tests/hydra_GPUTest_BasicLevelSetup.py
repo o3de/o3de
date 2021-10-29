@@ -215,7 +215,6 @@ def run():
     ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(f"{'AtomBasicLevelSetup'}.ppm")
     general.exit_game_mode()
     helper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=2.0)
-    general.log("Basic level created")
 
 
 if __name__ == "__main__":

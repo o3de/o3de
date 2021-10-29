@@ -553,6 +553,8 @@ set(FILES
     ViewportSelection/EditorTransformComponentSelectionRequestBus.cpp
     ViewportSelection/EditorVisibleEntityDataCache.h
     ViewportSelection/EditorVisibleEntityDataCache.cpp
+    ViewportSelection/InvalidClicks.h
+    ViewportSelection/InvalidClicks.cpp
     ViewportSelection/ViewportEditorModeTracker.cpp
     ViewportSelection/ViewportEditorModeTracker.h
     ToolsFileUtils/ToolsFileUtils.h
@@ -646,6 +648,9 @@ set(FILES
     Prefab/PrefabFocusHandler.cpp
     Prefab/PrefabFocusInterface.h
     Prefab/PrefabFocusNotificationBus.h
+    Prefab/PrefabFocusPublicInterface.h
+    Prefab/PrefabFocusUndo.h
+    Prefab/PrefabFocusUndo.cpp
     Prefab/PrefabIdTypes.h
     Prefab/PrefabLoader.h
     Prefab/PrefabLoader.cpp
@@ -754,6 +759,9 @@ set(FILES
     UI/Prefab/PrefabUiHandler.cpp
     UI/Prefab/PrefabViewportFocusPathHandler.h
     UI/Prefab/PrefabViewportFocusPathHandler.cpp
+    UI/Notifications/ToastNotificationsView.cpp
+    UI/Notifications/ToastNotificationsView.h
+    UI/Notifications/ToastBus.h
     PythonTerminal/ScriptHelpDialog.cpp
     PythonTerminal/ScriptHelpDialog.h
     PythonTerminal/ScriptHelpDialog.ui
@@ -762,6 +770,9 @@ set(FILES
     PythonTerminal/ScriptTermDialog.ui
     Input/QtEventToAzInputManager.h
     Input/QtEventToAzInputManager.cpp
+    Script/LuaSymbolsReporterBus.h
+    Script/LuaSymbolsReporterSystemComponent.h
+    Script/LuaSymbolsReporterSystemComponent.cpp
 )
 
 # Prevent the following files from being grouped in UNITY builds

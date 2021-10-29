@@ -10,6 +10,7 @@
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 
 namespace O3DE::ProjectManager
 {
@@ -48,6 +49,7 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_features, RoleFeatures);
         item->setData(gemInfo.m_path, RolePath);
         item->setData(gemInfo.m_requirement, RoleRequirement);
+        item->setData(gemInfo.m_downloadStatus, RoleDownloadStatus);
 
         appendRow(item);
 
@@ -130,6 +132,11 @@ namespace O3DE::ProjectManager
     GemInfo::Types GemModel::GetTypes(const QModelIndex& modelIndex)
     {
         return static_cast<GemInfo::Types>(modelIndex.data(RoleTypes).toInt());
+    }
+
+    GemInfo::DownloadStatus GemModel::GetDownloadStatus(const QModelIndex& modelIndex)
+    {
+        return static_cast<GemInfo::DownloadStatus>(modelIndex.data(RoleDownloadStatus).toInt());
     }
 
     QString GemModel::GetSummary(const QModelIndex& modelIndex)
@@ -293,23 +300,50 @@ namespace O3DE::ProjectManager
         AZ_Assert(gemModel, "Failed to obtain GemModel");
 
         QVector<QModelIndex> dependencies = gemModel->GatherGemDependencies(modelIndex);
+        uint32_t numChangedDependencies = 0;
+
         if (IsAdded(modelIndex))
         {
             for (const QModelIndex& dependency : dependencies)
             {
-                SetIsAddedDependency(*gemModel, dependency, true);
+                if (!IsAddedDependency(dependency))
+                {
+                    SetIsAddedDependency(*gemModel, dependency, true);
+
+                    // if the gem was already added then the state didn't really change
+                    if (!IsAdded(dependency))
+                    {
+                        numChangedDependencies++;
+                    }
+                }
             }
         }
         else
         {
             // still a dependency if some added gem depends on this one 
-            SetIsAddedDependency(model, modelIndex, gemModel->HasDependentGems(modelIndex));
+            bool hasDependentGems = gemModel->HasDependentGems(modelIndex);
+            if (IsAddedDependency(modelIndex) != hasDependentGems)
+            {
+                SetIsAddedDependency(model, modelIndex, hasDependentGems);
+            }
 
             for (const QModelIndex& dependency : dependencies)
             {
-                SetIsAddedDependency(*gemModel, dependency, gemModel->HasDependentGems(dependency));
+                hasDependentGems = gemModel->HasDependentGems(dependency);
+                if (IsAddedDependency(dependency) != hasDependentGems)
+                {
+                    SetIsAddedDependency(*gemModel, dependency, hasDependentGems);
+
+                    // if the gem was already added then the state didn't really change
+                    if (!IsAdded(dependency))
+                    {
+                        numChangedDependencies++;
+                    }
+                }
             }
         }
+
+        gemModel->emit gemStatusChanged(modelIndex, numChangedDependencies);
     }
 
     void GemModel::SetIsAddedDependency(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)
@@ -371,6 +405,11 @@ namespace O3DE::ProjectManager
             added |= modelIndex.data(RoleIsAddedDependency).toBool();
         }
         return previouslyAdded && !added;
+    }
+
+    void GemModel::SetDownloadStatus(QAbstractItemModel& model, const QModelIndex& modelIndex, GemInfo::DownloadStatus status)
+    {
+        model.setData(modelIndex, status, RoleDownloadStatus);
     }
 
     bool GemModel::HasRequirement(const QModelIndex& modelIndex)
@@ -477,5 +516,4 @@ namespace O3DE::ProjectManager
         }
         return result;
     }
-
 } // namespace O3DE::ProjectManager

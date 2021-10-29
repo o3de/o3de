@@ -66,12 +66,22 @@ float3 GetSharedTangent(int tangentIndex)
     );
 }
 
+//! Hair vertex geometry output - input structure for the Pixel shaders
 struct TressFXVertex
 {
     float4 Position;
-    float4 Tangent;
+    float4 Tangent;         // xyz = Tangent, w = Strand U 
     float4 p0p1;
-    float4 StrandColor;
+    float4 StrandColor;     // xyz = Strand Color, w = Strand V
+};
+
+//! Matching structure to carry out as VS output / PS input
+struct PS_INPUT_HAIR
+{
+    float4 Position    : SV_POSITION;
+    float4 Tangent     : Tangent;
+    float4 p0p1        : TEXCOORD0;
+    float4 StrandColor : TEXCOORD1;
 };
 
 float3 GetStrandColor(int index, float fractionOfStrand)
@@ -178,5 +188,26 @@ TressFXVertex GetExpandedTressFXShadowVert(uint vertexId, float3 eye, float2 win
     return Output;
 }
 
-// EndHLSL
+//!=============================================================================
+//!             Hair Render VS - Used by all geometry hair shaders 
+//!=============================================================================
+PS_INPUT_HAIR RenderHairVS(uint vertexId : SV_VertexID)
+{
+    PS_INPUT_HAIR vsOutput;
 
+    //    uint2  scrSize;
+    //    PassSrg::m_linearDepth.GetDimensions(scrSize.x, scrSize.y);
+    //    TressFXVertex tressfxVert = GetExpandedTressFXVert(vertexId, g_vEye.xyz, float2(scrSize), g_mVP);
+
+    // [To Do] Hair: the above code should replace the existing but requires modifications to 
+    // the function GetExpandedTressFXVert. 
+    // Note that in Atom g_vViewport is aspect ratio and NOT size.
+    TressFXVertex tressfxVert = GetExpandedTressFXVert(vertexId, g_vEye.xyz, g_vViewport.zw, g_mVP);
+
+    vsOutput.Position = tressfxVert.Position;
+    vsOutput.Tangent = tressfxVert.Tangent;
+    vsOutput.p0p1 = tressfxVert.p0p1;
+    vsOutput.StrandColor = tressfxVert.StrandColor;
+
+    return vsOutput;
+}

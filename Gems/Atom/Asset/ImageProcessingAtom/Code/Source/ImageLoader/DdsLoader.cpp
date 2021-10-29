@@ -122,14 +122,45 @@ namespace ImageProcessingAtom
                 {
                     format = ePixelFormat_BC1;
                 }
-                else if (header.ddspf.dwFourCC == FOURCC_DXT5 || header.ddspf.dwFourCC == FOURCC_DXT4)
+                else if (header.ddspf.dwFourCC == FOURCC_DXT5)
                 {
                     format = ePixelFormat_BC3;
                 }
-                else
+                else if (header.ddspf.dwFourCC == FOURCC_3DCP)
                 {
-                    AZ_Error("Image Processing", false, "unsupported fourCC format: 0x%x", header.ddspf.dwFourCC);
-                    return nullptr;
+                    format = ePixelFormat_BC4;
+                }
+                else if (header.ddspf.dwFourCC == FOURCC_3DC)
+                {
+                    format = ePixelFormat_BC5;
+                }
+                else if (header.ddspf.dwFourCC == DDS_FOURCC_R32F)
+                {
+                    format = ePixelFormat_R32F;
+                }
+                else if (header.ddspf.dwFourCC == DDS_FOURCC_G32R32F)
+                {
+                    format = ePixelFormat_R32G32F;
+                }
+                else if (header.ddspf.dwFourCC == DDS_FOURCC_A32B32G32R32F)
+                {
+                    format = ePixelFormat_R32G32B32A32F;
+                }
+                else if (header.ddspf.dwFourCC == DDS_FOURCC_R16F)
+                {
+                    format = ePixelFormat_R16F;
+                }
+                else if (header.ddspf.dwFourCC == DDS_FOURCC_G16R16F)
+                {
+                    format = ePixelFormat_R16G16F;
+                }
+                else if (header.ddspf.dwFourCC == DDS_FOURCC_A16B16G16R16F)
+                {
+                    format = ePixelFormat_R16G16B16A16F;
+                }
+                else if (header.ddspf.dwFourCC == DDS_FOURCC_A16B16G16R16)
+                {
+                    format = ePixelFormat_R16G16B16A16;
                 }
             }
             else

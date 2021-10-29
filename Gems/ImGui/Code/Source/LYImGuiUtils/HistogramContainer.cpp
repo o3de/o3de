@@ -16,45 +16,92 @@ namespace ImGui
 {
     namespace LYImGuiUtils
     {
-        void HistogramContainer::Init(const char* histogramName, int maxValueCountSize, ViewType viewType, bool displayOverlays, float minScale, float maxScale
-            , bool autoExpandScale, bool startCollapsed/* = false*/, bool drawMostRecentValue/* = true*/)
+        void HistogramContainer::Init(const char* histogramName, int maxValueCountSize, ViewType viewType, bool displayOverlays, float minScale, float maxScale,
+            ScaleMode scaleMode, bool startCollapsed/* = false*/, bool drawMostRecentValue/* = true*/)
         {
             m_histogramName = histogramName;
             m_minScale = minScale;
             m_maxScale = maxScale;
             m_viewType = viewType;
             m_dispalyOverlays = displayOverlays;
-            m_autoExpandScale = autoExpandScale;
+            m_scaleMode = scaleMode;
             m_collapsed = startCollapsed;
             m_drawMostRecentValueText = drawMostRecentValue;
             SetMaxSize(maxValueCountSize);
         }
 
-        void HistogramContainer::PushValue(float val)
+        void HistogramContainer::SetMaxSize(int size)
+        {
+            m_values.resize(size);
+            m_maxSize = size;
+
+            // Pre-fill the histogram with zeros so that the bars do not fill the space and
+            // scale horizontally when there are not enough samples yet.
+            for (float& value : m_values)
+            {
+                value = 0.0f;
+            }
+        }
+
+        void HistogramContainer::PushValue(float value)
         {
             if (m_maxSize == 0)
             {
                 return;
             }
+
             if (m_values.size() == m_maxSize)
             {
-                m_values.pop_back();
+                if (m_moveDirection == PushLeftMoveRight)
+                {
+                    m_values.pop_back();
+                }
+                else
+                {
+                    m_values.pop_front();
+                }
             }
             else if (m_values.size() > m_maxSize)
             {
                 m_values.erase(m_values.begin() + (m_maxSize - 1), m_values.end());
             }
-            m_values.push_front(val);
 
-            if (m_autoExpandScale)
+            if (m_moveDirection == PushLeftMoveRight)
             {
-                if (val < m_minScale)
+                m_values.push_front(value);
+            }
+            else
+            {
+                m_values.push_back(value);
+            }
+
+            switch (m_scaleMode)
+            {
+                case AutoExpand:
                 {
-                    m_minScale = val;
+                    if (value < m_minScale)
+                    {
+                        m_minScale = value;
+                    }
+                    else if (value > m_maxScale)
+                    {
+                        m_maxScale = value;
+                    }
+                    break;
                 }
-                else if (val > m_maxScale)
+                case AutoScale:
                 {
-                    m_maxScale = val;
+                    float min = 0.0f;
+                    float max = 0.0f;
+                    CalcMinMaxValues(min, max);
+
+                    m_minScale = AZ::Lerp(m_minScale, min, m_autoScaleSpeed);
+                    m_maxScale = AZ::Lerp(m_maxScale, max, m_autoScaleSpeed);
+                    break;
+                }
+                default:
+                {
+                    break;
                 }
             }
         }
@@ -86,7 +133,6 @@ namespace ImGui
                 ImGui::DragInt("History Size", &m_maxSize, 1, 1, 1000, "%f");
                 ImGui::DragFloat("Max Scale", &m_maxScale, 0.0001f, -100.0f, 100.0f);
                 ImGui::DragFloat("Min Scale", &m_minScale, 0.0001f, -100.0f, 100.0f);
-                ImGui::Checkbox("Auto Expand Scale", &m_autoExpandScale);
 
                 ImGui::EndPopup();
             }
@@ -101,6 +147,8 @@ namespace ImGui
             float imGuiHistoWidgetHeight = m_collapsed ? histogramHeight : (histogramHeight - 15);
             if (GetSize() > 0)
             {
+                ImGui::PushStyleColor(ImGuiCol_PlotHistogram, m_barLineColor.Value);
+
                 switch (m_viewType)
                 {
                     default:
@@ -114,6 +162,8 @@ namespace ImGui
                         ImGui::PlotLines(AZStd::string::format("##%s_lines", m_histogramName.c_str()).c_str(), ImGui::LYImGuiUtils::s_histogramContainerGetter, this, GetSize(), 0, m_histogramName.c_str(), m_minScale, m_maxScale, ImVec2(histogramWidth - 10, imGuiHistoWidgetHeight));
                         break;
                 }
+
+                ImGui::PopStyleColor();
             }
 
 
@@ -155,6 +205,26 @@ namespace ImGui
 
                 case ViewType::Lines:
                     return "Lines";
+            }
+        }
+
+        void HistogramContainer::CalcMinMaxValues(float& outMin, float& outMax)
+        {
+            // Use the manually set min and max scale values in case there are no samples.
+            if (m_values.empty())
+            {
+                outMin = m_minScale;
+                outMax = m_maxScale;
+                return;
+            }
+
+            outMin = +AZ::Constants::FloatMax;
+            outMax = -AZ::Constants::FloatMax;
+
+            for (const float x : m_values)
+            {
+                outMin = AZ::GetMin(outMin, x);
+                outMax = AZ::GetMax(outMax, x);
             }
         }
     }

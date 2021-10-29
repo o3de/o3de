@@ -18,6 +18,14 @@ from shiboken2 import wrapInstance, getCppPointer
 view_pane_handlers = {}
 registration_handlers = {}
 
+# Helper method for retrieving the Editor QMainWindow instance
+def get_editor_main_window():
+    params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, "GetQtBootstrapParameters")
+    editor_id = QtWidgets.QWidget.find(params.mainWindowId)
+    editor_main_window = wrapInstance(int(getCppPointer(editor_id)[0]), QtWidgets.QMainWindow)
+
+    return editor_main_window
+
 # Helper method for registering a Python widget as a tool/view pane with the Editor
 def register_view_pane(name, widget_type, options=editor.ViewPaneOptions()):
     global view_pane_handlers
@@ -29,9 +37,7 @@ def register_view_pane(name, widget_type, options=editor.ViewPaneOptions()):
     # This method will be invoked by the ViewPaneCallbackBus::CreateViewPaneWidget
     # when our view pane needs to be created
     def on_create_view_pane_widget(parameters):
-        params = azlmbr.qt.QtForPythonRequestBus(azlmbr.bus.Broadcast, "GetQtBootstrapParameters")
-        editor_id = QtWidgets.QWidget.find(params.mainWindowId)
-        editor_main_window = wrapInstance(int(getCppPointer(editor_id)[0]), QtWidgets.QMainWindow)
+        editor_main_window = get_editor_main_window()
         dock_main_window = editor_main_window.findChild(QtWidgets.QMainWindow)
 
         # Create the view pane widget parented to the Editor QMainWindow, so it can be found

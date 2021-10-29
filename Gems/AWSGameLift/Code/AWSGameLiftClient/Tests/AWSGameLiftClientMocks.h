@@ -11,6 +11,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzFramework/Session/ISessionRequests.h>
 #include <AzFramework/Session/ISessionHandlingRequests.h>
+#include <AzFramework/Matchmaking/IMatchmakingRequests.h>
 #include <AzFramework/Matchmaking/MatchmakingNotifications.h>
 #include <AzTest/AzTest.h>
 
@@ -18,6 +19,8 @@
 #include <aws/core/utils/Outcome.h>
 #include <aws/gamelift/GameLiftClient.h>
 #include <aws/gamelift/GameLiftErrors.h>
+#include <aws/gamelift/model/AcceptMatchRequest.h>
+#include <aws/gamelift/model/AcceptMatchResult.h>
 #include <aws/gamelift/model/CreateGameSessionRequest.h>
 #include <aws/gamelift/model/CreateGameSessionResult.h>
 #include <aws/gamelift/model/CreatePlayerSessionRequest.h>
@@ -33,8 +36,6 @@
 #include <aws/gamelift/model/StopMatchmakingRequest.h>
 #include <aws/gamelift/model/StopMatchmakingResult.h>
 
-#include <Request/IAWSGameLiftMatchmakingInternalRequests.h>
-
 using namespace Aws::GameLift;
 
 class GameLiftClientMock
@@ -46,6 +47,7 @@ public:
     {
     }
 
+    MOCK_CONST_METHOD1(AcceptMatch, Model::AcceptMatchOutcome(const Model::AcceptMatchRequest&));
     MOCK_CONST_METHOD1(CreateGameSession, Model::CreateGameSessionOutcome(const Model::CreateGameSessionRequest&));
     MOCK_CONST_METHOD1(CreatePlayerSession, Model::CreatePlayerSessionOutcome(const Model::CreatePlayerSessionRequest&));
     MOCK_CONST_METHOD1(DescribeMatchmaking, Model::DescribeMatchmakingOutcome(const Model::DescribeMatchmakingRequest&));
@@ -72,6 +74,46 @@ public:
     MOCK_METHOD0(OnAcceptMatchAsyncComplete, void());
     MOCK_METHOD1(OnStartMatchmakingAsyncComplete, void(const AZStd::string&));
     MOCK_METHOD0(OnStopMatchmakingAsyncComplete, void());
+};
+
+class MatchmakingNotificationsHandlerMock
+    : public AzFramework::MatchmakingNotificationBus::Handler
+{
+public:
+    MatchmakingNotificationsHandlerMock()
+    {
+        AzFramework::MatchmakingNotificationBus::Handler::BusConnect();
+    }
+
+    ~MatchmakingNotificationsHandlerMock()
+    {
+        AzFramework::MatchmakingNotificationBus::Handler::BusDisconnect();
+    }
+
+    void OnMatchAcceptance() override
+    {
+        ++m_numMatchAcceptance;
+    }
+
+    void OnMatchComplete() override
+    {
+        ++m_numMatchComplete;
+    }
+
+    void OnMatchError() override
+    {
+        ++m_numMatchError;
+    }
+
+    void OnMatchFailure() override
+    {
+        ++m_numMatchFailure;
+    }
+
+    int m_numMatchAcceptance = 0;
+    int m_numMatchComplete = 0;
+    int m_numMatchError = 0;
+    int m_numMatchFailure = 0;
 };
 
 class SessionAsyncRequestNotificationsHandlerMock

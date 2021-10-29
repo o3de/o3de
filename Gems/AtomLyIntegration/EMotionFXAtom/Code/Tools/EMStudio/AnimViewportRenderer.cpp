@@ -128,10 +128,10 @@ namespace EMStudio
         AZ_Assert(m_gridEntity != nullptr, "Failed to create grid entity.");
 
         AZ::Render::GridComponentConfig gridConfig;
-        gridConfig.m_gridSize = 4.0f;
+        gridConfig.m_gridSize = 20.0f;
         gridConfig.m_axisColor = AZ::Color(0.5f, 0.5f, 0.5f, 1.0f);
         gridConfig.m_primaryColor = AZ::Color(0.3f, 0.3f, 0.3f, 1.0f);
-        gridConfig.m_secondaryColor = AZ::Color(0.5f, 0.1f, 0.1f, 1.0f);
+        gridConfig.m_secondaryColor = AZ::Color(0.5f, 0.5f, 0.5f, 1.0f);
         auto gridComponent = m_gridEntity->CreateComponent(AZ::Render::GridComponentTypeId);
         gridComponent->SetConfiguration(gridConfig);
 
@@ -179,6 +179,45 @@ namespace EMStudio
     {
         ReinitActorEntities();
         ResetEnvironment();
+    }
+
+    AZ::Vector3 AnimViewportRenderer::GetCharacterCenter() const
+    {
+        AZ::Vector3 result = AZ::Vector3::CreateZero();
+        if (!m_actorEntities.empty())
+        {
+            // Find the actor instance and calculate the center from aabb.
+            AZ::Vector3 actorCenter = AZ::Vector3::CreateZero();
+            EMotionFX::Integration::ActorComponent* actorComponent =
+                m_actorEntities[0]->FindComponent<EMotionFX::Integration::ActorComponent>();
+            EMotionFX::ActorInstance* actorInstance = actorComponent->GetActorInstance();
+            if (actorInstance)
+            {
+                actorCenter += actorInstance->GetAabb().GetCenter();
+            }
+            
+            // Just return the position of the first entity.
+            AZ::Transform worldTransform;
+            AZ::TransformBus::EventResult(worldTransform, m_actorEntities[0]->GetId(), &AZ::TransformBus::Events::GetWorldTM);
+            result = worldTransform.GetTranslation();
+            result += actorCenter;
+        }
+
+        return result;
+    }
+
+    void AnimViewportRenderer::UpdateActorRenderFlag(EMotionFX::ActorRenderFlagBitset renderFlags)
+    {
+        for (AZ::Entity* entity : m_actorEntities)
+        {
+            EMotionFX::Integration::ActorComponent* actorComponent = entity->FindComponent<EMotionFX::Integration::ActorComponent>();
+            if (!actorComponent)
+            {
+                AZ_Assert(false, "Found entity without actor component in the actor entity list.");
+                continue;
+            }
+            actorComponent->SetRenderFlag(renderFlags);
+        }
     }
 
     void AnimViewportRenderer::ResetEnvironment()
