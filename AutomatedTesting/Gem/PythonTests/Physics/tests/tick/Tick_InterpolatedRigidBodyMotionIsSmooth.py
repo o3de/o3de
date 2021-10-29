@@ -23,7 +23,7 @@ def Tick_InterpolatedRigidBodyMotionIsSmooth():
      Verify that the position of the rigid body varies smoothly with time.
 
     Expected Behavior:
-     1) The motion of the rigid body under the gravity is a smooth curve, rather than an erratic/jittery movement.
+     1) The motion of the rigid body under gravity is a smooth curve, rather than an erratic/jittery movement.
 
     Test Steps:
      1) Load the empty level
