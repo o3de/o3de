@@ -67,8 +67,7 @@ namespace ScriptCanvasEditor
         //=====================================================================
 
         void OpenEditor();
-        void CloseGraph();
-
+        
         void SetName(const AZStd::string& name) { m_name = name; }
         const AZStd::string& GetName() const;
         AZ::EntityId GetEditorEntityId() const { return GetEntity() ? GetEntityId() : AZ::EntityId(); }

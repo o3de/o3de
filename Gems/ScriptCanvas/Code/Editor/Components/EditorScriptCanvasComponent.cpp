@@ -247,21 +247,12 @@ namespace ScriptCanvasEditor
         m_scriptCanvasAssetHolder.OpenEditor();
     }
 
-    void EditorScriptCanvasComponent::CloseGraph()
-    {
-        AZ::Data::AssetId assetId = m_scriptCanvasAssetHolder.GetAssetId();
-        if (assetId.IsValid())
-        {
-            GeneralRequestBus::Broadcast(&GeneralRequests::CloseScriptCanvasAsset, assetId);
-        }
-    }
-
     void EditorScriptCanvasComponent::Init()
     {
         EditorComponentBase::Init();
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
-        m_scriptCanvasAssetHolder.Init(GetEntityId(), GetId());
+        // m_scriptCanvasAssetHolder.Init(GetEntityId(), GetId());
     }
 
     //=========================================================================

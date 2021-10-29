@@ -8,18 +8,16 @@
 
 #pragma once
 
-#include <AzCore/EBus/EBus.h>
-#include <AzCore/Component/EntityId.h>
-#include <AzCore/Component/Entity.h>
 #include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/Component/Entity.h>
+#include <AzCore/Component/EntityId.h>
+#include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Vector2.h>
-
+#include <AzCore/Outcome/Outcome.h>
 #include <GraphCanvas/Types/Types.h>
-
-#include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 #include <ScriptCanvas/Bus/NodeIdPair.h>
-
+#include <ScriptCanvas/Bus/ScriptCanvasBus.h>
+#include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Data/Data.h>
 
 class QLineEdit;
