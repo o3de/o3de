@@ -9,6 +9,8 @@ Launch the windows launcher attached to the currently installed instance.
 """
 # Import any dependencies for the test.
 import logging
+import subprocess
+
 import pytest
 
 # Import any desired LTT modules from the package `ly_test_tools`. All LTT modules can be viewed at `Tools/LyTestTools/ly_test_tools`.
@@ -86,6 +88,24 @@ class TestAutomatedTestingProject(object):
             with editor.start():
                 # Wait for the process to exist
                 waiter.wait_for(lambda: process_utils.process_exists("Editor.exe", ignore_extensions=True))
+        finally:
+            # Clean up processes after the test is finished
+            process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
+
+    def test_StartAP_Sanity(self, project):
+        # Kill processes that may interfere with the test
+        process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
+
+        try:
+            # Create the Workspace object
+            workspace = helpers.create_builtin_workspace(project=project)
+
+            ap_command = [workspace.paths.asset_processor(), "--zeroAnalysisMode",
+                          f'--regset="/Amazon/AzCore/Bootstrap/project_path={workspace.paths.project()}"',
+                          "--platforms=linux"]
+
+            subprocess.run(ap_command, capture_output=True, check=True, timeout=60)
+
         finally:
             # Clean up processes after the test is finished
             process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
