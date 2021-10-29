@@ -22,6 +22,7 @@ import ly_test_tools.builtin.helpers as helpers
 # The `environment` module contains tools that involve the system's environment such as processes or timed waiters.
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
+import ly_test_tools.o3de.asset_processor as ap
 
 # Initialize a logger instance to hook all test logs together. The sub-logger pattern below makes it easy to track which file creates a log line.
 logger = logging.getLogger(__name__)
@@ -100,8 +101,88 @@ class TestAutomatedTestingProject(object):
             # Create the Workspace object
             workspace = helpers.create_builtin_workspace(project=project)
 
-            workspace.asset_processor.start(connect_to_ap=True, connection_timeout=10)  # verify connection
-            workspace.asset_processor.wait_for_idle()
+            ap_manager = ap.AssetProcessor(workspace)
+
+            # start
+            ap_manager.create_temp_log_root()
+
+            import os
+            import time
+
+            """
+            
+            def start(self, connection_timeout=30, quitonidle=False,
+                      add_gem_scan_folders=None,
+                      add_config_scan_folders=None,
+                      accept_input=True, run_until_idle=False,
+                      scan_folder_pattern=None, connect_to_ap=False):
+            def gui_process(self, timeout=30, fastscan=True,
+                            capture_output=False, platforms=None,
+                            extra_params=None,
+                            decode=True,
+                            expect_failure=False, quitonidle=False,
+                            accept_input=True):
+            """
+
+            command = ap_manager.build_ap_command(
+                ap_path=os.path.abspath(self._workspace.paths.asset_processor()),
+                fastscan=True,
+                platforms=None,  # but this apparently adds the params in extra params
+                extra_params=["--acceptInput", "--platforms", "linux"],
+                add_gem_scan_folders=None,
+                add_config_scan_folders=None,
+                scan_folder_pattern=None)
+
+            ap_exe_path = os.path.dirname(self._workspace.paths.asset_processor())
+
+            ap_proc = subprocess.Popen(command, cwd=ap_exe_path, env=process_utils.get_display_env(), stdout=subprocess.PIPE)
+            time.sleep(1)
+            if ap_proc.poll() is not None:
+                raise RuntimeError(f"AssetProcessor immediately quit with errorcode {ap_proc.returncode}")
+
+            port = None
+
+            def _get_port_from_log():
+                nonlocal port
+                if not os.path.exists(workspace.paths.ap_gui_log()):
+                    return False
+
+                log = ap.APLogParser(workspace.paths.ap_gui_log())
+                if len(log.runs):
+                    try:
+                        port = log.runs[-1]["Control Port"]
+                        return True
+                    except Exception as ex:  # intentionally broad
+                        logger.debug("Failed to read port from file", exc_info=ex)
+                return False
+
+            waiter.wait_for(_get_port_from_log, timeout=10)
+
+            import socket
+
+            def _attempt_connection():
+                nonlocal port
+                if ap_proc.poll() is not None:
+                    raise RuntimeError(
+                        f"Asset processor exited early with errorcode: {self._ap_proc.returncode}")
+
+                connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                connection_socket.settimeout(60)
+                connection_socket.connect(('127.0.0.1', port))
+
+            waiter.wait_for(_attempt_connection, timeout=60)
+
+            # TODO false? self.connect_listen()
+
+            # wait for idle
+            self.send_message("waitforidle")
+            result = self.read_message(read_timeout=300)
+            assert result == "idle", f"Did not get idle state from AP, message was instead: {result}"
+
+        except Exception:
+            if ap_proc.poll() is not None:
+                raise RuntimeError("Unexpectedly exited early")
+            raise RuntimeError(f"Error during AP test, with output:\n{ap_proc.stdout.readlines()}")
 
         finally:
             # Clean up processes after the test is finished
