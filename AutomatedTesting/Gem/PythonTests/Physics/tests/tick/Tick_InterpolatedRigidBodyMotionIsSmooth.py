@@ -19,13 +19,11 @@ class Tests():
 def Tick_InterpolatedRigidBodyMotionIsSmooth():
     """
     Summary:
-     Create entity with Mesh and PhysX Collider components and assign a fbx file in both the components.
-     Verify that the fbx is properly fitting the mesh.
+     Create entity with PhysX Rigid Body component and turn on the Interpolate motion setting.
+     Verify that the position of the rigid body varies smoothly with time.
 
     Expected Behavior:
-     1) The fbx is properly fitting the mesh.
-     2) Multiple material slots show up under Materials section in the PhysX Collider component and that
-     they correspond to the number of surfaces as designed in the mesh.
+     1) The motion of the rigid body under the gravity is a smooth curve, rather than an erratic/jittery movement.
 
     Test Steps:
      1) Load the empty level
