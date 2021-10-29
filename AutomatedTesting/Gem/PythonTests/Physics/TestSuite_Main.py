@@ -52,8 +52,7 @@ class TestAutomation(TestAutomationBase):
     @revert_physics_config
     def test_CharacterController_SwitchLevels(self, request, workspace, editor, launcher_platform):
         from .tests.character_controller import CharacterController_SwitchLevels as test_module
-        self._run_test(request, workspace, editor, test_module, 
-                       extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"])
+        self._run_test(request, workspace, editor, test_module)
 
     def test_Ragdoll_AddPhysxRagdollComponentWorks(self, request, workspace, editor, launcher_platform):
         from .tests.ragdoll import Ragdoll_AddPhysxRagdollComponentWorks as test_module
