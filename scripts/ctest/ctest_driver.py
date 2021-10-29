@@ -13,6 +13,8 @@ import result_processing.result_processing as rp
 import subprocess
 import sys
 import shutil
+import re
+import time
 
 SUITES_AND_DESCRIPTIONS = {
     "smoke": "Quick across-the-board set of tests designed to check if something is fundamentally broken",
@@ -38,7 +40,44 @@ def _regex_matching_any(words):
     return "^(" + "|".join(words) + ")$"
 
 
-def run_single_test_suite(suite, ctest_path, cmake_build_path, build_config, disable_gpu, only_gpu, generate_xml, repeat, extra_args):
+def _get_only_failed(cmake_build_path):
+    # type (str) -> str or None
+    """
+    Read and parse the LastTestsFailed log if possible to build a list of tests to run. A string is returned that is
+    passed to the CTest regex -R option. The string contains all of the failed test modules to run joined with |. If an
+    exception occurs, it will return None and be skipped.
+    :param cmake_build_path: The patch to the CMake build folder as a string
+    :return: A string to pass to CTest regex option, returns None if an exception occured
+    """
+    failed_tests_list_lines = []
+    failed_test_modules = []
+    # Check to see if the default LastTestsFailed log exists
+    last_test_failed_log = os.path.join(cmake_build_path, 'Testing', 'Temporary', 'LastTestsFailed.log')
+    if not os.path.exists(last_test_failed_log):
+        # Read the TAG file to get the last run date
+        date_line = rp._get_ctest_tag_content(cmake_build_path)
+        # The LastTestsFailed log contains each failed module on a separate line
+        last_test_failed_log = os.path.join(cmake_build_path, 'Testing', 'Temporary', f'LastTestsFailed_{date_line}.log')
+
+    with open(last_test_failed_log, 'r') as opened_failed_log_file:
+        failed_tests_list_lines = opened_failed_log_file.readlines()
+    
+    # Test strings will be in the format of "<Run Number>:<CTest Module Name>::TEST_RUN"
+    module_regex = '^\d+:(.+)::TEST_RUN$'
+    print("Running failed tests:")
+    for test_line in failed_tests_list_lines:
+        module_name = re.search(module_regex, test_line).group(1)
+        failed_test_modules.append(module_name)
+        print(f"  {module_name}")
+    print()  # Blank line
+    
+    # Filter to run only tests in failed test modules list
+    ctest_regex_string = '|'.join(failed_test_modules)
+    return ctest_regex_string
+
+
+def run_single_test_suite(suite, ctest_path, cmake_build_path, build_config, disable_gpu, only_gpu, generate_xml,
+                          repeat, only_failed, extra_args, soft_repeat_timeout=0):
     """
     Starts CTest to filter down to a specific suite
     :param suite: subset of tests to run, see SUITES_AND_DESCRIPTIONS
@@ -49,7 +88,9 @@ def run_single_test_suite(suite, ctest_path, cmake_build_path, build_config, dis
     :param only_gpu: optional, run only gpu-required tests
     :param generate_xml: optional, enable to produce the CTest xml file
     :param repeat: optional, number of times to run the tests in the suite
+    :param only_failed: optional, only usable with the repeat option. Run only initially failed tests during repeat
     :param extrargs: optional, forward args to ctest
+    :param soft_repeat_timeout: optional, only usable with the repeat option. Sets a soft timeout for the total test runtime
     :return: CTest exit code
     """
     ctest_command = [
@@ -108,12 +149,19 @@ def run_single_test_suite(suite, ctest_path, cmake_build_path, build_config, dis
     if repeat:
         # Run the tests multiple times. Previous test results are deleted, new test results are combined in a file per
         # test runner.
-
         test_result_prefix = 'Repeat'
         repeat = int(repeat)
+        total_runs = repeat
+        start_time = 0
         if generate_xml:
             rp.clean_test_results(cmake_build_path)
+        if only_failed:
+            ctest_regex_string = _get_only_failed(cmake_build_path)
+            if ctest_regex_string:
+                ctest_command.extend(['-R', ctest_regex_string])
 
+        if soft_repeat_timeout:
+            start_time = time.time()
         for iteration in range(repeat):
             print(f"Executing CTest iteration {iteration + 1}/{repeat}")
             result = subprocess.run(ctest_command, shell=False, cwd=cmake_build_path, stdout=sys.stdout, stderr=sys.stderr)
@@ -122,10 +170,14 @@ def run_single_test_suite(suite, ctest_path, cmake_build_path, build_config, dis
                 rp.rename_test_results(cmake_build_path, test_result_prefix, iteration + 1, repeat)
             if result.returncode:
                 error_code = result.returncode
+            if soft_repeat_timeout and (time.time() - start_time) > soft_repeat_timeout and (iteration + 1 != repeat):
+                print(f"Soft timeout of {soft_repeat_timeout} seconds exceeded, executed {iteration + 1}/{repeat} runs.")
+                total_runs = iteration + 1
+                break
 
         if generate_xml:
             rp.collect_test_results(cmake_build_path, test_result_prefix)
-            summary = rp.summarize_test_results(cmake_build_path, repeat)
+            summary = rp.summarize_test_results(cmake_build_path, total_runs)
             
             print()  # empty line
             print('Test stability summary:')
@@ -133,7 +185,7 @@ def run_single_test_suite(suite, ctest_path, cmake_build_path, build_config, dis
                 print('The following test(s) failed:')
                 for line in summary: print(line)
             else:
-                print(f'All tests were executed {repeat} times and passed 100% of the time.')
+                print(f'All tests were executed {total_runs} times and passed 100% of the time.')
 
     else:
         # Run the tests one time. Previous test results are not deleted but
@@ -193,6 +245,11 @@ def main():
                                                "failures (e.g. --repeat 3 for running the test three times). When used"
                                                "with --generate-xml, the resulting test reports will be combined, "
                                                "aggregated and summarized.", type=int)
+    parser.add_argument('--only-failed', action='store_true',
+                        help='Enable this option with the --repeat option to run all repeats against the intially failed tests.')
+    parser.add_argument('--soft-repeat-timeout', type=int, help='Enable this option with the --repeat option to set a soft timeout in seconds. 
+                        'A repeat iteration will complete its full test run, but will not start the next iteration.')
+
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--no-gpu', action='store_true',
                         help="Disable tests that require a GPU")
@@ -200,6 +257,9 @@ def main():
                         help="Run only tests that require a GPU")
 
     args, unknown_args = parser.parse_known_args()
+
+    if not args.repeat and (args.only_failed or args.soft_repeat_timeout):
+        parser.error('The --only-failed and --soft-repeat-timeout option requires the --repeat option. Use --rerun-failed to run without the --repeat option.')
 
     # handle the CTEST executable.
     # we always obey command line, and its an error if the command line has
@@ -244,6 +304,8 @@ def main():
         only_gpu=args.only_gpu,
         generate_xml=args.generate_xml,
         repeat=args.repeat,
+        only_failed=args.only_failed,
+        soft_repeat_timeout=args.soft_repeat_timeout,
         extra_args=unknown_args)
 
 
