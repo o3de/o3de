@@ -100,15 +100,8 @@ class TestAutomatedTestingProject(object):
             # Create the Workspace object
             workspace = helpers.create_builtin_workspace(project=project)
 
-            ap_command = [workspace.paths.asset_processor(), "--zeroAnalysisMode",
-                          f'--regset="/Amazon/AzCore/Bootstrap/project_path={workspace.paths.project()}"',
-                          "--platforms=linux", "--quitonidle"]
-
-            try:
-                result = subprocess.run(ap_command, capture_output=True, check=True, timeout=120)
-            except subprocess.TimeoutExpired as te:
-                raise RuntimeError(f'AP failed to idle within 60s with output:\n{te.output}')
-            raise RuntimeError(result.stdout)
+            workspace.asset_processor.start(connect_to_ap=True, connection_timeout=10)  # verify connection
+            workspace.asset_processor.wait_for_idle()
 
         finally:
             # Clean up processes after the test is finished
