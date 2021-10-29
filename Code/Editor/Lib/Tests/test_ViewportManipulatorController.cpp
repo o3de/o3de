@@ -85,6 +85,7 @@ namespace UnitTest
 
             m_rootWidget = AZStd::make_unique<QWidget>();
             m_rootWidget->setFixedSize(QSize(100, 100));
+            QApplication::setActiveWindow(m_rootWidget.get());
 
             m_controllerList = AZStd::make_shared<AzFramework::ViewportControllerList>();
             m_controllerList->RegisterViewportContext(TestViewportId);
@@ -99,6 +100,8 @@ namespace UnitTest
             m_controllerList->UnregisterViewportContext(TestViewportId);
             m_controllerList.reset();
             m_rootWidget.reset();
+
+            QApplication::setActiveWindow(nullptr);
 
             AllocatorsTestFixture::TearDown();
         }
@@ -155,8 +158,7 @@ namespace UnitTest
     TEST_F(ViewportManipulatorControllerFixture, ChangingFocusDoesNotClearInput)
     {
         bool endedEvent = false;
-
-        // forward input events to our controller list
+        // detect input events and ensure that the Alt key press does not end before the end of the test
         QObject::connect(
             m_inputChannelMapper.get(), &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, m_rootWidget.get(),
             [&endedEvent](const AzFramework::InputChannel* inputChannel, [[maybe_unused]] QEvent* event)
@@ -168,15 +170,23 @@ namespace UnitTest
                 }
             });
 
-        QWidget* separateWidget = new QWidget();
-        separateWidget->setParent(m_rootWidget.get());
+        // given
+        auto* secondaryWidget = new QWidget(m_rootWidget.get());
 
-        separateWidget->setFocus();
-
-        QTest::keyPress(separateWidget, Qt::Key_Alt, Qt::KeyboardModifier::AltModifier);
+        m_rootWidget->show();
+        secondaryWidget->show();
 
         m_rootWidget->setFocus();
 
+        // simulate a key press when root widget has focus
+        QTest::keyPress(secondaryWidget, Qt::Key_Alt, Qt::KeyboardModifier::AltModifier);
+
+        // when
+        // change focus to secondary widget
+        secondaryWidget->setFocus();
+
+        // then
+        // the alt key was not released
         EXPECT_FALSE(endedEvent);
     }
 } // namespace UnitTest
