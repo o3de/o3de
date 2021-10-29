@@ -22,18 +22,19 @@
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 #include <AzToolsFramework/AssetBrowser/Search/SearchWidget.h>
+#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
-#include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <Prefab/PrefabTestFixture.h>
 #include <QAbstractItemModelTester>
 
 namespace UnitTest
 {
-
     // Test fixture for the AssetBrowser model that uses a QAbstractItemModelTester to validate the state of the model
     // when QAbstractItemModel signals fire. Tests will exit with a fatal error if an invalid state is detected.
-    class AssetBrowserTest : public ToolsApplicationFixture
+    class AssetBrowserTest
+        : public ToolsApplicationFixture
+        , public testing::WithParamInterface<const char*>
     {
     protected:
         enum class AssetEntryType
@@ -44,13 +45,19 @@ namespace UnitTest
             Product
         };
 
+        enum class FolderType
+        {
+            Root,
+            File
+        };
+
         void SetUpEditorFixtureImpl() override;
         void TearDownEditorFixtureImpl() override;
 
     protected:
-
-        void CreateScanFolder(AZ::s64 folderID, AZStd::string folderPath, AZStd::string displayName, bool isRoot = false);
-        AZ::Uuid CreateSourceEntry(AZ::s64 fileID, AZ::s64 parentFolderID, AZStd::string filename, bool isFolder = false);
+        void AddScanFolder(AZ::s64 folderID, AZStd::string folderPath, AZStd::string displayName, FolderType folderType = FolderType::File);
+        AZ::Uuid CreateSourceEntry(
+            AZ::s64 fileID, AZ::s64 parentFolderID, AZStd::string filename, AssetEntryType sourceType = AssetEntryType::Source);
         void SetupAssetBrowser();
         void PrintModel(const QAbstractItemModel* model);
         QModelIndex GetModelIndex(const QAbstractItemModel* model, int targetDepth, int row = 0);
@@ -70,6 +77,10 @@ namespace UnitTest
         AZStd::unique_ptr<QAbstractItemModelTester> m_modelTesterAssetBrowser;
         AZStd::unique_ptr<QAbstractItemModelTester> m_modelTesterFilterModel;
         AZStd::unique_ptr<QAbstractItemModelTester> m_modelTesterTableModel;
+
+        const AZStd::vector<const int> folderIds = { 13, 14, 15 };
+        const AZStd::vector<const int> sourceIDs = { 1, 2, 3, 4, 5 };
+        const AZStd::vector<const int> productIDs = { 1, 2, 3, 4, 5 };
     };
 
     void AssetBrowserTest::SetUpEditorFixtureImpl()
@@ -114,27 +125,28 @@ namespace UnitTest
         m_searchWidget.reset();
     }
 
-    void AssetBrowserTest::CreateScanFolder(
-        AZ::s64 folderID, AZStd::string folderPath, AZStd::string displayName, bool isRoot /*= false*/)
+    void AssetBrowserTest::AddScanFolder(
+        AZ::s64 folderID, AZStd::string folderPath, AZStd::string displayName, FolderType folderType /*= FolderType::File*/)
     {
         AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolder = AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry();
         scanFolder.m_scanFolderID = folderID;
         scanFolder.m_scanFolder = folderPath;
         scanFolder.m_displayName = displayName;
-        scanFolder.m_isRoot = isRoot;
+        scanFolder.m_isRoot = folderType == FolderType::Root;
         GetRootEntry()->AddScanFolder(scanFolder);
     }
 
-    AZ::Uuid AssetBrowserTest::CreateSourceEntry(AZ::s64 fileID, AZ::s64 parentFolderID, AZStd::string filename, bool isFolder /* = false */)
+    AZ::Uuid AssetBrowserTest::CreateSourceEntry(
+        AZ::s64 fileID, AZ::s64 parentFolderID, AZStd::string filename, AssetEntryType sourceType /*= AssetEntryType::Source*/)
     {
         AzToolsFramework::AssetDatabase::FileDatabaseEntry entry = AzToolsFramework::AssetDatabase::FileDatabaseEntry();
         entry.m_scanFolderPK = parentFolderID;
         entry.m_fileID = fileID;
         entry.m_fileName = filename;
-        entry.m_isFolder = isFolder;
+        entry.m_isFolder = sourceType == AssetEntryType::Folder;
         GetRootEntry()->AddFile(entry);
 
-        if (!isFolder)
+        if (!entry.m_isFolder)
         {
             AzToolsFramework::AssetBrowser::SourceWithFileID entrySource = AzToolsFramework::AssetBrowser::SourceWithFileID();
             entrySource.first = entry.m_fileID;
@@ -213,41 +225,32 @@ namespace UnitTest
 
         namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 
-        CreateScanFolder(15, "D:/dev/o3de/GameProject/Misc", "Misc");
-        AZ::Uuid sourceUuid_4 = CreateSourceEntry(5, 15, "Source_4");
-        CreateProduct(1, sourceUuid_4, "Product_4_0");
-        CreateProduct(2, sourceUuid_4, "Product_4_1");
-        CreateProduct(3, sourceUuid_4, "Product_4_2");
+        AddScanFolder(folderIds.at(2), "D:/dev/o3de/GameProject/Misc", "Misc");
+        AZ::Uuid sourceUuid_4 = CreateSourceEntry(sourceIDs.at(4), folderIds.at(2), "Source_4");
+        CreateProduct(productIDs.at(0), sourceUuid_4, "Product_4_0");
+        CreateProduct(productIDs.at(1), sourceUuid_4, "Product_4_1");
+        CreateProduct(productIDs.at(2), sourceUuid_4, "Product_4_2");
 
-        CreateScanFolder(14, "D:/dev/o3de/GameProject/Scripts", "Scripts");
+        AddScanFolder(folderIds.at(1), "D:/dev/o3de/GameProject/Scripts", "Scripts");
 
-        AZ::Uuid sourceUuid_2 = CreateSourceEntry(3, 14, "Source_2");
-        CreateProduct(1, sourceUuid_2, "Product_2_0");
-        CreateProduct(2, sourceUuid_2, "Product_2_1");
-        CreateProduct(3, sourceUuid_2, "Product_2_2");
+        AZ::Uuid sourceUuid_2 = CreateSourceEntry(sourceIDs.at(2), folderIds.at(1), "Source_2");
+        CreateProduct(productIDs.at(0), sourceUuid_2, "Product_2_0");
+        CreateProduct(productIDs.at(1), sourceUuid_2, "Product_2_1");
+        CreateProduct(productIDs.at(2), sourceUuid_2, "Product_2_2");
 
-        CreateSourceEntry(4, 14, "Source_3");
+        CreateSourceEntry(sourceIDs.at(3), folderIds.at(1), "Source_3");
 
-        CreateScanFolder(13, "D:/dev/o3de/GameProject/Assets", "Assets");
+        AddScanFolder(folderIds.at(0), "D:/dev/o3de/GameProject/Assets", "Assets");
 
-        AZ::Uuid sourceUuid_0 = CreateSourceEntry(1, 13, "Source_0");
-        CreateProduct(1, sourceUuid_0, "Product_0_0");
-        CreateProduct(2, sourceUuid_0, "Product_0_1");
-        CreateProduct(3, sourceUuid_0, "Product_0_2");
-        CreateProduct(4, sourceUuid_0, "Product_0_3");
+        AZ::Uuid sourceUuid_0 = CreateSourceEntry(sourceIDs.at(0), folderIds.at(0), "Source_0");
+        CreateProduct(productIDs.at(0), sourceUuid_0, "Product_0_0");
+        CreateProduct(productIDs.at(1), sourceUuid_0, "Product_0_1");
+        CreateProduct(productIDs.at(2), sourceUuid_0, "Product_0_2");
+        CreateProduct(productIDs.at(3), sourceUuid_0, "Product_0_3");
 
-        AZ::Uuid sourceUuid_1 = CreateSourceEntry(2, 13, "Source_1");
-        CreateProduct(1, sourceUuid_1, "Product_1_0");
-        CreateProduct(2, sourceUuid_1, "Product_1_1");
-
-        qDebug() << "\n-------------Asset Browser Model------------\n";
-        PrintModel(m_assetBrowserComponent->GetAssetBrowserModel());
-
-        qDebug() << "\n---------Asset Browser Filter Model---------\n";
-        PrintModel(m_filterModel.get());
-
-        qDebug() << "\n-------------Asset Table Model--------------\n";
-        PrintModel(m_tableModel.get());
+        AZ::Uuid sourceUuid_1 = CreateSourceEntry(sourceIDs.at(1), folderIds.at(0), "Source_1");
+        CreateProduct(productIDs.at(0), sourceUuid_1, "Product_1_0");
+        CreateProduct(productIDs.at(1), sourceUuid_1, "Product_1_1");
     }
 
     void AssetBrowserTest::PrintModel(const QAbstractItemModel* model)
@@ -293,38 +296,54 @@ namespace UnitTest
         return QModelIndex();
     }
 
-
     TEST_F(AssetBrowserTest, CheckScanFolderAddition)
     {
-        
         EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(), 1);
+        const int newFolderId = 20;
+        AddScanFolder(newFolderId, "E:/TestFolder/TestFolder2", "TestFolder");
 
-        CreateScanFolder(20, "E:/TestFolder/TestFolder2", "TestFolder");
-
-        //Since the folder is empty it shouldn't be added to the model.
+        // Since the folder is empty it shouldn't be added to the model.
         EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(), 1);
 
         AZ::Uuid sourceUuid = CreateSourceEntry(123, 20, "DummyFile");
 
-        //When we add a file to the folder it should be added to the model
+        // When we add a file to the folder it should be added to the model
         EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(), 2);
     }
 
     TEST_F(AssetBrowserTest, CheckSourceAddition)
     {
-        //Get the asset Folder which should have 2 child entries
+        // Get the asset Folder which should have 2 child entries
         QModelIndex AssetFolderIndex = GetModelIndex(m_assetBrowserComponent->GetAssetBrowserModel(), 5, 2);
+
+        // Unique set of Ids for the sourcefiles
+        const AZStd::vector<const int> sourceUniqueId = { 123, 124, 125, 126, 127 };
+
+        // ID of the folder that contains the files
+        const int assetFolderId = 13;
 
         EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(AssetFolderIndex), 2);
 
-        AZ::Uuid addedEntryUuid_1 = CreateSourceEntry(123, 13, "DummyFle_1");
-        AZ::Uuid addedEntryUuid_2 = CreateSourceEntry(124, 13, "DummyFle_2");
-        AZ::Uuid addedEntryUuid_3 = CreateSourceEntry(125, 13, "DummyFle_3");
-        AZ::Uuid addedEntryUuid_4 = CreateSourceEntry(126, 13, "DummyFle_4");
-        AZ::Uuid addedEntryUuid_5 = CreateSourceEntry(127, 13, "DummyFle_5");
+        AZ::Uuid addedEntryUuid_1 = CreateSourceEntry(sourceUniqueId.at(0), assetFolderId, "DummyFle_1");
+        AZ::Uuid addedEntryUuid_2 = CreateSourceEntry(sourceUniqueId.at(1), assetFolderId, "DummyFle_2");
+        AZ::Uuid addedEntryUuid_3 = CreateSourceEntry(sourceUniqueId.at(2), assetFolderId, "DummyFle_3");
+        AZ::Uuid addedEntryUuid_4 = CreateSourceEntry(sourceUniqueId.at(3), assetFolderId, "DummyFle_4");
+        AZ::Uuid addedEntryUuid_5 = CreateSourceEntry(sourceUniqueId.at(4), assetFolderId, "DummyFle_5");
 
-        //After Adding 5 entries it should have 7 child entries
-        EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(AssetFolderIndex),7);
+        // Adding 5 more entries
+        EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(AssetFolderIndex), 7);
+
+        UnitTest::ErrorHandler errorHandler("File 123 already exists");
+        // Try to create a file that already exist.
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        CreateSourceEntry(sourceUniqueId.at(0), assetFolderId, "DummyFle_1");
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
+        // Remove file that generates the product and adding it again.
+        GetRootEntry()->RemoveFile(sourceUniqueId.at(1));
+        CreateSourceEntry(sourceUniqueId.at(1), assetFolderId, "DummyFle_2");
+
+        EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(AssetFolderIndex), 7);
     }
 
     TEST_F(AssetBrowserTest, CheckCorrectNumberOfEntriesInTableView)
