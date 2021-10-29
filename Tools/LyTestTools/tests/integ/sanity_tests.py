@@ -47,6 +47,13 @@ class TestAutomatedTestingProject(object):
         # Kill processes that may interfere with the test
         process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
+        # Check for running AP
+        ap_preexisted = False
+        if process_utils.process_exists("AssetProcessor", ignore_extensions=True):
+            ap_preexisted = True
+            logger.warning("AssetProcessor unexpectedly already running")
+            process_utils.kill_processes_named("AssetProcessor", ignore_extensions=True)
+
         try:
             # Create the Workspace object
             workspace = helpers.create_builtin_workspace(project=project)
@@ -63,6 +70,8 @@ class TestAutomatedTestingProject(object):
             # Clean up processes after the test is finished
             process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
+        assert not ap_preexisted, "ap unexpectedly found before start"
+
     def test_StartEditor_Sanity(self, project):
         """
         The `test_StartEditor_Sanity` test function is similar to the previous example with minor adjustments. A
@@ -75,7 +84,11 @@ class TestAutomatedTestingProject(object):
         process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
         # Check for running AP
-        assert not process_utils.process_exists("AssetProcessor", ignore_extensions=True), "AssetProcessor unexpectedly already running"
+        ap_preexisted = False
+        if process_utils.process_exists("AssetProcessor", ignore_extensions=True):
+            ap_preexisted = True
+            logger.warning("AssetProcessor unexpectedly already running")
+            process_utils.kill_processes_named("AssetProcessor", ignore_extensions=True)
 
         try:
             # Create the Workspace object
@@ -92,3 +105,5 @@ class TestAutomatedTestingProject(object):
         finally:
             # Clean up processes after the test is finished
             process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
+
+        assert not ap_preexisted, "ap unexpectedly found before start"
