@@ -1088,6 +1088,8 @@ namespace AzToolsFramework
 
         m_listModel->SearchStringChanged(filterString);
         m_proxyModel->UpdateFilter();
+
+        m_gui->m_objectTree->expandAll();
     }
 
     void EntityOutlinerWidget::OnFilterChanged(const AzQtComponents::SearchTypeFilterList& activeTypeFilters)
