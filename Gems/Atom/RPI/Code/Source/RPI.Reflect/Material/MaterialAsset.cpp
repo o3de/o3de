@@ -9,6 +9,7 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
+#include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
@@ -32,8 +33,9 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialAsset, AZ::Data::AssetData>()
-                    ->Version(10)
+                    ->Version(11) // Material version update
                     ->Field("materialTypeAsset", &MaterialAsset::m_materialTypeAsset)
+                    ->Field("materialTypeVersion", &MaterialAsset::m_materialTypeVersion)
                     ->Field("propertyValues", &MaterialAsset::m_propertyValues)
                     ->Field("propertyNames", &MaterialAsset::m_propertyNames)
                     ;
@@ -103,9 +105,25 @@ namespace AZ
 
         AZStd::array_view<MaterialPropertyValue> MaterialAsset::GetPropertyValues() const
         {
-            if (!m_propertyNames.empty() && m_isDirty)
+            // If property names are included, they are used to re-arrange the property value list to align with the
+            // MaterialPropertiesLayout. This realignment would be necessary if the material type is updated with
+            // a new property layout, and a corresponding material is not reprocessed by the AP and continues using the
+            // old property layout.
+            if (!m_propertyNames.empty())
             {
-                const_cast<MaterialAsset*>(this)->RealignPropertyValuesAndNames();
+                const uint32_t materialTypeVersion = m_materialTypeAsset->GetVersion();
+                if (m_materialTypeVersion < materialTypeVersion)
+                {
+                    // It is possible that the material type has had some properties renamed. If that's the case, and this material
+                    // is still referencing the old property layout, we need to apply any auto updates to rename those properties
+                    // before using them to realign the property values.
+                    const_cast<MaterialAsset*>(this)->ApplyVersionUpdates();
+                }
+
+                if (m_isDirty)
+                {
+                    const_cast<MaterialAsset*>(this)->RealignPropertyValuesAndNames();
+                }
             }
 
             return m_propertyValues;
@@ -182,6 +200,40 @@ namespace AZ
 
             m_isDirty = false;
         } 
+
+        void MaterialAsset::ApplyVersionUpdates()
+        {
+            if (m_materialTypeVersion == m_materialTypeAsset->GetVersion())
+            {
+                return;
+            }
+
+            [[maybe_unused]] const uint32_t originalVersion = m_materialTypeVersion;
+
+            bool changesWereApplied = false;
+
+            for (const MaterialVersionUpdate& versionUpdate : m_materialTypeAsset->GetMaterialVersionUpdateList())
+            {
+                if (m_materialTypeVersion < versionUpdate.GetVersion())
+                {
+                    if (versionUpdate.ApplyVersionUpdates(*this))
+                    {
+                        changesWereApplied = true;
+                        m_materialTypeVersion = versionUpdate.GetVersion();
+                    }
+                }
+            }
+            
+            if (changesWereApplied)
+            {
+                AZ_Warning("MaterialAsset", false,
+                    "This material is based on version '%u' of %s, but the material type is now at version '%u'. "
+                    "Automatic updates are available. Consider updating the .material source file.",
+                    originalVersion, m_materialTypeAsset.ToString<AZStd::string>().c_str(), m_materialTypeAsset->GetVersion());
+            }
+
+            m_materialTypeVersion = m_materialTypeAsset->GetVersion();
+        }
 
         void MaterialAsset::ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset)
         {

@@ -43,6 +43,7 @@
             m_whiteBalanceWeightIndex.Reset();
             m_whiteBalanceKelvinIndex.Reset();
             m_whiteBalanceTintIndex.Reset();
+            m_whiteBalanceLuminancePreservationIndex.Reset();
 
             m_splitToneBalanceIndex.Reset();
             m_splitToneWeightIndex.Reset();
@@ -96,7 +97,7 @@
                 m_shaderResourceGroup->SetConstant(m_whiteBalanceWeightIndex, settings->GetWhiteBalanceWeight());
                 m_shaderResourceGroup->SetConstant(m_whiteBalanceKelvinIndex, settings->GetWhiteBalanceKelvin());
                 m_shaderResourceGroup->SetConstant(m_whiteBalanceTintIndex, settings->GetWhiteBalanceTint());
-
+                m_shaderResourceGroup->SetConstant(m_whiteBalanceLuminancePreservationIndex, settings->GetWhiteBalanceLuminancePreservation());
                 m_shaderResourceGroup->SetConstant(m_splitToneBalanceIndex, settings->GetSplitToneBalance());
                 m_shaderResourceGroup->SetConstant(m_splitToneWeightIndex, settings->GetSplitToneWeight());
                 m_shaderResourceGroup->SetConstant(m_splitToneShadowsColorIndex, AZ::Vector4(settings->GetSplitToneShadowsColor()));

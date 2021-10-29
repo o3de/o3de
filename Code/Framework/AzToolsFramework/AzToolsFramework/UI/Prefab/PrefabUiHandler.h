@@ -36,7 +36,10 @@ namespace AzToolsFramework
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
         void PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
             const QModelIndex& descendantIndex) const override;
-        void OnDoubleClick(AZ::EntityId entityId) const override;
+        void PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        bool OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        void OnOutlinerItemCollapse(const QModelIndex& index) const override;
+        bool OnEntityDoubleClick(AZ::EntityId entityId) const override;
 
     private:
         Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
@@ -48,9 +51,15 @@ namespace AzToolsFramework
 
         static constexpr int m_prefabCapsuleRadius = 6;
         static constexpr int m_prefabBorderThickness = 2;
+        static const QColor m_backgroundColor;
+        static const QColor m_backgroundHoverColor;
+        static const QColor m_backgroundSelectedColor;
         static const QColor m_prefabCapsuleColor;
+        static const QColor m_prefabCapsuleDisabledColor;
         static const QColor m_prefabCapsuleEditColor;
         static const QString m_prefabIconPath;
         static const QString m_prefabEditIconPath;
+        static const QString m_prefabEditOpenIconPath;
+        static const QString m_prefabEditCloseIconPath;
     };
 } // namespace AzToolsFramework

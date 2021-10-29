@@ -20,7 +20,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 {
     const static int HighlightBorderSize = 5;
     const static int TopHighlightBorderSize = 25;
-    const static char* HighlightBorderColor = "#44B2F8";
+    const static char* HighlightBorderColor = "#4A90E2";
 
     static void UnparentWidgets(ViewportUiElementIdInfoLookup& viewportUiElementIdInfoLookup)
     {
@@ -301,6 +301,7 @@ namespace AzToolsFramework::ViewportUi::Internal
             HighlightBorderSize + ViewportUiOverlayMargin, HighlightBorderSize + ViewportUiOverlayMargin);
         m_componentModeBorderText.setVisible(true);
         m_componentModeBorderText.setText(borderTitle.c_str());
+        UpdateUiOverlayGeometry();
     }
 
     void ViewportUiDisplay::RemoveViewportBorder()
@@ -427,8 +428,8 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiDisplay::PositionUiOverlayOverRenderViewport()
     {
         QPoint offset = m_renderOverlay->mapToGlobal(QPoint());
-        m_uiMainWindow.move(offset);
-        m_uiOverlay.setFixedSize(m_renderOverlay->width(), m_renderOverlay->height());
+        m_uiMainWindow.setGeometry(offset.x(), offset.y(), m_renderOverlay->width(), m_renderOverlay->height());
+        m_uiOverlay.setGeometry(m_uiMainWindow.rect());
         UpdateUiOverlayGeometry();
     }
 

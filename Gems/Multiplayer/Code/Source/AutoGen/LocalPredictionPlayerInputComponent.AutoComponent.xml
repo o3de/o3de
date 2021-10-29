@@ -13,9 +13,9 @@
 
     <Include File="Multiplayer/MultiplayerTypes.h"/>
     <Include File="Multiplayer/NetworkInput/NetworkInput.h"/>
-    <Include File="Source/NetworkInput/NetworkInputArray.h"/>
-    <Include File="Source/NetworkInput/NetworkInputHistory.h"/>
-    <Include File="Source/NetworkInput/NetworkInputMigrationVector.h"/>
+    <Include File="Multiplayer/NetworkInput/NetworkInputArray.h"/>
+    <Include File="Multiplayer/NetworkInput/NetworkInputHistory.h"/>
+    <Include File="Multiplayer/NetworkInput/NetworkInputMigrationVector.h"/>
     <Include File="AzNetworking/DataStructures/ByteBuffer.h"/>
 
     <NetworkProperty Type="Multiplayer::ClientInputId" Name="LastInputId" Init="Multiplayer::ClientInputId{ 0 }" ReplicateFrom="Authority" ReplicateTo="Server" IsRewindable="false" IsPredictable="false" IsPublic="false" Container="Object" ExposeToEditor="false" ExposeToScript="false" GenerateEventBindings="false" />

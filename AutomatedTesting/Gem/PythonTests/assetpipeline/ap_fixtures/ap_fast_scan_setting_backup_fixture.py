@@ -29,6 +29,9 @@ def ap_fast_scan_setting_backup_fixture(request, workspace) -> PlatformSetting:
     if workspace.asset_processor_platform == 'mac':
         pytest.skip("Mac plist file editing not implemented yet")
 
+    if workspace.asset_processor_platform == 'linux':
+        pytest.skip("Linux system settings not implemented yet")
+
     key = fast_scan_key
     subkey = fast_scan_subkey
 

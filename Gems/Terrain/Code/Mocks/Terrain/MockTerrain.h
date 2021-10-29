@@ -10,11 +10,12 @@
 #include <gmock/gmock.h>
 
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzFramework/Physics/HeightfieldProviderBus.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <TerrainSystem/TerrainSystemBus.h>
 
 namespace UnitTest
 {
-
     class MockTerrainSystemService : private Terrain::TerrainSystemServiceRequestBus::Handler
     {
     public:
@@ -33,7 +34,8 @@ namespace UnitTest
 
         MOCK_METHOD1(RegisterArea, void(AZ::EntityId areaId));
         MOCK_METHOD1(UnregisterArea, void(AZ::EntityId areaId));
-        MOCK_METHOD1(RefreshArea, void(AZ::EntityId areaId));
+        MOCK_METHOD2(RefreshArea,
+            void(AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask));
     };
 
     class MockTerrainDataNotificationListener : public AzFramework::Terrain::TerrainDataNotificationBus::Handler
@@ -69,11 +71,7 @@ namespace UnitTest
             Terrain::TerrainAreaHeightRequestBus::Handler::BusDisconnect();
         }
 
-        MOCK_METHOD3(GetHeight, void(
-            const AZ::Vector3& inPosition,
-            AZ::Vector3& outPosition,
-            bool& terrainExists));
-
+        MOCK_METHOD3(GetHeight, void(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, bool& terrainExists));
     };
 
     class MockTerrainSpawnerRequests : public Terrain::TerrainSpawnerRequestBus::Handler
@@ -92,4 +90,46 @@ namespace UnitTest
         MOCK_METHOD2(GetPriority, void(AZ::u32& outLayer, AZ::u32& outPriority));
         MOCK_METHOD0(GetUseGroundPlane, bool());
     };
-}
+
+    class MockTerrainDataRequests : public AzFramework::Terrain::TerrainDataRequestBus::Handler
+    {
+    public:
+        MockTerrainDataRequests()
+        {
+            AzFramework::Terrain::TerrainDataRequestBus::Handler::BusConnect();
+        }
+
+        ~MockTerrainDataRequests()
+        {
+            AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
+        }
+
+        MOCK_CONST_METHOD0(GetTerrainHeightQueryResolution, AZ::Vector2());
+        MOCK_METHOD1(SetTerrainHeightQueryResolution, void(AZ::Vector2));
+        MOCK_CONST_METHOD0(GetTerrainAabb, AZ::Aabb());
+        MOCK_METHOD1(SetTerrainAabb, void(const AZ::Aabb&));
+        MOCK_CONST_METHOD3(GetHeight, float(const AZ::Vector3&, Sampler, bool*));
+        MOCK_CONST_METHOD3(GetHeightFromVector2, float(const AZ::Vector2&, Sampler, bool*));
+        MOCK_CONST_METHOD4(GetHeightFromFloats, float(float, float, Sampler, bool*));
+        MOCK_CONST_METHOD2(GetIsHole, bool(const AZ::Vector3&, Sampler));
+        MOCK_CONST_METHOD2(GetIsHoleFromVector2, bool(const AZ::Vector2&, Sampler));
+        MOCK_CONST_METHOD3(GetIsHoleFromFloats, bool(float, float, Sampler));
+        MOCK_CONST_METHOD3(GetNormal, AZ::Vector3(const AZ::Vector3&, Sampler, bool*));
+        MOCK_CONST_METHOD3(GetNormalFromVector2, AZ::Vector3(const AZ::Vector2&, Sampler, bool*));
+        MOCK_CONST_METHOD4(GetNormalFromFloats, AZ::Vector3(float, float, Sampler, bool*));
+        MOCK_CONST_METHOD3(GetMaxSurfaceWeight, AzFramework::SurfaceData::SurfaceTagWeight(const AZ::Vector3&, Sampler, bool*));
+        MOCK_CONST_METHOD3(GetMaxSurfaceWeightFromVector2, AzFramework::SurfaceData::SurfaceTagWeight(const AZ::Vector2&, Sampler, bool*));
+        MOCK_CONST_METHOD4(GetMaxSurfaceWeightFromFloats, AzFramework::SurfaceData::SurfaceTagWeight(float, float, Sampler, bool*));
+        MOCK_CONST_METHOD4(GetSurfaceWeights, void(const AZ::Vector3&, AzFramework::SurfaceData::SurfaceTagWeightList&, Sampler, bool*));
+        MOCK_CONST_METHOD4(
+            GetSurfaceWeightsFromVector2, void(const AZ::Vector2&, AzFramework::SurfaceData::SurfaceTagWeightList&, Sampler, bool*));
+        MOCK_CONST_METHOD5(
+            GetSurfaceWeightsFromFloats, void(float, float, AzFramework::SurfaceData::SurfaceTagWeightList&, Sampler, bool*));
+        MOCK_CONST_METHOD3(GetMaxSurfaceName, const char*(const AZ::Vector3&, Sampler, bool*));
+        MOCK_CONST_METHOD4(GetSurfacePoint, void(const AZ::Vector3&, AzFramework::SurfaceData::SurfacePoint&, Sampler, bool*));
+        MOCK_CONST_METHOD4(
+            GetSurfacePointFromVector2, void(const AZ::Vector2&, AzFramework::SurfaceData::SurfacePoint&, Sampler, bool*));
+        MOCK_CONST_METHOD5(
+            GetSurfacePointFromFloats, void(float, float, AzFramework::SurfaceData::SurfacePoint&, Sampler, bool*));
+    };
+} // namespace UnitTest

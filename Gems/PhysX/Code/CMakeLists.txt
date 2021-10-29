@@ -17,6 +17,7 @@ if(PAL_TRAIT_PHYSX_SUPPORTED)
     set(physx_dependency 3rdParty::PhysX)
     set(physx_files physx_files.cmake)
     set(physx_shared_files physx_shared_files.cmake)
+    set(physx_mock_files physx_mocks_files.cmake)
     set(physx_editor_files physx_editor_files.cmake)
 else()
     set(physx_files physx_unsupported_files.cmake)
@@ -152,6 +153,17 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
+        NAME PhysX.Mocks HEADERONLY
+        NAMESPACE Gem
+        OUTPUT_NAME PhysX.Mocks.Gem
+        FILES_CMAKE
+            physx_mocks_files.cmake
+        INCLUDE_DIRECTORIES
+            INTERFACE
+                Mocks
+    )
+
+    ly_add_target(
         NAME PhysX.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         OUTPUT_NAME PhysX.Tests.Gem
@@ -213,6 +225,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     AZ::AzToolsFrameworkTestCommon
                     Gem::PhysX.Static
+                    Gem::PhysX.Mocks
                     Gem::PhysX.Editor.Static
             RUNTIME_DEPENDENCIES
                 Gem::LmbrCentral.Editor

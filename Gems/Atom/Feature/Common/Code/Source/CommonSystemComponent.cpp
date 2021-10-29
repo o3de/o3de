@@ -51,6 +51,7 @@
 #include <PostProcessing/DepthOfFieldParentPass.h>
 #include <PostProcessing/DepthOfFieldReadBackFocusDepthPass.h>
 #include <PostProcessing/DepthOfFieldWriteFocusDepthFromGpuPass.h>
+#include <PostProcessing/NewDepthOfFieldPasses.h>
 #include <PostProcessing/EyeAdaptationPass.h>
 #include <PostProcessing/LuminanceHistogramGeneratorPass.h>
 #include <PostProcessing/FastDepthAwareBlurPasses.h>
@@ -249,6 +250,10 @@ namespace AZ
             passSystem->AddPassCreator(Name("DepthOfFieldParentPass"), &DepthOfFieldParentPass::Create);
             passSystem->AddPassCreator(Name("DepthOfFieldReadBackFocusDepthPass"), &DepthOfFieldReadBackFocusDepthPass::Create);
             passSystem->AddPassCreator(Name("DepthOfFieldWriteFocusDepthFromGpuPass"), &DepthOfFieldWriteFocusDepthFromGpuPass::Create);
+
+            passSystem->AddPassCreator(Name("NewDepthOfFieldParentPass"), &NewDepthOfFieldParentPass::Create);
+            passSystem->AddPassCreator(Name("NewDepthOfFieldTileReducePass"), &NewDepthOfFieldTileReducePass::Create);
+            passSystem->AddPassCreator(Name("NewDepthOfFieldFilterPass"), &NewDepthOfFieldFilterPass::Create);
 
             // Add FastDepthAwareBlur passes
             passSystem->AddPassCreator(Name("FastDepthAwareBlurHorPass"), &FastDepthAwareBlurHorPass::Create);

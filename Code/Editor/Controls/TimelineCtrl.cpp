@@ -126,7 +126,6 @@ void TimelineWidget::DrawTicks(QPainter* painter)
     const QPen pOldPen = painter->pen();
 
     const QPen ltgray(QColor(110, 110, 110));
-    const QPen black(palette().color(QPalette::Normal, QPalette::Text));
     const QPen redpen(QColor(255, 0, 255));
 
     // Draw time ticks every tick step seconds.
@@ -598,7 +597,6 @@ void TimelineWidget::DrawSecondTicks(QPainter* painter)
 {
     const QPen ltgray(QColor(110, 110, 110));
     const QPen black(palette().color(QPalette::Normal, QPalette::Text));
-    const QPen redpen(QColor(255, 0, 255));
 
     for (int gx = m_grid.firstGridLine.x(); gx < m_grid.firstGridLine.x() + m_grid.numGridLines.x() + 1; gx++)
     {

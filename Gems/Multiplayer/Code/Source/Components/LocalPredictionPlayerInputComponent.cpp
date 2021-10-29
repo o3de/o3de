@@ -354,6 +354,16 @@ namespace Multiplayer
         }
     }
 
+    void LocalPredictionPlayerInputComponentController::ForceEnableAutonomousUpdate()
+    {
+        m_autonomousUpdateEvent.Enqueue(AZ::TimeMs{ 1 }, true);
+    }
+
+    void LocalPredictionPlayerInputComponentController::ForceDisableAutonomousUpdate()
+    {
+        m_autonomousUpdateEvent.RemoveFromQueue();
+    }
+
     bool LocalPredictionPlayerInputComponentController::IsMigrating() const
     {
         return m_lastMigratedInputId != ClientInputId{ 0 };

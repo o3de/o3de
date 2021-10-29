@@ -33,7 +33,6 @@ namespace PhysX
         // DefaultWorldBus
         AzPhysics::SceneHandle GetDefaultSceneHandle() const override;
 
-        AZ::ComponentDescriptor* m_dummyTerrainComponentDescriptor = nullptr;
         AzPhysics::Scene* m_defaultScene = nullptr;
         AzPhysics::SceneHandle m_testSceneHandle = AzPhysics::InvalidSceneHandle;
     };
