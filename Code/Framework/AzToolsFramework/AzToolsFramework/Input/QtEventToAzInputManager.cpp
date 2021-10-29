@@ -259,11 +259,7 @@ namespace AzToolsFramework
         // main editor window) then ensure all input channels are cleared
         if (eventType == QEvent::ApplicationStateChange)
         {
-            if (const auto* applicationStateChange = static_cast<QApplicationStateChangeEvent*>(event);
-                applicationStateChange->applicationState() != Qt::ApplicationState::ApplicationActive)
-            {
-                ClearInputChannels(event);
-            }
+            ClearInputChannels(event);
         }
 
         // Only accept mouse & key release events that originate from an object that is not our target widget,
