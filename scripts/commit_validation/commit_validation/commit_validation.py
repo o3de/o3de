@@ -176,13 +176,8 @@ EXCLUDED_VALIDATION_PATTERNS = [
     'build',
     'Cache',
     '*/Code/Framework/AzCore/azgnmx/azgnmx/*',
-    'Code/Tools/CryFXC',
-    'Code/Tools/HLSLCrossCompiler',
-    'Code/Tools/HLSLCrossCompilerMETAL',
-    'Docs',
     'python/runtime',
     'restricted/*/Tools/*RemoteControl',
-    'Tools/3dsmax',
     '*/user/Cache/*',
     '*/user/log/*',
 ]
