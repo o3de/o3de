@@ -114,7 +114,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
-      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode --regset=\"/Amazon/AzCore/Bootstrap/project_path=/data/workspace/o3de/AutomatedTesting\"",
       "ASSET_PROCESSOR_PLATFORMS": "linux,server"
     }
   },
@@ -128,7 +128,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
-      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode",
+      "ASSET_PROCESSOR_OPTIONS": "/zeroAnalysisMode --regset=\"/Amazon/AzCore/Bootstrap/project_path=/data/workspace/o3de/AutomatedTesting\"",
       "ASSET_PROCESSOR_PLATFORMS": "linux,server"
     }
   },

@@ -1,6 +1,6 @@
 {
     "ENV": {
-        "NODE_LABEL": "linux",
+        "NODE_LABEL": "linux-test",
         "LY_3RDPARTY_PATH": "/home/lybuilder/ly/workspace/3rdParty",
         "TIMEOUT": 30,
         "WORKSPACE": "/data/workspace",
