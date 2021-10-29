@@ -6,13 +6,6 @@
 #
 #
 
-ly_install_directory(
-    DIRECTORIES 
-        AssetGem
-        CppToolGem
-        PythonToolGem
-        DefaultGem
-        DefaultProject
-        MinimalProject
-    VERBATIM
+set(FILES
+    Mocks/PhysX/MockPhysXHeightfieldProviderComponent.h
 )
