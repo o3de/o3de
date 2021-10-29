@@ -651,7 +651,10 @@ namespace AZ
                     // Check if the input path is relative to the alias value
                     if (AZ::IO::PathView(inBuffer).IsRelativeTo(AZ::IO::PathView(resolvedAlias)))
                     {
-                        longestMatch = resolvedAlias.size();
+                        // If the resolved alias ends in a path separator, do not consume it.
+                        const bool resolvedAliasEndsInPathSeparator = (resolvedAlias.ends_with(AZ::IO::PosixPathSeparator) ||
+                                                                       resolvedAlias.ends_with(AZ::IO::WindowsPathSeparator));
+                        longestMatch = resolvedAliasEndsInPathSeparator ? resolvedAlias.size() - 1 : resolvedAlias.size();
                         longestAlias = alias;
                     }
                 }
