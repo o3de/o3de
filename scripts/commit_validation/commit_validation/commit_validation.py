@@ -173,10 +173,11 @@ EXCLUDED_VALIDATION_PATTERNS = [
     '*/3rdParty/*',
     '*/__pycache__/*',
     '*/External/*',
-    'build',
-    'Cache',
-    '*/Code/Framework/AzCore/azgnmx/azgnmx/*',
+    'build', # build artifacts
+    '*/Cache/*', # Asset processing artifacts
+    'install', # install layout artifacts
     'python/runtime',
+    'restricted/*/Code/Framework/AzCore/azgnmx/azgnmx/*',
     'restricted/*/Tools/*RemoteControl',
     '*/user/Cache/*',
     '*/user/log/*',
