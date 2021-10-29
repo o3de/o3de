@@ -11,7 +11,7 @@ def PrefabComplexWorflow_CreatePrefabInsidePrefab():
     - Creates an entity with a physx collider
     - Creates a prefab "Outer_prefab" and an instance based of that entity 
     - Creates a prefab "Inner_prefab" inside "Outer_prefab" based the entity contained inside of it
-    Checks that the entity is correctly handlded by the prefab system checking the name and that it contains the correct component
+    Checks that the entity is correctly handlded by the prefab system checking the name and that it contains the physx collider
     """
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
@@ -31,20 +31,23 @@ def PrefabComplexWorflow_CreatePrefabInsidePrefab():
     # Create a prefab based on that entity
     outer_prefab, outer_instance = Prefab.create_prefab([entity], "Outer_prefab")
     # The test should be now inside the outer prefab instance.
-    entity = outer_instance.get_first_level_entities()[0]
+    entity = outer_instance.get_direct_child_entities()[0]
     # We track if that is the same entity by checking the name and if it still contains the component that we created before
     assert entity.get_name() == "TestEntity", f"Entity name inside outer_prefab doesn't match the original name, original:'TestEntity' current:'{entity.get_name()}'"
-    assert entity.has_component("PhysX Collider"), f"Entity name inside outer_prefab doesn't have the collider component it should"
+    assert entity.has_component("PhysX Collider"), "Entity name inside outer_prefab doesn't have the collider component it should"
 
     # Now, create another prefab, based on the entity that is inside outer_prefab
     inner_prefab, inner_instance = Prefab.create_prefab([entity], "Inner_prefab")
     # The test entity should now be inside the inner prefab instance
-    entity = inner_instance.get_first_level_entities()[0]
+    entity = inner_instance.get_direct_child_entities()[0]
     # We track if that is the same entity by checking the name and if it still contains the component that we created before
     assert entity.get_name() == "TestEntity", f"Entity name inside inner_prefab doesn't match the original name, original:'TestEntity' current:'{entity.get_name()}'"
-    assert entity.has_component("PhysX Collider"), f"Entity name inside inner_prefab doesn't have the collider component it should"
+    assert entity.has_component("PhysX Collider"), "Entity name inside inner_prefab doesn't have the collider component it should"
 
-    # Verify Hierarch of entities, "Outer_prefab" entity->"Inner_prefab" entity->"TestEntity" entity
+    # Verify hierarchy of entities:
+    # Outer_prefab
+    # |- Inner_prefab 
+    # |  |- TestEntity
     assert entity.get_parent_id() == inner_instance.container_entity.id
     assert inner_instance.container_entity.get_parent_id() == outer_instance.container_entity.id
 
