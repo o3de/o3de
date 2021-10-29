@@ -9,7 +9,7 @@ QMainWindow {
 
 #ScreensCtrl {
     min-width:1200px;
-    min-height:800px;
+    min-height:700px;
 }
 
 QPushButton:focus {
@@ -691,6 +691,12 @@ QProgressBar::chunk {
 
 #gemRepoAddDialogInstructionTitleLabel {
     font-size:14px;
+    font-weight:bold;
+}
+
+#gemRepoAddDialogWarningLabel {
+    font-size:12px;
+    font-style:italic;
 }
 
 #addGemRepoDialog #formFrame {
