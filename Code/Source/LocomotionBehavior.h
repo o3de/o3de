@@ -29,7 +29,6 @@ namespace EMotionFX
         class FeaturePosition;
         class FeatureVelocity;
         class FeatureTrajectory;
-        class FeatureDirection;
 
         enum EControlSplineMode : AZ::u8
         {
@@ -54,7 +53,6 @@ namespace EMotionFX
                 float m_rootFutureFactor = 1.0f;
                 float m_rootPastFactor = 1.0f;
                 float m_differentMotionFactor = 1.0f;
-                float m_rootDirectionFactor = 1.0f;
             };
 
             LocomotionBehavior();
@@ -87,7 +85,6 @@ namespace EMotionFX
             FeaturePosition* m_rightFootPositionData = nullptr;
             FeatureVelocity* m_leftFootVelocityData = nullptr;
             FeatureVelocity* m_rightFootVelocityData = nullptr;
-            //FeatureDirection* m_rootDirectionData = nullptr;
             FeatureTrajectory* m_rootTrajectoryData = nullptr;
             size_t m_rootNodeIndex = InvalidIndex32;
             size_t m_leftFootNodeIndex = InvalidIndex32;

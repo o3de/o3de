@@ -13,7 +13,6 @@
 #include <Allocators.h>
 #include <Behavior.h>
 #include <BehaviorInstance.h>
-#include <FeatureDirection.h>
 #include <Feature.h>
 #include <LocomotionBehavior.h>
 #include <MotionMatchEventData.h>
@@ -41,7 +40,6 @@ namespace EMotionFX
             FeaturePosition::Reflect(context);
             FeatureTrajectory::Reflect(context);
             FeatureVelocity::Reflect(context);
-            FeatureDirection::Reflect(context);
         }
     } // namespace MotionMatching
 } // namespace EMotionFX

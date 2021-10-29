@@ -281,7 +281,6 @@ namespace EMotionFX
             factors.m_rootFutureFactor = m_rootFutureFactor;
             factors.m_rootPastFactor = m_rootPastFactor;
             factors.m_differentMotionFactor = m_differentMotionFactor;
-            factors.m_rootDirectionFactor = m_rootDirectionFactor;
             behavior->SetFactorWeights(factors);
 
             MotionMatching::BehaviorInstance* behaviorInstance = uniqueData->m_behaviorInstance;
@@ -324,7 +323,6 @@ namespace EMotionFX
                 ->Field("footVelocity", &BlendTreeMotionMatchNode::m_footVelocityFactor)
                 ->Field("rootFutureFactor", &BlendTreeMotionMatchNode::m_rootFutureFactor)
                 ->Field("rootPastFactor", &BlendTreeMotionMatchNode::m_rootPastFactor)
-                ->Field("rootDirectionFactor", &BlendTreeMotionMatchNode::m_rootDirectionFactor)
                 ->Field("differentMotionFactor", &BlendTreeMotionMatchNode::m_differentMotionFactor)
                 ->Field("sampleRate", &BlendTreeMotionMatchNode::m_sampleRate)
                 ->Field("lowestCostSearchFrequency", &BlendTreeMotionMatchNode::m_lowestCostSearchFrequency)
@@ -368,10 +366,6 @@ namespace EMotionFX
                 ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                 ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                 ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_rootPastFactor, "Root Past Factor", "")
-                ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
-                ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                ->DataElement(AZ::Edit::UIHandlers::Default, &BlendTreeMotionMatchNode::m_rootDirectionFactor, "Root Direction Factor", "")
                 ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                 ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                 ->Attribute(AZ::Edit::Attributes::Step, 0.01f)

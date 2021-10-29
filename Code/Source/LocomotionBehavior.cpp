@@ -19,7 +19,6 @@
 #include <EMotionFX/Source/TransformData.h>
 #include <Behavior.h>
 #include <BehaviorInstance.h>
-#include <FeatureDirection.h>
 #include <LocomotionBehavior.h>
 #include <FeaturePosition.h>
 #include <FeatureTrajectory.h>
@@ -131,16 +130,6 @@ namespace EMotionFX
             m_features.AddKdTreeFeature(m_rightFootVelocityData);
             //----------------------------------------------------------------------------------------------------------
 
-            // Root direction.
-            /*m_rootDirectionData->SetNodeIndex(m_rootNodeIndex);
-            m_rootDirectionData->SetRelativeToNodeIndex(m_rootNodeIndex);
-            m_rootDirectionData->SetDebugDrawColor(AZ::Colors::Yellow);
-            m_rootDirectionData->SetDebugDrawEnabled(false);
-            m_rootDirectionData->SetIncludeInKdTree(false);
-            m_features.RegisterFeature(m_rootDirectionData);
-            m_rootDirectionData = aznew FeatureDirection();*/
-            //----------------------------------------------------------------------------------------------------------
-
             return true;
         }
 
@@ -169,12 +158,6 @@ namespace EMotionFX
             {
                 m_features.DebugDraw(drawQueue, draw, behaviorInstance, currentFrame);
             }
-
-            //// Draw the root direction
-            //const size_t frameIndex = behaviorInstance->GetLowestCostFrameIndex();
-            //const AZ::Vector3 direction = m_rootDirectionData->GetDirection(frameIndex).GetNormalizedSafeExact();
-            //draw.DrawLine(actorInstance->GetWorldSpaceTransform().mPosition,
-            //              actorInstance->GetWorldSpaceTransform().mPosition + direction, AZ::Colors::LightCyan);
         }
 
         void LocomotionBehavior::DebugDrawControlSpline(AZ::RPI::AuxGeomDrawPtr& drawQueue,
@@ -253,12 +236,10 @@ namespace EMotionFX
             FeatureTrajectory::FrameCostContext rootTrajectoryContext(m_features.GetFeatureMatrix());
             FeatureVelocity::FrameCostContext leftFootVelocityContext(m_features.GetFeatureMatrix());
             FeatureVelocity::FrameCostContext rightFootVelocityContext(m_features.GetFeatureMatrix());
-            //DirectionFrameData::FrameCostContext rootDirectionContext;
             Feature::CalculateVelocity(m_leftFootNodeIndex, m_rootNodeIndex, motionInstance, leftFootVelocityContext.m_direction, leftFootVelocityContext.m_speed);
             Feature::CalculateVelocity(m_rightFootNodeIndex, m_rootNodeIndex, motionInstance, rightFootVelocityContext.m_direction, rightFootVelocityContext.m_speed); // TODO: group this with left foot for faster performance
             rootTrajectoryContext.m_pose = &inputPose;
             rootTrajectoryContext.m_facingDirectionRelative = AZ::Vector3(0.0f, 1.0f, 0.0f);
-            //rootDirectionContext.m_pose = &inputPose;
             rootTrajectoryContext.m_controlSpline = &behaviorInstance->GetControlSpline();
 
             // 1. Broad-phase search using KD-tree
@@ -323,7 +304,6 @@ namespace EMotionFX
                     m_factorWeights.m_footPositionFactor * leftFootPositionCost + m_factorWeights.m_footPositionFactor * rightFootPositionCost + // foot position
                     m_factorWeights.m_footVelocityFactor * leftFootVelocityCost + m_factorWeights.m_footVelocityFactor * rightFootVelocityCost + // foot velocity
                     m_factorWeights.m_rootPastFactor * trajectoryPastCost + m_factorWeights.m_rootFutureFactor * trajectoryFutureCost; // trajectory
-                    //m_factorWeights.m_rootDirectionFactor * m_rootDirectionData->CalculateFrameCost(frameIndex, rootDirectionContext);
 
                 if (frame.GetSourceMotion() != currentFrame.GetSourceMotion())
                 {
@@ -374,80 +354,6 @@ namespace EMotionFX
             return minCostFrameIndex;
         }
 
-/*
-        size_t LocomotionBehavior::FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& inputPose, const Pose& previousPose, size_t currentFrameIndex, float timeDelta)
-        {
-            const BehaviorInstance::ControlSpline& controlSpline = behaviorInstance->GetControlSpline();
-            const Frame& currentFrame = m_data.GetFrame(currentFrameIndex);
-            MotionInstance* motionInstance = behaviorInstance->GetMotionInstance();
-
-            float minCost = FLT_MAX;
-            float maxCost = -1.0f;
-            size_t minCostFrameIndex = 0;
-
-            PositionFrameData::FrameCostContext leftFootPosContext;
-            PositionFrameData::FrameCostContext rightFootPosContext;
-            TrajectoryFrameData::FrameCostContext rootTrajectoryContext;
-            VelocityFrameData::FrameCostContext leftFootVelocityContext;
-            VelocityFrameData::FrameCostContext rightFootVelocityContext;
-            //DirectionFrameData::FrameCostContext rootDirectionContext;
-            FrameData::CalculateVelocity(m_leftFootNodeIndex, m_rootNodeIndex, motionInstance, leftFootVelocityContext.m_direction, leftFootVelocityContext.m_speed);
-            FrameData::CalculateVelocity(m_rightFootNodeIndex, m_rootNodeIndex, motionInstance, rightFootVelocityContext.m_direction, rightFootVelocityContext.m_speed); // TODO: group this with left foot for faster performance
-            leftFootPosContext.m_pose = &inputPose;
-            rightFootPosContext.m_pose = &inputPose;
-            rootTrajectoryContext.m_pose = &inputPose;
-            rootTrajectoryContext.m_facingDirectionRelative = AZ::Vector3(0.0f, 1.0f, 0.0f);
-            //rootDirectionContext.m_pose = &inputPose;
-            rootTrajectoryContext.m_controlSpline = &behaviorInstance->GetControlSpline();
-
-            for (Frame& frame : m_data.GetFrames())
-            {
-                if (frame.GetSampleTime() >= frame.GetSourceMotion()->GetMaxTime() - 1.0f)
-                {
-                    continue;
-                }
-
-                const size_t frameIndex = frame.GetFrameIndex();
-                float totalCost =
-                    m_tweakFactors.m_footPositionFactor * m_leftFootPositionData->CalculateFrameCost(frameIndex, leftFootPosContext) +
-                    m_tweakFactors.m_footPositionFactor * m_rightFootPositionData->CalculateFrameCost(frameIndex, rightFootPosContext) +
-                    m_tweakFactors.m_rootFutureFactor * m_rootTrajectoryData->CalculateFutureFrameCost(frameIndex, rootTrajectoryContext) +
-                    m_tweakFactors.m_rootPastFactor * m_rootTrajectoryData->CalculatePastFrameCost(frameIndex, rootTrajectoryContext) +
-                    m_tweakFactors.m_rootDirectionFactor * m_rootTrajectoryData->CalculateDirectionCost(frameIndex, rootTrajectoryContext) +
-                    m_tweakFactors.m_footVelocityFactor * m_leftFootVelocityData->CalculateFrameCost(frameIndex, leftFootVelocityContext) +
-                    m_tweakFactors.m_footVelocityFactor * m_rightFootVelocityData->CalculateFrameCost(frameIndex, rightFootVelocityContext);// +
-                    //m_tweakFactors.m_rootDirectionFactor * m_rootDirectionData->CalculateFrameCost(frameIndex, rootDirectionContext);
-
-                if (frame.GetSourceMotion() != currentFrame.GetSourceMotion())
-                {
-                    totalCost *= m_tweakFactors.m_differentMotionFactor;
-                }
-
-                frame.SetCost(totalCost);
-
-                // Track the minimum cost value and frame.
-                if (totalCost < minCost)
-                {
-                    minCost = totalCost;
-                    minCostFrameIndex = frameIndex;
-                }
-
-                if (totalCost > maxCost)
-                {
-                    maxCost = totalCost;
-                }
-            }
-
-            // Normalize frame costs
-            for (Frame& frame : m_data.GetFrames())
-            {
-                frame.SetCost(frame.GetCost() / maxCost);
-            }
-
-            //AZ_Printf("EMotionFX", "Frame %d = %f    %f/%f  max=%f", minCostFrameIndex, minCost, m_data.GetFrame(minCostFrameIndex).GetSampleTime(), m_data.GetFrame(minCostFrameIndex).GetSourceMotion()->GetMaxTime(), maxCost);
-            return minCostFrameIndex;
-        }
-*/
         AZ::Vector3 SampleFunction1(float offset, float radius, float phase)
         {
             AZ::Vector3 displacement = AZ::Vector3::CreateZero();
