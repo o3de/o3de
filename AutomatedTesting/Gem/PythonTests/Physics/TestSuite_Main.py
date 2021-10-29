@@ -98,3 +98,9 @@ class TestAutomation(TestAutomationBase):
     def test_Tick_InterpolatedRigidBodyMotionIsSmooth(self, request, workspace, editor, launcher_platform):
         from .tests.tick import Tick_InterpolatedRigidBodyMotionIsSmooth as test_module
         self._run_test(request, workspace, editor, test_module)
+
+    @pytest.mark.tick
+    @pytest.mark.xfail(reason="Test still under development.")
+    def test_Tick_Tick_CharacterGameplayComponentMotionIsSmooth(self, request, workspace, editor, launcher_platform):
+        from .tests.tick import Tick_CharacterGameplayComponentMotionIsSmooth as test_module
+        self._run_test(request, workspace, editor, test_module)
