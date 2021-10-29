@@ -55,13 +55,19 @@ namespace UnitTest
         void TearDownEditorFixtureImpl() override;
 
     protected:
+        //! Creates a Mock Scan Folder
         void AddScanFolder(AZ::s64 folderID, AZStd::string folderPath, AZStd::string displayName, FolderType folderType = FolderType::File);
+
+        //! Creates a Source entry from a mock file
         AZ::Uuid CreateSourceEntry(
             AZ::s64 fileID, AZ::s64 parentFolderID, AZStd::string filename, AssetEntryType sourceType = AssetEntryType::Source);
+
+        //! Creates a product from a given sourceEntry
+        void CreateProduct(AZ::s64 productID, AZ::Uuid sourceUuid, AZStd::string productName);
+
         void SetupAssetBrowser();
         void PrintModel(const QAbstractItemModel* model);
         QModelIndex GetModelIndex(const QAbstractItemModel* model, int targetDepth, int row = 0);
-        void CreateProduct(AZ::s64 productID, AZ::Uuid sourceUuid, AZStd::string productName);
 
         AZStd::shared_ptr<AzToolsFramework::AssetBrowser::RootAssetBrowserEntry> GetRootEntry()
         {
@@ -118,7 +124,6 @@ namespace UnitTest
 
         m_tableModel.reset();
         m_filterModel.reset();
-        delete m_assetBrowserComponent->GetAssetBrowserModel();
 
         m_assetBrowserComponent->Deactivate();
         m_assetBrowserComponent.reset();
