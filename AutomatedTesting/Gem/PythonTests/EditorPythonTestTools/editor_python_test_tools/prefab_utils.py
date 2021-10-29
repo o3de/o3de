@@ -138,7 +138,7 @@ class PrefabInstance:
         self.container_entity = reparented_container_entity
         current_instance_prefab.instances.add(self)
 
-    def get_first_level_entities(self):
+    def get_direct_child_entities(self):
         """
         Returns the entities only contained in the current prefab instance.
         This function does not return entities contained in other child instances

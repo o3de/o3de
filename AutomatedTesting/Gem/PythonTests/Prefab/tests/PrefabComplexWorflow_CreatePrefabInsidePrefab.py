@@ -8,9 +8,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 def PrefabComplexWorflow_CreatePrefabInsidePrefab():
     """
     Test description:
-    - Creates two entities, parent and child. Child entity has Parent entity as its parent.
-    - Creates a prefab of the child entity.
-    Test is successful if the new instanced prefab of the child has the parent entity id
+    - Creates an entity with a physx collider
+    - Creates a prefab "Outer_prefab" and an instance based of that entity 
+    - Creates a prefab "Inner_prefab" inside "Outer_prefab" based the entity contained inside of it
+    Checks that the entity is correctly handlded by the prefab system checking the name and that it contains the correct component
     """
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
