@@ -691,6 +691,12 @@ QProgressBar::chunk {
 
 #gemRepoAddDialogInstructionTitleLabel {
     font-size:14px;
+    font-weight:bold;
+}
+
+#gemRepoAddDialogWarningLabel {
+    font-size:12px;
+    font-style:italic;
 }
 
 #addGemRepoDialog #formFrame {

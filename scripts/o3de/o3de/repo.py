@@ -115,14 +115,14 @@ def get_gem_json_paths_from_cached_repo(repo_uri: str) -> set:
     file_name = pathlib.Path(cache_filename).resolve()
     if not file_name.is_file():
         logger.error(f'Could not find cached repo json file for {repo_uri}')
-        return gem_list
+        return gem_set
 
     with file_name.open('r') as f:
         try:
             repo_data = json.load(f)
         except json.JSONDecodeError as e:
             logger.error(f'{file_name} failed to load: {str(e)}')
-            return gem_list
+            return gem_set
 
         # Get list of gems, then add all json paths to the list if they exist in the cache
         repo_gems = []

@@ -128,10 +128,10 @@ namespace EMStudio
         AZ_Assert(m_gridEntity != nullptr, "Failed to create grid entity.");
 
         AZ::Render::GridComponentConfig gridConfig;
-        gridConfig.m_gridSize = 4.0f;
+        gridConfig.m_gridSize = 20.0f;
         gridConfig.m_axisColor = AZ::Color(0.5f, 0.5f, 0.5f, 1.0f);
         gridConfig.m_primaryColor = AZ::Color(0.3f, 0.3f, 0.3f, 1.0f);
-        gridConfig.m_secondaryColor = AZ::Color(0.5f, 0.1f, 0.1f, 1.0f);
+        gridConfig.m_secondaryColor = AZ::Color(0.5f, 0.5f, 0.5f, 1.0f);
         auto gridComponent = m_gridEntity->CreateComponent(AZ::Render::GridComponentTypeId);
         gridComponent->SetConfiguration(gridConfig);
 

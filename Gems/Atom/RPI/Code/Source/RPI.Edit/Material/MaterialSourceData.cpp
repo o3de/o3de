@@ -93,31 +93,28 @@ namespace AZ
 
             // Note that the only kind of property update currently supported is rename...
 
+            PropertyGroupMap newPropertyGroups;
             for (auto& groupPair : m_properties)
             {
                 PropertyMap& propertyMap = groupPair.second;
 
-                PropertyMap newPropertyMap;
-
                 for (auto& propertyPair : propertyMap)
                 {
                     MaterialPropertyId propertyId{groupPair.first, propertyPair.first};
+
                     if (materialTypeSourceData.ApplyPropertyRenames(propertyId, m_materialTypeVersion))
                     {
-                        newPropertyMap[propertyId.GetPropertyName().GetStringView()] = propertyPair.second;
                         changesWereApplied = true;
                     }
-                    else
-                    {
-                        newPropertyMap[propertyPair.first] = propertyPair.second;
-                    }
+                    
+                    newPropertyGroups[propertyId.GetGroupName().GetStringView()][propertyId.GetPropertyName().GetStringView()] = propertyPair.second;
                 }
-
-                propertyMap = newPropertyMap;
             }
 
             if (changesWereApplied)
             {
+                m_properties = AZStd::move(newPropertyGroups);
+
                 AZ_Warning("MaterialSourceData", false,
                     "This material is based on version '%u' of '%s', but the material type is now at version '%u'. "
                     "Automatic updates are available. Consider updating the .material source file.",

@@ -32,16 +32,22 @@ namespace Terrain
             AZ::EditContext* edit = serialize->GetEditContext();
             if (edit)
             {
-                edit->Class<TerrainWorldConfig>(
-                    "Terrain World Component", "Data required for the terrain system to run")
+                edit->Class<TerrainWorldConfig>("Terrain World Component", "Data required for the terrain system to run")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level") }))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_worldMin, "World Bounds (Min)", "")
+                    // Temporary constraint until the rest of the Terrain system is updated to support larger worlds.
+                    ->Attribute(AZ::Edit::Attributes::Min, -2048.0f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_worldMax, "World Bounds (Max)", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_heightQueryResolution, "Height Query Resolution (m)", "")
+                    // Temporary constraint until the rest of the Terrain system is updated to support larger worlds.
+                    ->Attribute(AZ::Edit::Attributes::Min, -2048.0f)
+                    ->Attribute(AZ::Edit::Attributes::Max, 2048.0f)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_heightQueryResolution, "Height Query Resolution (m)", "")
                 ;
             }
         }

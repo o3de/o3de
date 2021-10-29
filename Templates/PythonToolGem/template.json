@@ -1,14 +1,14 @@
 {
-    "template_name": "PythonGem",
+    "template_name": "PythonToolGem",
     "restricted_name": "o3de",
     "restricted_platform_relative_path": "Templates",
-    "origin": "The primary repo for PythonGem goes here: i.e. http://www.mydomain.com",
-    "license": "What license PythonGem uses goes here: i.e. https://opensource.org/licenses/MIT",
-    "display_name": "PythonGem",
-    "summary": "A short description of PythonGem.",
+    "origin": "The primary repo for PythonToolGem goes here: i.e. http://www.mydomain.com",
+    "license": "What license PythonToolGem uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "display_name": "PythonToolGem",
+    "summary": "A gem template for a custom tool in Python that gets registered with the Editor.",
     "canonical_tags": [],
     "user_tags": [
-        "PythonGem"
+        "PythonToolGem"
     ],
     "icon_path": "preview.png",
     "copyFiles": [
