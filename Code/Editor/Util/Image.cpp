@@ -80,9 +80,7 @@ void CImageEx::ReverseUpDown()
     {
         for (int k = 0; k < GetWidth(); k++)
         {
-            uint32 tmp = pPixData[(GetHeight() - i) * GetWidth() + k];
-            pPixData[(GetHeight() - i) * GetWidth() + k] = pPixData[i * GetWidth() + k];
-            pPixData[i * GetWidth() + k] = tmp;
+            AZStd::swap(pPixData[(GetHeight() - i) * GetWidth() + k], pPixData[i * GetWidth() + k]);
         }
     }
 }
