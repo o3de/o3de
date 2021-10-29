@@ -634,12 +634,18 @@ namespace AZ::SettingsRegistryMergeUtils
             }
 
             // Project name - if it was set via merging project.json use that value, otherwise use the project path's folder name.
-            auto projectNameKey =
-                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey)
+            constexpr auto projectNameKey =
+                FixedValueString(AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey)
                 + "/project_name";
 
-            AZ::SettingsRegistryInterface::FixedValueString projectName;
-            if (!registry.Get(projectName, projectNameKey))
+            // Read the project name from the project.json file if it exists
+            if (AZ::IO::FixedMaxPath projectJsonPath = normalizedProjectPath / "project.json";
+                AZ::IO::SystemFile::Exists(projectJsonPath.c_str()))
+            {
+                registry.MergeSettingsFile(projectJsonPath.Native(),
+                    AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey);
+            }
+            if (FixedValueString projectName; !registry.Get(projectName, projectNameKey))
             {
                 projectName = path.Filename().Native();
                 registry.Set(projectNameKey, projectName);

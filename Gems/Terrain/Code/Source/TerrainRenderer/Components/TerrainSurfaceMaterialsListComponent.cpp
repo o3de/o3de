@@ -123,20 +123,23 @@ namespace Terrain
             {
                 surfaceMaterialMapping.m_active = false;
                 surfaceMaterialMapping.m_materialAsset.QueueLoad();
-                AZ::Data::AssetBus::Handler::BusConnect(surfaceMaterialMapping.m_materialAsset.GetId());
+                AZ::Data::AssetBus::MultiHandler::BusConnect(surfaceMaterialMapping.m_materialAsset.GetId());
             }
         }
+
+        // Announce initial shape using OnShapeChanged
+        OnShapeChanged(LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::ShapeChanged);
     }
 
     void TerrainSurfaceMaterialsListComponent::Deactivate()
     {
         TerrainAreaMaterialRequestBus::Handler::BusDisconnect();
+        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
 
         for (auto& surfaceMaterialMapping : m_configuration.m_surfaceMaterials)
         {
             if (surfaceMaterialMapping.m_materialAsset.GetId().IsValid())
             {
-                AZ::Data::AssetBus::Handler::BusDisconnect(surfaceMaterialMapping.m_materialAsset.GetId());
                 surfaceMaterialMapping.m_materialAsset.Release();
                 surfaceMaterialMapping.m_materialInstance.reset();
                 surfaceMaterialMapping.m_activeMaterialAssetId = AZ::Data::AssetId();
@@ -202,7 +205,7 @@ namespace Terrain
                 // Don't disconnect from the AssetBus if this material is mapped more than once.
                 if (CountMaterialIDInstances(surfaceMaterialMapping.m_activeMaterialAssetId) == 1)
                 {
-                    AZ::Data::AssetBus::Handler::BusDisconnect(surfaceMaterialMapping.m_activeMaterialAssetId);
+                    AZ::Data::AssetBus::MultiHandler::BusDisconnect(surfaceMaterialMapping.m_activeMaterialAssetId);
                 }
 
                 surfaceMaterialMapping.m_activeMaterialAssetId = AZ::Data::AssetId();
@@ -273,12 +276,14 @@ namespace Terrain
              &TerrainAreaMaterialNotificationBus::Events::OnTerrainSurfaceMaterialMappingRegionChanged, GetEntityId(), oldAabb,
              m_cachedAabb);
      }
-
-    const AZStd::vector<TerrainSurfaceMaterialMapping>& TerrainSurfaceMaterialsListComponent::GetSurfaceMaterialMappings(
-         AZ::Aabb& region) const
+    
+    const AZ::Aabb& TerrainSurfaceMaterialsListComponent::GetTerrainSurfaceMaterialRegion() const
     {
-        region = m_cachedAabb;
+        return m_cachedAabb;
+    }
 
+    const AZStd::vector<TerrainSurfaceMaterialMapping>& TerrainSurfaceMaterialsListComponent::GetSurfaceMaterialMappings() const
+    {
         return m_configuration.m_surfaceMaterials;
     }
 

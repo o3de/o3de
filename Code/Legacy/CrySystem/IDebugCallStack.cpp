@@ -242,7 +242,7 @@ void IDebugCallStack::WriteLineToLog(const char* format, ...)
     va_end(ArgList);
 
     AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
-    AZ::IO::FileIOBase::GetDirectInstance()->Open("@Log@\\error.log", AZ::IO::GetOpenModeFromStringMode("a+t"), fileHandle);
+    AZ::IO::FileIOBase::GetDirectInstance()->Open("@log@\\error.log", AZ::IO::GetOpenModeFromStringMode("a+t"), fileHandle);
     if (fileHandle != AZ::IO::InvalidHandle)
     {
         AZ::IO::FileIOBase::GetDirectInstance()->Write(fileHandle, szBuffer, strlen(szBuffer));
@@ -254,7 +254,7 @@ void IDebugCallStack::WriteLineToLog(const char* format, ...)
 //////////////////////////////////////////////////////////////////////////
 void IDebugCallStack::StartMemLog()
 {
-    AZ::IO::FileIOBase::GetDirectInstance()->Open("@Log@\\memallocfile.log", AZ::IO::OpenMode::ModeWrite, m_memAllocFileHandle);
+    AZ::IO::FileIOBase::GetDirectInstance()->Open("@log@\\memallocfile.log", AZ::IO::OpenMode::ModeWrite, m_memAllocFileHandle);
 
     assert(m_memAllocFileHandle != AZ::IO::InvalidHandle);
 }
