@@ -78,9 +78,9 @@ namespace UnitTest
         AZStd::unique_ptr<QAbstractItemModelTester> m_modelTesterFilterModel;
         AZStd::unique_ptr<QAbstractItemModelTester> m_modelTesterTableModel;
 
-        const AZStd::vector<const int> folderIds = { 13, 14, 15 };
-        const AZStd::vector<const int> sourceIDs = { 1, 2, 3, 4, 5 };
-        const AZStd::vector<const int> productIDs = { 1, 2, 3, 4, 5 };
+        QVector<int> m_folderIds = { 13, 14, 15 };
+        QVector<int> m_sourceIDs = { 1, 2, 3, 4, 5 };
+        QVector<int> m_productIDs = { 1, 2, 3, 4, 5 };
     };
 
     void AssetBrowserTest::SetUpEditorFixtureImpl()
@@ -225,32 +225,32 @@ namespace UnitTest
 
         namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 
-        AddScanFolder(folderIds.at(2), "D:/dev/o3de/GameProject/Misc", "Misc");
-        AZ::Uuid sourceUuid_4 = CreateSourceEntry(sourceIDs.at(4), folderIds.at(2), "Source_4");
-        CreateProduct(productIDs.at(0), sourceUuid_4, "Product_4_0");
-        CreateProduct(productIDs.at(1), sourceUuid_4, "Product_4_1");
-        CreateProduct(productIDs.at(2), sourceUuid_4, "Product_4_2");
+        AddScanFolder(m_folderIds.at(2), "D:/dev/o3de/GameProject/Misc", "Misc");
+        AZ::Uuid sourceUuid_4 = CreateSourceEntry(m_sourceIDs.at(4), m_folderIds.at(2), "Source_4");
+        CreateProduct(m_productIDs.at(0), sourceUuid_4, "Product_4_0");
+        CreateProduct(m_productIDs.at(1), sourceUuid_4, "Product_4_1");
+        CreateProduct(m_productIDs.at(2), sourceUuid_4, "Product_4_2");
 
-        AddScanFolder(folderIds.at(1), "D:/dev/o3de/GameProject/Scripts", "Scripts");
+        AddScanFolder(m_folderIds.at(1), "D:/dev/o3de/GameProject/Scripts", "Scripts");
 
-        AZ::Uuid sourceUuid_2 = CreateSourceEntry(sourceIDs.at(2), folderIds.at(1), "Source_2");
-        CreateProduct(productIDs.at(0), sourceUuid_2, "Product_2_0");
-        CreateProduct(productIDs.at(1), sourceUuid_2, "Product_2_1");
-        CreateProduct(productIDs.at(2), sourceUuid_2, "Product_2_2");
+        AZ::Uuid sourceUuid_2 = CreateSourceEntry(m_sourceIDs.at(2), m_folderIds.at(1), "Source_2");
+        CreateProduct(m_productIDs.at(0), sourceUuid_2, "Product_2_0");
+        CreateProduct(m_productIDs.at(1), sourceUuid_2, "Product_2_1");
+        CreateProduct(m_productIDs.at(2), sourceUuid_2, "Product_2_2");
 
-        CreateSourceEntry(sourceIDs.at(3), folderIds.at(1), "Source_3");
+        CreateSourceEntry(m_sourceIDs.at(3), m_folderIds.at(1), "Source_3");
 
-        AddScanFolder(folderIds.at(0), "D:/dev/o3de/GameProject/Assets", "Assets");
+        AddScanFolder(m_folderIds.at(0), "D:/dev/o3de/GameProject/Assets", "Assets");
 
-        AZ::Uuid sourceUuid_0 = CreateSourceEntry(sourceIDs.at(0), folderIds.at(0), "Source_0");
-        CreateProduct(productIDs.at(0), sourceUuid_0, "Product_0_0");
-        CreateProduct(productIDs.at(1), sourceUuid_0, "Product_0_1");
-        CreateProduct(productIDs.at(2), sourceUuid_0, "Product_0_2");
-        CreateProduct(productIDs.at(3), sourceUuid_0, "Product_0_3");
+        AZ::Uuid sourceUuid_0 = CreateSourceEntry(m_sourceIDs.at(0), m_folderIds.at(0), "Source_0");
+        CreateProduct(m_productIDs.at(0), sourceUuid_0, "Product_0_0");
+        CreateProduct(m_productIDs.at(1), sourceUuid_0, "Product_0_1");
+        CreateProduct(m_productIDs.at(2), sourceUuid_0, "Product_0_2");
+        CreateProduct(m_productIDs.at(3), sourceUuid_0, "Product_0_3");
 
-        AZ::Uuid sourceUuid_1 = CreateSourceEntry(sourceIDs.at(1), folderIds.at(0), "Source_1");
-        CreateProduct(productIDs.at(0), sourceUuid_1, "Product_1_0");
-        CreateProduct(productIDs.at(1), sourceUuid_1, "Product_1_1");
+        AZ::Uuid sourceUuid_1 = CreateSourceEntry(m_sourceIDs.at(1), m_folderIds.at(0), "Source_1");
+        CreateProduct(m_productIDs.at(0), sourceUuid_1, "Product_1_0");
+        CreateProduct(m_productIDs.at(1), sourceUuid_1, "Product_1_1");
     }
 
     void AssetBrowserTest::PrintModel(const QAbstractItemModel* model)
@@ -317,7 +317,7 @@ namespace UnitTest
         QModelIndex AssetFolderIndex = GetModelIndex(m_assetBrowserComponent->GetAssetBrowserModel(), 5, 2);
 
         // Unique set of Ids for the sourcefiles
-        const AZStd::vector<const int> sourceUniqueId = { 123, 124, 125, 126, 127 };
+        QVector<int> sourceUniqueId = { 123, 124, 125, 126, 127 };
 
         // ID of the folder that contains the files
         const int assetFolderId = 13;
