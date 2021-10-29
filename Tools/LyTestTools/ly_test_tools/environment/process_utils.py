@@ -20,6 +20,7 @@ _PROCESS_OUTPUT_ENCODING = 'utf-8'
 
 # Default list of processes names to kill
 LY_PROCESS_KILL_LIST = [
+    'AssetBuilder', 'AssetProcessor', 'AssetProcessorBatch',
     'CrySCompileServer', 'Editor',
     'Profiler', 'RemoteConsole',
     'rc'  # Resource Compiler
