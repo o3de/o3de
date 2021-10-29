@@ -92,6 +92,7 @@ def AtomEditorComponents_postfx_shape_weight_AddedToEntity():
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
+    from Atom.atom_utils.atom_constants import AtomComponentProperties
 
     with Tracer() as error_tracer:
         # Test setup begins.
@@ -101,15 +102,14 @@ def AtomEditorComponents_postfx_shape_weight_AddedToEntity():
 
         # Test steps begin.
         # 1. Create a PostFx Shape Weight Modifier entity with no components.
-        postfx_shape_weight_name = "PostFX Shape Weight Modifier"
-        postfx_shape_weight_entity = EditorEntity.create_editor_entity(postfx_shape_weight_name)
+        postfx_shape_weight_entity = EditorEntity.create_editor_entity(AtomComponentProperties.postfx_shape())
         Report.critical_result(Tests.postfx_shape_weight_creation, postfx_shape_weight_entity.exists())
 
         # 2. Add a PostFx Shape Weight Modifier component to PostFx Shape Weight Modifier entity.
-        postfx_shape_weight_component = postfx_shape_weight_entity.add_component(postfx_shape_weight_name)
+        postfx_shape_weight_component = postfx_shape_weight_entity.add_component(AtomComponentProperties.postfx_shape())
         Report.critical_result(
             Tests.postfx_shape_weight_component,
-            postfx_shape_weight_entity.has_component(postfx_shape_weight_name))
+            postfx_shape_weight_entity.has_component(AtomComponentProperties.postfx_shape()))
 
         # 3. UNDO the entity creation and component addition.
         # -> UNDO component addition.
@@ -139,16 +139,16 @@ def AtomEditorComponents_postfx_shape_weight_AddedToEntity():
         Report.result(Tests.postfx_shape_weight_disabled, not postfx_shape_weight_component.is_enabled())
 
         # 6. Add PostFX Layer component since it is required by the PostFx Shape Weight Modifier component.
-        postfx_layer_name = "PostFX Layer"
-        postfx_shape_weight_entity.add_component(postfx_layer_name)
-        Report.result(Tests.postfx_layer_component, postfx_shape_weight_entity.has_component(postfx_layer_name))
+        postfx_shape_weight_entity.add_component(AtomComponentProperties.postfx_layer())
+        Report.result(
+            Tests.postfx_layer_component,
+            postfx_shape_weight_entity.has_component(AtomComponentProperties.postfx_layer()))
 
         # 7. Verify PostFx Shape Weight Modifier component is NOT enabled since it also requires a shape.
         Report.result(Tests.postfx_shape_weight_disabled, not postfx_shape_weight_component.is_enabled())
 
         # 8. Add a required shape looping over a list and checking if it enables PostFX Shape Weight Modifier.
-        for shape in ['Axis Aligned Box Shape', 'Box Shape', 'Capsule Shape', 'Compound Shape', 'Cylinder Shape',
-                      'Disk Shape', 'Polygon Prism Shape', 'Quad Shape', 'Sphere Shape', 'Vegetation Reference Shape']:
+        for shape in AtomComponentProperties.postfx_shape('shapes'):
             postfx_shape_weight_entity.add_component(shape)
             test_shape = (
                 f"Entity has a {shape} component",

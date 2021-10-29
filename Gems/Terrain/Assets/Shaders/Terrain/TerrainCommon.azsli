@@ -93,9 +93,14 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 {
     Texture2D m_heightmapImage;
+    Texture2D<uint4> m_detailMaterialIdImage;
+    float2 m_detailMaterialIdImageCenter;
     float m_detailTextureMultiplier;
     float m_detailFadeDistance;
     float m_detailFadeLength;
+
+    float4 m_detailAabb;
+    float m_detailHalfPixelUv;
 
     Sampler HeightmapSampler
     {
@@ -115,6 +120,15 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
         MagFilter = Linear;
         MipFilter = Linear;
         MaxAnisotropy = 16;
+    };
+
+    Sampler m_detailSampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
     };
 
     // Base Color

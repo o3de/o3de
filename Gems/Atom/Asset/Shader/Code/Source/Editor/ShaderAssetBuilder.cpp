@@ -477,8 +477,8 @@ namespace AZ
                         preprocessorOptions.m_predefinedMacros.end(), macroDefinitionsToAdd.begin(), macroDefinitionsToAdd.end());
                     // Run the preprocessor.
                     PreprocessorData output;
-                    PreprocessFile(prependedAzslFilePath, output, preprocessorOptions, true, true);
-                    RHI::ReportErrorMessages(ShaderAssetBuilderName, output.diagnostics);
+                    const bool preprocessorSuccess = PreprocessFile(prependedAzslFilePath, output, preprocessorOptions, true, true);
+                    RHI::ReportMessages(ShaderAssetBuilderName, output.diagnostics, !preprocessorSuccess);
                     // Dump the preprocessed string as a flat AZSL file with extension .azslin, which will be given to AZSLc to generate the HLSL file.
                     AZStd::string superVariantAzslinStemName = shaderFileName;
                     if (!supervariantInfo.m_name.IsEmpty())

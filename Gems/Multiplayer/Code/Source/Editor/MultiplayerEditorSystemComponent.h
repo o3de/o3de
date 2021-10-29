@@ -9,7 +9,7 @@
 #pragma once
 
 #include <Multiplayer/IMultiplayer.h>
-
+#include <Multiplayer/MultiplayerEditorServerBus.h>
 #include <IEditor.h>
 
 #include <Editor/MultiplayerEditorConnection.h>
@@ -35,6 +35,7 @@ namespace Multiplayer
         , private AzFramework::GameEntityContextEventBus::Handler
         , private AzToolsFramework::EditorEvents::Bus::Handler
         , private IEditorNotifyListener
+        , private MultiplayerEditorServerRequestBus::Handler
     {
     public:
         AZ_COMPONENT(MultiplayerEditorSystemComponent, "{9F335CC0-5574-4AD3-A2D8-2FAEF356946C}");
@@ -71,6 +72,11 @@ namespace Multiplayer
         //! @{
         void OnGameEntitiesStarted() override;
         void OnGameEntitiesReset() override;
+        //! @}
+
+        //! MultiplayerEditorServerRequestBus::Handler
+        //! @{
+        void SendEditorServerLevelDataPacket(AzNetworking::IConnection* connection) override;
         //! @}
 
         IEditor* m_editor = nullptr;

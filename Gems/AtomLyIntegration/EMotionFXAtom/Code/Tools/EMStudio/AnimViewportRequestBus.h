@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-
+#include <Integration/Rendering/RenderFlag.h>
 
 namespace EMStudio
 {
@@ -35,6 +35,9 @@ namespace EMStudio
 
         //! Set the camera view mode.
         virtual void SetCameraViewMode(CameraViewMode mode) = 0;
+
+        //! Toggle render option flag
+        virtual void ToggleRenderFlag(EMotionFX::ActorRenderFlag flag) = 0;
     };
 
     using AnimViewportRequestBus = AZ::EBus<AnimViewportRequests>;

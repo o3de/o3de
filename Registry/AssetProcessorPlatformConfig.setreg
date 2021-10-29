@@ -137,64 +137,66 @@
 
                 // Excludes files that match the pattern or glob 
                 // if you use a pattern, remember to escape your backslashes (\\)
+                // The patterns are checked against a path relative to the entry's
+                // root scan folder.
                 "Exclude _LevelBackups": {
-                    "pattern": ".*\\\\/Levels\\\\/.*\\\\/_savebackup\\\\/.*"
+                    "pattern": "(^|.+/)Levels/.*/_savebackup(/.*)?$"
                 },
                 "Exclude _LevelAutoBackups": {
-                    "pattern": ".*\\\\/Levels\\\\/.*\\\\/_autobackup\\\\/.*"
+                    "pattern": "(^|.+/)Levels/.*/_autobackup(/.*)?$"
                 },
                 "Exclude HoldFiles": {
-                    "pattern": ".*\\\\/Levels\\\\/.*_hold\\\\/.*"
+                    "pattern": "(^|.+/)Levels/.*_hold(/.*)?$"
                 },
                 // note that $ has meaning to regex, so we escape it.
                 "Exclude TempFiles": {
-                    "pattern": ".*\\\\/\\\\$tmp[0-9]*_.*"
+                    "pattern": "(^|.+/)\\\\$tmp[0-9]*_.*"
                 },
                 "Exclude TmpAnimationCompression": {
-                    "pattern": ".*\\\\/Editor\\\\/Tmp\\\\/AnimationCompression\\\\/.*"
+                    "pattern": "(^|.+/)Editor/Tmp/AnimationCompression(/.*)?$"
                 },
                 "Exclude EventLog": {
-                    "pattern": ".*\\\\/Editor\\\\/.*eventlog\\\\.xml"
+                    "pattern": "(^|.+/)Editor/.*eventlog\\\\.xml"
                 },
                 "Exclude GameGemsCode": {
-                    "pattern": ".*\\\\/Gem\\\\/Code\\\\/.*"
+                    "pattern": "(^|.+/)Gem/Code(/.*)?$"
                 },
                 "Exclude GameGemsResources": {
-                    "pattern": ".*\\\\/Gem\\\\/Resources\\\\/.*"
+                    "pattern": "(^|.+/)Gem/Resources(/.*)?$"
                 },
                 "Exclude Private Certs": {
-                    "pattern": ".*\\DynamicContent\\\\/Certificates\\\\/Private\\\\/.*"
+                    "pattern": "(^|.+/)DynamicContent/Certificates/Private(/.*)?$"
                 },
                 "Exclude CMakeLists": {
-                    "pattern": ".*\\\\/CMakeLists.txt"
+                    "pattern": "(^|.+/)CMakeLists\\\\.txt"
                 },
                 "Exclude CMakeFiles": {
-                    "pattern": ".*\\\\/.*\\\\.cmake"
+                    "pattern": "(^|.+/).+\\\\.cmake"
                 },
                 "Exclude User": {
-                    "pattern": ".*/[Uu]ser/.*"
+                    "pattern": "^[Uu]ser(/.*)?$"
                 },
                 "Exclude Build": {
-                    "pattern": ".*/[Bb]uild/.*"
+                    "pattern": "^[Bb]uild(/.*)?$"
                 },
                 "Exclude Install": {
-                    "pattern": ".*/[Ii]nstall/.*"
+                    "pattern": "^[Ii]nstall(/.*)?$"
                 },
                 "Exclude UserSettings": {
-                    "pattern": ".*/UserSettings.xml"
+                    "pattern": "(^|[^/]+/)UserSettings\\\\.xml"
                 },
 
                 // ------------------------------------------------------------------------------
                 // Large Worlds Test
                 // ------------------------------------------------------------------------------
                 "Exclude Work In Progress Folders": {
-                    "pattern": ".*\\\\/WIP\\\\/.*"
+                    "pattern": "(^|[^/]+/)WIP(/.*)?"
                 },
                 "Exclude Content Source Folders": {
-                    "pattern": ".*\\\\/CONTENT_SOURCE\\\\/.*"
+                    "pattern": "(^|[^/]+/)CONTENT_SOURCE(/.*)?"
                 },
                 "Exclude Art Source Folders": {
-                    "pattern": ".*\\\\/ArtSource\\\\/.*"
+                    "pattern": "(^|[^/]+/)ArtSource(/.*)?"
                 },
                 //------------------------------------------------------------------------------
                 // Copying Files Automatically Into the Cache
