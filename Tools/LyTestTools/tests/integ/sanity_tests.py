@@ -125,7 +125,7 @@ class TestAutomatedTestingProject(object):
             """
 
             command = ap_manager.build_ap_command(
-                ap_path=os.path.abspath(self._workspace.paths.asset_processor()),
+                ap_path=os.path.abspath(workspace.paths.asset_processor()),
                 fastscan=True,
                 platforms=None,  # but this apparently adds the params in extra params
                 extra_params=["--acceptInput", "--platforms", "linux"],
@@ -133,7 +133,7 @@ class TestAutomatedTestingProject(object):
                 add_config_scan_folders=None,
                 scan_folder_pattern=None)
 
-            ap_exe_path = os.path.dirname(self._workspace.paths.asset_processor())
+            ap_exe_path = os.path.dirname(workspace.paths.asset_processor())
 
             ap_proc = subprocess.Popen(command, cwd=ap_exe_path, env=process_utils.get_display_env(), stdout=subprocess.PIPE)
             time.sleep(1)
@@ -159,12 +159,13 @@ class TestAutomatedTestingProject(object):
             waiter.wait_for(_get_port_from_log, timeout=10)
 
             import socket
+            connection_socket = None
 
             def _attempt_connection():
-                nonlocal port
+                nonlocal port, connection_socket
                 if ap_proc.poll() is not None:
                     raise RuntimeError(
-                        f"Asset processor exited early with errorcode: {self._ap_proc.returncode}")
+                        f"Asset processor exited early with errorcode: {ap_proc.returncode}")
 
                 connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 connection_socket.settimeout(60)
@@ -175,8 +176,10 @@ class TestAutomatedTestingProject(object):
             # TODO false? self.connect_listen()
 
             # wait for idle
-            self.send_message("waitforidle")
-            result = self.read_message(read_timeout=300)
+            #self.send_message("waitforidle")
+            connection_socket.sendall("waitforidle".encode())
+            connection_socket.settimeout(300)
+            result = connection_socket.recv(4096).decode()
             assert result == "idle", f"Did not get idle state from AP, message was instead: {result}"
 
         except Exception:
