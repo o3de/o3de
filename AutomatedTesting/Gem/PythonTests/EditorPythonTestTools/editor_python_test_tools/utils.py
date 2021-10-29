@@ -76,21 +76,42 @@ class TestHelper:
 
         :return: None
         """
+
+        # looks for an expected line in a list of tracers lines
+        # lines: the tracer list of lines to search. options are section_tracer.warnings, section_tracer.errors, section_tracer.asserts, section_tracer.prints
+        # return: true if the line is found, otherwise false
+        def find_expected_line(expected_line, lines):
+            found_lines = [printInfo.message.strip() for printInfo in lines]
+            return expected_line in found_lines
+
+        def wait_for_critical_expected_line(expected_line, lines, time_out):
+            TestHelper.wait_for_condition(lambda : find_expected_line(expected_line, lines), time_out)
+            Report.critical_result(("Found expected line: " + expected_line, "Failed to find expected line: " + expected_line), find_expected_line(expected_line, lines))
+
+        def wait_for_critical_unexpected_line(unexpected_line, lines, time_out):
+            TestHelper.wait_for_condition(lambda : find_expected_line(unexpected_line, lines), time_out)
+            Report.critical_result(("Unexpected line not found: " + unexpected_line, "Unexpected line found: " + unexpected_line), not find_expected_line(unexpected_line, lines))
+
+
         Report.info("Entering game mode")
         if sv_default_player_spawn_asset :
             general.set_cvar("sv_defaultPlayerSpawnAsset", sv_default_player_spawn_asset)
 
         with Tracer() as section_tracer:
+            # enter game-mode. 
+            # game-mode in multiplayer will also launch ServerLauncher.exe and connect to the editor
             multiplayer.PythonEditorFuncs_enter_game_mode()
-            general.idle_wait_frames(1)
 
-            # Make sure the server launcher binary exists
-            unexpected_line = "LaunchEditorServer failed! The ServerLauncher binary is missing!"
-            found_lines = [printInfo.message.strip() for printInfo in section_tracer.errors]
-            found_unexpected_lines = [x for x in found_lines if unexpected_line in x]
-            Report.critical_result(("ServerLauncher exists.", "ServerLauncher does not exist!"), not found_unexpected_lines)
+            # make sure the server launcher binary exists
+            wait_for_critical_unexpected_line("LaunchEditorServer failed! The ServerLauncher binary is missing!", section_tracer.errors, 1.0)
 
-        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 30.0)
+            # make sure the editor connects to the editor-server and sends the level data packet
+            wait_for_critical_expected_line("Editor is sending the editor-server the level data packet.", section_tracer.prints, 30.0)
+
+            # make sure the editor finally connects to the editor-server network simulation
+            wait_for_critical_expected_line("Editor-server ready. Editor has successfully connected to the editor-server's network simulation.", section_tracer.prints, 30.0)
+
+        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 10.0)
         Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())
 
     @staticmethod

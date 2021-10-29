@@ -180,8 +180,14 @@ namespace Multiplayer
         }
         
         // Connect the Editor to the editor server for Multiplayer simulation
-        AZ::Interface<IMultiplayer>::Get()->Connect(editorsv_serveraddr.c_str(), sv_port);
-
+        if (AZ::Interface<IMultiplayer>::Get()->Connect(editorsv_serveraddr.c_str(), sv_port))
+        {
+            AZ_Printf("MultiplayerEditorConnection", "Editor-server ready. Editor has successfully connected to the editor-server's network simulation.")
+        }
+        else
+        {
+            AZ_Warning("MultiplayerEditorConnection", false, "MultiplayerEditorConnection::HandleRequest for EditorServerReady failed! Connecting to the editor-server's network simulation failed.")
+        }
         return true;
     }
 

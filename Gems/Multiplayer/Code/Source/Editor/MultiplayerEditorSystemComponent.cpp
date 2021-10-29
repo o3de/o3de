@@ -328,6 +328,8 @@ namespace Multiplayer
             return;
         }
 
+        AZ_Printf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
+
         const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& assetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
 
         AZStd::vector<uint8_t> buffer;
