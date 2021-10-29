@@ -621,50 +621,51 @@ namespace ScriptCanvasEditor
 
     void ExecutionLogTreeItem::ScrapeGraphCanvasData()
     {
-        if (!m_graphCanvasGraphId.IsValid())
-        {
-            GeneralRequestBus::BroadcastResult(m_graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId, GetAssetId());
-
-            if (!EditorGraphNotificationBus::Handler::BusIsConnected())
-            {
-                ScriptCanvas::ScriptCanvasId scriptCanvasId;
-                GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::FindScriptCanvasIdByAssetId, GetAssetId());
-
-                EditorGraphNotificationBus::Handler::BusConnect(scriptCanvasId);
-            }
-        }
-
-        if (m_graphCanvasGraphId.IsValid())
-        {
-            if (!m_graphCanvasNodeId.IsValid())
-            {
-                AssetGraphSceneBus::BroadcastResult(m_scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId, GetAssetId(), m_scriptCanvasAssetNodeId);
-                SceneMemberMappingRequestBus::EventResult(m_graphCanvasNodeId, m_scriptCanvasNodeId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);
-            }
-
-            if (m_graphCanvasNodeId.IsValid())
-            {
-                const bool refreshDisplayData = false;
-                ResolveWrapperNode(refreshDisplayData);
-
-                AZStd::string displayName;
-                GraphCanvas::NodeTitleRequestBus::EventResult(displayName, m_graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::GetTitle);
-
-                if (!displayName.empty())
-                {
-                    m_displayName = displayName.c_str();
-                }
-
-                GraphCanvas::NodeTitleRequestBus::Event(m_graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::ConfigureIconConfiguration, m_paletteConfiguration);
-
-                OnStylesLoaded();
-
-                PopulateInputSlotData();
-                PopulateOutputSlotData();
-
-                SignalDataChanged();
-            }
-        }
+        // #sc_editor_asset
+//         if (!m_graphCanvasGraphId.IsValid())
+//         {
+//             GeneralRequestBus::BroadcastResult(m_graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId, GetAssetId());
+// 
+//             if (!EditorGraphNotificationBus::Handler::BusIsConnected())
+//             {
+//                 ScriptCanvas::ScriptCanvasId scriptCanvasId;
+//                 GeneralRequestBus::BroadcastResult(scriptCanvasId, &GeneralRequests::FindScriptCanvasIdByAssetId, GetAssetId());
+// 
+//                 EditorGraphNotificationBus::Handler::BusConnect(scriptCanvasId);
+//             }
+//         }
+// 
+//         if (m_graphCanvasGraphId.IsValid())
+//         {
+//             if (!m_graphCanvasNodeId.IsValid())
+//             {
+//                 AssetGraphSceneBus::BroadcastResult(m_scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId, GetAssetId(), m_scriptCanvasAssetNodeId);
+//                 SceneMemberMappingRequestBus::EventResult(m_graphCanvasNodeId, m_scriptCanvasNodeId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);
+//             }
+// 
+//             if (m_graphCanvasNodeId.IsValid())
+//             {
+//                 const bool refreshDisplayData = false;
+//                 ResolveWrapperNode(refreshDisplayData);
+// 
+//                 AZStd::string displayName;
+//                 GraphCanvas::NodeTitleRequestBus::EventResult(displayName, m_graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::GetTitle);
+// 
+//                 if (!displayName.empty())
+//                 {
+//                     m_displayName = displayName.c_str();
+//                 }
+// 
+//                 GraphCanvas::NodeTitleRequestBus::Event(m_graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::ConfigureIconConfiguration, m_paletteConfiguration);
+// 
+//                 OnStylesLoaded();
+// 
+//                 PopulateInputSlotData();
+//                 PopulateOutputSlotData();
+// 
+//                 SignalDataChanged();
+//             }
+//         }
     }
 
     void ExecutionLogTreeItem::PopulateInputSlotData()
@@ -806,7 +807,8 @@ namespace ScriptCanvasEditor
     {
         if (!m_graphCanvasGraphId.IsValid())
         {
-            GeneralRequestBus::BroadcastResult(m_graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId, m_graphIdentifier.m_assetId);
+            // #sc_editor_asset
+            // GeneralRequestBus::BroadcastResult(m_graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId, m_graphIdentifier.m_assetId);
         }
 
         ScrapeInputName();
@@ -828,7 +830,8 @@ namespace ScriptCanvasEditor
         if (m_graphCanvasGraphId.IsValid() && m_assetInputEndpoint.IsValid())
         {
             AZ::EntityId scriptCanvasNodeId;
-            AssetGraphSceneBus::BroadcastResult(scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId, GetAssetId(), m_assetInputEndpoint.GetNodeId());
+            // #sc_editor_asset
+        // AssetGraphSceneBus::BroadcastResult(scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId, GetAssetId(), m_assetInputEndpoint.GetNodeId());
 
             GraphCanvas::NodeId graphCanvasNodeId;
             SceneMemberMappingRequestBus::EventResult(graphCanvasNodeId, scriptCanvasNodeId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);
@@ -851,7 +854,8 @@ namespace ScriptCanvasEditor
         if (m_graphCanvasGraphId.IsValid() && m_assetOutputEndpoint.IsValid())
         {
             AZ::EntityId scriptCanvasNodeId;
-            AssetGraphSceneBus::BroadcastResult(scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId, GetAssetId(), m_assetOutputEndpoint.GetNodeId());
+            // #sc_editor_asset
+            // AssetGraphSceneBus::BroadcastResult(scriptCanvasNodeId, &AssetGraphScene::FindEditorNodeIdByAssetNodeId, GetAssetId(), m_assetOutputEndpoint.GetNodeId());
 
             GraphCanvas::NodeId graphCanvasNodeId;
             SceneMemberMappingRequestBus::EventResult(graphCanvasNodeId, scriptCanvasNodeId, &SceneMemberMappingRequests::GetGraphCanvasEntityId);

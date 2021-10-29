@@ -7,27 +7,4 @@
  */
 
 #include <ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h>
-#include <ScriptCanvas/Components/EditorGraph.h>
 
-namespace ScriptCanvas
-{
-    const Graph* ScriptCanvasData::GetGraph() const
-    {
-        return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());
-    }
-
-    const ScriptCanvasEditor::Graph* ScriptCanvasData::GetEditorGraph() const
-    {
-        return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::Graph>(m_scriptCanvasEntity.get());
-    }
-
-    Graph* ScriptCanvasData::ModGraph()
-    {
-        return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());
-    }
-
-    ScriptCanvasEditor::Graph* ScriptCanvasData::ModEditorGraph()
-    {
-        return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::Graph>(m_scriptCanvasEntity.get());
-    }
-}

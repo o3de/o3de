@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/UserSettings/UserSettings.h>
+#include <ScriptCanvas/Core/Core.h>
 
 // qdatastream.h(173): warning C4251: 'QDataStream::d': class 'QScopedPointer<QDataStreamPrivate,QScopedPointerDeleter<T>>' needs to have dll-interface to be used by clients of class 'QDataStream'
 // qwidget.h(858): warning C4800: 'uint': forcing value to bool 'true' or 'false' (performance warning)

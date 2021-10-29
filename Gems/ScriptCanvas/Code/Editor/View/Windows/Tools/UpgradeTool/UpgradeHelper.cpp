@@ -99,7 +99,8 @@ namespace ScriptCanvasEditor
 
         if (assetId.IsValid())
         {
-            GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, assetId, -1);
+            // #sc_editor_asset
+            // GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, assetId, -1);
         }
 
         if (!openOutcome)

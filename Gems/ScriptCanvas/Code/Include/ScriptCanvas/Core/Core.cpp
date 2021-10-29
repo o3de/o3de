@@ -13,9 +13,12 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h>
+// #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
 
 #include "Core.h"
 #include "Attributes.h"
+
+#include <Core/Graph.h>
 
 namespace ScriptCanvas
 {
@@ -233,5 +236,37 @@ namespace ScriptCanvasEditor
     const AZStd::string& SourceHandle::Path() const
     {
         return m_path;
+    }
+
+    AZStd::string SourceHandle::ToString() const
+    {
+        return AZStd::string::format
+            ( "%s, %s, %s"
+            , IsValid() ? "O" : "X"
+            , m_path.empty() ? m_path.c_str() : "<no name>"
+            , m_id.IsNull() ? "<null id>" : m_id.ToString<AZStd::string>().c_str());
+    }
+}
+
+namespace ScriptCanvas
+{
+    const Graph* ScriptCanvasData::GetGraph() const
+    {
+        return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());
+    }
+
+    const ScriptCanvasEditor::Graph* ScriptCanvasData::GetEditorGraph() const
+    {
+        return reinterpret_cast<const ScriptCanvasEditor::Graph*>(GetGraph());
+    }
+
+    Graph* ScriptCanvasData::ModGraph()
+    {
+        return AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Graph>(m_scriptCanvasEntity.get());
+    }
+
+    ScriptCanvasEditor::Graph* ScriptCanvasData::ModEditorGraph()
+    {
+        return reinterpret_cast<ScriptCanvasEditor::Graph*>(ModGraph());
     }
 }

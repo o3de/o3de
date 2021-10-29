@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <ScriptCanvas/Core/Core.h>
 
 namespace ScriptCanvasEditor
 {

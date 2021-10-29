@@ -1340,7 +1340,8 @@ namespace ScriptCanvasEditor
 
     void Graph::SignalDirty()
     {
-        GeneralRequestBus::Broadcast(&GeneralRequests::SignalSceneDirty, GetAssetId());
+        // #sc_editor_asset
+        // GeneralRequestBus::Broadcast(&GeneralRequests::SignalSceneDirty, GetAssetId());
     }
 
     void Graph::HighlightNodesByType(const ScriptCanvas::NodeTypeIdentifier& nodeTypeIdentifier)

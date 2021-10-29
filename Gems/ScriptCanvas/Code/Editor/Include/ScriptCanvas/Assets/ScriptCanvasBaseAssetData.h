@@ -13,31 +13,5 @@
 
 namespace ScriptCanvas
 {
-    class ScriptCanvasData
-    {
-    public:
-
-        AZ_RTTI(ScriptCanvasData, "{1072E894-0C67-4091-8B64-F7DB324AD13C}");
-        AZ_CLASS_ALLOCATOR(ScriptCanvasData, AZ::SystemAllocator, 0);
-        ScriptCanvasData() {}
-        virtual ~ScriptCanvasData() {}
-        ScriptCanvasData(ScriptCanvasData&& other);
-        ScriptCanvasData& operator=(ScriptCanvasData&& other);
-
-        static void Reflect(AZ::ReflectContext* reflectContext);
-
-        AZ::Entity* GetScriptCanvasEntity() const { return m_scriptCanvasEntity.get(); }
-
-        const Graph* GetGraph() const;
-
-        const ScriptCanvasEditor::Graph* GetEditorGraph() const;
-
-        Graph* ModGraph();
-
-        ScriptCanvasEditor::Graph* ModEditorGraph();
-
-        AZStd::unique_ptr<AZ::Entity> m_scriptCanvasEntity;
-    private:
-        ScriptCanvasData(const ScriptCanvasData&) = delete;
-    };
+   
 }

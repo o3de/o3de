@@ -405,18 +405,18 @@ namespace ScriptCanvasEditor
         {
             sourceIndex = proxyModel->mapToSource(modelIndex);
         }
-
-        PivotTreeItem* pivotTreeItem = static_cast<PivotTreeItem*>(sourceIndex.internalPointer());
-
-        if (pivotTreeItem)
-        {
-            PivotTreeGraphItem* graphItem = azrtti_cast<PivotTreeGraphItem*>(pivotTreeItem);
-
-            if (graphItem)
-            {
-                GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAssetId, graphItem->GetAssetId());
-            }
-        }
+        // #sc_editor_asset
+//         PivotTreeItem* pivotTreeItem = static_cast<PivotTreeItem*>(sourceIndex.internalPointer());
+// 
+//         if (pivotTreeItem)
+//         {
+//             PivotTreeGraphItem* graphItem = azrtti_cast<PivotTreeGraphItem*>(pivotTreeItem);
+// 
+//             if (graphItem)
+//             {
+//                 GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAssetId, graphItem->GetAssetId());
+//             }
+//         }
     }
 
 #include <Editor/View/Widgets/LoggingPanel/PivotTree/moc_PivotTreeWidget.cpp>
