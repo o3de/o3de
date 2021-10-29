@@ -55,7 +55,7 @@ namespace AZ::Debug
     // Globals
     const int       g_maxMessageLength = 4096;
     static const char*    g_dbgSystemWnd = "System";
-    Trace Debug::g_tracer;
+    Trace g_tracer;
     void* g_exceptionInfo = nullptr;
 
     // Environment var needed to track ignored asserts across systems and disable native UI under certain conditions
