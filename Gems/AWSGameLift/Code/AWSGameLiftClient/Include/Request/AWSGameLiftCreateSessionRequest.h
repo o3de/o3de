@@ -25,14 +25,14 @@ namespace AWSGameLift
         AWSGameLiftCreateSessionRequest() = default;
         virtual ~AWSGameLiftCreateSessionRequest() = default;
 
-        // A unique identifier for the alias associated with the fleet to create a game session in.
+        //! A unique identifier for the alias associated with the fleet to create a game session in.
         AZStd::string m_aliasId;
 
-        // A unique identifier for the fleet to create a game session in.
+        //! A unique identifier for the fleet to create a game session in.
         AZStd::string m_fleetId;
 
-        // Custom string that uniquely identifies the new game session request.
-        // This is useful for ensuring that game session requests with the same idempotency token are processed only once. 
+        //! Custom string that uniquely identifies the new game session request.
+        //! This is useful for ensuring that game session requests with the same idempotency token are processed only once. 
         AZStd::string m_idempotencyToken;
     };
 } // namespace AWSGameLift
