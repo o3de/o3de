@@ -188,9 +188,9 @@ class TestAutomatedTestingProject(object):
             output = ""
             linecount = 0
             for line in iter(ap_proc.stdout.readline, ''):
-                output += f"{line.rstrip()}"
+                output += f"{line.rstrip()}\n"
                 linecount += 1
-                if linecount > 1000:
+                if linecount > 10000:
                     break
             raise RuntimeError(f"Error during AP test, with output:\n{output}")
 
