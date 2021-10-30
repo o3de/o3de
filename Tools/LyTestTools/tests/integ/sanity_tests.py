@@ -185,6 +185,9 @@ class TestAutomatedTestingProject(object):
         except Exception:
             if ap_proc.poll() is not None:
                 raise RuntimeError("Unexpectedly exited early")
+            output = ""
+            for line in iter(ap_proc.stdout.readline, ''):
+                output += f"{line.rstrip()}"
             raise RuntimeError(f"Error during AP test, with output:\n{ap_proc.stdout.readlines()}")
 
         finally:
