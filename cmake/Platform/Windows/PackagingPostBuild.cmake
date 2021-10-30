@@ -59,13 +59,20 @@ if(CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
     file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
     file(TO_NATIVE_PATH "${_root_path}/scripts/signer/Platform/Windows/signer.ps1" _sign_script)
 
-    find_program(_psiexec_path psexec.exe REQUIRED)
-    set(_signing_command
-        ${_psiexec_path}
-        -accepteula 
-        -nobanner 
-        -s
-        powershell.exe
+    unset(_signing_command)
+    find_program(_psiexec_path psexec.exe)
+    if(_psiexec_path)
+        list(APPEND _signing_command
+            ${_psiexec_path}
+            -accepteula 
+            -nobanner 
+            -s
+        )
+    endif()
+
+    find_program(_powershell_path powershell.exe REQUIRED)
+    list(APPEND _signing_command
+        ${_powershell_path}
         -NoLogo
         -ExecutionPolicy Bypass 
         -File ${_sign_script}

@@ -26,7 +26,7 @@ if(_psiexec_path)
 endif()
 
 find_program(_powershell_path powershell.exe REQUIRED)
-list(APPEND
+list(APPEND _signing_command
     ${_powershell_path}
     -NoLogo
     -ExecutionPolicy Bypass
