@@ -9,6 +9,13 @@ REM
 
 SETLOCAL EnableDelayedExpansion
 
+REM Jenkins reports MSB8029 when TMP/TEMP is not defined, define a dummy folder
+SET TMP=%cd%/temp
+SET TEMP=%cd%/temp
+IF NOT EXIST %TMP% (
+    MKDIR temp
+)
+
 CALL %~dp0env_windows.cmd
 
 IF NOT EXIST "%OUTPUT_DIRECTORY%" (
@@ -23,13 +30,6 @@ cmake --version
 IF ERRORLEVEL 1 (
     ECHO [ci_build] CMAKE not found!
     exit /b 1
-)
-
-REM Jenkins reports MSB8029 when TMP/TEMP is not defined, define a dummy folder
-SET TMP=%cd%/temp
-SET TEMP=%cd%/temp
-IF NOT EXIST %TMP% (
-    MKDIR temp
 )
 
 REM Compute half the amount of processors so some jobs can run
