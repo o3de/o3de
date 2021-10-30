@@ -152,6 +152,7 @@ class TestAutomatedTestingProject(object):
                 if len(log.runs):
                     try:
                         port = log.runs[-1]["Control Port"]
+                        logger.error(f"Successfully read Control Port {port}")
                         return True
                     except Exception as ex:  # intentionally broad
                         logger.error("Failed to read port from file", exc_info=ex)
@@ -168,9 +169,18 @@ class TestAutomatedTestingProject(object):
                     raise RuntimeError(
                         f"Asset processor exited early with errorcode: {ap_proc.returncode}")
 
+                logger.error("Attempting to connect")
                 connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                logger.error("Setting timeout")
                 connection_socket.settimeout(60)
-                connection_socket.connect(('127.0.0.1', port))
+                try:
+                    logger.error("Connecting")
+                    connection_socket.connect(('127.0.0.1', port))
+                    logger.error("Attempt ends")
+                    return True
+                except Exception as ex:  # Purposefully broad
+                    logger.error(f"Failed to connect", exc_info=ex)
+                return False
 
             waiter.wait_for(_attempt_connection, timeout=60)
 
