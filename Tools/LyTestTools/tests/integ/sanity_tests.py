@@ -182,7 +182,7 @@ class TestAutomatedTestingProject(object):
             connection_socket.settimeout(300)
             result = connection_socket.recv(4096).decode()
             assert result == "idle", f"Did not get idle state from AP, message was instead: {result}"
-
+        """
         except Exception:
             if ap_proc.poll() is not None:
                 raise RuntimeError("Unexpectedly exited early")
@@ -194,6 +194,7 @@ class TestAutomatedTestingProject(object):
                 if linecount > 10000:
                     break
             raise RuntimeError(f"Error during AP test, with output:\n{output}")
+        """
 
         finally:
             # Clean up processes after the test is finished
