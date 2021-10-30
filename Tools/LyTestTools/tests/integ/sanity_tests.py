@@ -180,7 +180,7 @@ class TestAutomatedTestingProject(object):
 
             waiter.wait_for(_attempt_connection, timeout=60)
 
-            # TODO false? self.connect_listen()
+            # false default, so ignoring self.connect_listen()
 
             # wait for idle
             #self.send_message("waitforidle")
@@ -194,13 +194,17 @@ class TestAutomatedTestingProject(object):
         except Exception:
             if ap_proc.poll() is not None:
                 raise RuntimeError("Unexpectedly exited early")
+
+            ret = subprocess.run("sudo netstat -tulpn | grep LISTEN", capture_output=True, shell=True, timeout=10)
+            logger.error(f"Current port status:\n{ret.stdout}")
+
             output = ""
             linecount = 0
             for line in iter(ap_proc.stdout.readline, ''):
                 output += f"{line.rstrip()}\n"
                 logger.error(line.rstrip())
                 linecount += 1
-                if linecount > 100:
+                if linecount > 200:
                     break
             raise RuntimeError(f"Error during AP test, with output:\n{output}")
 
