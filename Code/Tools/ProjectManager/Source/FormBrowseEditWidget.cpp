@@ -20,7 +20,8 @@ namespace O3DE::ProjectManager
         setObjectName("formBrowseEditWidget");
 
         QPushButton* browseButton = new QPushButton(this);
-        connect(browseButton, &QPushButton::pressed, this, &FormBrowseEditWidget::HandleBrowseButton);
+        connect( browseButton, &QPushButton::pressed, [this]{ emit OnBrowse(); });
+        connect( this, &FormBrowseEditWidget::OnBrowse, this, &FormBrowseEditWidget::HandleBrowseButton);
         m_frameLayout->addWidget(browseButton); 
     }
 
@@ -34,7 +35,7 @@ namespace O3DE::ProjectManager
         int key = event->key();
         if (key == Qt::Key_Return || key == Qt::Key_Enter)
         {
-            HandleBrowseButton();
+            emit OnBrowse();
         }
     }
 
