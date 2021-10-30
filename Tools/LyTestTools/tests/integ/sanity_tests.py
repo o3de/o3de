@@ -198,7 +198,7 @@ class TestAutomatedTestingProject(object):
             linecount = 0
             for line in iter(ap_proc.stdout.readline, ''):
                 output += f"{line.rstrip()}\n"
-                logger.error(line)
+                logger.error(line.rstrip())
                 linecount += 1
                 if linecount > 100:
                     break
