@@ -528,7 +528,7 @@ function(ly_setup_runtime_dependencies)
         ly_install(CODE
 "function(ly_copy source_file target_directory)
     cmake_path(GET source_file FILENAME file_name)
-    if(NOT EXISTS ${target_directory}/${file_name})
+    if(NOT EXISTS \${target_directory}/\${file_name})
         file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
     endif()
 endfunction()"
