@@ -188,7 +188,7 @@ class TestAutomatedTestingProject(object):
             output = ""
             for line in iter(ap_proc.stdout.readline, ''):
                 output += f"{line.rstrip()}"
-            raise RuntimeError(f"Error during AP test, with output:\n{ap_proc.stdout.readlines()}")
+            raise RuntimeError(f"Error during AP test, with output:\n{output}")
 
         finally:
             # Clean up processes after the test is finished
