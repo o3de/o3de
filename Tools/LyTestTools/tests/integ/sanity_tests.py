@@ -128,7 +128,7 @@ class TestAutomatedTestingProject(object):
                 ap_path=os.path.abspath(workspace.paths.asset_processor()),
                 fastscan=True,
                 platforms=None,  # but this apparently adds the params in extra params
-                extra_params=["--acceptInput", "--platforms", "linux"],
+                extra_params=["--acceptInput", "--platforms", "linux", "--logDir", ap_manager._temp_log_root],
                 add_gem_scan_folders=None,
                 add_config_scan_folders=None,
                 scan_folder_pattern=None)
@@ -145,6 +145,7 @@ class TestAutomatedTestingProject(object):
             def _get_port_from_log():
                 nonlocal port
                 if not os.path.exists(workspace.paths.ap_gui_log()):
+                    logger.error("No GUI log at expected path")
                     return False
 
                 log = ap.APLogParser(workspace.paths.ap_gui_log())
@@ -153,7 +154,7 @@ class TestAutomatedTestingProject(object):
                         port = log.runs[-1]["Control Port"]
                         return True
                     except Exception as ex:  # intentionally broad
-                        logger.debug("Failed to read port from file", exc_info=ex)
+                        logger.error("Failed to read port from file", exc_info=ex)
                 return False
 
             waiter.wait_for(_get_port_from_log, timeout=10)
@@ -171,7 +172,7 @@ class TestAutomatedTestingProject(object):
                 connection_socket.settimeout(60)
                 connection_socket.connect(('127.0.0.1', port))
 
-            waiter.wait_for(_attempt_connection, timeout=60)  # TODO failing here
+            waiter.wait_for(_attempt_connection, timeout=60)
 
             # TODO false? self.connect_listen()
 
