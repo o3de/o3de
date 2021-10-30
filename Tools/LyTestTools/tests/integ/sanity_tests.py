@@ -169,14 +169,10 @@ class TestAutomatedTestingProject(object):
                     raise RuntimeError(
                         f"Asset processor exited early with errorcode: {ap_proc.returncode}")
 
-                logger.error("Attempting to connect")
                 connection_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                logger.error("Setting timeout")
                 connection_socket.settimeout(60)
                 try:
-                    logger.error("Connecting")
                     connection_socket.connect(('127.0.0.1', port))
-                    logger.error("Attempt ends")
                     return True
                 except Exception as ex:  # Purposefully broad
                     logger.error(f"Failed to connect", exc_info=ex)
@@ -189,11 +185,12 @@ class TestAutomatedTestingProject(object):
             # wait for idle
             #self.send_message("waitforidle")
             connection_socket.sendall("waitforidle".encode())
+            logger.error("Mesage sent")
             connection_socket.settimeout(300)
+            logger.error("Waiting for result")
             result = connection_socket.recv(4096).decode()
             assert result == "idle", f"Did not get idle state from AP, message was instead: {result}"
 
-            """
         except Exception:
             if ap_proc.poll() is not None:
                 raise RuntimeError("Unexpectedly exited early")
@@ -201,11 +198,11 @@ class TestAutomatedTestingProject(object):
             linecount = 0
             for line in iter(ap_proc.stdout.readline, ''):
                 output += f"{line.rstrip()}\n"
+                logger.error(line)
                 linecount += 1
-                if linecount > 10000:
+                if linecount > 10:
                     break
             raise RuntimeError(f"Error during AP test, with output:\n{output}")
-            """
 
         finally:
             # Clean up processes after the test is finished
