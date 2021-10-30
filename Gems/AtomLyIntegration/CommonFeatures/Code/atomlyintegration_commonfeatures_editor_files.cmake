@@ -31,6 +31,8 @@ set(FILES
     Source/ImageBasedLights/EditorImageBasedLightComponent.cpp
     Source/Material/EditorMaterialComponent.cpp
     Source/Material/EditorMaterialComponent.h
+    Source/Material/EditorMaterialComponentSerializer.cpp
+    Source/Material/EditorMaterialComponentSerializer.h
     Source/Material/EditorMaterialComponentUtil.cpp
     Source/Material/EditorMaterialComponentUtil.h
     Source/Material/EditorMaterialComponentSlot.cpp
