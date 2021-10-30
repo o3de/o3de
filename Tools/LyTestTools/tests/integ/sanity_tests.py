@@ -171,8 +171,7 @@ class TestAutomatedTestingProject(object):
                 connection_socket.settimeout(60)
                 connection_socket.connect(('127.0.0.1', port))
 
-            waiter.wait_for(_attempt_connection, timeout=60)
-            """
+            waiter.wait_for(_attempt_connection, timeout=60)  # TODO failing here
 
             # TODO false? self.connect_listen()
 
@@ -187,10 +186,13 @@ class TestAutomatedTestingProject(object):
             if ap_proc.poll() is not None:
                 raise RuntimeError("Unexpectedly exited early")
             output = ""
+            linecount = 0
             for line in iter(ap_proc.stdout.readline, ''):
                 output += f"{line.rstrip()}"
+                linecount += 1
+                if linecount > 1000:
+                    break
             raise RuntimeError(f"Error during AP test, with output:\n{output}")
-            """
 
         finally:
             # Clean up processes after the test is finished
