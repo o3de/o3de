@@ -16,12 +16,8 @@ namespace AZ::Debug
 {
     AZStd::string GenerateOutputFile(const char* nameHint)
     {
-        AZStd::string timeString;
-        AZStd::to_string(timeString, AZStd::GetTimeNowSecond());
-
         AZ::IO::FixedMaxPathString captureOutput = GetProfilerCaptureLocation();
-
-        return AZStd::string::format("%s/capture_%s_%s.json", captureOutput.c_str(), nameHint, timeString.c_str());
+        return AZStd::string::format("%s/capture_%s_%lld.json", captureOutput.c_str(), nameHint, AZStd::GetTimeNowSecond());
     }
 
     void ProfilerCaptureFrame([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
@@ -41,7 +37,7 @@ namespace AZ::Debug
         {
             AZStd::string captureFile = GenerateOutputFile("multi");
             AZLOG_INFO("Setting capture file to %s", captureFile.c_str());
-            profilerSystem->StartCapture(captureFile);
+            profilerSystem->StartCapture(AZStd::move(captureFile));
         }
     }
     AZ_CONSOLEFREEFUNC(ProfilerStartCapture, AZ::ConsoleFunctorFlags::DontReplicate, "Start a multi-frame capture of profiling data");

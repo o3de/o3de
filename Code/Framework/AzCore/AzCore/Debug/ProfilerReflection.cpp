@@ -74,7 +74,8 @@ namespace AZ::Debug
                 ->Method("GetCaptureLocation",
                     [](ProfilerSystemScriptProxy*) -> AZStd::string
                     {
-                        return AZStd::string(GetProfilerCaptureLocation().c_str());
+                        AZ::IO::FixedMaxPathString captureOutput = GetProfilerCaptureLocation();
+                        return AZStd::string(captureOutput.c_str(), captureOutput.length());
                     })
 
                 ->Method("IsActive", ProfilerSystemScriptProxy::WrapMethod<&ProfilerRequests::IsActive>())

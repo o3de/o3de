@@ -402,13 +402,10 @@ namespace Profiler
 
     AZStd::string ImGuiCpuProfiler::GenerateOutputFile(const char* nameHint)
     {
-        AZStd::string timeString;
-        AZStd::to_string(timeString, AZStd::GetTimeNowSecond());
-
         AZ::IO::FixedMaxPathString captureOutput = AZ::Debug::GetProfilerCaptureLocation();
 
         const AZ::IO::FixedMaxPathString frameDataFilePath =
-            AZ::IO::FixedMaxPathString::format("%s/cpu_%s_%s.json", captureOutput.c_str(), nameHint, timeString.c_str());
+            AZ::IO::FixedMaxPathString::format("%s/cpu_%s_%lld.json", captureOutput.c_str(), nameHint, AZStd::GetTimeNowSecond());
 
         AZ::IO::FileIOBase::GetInstance()->ResolvePath(m_lastCapturedFilePath, frameDataFilePath.c_str());
 
