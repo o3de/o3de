@@ -200,7 +200,7 @@ class TestAutomatedTestingProject(object):
                 output += f"{line.rstrip()}\n"
                 logger.error(line)
                 linecount += 1
-                if linecount > 10:
+                if linecount > 100:
                     break
             raise RuntimeError(f"Error during AP test, with output:\n{output}")
 
