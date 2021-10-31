@@ -37,13 +37,14 @@ namespace AZ::Render
 
     private:
 
+        float CalculateScaleMultiplier(EMotionFX::ActorInstance* instance) const;
         void PrepareForMesh(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM);
         void RenderAABB(EMotionFX::ActorInstance* instance);
         void RenderSkeleton(EMotionFX::ActorInstance* instance);
         void RenderEMFXDebugDraw(EMotionFX::ActorInstance* instance);
-        void RenderNormals(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, bool vertexNormals, bool faceNormals);
-        void RenderTangents(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM);
-        void RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM);
+        void RenderNormals(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, bool vertexNormals, bool faceNormals, float scaleMultiplier);
+        void RenderTangents(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float scaleMultiplier);
+        void RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float scaleMultiplier);
 
         EMotionFX::Mesh* m_currentMesh = nullptr; /**< A pointer to the mesh whose world space positions are in the pre-calculated positions buffer.
                                            NULL in case we haven't pre-calculated any positions yet. */

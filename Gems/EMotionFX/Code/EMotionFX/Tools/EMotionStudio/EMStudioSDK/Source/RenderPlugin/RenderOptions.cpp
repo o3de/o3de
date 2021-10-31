@@ -12,9 +12,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <EMotionFX/Rendering/Common/OrbitCamera.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
-#include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
-#include <EMotionStudio/EMStudioSDK/Source/GUIOptions.h>
-#include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
+#include <Integration/Rendering/RenderActorSettings.h>
 #include <MysticQt/Source/MysticQtConfig.h>
 
 #include <QColor>
@@ -317,6 +315,9 @@ namespace EMStudio
         options.m_renderSelectionBox = settings->value(s_renderSelectionBoxOptionName, options.m_renderSelectionBox).toBool();
 
         options.m_manipulatorMode = static_cast<ManipulatorMode>(settings->value("manipulatorMode", options.m_manipulatorMode).toInt());
+
+        AZ::Render::RenderActorSettings& renderActorSettings = EMotionFX::GetRenderActorSettings();
+        options.CopyToRenderActorSettings(renderActorSettings);
 
         return options;
     }
@@ -1055,6 +1056,23 @@ namespace EMStudio
     RenderOptions::ManipulatorMode RenderOptions::GetManipulatorMode() const
     {
         return m_manipulatorMode;
+    }
+
+    void RenderOptions::CopyToRenderActorSettings(AZ::Render::RenderActorSettings& settings) const
+    {
+        settings.m_vertexNormalsScale = m_vertexNormalsScale;
+        settings.m_faceNormalsScale = m_faceNormalsScale;
+        settings.m_tangentsScale = m_tangentsScale;
+
+        settings.m_vertexNormalsColor = m_vertexNormalsColor;
+        settings.m_faceNormalsColor = m_faceNormalsColor;
+        settings.m_tangentsColor = m_tangentsColor;
+        settings.m_mirroredBitangentsColor = m_mirroredBitangentsColor;
+        settings.m_bitangentsColor = m_bitangentsColor;
+        settings.m_wireframeColor = m_wireframeColor;
+        settings.m_staticAABBColor = m_staticAABBColor;
+        settings.m_skeletonColor = m_skeletonColor;
+        settings.m_lineSkeletonColor = m_lineSkeletonColor;
     }
 
     void RenderOptions::OnGridUnitSizeChangedCallback() const

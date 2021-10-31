@@ -19,6 +19,10 @@
 
 MCORE_FORWARD_DECLARE(MemoryTracker);
 
+namespace AZ::Render
+{
+    class RenderActorSettings;
+}
 
 namespace EMotionFX
 {
@@ -185,6 +189,15 @@ namespace EMotionFX
         MCORE_INLINE DebugDraw* GetDebugDraw() const                                { return m_debugDraw; }
 
         /**
+         * Get the render actor settings
+         * @result A pointer to global render actor settings.
+         */
+        MCORE_INLINE AZ::Render::RenderActorSettings* GetRenderActorSettings() const
+        {
+            return m_renderActorSettings;
+        }
+
+        /**
          * Set the path of the media root directory.
          * @param path The path of the media root folder.
          */
@@ -347,6 +360,8 @@ namespace EMotionFX
         Recorder*                   m_recorder;              /**< The recorder. */
         MotionInstancePool*         m_motionInstancePool;    /**< The motion instance pool. */        
         DebugDraw*                  m_debugDraw;             /**< The debug drawing system. */
+        AZ::Render::RenderActorSettings* m_renderActorSettings;   /**< The global render actor settings. */
+
         AZStd::vector<ThreadData*>   m_threadDatas;           /**< The per thread data. */
         MCore::Distance::EUnitType  m_unitType;              /**< The unit type, on default it is MCore::Distance::UNITTYPE_METERS. */
         float                       m_globalSimulationSpeed; /**< The global simulation speed, default is 1.0. */
@@ -411,6 +426,12 @@ namespace EMotionFX
          * @param draw The debug drawing object.
          */
         void SetDebugDraw(DebugDraw* draw);
+
+        /**
+         * Set the render actor settings.
+         * @param settings The render actor settings.
+         */
+        void SetRenderActorSettings(AZ::Render::RenderActorSettings* settings);
 
         /**
          * Set the motion instance pool.
@@ -505,4 +526,5 @@ namespace EMotionFX
     MCORE_INLINE Recorder&                  GetRecorder()               { return *GetEMotionFX().GetRecorder(); }           /**< Get the recorder. */
     MCORE_INLINE MotionInstancePool&        GetMotionInstancePool()     { return *GetEMotionFX().GetMotionInstancePool(); } /**< Get the motion instance pool. */
     MCORE_INLINE DebugDraw&                 GetDebugDraw()              { return *GetEMotionFX().GetDebugDraw(); }          /**< Get the debug drawing. */
+    MCORE_INLINE AZ::Render::RenderActorSettings&       GetRenderActorSettings()    { return *GetEMotionFX().GetRenderActorSettings(); }/**< Get the render actor settings. */
 }   // namespace EMotionFX
