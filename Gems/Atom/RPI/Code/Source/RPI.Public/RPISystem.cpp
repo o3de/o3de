@@ -159,6 +159,11 @@ namespace AZ
                     AZ_Assert(false, "Scene was already registered");
                     return;
                 }
+                else if (!scene->GetName().IsEmpty() && scene->GetName() == sceneItem->GetName())
+                {
+                    // only report a warning if there is a scene with duplicated name
+                    AZ_Warning("RPISystem", false, "There is a registered scene with same name [%s]", scene->GetName().GetCStr());
+                }
             }
 
             m_scenes.push_back(scene);
@@ -171,33 +176,65 @@ namespace AZ
                 if (*itr == scene)
                 {
                     m_scenes.erase(itr);
+                    if (m_mainScene == scene)
+                    {
+                        m_mainScene = nullptr;
+                    }
                     return;
                 }
             }
             AZ_Assert(false, "Can't unregister scene which wasn't registered");
         }
 
-        ScenePtr RPISystem::GetScene(const SceneId& sceneId) const
+        Scene* RPISystem::GetScene(const SceneId& sceneId) const
         {
             for (const auto& scene : m_scenes)
             {
                 if (scene->GetId() == sceneId)
                 {
-                    return scene;
+                    return scene.get();
                 }
             }
             return nullptr;
         }
 
-        ScenePtr RPISystem::GetDefaultScene() const
+        Scene* RPISystem::GetSceneByName(const AZ::Name& name) const
         {
-            if (m_scenes.size() > 0)
+            for (const auto& scene : m_scenes)
             {
-                return m_scenes[0];
+                if (scene->GetName() == name)
+                {
+                    return scene.get();
+                }
             }
             return nullptr;
         }
+        
+        ScenePtr RPISystem::GetDefaultScene() const
+        {
+            return m_mainScene;
+        }
 
+        Scene* RPISystem::GetMainScene() const
+        {
+            return m_mainScene.get();
+        }
+
+        void RPISystem::SetMainScene(ScenePtr scene)
+        {
+            // Validate the scene was registered
+            // scene = nullptr is acceptted
+            if (scene)
+            {
+                if (AZStd::find(m_scenes.begin(), m_scenes.end(), scene) == m_scenes.end())
+                {
+                    AZ_Assert(false, "SetDefaultScene only can set a registered scene");
+                    return;
+                }
+            }
+
+            m_mainScene = scene;
+        }
 
         RenderPipelinePtr RPISystem::GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle)
         {

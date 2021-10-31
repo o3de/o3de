@@ -32,7 +32,7 @@ namespace AZ
         {
             if (m_rtPipeline)
             {
-                AZ::RPI::RPISystemInterface::Get()->GetDefaultScene()->RemoveRenderPipeline(m_rtPipeline->GetId());
+                m_rtPipeline->RemoveFromScene();
                 m_rtPipeline = nullptr;
             }
             
@@ -112,7 +112,7 @@ namespace AZ
                 break;
             }
 
-            AZ::RPI::RPISystemInterface::Get()->GetDefaultScene()->AddRenderPipeline(m_rtPipeline);
+            AZ::RPI::RPISystemInterface::Get()->GetMainScene()->AddRenderPipeline(m_rtPipeline);
         }
 
         bool LuxCoreTexture::IsIBLTexture()

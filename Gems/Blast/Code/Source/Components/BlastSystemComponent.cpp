@@ -255,10 +255,10 @@ namespace Blast
             BlastFamilyComponentRequestBus::Broadcast(
                 &BlastFamilyComponentRequests::FillDebugRenderBuffer, buffer, m_debugRenderMode);
 
-            // This is a system component, and thus is not associated with a specific scene, so use the default scene
+            // This is a system component, and thus is not associated with a specific scene, so use the main scene
             // for the debug drawing
-            const auto defaultScene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
-            auto drawQueue = AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(defaultScene);
+            const auto mainScene = AZ::RPI::RPISystemInterface::Get()->GetMainScene();
+            auto drawQueue = AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(mainScene);
 
             for (DebugLine& line : buffer.m_lines)
             {

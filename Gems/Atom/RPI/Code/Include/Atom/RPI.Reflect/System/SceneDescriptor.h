@@ -25,6 +25,9 @@ namespace AZ
 
             //! List of feature processors which the scene will initially enable.
             AZStd::vector<AZStd::string> m_featureProcessorNames;
+
+            //! A name used as scene id. It can be used to search a registered scene via RPISystemInterface::GetScene()
+            AZ::Name m_nameId;
         };
     } // namespace RPI
 } // namespace AZ

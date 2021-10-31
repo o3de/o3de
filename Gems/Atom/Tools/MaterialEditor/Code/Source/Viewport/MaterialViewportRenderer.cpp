@@ -67,6 +67,7 @@ namespace MaterialEditor
 
         // Create and register a scene with all available feature processors
         AZ::RPI::SceneDescriptor sceneDesc;
+        sceneDesc.m_nameId = AZ::Name("MaterialViewport");
         m_scene = AZ::RPI::Scene::CreateScene(sceneDesc);
         m_scene->EnableAllFeatureProcessors();
 
@@ -100,6 +101,9 @@ namespace MaterialEditor
         m_scene->Activate();
 
         AZ::RPI::RPISystemInterface::Get()->RegisterScene(m_scene);
+
+        // Set it as main scene since it was created for AzFramework::Scene::MainSceneName
+        AZ::RPI::RPISystemInterface::Get()->SetMainScene(m_scene);
 
         AzFramework::EntityContextId entityContextId;
         AzFramework::GameEntityContextRequestBus::BroadcastResult(entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
