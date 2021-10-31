@@ -41,6 +41,17 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
+        enum CursorInputMode {
+            CURSOR_MODE_NONE,
+            CURSOR_MODE_CAPTURED,   //< Sets whether or not the cursor should be constrained to the source widget and invisible.
+                                    //< Internally, this will reset the cursor position after each move event to ensure movement
+                                    //< events don't allow the cursor to escape. This can be used for typical camera controls
+                                    //< like a dolly or rotation, where mouse movement is important but cursor location is not.
+            CURSOR_MODE_WRAPPED,    //< Flags whether the curser is going to wrap around the soruce widget.
+            CURSOR_MODE_WRAPPED_X,
+            CURSOR_MODE_WRAPPED_Y 
+        };
+
         QtEventToAzInputMapper(QWidget* sourceWidget, int syntheticDeviceId = 0);
         ~QtEventToAzInputMapper() = default;
 
@@ -56,7 +67,11 @@ namespace AzToolsFramework
         //! Internally, this will reset the cursor position after each move event to ensure movement
         //! events don't allow the cursor to escape. This can be used for typical camera controls
         //! like a dolly or rotation, where mouse movement is important but cursor location is not.
+        //! @deprecated Use #SetCursorMode()
         void SetCursorCaptureEnabled(bool enabled);
+
+        //! Set the cursor mode.
+        void SetCursorMode(QtEventToAzInputMapper::CursorInputMode mode);
 
         void SetOverrideCursor(ViewportInteraction::CursorStyleOverride cursorStyleOverride);
         void ClearOverrideCursor();
@@ -176,8 +191,8 @@ namespace AzToolsFramework
         QWidget* m_sourceWidget;
         // Flags whether or not Qt events should currently be processed.
         bool m_enabled = true;
-        // Flags whether or not the cursor is being constrained to the source widget (for invisible mouse movement).
-        bool m_capturingCursor = false;
+        // Controls the cursor behavior.
+        QtEventToAzInputMapper::CursorInputMode m_cursorMode = CURSOR_MODE_NONE;
         // Flags whether the cursor has been overridden.
         bool m_overrideCursor = false;
 

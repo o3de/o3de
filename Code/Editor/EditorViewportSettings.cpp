@@ -23,6 +23,7 @@ namespace SandboxEditor
     constexpr AZStd::string_view AngleSizeSetting = "/Amazon/Preferences/Editor/AngleSize";
     constexpr AZStd::string_view ShowGridSetting = "/Amazon/Preferences/Editor/ShowGrid";
     constexpr AZStd::string_view StickySelectSetting = "/Amazon/Preferences/Editor/StickySelect";
+    constexpr AZStd::string_view ManipulatorMouseWrapSetting = "/Amazon/Preferences/Editor/Manipulator/MouseWrapping";
     constexpr AZStd::string_view ManipulatorLineBoundWidthSetting = "/Amazon/Preferences/Editor/Manipulator/LineBoundWidth";
     constexpr AZStd::string_view ManipulatorCircleBoundWidthSetting = "/Amazon/Preferences/Editor/Manipulator/CircleBoundWidth";
     constexpr AZStd::string_view CameraTranslateSpeedSetting = "/Amazon/Preferences/Editor/Camera/TranslateSpeed";
@@ -184,6 +185,16 @@ namespace SandboxEditor
     void SetManipulatorLineBoundWidth(const float lineBoundWidth)
     {
         AzToolsFramework::SetRegistry(ManipulatorLineBoundWidthSetting, lineBoundWidth);
+    }
+
+    bool ManipulatorMouseWrap()
+    {
+        return aznumeric_cast<float>(GetRegistry(ManipulatorMouseWrapSetting, false));
+    }
+
+    void SetManipulatorMouseWrap(bool wrapping)
+    {
+        SetRegistry(ManipulatorMouseWrapSetting, wrapping);
     }
 
     float ManipulatorCircleBoundWidth()
