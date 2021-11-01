@@ -228,18 +228,15 @@ namespace MaterialEditor
             return false;
         }
 
-        AZ::IO::BasicPath<AZStd::string> exportFolder(m_absolutePath);
-        exportFolder.RemoveFilename();
-
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.m_propertyLayout.m_version;
-        sourceData.m_materialType = AZ::IO::PathView(m_materialSourceData.m_materialType).LexicallyRelative(exportFolder).StringAsPosix();
-        sourceData.m_parentMaterial = AZ::IO::PathView(m_materialSourceData.m_parentMaterial).LexicallyRelative(exportFolder).StringAsPosix();
+        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        sourceData.m_materialType = AtomToolsFramework::GetExteralReferencePath(m_absolutePath, m_materialSourceData.m_materialType);
+        sourceData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(m_absolutePath, m_materialSourceData.m_parentMaterial);
 
         // populate sourceData with modified or overwritten properties
         const bool savedProperties = SavePropertiesToSourceData(
-            exportFolder, sourceData,
+            m_absolutePath, sourceData,
             [](const AtomToolsFramework::DynamicProperty& property)
             {
                 return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue);
@@ -302,18 +299,16 @@ namespace MaterialEditor
             return false;
         }
 
-        AZ::IO::BasicPath<AZStd::string> exportFolder(normalizedSavePath);
-        exportFolder.RemoveFilename();
-
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.m_propertyLayout.m_version;
-        sourceData.m_materialType = AZ::IO::PathView(m_materialSourceData.m_materialType).LexicallyRelative(exportFolder).StringAsPosix();
-        sourceData.m_parentMaterial = AZ::IO::PathView(m_materialSourceData.m_parentMaterial).LexicallyRelative(exportFolder).StringAsPosix();
+        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        sourceData.m_materialType = AtomToolsFramework::GetExteralReferencePath(normalizedSavePath, m_materialSourceData.m_materialType);
+        sourceData.m_parentMaterial =
+            AtomToolsFramework::GetExteralReferencePath(normalizedSavePath, m_materialSourceData.m_parentMaterial);
 
         // populate sourceData with modified or overwritten properties
         const bool savedProperties = SavePropertiesToSourceData(
-            exportFolder, sourceData,
+            normalizedSavePath, sourceData,
             [](const AtomToolsFramework::DynamicProperty& property)
             {
                 return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue);
@@ -375,27 +370,21 @@ namespace MaterialEditor
             return false;
         }
 
-        AZ::IO::BasicPath<AZStd::string> exportFolder(normalizedSavePath);
-        exportFolder.RemoveFilename();
-
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.m_propertyLayout.m_version;
-        sourceData.m_materialType = AZ::IO::PathView(m_materialSourceData.m_materialType).LexicallyRelative(exportFolder).StringAsPosix();
+        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
+        sourceData.m_materialType = AtomToolsFramework::GetExteralReferencePath(normalizedSavePath, m_materialSourceData.m_materialType);
 
         // Only assign a parent path if the source was a .material
         if (AzFramework::StringFunc::Path::IsExtension(m_relativePath.c_str(), MaterialSourceData::Extension))
         {
-            sourceData.m_parentMaterial = AZ::IO::PathView(m_absolutePath).LexicallyRelative(exportFolder).StringAsPosix();
+            sourceData.m_parentMaterial =
+                AtomToolsFramework::GetExteralReferencePath(normalizedSavePath, m_materialSourceData.m_parentMaterial);
         }
-
-        // Force save data to store forward slashes
-        AzFramework::StringFunc::Replace(sourceData.m_materialType, "\\", "/");
-        AzFramework::StringFunc::Replace(sourceData.m_parentMaterial, "\\", "/");
 
         // populate sourceData with modified properties
         const bool savedProperties = SavePropertiesToSourceData(
-            exportFolder, sourceData,
+            normalizedSavePath, sourceData,
             [](const AtomToolsFramework::DynamicProperty& property)
             {
                 return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_originalValue);
@@ -595,9 +584,7 @@ namespace MaterialEditor
     }
 
     bool MaterialDocument::SavePropertiesToSourceData(
-        const AZ::IO::BasicPath<AZStd::string>& exportFolder,
-        AZ::RPI::MaterialSourceData& sourceData,
-        PropertyFilterFunction propertyFilter) const
+        const AZStd::string& exportPath, AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const
     {
         using namespace AZ;
         using namespace RPI;
@@ -615,7 +602,7 @@ namespace MaterialEditor
                 MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(it->second.GetValue());
                 if (propertyValue.IsValid())
                 {
-                    if (!AtomToolsFramework::ConvertToExportFormat(exportFolder, propertyDefinition, propertyValue))
+                    if (!AtomToolsFramework::ConvertToExportFormat(exportPath, propertyDefinition, propertyValue))
                     {
                         AZ_Error("MaterialDocument", false, "Material document property could not be converted: '%s' in '%s'.", propertyId.GetFullName().GetCStr(), m_absolutePath.c_str());
                         result = false;
@@ -699,6 +686,12 @@ namespace MaterialEditor
                 return false;
             }
             m_materialTypeSourceData = materialTypeOutcome.GetValue();
+            
+            if (MaterialSourceData::ApplyVersionUpdatesResult::Failed == m_materialSourceData.ApplyVersionUpdates(m_absolutePath))
+            {
+                AZ_Error("MaterialDocument", false, "Material source data could not be auto updated to the latest version of the material type: '%s'.", m_materialSourceData.m_materialType.c_str());
+                return false;
+            }
         }
         else if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), MaterialTypeSourceData::Extension))
         {

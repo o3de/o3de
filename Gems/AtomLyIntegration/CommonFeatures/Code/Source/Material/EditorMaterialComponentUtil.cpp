@@ -98,9 +98,6 @@ namespace AZ
 
             bool SaveSourceMaterialFromEditData(const AZStd::string& path, const MaterialEditData& editData)
             {
-                AZ::IO::BasicPath<AZStd::string> exportFolder(path);
-                exportFolder.RemoveFilename();
-
                 // Construct the material source data object that will be exported
                 AZ::RPI::MaterialSourceData exportData;
 
@@ -121,8 +118,7 @@ namespace AZ
                         return false;
                     }
 
-                    exportData.m_materialType =
-                        AZ::IO::PathView(editData.m_materialTypeSourcePath).LexicallyRelative(exportFolder).StringAsPosix();
+                    exportData.m_materialType = AtomToolsFramework::GetExteralReferencePath(path, editData.m_materialTypeSourcePath);
                 }
 
                 if (!editData.m_materialParentSourcePath.empty())
@@ -141,8 +137,7 @@ namespace AZ
                         return false;
                     }
 
-                    exportData.m_parentMaterial =
-                        AZ::IO::PathView(editData.m_materialParentSourcePath).LexicallyRelative(exportFolder).StringAsPosix();
+                    exportData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(path, editData.m_materialParentSourcePath);
                 }
 
                 // Copy all of the properties from the material asset to the source data that will be exported
@@ -168,7 +163,7 @@ namespace AZ
                         propertyValue = AZ::RPI::MaterialPropertyValue::FromAny(propertyOverrideItr->second);
                     }
 
-                    if (!AtomToolsFramework::ConvertToExportFormat(exportFolder, propertyDefinition, propertyValue))
+                    if (!AtomToolsFramework::ConvertToExportFormat(path, propertyDefinition, propertyValue))
                     {
                         AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Failed to export: %s", path.c_str());
                         result = false;

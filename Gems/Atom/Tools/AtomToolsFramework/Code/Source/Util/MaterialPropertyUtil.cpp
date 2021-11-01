@@ -166,10 +166,13 @@ namespace AtomToolsFramework
     }
 
     bool ConvertToExportFormat(
-        const AZ::IO::BasicPath<AZStd::string>& exportFolder,
+        const AZStd::string& exportPath,
         const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
         AZ::RPI::MaterialPropertyValue& propertyValue)
     {
+        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPath);
+        exportFolder.RemoveFilename();
+
         if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Enum && propertyValue.Is<uint32_t>())
         {
             const uint32_t index = propertyValue.GetValue<uint32_t>();
@@ -204,6 +207,47 @@ namespace AtomToolsFramework
         }
 
         return true;
+    }
+
+    AZStd::string GetExteralReferencePath(const AZStd::string& exportPath, const AZStd::string& referencePath, const uint32_t maxPathDepth)
+    {
+        if (referencePath.empty())
+        {
+            return {};
+        }
+
+        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPath);
+        exportFolder.RemoveFilename();
+
+        const AZStd::string relativePath = AZ::IO::PathView(referencePath).LexicallyRelative(exportFolder).StringAsPosix();
+
+        // Count the difference in depth between the export file path and the referenced file path.
+        uint32_t parentFolderCount = 0;
+        AZStd::string::size_type pos = 0;
+        const AZStd::string parentFolderToken = "..";
+        while ((pos = relativePath.find(parentFolderToken, pos)) != AZStd::string::npos)
+        {
+            parentFolderCount++;
+            pos += parentFolderToken.length();
+        }
+
+        // If the difference in depth is too great then revert to using the asset folder relative path.
+        // We could change this to only use relative paths for references in subfolders.
+        if (parentFolderCount > maxPathDepth)
+        {
+            AZStd::string watchFolder;
+            AZ::Data::AssetInfo assetInfo;
+            bool sourceInfoFound = false;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, referencePath.c_str(),
+                assetInfo, watchFolder);
+            if (sourceInfoFound)
+            {
+                return assetInfo.m_relativePath;
+            }
+        }
+
+        return relativePath;
     }
 
     const AtomToolsFramework::DynamicProperty* FindDynamicPropertyForInstanceDataNode(const AzToolsFramework::InstanceDataNode* pNode)
