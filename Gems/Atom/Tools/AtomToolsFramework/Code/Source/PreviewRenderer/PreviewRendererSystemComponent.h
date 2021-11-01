@@ -19,7 +19,6 @@ namespace AtomToolsFramework
     //! System component that manages a global PreviewRenderer.
     class PreviewRendererSystemComponent final
         : public AZ::Component
-        , public AzFramework::AssetCatalogEventBus::Handler
         , public AzFramework::ApplicationLifecycleEvents::Bus::Handler
         , public PreviewRendererSystemRequestBus::Handler
     {
@@ -38,9 +37,6 @@ namespace AtomToolsFramework
         void Deactivate() override;
 
     private:
-        // AzFramework::AssetCatalogEventBus::Handler overrides ...
-        void OnCatalogLoaded(const char* catalogFile) override;
-
         // AzFramework::ApplicationLifecycleEvents overrides...
         void OnApplicationAboutToStop() override;
 

@@ -590,7 +590,7 @@ public:
 
     bool InitVTuneProfiler();
 
-    void OpenBasicPaks();
+    void OpenPlatformPaks();
     void OpenLanguagePak(const char* sLanguage);
     void OpenLanguageAudioPak(const char* sLanguage);
     void GetLocalizedPath(const char* sLanguage, AZStd::string& sLocalizedPath);
