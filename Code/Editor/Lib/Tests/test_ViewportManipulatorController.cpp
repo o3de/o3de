@@ -234,11 +234,12 @@ namespace UnitTest
         QTest::keyPress(m_rootWidget.get(), Qt::Key_W);
 
         // when
-        // change the window state
-        m_rootWidget->setWindowState(Qt::WindowState::WindowMinimized);
+        // simulate changing the window state
+        QApplicationStateChangeEvent applicationStateChangeEvent(Qt::ApplicationState::ApplicationInactive);
+        QCoreApplication::sendEvent(m_rootWidget.get(), &applicationStateChangeEvent);
 
         // then
-        // the alt key was released (cleared)
+        // the key was released (cleared)
         EXPECT_TRUE(endedEvent);
     }
 } // namespace UnitTest
