@@ -79,9 +79,9 @@ namespace AzFramework
         //! other than the calling thread including the main thread. Note that because the alert is queued it can still be called
         //! after the container has been deleted or can be called for a previously assigned spawnable. In the latter case check
         //! if the current generation matches the generation provided with the callback.
-        //! @callback The function called when the alert triggers. This can be called from a different thread than the one that
+        //! @param callback The function called when the alert triggers. This can be called from a different thread than the one that
         //!     the one that made the call to Alert.
-        //! @checkSpawnableIsLoaded If true the alert will also block until the spawnable has been loaded. If false then it will
+        //! @param checkSpawnableIsLoaded If true the alert will also block until the spawnable has been loaded. If false then it will
         //!     be called after all previous calls have completed, but the spawnable may not be loaded at that point.
         void Alert(AlertCallback callback, CheckIfSpawnableIsLoaded spawnableCheck = CheckIfSpawnableIsLoaded::No);
 

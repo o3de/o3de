@@ -118,6 +118,7 @@ namespace AzFramework
             SpawnableAssetEventsBus::Broadcast(
                 &SpawnableAssetEvents::OnResolveAliases, aliases, spawnable->GetMetaData(), spawnable->GetEntities());
 
+            // The aliases will only be optimized if OnResolveAliases has made any changes.
             aliases.Optimize();
             aliases.ListSpawnablesRequiringLoad(
                 [&assetLoadFilterCB, streamingDeadline, streamingPriority](AZ::Data::Asset<Spawnable>& assetPendingLoad)

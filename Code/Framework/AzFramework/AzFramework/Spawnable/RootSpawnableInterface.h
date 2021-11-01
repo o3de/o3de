@@ -30,7 +30,7 @@ namespace AzFramework
         
         //! Called when the root spawnable has been assigned a new value. This may be called several times without a call to release
         //!     in between.
-        //! NOTE: The callback is not queued but immediately called from a random thread. This is done because this callback is typically
+        //! @note: The callback is not queued but immediately called from a random thread. This is done because this callback is typically
         //!     used before entities are spawned and if it's queued then the entities spawn before this callback is called.
         //! @param rootSpawnable The new root spawnable that was assigned.
         //! @param generation The generation of the root spawnable. This will increment every time a new spawnable is assigned.
@@ -38,7 +38,7 @@ namespace AzFramework
             [[maybe_unused]] uint32_t generation) {}
         //! Called when the root spawnable has completed spawning of entities. This may be called several times without a call to release
         //!     in between.
-        //! NOTE: This callback is queued and will be called with a delay and from the main thread.
+        //! @note: This callback is queued and will be called with a delay and from the main thread.
         //! @param rootSpawnable The new root spawnable that was used to spawn entities from.
         //! @param generation The generation of the root spawnable. This will increment every time a new spawnable is assigned.
         virtual void OnRootSpawnableReady(

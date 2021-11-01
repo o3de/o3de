@@ -114,9 +114,9 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
 
             switch (aliasType)
             {
-            case PCU::EntityAliasType::Disabled:
+            case PCU::EntityAliasType::Disable:
                 // No need to do anything as the alias is disabled.
-                return ResultPair(nullptr, AzFramework::Spawnable::EntityAliasType::Disabled);
+                return ResultPair(nullptr, AzFramework::Spawnable::EntityAliasType::Disable);
             case PCU::EntityAliasType::OptionalReplace:
                 return ResultPair(CloneEntity(entity, source), AzFramework::Spawnable::EntityAliasType::Replace);
             case PCU::EntityAliasType::Replace:
@@ -129,7 +129,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
             default:
                 AZ_Assert(
                     false, "Invalid PrefabProcessorContext::EntityAliasType type (%i) provided.", aznumeric_cast<uint64_t>(aliasType));
-                return ResultPair(nullptr, AzFramework::Spawnable::EntityAliasType::Disabled);
+                return ResultPair(nullptr, AzFramework::Spawnable::EntityAliasType::Disable);
             }
         }
     }

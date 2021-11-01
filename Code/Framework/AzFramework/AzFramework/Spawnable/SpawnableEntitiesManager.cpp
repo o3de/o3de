@@ -327,7 +327,7 @@ namespace AzFramework
             clone = CloneSingleEntity(entityTemplate, templateToCloneMap, serializeContext);
             AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
             return clone;
-        case Spawnable::EntityAliasType::Disabled:
+        case Spawnable::EntityAliasType::Disable:
             // Do nothing.
             return nullptr;
         case Spawnable::EntityAliasType::Replace:

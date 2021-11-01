@@ -34,7 +34,7 @@ namespace AzFramework
         enum class EntityAliasType : uint8_t
         {
             Original,   //!< The original entity is spawned.
-            Disabled,   //!< No entity will be spawned.
+            Disable,    //!< No entity will be spawned.
             Replace,    //!< The entity alias is spawned instead of the original.
             Additional, //!< The original entity is spawned as well as the alias. The alias will get a new entity id.
             Merge       //!< The original entity is spawned and the components of the alias are added. The caller is responsible for
@@ -105,6 +105,9 @@ namespace AzFramework
             bool HasAliases() const;
             bool AreAllSpawnablesReady() const;
 
+            // Modification of aliases is limited to specific changes that can only be done through the available modification functions.
+            // For this reason access through iterators is limited to unmodifiable constant iterators.
+
             EntityAliasList::const_iterator begin() const;
             EntityAliasList::const_iterator end() const;
             EntityAliasList::const_iterator cbegin() const;
@@ -146,7 +149,7 @@ namespace AzFramework
         class EntityAliasConstVisitor final : public EntityAliasVisitorBase
         {
         public:
-            EntityAliasConstVisitor(const Spawnable& owner, const EntityAliasList* m_entityAliasList);
+            EntityAliasConstVisitor(const Spawnable& owner, const EntityAliasList* entityAliasList);
             ~EntityAliasConstVisitor();
 
             //! Checks if the visitor was able to retrieve data. This needs to be checked before calling any other functions.

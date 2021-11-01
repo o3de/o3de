@@ -27,7 +27,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
     enum class EntityAliasType : uint8_t
     {
-        Disabled,        //!< No alias is added.
+        Disable,         //!< No alias is added.
         OptionalReplace, //!< At runtime the entity might be replaced. If the alias is disabled the original entity will be spawned.
                          //!<   The original entity will be left in the spawnable and a copy is returned.
         Replace,         //!< At runtime the entity will be replaced. If the alias is disabled nothing will be spawned not. The original

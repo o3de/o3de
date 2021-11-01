@@ -191,8 +191,8 @@ namespace UnitTest
         InsertEightEntities();
         InsertEightEntityAliases(
             { 0, 0, 0, 0, 0, 0, 0, 0 }, { 0, 1, 2, 3, 4, 5, 6, 7 },
-            { Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Disabled,
-              Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Disabled,
+            { Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Disable,
+              Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Disable,
               Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Original });
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
@@ -245,14 +245,14 @@ namespace UnitTest
         InsertEightEntityAliases(
             { 0, 0, 0, 1, 1, 2, 2, 2 }, { 0, 1, 2, 3, 4, 5, 6, 7 },
             { Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Original,
-              Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Disabled, Spawnable::EntityAliasType::Original,
+              Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Disable, Spawnable::EntityAliasType::Original,
               Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Original });
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
         ASSERT_TRUE(visitor.IsSet());
 
         EXPECT_EQ(2, AZStd::distance(visitor.begin(), visitor.end()));
-        EXPECT_EQ(Spawnable::EntityAliasType::Disabled, visitor.begin()->m_aliasType);
+        EXPECT_EQ(Spawnable::EntityAliasType::Disable, visitor.begin()->m_aliasType);
         EXPECT_EQ(Spawnable::EntityAliasType::Replace, visitor.begin()[1].m_aliasType);
     }
 

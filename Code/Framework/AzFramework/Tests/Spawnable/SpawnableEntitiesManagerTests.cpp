@@ -485,8 +485,8 @@ namespace UnitTest
         FillSpawnable(NumEntities);
         InsertEntityAliases<NumEntities>(
             { 0, 1, 2, 3 }, { 0, 1, 2, 3 },
-            { Spawnable::EntityAliasType::Disabled, Spawnable::EntityAliasType::Disabled, Spawnable::EntityAliasType::Disabled,
-              Spawnable::EntityAliasType::Disabled });
+            { Spawnable::EntityAliasType::Disable, Spawnable::EntityAliasType::Disable, Spawnable::EntityAliasType::Disable,
+              Spawnable::EntityAliasType::Disable });
 
         size_t spawnedEntitiesCount = 0;
         auto callback = [&spawnedEntitiesCount](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
@@ -506,7 +506,7 @@ namespace UnitTest
         using namespace AzFramework;
         static constexpr size_t NumEntities = 8;
         FillSpawnable(NumEntities);
-        InsertEntityAliases<2>({ 1, 3 }, { 1, 3 }, { Spawnable::EntityAliasType::Disabled, Spawnable::EntityAliasType::Disabled });
+        InsertEntityAliases<2>({ 1, 3 }, { 1, 3 }, { Spawnable::EntityAliasType::Disable, Spawnable::EntityAliasType::Disable });
 
         size_t spawnedEntitiesCount = 0;
         auto callback = [&spawnedEntitiesCount](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
@@ -1019,8 +1019,8 @@ namespace UnitTest
 
         InsertEntityAliases<NumEntities>(
             { 0, 1, 2, 3 }, { 0, 1, 2, 3 },
-            { Spawnable::EntityAliasType::Disabled, Spawnable::EntityAliasType::Disabled, Spawnable::EntityAliasType::Disabled,
-              Spawnable::EntityAliasType::Disabled });
+            { Spawnable::EntityAliasType::Disable, Spawnable::EntityAliasType::Disable, Spawnable::EntityAliasType::Disable,
+              Spawnable::EntityAliasType::Disable });
 
         AZStd::vector<uint32_t> indices = { 0, 2, 3, 1 };
 
@@ -1043,7 +1043,7 @@ namespace UnitTest
         FillSpawnable(8);
         InsertEntityAliases<3>(
             { 1, 3, 6 }, { 1, 3, 6 },
-            { Spawnable::EntityAliasType::Disabled, Spawnable::EntityAliasType::Disabled, Spawnable::EntityAliasType::Disabled });
+            { Spawnable::EntityAliasType::Disable, Spawnable::EntityAliasType::Disable, Spawnable::EntityAliasType::Disable });
 
         AZStd::vector<uint32_t> indices = { 0, 2, 3, 1, 2, 3, 0, 1, 6, 4, 5, 7, 4, 1, 0, 6 };
 

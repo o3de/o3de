@@ -20,7 +20,6 @@ namespace AzFramework
     // EntityAlias
     //
 
-
     bool Spawnable::EntityAlias::HasLowerIndex(const EntityAlias& other) const
     {
         return m_sourceIndex == other.m_sourceIndex ?
@@ -51,7 +50,7 @@ namespace AzFramework
         {
             if (!alias.m_queueLoad ||
                 alias.m_aliasType == Spawnable::EntityAliasType::Original ||
-                alias.m_aliasType == Spawnable::EntityAliasType::Disabled)
+                alias.m_aliasType == Spawnable::EntityAliasType::Disable)
             {
                 continue;
             }
@@ -132,7 +131,6 @@ namespace AzFramework
     // EntityAliasVisitor
     //
 
-
     Spawnable::EntityAliasVisitor::EntityAliasVisitor(Spawnable& owner, EntityAliasList* entityAliasList)
         : m_owner(owner)
         , m_entityAliasList(entityAliasList)
@@ -167,11 +165,7 @@ namespace AzFramework
         if (this != &rhs)
         {
             this->~EntityAliasVisitor();
-            *this = EntityAliasVisitor(rhs.m_owner, rhs.m_entityAliasList);
-            m_dirty = rhs.m_dirty;
-
-            rhs.m_entityAliasList = nullptr;
-            rhs.m_dirty = false;
+            new(this) EntityAliasVisitor(AZStd::move(rhs));
         }
         return *this;
     }
@@ -249,7 +243,7 @@ namespace AzFramework
         {
             if (alias.m_queueLoad &&
                 alias.m_aliasType != Spawnable::EntityAliasType::Original &&
-                alias.m_aliasType != Spawnable::EntityAliasType::Disabled &&
+                alias.m_aliasType != Spawnable::EntityAliasType::Disable &&
                 !alias.m_spawnable.IsLoading() &&
                 !alias.m_spawnable.IsReady() &&
                 !alias.m_spawnable.IsError())
@@ -336,14 +330,14 @@ namespace AzFramework
                 {
                 case Spawnable::EntityAliasType::Original:
                     [[fallthrough]];
-                case Spawnable::EntityAliasType::Disabled:
+                case Spawnable::EntityAliasType::Disable:
                     [[fallthrough]];
                 case Spawnable::EntityAliasType::Replace:
                     // If the previous entry was a disabled, original or replace alias then remove it as it will be overwritten by the
                     // current entry.
                     if (previousIndex == it->m_sourceIndex &&
                         (previousType == Spawnable::EntityAliasType::Original ||
-                         previousType == Spawnable::EntityAliasType::Disabled ||
+                         previousType == Spawnable::EntityAliasType::Disable ||
                          previousType == Spawnable::EntityAliasType::Replace))
                     {
                         previousIndex = it->m_sourceIndex;
