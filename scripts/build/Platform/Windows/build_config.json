@@ -373,7 +373,7 @@
       "nightly-incremental",
       "nightly-clean"
     ],
-    "PIPELINE_ENV": {
+    "PIPELINE_ENV_OVERRIDE": {
       "PROJECT_REPOSITORY_NAME": "TestProject"
     },
     "steps": [
