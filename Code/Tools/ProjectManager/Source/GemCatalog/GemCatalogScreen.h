@@ -33,6 +33,7 @@ namespace O3DE::ProjectManager
         ProjectManagerScreen GetScreenEnum() override;
 
         void ReinitForProject(const QString& projectPath);
+        void Refresh(const QString& projectPath);
 
         enum class EnableDisableGemsResult 
         {

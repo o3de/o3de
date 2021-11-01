@@ -80,6 +80,9 @@ namespace O3DE::ProjectManager
     signals:
         void gemStatusChanged(const QString& gemName, uint32_t numChangedDependencies);
 
+    protected slots: 
+        void OnRowsAboutToBeRemoved(const QModelIndex& parent, int first, int last);
+
     private:
         void FindGemDisplayNamesByNameStrings(QStringList& inOutGemNames);
         void GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems);

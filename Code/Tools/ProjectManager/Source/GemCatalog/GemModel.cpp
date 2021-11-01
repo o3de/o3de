@@ -18,6 +18,7 @@ namespace O3DE::ProjectManager
         : QStandardItemModel(parent)
     {
         m_selectionModel = new QItemSelectionModel(this, parent);
+        connect(this, &QAbstractItemModel::rowsAboutToBeRemoved, this, &GemModel::OnRowsAboutToBeRemoved);
     }
 
     QItemSelectionModel* GemModel::GetSelectionModel() const
@@ -357,6 +358,16 @@ namespace O3DE::ProjectManager
         }
 
         gemModel->emit gemStatusChanged(gemName, numChangedDependencies);
+    }
+
+    void GemModel::OnRowsAboutToBeRemoved(const QModelIndex& parent, int first, int last)
+    {
+        for (int i = first; i <= last; ++i)
+        {
+            QModelIndex modelIndex = index(i, 0, parent);
+            const QString& gemName = GetName(modelIndex);
+            m_nameToIndexMap.remove(gemName);
+        }
     }
 
     void GemModel::SetIsAddedDependency(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)

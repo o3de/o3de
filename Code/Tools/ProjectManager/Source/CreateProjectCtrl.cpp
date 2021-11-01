@@ -55,6 +55,13 @@ namespace O3DE::ProjectManager
 
 
         connect(m_gemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
+        connect(
+            m_gemRepoScreen, &GemRepoScreen::OnRefresh,
+            [this]()
+            {
+                const QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
+                m_gemCatalogScreen->Refresh(projectTemplatePath + "/Template");
+            });
 
         // When there are multiple project templates present, we re-gather the gems when changing the selected the project template.
         connect(m_newProjectSettingsScreen, &NewProjectSettingsScreen::OnTemplateSelectionChanged, this, [=](int oldIndex, [[maybe_unused]] int newIndex)

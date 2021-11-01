@@ -23,6 +23,8 @@
 #include <QStandardPaths>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QSet>
+#include <QHash>
 
 namespace O3DE::ProjectManager
 {
@@ -143,6 +145,59 @@ namespace O3DE::ProjectManager
                 }
             }
         }
+    }
+
+    void GemCatalogScreen::Refresh(const QString& projectPath)
+    {
+        QHash<QString, GemInfo> gemInfoHash;
+
+        AZ::Outcome<QVector<GemInfo>, AZStd::string> allGemInfosResult = PythonBindingsInterface::Get()->GetAllGemInfos(projectPath);
+        if (allGemInfosResult.IsSuccess())
+        {
+            QVector<GemInfo> gemInfos = allGemInfosResult.GetValue();
+            for (const GemInfo& gemInfo : gemInfos)
+            {
+                gemInfoHash.insert(gemInfo.m_name, gemInfo);
+            }
+        }
+
+        AZ::Outcome<QVector<GemInfo>, AZStd::string> allRepoGemInfosResult = PythonBindingsInterface::Get()->GetAllGemRepoGemsInfos();
+        if (allRepoGemInfosResult.IsSuccess())
+        {
+            const QVector<GemInfo> allRepoGemInfos = allRepoGemInfosResult.GetValue();
+            for (const GemInfo& gemInfo : allRepoGemInfos)
+            {
+                if (!gemInfoHash.contains(gemInfo.m_name))
+                {
+                    gemInfoHash.insert(gemInfo.m_name, gemInfo);
+                }
+            }
+        }
+
+        // remove rows for gems that were removed and not project dependencies
+        int i = 0;
+        while (i < m_gemModel->rowCount())
+        {
+            QModelIndex index = m_gemModel->index(i,0);
+            QString gemName = m_gemModel->GetName(index);
+            if (!gemInfoHash.contains(gemName) && !m_gemModel->IsAdded(index) && !m_gemModel->IsAddedDependency(index))
+            {
+                m_gemModel->removeRow(i);
+            }
+            else
+            {
+                gemInfoHash.remove(gemName);
+                i++;
+            }
+        }
+
+        // add new rows
+        for(auto iter = gemInfoHash.begin(); iter != gemInfoHash.end(); ++iter)
+        {
+            m_gemModel->AddGem(iter.value());
+        }
+
+        m_gemModel->UpdateGemDependencies();
     }
 
     void GemCatalogScreen::OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies) 

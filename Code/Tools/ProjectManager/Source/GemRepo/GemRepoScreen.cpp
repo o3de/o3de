@@ -91,6 +91,7 @@ namespace O3DE::ProjectManager
             if (addGemRepoResult)
             {
                 Reinit();
+                emit OnRefresh();
             }
             else
             {
@@ -116,6 +117,7 @@ namespace O3DE::ProjectManager
             if (removeGemRepoResult)
             {
                 Reinit();
+                emit OnRefresh();
             }
             else
             {
@@ -130,6 +132,7 @@ namespace O3DE::ProjectManager
     {
         bool refreshResult = PythonBindingsInterface::Get()->RefreshAllGemRepos();
         Reinit();
+        emit OnRefresh();
 
         if (!refreshResult)
         {
@@ -146,6 +149,7 @@ namespace O3DE::ProjectManager
         if (refreshResult.IsSuccess())
         {
             Reinit();
+            emit OnRefresh();
         }
         else
         {

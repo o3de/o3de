@@ -28,6 +28,7 @@ namespace O3DE::ProjectManager
     class GemRepoScreen
         : public ScreenWidget
     {
+        Q_OBJECT
     public:
         explicit GemRepoScreen(QWidget* parent = nullptr);
         ~GemRepoScreen() = default;
@@ -36,6 +37,9 @@ namespace O3DE::ProjectManager
         void Reinit();
 
         GemRepoModel* GetGemRepoModel() const { return m_gemRepoModel; }
+
+    signals:
+        void OnRefresh();
 
     public slots:
         void HandleAddRepoButton();
