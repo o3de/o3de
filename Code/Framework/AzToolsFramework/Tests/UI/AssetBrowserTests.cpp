@@ -120,12 +120,11 @@ namespace UnitTest
         m_modelTesterFilterModel.reset();
         m_modelTesterTableModel.reset();
 
-        m_assetBrowserComponent->GetAssetBrowserModel()->GetRootEntry().reset();
-
         m_tableModel.reset();
         m_filterModel.reset();
 
         m_assetBrowserComponent->Deactivate();
+
         m_assetBrowserComponent.reset();
         m_searchWidget.reset();
     }
