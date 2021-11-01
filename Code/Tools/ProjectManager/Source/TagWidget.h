@@ -26,7 +26,7 @@ namespace O3DE::ProjectManager
         explicit TagWidget(const QString& text, QWidget* parent = nullptr);
         ~TagWidget() = default;
 
-        signals:
+    signals:
         void TagClicked(const QString& tag);
 
     protected:
