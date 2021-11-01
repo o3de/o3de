@@ -237,6 +237,8 @@ namespace AzToolsFramework
              * Updates all Instances owned by a Template.
              *
              * @param templateId The id of the Template owning Instances to update.
+             * @param instanceToExclude An optional reference to an instance of the template being updated that should not be refreshed
+             *        as part of propagation.Defaults to nullopt, which means that all instances will be refreshed.
              */
             void UpdatePrefabInstances(TemplateId templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt);
 
