@@ -84,7 +84,7 @@ namespace AZ
 
                 if (taskGraphActive)
                 {
-                    static AZ::TaskDescriptor pngTaskDescriptor{"PngWriteOutChannelSwap", "Graphics"};
+                    static const AZ::TaskDescriptor pngTaskDescriptor{"PngWriteOutChannelSwap", "Graphics"};
                     AZ::TaskGraph taskGraph;
                     for (int i = 0; i < numThreads; ++i)
                     {
