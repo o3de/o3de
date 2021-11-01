@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <AzToolsFramework/Input/QtEventToAzInputManager.h>
@@ -91,10 +92,23 @@ namespace UnitTest
             m_controllerList->RegisterViewportContext(TestViewportId);
 
             m_inputChannelMapper = AZStd::make_unique<AzToolsFramework::QtEventToAzInputMapper>(m_rootWidget.get(), TestViewportId);
+
+            m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+            AZ::SettingsRegistry::Register(m_settingsRegistry.get());
+
+            m_settingsRegistry->Set("/O3DE/InputSystem/GamepadsEnabled", false);
+            m_settingsRegistry->Set("/O3DE/InputSystem/KeyboardEnabled", false);
+            m_settingsRegistry->Set("/O3DE/InputSystem/MotionEnabled", false);
+            m_settingsRegistry->Set("/O3DE/InputSystem/MouseEnabled", false);
+            m_settingsRegistry->Set("/O3DE/InputSystem/TouchEnabled", false);
+            m_settingsRegistry->Set("/O3DE/InputSystem/VirtualKeyboardEnabled", false);
         }
 
         void TearDown() override
         {
+            AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+            m_settingsRegistry.reset();
+
             m_inputChannelMapper.reset();
 
             m_controllerList->UnregisterViewportContext(TestViewportId);
@@ -108,6 +122,7 @@ namespace UnitTest
 
         AZStd::unique_ptr<QWidget> m_rootWidget;
         AzFramework::ViewportControllerListPtr m_controllerList;
+        AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
         AZStd::unique_ptr<AzToolsFramework::QtEventToAzInputMapper> m_inputChannelMapper;
     };
 
