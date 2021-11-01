@@ -200,7 +200,7 @@ namespace UnitTest
             m_inputChannelMapper.get(), &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, m_rootWidget.get(),
             [&endedEvent](const AzFramework::InputChannel* inputChannel, [[maybe_unused]] QEvent* event)
             {
-                if (inputChannel->GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::ModifierAltL &&
+                if (inputChannel->GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::AlphanumericW &&
                     inputChannel->IsStateEnded())
                 {
                     endedEvent = true;
@@ -216,7 +216,7 @@ namespace UnitTest
         m_rootWidget->setFocus();
 
         // simulate a key press when root widget has focus
-        QTest::keyPress(m_rootWidget.get(), Qt::Key_Alt, Qt::KeyboardModifier::AltModifier);
+        QTest::keyPress(m_rootWidget.get(), Qt::Key_W);
 
         // when
         // change the window state
