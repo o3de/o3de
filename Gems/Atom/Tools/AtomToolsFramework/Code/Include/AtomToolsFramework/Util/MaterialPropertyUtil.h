@@ -51,12 +51,8 @@ namespace AtomToolsFramework
 
     //! Generate a file path from the exported file to the external reference.
     //! This function is to support copying or moving a folder containing materials, models, and textures without modifying the files. The
-    //! general case returns a relative path from the export file to the reference file. If the reference path is too different or distant
-    //! from the export path then it might be more difficult to work with than an asset folder relative path. For example, material types
-    //! that Atom provides live in a folder that should be accessible from anywhere. When materials are created in arbitrary gems and
-    //! project folders, a relative path to the material type would need to be updated whenever the materials are copied or moved. The same
-    //! thing will happen with parent materials or textures if their paths can’t be resolved. To alleviate some of this, we use the asset
-    //! folder relative path if the export folder relative path is too complex. An alternate solution would be to only use export folder
+    //! general case returns a relative path from the export file to the reference file. If the relative path is too different or distant
+    //! from the export path then we return the asset folder relative path. An alternate solution would be to only use export folder
     //! relative paths if the referenced path is in the same folder or a sub folder the assets are not generally packaged like that.
     AZStd::string GetExteralReferencePath(
         const AZStd::string& exportPath, const AZStd::string& referencePath, const uint32_t maxPathDepth = 2);
