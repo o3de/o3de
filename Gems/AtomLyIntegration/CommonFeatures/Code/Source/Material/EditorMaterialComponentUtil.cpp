@@ -98,47 +98,18 @@ namespace AZ
 
             bool SaveSourceMaterialFromEditData(const AZStd::string& path, const MaterialEditData& editData)
             {
+                if (path.empty() || !editData.m_materialAsset.IsReady() || !editData.m_materialTypeAsset.IsReady() ||
+                    editData.m_materialTypeSourcePath.empty())
+                {
+                    AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Can not export: %s", path.c_str());
+                    return false;
+                }
+
                 // Construct the material source data object that will be exported
                 AZ::RPI::MaterialSourceData exportData;
-
-                // Converting absolute material paths to relative paths
-                if (!editData.m_materialTypeSourcePath.empty())
-                {
-                    bool result = false;
-                    AZ::Data::AssetInfo info;
-                    AZStd::string watchFolder;
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                        result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
-                        editData.m_materialTypeSourcePath.c_str(), info, watchFolder);
-                    if (!result)
-                    {
-                        AZ_Error(
-                            "AZ::Render::EditorMaterialComponentUtil", false,
-                            "Failed to get material type source file info while attempting to export: %s", path.c_str());
-                        return false;
-                    }
-
-                    exportData.m_materialType = AtomToolsFramework::GetExteralReferencePath(path, editData.m_materialTypeSourcePath);
-                }
-
-                if (!editData.m_materialParentSourcePath.empty())
-                {
-                    bool result = false;
-                    AZ::Data::AssetInfo info;
-                    AZStd::string watchFolder;
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                        result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
-                        editData.m_materialParentSourcePath.c_str(), info, watchFolder);
-                    if (!result)
-                    {
-                        AZ_Error(
-                            "AZ::Render::EditorMaterialComponentUtil", false,
-                            "Failed to get parent material source file info while attempting to export: %s", path.c_str());
-                        return false;
-                    }
-
-                    exportData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(path, editData.m_materialParentSourcePath);
-                }
+                exportData.m_materialTypeVersion = editData.m_materialTypeAsset->GetVersion();
+                exportData.m_materialType = AtomToolsFramework::GetExteralReferencePath(path, editData.m_materialTypeSourcePath);
+                exportData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(path, editData.m_materialParentSourcePath);
 
                 // Copy all of the properties from the material asset to the source data that will be exported
                 bool result = true;
