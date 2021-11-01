@@ -14,7 +14,7 @@
 namespace AZ::ComponentApplicationLifecycle
 {
     //! Root Key where lifecycle events should be registered under
-    inline constexpr AZStd::string_view ApplicationLifecycleEventRegistrationKey = "/O3DE/Runtime/Application/LifecycleEvents";
+    inline constexpr AZStd::string_view ApplicationLifecycleEventRegistrationKey = "/O3DE/Application/LifecycleEvents";
 
 
     //! Validates that the event @eventName is stored in the array at ApplicationLifecycleEventRegistrationKey
