@@ -73,8 +73,6 @@ namespace AZ
             Scene* GetScene(const SceneId& sceneId) const override;
             Scene* GetSceneByName(const AZ::Name& name) const override;
             ScenePtr GetDefaultScene() const override;
-            Scene* GetMainScene() const override;
-            void SetMainScene(ScenePtr scene) override;
             RenderPipelinePtr GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle) override;
             Data::Asset<ShaderAsset> GetCommonShaderAssetForSrgs() const override;
             RHI::Ptr<RHI::ShaderResourceGroupLayout> GetSceneSrgLayout() const override;
@@ -119,7 +117,6 @@ namespace AZ
             ViewportContextManager m_viewportContextManager;
 
             AZStd::vector<ScenePtr> m_scenes;
-            ScenePtr m_mainScene = nullptr;
 
             // The job policy used for feature processor's simulation
             RHI::JobPolicy m_simulationJobPolicy = RHI::JobPolicy::Parallel;

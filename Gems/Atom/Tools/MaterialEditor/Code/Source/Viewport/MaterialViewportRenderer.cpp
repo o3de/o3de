@@ -102,9 +102,6 @@ namespace MaterialEditor
 
         AZ::RPI::RPISystemInterface::Get()->RegisterScene(m_scene);
 
-        // Set it as main scene since it was created for AzFramework::Scene::MainSceneName
-        AZ::RPI::RPISystemInterface::Get()->SetMainScene(m_scene);
-
         AzFramework::EntityContextId entityContextId;
         AzFramework::GameEntityContextRequestBus::BroadcastResult(entityContextId, &AzFramework::GameEntityContextRequestBus::Events::GetGameEntityContextId);
 

@@ -13,6 +13,7 @@
 
 #include <Atom/RPI.Public/Base.h>
 
+#include <AzCore/Name/Name.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
 namespace AZ
@@ -46,17 +47,9 @@ namespace AZ
             //! Unregister a scene from RPISystem. The scene won't be simulated or rendered.
             virtual void UnregisterScene(ScenePtr scene) = 0;
 
-            //! Deprecated. Use GetMainScene instead
-            AZ_DEPRECATED(virtual ScenePtr GetDefaultScene() const = 0;, "This method has been deprecated. Please use GetMainScene() instead.");
+            //! Deprecated. Use GetSceneByName(name), GetSceneForEntityContextId(entityContextId) or Scene::GetSceneForEntityId(AZ::EntityId entityId) instead
+            AZ_DEPRECATED(virtual ScenePtr GetDefaultScene() const = 0;, "This method has been deprecated. Please use GetSceneByName(name), GetSceneForEntityContextId(entityContextId) or Scene::GetSceneForEntityId(AZ::EntityId entityId) instead.");
             
-            //! Get the main scene set via SetMainScene. It may return nullptr if the main scene wasn't set.
-            //! For most use cases, consider to use Scene::GetSceneForEntityId(entityId) or Scene::GetSceneForEntityContextId(entityContextId)
-            virtual Scene* GetMainScene() const = 0;
-
-            //! Set a scene as the main scene. The scene must be registered.
-            //! Using ScenePtr as input because this function is intended to be called by the owner
-            virtual void SetMainScene(ScenePtr scene) = 0;
-
             //! Get scene by using scene id.
             virtual Scene* GetScene(const SceneId& sceneId) const = 0;
 

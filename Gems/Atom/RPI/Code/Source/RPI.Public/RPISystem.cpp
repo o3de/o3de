@@ -176,10 +176,6 @@ namespace AZ
                 if (*itr == scene)
                 {
                     m_scenes.erase(itr);
-                    if (m_mainScene == scene)
-                    {
-                        m_mainScene = nullptr;
-                    }
                     return;
                 }
             }
@@ -212,29 +208,8 @@ namespace AZ
         
         ScenePtr RPISystem::GetDefaultScene() const
         {
-            return m_mainScene;
-        }
-
-        Scene* RPISystem::GetMainScene() const
-        {
-            return m_mainScene.get();
-        }
-
-        void RPISystem::SetMainScene(ScenePtr scene)
-        {
-            // Validate the scene was registered
-            // scene = nullptr is acceptted
-            if (scene)
-            {
-                if (AZStd::find(m_scenes.begin(), m_scenes.end(), scene) == m_scenes.end())
-                {
-                    AZ_Assert(false, "SetDefaultScene only can set a registered scene");
-                    return;
-                }
-            }
-
-            m_mainScene = scene;
-        }
+            return m_scenes[0];
+        }      
 
         RenderPipelinePtr RPISystem::GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle)
         {
