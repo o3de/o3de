@@ -187,6 +187,8 @@ namespace AZ
         azsnprintf(message, g_maxMessageLength, "Exception : 0x%lX - '%s' [%p]\n", ExceptionInfo->ExceptionRecord->ExceptionCode, GetExeptionName(ExceptionInfo->ExceptionRecord->ExceptionCode), ExceptionInfo->ExceptionRecord->ExceptionAddress);
         Debug::Trace::Instance().Output(nullptr, message);
 
+        Debug::Trace::Instance().PrintCallstack(nullptr, 0, ExceptionInfo->ContextRecord);
+
         EBUS_EVENT(Debug::TraceMessageDrillerBus, OnException, message);
 
         bool result = false;
@@ -198,7 +200,7 @@ namespace AZ
             // if someone ever returns TRUE we assume that they somehow handled this exception and continue.
             return EXCEPTION_CONTINUE_EXECUTION;
         }
-        Debug::Trace::Instance().PrintCallstack(nullptr, 0, ExceptionInfo->ContextRecord);
+        
         Debug::Trace::Instance().Output(nullptr, "==================================================================\n");
 
         // allowing continue of execution is not valid here.  This handler gets called for serious exceptions.
