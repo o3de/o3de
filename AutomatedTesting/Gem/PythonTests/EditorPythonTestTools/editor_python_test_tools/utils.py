@@ -16,6 +16,8 @@ import azlmbr
 import azlmbr.legacy.general as general
 import azlmbr.multiplayer as multiplayer
 import azlmbr.debug
+import ly_test_tools.environment.waiter as waiter
+import ly_test_tools.environment.process_utils as process_utils
 
 
 class FailFast(Exception):
@@ -103,15 +105,18 @@ class TestHelper:
             multiplayer.PythonEditorFuncs_enter_game_mode()
 
             # make sure the server launcher binary exists
-            wait_for_critical_unexpected_line("LaunchEditorServer failed! The ServerLauncher binary is missing!", section_tracer.errors, 1.0)
+            wait_for_critical_unexpected_line("LaunchEditorServer failed! The ServerLauncher binary is missing!", section_tracer.errors, 0.5)
+
+            # make sure the server launcher is running
+            waiter.wait_for(lambda: process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True), timeout=5.0, exc=AssertionError("AutomatedTesting.ServerLauncher has NOT launched!"), interval=1.0)
 
             # make sure the editor connects to the editor-server and sends the level data packet
-            wait_for_critical_expected_line("Editor is sending the editor-server the level data packet.", section_tracer.prints, 30.0)
+            wait_for_critical_expected_line("Editor is sending the editor-server the level data packet.", section_tracer.prints, 5.0)
 
             # make sure the editor finally connects to the editor-server network simulation
-            wait_for_critical_expected_line("Editor-server ready. Editor has successfully connected to the editor-server's network simulation.", section_tracer.prints, 30.0)
+            wait_for_critical_expected_line("Editor-server ready. Editor has successfully connected to the editor-server's network simulation.", section_tracer.prints, 5.0)
 
-        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 10.0)
+        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 5.0)
         Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())
 
     @staticmethod
