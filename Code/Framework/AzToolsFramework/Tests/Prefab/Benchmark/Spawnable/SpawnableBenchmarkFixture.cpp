@@ -45,7 +45,7 @@ namespace Benchmark
         BM_Prefab::TearDown(state);
     }
 
-    void BM_Spawnable::CreateSpawnable(unsigned int entityCount)
+    void BM_Spawnable::SetUpSpawnableAsset(unsigned int entityCount)
     {
         AZStd::vector<AZ::Entity*> entities;
         entities.reserve(entityCount);

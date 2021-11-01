@@ -17,16 +17,18 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_SpawnAllEntities, SingleEntitySpawnable_SpawnCallVariable)(::benchmark::State& state)
     {
-        const unsigned int spawnAllEntitiesCallCount = static_cast<unsigned int>(state.range());
-        const unsigned int entityCountInSourcePrefab = 1;
+        const uint64_t spawnAllEntitiesCallCount = aznumeric_cast<uint64_t>(state.range());
+        const uint64_t entityCountInSourcePrefab = 1;
 
-        CreateSpawnable(entityCountInSourcePrefab);
+        SetUpSpawnableAsset(entityCountInSourcePrefab);
 
         for (auto _ : state)
         {
+            state.PauseTiming();
             m_spawnTicket = new AzFramework::EntitySpawnTicket(m_spawnableAsset);
+            state.ResumeTiming();
 
-            for (unsigned int spwanableCounter = 0; spwanableCounter < spawnAllEntitiesCallCount; spwanableCounter++)
+            for (uint64_t spwanableCounter = 0; spwanableCounter < spawnAllEntitiesCallCount; spwanableCounter++)
             {
                 AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(*m_spawnTicket);
             }
@@ -53,13 +55,16 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_SpawnAllEntities, SingleSpawnCall_EntityCountVariable)(::benchmark::State& state)
     {
-        const unsigned int entityCountInSpawnable = static_cast<unsigned int>(state.range());
+        const uint64_t entityCountInSpawnable = aznumeric_cast<uint64_t>(state.range());
 
-        CreateSpawnable(entityCountInSpawnable);
+        SetUpSpawnableAsset(entityCountInSpawnable);
 
         for (auto _ : state)
         {
+            state.PauseTiming();
             m_spawnTicket = new AzFramework::EntitySpawnTicket(m_spawnableAsset);
+            state.ResumeTiming();
+
             AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(*m_spawnTicket);
             m_rootSpawnableInterface->ProcessSpawnableQueue();
 
@@ -83,16 +88,18 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_SpawnAllEntities, EntityCountVariable_SpawnCallCountVariable)(::benchmark::State& state)
     {
-        const unsigned int entityCountInSpawnable = static_cast<unsigned int>(state.range(0));
-        const unsigned int spawnCallCount = static_cast<unsigned int>(state.range(1));
+        const uint64_t entityCountInSpawnable = aznumeric_cast<uint64_t>(state.range(0));
+        const uint64_t spawnCallCount = aznumeric_cast<uint64_t>(state.range(1));
 
-        CreateSpawnable(entityCountInSpawnable);
+        SetUpSpawnableAsset(entityCountInSpawnable);
 
         for (auto _ : state)
         {
+            state.PauseTiming();
             m_spawnTicket = new AzFramework::EntitySpawnTicket(m_spawnableAsset);
+            state.ResumeTiming();
 
-            for (unsigned int spawnCallCounter = 0; spawnCallCounter < spawnCallCount; spawnCallCounter++)
+            for (uint64_t spawnCallCounter = 0; spawnCallCounter < spawnCallCount; spawnCallCounter++)
             {
                 AzFramework::SpawnableEntitiesInterface::Get()->SpawnAllEntities(*m_spawnTicket);
             }

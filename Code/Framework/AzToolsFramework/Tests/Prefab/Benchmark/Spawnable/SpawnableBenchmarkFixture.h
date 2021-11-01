@@ -33,7 +33,7 @@ namespace Benchmark
         void TearDown(benchmark::State& state) override;
         void TearDownHelper(const benchmark::State& state);
 
-        void CreateSpawnable(unsigned int entityCount);
+        void SetUpSpawnableAsset(unsigned int entityCount);
 
         AZ::Data::Asset<AzFramework::Spawnable> m_spawnableAsset;
         AzFramework::EntitySpawnTicket* m_spawnTicket;
