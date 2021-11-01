@@ -157,9 +157,9 @@ namespace AZ
 
         void AtomBridgeSystemComponent::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
         {
-            AZ_UNUSED(bootstrapScene);
             // Make default AtomDebugDisplayViewportInterface
-            AZStd::shared_ptr<AtomDebugDisplayViewportInterface> mainEntityDebugDisplay = AZStd::make_shared<AtomDebugDisplayViewportInterface>(AzFramework::g_defaultSceneEntityDebugDisplayId, bootstrapScene);
+            AZStd::shared_ptr<AtomDebugDisplayViewportInterface> mainEntityDebugDisplay =
+                AZStd::make_shared<AtomDebugDisplayViewportInterface>(AzFramework::g_defaultSceneEntityDebugDisplayId, bootstrapScene);
             m_activeViewportsList[AzFramework::g_defaultSceneEntityDebugDisplayId] = mainEntityDebugDisplay;
         }
 
