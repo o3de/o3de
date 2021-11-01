@@ -208,8 +208,15 @@ namespace AZ
         
         ScenePtr RPISystem::GetDefaultScene() const
         {
-            return m_scenes[0];
-        }      
+            for (const auto& scene : m_scenes)
+            {
+                if (scene->GetName() == AZ::Name("Main"))
+                {
+                    return scene;
+                }
+            }
+            return nullptr;
+        }
 
         RenderPipelinePtr RPISystem::GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle)
         {
