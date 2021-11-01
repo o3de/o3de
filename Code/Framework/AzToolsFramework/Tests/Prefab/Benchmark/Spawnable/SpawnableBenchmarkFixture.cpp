@@ -45,12 +45,12 @@ namespace Benchmark
         BM_Prefab::TearDown(state);
     }
 
-    void BM_Spawnable::SetUpSpawnableAsset(unsigned int entityCount)
+    void BM_Spawnable::SetUpSpawnableAsset(uint64_t entityCount)
     {
         AZStd::vector<AZ::Entity*> entities;
         entities.reserve(entityCount);
 
-        for (unsigned int i = 0; i < entityCount; i++)
+        for (uint64_t i = 0; i < entityCount; i++)
         {
             entities.emplace_back(CreateEntity("Entity"));
         }
