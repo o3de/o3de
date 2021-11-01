@@ -195,8 +195,11 @@ class AssetProcessor(object):
                     logger.debug("Failed to read port from file", exc_info=ex)
             return False
 
+        # the timeout needs to be large enough to load all the dynamic libraries the AP-GUI loads since the control port
+        # is opened after all the DLL loads, this can take a long time in a Debug build
+        ap_max_activate_time = 60
         err = AssetProcessorError(f"Failed to read port type {port_type} from {self._workspace.paths.ap_gui_log()}")
-        waiter.wait_for(_get_port_from_log, timeout=10, exc=err)
+        waiter.wait_for(_get_port_from_log, timeout=ap_max_activate_time, exc=err)
         return port
 
     def set_control_connection(self, connection):
