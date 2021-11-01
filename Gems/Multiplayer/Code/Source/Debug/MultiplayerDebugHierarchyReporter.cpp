@@ -74,7 +74,7 @@ namespace Multiplayer
                         {
                             ImGui::Text("%s", entity->GetId().ToString().c_str());
                             ImGui::NextColumn();
-                            ImGui::Text("%u", GetMultiplayer()->GetNetworkEntityManager()->GetNetEntityIdById(entity->GetId()));
+                            ImGui::Text("%llu", static_cast<AZ::u64>(GetMultiplayer()->GetNetworkEntityManager()->GetNetEntityIdById(entity->GetId())));
                             ImGui::NextColumn();
                             ImGui::Text("%s", entity->GetName().c_str());
                             ImGui::NextColumn();

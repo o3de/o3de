@@ -39,10 +39,10 @@ file(GENERATE
 # This needs to be done here because it needs to update the install prefix 
 # before cmake does anything else in the install process.
 configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/PreInstallSteps_mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/PreInstallSteps_mac.cmake @ONLY)
-install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/PreInstallSteps_mac.cmake COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
+ly_install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/PreInstallSteps_mac.cmake COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
 
-#! ly_install_target_override: Mac specific target installation
-function(ly_install_target_override)
+#! ly_setup_target_install_targets_override: Mac specific target installation
+function(ly_setup_target_install_targets_override)
 
     set(options)
     set(oneValueArgs TARGET ARCHIVE_DIR LIBRARY_DIR RUNTIME_DIR LIBRARY_SUBDIR RUNTIME_SUBDIR)
@@ -58,24 +58,31 @@ function(ly_install_target_override)
         set_property(TARGET ${ly_platform_install_target_TARGET} PROPERTY RESOURCE "")
     endif()
     
-    install(
-        TARGETS ${ly_platform_install_target_TARGET}
-        ARCHIVE
-            DESTINATION ${ly_platform_install_target_ARCHIVE_DIR}
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-        LIBRARY
-            DESTINATION ${ly_platform_install_target_LIBRARY_DIR}/${ly_platform_install_target_LIBRARY_SUBDIR}
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-        RUNTIME
-            DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-        BUNDLE
-            DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-        RESOURCE
-            DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-    )
+    foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+        string(TOUPPER ${conf} UCONF)
+        ly_install(TARGETS ${TARGET_NAME}
+            ARCHIVE
+                DESTINATION ${ly_platform_install_target_ARCHIVE_DIR}
+                COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+                CONFIGURATIONS ${conf}
+            LIBRARY
+                DESTINATION ${ly_platform_install_target_LIBRARY_DIR}/${ly_platform_install_target_LIBRARY_SUBDIR}
+                COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+                CONFIGURATIONS ${conf}
+            RUNTIME
+                DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}
+                COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+                CONFIGURATIONS ${conf}
+            BUNDLE
+                DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}
+                COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+                CONFIGURATIONS ${conf}
+            RESOURCE
+                DESTINATION ${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}
+                COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+                CONFIGURATIONS ${conf}
+        )
+    endforeach()
 
     set(install_relative_binaries_path "${ly_platform_install_target_RUNTIME_DIR}/${ly_platform_install_target_RUNTIME_SUBDIR}")
 
@@ -102,8 +109,8 @@ function(ly_install_target_override)
     endif()
 endfunction()
 
-#! ly_install_code_function_override: Mac specific copy function to handle frameworks
-function(ly_install_code_function_override)
+#! ly_setup_runtime_dependencies_copy_function_override: Mac specific copy function to handle frameworks
+function(ly_setup_runtime_dependencies_copy_function_override)
 
     configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/InstallUtils_mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/InstallUtils_mac.cmake @ONLY)
     ly_install_run_script(${CMAKE_BINARY_DIR}/runtime_install/InstallUtils_mac.cmake)

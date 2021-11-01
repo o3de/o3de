@@ -194,6 +194,9 @@ namespace AZ
                           AZ::RPI::AssetUtils::GetAssetIdForProductPath(DefaultLightingPresetPath), propertyOverrides),
                       [entityId, materialAssignmentId]()
                       {
+                          AZ_UNUSED(entityId);
+                          AZ_UNUSED(materialAssignmentId);
+
                           AZ_Warning(
                               "EditorMaterialSystemComponent", false, "RenderMaterialPreview capture failed for entity %s slot %s.",
                               entityId.ToString().c_str(), materialAssignmentId.ToString().c_str());

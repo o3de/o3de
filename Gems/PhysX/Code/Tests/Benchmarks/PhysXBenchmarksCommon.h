@@ -61,7 +61,6 @@ namespace PhysX::Benchmarks
 
         AzPhysics::Scene* m_defaultScene = nullptr;
         AzPhysics::SceneHandle m_testSceneHandle = AzPhysics::InvalidSceneHandle;
-        AZ::ComponentDescriptor* m_dummyTerrainComponentDescriptor = nullptr;
     };
 } // namespace PhysX::Benchmarks
 #endif //HAVE_BENCHMARK

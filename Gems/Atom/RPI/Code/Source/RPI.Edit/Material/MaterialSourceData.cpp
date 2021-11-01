@@ -72,6 +72,59 @@ namespace AZ
                 materialAssetCreator.SetPropertyValue(propertyId, entry.second);
             }
         }
+        
+        MaterialSourceData::ApplyVersionUpdatesResult MaterialSourceData::ApplyVersionUpdates(AZStd::string_view materialSourceFilePath)
+        {
+            AZStd::string materialTypeFullPath = AssetUtils::ResolvePathReference(materialSourceFilePath, m_materialType);
+            auto materialTypeSourceDataOutcome = MaterialUtils::LoadMaterialTypeSourceData(materialTypeFullPath);
+            if (!materialTypeSourceDataOutcome.IsSuccess())
+            {
+                return ApplyVersionUpdatesResult::Failed;
+            }
+            
+            MaterialTypeSourceData materialTypeSourceData = materialTypeSourceDataOutcome.TakeValue();
+
+            if (m_materialTypeVersion == materialTypeSourceData.m_version)
+            {
+                return ApplyVersionUpdatesResult::NoUpdates;
+            }
+
+            bool changesWereApplied = false;
+
+            // Note that the only kind of property update currently supported is rename...
+
+            PropertyGroupMap newPropertyGroups;
+            for (auto& groupPair : m_properties)
+            {
+                PropertyMap& propertyMap = groupPair.second;
+
+                for (auto& propertyPair : propertyMap)
+                {
+                    MaterialPropertyId propertyId{groupPair.first, propertyPair.first};
+
+                    if (materialTypeSourceData.ApplyPropertyRenames(propertyId, m_materialTypeVersion))
+                    {
+                        changesWereApplied = true;
+                    }
+                    
+                    newPropertyGroups[propertyId.GetGroupName().GetStringView()][propertyId.GetPropertyName().GetStringView()] = propertyPair.second;
+                }
+            }
+
+            if (changesWereApplied)
+            {
+                m_properties = AZStd::move(newPropertyGroups);
+
+                AZ_Warning("MaterialSourceData", false,
+                    "This material is based on version '%u' of '%s', but the material type is now at version '%u'. "
+                    "Automatic updates are available. Consider updating the .material source file.",
+                    m_materialTypeVersion, m_materialType.c_str(), materialTypeSourceData.m_version);
+            }
+
+            m_materialTypeVersion = materialTypeSourceData.m_version;
+            
+            return changesWereApplied ? ApplyVersionUpdatesResult::UpdatesApplied : ApplyVersionUpdatesResult::NoUpdates;
+        }
 
         Outcome<Data::Asset<MaterialAsset> > MaterialSourceData::CreateMaterialAsset(Data::AssetId assetId, AZStd::string_view materialSourceFilePath, bool elevateWarnings, bool includeMaterialPropertyNames) const
         {

@@ -18,6 +18,7 @@
 #include <Components/TerrainLayerSpawnerComponent.h>
 #include <Components/TerrainSurfaceGradientListComponent.h>
 #include <Components/TerrainSurfaceDataSystemComponent.h>
+#include <Components/TerrainPhysicsColliderComponent.h>
 #include <TerrainRenderer/Components/TerrainSurfaceMaterialsListComponent.h>
 #include <TerrainRenderer/Components/TerrainMacroMaterialComponent.h>
 
@@ -37,6 +38,7 @@ namespace Terrain
                 TerrainMacroMaterialComponent::CreateDescriptor(),
                 TerrainSurfaceGradientListComponent::CreateDescriptor(),
                 TerrainSurfaceDataSystemComponent::CreateDescriptor(),
+                TerrainPhysicsColliderComponent::CreateDescriptor()
             });
     }
 

@@ -39,7 +39,8 @@ namespace AZ
                     ->Field("ShadowFilterMethod", &DirectionalLightComponentConfig::m_shadowFilterMethod)
                     ->Field("PcfFilteringSampleCount", &DirectionalLightComponentConfig::m_filteringSampleCount)
                     ->Field("ShadowReceiverPlaneBiasEnabled", &DirectionalLightComponentConfig::m_receiverPlaneBiasEnabled)
-                    ->Field("Shadow Bias", &DirectionalLightComponentConfig::m_shadowBias);
+                    ->Field("Shadow Bias", &DirectionalLightComponentConfig::m_shadowBias)
+                    ->Field("Normal Shadow Bias", &DirectionalLightComponentConfig::m_normalShadowBias);
             }
         }
 
