@@ -28,6 +28,10 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 // Folder in which levels are stored
 static const char kNewLevelDialog_LevelsFolder[] = "Levels";
+<<<<<<< HEAD
+=======
+
+>>>>>>> fb6462d14e ([TicketNo:] DTS2021102212499 [Description:] 回合输入关卡名时超过259个字符时后面无法输入，而不是跳转报错问题（2107版本仅验证文件名，固定文件名长度小于100，GameEngine development版本验证整个文件目录长度，动态显示新建文件长度） [Binary Source:]NA)
 
 class LevelFolderValidator : public QValidator
 {
@@ -210,7 +214,30 @@ void CNewLevelDialog::OnLevelNameChange()
     UpdateData(true);
 
     // QRegExpValidator means the string will always be valid as long as it's not empty:
+<<<<<<< HEAD
     const bool valid = !m_level.isEmpty() && ValidateLevel();
+=======
+    bool valid = !m_level.isEmpty() && ValidateLevel();
+    if (valid)
+    {
+        QString strLevelPath = m_levelFolders + "/" + m_level + "/" + m_level + EditorUtils::LevelFile::GetDefaultFileExtension();
+        int levelMaxLength = (_MAX_PATH - m_levelFolders.length() - QString(EditorUtils::LevelFile::GetDefaultFileExtension()).length() - 2) / 2;
+        if (strLevelPath.length() >= _MAX_PATH)
+        {
+            valid = false;
+            if (!ui->nameErrorTips->isVisible())
+            {
+                ui->nameErrorTips->setVisible(true);
+            }
+            ui->nameErrorTips->setText(QObject::tr("The level name is too long, the maximum is '%1'.").arg(levelMaxLength));
+        }
+        else if (ui->nameErrorTips->isVisible())
+        {
+            ui->nameErrorTips->setVisible(false);
+        }
+    }
+>>>>>>> fb6462d14e ([TicketNo:] DTS2021102212499 [Description:] 回合输入关卡名时超过259个字符时后面无法输入，而不是跳转报错问题（2107版本仅验证文件名，固定文件名长度小于100，GameEngine development版本验证整个文件目录长度，动态显示新建文件长度） [Binary Source:]NA)
+
 
     // Use the validity to dynamically change the Ok button's enabled state
     if (QPushButton* button = ui->buttonBox->button(QDialogButtonBox::Ok))
