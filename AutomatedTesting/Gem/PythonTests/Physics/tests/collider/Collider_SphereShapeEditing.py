@@ -4,8 +4,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Test case ID : C4982801
-Test Case Title : Verify that the shape Box can be selected from drop downlist and the value for its dimensions in x,y,z can be set after that
+Test case ID : C4982800
+Test Case Title : Verify that the shape Sphere can be selected from the drop downlist and the value for its radius can be set
 
 """
 
@@ -19,13 +19,13 @@ class Tests():
 # fmt: on
 
 
-def Collider_BoxShapeEditting():
+def Collider_SphereShapeEditing():
     """
     Summary:
      Adding PhysX Collider and Shape components to test entity, then attempting to modify the shape's dimensions
 
     Expected Behavior:
-     Box shape can be selected for the Shape Component and the value for X, Y, and Z dimensions can be changed
+     Sphere shape can be selected for the Shape Component and the value for Radius can be changed
 
     Test Steps:
      1) Load the empty level
@@ -51,25 +51,9 @@ def Collider_BoxShapeEditting():
     # Open 3D Engine Imports
     import azlmbr.math as math
 
-    BOX_SHAPETYPE_ENUM = 1
-    SET_SIZE = 2.5
-    SIZE_TOLERANCE = 0.5
-
-    def check_dimensions_changed(set_dimension_value, modified_dimensions, tolerance):
-        def compare_values(value_name, set_value, grabbed_value, tolerance):
-            within_tolerance = math.Math_IsClose(set_value, grabbed_value, tolerance)
-            if not within_tolerance:
-                assert (
-                    False
-                ), f"The modified value for {value_name} was not within the allowed tolerance\nExpected:{set_value}\nActual: {grabbed_value}"
-            return within_tolerance
-
-        # Check for X, Y, & Z values
-        x_value = compare_values("x_value", set_dimension_value, modified_dimensions.x, tolerance)
-        y_value = compare_values("y_value", set_dimension_value, modified_dimensions.y, tolerance)
-        z_value = compare_values("z_value", set_dimension_value, modified_dimensions.z, tolerance)
-
-        return x_value and y_value and z_value
+    SPHERE_SHAPETYPE_ENUM = 0
+    DIMENSION_TO_SET = 2.5
+    DIMENSION_SIZE_TOLERANCE = 0.5
 
     helper.init_idle()
     # 1) Load the empty level
@@ -84,22 +68,26 @@ def Collider_BoxShapeEditting():
     Report.result(Tests.collider_added, test_entity.has_component("PhysX Collider"))
 
     # 4) Change the PhysX Collider shape and store the original dimensions
-    test_component.set_component_property_value("Shape Configuration|Shape", BOX_SHAPETYPE_ENUM)
-    add_check = test_component.get_component_property_value("Shape Configuration|Shape") == BOX_SHAPETYPE_ENUM
+    test_component.set_component_property_value("Shape Configuration|Shape", SPHERE_SHAPETYPE_ENUM)
+    add_check = test_component.get_component_property_value("Shape Configuration|Shape") == SPHERE_SHAPETYPE_ENUM
     Report.result(Tests.collider_shape_changed, add_check)
 
     # 5) Modify the dimensions
-    Report.info(f"Attempting to set XYZ values to {SET_SIZE}")
-    test_component.set_component_property_value(
-        "Shape Configuration|Box|Dimensions", math.Vector3(SET_SIZE, SET_SIZE, SET_SIZE)
-    )
-    mod_dimensions = test_component.get_component_property_value("Shape Configuration|Box|Dimensions")
+    test_component.set_component_property_value("Shape Configuration|Sphere|Radius", DIMENSION_TO_SET)
 
     # 6) Verify they have been changed
-    dimensions_successfully_changed = check_dimensions_changed(SET_SIZE, mod_dimensions, SIZE_TOLERANCE)
-    Report.result(Tests.shape_dimensions_changed, dimensions_successfully_changed)
+    modified_dimensions = test_component.get_component_property_value("Shape Configuration|Sphere|Radius")
+
+    dimensions_successfully_modified = math.Math_IsClose(
+        DIMENSION_TO_SET, modified_dimensions, DIMENSION_SIZE_TOLERANCE
+    )
+    if not dimensions_successfully_modified:
+        assert (
+            False
+        ), f"The modified value was not within the allowed tolerance\nExpected:{DIMENSION_TO_SET}\nActual: {modified_dimensions}"
+    Report.result(Tests.shape_dimensions_changed, dimensions_successfully_modified)
 
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(Collider_BoxShapeEditting)
+    Report.start_test(Collider_SphereShapeEditing)

@@ -4,8 +4,8 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-Test case ID : C4982800
-Test Case Title : Verify that the shape Sphere can be selected from the drop downlist and the value for its radius can be set
+Test case ID : C4982802
+Test Case Title : Verify that the shape capsule can be selected from drop downlist and the value for its height and radius can be set after that
 
 """
 
@@ -19,19 +19,19 @@ class Tests():
 # fmt: on
 
 
-def Collider_SphereShapeEditting():
+def Collider_CapsuleShapeEditing():
     """
     Summary:
      Adding PhysX Collider and Shape components to test entity, then attempting to modify the shape's dimensions
 
     Expected Behavior:
-     Sphere shape can be selected for the Shape Component and the value for Radius can be changed
+     Capsule shape can be selected for the Shape Component and the value for Height and Radius can be changed
 
     Test Steps:
      1) Load the empty level
      2) Create the test entity
      3) Add PhysX Collider component to test entity
-     4) Change the PhysX Collider shape and store the original dimensions
+     4) Change the PhysX Collider shape
      5) Modify the dimensions
      6) Verify they have been changed
 
@@ -51,9 +51,26 @@ def Collider_SphereShapeEditting():
     # Open 3D Engine Imports
     import azlmbr.math as math
 
-    SPHERE_SHAPETYPE_ENUM = 0
-    DIMENSION_TO_SET = 2.5
-    DIMENSION_SIZE_TOLERANCE = 0.5
+    CAPSULE_SHAPETYPE_ENUM = 2
+    # Note from Editor Console: Height must exceed twice the radius in capsule configuration
+    SIZE_RADIUS = 4.0
+    SIZE_HEIGHT = SIZE_RADIUS * 2 + 1.0
+    SIZE_TOLERANCE = 0.5
+
+    def change_dimension_value(component, component_property_path, value):
+        Report.info(f"Attempting to set value for {component_property_path} to {value}")
+        component.set_component_property_value(component_property_path, value)
+        returning_value = component.get_component_property_value(component_property_path)
+        Report.info(f"Value for {component_property_path} is currently {returning_value}")
+        return returning_value
+
+    def check_dimension_change(value_name, value_set, grabbed_value, tolerance):
+        within_tolerance = math.Math_IsClose(value_set, grabbed_value, tolerance)
+        if not within_tolerance:
+            assert (
+                False
+            ), f"The modified value for {value_name} was not within the allowed tolerance\nExpected:{value_set}\nActual: {grabbed_value}"
+        return within_tolerance
 
     helper.init_idle()
     # 1) Load the empty level
@@ -67,27 +84,22 @@ def Collider_SphereShapeEditting():
     test_component = test_entity.add_component("PhysX Collider")
     Report.result(Tests.collider_added, test_entity.has_component("PhysX Collider"))
 
-    # 4) Change the PhysX Collider shape and store the original dimensions
-    test_component.set_component_property_value("Shape Configuration|Shape", SPHERE_SHAPETYPE_ENUM)
-    add_check = test_component.get_component_property_value("Shape Configuration|Shape") == SPHERE_SHAPETYPE_ENUM
+    # 4) Change the PhysX Collider shape
+    test_component.set_component_property_value("Shape Configuration|Shape", CAPSULE_SHAPETYPE_ENUM)
+    add_check = test_component.get_component_property_value("Shape Configuration|Shape") == CAPSULE_SHAPETYPE_ENUM
     Report.result(Tests.collider_shape_changed, add_check)
 
     # 5) Modify the dimensions
-    test_component.set_component_property_value("Shape Configuration|Sphere|Radius", DIMENSION_TO_SET)
+    mod_height = change_dimension_value(test_component, "Shape Configuration|Capsule|Height", SIZE_HEIGHT)
+    mod_radius = change_dimension_value(test_component, "Shape Configuration|Capsule|Radius", SIZE_RADIUS)
 
     # 6) Verify they have been changed
-    modified_dimensions = test_component.get_component_property_value("Shape Configuration|Sphere|Radius")
-
-    dimensions_successfully_modified = math.Math_IsClose(
-        DIMENSION_TO_SET, modified_dimensions, DIMENSION_SIZE_TOLERANCE
-    )
-    if not dimensions_successfully_modified:
-        assert (
-            False
-        ), f"The modified value was not within the allowed tolerance\nExpected:{DIMENSION_TO_SET}\nActual: {modified_dimensions}"
-    Report.result(Tests.shape_dimensions_changed, dimensions_successfully_modified)
+    resulting_check = check_dimension_change(
+        "Height", SIZE_HEIGHT, mod_height, SIZE_TOLERANCE
+    ) and check_dimension_change("Radius", SIZE_RADIUS, mod_radius, SIZE_TOLERANCE)
+    Report.result(Tests.shape_dimensions_changed, resulting_check)
 
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(Collider_SphereShapeEditting)
+    Report.start_test(Collider_CapsuleShapeEditing)

@@ -67,13 +67,13 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
         return 16
 
     class C4982801_PhysXColliderShape_CanBeSelected(EditorSharedTest):
-        from .tests.collider import Collider_BoxShapeEditting as test_module
+        from .tests.collider import Collider_BoxShapeEditing as test_module
 
     class C4982800_PhysXColliderShape_CanBeSelected(EditorSharedTest):
-        from .tests.collider import Collider_SphereShapeEditting as test_module
+        from .tests.collider import Collider_SphereShapeEditing as test_module
 
     class C4982802_PhysXColliderShape_CanBeSelected(EditorSharedTest):
-        from .tests.collider import Collider_CapsuleShapeEditting as test_module
+        from .tests.collider import Collider_CapsuleShapeEditing as test_module
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
