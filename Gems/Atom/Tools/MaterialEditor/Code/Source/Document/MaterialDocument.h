@@ -111,9 +111,7 @@ namespace MaterialEditor
         //////////////////////////////////////////////////////////////////////////
 
         bool SavePropertiesToSourceData(
-            const AZ::IO::BasicPath<AZStd::string>& exportFolder,
-            AZ::RPI::MaterialSourceData& sourceData,
-            PropertyFilterFunction propertyFilter) const;
+            const AZStd::string& exportPath, AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const;
 
         bool OpenInternal(AZStd::string_view loadPath);
 
