@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
