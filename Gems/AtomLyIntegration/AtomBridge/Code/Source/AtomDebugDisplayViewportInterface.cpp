@@ -256,12 +256,11 @@ namespace AZ::AtomBridge
         viewportContextPtr->ConnectSceneChangedHandler(m_sceneChangeHandler);
     }
 
-    AtomDebugDisplayViewportInterface::AtomDebugDisplayViewportInterface(uint32_t defaultInstanceAddress)
+    AtomDebugDisplayViewportInterface::AtomDebugDisplayViewportInterface(uint32_t defaultInstanceAddress, RPI::Scene* scene)
     {
         ResetRenderState();
         m_viewportId = defaultInstanceAddress;
         m_defaultInstance = true;
-        RPI::Scene* scene = RPI::RPISystemInterface::Get()->GetDefaultScene().get();
         InitInternal(scene, nullptr);
     }
 
