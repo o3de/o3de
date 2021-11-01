@@ -201,7 +201,7 @@ namespace AZ
             void RebuildPipelineStatesLookup();
 
             // Helper function to wait for end of TaskGraph and then delete the TaskGraphEvent
-            void WaitAndCleanTGEvent(AZ::TaskGraphEvent*& completionTGEvent);
+            void WaitAndCleanTGEvent(AZStd::unique_ptr<AZ::TaskGraphEvent>&& completionTGEvent);
 
             // Helper function for wait and clean up a completion job
             void WaitAndCleanCompletionJob(AZ::JobCompletion*& completionJob);
@@ -230,7 +230,7 @@ namespace AZ
             AZStd::vector<RenderPipelinePtr> m_pipelines;
 
             // CPU simulation TaskGraphEvent to wait for completion of all the simulation tasks
-            AZ::TaskGraphEvent* m_simulationFinishedTGEvent = nullptr;
+            AZStd::unique_ptr<AZ::TaskGraphEvent> m_simulationFinishedTGEvent;
 
             // CPU simulation job completion for track all feature processors' simulation jobs
             AZ::JobCompletion* m_simulationCompletion = nullptr;

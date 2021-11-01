@@ -92,7 +92,7 @@ namespace AZ
 
                         taskGraph.AddTask(
                             pngTaskDescriptor,
-                            [&, startPixel, numPixelsPerThread]()
+                            [&, startPixel]()
                             {
                                 for (int pixelOffset = 0; pixelOffset < numPixelsPerThread; ++pixelOffset)
                                 {
@@ -118,7 +118,7 @@ namespace AZ
                         int startPixel = i * numPixelsPerThread;
 
                         AZ::Job* job = AZ::CreateJobFunction(
-                            [&, startPixel, numPixelsPerThread]()
+                            [&, startPixel]()
                             {
                                 for (int pixelOffset = 0; pixelOffset < numPixelsPerThread; ++pixelOffset)
                                 {

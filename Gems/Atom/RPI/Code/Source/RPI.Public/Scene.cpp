@@ -111,7 +111,7 @@ namespace AZ
         {
             if (m_taskGraphActive)
             {
-                WaitAndCleanTGEvent(m_simulationFinishedTGEvent);
+                WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
             }
             else
             {
@@ -385,8 +385,8 @@ namespace AZ
                     });
             }
             simulationTG.Detach();
-            m_simulationFinishedTGEvent = new AZ::TaskGraphEvent;
-            simulationTG.Submit(m_simulationFinishedTGEvent);
+            m_simulationFinishedTGEvent = AZStd::make_unique<TaskGraphEvent>();
+            simulationTG.Submit(m_simulationFinishedTGEvent.get());
         }
 
         void Scene::SimulateJobs()
@@ -419,7 +419,7 @@ namespace AZ
             // If previous simulation job wasn't done, wait for it to finish.
             if (m_taskGraphActive)
             {
-                WaitAndCleanTGEvent(m_simulationFinishedTGEvent);
+                WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
             }
             else
             {
@@ -449,15 +449,14 @@ namespace AZ
             }
         }
 
-        void Scene::WaitAndCleanTGEvent(AZ::TaskGraphEvent*& completionTGEvent)
+        void Scene::WaitAndCleanTGEvent(AZStd::unique_ptr<AZ::TaskGraphEvent>&&  completionTGEvent)
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: WaitAndCleanTGEvent");
             if (completionTGEvent)
             {
                 completionTGEvent->Wait();
-                delete completionTGEvent;
-                completionTGEvent = nullptr;
             }
+            // allow completionTGEvent to go out of scope and be deleted
         }
 
         void Scene::WaitAndCleanCompletionJob(AZ::JobCompletion*& completionJob)
@@ -646,7 +645,7 @@ namespace AZ
 
             if (m_taskGraphActive)
             {
-                WaitAndCleanTGEvent(m_simulationFinishedTGEvent);
+                WaitAndCleanTGEvent(AZStd::move(m_simulationFinishedTGEvent));
             }
             else
             {

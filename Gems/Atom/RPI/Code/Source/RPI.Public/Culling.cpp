@@ -278,6 +278,24 @@ namespace AZ
             MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
 #endif
         };
+
+        static AZStd::shared_ptr<WorklistData> MakeWorklistData(
+            CullingDebugContext& debugCtx,
+            const Scene& scene,
+            View& view,
+            Frustum& frustum,
+            void* maskedOcclusionCulling)
+        {
+            AZStd::shared_ptr<WorklistData> worklistData = AZStd::make_shared<WorklistData>();
+            worklistData->m_debugCtx = &debugCtx;
+            worklistData->m_scene = &scene;
+            worklistData->m_view = &view;
+            worklistData->m_frustum = frustum;
+#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
+            worklistData->m_maskedOcclusionCulling = static_cast<MaskedOcclusionCulling*>(maskedOcclusionCulling);
+#endif
+            return worklistData;
+        }
             
         constexpr size_t WorkListCapacity = 5;
         using WorkListType = AZStd::fixed_vector<AzFramework::IVisibilityScene::NodeData, WorkListCapacity>;
@@ -485,6 +503,11 @@ namespace AZ
             for (uint32_t index = 0; index < 8; ++index)
             {
                 minDepth = AZStd::min(minDepth, corners[index].GetW());
+                if (minDepth < 0.00000001f)
+                {
+                    return CullingResult::Visible;
+                }
+
 
                 // convert to NDC
                 corners[index] /= corners[index].GetW();
@@ -493,11 +516,6 @@ namespace AZ
                 ndcMinY = AZStd::min(ndcMinY, corners[index].GetY());
                 ndcMaxX = AZStd::max(ndcMaxX, corners[index].GetX());
                 ndcMaxY = AZStd::max(ndcMaxY, corners[index].GetY());
-            }
-
-            if (minDepth < 0.00000001f)
-            {
-                return CullingResult::Visible;
             }
 
             // test against the occlusion buffer, which contains only the manually placed occlusion planes
@@ -578,7 +596,7 @@ namespace AZ
                     static uint32_t indices[6] = { 0, 1, 2, 2, 3, 0 };
 
                     // render into the occlusion buffer, specifying BACKFACE_NONE so it functions as a double-sided occluder
-                    static_cast<MaskedOcclusionCulling*>(maskedOcclusionCulling)->RenderTriangles((float*)verts, indices, 2, nullptr, MaskedOcclusionCulling::BACKFACE_NONE);
+                    static_cast<MaskedOcclusionCulling*>(maskedOcclusionCulling)->RenderTriangles(verts, indices, 2, nullptr, MaskedOcclusionCulling::BACKFACE_NONE);
                 }
             }
 #endif
@@ -596,14 +614,7 @@ namespace AZ
 
             WorkListType worklist;
 
-            AZStd::shared_ptr<WorklistData> worklistData = AZStd::make_shared<WorklistData>();
-            worklistData->m_debugCtx = &m_debugCtx;
-            worklistData->m_scene = &scene;
-            worklistData->m_view = &view;
-            worklistData->m_frustum = frustum;
-#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-            worklistData->m_maskedOcclusionCulling = static_cast<MaskedOcclusionCulling*>(maskedOcclusionCulling);
-#endif
+            AZStd::shared_ptr<WorklistData> worklistData = MakeWorklistData(m_debugCtx, scene, view, frustum, maskedOcclusionCulling);
 
             auto nodeVisitorLambda = [worklistData, &parentJob, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
             {
@@ -663,17 +674,10 @@ namespace AZ
             void* maskedOcclusionCulling = nullptr;
             ProcessCullablesCommon(scene, view, frustum, maskedOcclusionCulling);
 
-            WorkListType* worklist = new WorkListType;
+            AZStd::unique_ptr<WorkListType> worklist = AZStd::make_unique<WorkListType>();
 
-            AZStd::shared_ptr<WorklistData> worklistData = AZStd::make_shared<WorklistData>();
-            worklistData->m_debugCtx = &m_debugCtx;
-            worklistData->m_scene = &scene;
-            worklistData->m_view = &view;
-            worklistData->m_frustum = frustum;
-#if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-            worklistData->m_maskedOcclusionCulling = static_cast<MaskedOcclusionCulling*>(maskedOcclusionCulling);
-#endif
-            static AZ::TaskDescriptor descriptor{ "AZ::RPI::ProcessWorklist", "Graphics" };
+            AZStd::shared_ptr<WorklistData> worklistData = MakeWorklistData(m_debugCtx, scene, view, frustum, maskedOcclusionCulling);
+            static const AZ::TaskDescriptor descriptor{ "AZ::RPI::ProcessWorklist", "Graphics" };
 
             auto nodeVisitorLambda = [worklistData, &taskGraph, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
             {
@@ -681,19 +685,19 @@ namespace AZ
                 AZ_Assert(nodeData.m_entries.size() > 0, "should not get called with 0 entries");
                 AZ_Assert(worklist->size() < worklist->capacity(), "we should always have room to push a node on the queue");
 
-                //Queue up a small list of work items (NodeData*) which will be pushed to a worker job (AddObjectsToViewJob) once the queue is full.
-                //This reduces the number of jobs in flight, reducing job-system overhead.
+                //Queue up a small list of work items (NodeData*) which will be pushed to a worker task once the queue is full.
+                //This reduces the number of tasks in flight, reducing task-system overhead.
                 worklist->emplace_back(AZStd::move(nodeData));
 
                 if (worklist->size() == worklist->capacity())
                 {
-                    // capture worklistData & worklist by value
-                    taskGraph.AddTask( descriptor, [worklistData, worklist]()
+                    //Task takes ownership of the worklist unique ptr
+                    taskGraph.AddTask( descriptor, [worklistData, worklist = AZStd::move(worklist)]()
                     {
-                        ProcessWorklist(worklistData, *worklist);
-                        delete worklist;
+                        ProcessWorklist(worklistData, *worklist.get());
+                        // allow worklist to go out of scope and be deleted
                     });
-                    worklist = new WorkListType;
+                    worklist = AZStd::make_unique<WorkListType>();
                 }
             };
 
@@ -708,11 +712,11 @@ namespace AZ
 
             if (worklist->size() > 0)
             {
-                // capture worklistData & worklist by value
-                taskGraph.AddTask( descriptor, [worklistData, worklist]()
+                //Task takes ownership of the worklist unique ptr
+                taskGraph.AddTask( descriptor, [worklistData, worklist = AZStd::move(worklist)]()
                 {
-                    ProcessWorklist(worklistData, *worklist);
-                    delete worklist;
+                    ProcessWorklist(worklistData, *worklist.get());
+                    // allow worklist to go out of scope and be deleted
                 });
             }
         }
