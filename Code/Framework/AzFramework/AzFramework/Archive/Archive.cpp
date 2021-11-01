@@ -1196,13 +1196,9 @@ namespace AZ::IO
         AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog;
         auto bundleManifest = GetBundleManifest(desc.pZip);
         if (bundleManifest)
-            if (bundleManifest)
-            {
-                {
-                    bundleCatalog = GetBundleCatalog(desc.pZip, bundleManifest->GetCatalogName());
-                    bundleCatalog = GetBundleCatalog(desc.pZip, bundleManifest->GetCatalogName());
-                }
-            }
+        {
+            bundleCatalog = GetBundleCatalog(desc.pZip, bundleManifest->GetCatalogName());
+        }
 
         // If this archive is loaded before the serialize context is available, then the manifest and catalog will need to be loaded later.
         if (!bundleManifest || !bundleCatalog)

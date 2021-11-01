@@ -355,7 +355,11 @@ namespace AZ::IO
         struct ArchivesWithCatalogsToLoad
         {
             ArchivesWithCatalogsToLoad(
-                AZStd::string_view fullPath, AZStd::string_view bindRoot, int flags, AZ::IO::PathView nextBundle, AZ::IO::Path strFileName)
+                AZStd::string_view fullPath,
+                AZStd::string_view bindRoot,
+                int flags,
+                AZ::IO::PathView nextBundle,
+                AZ::IO::Path strFileName)
                 : m_fullPath(fullPath)
                 , m_bindRoot(bindRoot)
                 , m_flags(flags)
@@ -363,6 +367,7 @@ namespace AZ::IO
                 , m_strFileName(strFileName)
             {
             }
+
             AZ::IO::Path m_strFileName;
             AZStd::string m_fullPath;
             AZStd::string m_bindRoot;
