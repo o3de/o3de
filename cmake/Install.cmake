@@ -8,16 +8,38 @@
 
 set(LY_INSTALL_ENABLED TRUE CACHE BOOL "Indicates if the install process is enabled")
 
-if(LY_INSTALL_ENABLED)
-    ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})
-    include(${pal_dir}/Install_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-endif()
+#! ly_install: wrapper to install that handles common functionality
+#
+# \notes: 
+#  - this wrapper handles the case where common installs are called multiple times from different
+#      build folders (when using LY_INSTALL_EXTERNAL_BUILD_DIRS) to generate install layouts that
+#      have multiple build permutations
+#
+function(ly_install)
+
+    if(NOT LY_INSTALL_ENABLED)
+        return()
+    endif()
+
+    cmake_parse_arguments(ly_install "" "COMPONENT" "" ${ARGN})
+    if (NOT ly_install_COMPONENT OR "${ly_install_COMPONENT}" STREQUAL "${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}")
+        # if it is installing under the default component, we need to de-duplicate since we can have
+        # cases coming from different build directories (when using LY_INSTALL_EXTERNAL_BUILD_DIRS)
+        install(CODE "if(NOT LY_CORE_COMPONENT_ALREADY_INCLUDED)" ALL_COMPONENTS)
+        install(${ARGN})
+        install(CODE "endif()\n" ALL_COMPONENTS)
+    else()
+        install(${ARGN})
+    endif() 
+
+endfunction()
 
 #! ly_install_directory: specifies a directory to be copied to the install layout at install time
 #
 # \arg:DIRECTORIES directories to install
 # \arg:DESTINATION (optional) destination to install the directory to (relative to CMAKE_PREFIX_PATH)
 # \arg:EXCLUDE_PATTERNS (optional) patterns to exclude
+# \arg:COMPONENT (optional) component to use (defaults to CMAKE_INSTALL_DEFAULT_COMPONENT_NAME)
 # \arg:VERBATIM (optional) copies the directories as they are, this excludes the default exclude patterns
 #
 # \notes: 
@@ -34,13 +56,17 @@ function(ly_install_directory)
     endif()
 
     set(options VERBATIM)
-    set(oneValueArgs DESTINATION)
+    set(oneValueArgs DESTINATION COMPONENT)
     set(multiValueArgs DIRECTORIES EXCLUDE_PATTERNS)
 
     cmake_parse_arguments(ly_install_directory "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     if(NOT ly_install_directory_DIRECTORIES)
         message(FATAL_ERROR "You must provide at least a directory to install")
+    endif()
+    
+    if(NOT ly_install_directory_COMPONENT)
+        set(ly_install_directory_COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
     endif()
 
     foreach(directory ${ly_install_directory_DIRECTORIES})
@@ -77,11 +103,12 @@ function(ly_install_directory)
             list(APPEND exclude_patterns PATTERN *.egg-info EXCLUDE)
         endif()
 
-        install(DIRECTORY ${directory}
+        ly_install(DIRECTORY ${directory}
             DESTINATION ${ly_install_directory_DESTINATION}
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} # use the deafult for the time being
+            COMPONENT ${ly_install_directory_COMPONENT}
             ${exclude_patterns}
         )
+
     endforeach()
 
 endfunction()
@@ -126,7 +153,7 @@ function(ly_install_files)
         set(install_type FILES)
     endif()
 
-    install(${install_type} ${files}
+    ly_install(${install_type} ${files}
         DESTINATION ${ly_install_files_DESTINATION}
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} # use the default for the time being
     )
@@ -144,7 +171,7 @@ function(ly_install_run_code CODE)
         return()
     endif()
 
-    install(CODE ${CODE}
+    ly_install(CODE ${CODE}
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} # use the default for the time being
     )
 
@@ -161,8 +188,13 @@ function(ly_install_run_script SCRIPT)
         return()
     endif()
 
-    install(SCRIPT ${SCRIPT}
+    ly_install(SCRIPT ${SCRIPT}
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} # use the default for the time being
     )
 
 endfunction()
+
+if(LY_INSTALL_ENABLED)
+    ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})
+    include(${pal_dir}/Install_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+endif()

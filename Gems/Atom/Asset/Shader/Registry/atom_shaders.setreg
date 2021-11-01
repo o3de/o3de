@@ -1,0 +1,10 @@
+{
+    "O3DE": {
+        "Atom": {
+            "Shaders": {
+                "BuildVariants": true
+                }
+            }
+        }
+    }
+}

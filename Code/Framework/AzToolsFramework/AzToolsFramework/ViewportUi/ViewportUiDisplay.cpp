@@ -301,6 +301,7 @@ namespace AzToolsFramework::ViewportUi::Internal
             HighlightBorderSize + ViewportUiOverlayMargin, HighlightBorderSize + ViewportUiOverlayMargin);
         m_componentModeBorderText.setVisible(true);
         m_componentModeBorderText.setText(borderTitle.c_str());
+        UpdateUiOverlayGeometry();
     }
 
     void ViewportUiDisplay::RemoveViewportBorder()

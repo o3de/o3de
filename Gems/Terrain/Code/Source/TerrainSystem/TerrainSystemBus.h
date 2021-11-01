@@ -44,7 +44,7 @@ namespace Terrain
         // register an area to override terrain
         virtual void RegisterArea(AZ::EntityId areaId) = 0;
         virtual void UnregisterArea(AZ::EntityId areaId) = 0;
-        virtual void RefreshArea(AZ::EntityId areaId) = 0;
+        virtual void RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask) = 0;
     };
 
     using TerrainSystemServiceRequestBus = AZ::EBus<TerrainSystemServiceRequests>;

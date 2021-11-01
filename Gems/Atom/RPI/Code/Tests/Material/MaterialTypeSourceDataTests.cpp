@@ -1346,7 +1346,8 @@ namespace UnitTest
                     {
                         "toVersion": 7,
                         "actions": [
-                            { "op": "rename", "from": "general.bazA", "to": "otherGroup.bazB" }
+                            { "op": "rename", "from": "general.bazA", "to": "otherGroup.bazB" },
+                            { "op": "rename", "from": "onlyOneProperty.bopA", "to": "otherGroup.bopB" } // This tests a group 'onlyOneProperty' that no longer exists in the material type
                         ]
                     }
                 ],
@@ -1370,6 +1371,10 @@ namespace UnitTest
                             {
                                 "name": "bazB",
                                 "type": "Float"
+                            },
+                            {
+                                "name": "bopB",
+                                "type": "Float"
                             }
                         ]
                     }
@@ -1386,13 +1391,16 @@ namespace UnitTest
         const MaterialTypeSourceData::PropertyDefinition* foo = materialType.FindProperty("general", "fooC");
         const MaterialTypeSourceData::PropertyDefinition* bar = materialType.FindProperty("general", "barC");
         const MaterialTypeSourceData::PropertyDefinition* baz = materialType.FindProperty("otherGroup", "bazB");
+        const MaterialTypeSourceData::PropertyDefinition* bop = materialType.FindProperty("otherGroup", "bopB");
         
         EXPECT_TRUE(foo);
         EXPECT_TRUE(bar);
         EXPECT_TRUE(baz);
+        EXPECT_TRUE(bop);
         EXPECT_EQ(foo->m_name, "fooC");
         EXPECT_EQ(bar->m_name, "barC");
         EXPECT_EQ(baz->m_name, "bazB");
+        EXPECT_EQ(bop->m_name, "bopB");
 
         // Now try doing the property lookup using old versions of the name and make sure the same property can be found
 
@@ -1401,12 +1409,15 @@ namespace UnitTest
         EXPECT_EQ(bar, materialType.FindProperty("general", "barA"));
         EXPECT_EQ(bar, materialType.FindProperty("general", "barB"));
         EXPECT_EQ(baz, materialType.FindProperty("general", "bazA"));
+        EXPECT_EQ(bop, materialType.FindProperty("onlyOneProperty", "bopA"));
         
         EXPECT_EQ(nullptr, materialType.FindProperty("general", "fooX"));
         EXPECT_EQ(nullptr, materialType.FindProperty("general", "barX"));
         EXPECT_EQ(nullptr, materialType.FindProperty("general", "bazX"));
         EXPECT_EQ(nullptr, materialType.FindProperty("general", "bazB"));
         EXPECT_EQ(nullptr, materialType.FindProperty("otherGroup", "bazA"));
+        EXPECT_EQ(nullptr, materialType.FindProperty("onlyOneProperty", "bopB"));
+        EXPECT_EQ(nullptr, materialType.FindProperty("otherGroup", "bopA"));
     }
     
     TEST_F(MaterialTypeSourceDataTests, FindPropertyUsingOldName_Error_UnsupportedVersionUpdate)

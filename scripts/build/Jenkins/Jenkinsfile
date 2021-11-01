@@ -449,8 +449,8 @@ def UploadAPLogs(Map options, String branchName, String jobName, String workspac
             }
             def command = "${pythonPath} -u ${s3UploadScriptPath} --base_dir ${apLogsPath} " +
                           "--file_regex \".*\" --bucket ${env.AP_LOGS_S3_BUCKET} " +
-                          "--search_subdirectories True --key_prefix ${env.JOB_NAME}/${branchName}/${env.BUILD_NUMBER}/${jobName}" +
-                          "--extra-args {\"ACL\": \"bucket-owner-full-control\"}"
+                          "--search_subdirectories True --key_prefix ${env.JENKINS_JOB_NAME}/${branchName}/${env.BUILD_NUMBER}/${jobName} " +
+                          "--extra_args {\"ACL\": \"bucket-owner-full-control\"}"
             palSh(command, "Uploading AP logs for job ${jobName} for branch ${branchName}", false)
             }
         }
@@ -806,6 +806,7 @@ try {
         platform.value.build_types.each { build_job ->
             if (IsJobEnabled(branchName, build_job, pipelineName, platform.key)) {   // User can filter jobs, jobs are tagged by pipeline
                 def envVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
+                envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
                 envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
                 someBuildHappened = true
 

@@ -606,7 +606,7 @@ namespace EMotionFX
                 m_renderActorInstance->UpdateBounds();
 
                 m_debugRenderFlags[RENDER_AABB] = m_renderBounds;
-                m_debugRenderFlags[RENDER_SKELETON] = m_renderSkeleton;
+                m_debugRenderFlags[RENDER_LINESKELETON] = m_renderSkeleton;
                 m_debugRenderFlags[RENDER_EMFX_DEBUG] = true;
                 m_renderActorInstance->DebugDraw(m_debugRenderFlags);
             }
