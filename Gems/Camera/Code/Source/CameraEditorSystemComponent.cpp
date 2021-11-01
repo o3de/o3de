@@ -23,6 +23,7 @@
 
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include "ViewportCameraSelectorWindow.h"
+#include "Entity/PrefabEditorEntityOwnershipInterface.h"
 
 #include <QAction>
 #include <QMenu>
@@ -70,6 +71,11 @@ namespace Camera
         if (!(flags & AzToolsFramework::EditorEvents::eECMF_HIDE_ENTITY_CREATION))
         {
             QAction* action = menu->addAction(QObject::tr("Create camera entity from view"));
+            const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+            if (prefabEditorEntityOwnershipInterface && !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned())
+            {
+                action->setEnabled(false);
+            }
             QObject::connect(action, &QAction::triggered, [this]() { CreateCameraEntityFromViewport(); });
         }
     }
