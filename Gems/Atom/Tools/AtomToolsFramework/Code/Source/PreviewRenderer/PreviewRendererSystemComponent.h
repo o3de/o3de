@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AtomToolsFramework/PreviewRenderer/PreviewRendererSystemRequestBus.h>
-#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzFramework/Application/Application.h>
 #include <PreviewRenderer/PreviewRenderer.h>

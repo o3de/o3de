@@ -63,8 +63,8 @@ namespace AtomToolsFramework
 
     void PreviewRendererSystemComponent::Deactivate()
     {
+        PreviewRendererSystemRequestBus::Handler::BusDisconnect();
         AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
-        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         m_previewRenderer.reset();
     }
 
