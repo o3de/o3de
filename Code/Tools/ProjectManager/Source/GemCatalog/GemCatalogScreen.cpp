@@ -80,7 +80,7 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::ReinitForProject(const QString& projectPath)
     {
-        m_gemModel->clear();
+        m_gemModel->Clear();
         m_gemsToRegisterWithProject.clear();
         FillModel(projectPath);
 

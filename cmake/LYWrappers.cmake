@@ -403,7 +403,7 @@ function(ly_target_link_libraries TARGET)
         message(FATAL_ERROR "You must provide a target")
     endif()
 
-    set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LINK_${TARGET} ${ARGN})
+    set_property(TARGET ${TARGET} APPEND PROPERTY LY_DELAYED_LINK ${ARGN})
     set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LINK_TARGETS ${TARGET}) # to walk them at the end
 
 endfunction()
@@ -430,7 +430,7 @@ function(ly_delayed_target_link_libraries)
     get_property(delayed_targets GLOBAL PROPERTY LY_DELAYED_LINK_TARGETS)
     foreach(target ${delayed_targets})
 
-        get_property(delayed_link GLOBAL PROPERTY LY_DELAYED_LINK_${target})
+        get_property(delayed_link TARGET ${target} PROPERTY LY_DELAYED_LINK)
         if(delayed_link)
 
             cmake_parse_arguments(ly_delayed_target_link_libraries "" "" "${visibilities}" ${delayed_link})
@@ -458,7 +458,6 @@ function(ly_delayed_target_link_libraries)
 
                 endforeach()
             endforeach()
-            set_property(GLOBAL PROPERTY LY_DELAYED_LINK_${target})
 
         endif()
 
