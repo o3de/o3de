@@ -1,0 +1,11 @@
+{
+    "excluded_directories": [
+        ".git",
+        ".venv",
+        "build",
+        "license_scanner"
+    ],
+    "package_patterns": [
+        "PackageInfo.json"
+    ]
+}
