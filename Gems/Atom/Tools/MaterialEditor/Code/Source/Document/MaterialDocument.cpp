@@ -235,12 +235,10 @@ namespace MaterialEditor
         sourceData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(m_absolutePath, m_materialSourceData.m_parentMaterial);
 
         // populate sourceData with modified or overwritten properties
-        const bool savedProperties = SavePropertiesToSourceData(
-            m_absolutePath, sourceData,
-            [](const AtomToolsFramework::DynamicProperty& property)
-            {
-                return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue);
-            });
+        const bool savedProperties = SavePropertiesToSourceData(m_absolutePath, sourceData, [](const AtomToolsFramework::DynamicProperty& property)
+        {
+            return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue);
+        });
 
         if (!savedProperties)
         {
@@ -303,16 +301,13 @@ namespace MaterialEditor
         MaterialSourceData sourceData;
         sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
         sourceData.m_materialType = AtomToolsFramework::GetExteralReferencePath(normalizedSavePath, m_materialSourceData.m_materialType);
-        sourceData.m_parentMaterial =
-            AtomToolsFramework::GetExteralReferencePath(normalizedSavePath, m_materialSourceData.m_parentMaterial);
+        sourceData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(normalizedSavePath, m_materialSourceData.m_parentMaterial);
 
         // populate sourceData with modified or overwritten properties
-        const bool savedProperties = SavePropertiesToSourceData(
-            normalizedSavePath, sourceData,
-            [](const AtomToolsFramework::DynamicProperty& property)
-            {
-                return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue);
-            });
+        const bool savedProperties = SavePropertiesToSourceData(normalizedSavePath, sourceData, [](const AtomToolsFramework::DynamicProperty& property)
+        {
+            return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_parentValue);
+        });
 
         if (!savedProperties)
         {
@@ -378,17 +373,14 @@ namespace MaterialEditor
         // Only assign a parent path if the source was a .material
         if (AzFramework::StringFunc::Path::IsExtension(m_relativePath.c_str(), MaterialSourceData::Extension))
         {
-            sourceData.m_parentMaterial =
-                AtomToolsFramework::GetExteralReferencePath(normalizedSavePath, m_materialSourceData.m_parentMaterial);
+            sourceData.m_parentMaterial = AtomToolsFramework::GetExteralReferencePath(normalizedSavePath, m_absolutePath);
         }
 
         // populate sourceData with modified properties
-        const bool savedProperties = SavePropertiesToSourceData(
-            normalizedSavePath, sourceData,
-            [](const AtomToolsFramework::DynamicProperty& property)
-            {
-                return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_originalValue);
-            });
+        const bool savedProperties = SavePropertiesToSourceData(normalizedSavePath, sourceData, [](const AtomToolsFramework::DynamicProperty& property)
+        {
+            return !AtomToolsFramework::ArePropertyValuesEqual(property.GetValue(), property.GetConfig().m_originalValue);
+        });
 
         if (!savedProperties)
         {

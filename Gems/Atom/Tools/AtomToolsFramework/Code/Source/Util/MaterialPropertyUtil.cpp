@@ -170,9 +170,6 @@ namespace AtomToolsFramework
         const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
         AZ::RPI::MaterialPropertyValue& propertyValue)
     {
-        AZ::IO::BasicPath<AZStd::string> exportFolder(exportPath);
-        exportFolder.RemoveFilename();
-
         if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Enum && propertyValue.Is<uint32_t>())
         {
             const uint32_t index = propertyValue.GetValue<uint32_t>();
@@ -192,16 +189,16 @@ namespace AtomToolsFramework
             if (propertyValue.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
             {
                 const auto& imageAsset = propertyValue.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>();
-                const auto& sourcePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(imageAsset.GetId());
-                propertyValue = AZ::IO::PathView(sourcePath).LexicallyRelative(exportFolder).StringAsPosix();
+                const auto& imagePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(imageAsset.GetId());
+                propertyValue = GetExteralReferencePath(exportPath, imagePath);
                 return true;
             }
 
             if (propertyValue.Is<AZ::Data::Instance<AZ::RPI::Image>>())
             {
                 const auto& image = propertyValue.GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
-                const auto& sourcePath = image ? AZ::RPI::AssetUtils::GetSourcePathByAssetId(image->GetAssetId()) : "";
-                propertyValue = AZ::IO::PathView(sourcePath).LexicallyRelative(exportFolder).StringAsPosix();
+                const auto& imagePath = image ? AZ::RPI::AssetUtils::GetSourcePathByAssetId(image->GetAssetId()) : "";
+                propertyValue = GetExteralReferencePath(exportPath, imagePath);
                 return true;
             }
         }
