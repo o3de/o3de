@@ -86,7 +86,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     
     // ------- Macro Color / Normal -------
     float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
-    [unroll] for (uint i = 0; i < 4; ++i)
+    [unroll] for (uint i = 0; i < 4 && (i < ObjectSrg::m_macroMaterialCount); ++i)
     {
         float2 macroUvMin = ObjectSrg::m_macroMaterialData[i].m_uvMin;
         float2 macroUvMax = ObjectSrg::m_macroMaterialData[i].m_uvMax;
