@@ -116,29 +116,11 @@ def create_basic_atom_level(level_name):
 
     helper = EditorTestHelper(log_prefix="Atom_EditorTestHelper")
 
-    # Create a new level.
-    new_level_name = level_name
-    heightmap_resolution = 512
-    heightmap_meters_per_pixel = 1
-    terrain_texture_resolution = 412
-    use_terrain = False
-
-    # Return codes are ECreateLevelResult defined in CryEdit.h
-    return_code = general.create_level_no_prompt(
-        new_level_name, heightmap_resolution, heightmap_meters_per_pixel, terrain_texture_resolution, use_terrain)
-    if return_code == 1:
-        general.log(f"{new_level_name} level already exists")
-    elif return_code == 2:
-        general.log("Failed to create directory")
-    elif return_code == 3:
-        general.log("Directory length is too long")
-    elif return_code != 0:
-        general.log("Unknown error, failed to create level")
-    else:
-        general.log(f"{new_level_name} level created successfully")
-
-    # Enable idle and update viewport.
+    # Wait for Editor idle loop before executing Python hydra scripts.
     general.idle_enable(True)
+
+    # Basic setup for opened level.
+    helper.open_level(level_name="Base")
     general.idle_wait(1.0)
     general.update_viewport()
     general.idle_wait(0.5)  # half a second is more than enough for updating the viewport.
@@ -205,23 +187,24 @@ def create_basic_atom_level(level_name):
         components=["Material"],
         parent_id=default_level.id)
     azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalUniformScale", ground_plane.id, 32.0)
-    ground_plane_material_asset_path = os.path.join(
-        "Materials", "Presets", "PBR", "metal_chrome.azmaterial")
-    ground_plane_material_asset_value = asset.AssetCatalogRequestBus(
-        bus.Broadcast, "GetAssetIdByPath", ground_plane_material_asset_path, math.Uuid(), False)
-    ground_plane.get_set_test(0, "Default Material|Material Asset", ground_plane_material_asset_value)
 
-    # Work around to add the correct Atom Mesh component
+    # Work around to add the correct Atom Mesh component and asset.
     mesh_type_id = azlmbr.globals.property.EditorMeshComponentTypeId
     ground_plane.components.append(
         editor.EditorComponentAPIBus(
             bus.Broadcast, "AddComponentsOfType", ground_plane.id, [mesh_type_id]
         ).GetValue()[0]
     )
-    ground_plane_mesh_asset_path = os.path.join("Models", "plane.azmodel")
+    ground_plane_mesh_asset_path = os.path.join("TestData", "Objects", "plane.azmodel")
     ground_plane_mesh_asset_value = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", ground_plane_mesh_asset_path, math.Uuid(), False)
     ground_plane.get_set_test(1, "Controller|Configuration|Mesh Asset", ground_plane_mesh_asset_value)
+
+    # Add Atom Material component and asset.
+    ground_plane_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_chrome.azmaterial")
+    ground_plane_material_asset_value = asset.AssetCatalogRequestBus(
+        bus.Broadcast, "GetAssetIdByPath", ground_plane_material_asset_path, math.Uuid(), False)
+    ground_plane.get_set_test(0, "Default Material|Material Asset", ground_plane_material_asset_value)
 
     # Create directional_light entity and set the properties
     directional_light = hydra.Entity("directional_light")
@@ -239,12 +222,8 @@ def create_basic_atom_level(level_name):
         entity_position=math.Vector3(0.0, 0.0, 1.0),
         components=["Material"],
         parent_id=default_level.id)
-    sphere_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_brass_polished.azmaterial")
-    sphere_material_asset_value = asset.AssetCatalogRequestBus(
-        bus.Broadcast, "GetAssetIdByPath", sphere_material_asset_path, math.Uuid(), False)
-    sphere_entity.get_set_test(0, "Default Material|Material Asset", sphere_material_asset_value)
 
-    # Work around to add the correct Atom Mesh component
+    # Work around to add the correct Atom Mesh component and asset.
     sphere_entity.components.append(
         editor.EditorComponentAPIBus(
             bus.Broadcast, "AddComponentsOfType", sphere_entity.id, [mesh_type_id]
@@ -254,6 +233,12 @@ def create_basic_atom_level(level_name):
     sphere_mesh_asset_value = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", sphere_mesh_asset_path, math.Uuid(), False)
     sphere_entity.get_set_test(1, "Controller|Configuration|Mesh Asset", sphere_mesh_asset_value)
+
+    # Add Atom Material component and asset.
+    sphere_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_brass_polished.azmaterial")
+    sphere_material_asset_value = asset.AssetCatalogRequestBus(
+        bus.Broadcast, "GetAssetIdByPath", sphere_material_asset_path, math.Uuid(), False)
+    sphere_entity.get_set_test(0, "Default Material|Material Asset", sphere_material_asset_value)
 
     # Create camera component and set the properties
     camera_entity = hydra.Entity("camera")

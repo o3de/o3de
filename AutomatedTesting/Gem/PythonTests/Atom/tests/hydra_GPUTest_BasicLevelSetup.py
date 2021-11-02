@@ -33,7 +33,7 @@ def run():
     11. Adds a "camera" entity to "default_level" & adds a Camera component with 80 degree FOV and Transform values:
         Translate - x:5.5m, y:-12.0m, z:9.0m
         Rotate - x:-27.0, y:-12.0, z:25.0
-    12. Finally enters game mode, takes a screenshot, exits game mode, & saves the level.
+    12. Finally enters game mode, takes a screenshot, & exits game mode.
     :return: None
     """
     import azlmbr.asset as asset
@@ -81,33 +81,11 @@ def run():
         general.run_console("r_displayInfo=0")
         general.idle_wait(1.0)
 
-        return True
-
     # Wait for Editor idle loop before executing Python hydra scripts.
     general.idle_enable(True)
 
-    # Open the auto_test level.
-    new_level_name = "auto_test"  # Specified in class TestAllComponentsIndepthTests()
-    heightmap_resolution = 512
-    heightmap_meters_per_pixel = 1
-    terrain_texture_resolution = 412
-    use_terrain = False
-
-    # Return codes are ECreateLevelResult defined in CryEdit.h
-    return_code = general.create_level_no_prompt(
-        new_level_name, heightmap_resolution, heightmap_meters_per_pixel, terrain_texture_resolution, use_terrain)
-    if return_code == 1:
-        general.log(f"{new_level_name} level already exists")
-    elif return_code == 2:
-        general.log("Failed to create directory")
-    elif return_code == 3:
-        general.log("Directory length is too long")
-    elif return_code != 0:
-        general.log("Unknown error, failed to create level")
-    else:
-        general.log(f"{new_level_name} level created successfully")
-
-    # Basic setup for newly created level.
+    # Basic setup for opened level.
+    helper.open_level(level_name="Base")
     after_level_load()
     initial_viewport_setup(SCREEN_WIDTH, SCREEN_HEIGHT)
 

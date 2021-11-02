@@ -69,7 +69,7 @@ def create_screenshots_archive(screenshot_path):
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ["windows_editor"])
-@pytest.mark.parametrize("level", ["auto_test"])
+@pytest.mark.parametrize("level", ["Base"])
 class TestAllComponentsIndepthTests(object):
 
     @pytest.mark.parametrize("screenshot_name", ["AtomBasicLevelSetup.ppm"])
@@ -91,10 +91,7 @@ class TestAllComponentsIndepthTests(object):
             "Viewport is set to the expected size: True",
             "Exited game mode"
         ]
-        unexpected_lines = [
-            "Traceback (most recent call last):",
-            "Screenshot failed"
-        ]
+        unexpected_lines = ["Traceback (most recent call last):"]
 
         hydra.launch_and_validate_results(
             request,
@@ -149,12 +146,7 @@ class TestAllComponentsIndepthTests(object):
             golden_images.append(golden_image_path)
 
         expected_lines = ["spot_light Controller|Configuration|Shadows|Shadowmap size: SUCCESS"]
-        unexpected_lines = [
-            "Trace::Assert",
-            "Trace::Error",
-            "Traceback (most recent call last):",
-            "Screenshot failed",
-        ]
+        unexpected_lines = ["Traceback (most recent call last):"]
         hydra.launch_and_validate_results(
             request,
             TEST_DIRECTORY,
