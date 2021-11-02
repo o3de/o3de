@@ -41,10 +41,10 @@ class Tests:
         "REDO deletion failed")
 
 
-def AtomEditorComponents_occlusion_culling_plane_AddedToEntity():
+def AtomEditorComponents_OcclusionCullingPlane_AddedToEntity():
     """
     Summary:
-    Tests the occlusion_culling_plane component can be added to an entity and has the expected functionality.
+    Tests the occlusion culling plane component can be added to an entity and has the expected functionality.
 
     Test setup:
     - Wait for Editor idle loop.
@@ -156,4 +156,4 @@ def AtomEditorComponents_occlusion_culling_plane_AddedToEntity():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(AtomEditorComponents_occlusion_culling_plane_AddedToEntity)
+    Report.start_test(AtomEditorComponents_OcclusionCullingPlane_AddedToEntity)
