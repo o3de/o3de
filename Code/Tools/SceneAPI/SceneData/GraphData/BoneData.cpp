@@ -8,6 +8,7 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <SceneAPI/SceneData/GraphData/BoneData.h>
 
 namespace AZ
@@ -40,6 +41,16 @@ namespace AZ
                         editContext->Class<BoneData>("Bone data", "Data this individual bone contributes to the overall skeleton.")
                             ->DataElement(AZ::Edit::UIHandlers::Default, &BoneData::m_worldTransform, "World", "World transform this bone contributes to the overall skeleton.");
                     }
+                }
+
+                BehaviorContext* behaviorContext = azrtti_cast<BehaviorContext*>(context);
+                if (behaviorContext)
+                {
+                    behaviorContext->Class<AZ::SceneData::GraphData::BoneData>()
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Method("GetWorldTransform", &BoneData::GetWorldTransform);
                 }
             }
         } // namespace GraphData
