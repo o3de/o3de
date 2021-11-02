@@ -51,8 +51,9 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceVirtualKeyboard::InputDeviceVirtualKeyboard()
-        : InputDevice(Id)
+    InputDeviceVirtualKeyboard::InputDeviceVirtualKeyboard(const InputDeviceId& inputDeviceId,
+                                                           ImplementationFactory implementationFactory)
+        : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_pimpl()
         , m_implementationRequestHandler(*this)
@@ -65,8 +66,11 @@ namespace AzFramework
             m_commandChannelsById[channelId] = channel;
         }
 
-        // Create the platform specific implementation
-        m_pimpl.reset(Implementation::Create(*this));
+        // Create a custom implementation if we've been provided one,
+        // otherwise default to the platform specific implementation
+        m_pimpl.reset(implementationFactory ?
+                      implementationFactory(*this) :
+                      Implementation::Create(*this));
 
         // Connect to the text entry request bus
         InputTextEntryRequestBus::Handler::BusConnect(GetInputDeviceId());

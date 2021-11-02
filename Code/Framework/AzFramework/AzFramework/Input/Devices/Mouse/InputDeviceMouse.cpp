@@ -67,8 +67,9 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceMouse::InputDeviceMouse(AzFramework::InputDeviceId id)
-        : InputDevice(id)
+    InputDeviceMouse::InputDeviceMouse(const InputDeviceId& inputDeviceId,
+                                       ImplementationFactory implementationFactory)
+        : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_buttonChannelsById()
         , m_movementChannelsById()
@@ -97,8 +98,11 @@ namespace AzFramework
         m_cursorPositionChannel = aznew InputChannelDeltaWithSharedPosition2D(SystemCursorPosition, *this, m_cursorPositionData2D);
         m_allChannelsById[SystemCursorPosition] = m_cursorPositionChannel;
 
-        // Create the platform specific implementation
-        m_pimpl.reset(Implementation::Create(*this));
+        // Create a custom implementation if we've been provided one,
+        // otherwise default to the platform specific implementation
+        m_pimpl.reset(implementationFactory ?
+                      implementationFactory(*this) :
+                      Implementation::Create(*this));
 
         // Connect to the system cursor request bus
         InputSystemCursorRequestBus::Handler::BusConnect(GetInputDeviceId());
