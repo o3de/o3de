@@ -525,15 +525,20 @@ function(ly_setup_runtime_dependencies)
     if(COMMAND ly_setup_runtime_dependencies_copy_function_override)
         ly_setup_runtime_dependencies_copy_function_override()
     else()
-        ly_install(CODE
+        # despite this copy function being the same, we need to install it per component that uses it
+        # (which is per-configuration per-permutation component)
+        foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+            string(TOUPPER ${conf} UCONF)
+            ly_install(CODE
 "function(ly_copy source_file target_directory)
     cmake_path(GET source_file FILENAME file_name)
     if(NOT EXISTS \${target_directory}/\${file_name})
         file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
     endif()
 endfunction()"
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-        )
+                COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+            )
+        endforeach()
     endif()
 
     unset(runtime_commands)
@@ -574,11 +579,8 @@ endfunction()"
     list(JOIN runtime_commands "    " runtime_commands_str) # the spaces are just to see the right identation in the cmake_install.cmake file
     foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
         string(TOUPPER ${conf} UCONF)
-        ly_install(CODE
-"if(\"\${CMAKE_INSTALL_CONFIG_NAME}\" MATCHES \"^(${conf})\$\")
-    ${runtime_commands_str}
-endif()" 
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_${UCONF}
+        ly_install(CODE "${runtime_commands_str}"
+            COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
         )
     endforeach()
 

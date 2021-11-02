@@ -124,7 +124,7 @@ namespace AZ::AtomBridge
         AZ_RTTI(AtomDebugDisplayViewportInterface, "{09AF6A46-0100-4FBF-8F94-E6B221322D14}", AzFramework::DebugDisplayRequestBus::Handler);
 
         explicit AtomDebugDisplayViewportInterface(AZ::RPI::ViewportContextPtr viewportContextPtr);
-        explicit AtomDebugDisplayViewportInterface(uint32_t defaultInstanceAddress);
+        explicit AtomDebugDisplayViewportInterface(uint32_t defaultInstanceAddress, RPI::Scene* scene);
         ~AtomDebugDisplayViewportInterface();
 
         void ResetRenderState();

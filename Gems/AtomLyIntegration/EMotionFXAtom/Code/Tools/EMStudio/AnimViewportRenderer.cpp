@@ -60,6 +60,7 @@ namespace EMStudio
 
         // Create and register a scene with all available feature processors
         AZ::RPI::SceneDescriptor sceneDesc;
+        sceneDesc.m_nameId = AZ::Name("AnimViewport");
         m_scene = AZ::RPI::Scene::CreateScene(sceneDesc);
         m_scene->EnableAllFeatureProcessors();
 
@@ -227,8 +228,7 @@ namespace EMStudio
         AZ::TransformBus::Event(m_iblEntity->GetId(), &AZ::TransformBus::Events::SetLocalTM, iblTransform);
 
         const AZ::Matrix4x4 rotationMatrix = AZ::Matrix4x4::CreateIdentity();
-        AZ::RPI::ScenePtr scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
-        auto skyBoxFeatureProcessorInterface = scene->GetFeatureProcessor<AZ::Render::SkyBoxFeatureProcessorInterface>();
+        auto skyBoxFeatureProcessorInterface = m_scene->GetFeatureProcessor<AZ::Render::SkyBoxFeatureProcessorInterface>();
         skyBoxFeatureProcessorInterface->SetCubemapRotationMatrix(rotationMatrix);
     }
 

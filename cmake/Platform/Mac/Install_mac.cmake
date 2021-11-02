@@ -113,7 +113,12 @@ endfunction()
 function(ly_setup_runtime_dependencies_copy_function_override)
 
     configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/InstallUtils_mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/InstallUtils_mac.cmake @ONLY)
-    ly_install_run_script(${CMAKE_BINARY_DIR}/runtime_install/InstallUtils_mac.cmake)
+    foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+        string(TOUPPER ${conf} UCONF)
+        ly_install(SCRIPT "${CMAKE_BINARY_DIR}/runtime_install/InstallUtils_mac.cmake"
+            COMPONENT  ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+        )
+    endforeach()
 
 endfunction()
 
