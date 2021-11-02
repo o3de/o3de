@@ -6,23 +6,14 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 # -------------------------------------------------------------------------
 """${SanitizedCppName}\\editor\\scripts\\${SanitizedCppName}_dialog.py
-Generated from O3DE PythonGem Template"""
+Generated from O3DE PythonToolGem Template"""
 
-import azlmbr
-from shiboken2 import wrapInstance, getCppPointer
-from PySide2 import QtCore, QtWidgets, QtGui
-from PySide2.QtCore import QEvent, Qt
-from PySide2.QtWidgets import QVBoxLayout, QAction, QDialog, QHeaderView, QLabel, QLineEdit, QPushButton, QSplitter, QTreeWidget, QTreeWidgetItem, QWidget, QAbstractButton
-
-# Once PySide2 has been bootstrapped, register our ${SanitizedCppName}Dialog with the Editor
+from PySide2.QtCore import Qt
+from PySide2.QtWidgets import QDialog, QLabel, QVBoxLayout
 
 class ${SanitizedCppName}Dialog(QDialog):
     def __init__(self, parent=None):
         super(${SanitizedCppName}Dialog, self).__init__(parent)
-
-        self.setObjectName("${SanitizedCppName}Dialog")
-
-        self.setWindowTitle("HelloWorld, ${SanitizedCppName} Dialog")
 
         self.mainLayout = QVBoxLayout(self)
 
@@ -42,5 +33,3 @@ class ${SanitizedCppName}Dialog(QDialog):
         self.mainLayout.addWidget(self.helpLabel, 0, Qt.AlignCenter)
 
         self.setLayout(self.mainLayout)
-
-        return

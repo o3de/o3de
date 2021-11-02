@@ -71,8 +71,8 @@ namespace ${SanitizedCppName}
         options.showOnToolsToolbar = true;
         options.toolbarIcon = ":/${Name}/toolbar_icon.svg";
 
-        // Register our custom widget as a dockable tool with the Editor
-        AzToolsFramework::RegisterViewPane<${SanitizedCppName}Widget>("${Name}", "Tools", options);
+        // Register our custom widget as a dockable tool with the Editor under an Examples sub-menu
+        AzToolsFramework::RegisterViewPane<${SanitizedCppName}Widget>("${Name}", "Examples", options);
     }
 
 } // namespace ${SanitizedCppName}

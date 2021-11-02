@@ -20,8 +20,6 @@ namespace ${SanitizedCppName}
     ${SanitizedCppName}Widget::${SanitizedCppName}Widget(QWidget* parent)
         : QWidget(parent)
     {
-        setWindowTitle(QObject::tr("${Name}"));
-
         QVBoxLayout* mainLayout = new QVBoxLayout(this);
 
         QLabel* introLabel = new QLabel(QObject::tr("Put your cool stuff here!"), this);
