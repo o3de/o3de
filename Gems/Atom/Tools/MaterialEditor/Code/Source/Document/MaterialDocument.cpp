@@ -659,8 +659,8 @@ namespace MaterialEditor
                 return false;
             }
 
-            // We must also always load the material type data for a complete, ordered set of the
-            // groups and properties that will be needed for comparison and building the inspector
+            // We always need the absolute path for the material type and parent material to load source data and resolving
+            // relative paths when saving. This will convert and store them as absolute paths for use within the document.
             if (!m_materialSourceData.m_parentMaterial.empty())
             {
                 m_materialSourceData.m_parentMaterial =
@@ -672,6 +672,7 @@ namespace MaterialEditor
                 m_materialSourceData.m_materialType = AssetUtils::ResolvePathReference(m_absolutePath, m_materialSourceData.m_materialType);
             }
 
+            // Load the material type source data which provides the layout and default values of all of the properties
             auto materialTypeOutcome = MaterialUtils::LoadMaterialTypeSourceData(m_materialSourceData.m_materialType);
             if (!materialTypeOutcome.IsSuccess())
             {
@@ -688,7 +689,9 @@ namespace MaterialEditor
         }
         else if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), MaterialTypeSourceData::Extension))
         {
-            // Load the material type source data, which will be used for enumerating properties and building material source data
+            // A material document can be created or loaded from material or material type source data. If we are attempting to load
+            // material type source data then the material source data object can be created just by referencing the document path as the
+            // material type path.
             auto materialTypeOutcome = MaterialUtils::LoadMaterialTypeSourceData(m_absolutePath);
             if (!materialTypeOutcome.IsSuccess())
             {
@@ -697,8 +700,7 @@ namespace MaterialEditor
             }
             m_materialTypeSourceData = materialTypeOutcome.GetValue();
 
-            // The document represents a material, not a material type.
-            // If the input data is a material type file we have to generate the material source data by referencing it.
+            // We are storing absolute paths in the loaded version of the source data so that the files can be resolved at all times.
             m_materialSourceData.m_materialType = m_absolutePath;
             m_materialSourceData.m_parentMaterial.clear();
         }
