@@ -12,10 +12,10 @@ class Tests:
     creation_redo = (
         "REDO Entity creation success",
         "REDO Entity creation failed")
-    Occlusion_Culling_Plane_entity_creation = (
+    occlusion_culling_plane_entity_creation = (
         "Occlusion Culling Plane Entity successfully created",
         "Occlusion Culling Plane Entity failed to be created")
-    Occlusion_Culling_Plane_component_added = (
+    occlusion_culling_plane_component_added = (
         "Entity has a Occlusion Culling Plane component",
         "Entity failed to find Occlusion Culling Plane component")
     enter_game_mode = (
@@ -41,10 +41,10 @@ class Tests:
         "REDO deletion failed")
 
 
-def AtomEditorComponents_Occlusion_Culling_Plane_AddedToEntity():
+def AtomEditorComponents_occlusion_culling_plane_AddedToEntity():
     """
     Summary:
-    Tests the Occlusion_Culling_Plane component can be added to an entity and has the expected functionality.
+    Tests the occlusion_culling_plane component can be added to an entity and has the expected functionality.
 
     Test setup:
     - Wait for Editor idle loop.
@@ -83,14 +83,17 @@ def AtomEditorComponents_Occlusion_Culling_Plane_AddedToEntity():
         TestHelper.open_level("", "Base")
 
         # Test steps begin.
-        # 1. Create a Occlusion_Culling_Plane entity with no components.
-        occlusion_culling_plane_entity = EditorEntity.create_editor_entity(AtomComponentProperties.occlusion_culling_plane())
-        Report.critical_result(Tests.Occlusion_Culling_Plane_entity_creation, occlusion_culling_plane_entity.exists())
+        # 1. Create a occlusion culling plane entity with no components.
+        occlusion_culling_plane_entity = EditorEntity.\
+            create_editor_entity(AtomComponentProperties.occlusion_culling_plane())
+        Report.critical_result(Tests.occlusion_culling_plane_entity_creation, 
+                               occlusion_culling_plane_entity.exists())
 
-        # 2. Add a Occlusion_Culling_Plane component to Occlusion_Culling_Plane entity.
-        Occlusion_Culling_Plane_component = occlusion_culling_plane_entity.add_component(AtomComponentProperties.occlusion_culling_plane())
+        # 2. Add a occlusion culling plane component to occlusion culling plane entity.
+        occlusion_culling_plane_component = occlusion_culling_plane_entity.\
+            add_component(AtomComponentProperties.occlusion_culling_plane())
         Report.critical_result(
-            Tests.Occlusion_Culling_Plane_component_added,
+            Tests.occlusion_culling_plane_component_added,
             occlusion_culling_plane_entity.has_component(AtomComponentProperties.occlusion_culling_plane()))
 
         # 3. UNDO the entity creation and component addition.
@@ -131,7 +134,7 @@ def AtomEditorComponents_Occlusion_Culling_Plane_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, occlusion_culling_plane_entity.is_visible() is True)
 
-        # 8. Delete Occlusion_Culling_Plane entity.
+        # 8. Delete occlusion_culling_plane entity.
         occlusion_culling_plane_entity.delete()
         Report.result(Tests.entity_deleted, not occlusion_culling_plane_entity.exists())
 
@@ -153,4 +156,4 @@ def AtomEditorComponents_Occlusion_Culling_Plane_AddedToEntity():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(AtomEditorComponents_Occlusion_Culling_Plane_AddedToEntity)
+    Report.start_test(AtomEditorComponents_occlusion_culling_plane_AddedToEntity)
