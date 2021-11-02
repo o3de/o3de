@@ -180,16 +180,20 @@ class AndroidDeployment(object):
             call_arguments.extend(['-s', device_id])
 
         call_arguments.extend(arg_list)
+        logging.debug(f"adb command: {subprocess.list2cmdline(call_arguments)}")
 
         try:
             output = subprocess.check_output(call_arguments,
                                              shell=True,
                                              stderr=subprocess.PIPE).decode(common.DEFAULT_TEXT_READ_ENCODING,
                                                                                common.ENCODING_ERROR_HANDLINGS)
+            logging.debug(f"adb output:\n{output}")
             return output
         except subprocess.CalledProcessError as err:
-            raise common.LmbrCmdError(err.stderr.decode(common.DEFAULT_TEXT_READ_ENCODING,
-                                                        common.ENCODING_ERROR_HANDLINGS))
+            std_out = err.stdout.decode(common.DEFAULT_TEXT_READ_ENCODING, common.ENCODING_ERROR_HANDLINGS)
+            std_err = err.stderr.decode(common.DEFAULT_TEXT_READ_ENCODING, common.ENCODING_ERROR_HANDLINGS)
+            logging.debug(f"adb returned non-zero.\noutput:\n{std_out}\nerror:\n{std_err}\n")
+            raise common.LmbrCmdError(std_err)
 
     def adb_shell(self, command, device_id):
         """
@@ -224,19 +228,15 @@ class AndroidDeployment(object):
 
         shell_command.append(path)
 
-        logging.debug(f"Testing {device_id}: ls {' '.join(shell_command)}")
         raw_output = self.adb_shell(command=' '.join(shell_command),
                                     device_id=device_id)
 
         if not raw_output:
-            logging.debug('adb_ls: No output given')
             return False, None
 
         if raw_output is None or any([error for error in error_messages if error in raw_output]):
-            logging.debug('adb_ls: Error message found')
             status = False
         else:
-            logging.debug('adb_ls: Command was successful')
             status = True
 
         return status, raw_output
