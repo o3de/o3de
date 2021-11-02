@@ -29,6 +29,8 @@
 
 namespace AZ::Internal
 {
+    static constexpr const char* ProductCacheDirectoryName = "Cache";
+
     AZ::SettingsRegistryInterface::FixedValueString GetEngineMonikerForProject(
         SettingsRegistryInterface& settingsRegistry, const AZ::IO::FixedMaxPath& projectJsonPath)
     {
@@ -291,7 +293,7 @@ namespace AZ::SettingsRegistryMergeUtils
         AZ::IO::FixedMaxPath projectRoot;
         constexpr auto projectRootKey = FixedValueString(BootstrapSettingsRootKey) + "/project_path";
 
-        // Step 1 Run the scan upwards logic once to find the location of the nearset project.json
+        // Step 1 Run the scan upwards logic once to find the location of the closest ancestor project.json
         // Once this step is run the {InternalScanUpProjectRootKey} is set in the Settings Registry
         // to have this scan logic only run once for the supplied registry
         // SettingsRegistryInterface::GetType is used to check if a key is set
@@ -316,7 +318,7 @@ namespace AZ::SettingsRegistryMergeUtils
     }
 
     //! The algorithm that is used to find the project cache is as follows
-    //! 1. Next the "{BootstrapSettingsRootKey}/project_cache_path" is checked for the path
+    //! 1. The "{BootstrapSettingsRootKey}/project_cache_path" is checked for the path
     //! 2. One time only this function is it scans upwards for a "Cache" directory from
     //! the executable directory
     //! If a directory is found it injects it into the back of the command line parameters
@@ -334,11 +336,12 @@ namespace AZ::SettingsRegistryMergeUtils
             return projectCachePath;
         }
 
-        // Step 2 Fallback to scaning upwards to locate the nearest "Cache" directory
+        // Step 2 Fallback to scanning upwards to locate the nearest "Cache" directory
         // This step occurs only once via setting the InternalScanUp* key
         if (settingsRegistry.GetType(InternalScanUpProjectCacheRootKey) == Type::NoType)
         {
-            AZ::IO::FixedMaxPath projectCachePath = Internal::ScanUpRootLocator("Cache") / "Cache";
+            AZ::IO::FixedMaxPath projectCachePath = Internal::ScanUpRootLocator(Internal::ProductCacheDirectoryName)
+                / Internal::ProductCacheDirectoryName;
             settingsRegistry.Set(InternalScanUpProjectCacheRootKey, projectCachePath.Native());
             if (!projectCachePath.empty() && AZ::IO::SystemFile::IsDirectory(projectCachePath.c_str()))
             {
@@ -350,7 +353,7 @@ namespace AZ::SettingsRegistryMergeUtils
         }
 
         // Step 3 Append the "Cache" directory to the project-path
-        return projectPath / "Cache";
+        return projectPath / Internal::ProductCacheDirectoryName;
     }
 
     //! Set the user directory with the provided path or using <project-path>/user as default
