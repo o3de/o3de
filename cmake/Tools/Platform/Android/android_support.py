@@ -30,6 +30,7 @@ if ROOT_DEV_PATH not in sys.path:
     sys.path.append(ROOT_DEV_PATH)
 
 from cmake.Tools import common
+from cmake.Tools.layout_tool import remove_link
 
 
 ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = {
@@ -767,6 +768,8 @@ class AndroidProjectGenerator(object):
         # We must always delete 'src' any existing copied AzAndroid projects since building may pick up stale java sources
         lumberyard_app_src = az_android_dst_path / 'src'
         if lumberyard_app_src.exists():
+            # special case the 'assets' directory before cleaning the whole directory tree
+            remove_link(lumberyard_app_src / 'main' / 'assets')
             common.remove_dir_path(lumberyard_app_src)
 
         logging.debug("Copying AzAndroid to '%s'", az_android_dst_path.resolve())
