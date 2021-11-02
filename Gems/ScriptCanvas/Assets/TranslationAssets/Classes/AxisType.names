@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "AxisType",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "AxisType"
+            }
+        }
+    ]
+}

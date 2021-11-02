@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ExposureControlComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ExposureControlComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

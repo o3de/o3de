@@ -137,6 +137,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 .
                 Editor/Include
                 Editor/Static/Include
+                Editor/Assets
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore

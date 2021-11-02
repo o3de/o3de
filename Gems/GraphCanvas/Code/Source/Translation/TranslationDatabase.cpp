@@ -104,35 +104,49 @@ namespace GraphCanvas
         return m_database.find(key) != m_database.end();
     }
 
-    GraphCanvas::TranslationRequests::Details TranslationDatabase::GetDetails(const AZStd::string& key)
+    GraphCanvas::TranslationRequests::Details TranslationDatabase::GetDetails(const AZStd::string& key, const Details& fallbackDetails)
     {
-        const char* name = Get(key + ".name");
-        const char* tooltip = Get(key + ".tooltip");
-        const char* subtitle = Get(key + ".subtitle");
-        const char* category = Get(key + ".category");
-
-        static bool s_traceMissingItems = true;
-        if (s_traceMissingItems)
+        Details details;
+        if (!Get(key + ".name", details.Name))
         {
-            AZ_TracePrintf("GraphCanvas", AZStd::string::format("Value (name) not found for key: %s", key.c_str()).c_str());
-            AZ_TracePrintf("GraphCanvas", AZStd::string::format("Value (tooltip) not found for key: %s", key.c_str()).c_str());
-            AZ_TracePrintf("GraphCanvas", AZStd::string::format("Value (subtitle) not found for key: %s", key.c_str()).c_str());
-            AZ_TracePrintf("GraphCanvas", AZStd::string::format("Value (category) not found for key: %s", key.c_str()).c_str());
+            details.Name = fallbackDetails.Name;
         }
 
-        return Details(name ? name : "", tooltip ? tooltip : "", subtitle ? subtitle : "", category ? category : "");
+        if (!Get(key + ".tooltip", details.Tooltip))
+        {
+            details.Tooltip = fallbackDetails.Tooltip;
+        }
+
+        if (!Get(key + ".subtitle", details.Subtitle))
+        {
+            details.Subtitle = fallbackDetails.Subtitle;
+        }
+
+        if (!Get(key + ".category", details.Category))
+        {
+            details.Category = fallbackDetails.Category;
+        }
+
+        return details;
     }
 
-    const char* TranslationDatabase::Get(const AZStd::string& key)
+    bool TranslationDatabase::Get(const AZStd::string& key, AZStd::string& value)
     {
         AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
 
         if (m_database.find(key) != m_database.end())
         {
-            return m_database[key].c_str();
+            value = m_database[key].c_str();
+            return true;
         }
 
-        return "";
+        static bool s_traceMissingItems = true;
+        if (s_traceMissingItems)
+        {
+            AZ_TracePrintf("GraphCanvas", AZStd::string::format("Value not found for key: %s", key.c_str()).c_str());
+        }
+
+        return false;
     }
 
     bool TranslationDatabase::Add(const TranslationFormat& format)

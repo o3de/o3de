@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "RandomGradientComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "RandomGradientComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

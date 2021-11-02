@@ -1,0 +1,534 @@
+{
+    "entries": [
+        {
+            "key": "UiInteractableStatesBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiInteractableStatesBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "SetStateFont",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set State Font"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set State Font is invoked"
+                    },
+                    "details": {
+                        "name": "Set State Font",
+                        "tooltip": "Sets the font to be used for the specified target when the interactive element is in the specified state"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Interactable State",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target EntityID",
+                                "tooltip": "The target element"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Pathname",
+                                "tooltip": "The pathname to the font"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Font Effect Index",
+                                "tooltip": "The index of the font effect"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetStateSpritePathname",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set State Sprite Pathname"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set State Sprite Pathname is invoked"
+                    },
+                    "details": {
+                        "name": "Set State Sprite Pathname",
+                        "tooltip": "Sets the sprite path to be used for the specified target when the interactive element is in the specified state"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Interactable State",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target EntityID",
+                                "tooltip": "The target element"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Pathname",
+                                "tooltip": "The pathname to the sprite"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetStateFontPathname",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get State Font Pathname"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get State Font Pathname is invoked"
+                    },
+                    "details": {
+                        "name": "Get State Font Pathname",
+                        "tooltip": "Gets the font pathname to be used for the specified target when the interactive element is in the specified state"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Interactable State",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target EntityID",
+                                "tooltip": "The target element"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "HasStateFont",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Has State Font"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Has State Font is invoked"
+                    },
+                    "details": {
+                        "name": "Has State Font",
+                        "tooltip": "Returns whether the interactive element has a font action for the specified state and target combination"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Interactable State",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target EntityID",
+                                "tooltip": "The target element"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetStateAlpha",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set State Alpha"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set State Alpha is invoked"
+                    },
+                    "details": {
+                        "name": "Set State Alpha",
+                        "tooltip": "Sets the alpha to be used for the specified target when the interactive element is in the specified state"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Interactable State",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target EntityID",
+                                "tooltip": "The target element"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Alpha",
+                                "tooltip": "The alpha to be used for the specified target when the interactive element is in the specified state [0-1]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetStateAlpha",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get State Alpha"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get State Alpha is invoked"
+                    },
+                    "details": {
+                        "name": "Get State Alpha",
+                        "tooltip": "Gets the alpha to be used for the specified target when the interactive element is in the specified state"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Interactable State",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target EntityID",
+                                "tooltip": "The target element"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetStateFontEffectIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get State Font Effect Index"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get State Font Effect Index is invoked"
+                    },
+                    "details": {
+                        "name": "Get State Font Effect Index",
+                        "tooltip": "Gets the font effect to be used for the specified target when the interactive element is in the specified state"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Interactable State",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target EntityID",
+                                "tooltip": "The target element"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "HasStateColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Has State Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Has State Color is invoked"
+                    },
+                    "details": {
+                        "name": "Has State Color",
+                        "tooltip": "Returns whether the interactive element has a color action for the specified state and target combination"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Interactable State",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target EntityID",
+                                "tooltip": "The target element"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetStateSpritePathname",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get State Sprite Pathname"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get State Sprite Pathname is invoked"
+                    },
+                    "details": {
+                        "name": "Get State Sprite Pathname",
+                        "tooltip": "Gets the sprite pathname to be used for the specified target when the interactive element is in the specified state"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Interactable State",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target EntityID",
+                                "tooltip": "The target element"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "HasStateSprite",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Has State Sprite"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Has State Sprite is invoked"
+                    },
+                    "details": {
+                        "name": "Has State Sprite",
+                        "tooltip": "Returns whether the interactive element has a sprite action for the specified state and target combination"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Interactable State",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target EntityID",
+                                "tooltip": "The target element"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetStateColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set State Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set State Color is invoked"
+                    },
+                    "details": {
+                        "name": "Set State Color",
+                        "tooltip": "Sets the color to be used for the specified target when the interactive element is in the specified state"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Interactable State",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target EntityID",
+                                "tooltip": "The target element"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color",
+                                "tooltip": "The color to be used for the specified target when the interactive element is in the specified state"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "HasStateAlpha",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Has State Alpha"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Has State Alpha is invoked"
+                    },
+                    "details": {
+                        "name": "Has State Alpha",
+                        "tooltip": "Returns whether the interactive element has an alpha action for the specified state and target combination"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Interactable State",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target EntityID",
+                                "tooltip": "The target element"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetStateColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get State Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get State Color is invoked"
+                    },
+                    "details": {
+                        "name": "Get State Color",
+                        "tooltip": "Gets the color to be used for the specified target when the interactive element is in the specified state"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Interactable State",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target EntityID",
+                                "tooltip": "The target element"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color",
+                                "tooltip": "The interactable state (0=Normal, 1=Hover, 2=Pressed, 3=Disabled)"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

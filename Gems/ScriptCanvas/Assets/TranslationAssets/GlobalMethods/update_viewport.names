@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "update_viewport",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "update_viewport",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke update_viewport"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after update_viewport is invoked"
+                    },
+                    "details": {
+                        "name": "update_viewport",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

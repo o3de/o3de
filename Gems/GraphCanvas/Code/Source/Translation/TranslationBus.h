@@ -88,10 +88,16 @@ namespace GraphCanvas
         static AZStd::string Sanitize(const AZStd::string& text)
         {
             AZStd::string result = text;
+            AZ::StringFunc::Replace(result, "*", "x");
+            AZ::StringFunc::Replace(result, "(", "_");
+            AZ::StringFunc::Replace(result, ")", "_");
+            AZ::StringFunc::Replace(result, "{", "_");
+            AZ::StringFunc::Replace(result, "}", "_");
             AZ::StringFunc::Replace(result, ":", "_");
             AZ::StringFunc::Replace(result, "<", "_");
             AZ::StringFunc::Replace(result, ",", "_");
             AZ::StringFunc::Replace(result, ">", " ");
+            AZ::StringFunc::Replace(result, "/", "");
             AZ::StringFunc::Strip(result, " ");
             AZ::StringFunc::Path::Normalize(result);
             return result;
@@ -117,7 +123,7 @@ namespace GraphCanvas
         virtual bool HasKey(const AZStd::string& /*key*/) { return false; }
 
         //! Returns the text value for a given key
-        virtual const char* Get(const AZStd::string& /*key*/) { return nullptr; }
+        virtual bool Get(const AZStd::string& /*key*/, AZStd::string& /*value*/) { return false; }
 
         struct Details
         {
@@ -150,7 +156,7 @@ namespace GraphCanvas
         virtual bool Add(const TranslationFormat& /*translationFormat*/) { return false;  }
 
         //! Get the details associated with a given key (assumes they are within a "details" object)
-        virtual Details GetDetails(const AZStd::string& /*key*/) { return Details(); }
+        virtual Details GetDetails(const AZStd::string& /*key*/, const Details& /*fallbackDetails*/) { return Details(); }
 
         //! Generates the source JSON assets for all reflected elements
         virtual void GenerateSourceAssets() {}

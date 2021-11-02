@@ -1,0 +1,64 @@
+{
+    "entries": [
+        {
+            "key": "LocalScriptEvents",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "LocalScriptEvents"
+            },
+            "methods": [
+                {
+                    "key": "Void",
+                    "details": {
+                        "name": "Void"
+                    }
+                },
+                {
+                    "key": "Not",
+                    "details": {
+                        "name": "Not"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Not"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Not"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Increment",
+                    "details": {
+                        "name": "Increment"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Increment"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Increment"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

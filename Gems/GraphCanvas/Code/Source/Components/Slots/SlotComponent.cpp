@@ -188,6 +188,21 @@ namespace GraphCanvas
         SlotNotificationBus::Event(GetEntityId(), &SlotNotifications::OnNameChanged, m_slotConfiguration.m_name);
     }
 
+    void SlotComponent::SetDetails(const AZStd::string& name, const AZStd::string& tooltip)
+    {
+        if (name != m_slotConfiguration.m_name.GetDisplayString())
+        {
+            m_slotConfiguration.m_name.SetFallback(name);
+            SlotNotificationBus::Event(GetEntityId(), &SlotNotifications::OnNameChanged, m_slotConfiguration.m_name);
+        }
+
+        if (tooltip != m_slotConfiguration.m_tooltip.GetDisplayString())
+        {
+            m_slotConfiguration.m_tooltip.SetFallback(tooltip);
+            SlotNotificationBus::Event(GetEntityId(), &SlotNotifications::OnTooltipChanged, m_slotConfiguration.m_tooltip);
+        }
+    }
+
     void SlotComponent::SetTranslationKeyedName(const TranslationKeyedString& name)
     {
         if (name == m_slotConfiguration.m_name)

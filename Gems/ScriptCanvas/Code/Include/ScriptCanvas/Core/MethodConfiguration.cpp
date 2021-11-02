@@ -13,6 +13,7 @@
 
 #include <ScriptCanvas/Core/Contracts/MethodOverloadContract.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
+#include "../../GraphCanvas/Code/Source/Translation/TranslationBus.h"
 
 namespace ScriptCanvas
 {
@@ -55,7 +56,19 @@ namespace ScriptCanvas
             {
                 const Data::Type outputType = (unpackedTypes.size() == 1 && AZ::BehaviorContextHelper::IsStringParameter(*result)) ? Data::Type::String() : Data::FromAZType(unpackedTypes[resultIndex]);
 
-                const AZStd::string resultSlotName(AZStd::string::format("Result: %s", Data::GetName(outputType).data()));
+                AZStd::string resultSlotName(AZStd::string::format("Result: %s", Data::GetName(outputType).data()));
+
+                GraphCanvas::TranslationKey key;
+                key << "BehaviorClass" << *outputConfig.config.m_className << "methods" << *outputConfig.config.m_lookupName << "results" << resultIndex << "details";
+
+                GraphCanvas::TranslationRequests::Details details;
+                GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+
+                if (!details.Name.empty())
+                {
+                    resultSlotName = details.Name;
+                }
+
                 SlotId addedSlotId;
 
                 if (outputConfig.isReturnValueOverloaded)

@@ -19,7 +19,7 @@ namespace ScriptCanvas
     {
         using namespace Data;
         using namespace MathNodeUtilities;
-        static const char* k_categoryName = "Math/Color";
+        static constexpr const char* k_categoryName = "Math/Color";
 
         AZ_INLINE ColorType Add(ColorType a, ColorType b)
         {

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "AxisAlignedBoxShapeComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "AxisAlignedBoxShapeComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

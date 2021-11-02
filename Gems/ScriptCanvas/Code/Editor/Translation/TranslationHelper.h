@@ -15,6 +15,72 @@
 
 #include <ScriptCanvas/Core/Slot.h>
 #include <GraphCanvas/Types/TranslationTypes.h>
+#include "Source/Translation/TranslationBus.h"
+
+namespace Translation
+{
+    namespace GlobalKeys
+    {
+        static constexpr const char* EBusSenderIDKey = "Globals.EBusSenderBusId";
+        static constexpr const char* EBusHandlerIDKey = "Globals.EBusHandlerBusId";
+        static constexpr const char* MissingFunctionKey = "Globals.MissingFunction";
+        static constexpr const char* EBusHandlerOutSlot = "Globals.EBusHandler.OutSlot";
+    }
+
+    static inline bool GetValue(const AZStd::string key, AZStd::string& value)
+    {
+        GraphCanvas::TranslationKey tkey;
+        tkey = key;
+
+        bool result = false;
+        GraphCanvas::TranslationRequestBus::BroadcastResult(result, &GraphCanvas::TranslationRequests::Get, key, value);
+        return result;
+    }
+}
+
+
+namespace GraphCanvasAttributeHelper
+{
+    template <typename T>
+    AZStd::string GetStringAttribute(const T* source, const AZ::Crc32& attribute)
+    {
+        AZStd::string attributeValue = "";
+        if (auto attributeItem = azrtti_cast<AZ::AttributeData<AZStd::string>*>(AZ::FindAttribute(attribute, source->m_attributes)))
+        {
+            attributeValue = attributeItem->Get(nullptr);
+        }
+        return attributeValue;
+    }
+
+    template <typename T>
+    AZStd::string HasAttribute(const T* source, const AZ::Crc32& attribute)
+    {
+        AZStd::string attributeValue = "";
+        if (auto attributeItem = azrtti_cast<AZ::AttributeData<const char*>*>(AZ::FindAttribute(attribute, source->m_attributes)))
+        {
+            attributeValue = attributeItem->Get(nullptr);
+        }
+        return attributeValue ? true : false;
+    }
+
+    inline AZStd::string ReadStringAttribute(const AZ::AttributeArray& attributes, const AZ::Crc32& attribute)
+    {
+        AZStd::string attributeValue = "";
+        if (auto attributeItem = azrtti_cast<AZ::AttributeData<AZStd::string>*>(AZ::FindAttribute(attribute, attributes)))
+        {
+            attributeValue = attributeItem->Get(nullptr);
+            return attributeValue;
+        }
+
+        if (auto attributeItem = azrtti_cast<AZ::AttributeData<const char*>*>(AZ::FindAttribute(attribute, attributes)))
+        {
+            attributeValue = attributeItem->Get(nullptr);
+            return attributeValue;
+        }
+
+        return {};
+    }
+}
 
 namespace ScriptCanvasEditor
 {
@@ -434,16 +500,6 @@ namespace ScriptCanvasEditor
             }
 
             return translated;
-        }
-
-        static GraphCanvas::TranslationKeyedString GetEBusHandlerBusIdNameKey()
-        {
-            GraphCanvas::TranslationKeyedString keyedString;
-            keyedString.m_context = "Globals";
-            keyedString.m_key = "DEFAULTS_EBUSHANDLER_BUSID_NAME";
-            keyedString.SetFallback("BusId");
-
-            return keyedString;
         }
 
         static GraphCanvas::TranslationKeyedString GetEBusHandlerBusIdTooltipKey()

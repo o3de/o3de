@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "ExposureControlConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ExposureControlConfig"
+            }
+        }
+    ]
+}

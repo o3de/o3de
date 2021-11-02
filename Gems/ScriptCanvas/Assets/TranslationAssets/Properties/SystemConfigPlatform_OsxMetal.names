@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "SystemConfigPlatform_OsxMetal",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "SystemConfigPlatform_OsxMetal::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

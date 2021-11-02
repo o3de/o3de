@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiScaleToDeviceMode_ScaleXOnly",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiScaleToDeviceMode_ScaleXOnly::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

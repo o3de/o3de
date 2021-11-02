@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiVerticalOrder_TopToBottom",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiVerticalOrder_TopToBottom::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

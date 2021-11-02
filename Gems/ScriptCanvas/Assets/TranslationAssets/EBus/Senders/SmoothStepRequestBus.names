@@ -1,0 +1,146 @@
+{
+    "entries": [
+        {
+            "key": "SmoothStepRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "SmoothStepRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "GetFallOffStrength",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFallOffStrength"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFallOffStrength is invoked"
+                    },
+                    "details": {
+                        "name": "GetFallOffStrength"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetFallOffStrength",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetFallOffStrength"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetFallOffStrength is invoked"
+                    },
+                    "details": {
+                        "name": "SetFallOffStrength"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetFallOffRange",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFallOffRange"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFallOffRange is invoked"
+                    },
+                    "details": {
+                        "name": "GetFallOffRange"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetFallOffMidpoint",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetFallOffMidpoint"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetFallOffMidpoint is invoked"
+                    },
+                    "details": {
+                        "name": "SetFallOffMidpoint"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetFallOffRange",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetFallOffRange"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetFallOffRange is invoked"
+                    },
+                    "details": {
+                        "name": "SetFallOffRange"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetFallOffMidpoint",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFallOffMidpoint"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFallOffMidpoint is invoked"
+                    },
+                    "details": {
+                        "name": "GetFallOffMidpoint"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

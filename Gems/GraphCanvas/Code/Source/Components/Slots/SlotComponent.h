@@ -77,6 +77,8 @@ namespace GraphCanvas
         const AZStd::string GetName() const  override { return m_slotConfiguration.m_name.GetDisplayString(); }
         void SetName(const AZStd::string& name) override;
 
+        void SetDetails(const AZStd::string& name, const AZStd::string& tooltip) override;
+
         TranslationKeyedString GetTranslationKeyedName() const override { return m_slotConfiguration.m_name; }
         void SetTranslationKeyedName(const TranslationKeyedString&) override;
 

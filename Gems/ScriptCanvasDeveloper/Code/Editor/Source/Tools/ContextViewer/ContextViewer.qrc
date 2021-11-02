@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="/ContextViewerResources">
+    <file>Resources/ContextViewer.png</file>
+  </qresource>
+</RCC>

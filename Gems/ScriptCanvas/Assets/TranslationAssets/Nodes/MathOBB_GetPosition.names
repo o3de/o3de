@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{44BAE83D-1C90-5026-BD0D-65406C837A27}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "GetPosition",
+                "category": "Math/OBB",
+                "tooltip": "returns the position of Source",
+                "subtitle": "OBB"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_OBB: Source",
+                    "details": {
+                        "name": "OBB: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Vector3",
+                    "details": {
+                        "name": "Result: Vector3"
+                    }
+                }
+            ]
+        }
+    ]
+}

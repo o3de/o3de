@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "{C1E9BE9C-DD4E-5AD5-BFBD-23A012619BD3}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Max",
+                "category": "Math/Vector3",
+                "tooltip": "returns the vector (max(A.x, B.x), max(A.y, B.y), max(A.z, B.z))",
+                "subtitle": "Vector3"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector3: A",
+                    "details": {
+                        "name": "Vector3: A"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector3: B",
+                    "details": {
+                        "name": "Vector3: B"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Vector3",
+                    "details": {
+                        "name": "Result: Vector3"
+                    }
+                }
+            ]
+        }
+    ]
+}

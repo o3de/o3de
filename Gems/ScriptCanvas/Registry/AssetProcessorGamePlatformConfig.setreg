@@ -1,0 +1,17 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "RC names": {
+                    "glob": "*.names",
+                    "params": "copy",
+                },
+                "ScanFolder TranslationAssets": {
+                    "watch": "@ENGINEROOT@/Gems/ScriptCanvas/Assets/TranslationAssets",
+                    "recursive": 1,
+                    "order": 1000
+                }
+            }
+        }
+    }
+}

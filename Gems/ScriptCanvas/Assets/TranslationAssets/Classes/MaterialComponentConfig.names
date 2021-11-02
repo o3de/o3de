@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "MaterialComponentConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "MaterialComponentConfig"
+            }
+        }
+    ]
+}

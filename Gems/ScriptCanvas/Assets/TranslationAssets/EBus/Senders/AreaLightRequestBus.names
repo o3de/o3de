@@ -1,0 +1,696 @@
+{
+    "entries": [
+        {
+            "key": "AreaLightRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "AreaLightRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "SetFilteringSampleCount",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetFilteringSampleCount"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetFilteringSampleCount is invoked"
+                    },
+                    "details": {
+                        "name": "SetFilteringSampleCount"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIntensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetIntensity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetIntensity is invoked"
+                    },
+                    "details": {
+                        "name": "SetIntensity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEsmExponent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEsmExponent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEsmExponent is invoked"
+                    },
+                    "details": {
+                        "name": "SetEsmExponent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetOuterShutterAngle",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOuterShutterAngle"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOuterShutterAngle is invoked"
+                    },
+                    "details": {
+                        "name": "GetOuterShutterAngle"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetInnerShutterAngle",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetInnerShutterAngle"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetInnerShutterAngle is invoked"
+                    },
+                    "details": {
+                        "name": "GetInnerShutterAngle"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetColor is invoked"
+                    },
+                    "details": {
+                        "name": "SetColor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetShadowBias",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetShadowBias"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetShadowBias is invoked"
+                    },
+                    "details": {
+                        "name": "SetShadowBias"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetShadowFilterMethod",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetShadowFilterMethod"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetShadowFilterMethod is invoked"
+                    },
+                    "details": {
+                        "name": "SetShadowFilterMethod"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEsmExponent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEsmExponent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEsmExponent is invoked"
+                    },
+                    "details": {
+                        "name": "GetEsmExponent"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetInnerShutterAngle",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetInnerShutterAngle"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetInnerShutterAngle is invoked"
+                    },
+                    "details": {
+                        "name": "SetInnerShutterAngle"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEnableShadow",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEnableShadow"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEnableShadow is invoked"
+                    },
+                    "details": {
+                        "name": "SetEnableShadow"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetUseFastApproximation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetUseFastApproximation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetUseFastApproximation is invoked"
+                    },
+                    "details": {
+                        "name": "SetUseFastApproximation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetUseFastApproximation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetUseFastApproximation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetUseFastApproximation is invoked"
+                    },
+                    "details": {
+                        "name": "GetUseFastApproximation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetFilteringSampleCount",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFilteringSampleCount"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFilteringSampleCount is invoked"
+                    },
+                    "details": {
+                        "name": "GetFilteringSampleCount"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEnableShadow",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEnableShadow"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEnableShadow is invoked"
+                    },
+                    "details": {
+                        "name": "GetEnableShadow"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetShadowFilterMethod",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetShadowFilterMethod"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetShadowFilterMethod is invoked"
+                    },
+                    "details": {
+                        "name": "GetShadowFilterMethod"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIntensityMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetIntensityMode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetIntensityMode is invoked"
+                    },
+                    "details": {
+                        "name": "GetIntensityMode"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetShadowBias",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetShadowBias"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetShadowBias is invoked"
+                    },
+                    "details": {
+                        "name": "GetShadowBias"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetAttenuationRadiusMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAttenuationRadiusMode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAttenuationRadiusMode is invoked"
+                    },
+                    "details": {
+                        "name": "SetAttenuationRadiusMode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEmitsLightBothDirections",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEmitsLightBothDirections"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEmitsLightBothDirections is invoked"
+                    },
+                    "details": {
+                        "name": "SetEmitsLightBothDirections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEnableShutters",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEnableShutters"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEnableShutters is invoked"
+                    },
+                    "details": {
+                        "name": "SetEnableShutters"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetShadowmapMaxSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetShadowmapMaxSize"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetShadowmapMaxSize is invoked"
+                    },
+                    "details": {
+                        "name": "GetShadowmapMaxSize"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEmitsLightBothDirections",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEmitsLightBothDirections"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEmitsLightBothDirections is invoked"
+                    },
+                    "details": {
+                        "name": "GetEmitsLightBothDirections"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetOuterShutterAngle",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetOuterShutterAngle"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetOuterShutterAngle is invoked"
+                    },
+                    "details": {
+                        "name": "SetOuterShutterAngle"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetAttenuationRadius",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAttenuationRadius"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAttenuationRadius is invoked"
+                    },
+                    "details": {
+                        "name": "SetAttenuationRadius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetAttenuationRadius",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetAttenuationRadius"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetAttenuationRadius is invoked"
+                    },
+                    "details": {
+                        "name": "GetAttenuationRadius"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEnableShutters",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEnableShutters"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEnableShutters is invoked"
+                    },
+                    "details": {
+                        "name": "GetEnableShutters"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColor is invoked"
+                    },
+                    "details": {
+                        "name": "GetColor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ConvertToIntensityMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ConvertToIntensityMode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ConvertToIntensityMode is invoked"
+                    },
+                    "details": {
+                        "name": "ConvertToIntensityMode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetShadowmapMaxSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetShadowmapMaxSize"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetShadowmapMaxSize is invoked"
+                    },
+                    "details": {
+                        "name": "SetShadowmapMaxSize"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIntensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetIntensity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetIntensity is invoked"
+                    },
+                    "details": {
+                        "name": "GetIntensity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

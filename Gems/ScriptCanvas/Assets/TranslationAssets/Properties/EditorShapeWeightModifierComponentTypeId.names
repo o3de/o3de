@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorShapeWeightModifierComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorShapeWeightModifierComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

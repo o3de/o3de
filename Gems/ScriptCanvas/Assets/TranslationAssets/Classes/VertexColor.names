@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "VertexColor",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "VertexColor"
+            }
+        }
+    ]
+}

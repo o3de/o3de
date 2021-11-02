@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "is_helpers_shown",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "is_helpers_shown",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke is_helpers_shown"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after is_helpers_shown is invoked"
+                    },
+                    "details": {
+                        "name": "is_helpers_shown",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

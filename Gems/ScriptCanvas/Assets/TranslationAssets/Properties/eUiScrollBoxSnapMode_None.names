@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiScrollBoxSnapMode_None",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiScrollBoxSnapMode_None::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

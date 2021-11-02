@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiImageType_Sliced",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiImageType_Sliced::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

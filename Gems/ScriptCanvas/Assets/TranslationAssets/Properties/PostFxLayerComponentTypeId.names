@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "PostFxLayerComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "PostFxLayerComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

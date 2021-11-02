@@ -1,0 +1,18 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "RC names": {
+                    "glob": "*.names",
+                    "params": "copy",
+                    "productAssetType": "{6A1A3B00-3DF2-4297-96BB-3BA067A978E6}"
+                },
+                "ScanFolder TranslationAssets": {
+                    "watch": "@ENGINEROOT@/Gems/ScriptCanvas/Assets/TranslationAssets",
+                    "recursive": 1,
+                    "order": 1000
+                }
+            }
+        }
+    }
+}

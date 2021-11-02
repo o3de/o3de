@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "{C5C21008-F0B8-4FC8-843E-9C5C50B9DCDC}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "NodeableNodeOverloaded",
+                "tooltip": "NodeableNode"
+            }
+        }
+    ]
+}

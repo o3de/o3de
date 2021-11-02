@@ -212,6 +212,8 @@ namespace GraphCanvas
         //! Set the slot's name.
         virtual void SetName(const AZStd::string&) = 0;
 
+        virtual void SetDetails(const AZStd::string& name, const AZStd::string& tooltip) = 0;
+
         //! Get and set the keys used for slot name translation.
         virtual TranslationKeyedString GetTranslationKeyedName() const = 0;
         virtual void SetTranslationKeyedName(const TranslationKeyedString&) = 0;

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiAnimationEvent_Updated",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiAnimationEvent_Updated::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

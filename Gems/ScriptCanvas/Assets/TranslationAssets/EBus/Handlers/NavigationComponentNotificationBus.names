@@ -1,0 +1,131 @@
+{
+    "entries": [
+        {
+            "key": "NavigationComponentNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Navigation",
+                "category": "AI"
+            },
+            "methods": [
+                {
+                    "key": "OnSearchingForPath",
+                    "details": {
+                        "name": "On Searching For Path",
+                        "tooltip": "Executes when the pathfinding request has been submitted to the navigation system"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Request ID",
+                                "tooltip": "The ID of the path search request"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnTraversalStarted",
+                    "details": {
+                        "name": "On Traversal Started",
+                        "tooltip": "Executes when the traversal for the indicated request has started"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Request ID",
+                                "tooltip": "The ID of the request for which traversal has started"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnTraversalPathUpdate",
+                    "details": {
+                        "name": "OnTraversalPathUpdate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "RequestId",
+                                "tooltip": "Navigation request Id"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "NextPathPosition",
+                                "tooltip": "Next path position"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "InflectionPosition",
+                                "tooltip": "Next inflection position"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnTraversalInProgress",
+                    "details": {
+                        "name": "On Traversal In Progress",
+                        "tooltip": "Executes when the traversal for the indicated request is in progress"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Request ID",
+                                "tooltip": "The ID of the request for which traversal is in progress"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Distance",
+                                "tooltip": "The remaining distance in the path"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnTraversalComplete",
+                    "details": {
+                        "name": "On Traversal Complete",
+                        "tooltip": "Executes when the traversal for the indicated request has completed successfully"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Request ID",
+                                "tooltip": "The ID of the request for which traversal has finished"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnTraversalCancelled",
+                    "details": {
+                        "name": "On Traversal Cancelled",
+                        "tooltip": "Executes when the traversal for the indicated request was canceled before successful completion."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Request ID",
+                                "tooltip": "The ID of the request for which traversal was cancelled"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,194 @@
+{
+    "entries": [
+        {
+            "key": "NavigationComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Navigation",
+                "category": "AI"
+            },
+            "methods": [
+                {
+                    "key": "SetAgentSpeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Agent Speed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Agent Speed is invoked"
+                    },
+                    "details": {
+                        "name": "Set Agent Speed",
+                        "tooltip": "Sets the agent speed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Speed"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetAgentMovementMethod",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAgentMovementMethod"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAgentMovementMethod is invoked"
+                    },
+                    "details": {
+                        "name": "SetAgentMovementMethod"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetAgentSpeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Agent Speed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Agent Speed is invoked"
+                    },
+                    "details": {
+                        "name": "Get Agent Speed",
+                        "tooltip": "Returns the agent speed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "FindPathToPosition",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FindPathToPosition"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FindPathToPosition is invoked"
+                    },
+                    "details": {
+                        "name": "FindPathToPosition"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Stop",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Stop"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Stop is invoked"
+                    },
+                    "details": {
+                        "name": "Stop",
+                        "tooltip": "Stop all pathfinding operations for the provided requestID"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Request ID",
+                                "tooltip": "The ID of the request to be canceled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "FindPathToEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Find Path To Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Find Path To Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Find Path To Entity",
+                        "tooltip": "Creates a pathfinding request to navigate toward the specified entity",
+                        "category": "AI/Navigation",
+                        "subtitle": "Navigation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target",
+                                "tooltip": "The ID of the entity toward which you want to navigate"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int",
+                                "tooltip": "The ID of the entity toward which you want to navigate"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetAgentMovementMethod",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetAgentMovementMethod"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetAgentMovementMethod is invoked"
+                    },
+                    "details": {
+                        "name": "GetAgentMovementMethod"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
