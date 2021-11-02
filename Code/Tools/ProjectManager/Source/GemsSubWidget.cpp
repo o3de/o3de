@@ -33,6 +33,7 @@ namespace O3DE::ProjectManager
         m_layout->addWidget(m_textLabel);
 
         m_tagWidget = new TagContainerWidget();
+        connect(m_tagWidget, &TagContainerWidget::TagClicked, this, [=](const QString& tag){ emit TagClicked(tag); });
         m_layout->addWidget(m_tagWidget);
     }
 
