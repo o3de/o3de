@@ -14,6 +14,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Debug/ProfilerReflection.h>
 #include <AzCore/Debug/TraceReflection.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Math/MathReflection.h>
@@ -925,6 +926,7 @@ void ScriptSystemComponent::Reflect(ReflectContext* reflection)
         // reflect default entity
         MathReflect(behaviorContext);
         ScriptDebug::Reflect(behaviorContext);
+        Debug::ProfilerReflect(behaviorContext);
         Debug::TraceReflect(behaviorContext);
 
         behaviorContext->Class<PlatformID>("Platform")
