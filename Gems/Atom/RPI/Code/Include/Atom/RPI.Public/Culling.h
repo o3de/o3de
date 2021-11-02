@@ -38,6 +38,8 @@
 namespace AZ
 {
     class Job;
+    class TaskGraphActiveInterface;
+    class TaskGraph;
 
     namespace RHI
     {
@@ -256,7 +258,13 @@ namespace AZ
             //! Must be called between BeginCulling() and EndCulling(), once for each active scene/view pair.
             //! Will create child jobs under the parentJob to do the processing in parallel.
             //! Can be called in parallel (i.e. to perform culling on multiple views at the same time).
-            void ProcessCullables(const Scene& scene, View& view, AZ::Job& parentJob);
+            void ProcessCullablesJobs(const Scene& scene, View& view, AZ::Job& parentJob);
+
+            //! Performs render culling and lod selection for a View, then adds the visible renderpackets to that View.
+            //! Must be called between BeginCulling() and EndCulling(), once for each active scene/view pair.
+            //! Will create child task graphs that signal the TaskGraphEvent to do the processing in parallel.
+            //! Can be called in parallel (i.e. to perform culling on multiple views at the same time).
+            void ProcessCullablesTG(const Scene& scene, View& view, AZ::TaskGraph& taskGraph);
 
             //! Adds a Cullable to the underlying visibility system(s).
             //! Must be called at least once on initialization and whenever a Cullable's position or bounds is changed.
@@ -276,17 +284,20 @@ namespace AZ
                 return m_debugCtx;
             }
 
-            static const size_t WorkListCapacity = 5;
-            using WorkListType = AZStd::fixed_vector<AzFramework::IVisibilityScene::NodeData, WorkListCapacity>;
-
         protected:
             size_t CountObjectsInScene();
+
+        private:
+            void BeginCullingTaskGraph(const AZStd::vector<ViewPtr>& views);
+            void BeginCullingJobs(const AZStd::vector<ViewPtr>& views);
+            void ProcessCullablesCommon(const Scene& scene, View& view, AZ::Frustum& frustum, void*& maskedOcclusionCulling);
 
             const Scene* m_parentScene = nullptr;
             AzFramework::IVisibilityScene* m_visScene = nullptr;
             CullingDebugContext m_debugCtx;
             AZStd::concurrency_checker m_cullDataConcurrencyCheck;
             OcclusionPlaneVector m_occlusionPlanes;
+            AZ::TaskGraphActiveInterface* m_taskGraphActive = nullptr;
         };
         
 

@@ -43,6 +43,7 @@ namespace AtomToolsFramework
             &PreviewerFeatureProcessorProviderBus::Handler::GetRequiredFeatureProcessors, featureProcessors);
 
         AZ::RPI::SceneDescriptor sceneDesc;
+        sceneDesc.m_nameId = AZ::Name("PreviewRenderer");
         sceneDesc.m_featureProcessorNames.assign(featureProcessors.begin(), featureProcessors.end());
         m_scene = AZ::RPI::Scene::CreateScene(sceneDesc);
 

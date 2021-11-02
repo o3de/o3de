@@ -53,6 +53,7 @@ namespace Multiplayer
     void NetworkHierarchyRootComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("NetworkHierarchyRootComponent"));
+        provided.push_back(AZ_CRC_CE("MultiplayerInputDriver"));
     }
 
     void NetworkHierarchyRootComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)

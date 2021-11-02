@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <Source/AutoGen/AutoComponentTypes.h>
 
 #include <AutomatedTestingSystemComponent.h>
 
@@ -60,6 +61,7 @@ namespace AutomatedTesting
     void AutomatedTestingSystemComponent::Activate()
     {
         AutomatedTestingRequestBus::Handler::BusConnect();
+        RegisterMultiplayerComponents(); //< Register AutomatedTesting's multiplayer components to assign NetComponentIds
     }
 
     void AutomatedTestingSystemComponent::Deactivate()

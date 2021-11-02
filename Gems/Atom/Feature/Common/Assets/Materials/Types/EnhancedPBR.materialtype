@@ -1577,15 +1577,6 @@
         {
             "type": "UseTexture",
             "args": {
-                "textureProperty": "metallic.textureMap",
-                "useTextureProperty": "metallic.useTexture",
-                "dependentProperties": ["metallic.textureMapUv"],
-                "shaderOption": "o_metallic_useTexture"
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
                 "textureProperty": "specularF0.textureMap",
                 "useTextureProperty": "specularF0.useTexture",
                 "dependentProperties": ["specularF0.textureMapUv"],
@@ -1647,6 +1638,12 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_Roughness.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "StandardPBR_Metallic.lua"
             }
         },
         {

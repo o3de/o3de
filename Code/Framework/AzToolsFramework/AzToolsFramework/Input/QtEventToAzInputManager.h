@@ -138,8 +138,9 @@ namespace AzToolsFramework
         void HandleKeyEvent(QKeyEvent* keyEvent);
         // Handles mouse wheel events.
         void HandleWheelEvent(QWheelEvent* wheelEvent);
-        // Handles focus change events.
-        void HandleFocusChange(QEvent* event);
+
+        // Clear all input channels (set all channel states to 'ended').
+        void ClearInputChannels(QEvent* event);
 
         // Populates m_keyMappings.
         void InitializeKeyMappings();
