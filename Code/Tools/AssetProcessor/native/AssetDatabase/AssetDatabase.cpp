@@ -1075,7 +1075,7 @@ namespace AssetProcessor
             AZStd::string dbFilePath = GetAssetDatabaseFilePath();
             if (dbFilePath != ":memory:")
             {
-                AZ_TracePrintf("AssetDatabase", "Deleting existing db\n"); // Temporary debug output to help with tracking down a crash
+                AZ_TracePrintf("AssetDatabase", "Deleting existing db %s\n", dbFilePath.c_str()); // Temporary debug output to help with tracking down a crash
                 // you cannot delete a memory database, but it drops all data when you close it anyway.
                 if (!AZ::IO::SystemFile::Delete(dbFilePath.c_str()))
                 {
