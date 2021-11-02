@@ -301,13 +301,7 @@ namespace AZ
         using WorkListType = AZStd::fixed_vector<AzFramework::IVisibilityScene::NodeData, WorkListCapacity>;
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-        enum CullingResult : uint8_t
-        {
-            Visible    = 0x0,
-            Occluded   = 0x1,
-            ViewCulled = 0x3
-        };
-        static CullingResult TestOcclusionCulling(
+        static MaskedOcclusionCulling::CullingResult TestOcclusionCulling(
                     const AZStd::shared_ptr<WorklistData>& worklistData, 
                     AzFramework::VisibilityEntry* visibleEntry);
 #endif
@@ -352,7 +346,7 @@ namespace AZ
                                 }
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-                                if (TestOcclusionCulling(worklistData, visibleEntry) == CullingResult::Visible)
+                                if (TestOcclusionCulling(worklistData, visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
 #endif
                                 {
                                     numDrawPackets += AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
@@ -388,7 +382,7 @@ namespace AZ
                             else if (res == IntersectResult::Interior || ShapeIntersection::Overlaps(worklistData->m_frustum, c->m_cullData.m_boundingObb))
                             {
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-                                if (TestOcclusionCulling(worklistData, visibleEntry) == CullingResult::Visible)
+                                if (TestOcclusionCulling(worklistData, visibleEntry) == MaskedOcclusionCulling::CullingResult::VISIBLE)
 #endif
                                 {
                                     numDrawPackets += AddLodDataToView(c->m_cullData.m_boundingSphere.GetCenter(), c->m_lodData, *worklistData->m_view);
@@ -465,19 +459,19 @@ namespace AZ
         }
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
-        static CullingResult TestOcclusionCulling(
+        static MaskedOcclusionCulling::CullingResult TestOcclusionCulling(
             const AZStd::shared_ptr<WorklistData>& worklistData, 
             AzFramework::VisibilityEntry* visibleEntry)
         {
             if (!worklistData->m_maskedOcclusionCulling)
             {
-                return CullingResult::Visible;
+                return MaskedOcclusionCulling::CullingResult::VISIBLE;
             }
 
             if (visibleEntry->m_boundingVolume.Contains(worklistData->m_view->GetCameraTransform().GetTranslation()))
             {
                 // camera is inside bounding volume
-                return CullingResult::Visible;
+                return MaskedOcclusionCulling::CullingResult::VISIBLE;
             }
 
             const Vector3& minBound = visibleEntry->m_boundingVolume.GetMin();
@@ -505,7 +499,7 @@ namespace AZ
                 minDepth = AZStd::min(minDepth, corners[index].GetW());
                 if (minDepth < 0.00000001f)
                 {
-                    return CullingResult::Visible;
+                    return MaskedOcclusionCulling::CullingResult::VISIBLE;
                 }
 
 
@@ -519,7 +513,7 @@ namespace AZ
             }
 
             // test against the occlusion buffer, which contains only the manually placed occlusion planes
-            return static_cast<CullingResult>(worklistData->m_maskedOcclusionCulling->TestRect(ndcMinX, ndcMinY, ndcMaxX, ndcMaxY, minDepth));
+            return worklistData->m_maskedOcclusionCulling->TestRect(ndcMinX, ndcMinY, ndcMaxX, ndcMaxY, minDepth);
         }
 #endif
 

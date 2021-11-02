@@ -499,23 +499,20 @@ namespace AZ
                 AZ_PROFILE_SCOPE(RPI, "CollectDrawPacketsTaskGraph");
                 AZ::TaskGraphEvent collectDrawPacketsTGEvent;
                 static const AZ::TaskDescriptor collectDrawPacketsTGDesc{"RPI_Scene_PrepareRender_CollectDrawPackets", "Graphics"};
+                AZ::TaskGraph collectDrawPacketsTG;
 
-                //if (m_featureProcessors.size()) // skip the submit if no work to do
+                // Launch FeatureProcessor::Render() taskgraphs
+                for (auto& fp : m_featureProcessors)
                 {
-                    AZ::TaskGraph collectDrawPacketsTG;
-                    // Launch FeatureProcessor::Render() taskgraphs
-                    for (auto& fp : m_featureProcessors)
-                    {
-                        collectDrawPacketsTG.AddTask( 
-                            collectDrawPacketsTGDesc,
-                            [this, &fp]()
-                            {
-                                fp->Render(m_renderPacket);
-                            });
+                    collectDrawPacketsTG.AddTask( 
+                        collectDrawPacketsTGDesc,
+                        [this, &fp]()
+                        {
+                            fp->Render(m_renderPacket);
+                        });
 
-                    }
-                    collectDrawPacketsTG.Submit(&collectDrawPacketsTGEvent);
                 }
+                collectDrawPacketsTG.Submit(&collectDrawPacketsTGEvent);
 
                 // Launch CullingSystem::ProcessCullables() jobs (will run concurrently with FeatureProcessor::Render() jobs if m_parallelOctreeTraversal)
                 bool parallelOctreeTraversal = m_cullingScene->GetDebugContext().m_parallelOctreeTraversal;
@@ -552,10 +549,7 @@ namespace AZ
                     processCullablesTG.Submit(&processCullablesTGEvent);
                 }
 
-                //if (m_featureProcessors.size()) // skip the wait if no work to do
-                {
-                    collectDrawPacketsTGEvent.Wait();
-                }
+                collectDrawPacketsTGEvent.Wait();
                 if (processCullablesHasWork) // skip the wait if there is no work to do
                 {
                     processCullablesTGEvent.Wait();
