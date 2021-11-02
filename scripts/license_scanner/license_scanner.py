@@ -6,6 +6,7 @@
 #
 
 import argparse
+from collections import OrderedDict
 import fnmatch
 import json
 import os
@@ -49,11 +50,11 @@ class LicenseScanner:
         if 'license_patterns' in self.config_data:
             for pattern in self.config_data['license_patterns']:
                 regex_patterns.append(fnmatch.translate(pattern))
-        if 'package_patterns' in self.config_data:
+        elif 'package_patterns' in self.config_data:
             for pattern in self.config_data['package_patterns']:
                 regex_patterns.append(fnmatch.translate(pattern))
         else:
-            print('Invalid key values found in config file! Use "license_patterns" for licenses, "package_patterns" for 3p packages')
+            print('Invalid or no key values found in config file! Use "license_patterns" for licenses, "package_patterns" for 3p packages')
             raise KeyError
 
         return re.compile('|'.join(regex_patterns), re.IGNORECASE)
@@ -63,10 +64,10 @@ class LicenseScanner:
 
         :param path: Path of the directory to run scanner
         :return: Package paths and their corresponding file contents
-        :rtype: dict
+        :rtype: Ordered dict
         """
         files = 0
-        matching_files = {}
+        matching_files = OrderedDict()
 
         for dirpath, dirnames, filenames in os.walk(path):
             for file in filenames:
@@ -111,28 +112,25 @@ class LicenseScanner:
         return None
     
     def create_package_file(self, packages, filepath='SPDX-Licenses.json', dirpath=None):
-        """Creates file with all the provided SPDX package info summaries.
+        """Creates file with all the provided SPDX package info summaries in json.
+        Optional dirpath parameter will follow the license file path in the package info and return its contents in a dictionary
 
-        :param licenses: Dict with package paths and their corresponding license file contents
+        :param licenses: Dict with package info paths and their corresponding file contents
         :param filepath: Path to write the file
         :param dirpath: Root path for packages
-        :rtype: dict
+        :rtype: Ordered dict
         """
-        licenses = {}
-        package_separator = ','
+        licenses = OrderedDict()
+        package_json = []
         with open(filepath, 'w', encoding='utf8') as pf:
             for directory, package in packages.items():
                 package_obj = json.loads(package)
-                package_json = json.dumps(package_obj, indent=4)
-                package_output = ''.join([
-                    f'{package_json}',
-                    f'{package_separator}\n'
-                ])
-                pf.write(package_output)
+                package_json.append(package_obj)
                 if dirpath:
                     license_path = os.path.join(directory, pathlib.Path(package_obj['LicenseFile'])) # Gets relative path
                     license_content = self._get_file_contents(os.path.join(dirpath, license_path))
                     licenses[license_path] = license_content
+            pf.write(json.dumps(package_json, indent=4))
         return licenses
 
 
