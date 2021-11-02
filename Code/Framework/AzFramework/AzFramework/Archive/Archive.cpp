@@ -378,7 +378,7 @@ namespace AZ::IO
                 {
                     OnSystemEntityActivated();
                 },
-                "SystemEntityActivated",
+                "SystemComponentsActivated",
                 /*autoRegisterEvent*/ true);
         }
     }

@@ -375,6 +375,6 @@ namespace AZ::IO
             int m_flags;
         };
 
-        AZStd::list<ArchivesWithCatalogsToLoad> m_archivesWithCatalogsToLoad;
+        AZStd::vector<ArchivesWithCatalogsToLoad> m_archivesWithCatalogsToLoad;
     };
 }

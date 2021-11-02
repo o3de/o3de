@@ -1689,7 +1689,7 @@ bool CCryEditApp::InitInstance()
 
     if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
     {
-        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "SystemInterfaceCreated", R"({})");
+        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "LegacySystemInterfaceCreated", R"({})");
     }
 
     // Process some queued events come from system init

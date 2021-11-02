@@ -665,7 +665,7 @@ namespace O3DELauncher
         systemInitParams.pSystem = CreateSystemInterface(systemInitParams);
     #endif // !defined(AZ_MONOLITHIC_BUILD)
 
-        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "SystemInterfaceCreated", R"({})");
+        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "LegacySystemInterfaceCreated", R"({})");
 
         ReturnCode status = ReturnCode::Success;
 

@@ -23,8 +23,7 @@
                 "GemsUnloaded": {},
                 "FileIOAvailable": {},
                 "FileIOUnavailable": {},
-                "SystemEntityActivated": {},
-                "SystemInterfaceCreated": {}
+                "LegacySystemInterfaceCreated": {}
             }
         }
     }

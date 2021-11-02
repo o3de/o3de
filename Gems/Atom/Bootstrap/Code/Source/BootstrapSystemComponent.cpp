@@ -155,7 +155,7 @@ namespace AZ
                         {
                             Initialize();
                         },
-                        "SystemInterfaceCreated");
+                        "LegacySystemInterfaceCreated");
                 }
             }
 
