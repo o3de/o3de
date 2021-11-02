@@ -77,20 +77,20 @@ def compare_screenshot_similarity(
     :return: Error string if compared mean value < similarity threshold or screenshot_directory is missing for .zip,
         otherwise it returns a "Screenshots match" string.
     """
-    error = "Screenshots match"
+    result = "Screenshots match"
     if create_zip_archive and not screenshot_directory:
-        error = 'You must specify a screenshot_directory in order to create a zip archive.\n'
+        result = 'You must specify a screenshot_directory in order to create a zip archive.\n'
 
     mean_similarity = compare_screenshots(test_screenshot, golden_image)
     if not mean_similarity > similarity_threshold:
         if create_zip_archive:
             create_screenshots_archive(screenshot_directory)
-        error = (
+        result = (
             f"When comparing the test_screenshot: '{test_screenshot}' "
             f"to golden_image: '{golden_image}' the mean similarity of '{mean_similarity}' "
             f"was lower than the similarity threshold of '{similarity_threshold}'. ")
 
-    return error
+    return result
 
 
 def create_basic_atom_level(level_name):
