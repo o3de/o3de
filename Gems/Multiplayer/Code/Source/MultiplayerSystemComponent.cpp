@@ -719,11 +719,6 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::OnConnect(AzNetworking::IConnection* connection)
     {
-        MultiplayerAgentDatum datum;
-        datum.m_id = connection->GetConnectionId();
-        datum.m_isInvited = false;
-        datum.m_agentType = MultiplayerAgentType::Client;
-
         AZStd::string providerTicket;
         if (connection->GetConnectionRole() == ConnectionRole::Connector)
         {
@@ -737,7 +732,12 @@ namespace Multiplayer
         }
         else
         {
-            AZLOG_INFO("New incoming connection from remote address: %s", connection->GetRemoteAddress().GetString().c_str());
+            AZLOG_INFO("New incoming connection from remote address: %s", connection->GetRemoteAddress().GetString().c_str())
+
+            MultiplayerAgentDatum datum;
+            datum.m_id = connection->GetConnectionId();
+            datum.m_isInvited = false;
+            datum.m_agentType = MultiplayerAgentType::Client;
             m_connectionAcquiredEvent.Signal(datum);
         }
 
@@ -771,15 +771,14 @@ namespace Multiplayer
         AZLOG_INFO("%s from remote address %s due to %s", endpointString, connection->GetRemoteAddress().GetString().c_str(), reasonString.c_str());
 
         // The client is disconnecting
-        if (GetAgentType() == MultiplayerAgentType::Client)
+        if (m_agentType == MultiplayerAgentType::Client)
         {
             AZ_Assert(connection->GetConnectionRole() == ConnectionRole::Connector, "Client connection role should only ever be Connector");
             m_clientDisconnectedEvent.Signal();
         }
-
-        // Signal to session management that a user has left the server
-        if (m_agentType == MultiplayerAgentType::DedicatedServer || m_agentType == MultiplayerAgentType::ClientServer)
+        else if (m_agentType == MultiplayerAgentType::DedicatedServer || m_agentType == MultiplayerAgentType::ClientServer)
         {
+            // Signal to session management that a user has left the server
             if (AZ::Interface<AzFramework::ISessionHandlingProviderRequests>::Get() != nullptr &&
                 connection->GetConnectionRole() == ConnectionRole::Acceptor)
             {
@@ -1130,7 +1129,10 @@ namespace Multiplayer
             return m_networkEntityManager.GetNetworkEntityTracker()->Get(node->second);
         }
 
-        PrefabEntityId playerPrefabEntityId(AZ::Name(static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str()));
+        // make sure the player prefab path is lowercase (how it's stored in the cache folder)
+        auto sv_defaultPlayerSpawnAssetLowerCase = static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset);
+        AZStd::to_lower(sv_defaultPlayerSpawnAssetLowerCase.begin(), sv_defaultPlayerSpawnAssetLowerCase.end());
+        PrefabEntityId playerPrefabEntityId(AZ::Name(static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAssetLowerCase).c_str()));
         INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity(), Multiplayer::AutoActivate::DoNotActivate);
 
         for (NetworkEntityHandle subEntity : entityList)
