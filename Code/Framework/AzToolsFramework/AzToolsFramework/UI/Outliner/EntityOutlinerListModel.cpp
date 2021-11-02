@@ -765,10 +765,18 @@ namespace AzToolsFramework
         return canHandleData;
     }
 
-    bool EntityOutlinerListModel::CanDropMimeDataAssets(const QMimeData* data, Qt::DropAction /*action*/, int /*row*/, int /*column*/, const QModelIndex& /*parent*/) const
+    bool EntityOutlinerListModel::CanDropMimeDataAssets(const QMimeData* data, Qt::DropAction /*action*/, int /*row*/, int /*column*/, const QModelIndex& parent) const
     {
         using namespace AzToolsFramework;
-        
+
+        // Disable dropping assets on closed container entities.
+        AZ::EntityId parentId = GetEntityFromIndex(parent);
+        if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+            !containerEntityInterface->IsContainerOpen(parentId))
+        {
+            return false;
+        }
+
         if (data->hasFormat(AssetBrowser::AssetBrowserEntry::GetMimeType()))
         {
             return DecodeAssetMimeData(data);
@@ -785,6 +793,13 @@ namespace AzToolsFramework
 
         bool hasValidAssets = DecodeAssetMimeData(data, &componentAssetPairs, &sourceFiles);
         if (!hasValidAssets)
+        {
+            return false;
+        }
+
+        // If the parent entity is a closed container, bail.
+        if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+            !containerEntityInterface->IsContainerOpen(assignParentId))
         {
             return false;
         }
