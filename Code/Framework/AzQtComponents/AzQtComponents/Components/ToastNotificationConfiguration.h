@@ -27,7 +27,6 @@ namespace AzQtComponents
     class AZ_QT_COMPONENTS_API ToastConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(ToastConfiguration, AZ::SystemAllocator, 0);
         ToastConfiguration(ToastType toastType, const QString& title, const QString& description);
 
         bool m_closeOnClick = true;
