@@ -145,7 +145,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemCatalogScreen::OnGemStatusChanged(const QModelIndex& modelIndex, uint32_t numChangedDependencies) 
+    void GemCatalogScreen::OnGemStatusChanged(const QModelIndex& modelIndex, uint32_t numChangedDependencies)
     {
         if (m_notificationsEnabled)
         {
@@ -170,6 +170,7 @@ namespace O3DE::ProjectManager
                 if (added && GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded)
                 {
                     m_downloadController->AddGemDownload(GemModel::GetName(modelIndex));
+                    GemModel::SetDownloadStatus(*m_proxModel, modelIndex, GemInfo::DownloadStatus::Downloading);
                 }
             }
 
@@ -187,7 +188,7 @@ namespace O3DE::ProjectManager
             toastConfiguration.m_customIconImage = ":/gem.svg";
             toastConfiguration.m_borderRadius = 4;
             toastConfiguration.m_duration = AZStd::chrono::milliseconds(3000);
-            m_notificationsView->ShowToastNotification(toastConfiguration);
+            //m_notificationsView->ShowToastNotification(toastConfiguration);
         }
     }
 
