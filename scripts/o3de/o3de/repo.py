@@ -147,7 +147,7 @@ def get_gem_json_paths_from_all_cached_repos() -> set:
     json_data = manifest.load_o3de_manifest()
     gem_set = set()
 
-    for repo_uri in json_data['repos']:
+    for repo_uri in json_data.get('repos', []):
         gem_set.update(get_gem_json_paths_from_cached_repo(repo_uri)) 
 
     return gem_set
@@ -189,7 +189,7 @@ def refresh_repos() -> int:
     # set will stop circular references
     repo_set = set()
 
-    for repo_uri in json_data['repos']:
+    for repo_uri in json_data.get('repos', []):
         if repo_uri not in repo_set:
             repo_set.add(repo_uri)
 
