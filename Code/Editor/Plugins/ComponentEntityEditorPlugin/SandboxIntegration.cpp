@@ -670,8 +670,9 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
                 action, &QAction::triggered, action,
                 [selected]
                 {
-                    EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, CreateNewEntityAsChild, selected.front());
-                });
+                    AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Handler::CreateNewEntityAsChild, selected.front());
+                }
+            );
         }
     }
 

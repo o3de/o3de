@@ -765,10 +765,13 @@ namespace AzToolsFramework
         return canHandleData;
     }
 
-    bool EntityOutlinerListModel::CanDropMimeDataAssets(const QMimeData* data, Qt::DropAction /*action*/, int /*row*/, int /*column*/, const QModelIndex& parent) const
+    bool EntityOutlinerListModel::CanDropMimeDataAssets(
+        const QMimeData* data,
+        [[maybe_unused]] Qt::DropAction action,
+        [[maybe_unused]] int row,
+        [[maybe_unused]] int column,
+        const QModelIndex& parent) const
     {
-        using namespace AzToolsFramework;
-
         // Disable dropping assets on closed container entities.
         AZ::EntityId parentId = GetEntityFromIndex(parent);
         if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
@@ -805,7 +808,7 @@ namespace AzToolsFramework
         }
 
         // Source Files
-        if (sourceFiles.size() > 0)
+        if (!sourceFiles.empty())
         {
             // Get position (center of viewport). If no viewport is available, (0,0,0) will be used.
             AZ::Vector3 viewportCenterPosition = AZ::Vector3::CreateZero();
