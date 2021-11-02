@@ -132,7 +132,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Alias for the function type used to create a custom implementation for this input device
-        using ImplementationFactory = typename InputDeviceMotion::Implementation*(InputDeviceMotion&);
+        using ImplementationFactory = Implementation*(InputDeviceMotion&);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
