@@ -3,7 +3,9 @@
         ".git",
         ".venv",
         "build",
-        "license_scanner"
+        "license_scanner",
+        "python",
+        "Qt*"
     ],
     "license_patterns": [
         "LICENSE*",
