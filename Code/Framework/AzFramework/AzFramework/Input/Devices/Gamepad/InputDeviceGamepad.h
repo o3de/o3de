@@ -188,7 +188,7 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Alias for the function type used to create a custom implementation for this input device
-        using ImplementationFactory = typename Implementation*(*)(InputDeviceGamepad&);
+        using ImplementationFactory = typename InputDeviceGamepad::Implementation*(InputDeviceGamepad&);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
@@ -204,7 +204,7 @@ namespace AzFramework
         //! \param[in] inputDeviceId Id of the input device
         //! \param[in] implementationFactory Optional override of the default Implementation::Create
         explicit InputDeviceGamepad(const InputDeviceId& inputDeviceId,
-                                    ImplementationFactory implementationFactory = nullptr);
+                                    ImplementationFactory implementationFactory = &Implementation::Create);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Disable copying

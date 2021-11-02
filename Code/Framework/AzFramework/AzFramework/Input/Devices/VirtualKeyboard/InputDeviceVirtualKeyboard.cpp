@@ -66,11 +66,8 @@ namespace AzFramework
             m_commandChannelsById[channelId] = channel;
         }
 
-        // Create a custom implementation if we've been provided one,
-        // otherwise default to the platform specific implementation
-        m_pimpl.reset(implementationFactory ?
-                      implementationFactory(*this) :
-                      Implementation::Create(*this));
+        // Create the platform specific or custom implementation
+        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
 
         // Connect to the text entry request bus
         InputTextEntryRequestBus::Handler::BusConnect(GetInputDeviceId());

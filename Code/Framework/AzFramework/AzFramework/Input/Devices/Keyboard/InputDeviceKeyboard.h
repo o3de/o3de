@@ -376,14 +376,14 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Alias for the function type used to create a custom implementation for this input device
-        using ImplementationFactory = typename Implementation*(*)(InputDeviceKeyboard&);
+        using ImplementationFactory = typename InputDeviceKeyboard::Implementation*(InputDeviceKeyboard&);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         //! \param[in] inputDeviceId Optional override of the default input device id
         //! \param[in] implementationFactory Optional override of the default Implementation::Create
         explicit InputDeviceKeyboard(const InputDeviceId& inputDeviceId = Id,
-                                     ImplementationFactory implementationFactory = nullptr);
+                                     ImplementationFactory implementationFactory = &Implementation::Create);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Disable copying

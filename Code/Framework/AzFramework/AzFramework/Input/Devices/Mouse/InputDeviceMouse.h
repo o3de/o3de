@@ -128,14 +128,14 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Alias for the function type used to create a custom implementation for this input device
-        using ImplementationFactory = typename Implementation*(*)(InputDeviceMouse&);
+        using ImplementationFactory = typename InputDeviceMouse::Implementation*(InputDeviceMouse&);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         //! \param[in] inputDeviceId Optional override of the default input device id
         //! \param[in] implementationFactory Optional override of the default Implementation::Create
         explicit InputDeviceMouse(const InputDeviceId& inputDeviceId = Id,
-                                  ImplementationFactory implementationFactory = nullptr);
+                                  ImplementationFactory implementationFactory = &Implementation::Create);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Disable copying
