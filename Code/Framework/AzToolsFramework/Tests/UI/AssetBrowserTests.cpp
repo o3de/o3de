@@ -122,7 +122,6 @@ namespace UnitTest
 
         m_tableModel.reset();
         m_filterModel.reset();
-
         m_assetBrowserComponent->Deactivate();
 
         m_assetBrowserComponent.reset();
@@ -174,7 +173,7 @@ namespace UnitTest
         product.first = sourceUuid;
         product.second = AzToolsFramework::AssetDatabase::ProductDatabaseEntry();
         product.second.m_productID = productID;
-        product.second.m_subID = productID;
+        product.second.m_subID = 0;
         product.second.m_productName = productName;
 
         GetRootEntry()->AddProduct(product);
