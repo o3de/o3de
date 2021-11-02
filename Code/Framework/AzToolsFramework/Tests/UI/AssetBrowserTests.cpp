@@ -6,11 +6,8 @@
  *
  */
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzTest/AzTest.h>
 
-#include <AzFramework/Entity/EntityContextBus.h>
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
@@ -20,12 +17,10 @@
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/RootAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 #include <AzToolsFramework/AssetBrowser/Search/SearchWidget.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
-#include <Prefab/PrefabTestFixture.h>
 #include <QAbstractItemModelTester>
 
 namespace UnitTest
