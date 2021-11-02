@@ -93,7 +93,7 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientRefreshesTer
     // As the TerrainHeightGradientListComponent subscribes to the dependency monitor, RefreshArea will be called twice:
     // once due to OnCompositionChanged being picked up by the the dependency monitor and resending the notification,
     // and once when the HeightGradientListComponent gets the OnCompositionChanged directly through the DependencyNotificationBus.
-    EXPECT_CALL(terrainSystem, RefreshArea(_)).Times(2);
+    EXPECT_CALL(terrainSystem, RefreshArea(_, _)).Times(2);
 
     LmbrCentral::DependencyNotificationBus::Event(m_entity->GetId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
 

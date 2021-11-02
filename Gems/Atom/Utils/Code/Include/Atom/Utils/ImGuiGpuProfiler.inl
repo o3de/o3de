@@ -651,7 +651,7 @@ namespace AZ
                 if (m_refreshType == RefreshType::OncePerSecond)
                 {
                     auto now = AZStd::GetTimeNowMicroSecond();
-                    if (m_lastUpdateTimeMicroSecond == 0 || now - m_lastUpdateTimeMicroSecond > 1000000)
+                    if (now - m_lastUpdateTimeMicroSecond > 1000000)
                     {
                         needEnable = true;
                         m_lastUpdateTimeMicroSecond = now;

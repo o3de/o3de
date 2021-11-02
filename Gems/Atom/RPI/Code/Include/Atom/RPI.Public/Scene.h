@@ -80,6 +80,9 @@ namespace AZ
             //! Gets the RPI::Scene for a given entityContextId.
             //! May return nullptr if there is no RPI::Scene created for that entityContext.
             static Scene* GetSceneForEntityContextId(AzFramework::EntityContextId entityContextId);
+            
+            //! Gets the RPI::Scene for a given entityId.
+            static Scene* GetSceneForEntityId(AZ::EntityId entityId);
 
             ~Scene();
 
@@ -134,6 +137,8 @@ namespace AZ
             Data::Instance<ShaderResourceGroup> GetShaderResourceGroup() const;
 
             const SceneId& GetId() const;
+
+            AZ::Name GetName() const;
 
             //! Set default pipeline by render pipeline ID.
             //! It returns true if the default render pipeline was set from the input ID.
@@ -245,6 +250,9 @@ namespace AZ
             // The uuid to identify this scene.
             SceneId m_id;
 
+            // Scene's name which is set at initialization. Can be empty
+            AZ::Name m_name;
+
             bool m_activated = false;
             bool m_taskGraphActive = false; // update during tick, to ensure it only changes on frame boundaries
 
@@ -286,13 +294,10 @@ namespace AZ
         template<typename FeatureProcessorType>
         FeatureProcessorType* Scene::GetFeatureProcessorForEntity(AZ::EntityId entityId)
         {
-            // Find the entity context for the entity ID.
-            AzFramework::EntityContextId entityContextId = AzFramework::EntityContextId::CreateNull();
-            AzFramework::EntityIdContextQueryBus::EventResult(entityContextId, entityId, &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
-
-            if (!entityContextId.IsNull())
+            RPI::Scene* renderScene = GetSceneForEntityId(entityId);            
+            if (renderScene)
             {
-                return GetFeatureProcessorForEntityContextId<FeatureProcessorType>(entityContextId);
+                return renderScene->GetFeatureProcessor<FeatureProcessorType>();
             }
             return nullptr;
         };
