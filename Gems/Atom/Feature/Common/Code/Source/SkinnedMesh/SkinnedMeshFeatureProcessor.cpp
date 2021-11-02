@@ -17,6 +17,7 @@
 #include <MorphTargets/MorphTargetDispatchItem.h>
 
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -241,12 +242,12 @@ namespace AZ
 
         void SkinnedMeshFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
         {
-            InitSkinningAndMorphPass(pipeline->GetRootPass());
+            InitSkinningAndMorphPass(pipeline.get());
         }
 
         void SkinnedMeshFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
         {
-            InitSkinningAndMorphPass(renderPipeline->GetRootPass());
+            InitSkinningAndMorphPass(renderPipeline);
         }
 
         void SkinnedMeshFeatureProcessor::OnBeginPrepareRender()
@@ -289,9 +290,10 @@ namespace AZ
             return false;
         }
 
-        void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass(const RPI::Ptr<RPI::ParentPass> pipelineRootPass)
+        void SkinnedMeshFeatureProcessor::InitSkinningAndMorphPass(RPI::RenderPipeline* renderPipeline)
         {
-            RPI::Ptr<RPI::Pass> skinningPass = pipelineRootPass->FindPassByNameRecursive(AZ::Name{ "SkinningPass" });
+            RPI::PassFilter skinPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "SkinningPass" }, renderPipeline);
+            RPI::Ptr<RPI::Pass> skinningPass = RPI::PassSystemInterface::Get()->FindFirstPass(skinPassFilter);
             if (skinningPass)
             {
                 SkinnedMeshComputePass* skinnedMeshComputePass = azdynamic_cast<SkinnedMeshComputePass*>(skinningPass.get());
@@ -310,7 +312,8 @@ namespace AZ
                 }
             }
 
-            RPI::Ptr<RPI::Pass> morphTargetPass = pipelineRootPass->FindPassByNameRecursive(AZ::Name{ "MorphTargetPass" });
+            RPI::PassFilter morphPassFilter = RPI::PassFilter::CreateWithPassName(AZ::Name{ "MorphTargetPass" }, renderPipeline);
+            RPI::Ptr<RPI::Pass> morphTargetPass = RPI::PassSystemInterface::Get()->FindFirstPass(morphPassFilter);
             if (morphTargetPass)
             {
                 MorphTargetComputePass* morphTargetComputePass = azdynamic_cast<MorphTargetComputePass*>(morphTargetPass.get());
