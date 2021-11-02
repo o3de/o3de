@@ -17,6 +17,9 @@
 #include "ImGuiColorDefines.h"
 #include "LYImGuiUtils/ImGuiDrawHelpers.h"
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace ImGui
 {
     // Resolution Widths to recommend for usage for both O3DE Rendering and/or ImGui Rendering
@@ -755,3 +758,6 @@ namespace ImGui
 } // namespace ImGui
 
 #endif // IMGUI_ENABLED
+
+#pragma optimize("", on)
+#pragma inline_depth()
