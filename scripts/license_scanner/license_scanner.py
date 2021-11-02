@@ -70,6 +70,7 @@ class LicenseScanner:
         matching_files = OrderedDict()
 
         for dirpath, dirnames, filenames in os.walk(path):
+            dirnames.sort(key=str.casefold) # Ensure that results are sorted
             for file in filenames:
                 if self.file_regex.match(file):
                     matching_file_content = self._get_file_contents(os.path.join(dirpath, file))
