@@ -114,7 +114,7 @@ MIN_NATIVE_API_LEVEL = 24       # The minimum Native API level that is supported
 ANDROID_NDK_PLATFORM_ARGUMENT_NAME = '--android-ndk-version'
 
 ANDROID_GRADLE_PLUGIN_ARGUMENT_NAME = '--gradle-plugin-version'
-ANDROID_GRADLE_MIN_PLUGIN_VERSION = LooseVersion("4.2.0")
+ANDROID_GRADLE_MIN_PLUGIN_VERSION = LooseVersion("4.2.2")
 
 # Constants for asset-related options for APK generation
 INCLUDE_APK_ASSETS_ARGUMENT_NAME = "--include-apk-assets"

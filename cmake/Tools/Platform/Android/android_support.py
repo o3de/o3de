@@ -33,7 +33,7 @@ from cmake.Tools import common
 
 
 ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = {
-    '4.2.0': {'min_gradle_version': '6.7.1',
+    '4.2.2': {'min_gradle_version': '6.7.1',
               'sdk_build': '30.0.2',
               'default_ndk': '21.4.7075529',
               'min_cmake_version': '3.20'}
