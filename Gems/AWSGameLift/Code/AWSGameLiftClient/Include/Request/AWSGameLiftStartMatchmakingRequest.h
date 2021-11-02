@@ -30,9 +30,10 @@ namespace AWSGameLift
         AWSGameLiftStartMatchmakingRequest() = default;
         virtual ~AWSGameLiftStartMatchmakingRequest() = default;
 
-        // Name of the matchmaking configuration to use for this request
+        //! Name of the matchmaking configuration to use for this request
         AZStd::string m_configurationName;
-        // Information on each player to be matched
+
+        //! Information on each player to be matched
         AZStd::vector<AWSGameLiftPlayer> m_players;
     };
 } // namespace AWSGameLift

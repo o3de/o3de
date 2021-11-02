@@ -215,11 +215,6 @@ namespace AZ
                 m_oldProjectPath = newProjectPath;
 
                 // Merge the project.json file into settings registry under ProjectSettingsRootKey path.
-                AZ::IO::FixedMaxPath projectMetadataFile{ AZ::SettingsRegistryMergeUtils::FindEngineRoot(m_registry) / newProjectPath };
-                projectMetadataFile /= "project.json";
-                m_registry.MergeSettingsFile(projectMetadataFile.Native(),
-                    AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey);
-
                 // Update all the runtime file paths based on the new "project_path" value.
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
             }

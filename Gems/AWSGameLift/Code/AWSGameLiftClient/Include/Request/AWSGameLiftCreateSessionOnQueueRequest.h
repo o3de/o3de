@@ -25,11 +25,11 @@ namespace AWSGameLift
         AWSGameLiftCreateSessionOnQueueRequest() = default;
         virtual ~AWSGameLiftCreateSessionOnQueueRequest() = default;
 
-        // Name of the queue to use to place the new game session. You can use either the queue name or ARN value. 
+        //! Name of the queue to use to place the new game session. You can use either the queue name or ARN value. 
         AZStd::string m_queueName;
 
-        // A unique identifier to assign to the new game session placement. This value is developer-defined.
-        // The value must be unique across all Regions and cannot be reused unless you are resubmitting a canceled or timed-out placement request.
+        //! A unique identifier to assign to the new game session placement. This value is developer-defined.
+        //! The value must be unique across all Regions and cannot be reused unless you are resubmitting a canceled or timed-out placement request.
         AZStd::string m_placementId;
     };
 } // namespace AWSGameLift
