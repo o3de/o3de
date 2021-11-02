@@ -62,12 +62,14 @@ namespace O3DE::ProjectManager
         appendRow(item);
 
         const QModelIndex modelIndex = index(rowCount()-1, 0);
+        m_nameToIndexMap[gemInfo.m_displayName] = modelIndex;
         m_nameToIndexMap[gemInfo.m_name] = modelIndex;
     }
 
     void GemModel::Clear()
     {
         clear();
+        m_nameToIndexMap.clear();
     }
 
     void GemModel::UpdateGemDependencies()
