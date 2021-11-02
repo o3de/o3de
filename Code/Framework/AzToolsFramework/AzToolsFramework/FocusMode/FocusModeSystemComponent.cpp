@@ -47,8 +47,12 @@ namespace AzToolsFramework
         AZ::Interface<FocusModeInterface>::Unregister(this);
     }
 
-    void FocusModeSystemComponent::Reflect([[maybe_unused]] AZ::ReflectContext* context)
+    void FocusModeSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<FocusModeSystemComponent, AZ::Component>()->Version(1);
+        }
     }
 
     void FocusModeSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
