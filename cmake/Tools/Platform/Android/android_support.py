@@ -358,7 +358,7 @@ CUSTOM_GRADLE_COPY_NATIVE_CONFIG_FORMAT_STR = """
         into  'outputs/native-lib/{abi}'
     }}
 
-    compile{config}Sources.dependsOn copyNativeLibs{config}
+    merge{config}JniLibFolders.dependsOn copyNativeLibs{config}
 
     copyNativeLibs{config}.mustRunAfter {{
         tasks.findAll {{ task->task.name.contains('externalNativeBuild{config}') }}
@@ -388,7 +388,7 @@ CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_FORMAT_STR = """
         include ('*.setreg')
     }}
 
-    compile{config}Sources.dependsOn copyRegistryFolder{config}
+    merge{config}Assets.dependsOn copyRegistryFolder{config}
 """
 
 CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_DEPENDENCY_FORMAT_STR = """
