@@ -61,7 +61,6 @@
 
 // Asset types
 #include <AzCore/Slice/SliceAsset.h>
-#include <AzCore/Script/ScriptAsset.h>
 #include <LmbrCentral/Rendering/MaterialAsset.h>
 #include <LmbrCentral/Rendering/MeshAsset.h>
 #include <LmbrCentral/Rendering/MaterialHandle.h>
@@ -357,7 +356,6 @@ namespace LmbrCentral
         auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler();
         if (assetCatalog)
         {
-            assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid());
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<MaterialAsset>::Uuid());
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<DccMaterialAsset>::Uuid());
             assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<MeshAsset>::Uuid());
@@ -371,7 +369,6 @@ namespace LmbrCentral
             assetCatalog->AddExtension("xml");
             assetCatalog->AddExtension("mtl");
             assetCatalog->AddExtension("dccmtl");
-            assetCatalog->AddExtension("lua");
             assetCatalog->AddExtension("sprite");
             assetCatalog->AddExtension("cax");
         }
