@@ -168,7 +168,8 @@ namespace UnitTest
         product.first = sourceUuid;
         product.second = AzToolsFramework::AssetDatabase::ProductDatabaseEntry();
         product.second.m_productID = productID;
-        product.second.m_subID = 0;
+
+        product.second.m_subID = aznumeric_cast<AZ::u32>(productID);
         product.second.m_productName = productName;
 
         GetRootEntry()->AddProduct(product);
@@ -294,6 +295,35 @@ namespace UnitTest
         return QModelIndex();
     }
 
+    TEST_F(AssetBrowserTest, CheckCorrectNumberOfEntriesInTableView)
+    {
+        m_filterModel->FilterUpdatedSlotImmediate();
+        int tableViewRowcount = m_tableModel->rowCount();
+
+        // RowCount should be 17 -> 5 SourceEntries + 12 ProductEntries)
+        EXPECT_EQ(tableViewRowcount, 17);
+    }
+
+    TEST_F(AssetBrowserTest, CheckCorrectNumberOfEntriesInTableViewAfterStringFilter)
+    {
+        /*
+         *-Source_1
+         * |
+         * |-product_1_0
+         * |-product_1_1
+         *
+         *
+         * Matching entries = 3
+         */
+
+        // Apply string filter
+        m_searchWidget->SetTextFilter(QString("source_1"));
+        m_filterModel->FilterUpdatedSlotImmediate();
+
+        int tableViewRowcount = m_tableModel->rowCount();
+        EXPECT_EQ(tableViewRowcount, 3);
+    }
+
     TEST_F(AssetBrowserTest, CheckScanFolderAddition)
     {
         EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(), 1);
@@ -322,11 +352,11 @@ namespace UnitTest
 
         EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(AssetFolderIndex), 2);
 
-        AZ::Uuid addedEntryUuid_1 = CreateSourceEntry(sourceUniqueId.at(0), assetFolderId, "DummyFle_1");
-        AZ::Uuid addedEntryUuid_2 = CreateSourceEntry(sourceUniqueId.at(1), assetFolderId, "DummyFle_2");
-        AZ::Uuid addedEntryUuid_3 = CreateSourceEntry(sourceUniqueId.at(2), assetFolderId, "DummyFle_3");
-        AZ::Uuid addedEntryUuid_4 = CreateSourceEntry(sourceUniqueId.at(3), assetFolderId, "DummyFle_4");
-        AZ::Uuid addedEntryUuid_5 = CreateSourceEntry(sourceUniqueId.at(4), assetFolderId, "DummyFle_5");
+        CreateSourceEntry(sourceUniqueId.at(0), assetFolderId, "DummyFle_1");
+        CreateSourceEntry(sourceUniqueId.at(1), assetFolderId, "DummyFle_2");
+        CreateSourceEntry(sourceUniqueId.at(2), assetFolderId, "DummyFle_3");
+        CreateSourceEntry(sourceUniqueId.at(3), assetFolderId, "DummyFle_4");
+        CreateSourceEntry(sourceUniqueId.at(4), assetFolderId, "DummyFle_5");
 
         // Adding 5 more entries
         EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(AssetFolderIndex), 7);
@@ -342,35 +372,6 @@ namespace UnitTest
         CreateSourceEntry(sourceUniqueId.at(1), assetFolderId, "DummyFle_2");
 
         EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(AssetFolderIndex), 7);
-    }
-
-    TEST_F(AssetBrowserTest, CheckCorrectNumberOfEntriesInTableView)
-    {
-        m_filterModel->FilterUpdatedSlotImmediate();
-        int tableViewRowcount = m_tableModel->rowCount();
-
-        // RowCount should be 17 -> 5 SourceEntries + 12 ProductEntries)
-        EXPECT_EQ(tableViewRowcount, 17);
-    }
-
-    TEST_F(AssetBrowserTest, CheckCorrectNumberOfEntriesInTableViewAfterStringFilter)
-    {
-        /*
-         *-Source_1
-         * |
-         * |-product_1_0
-         * |-product_1_1
-         *
-         *
-         * Matching entries = 3
-         */
-
-        // Apply string filter
-        m_searchWidget->SetTextFilter(QString("source_1"));
-        m_filterModel->FilterUpdatedSlotImmediate();
-
-        int tableViewRowcount = m_tableModel->rowCount();
-        EXPECT_EQ(tableViewRowcount, 3);
     }
 
 } // namespace UnitTest
