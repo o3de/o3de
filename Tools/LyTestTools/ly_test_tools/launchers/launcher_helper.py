@@ -60,7 +60,7 @@ def create_editor(workspace, launcher_platform=ly_test_tools.HOST_OS_EDITOR, arg
     Editor is only officially supported on the Windows Platform.
 
     :param workspace: lumberyard workspace to use
-     :param launcher_platform: the platform to target for a launcher (i.e. 'windows_dedicated' for DedicatedWinLauncher)
+    :param launcher_platform: the platform to target for a launcher (i.e. 'windows_dedicated' for DedicatedWinLauncher)
     :param args: List of arguments to pass to the launcher's 'args' argument during construction
     :return: Editor instance
     """

@@ -21,6 +21,7 @@
 #endif
 
 #include <gtest/gtest.h>
+#include <AzCore/UnitTest/UnitTest.h>
 
 //! These macros can be used for checking your unit tests,
 //! you can check AssetScannerUnitTest.cpp for usage
@@ -155,6 +156,7 @@ namespace UnitTestUtils
 
         bool OnPreWarning([[maybe_unused]] const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, [[maybe_unused]] const char* message) override
         {
+            UnitTest::ColoredPrintf(UnitTest::COLOR_YELLOW, message);
             ++m_numWarningsAbsorbed;
             if (m_debugMessages)
             {
@@ -165,6 +167,7 @@ namespace UnitTestUtils
 
         bool OnPreAssert([[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, [[maybe_unused]] const char* message) override
         {
+            UnitTest::ColoredPrintf(UnitTest::COLOR_YELLOW, message);
             ++m_numAssertsAbsorbed;
             if (m_debugMessages)
             {
@@ -175,6 +178,7 @@ namespace UnitTestUtils
 
         bool OnPreError([[maybe_unused]] const char* window, [[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, [[maybe_unused]] const char* message) override
         {
+            UnitTest::ColoredPrintf(UnitTest::COLOR_YELLOW, message);
             ++m_numErrorsAbsorbed;
             if (m_debugMessages)
             {
@@ -183,8 +187,9 @@ namespace UnitTestUtils
             return true; // I handled this, do not forward it
         }
 
-        bool OnPrintf(const char* /*window*/, const char* /*message*/) override
+        bool OnPrintf(const char* /*window*/, const char* message) override
         {
+            UnitTest::ColoredPrintf(UnitTest::COLOR_YELLOW, message);
             ++m_numMessagesAbsorbed;
             return true;
         }

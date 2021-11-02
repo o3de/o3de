@@ -19,7 +19,7 @@ class Tests():
 # fmt: on
 
 
-def Collider_SphereShapeEditting():
+def Collider_SphereShapeEditing():
     """
     Summary:
      Adding PhysX Collider and Shape components to test entity, then attempting to modify the shape's dimensions
@@ -57,7 +57,7 @@ def Collider_SphereShapeEditting():
 
     helper.init_idle()
     # 1) Load the empty level
-    helper.open_level("Physics", "Base")
+    helper.open_level("", "Base")
 
     # 2) Create the test entity
     test_entity = Entity.create_editor_entity("Test Entity")
@@ -90,4 +90,4 @@ def Collider_SphereShapeEditting():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(Collider_SphereShapeEditting)
+    Report.start_test(Collider_SphereShapeEditing)

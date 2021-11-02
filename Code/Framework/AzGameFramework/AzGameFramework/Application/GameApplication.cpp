@@ -82,7 +82,7 @@ namespace AzGameFramework
 
         // Used the lowercase the platform name since the bootstrap.game.<config>.<platform>.setreg is being loaded
         // from the asset cache root where all the files are in lowercased from regardless of the filesystem case-sensitivity
-        static constexpr char filename[] = "bootstrap.game." AZ_BUILD_CONFIGURATION_TYPE "." AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER ".setreg";
+        static constexpr char filename[] = "bootstrap.game." AZ_BUILD_CONFIGURATION_TYPE  ".setreg";
 
         AZ::IO::FixedMaxPath cacheRootPath;
         if (registry.Get(cacheRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))

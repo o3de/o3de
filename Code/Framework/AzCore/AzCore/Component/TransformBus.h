@@ -168,6 +168,11 @@ namespace AZ
 
         //! Rotation modifiers
         //! @{
+        //! Set the world rotation matrix using the composition of rotations around
+        //! the principle axes in the order of z-axis first and y-axis and then x-axis.
+        //! @param eulerRadianAngles A Vector3 denoting radian angles of the rotations around each principle axis.
+        virtual void SetWorldRotation([[maybe_unused]] const AZ::Vector3& eulerAnglesRadian) {}
+
         //! Sets the entity's rotation in the world in quaternion notation.
         //! The origin of the axes is the entity's position in world space.
         //! @param quaternion A quaternion that represents the rotation to use for the entity.
