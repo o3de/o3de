@@ -177,12 +177,6 @@ namespace AZ
                     }
                 }
             }
-
-            // Need to recreate the dest attachment because the source attachment might be changed
-            if (!m_attachmentCopy.expired())
-            {
-                m_attachmentCopy.lock()->InvalidateDestImage();
-            }
         }
 
         void RenderPass::FrameBeginInternal(FramePrepareParams params)
@@ -196,11 +190,7 @@ namespace AZ
 
             // Read back the ScopeQueries submitted from previous frames
             ReadbackScopeQueryResults();
-             
-            if (!m_attachmentCopy.expired())
-            {
-                m_attachmentCopy.lock()->FrameBegin(params);
-            }
+
             CollectSrgs();
 
             PassSystemInterface::Get()->IncrementFrameRenderPassCount();

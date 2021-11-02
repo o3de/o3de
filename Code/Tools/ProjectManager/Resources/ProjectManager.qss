@@ -242,11 +242,15 @@ QTabBar::tab:focus {
 
 /************** Project Settings **************/
 #projectSettings {
-    margin-top:42px;
+    margin-top:30px;
+}
+
+#projectPreviewLabel {
+    margin: 10px 0 5px 0;
 }
 
 #projectTemplate {
-    margin: 55px 0 0 50px;
+    margin: 25px 0 0 50px;
 }
 #projectTemplateLabel {
     font-size:16px;
@@ -691,6 +695,12 @@ QProgressBar::chunk {
 
 #gemRepoAddDialogInstructionTitleLabel {
     font-size:14px;
+    font-weight:bold;
+}
+
+#gemRepoAddDialogWarningLabel {
+    font-size:12px;
+    font-style:italic;
 }
 
 #addGemRepoDialog #formFrame {

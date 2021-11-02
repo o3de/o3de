@@ -78,7 +78,7 @@ namespace AZ
             ~ImageAttachmentPreviewPass();
             
             //! Preview the PassAttachment of a pass' PassAttachmentBinding
-            void PreviewImageAttachmentForPass(RenderPass* pass, const PassAttachment* passAttachment);
+            void PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment);
 
             //! Set the output color attachment for this pass
             void SetOutputColorAttachment(RHI::Ptr<PassAttachment> outputImageAttachment);

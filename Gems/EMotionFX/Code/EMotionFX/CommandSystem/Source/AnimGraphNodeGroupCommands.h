@@ -60,7 +60,7 @@ namespace CommandSystem
         const char* GetDescription() const override;
         MCore::Command* Create() override
         {
-            return new CommandAnimGraphAdjustNodeGroup(this);
+            return aznew CommandAnimGraphAdjustNodeGroup(this);
         }
 
         static AZStd::vector<AZStd::string> GenerateNodeNameVector(EMotionFX::AnimGraph* animGraph, const AZStd::vector<EMotionFX::AnimGraphNodeId>& nodeIDs);

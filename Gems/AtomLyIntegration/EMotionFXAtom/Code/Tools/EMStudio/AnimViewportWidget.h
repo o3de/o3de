@@ -30,6 +30,9 @@ namespace EMStudio
         EMotionFX::ActorRenderFlagBitset GetRenderFlags() const;
 
     private:
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
+        void CalculateCameraProjection();
         void SetupCameras();
         void SetupCameraController();
 
@@ -42,6 +45,8 @@ namespace EMStudio
         void ToggleRenderFlag(EMotionFX::ActorRenderFlag flag);
 
         static constexpr float CameraDistance = 2.0f;
+        static constexpr float DepthNear = 0.01f;
+        static constexpr float DepthFar = 100.0f;
 
         AZStd::unique_ptr<AnimViewportRenderer> m_renderer;
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_rotateCamera;
