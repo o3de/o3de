@@ -196,11 +196,14 @@ namespace AZ
             if (asset.GetAs<ShaderAsset>())
             {
                 m_asset = Data::static_pointer_cast<ShaderAsset>(asset);
-                if (!m_reloadedRootShaderVariantAsset->IsReady())
+                if (!m_reloadedRootShaderVariantAsset.IsReady())
                 {
                     // Do nothing, as We should not re-initilize until the root shader variant asset has been reloaded.
                     return;
                 }
+                AZ_Assert(m_asset->m_shaderAssetBuildTimestamp == m_reloadedRootShaderVariantAsset->GetBuildTimestamp(),
+                    "shaderAsset timeStamp=%lld, but Root ShaderVariantAsset timeStamp=%lld",
+                    m_asset->m_shaderAssetBuildTimestamp, m_reloadedRootShaderVariantAsset->GetBuildTimestamp());
                 m_asset->UpdateRootShaderVariantAsset(m_supervariantIndex, m_reloadedRootShaderVariantAsset);
                 m_reloadedRootShaderVariantAsset = {}; // Clear the temporary reference.
 
