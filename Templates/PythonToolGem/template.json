@@ -13,6 +13,12 @@
     "icon_path": "preview.png",
     "copyFiles": [
         {
+            "file": ".gitignore",
+            "origin": ".gitignore",
+            "isTemplated": false,
+            "isOptional": false
+        },
+        {
             "file": "CMakeLists.txt",
             "origin": "CMakeLists.txt",
             "isTemplated": true,
