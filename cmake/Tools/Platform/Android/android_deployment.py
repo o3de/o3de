@@ -347,7 +347,7 @@ class AndroidDeployment(object):
         try:
             timestamp_string = self.adb_shell(command=f'cat {remote_file_path}',
                                               device_id=device_id).strip()
-        except (subprocess.CalledProcessError, AttributeError):
+        except (common.LmbrCmdError, AttributeError):
             return None
 
         if not timestamp_string:
@@ -463,7 +463,7 @@ class AndroidDeployment(object):
                 try:
                     self.adb_call(arg_list=['push', str(path_to_deploy), target_path],
                                   device_id=target_device)
-                except subprocess.CalledProcessError as err:
+                except common.LmbrCmdError as err:
                     # Something went wrong, clean up before leaving
                     self.adb_shell(command=f'rm -rf {output_target}',
                                    device_id=target_device)
