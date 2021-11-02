@@ -102,6 +102,7 @@ def build_optional_signing_profile(store_file, store_password, key_alias, key_pa
 ANDROID_SDK_ARGUMENT_NAME = '--android-sdk-path'
 ANDROID_SDK_PLATFORM_ARGUMENT_NAME = '--android-sdk-platform'
 ANDROID_SDK_PREFERRED_TOOL_VER = '--android-sdk-build-tool-version'
+ANDROID_SDK_COMMAND_LINE_TOOLS_VER = '--android-sdk-command-line-tools-version'
 
 ANDROID_NATIVE_API_LEVEL = '--android-native-api-level'
 
@@ -185,6 +186,11 @@ def main(args):
                         default=-1)
 
     # Override arguments
+    parser.add_argument(ANDROID_SDK_COMMAND_LINE_TOOLS_VER,
+                        default='latest',
+                        help='The android SDK command line tools version.',
+                        required=False)
+
     parser.add_argument(ANDROID_SDK_PREFERRED_TOOL_VER,
                         help='The android SDK build tools version.',
                         required=False)
@@ -304,7 +310,8 @@ def main(args):
                                   f"({android_gradle_plugin_version}).")
 
     # Use the SDK Resolver to make sure the build tools and ndk
-    android_sdk = android_support.AndroidSDKResolver(android_sdk_path=parsed_args.get_argument(ANDROID_SDK_ARGUMENT_NAME))
+    android_sdk = android_support.AndroidSDKResolver(android_sdk_path=parsed_args.get_argument(ANDROID_SDK_ARGUMENT_NAME),
+                                                command_line_tools_version=parsed_args.get_argument(ANDROID_SDK_COMMAND_LINE_TOOLS_VER))
 
     # If no SDK platform is provided, check for any installed one
     if android_sdk_platform_version < 0:

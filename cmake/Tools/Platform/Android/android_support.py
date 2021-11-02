@@ -1548,17 +1548,32 @@ class AndroidSDKResolver(object):
             self.version = LooseVersion(available_update_components[1])
             self.available = available_update_components[2]
 
-    def __init__(self, android_sdk_path):
+    def __init__(self, android_sdk_path, command_line_tools_version):
 
         self.android_sdk_path = android_sdk_path or os.environ.get(ANDROID_SDK_ENV_NAME)
         if not self.android_sdk_path:
             raise common.LmbrCmdError(f"Android SDK path not set or it was not passed into the command to generate the android project")
         if not os.path.isdir(self.android_sdk_path):
             raise common.LmbrCmdError(f"Android SDK path {self.android_sdk_path} is not valid")
+
+        sdk_root = pathlib.Path(self.android_sdk_path)
+
+        tools_path = sdk_root / 'cmdline-tools'
+        if tools_path.exists():
+            tools_path = tools_path / command_line_tools_version
+            if not tools_path.exists():
+                raise common.LmbrCmdError(f"The desired version of the Android 'cmdline-tools' ({command_line_tools_version}) is not detected")
+        else:
+            tools_path =  sdk_root / 'tools'
+
+        ext = ''
         if platform.system() == 'Windows':
-            self.sdk_manager_path = pathlib.Path(self.android_sdk_path) / 'tools' / 'bin' / 'sdkmanager.bat'
+            ext = '.bat'
         else:
             raise common.LmbrCmdError(f"This tool is not supported on the current platform {platform.system()}")
+
+        self.sdk_manager_path =  tools_path / 'bin' / f'sdkmanager{ext}'
+
         if not self.sdk_manager_path.is_file():
             raise common.LmbrCmdError(f"Android SDK path {self.android_sdk_path} is not valid or complete. Missing {self.sdk_manager_path}")
 
