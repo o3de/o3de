@@ -4206,6 +4206,10 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeleteFails)
 
 TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
 {
+    // This test is intended to verify the AP will successfully retry deleting a source asset
+    // when one of its product assets is locked temporarily
+    // We'll lock the file by holding it open
+
     auto theFile = m_data->m_absolutePath[1].toUtf8();
     const char* theFileString = theFile.constData();
     auto [sourcePath, productPath] = *m_data->m_productPaths.find(theFileString);
@@ -4218,6 +4222,9 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
     ASSERT_GT(m_data->m_productPaths.size(), 0);
     QFile product(productPath);
 
+    // Open the file and keep it open to lock it
+    // We'll start a thread later to unlock the file
+    // This will allow us to test how AP handles trying to delete a locked file
     ASSERT_TRUE(product.open(QIODevice::ReadOnly));
 
     // Check if we can delete the file now, if we can't, proceed with the test
