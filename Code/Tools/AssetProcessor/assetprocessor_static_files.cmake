@@ -29,6 +29,8 @@ set(FILES
     native/AssetManager/SourceFileRelocator.h
     native/AssetManager/ControlRequestHandler.cpp
     native/AssetManager/ControlRequestHandler.h
+    native/AssetManager/ExcludedFolderCache.cpp
+    native/AssetManager/ExcludedFolderCache.h
     native/assetprocessor.h
     native/connection/connection.cpp
     native/connection/connection.h
