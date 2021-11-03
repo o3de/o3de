@@ -65,9 +65,11 @@ namespace O3DE::ProjectManager
         LinkLabel* m_documentationLinkLabel = nullptr;
 
         // Requirements
-        QLabel* m_reqirementsTitleLabel = nullptr;
-        QLabel* m_reqirementsIconLabel = nullptr;
-        QLabel* m_reqirementsTextLabel = nullptr;
+        QLabel* m_requirementsTitleLabel = nullptr;
+        QLabel* m_requirementsIconLabel = nullptr;
+        QLabel* m_requirementsTextLabel = nullptr;
+
+        QSpacerItem* m_requirementsMainSpacer = nullptr;
 
         // Depending and conflicting gems
         GemsSubWidget* m_dependingGems = nullptr;

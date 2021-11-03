@@ -52,6 +52,12 @@ namespace O3DE::ProjectManager
         Update(selectedIndices[0]);
     }
 
+    void SetLabelElidedText(QLabel* label, QString text)
+    {
+        QFontMetrics nameFontMetrics(label->font());
+        label->setText(nameFontMetrics.elidedText(text, Qt::ElideRight, label->width()));
+    }
+
     void GemInspector::Update(const QModelIndex& modelIndex)
     {
         if (!modelIndex.isValid())
@@ -59,35 +65,47 @@ namespace O3DE::ProjectManager
             m_mainWidget->hide();
         }
 
-        m_nameLabel->setText(m_model->GetDisplayName(modelIndex));
-        m_creatorLabel->setText(m_model->GetCreator(modelIndex));
+        SetLabelElidedText(m_nameLabel, m_model->GetDisplayName(modelIndex));
+        SetLabelElidedText(m_creatorLabel, m_model->GetCreator(modelIndex));
 
         m_summaryLabel->setText(m_model->GetSummary(modelIndex));
         m_summaryLabel->adjustSize();
 
         m_licenseLinkLabel->setText(m_model->GetLicenseText(modelIndex));
         m_licenseLinkLabel->SetUrl(m_model->GetLicenseLink(modelIndex));
+
         m_directoryLinkLabel->SetUrl(m_model->GetDirectoryLink(modelIndex));
         m_documentationLinkLabel->SetUrl(m_model->GetDocLink(modelIndex));
 
         if (m_model->HasRequirement(modelIndex))
         {
-            m_reqirementsIconLabel->show();
-            m_reqirementsTitleLabel->show();
-            m_reqirementsTextLabel->show();
+            m_requirementsIconLabel->show();
+            m_requirementsTitleLabel->show();
+            m_requirementsTextLabel->show();
+            m_requirementsMainSpacer->changeSize(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-            m_reqirementsTitleLabel->setText("Requirement");
-            m_reqirementsTextLabel->setText(m_model->GetRequirement(modelIndex));
+            m_requirementsTitleLabel->setText("Requirement");
+            m_requirementsTextLabel->setText(m_model->GetRequirement(modelIndex));
         }
         else
         {
-            m_reqirementsIconLabel->hide();
-            m_reqirementsTitleLabel->hide();
-            m_reqirementsTextLabel->hide();
+            m_requirementsIconLabel->hide();
+            m_requirementsTitleLabel->hide();
+            m_requirementsTextLabel->hide();
+            m_requirementsMainSpacer->changeSize(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
         }
 
         // Depending gems
-        m_dependingGems->Update("Depending Gems", "The following Gems will be automatically enabled with this Gem.", m_model->GetDependingGemNames(modelIndex));
+        QStringList dependingGems = m_model->GetDependingGemNames(modelIndex);
+        if (!dependingGems.isEmpty())
+        {
+            m_dependingGems->Update("Depending Gems", "The following Gems will be automatically enabled with this Gem.", dependingGems);
+            m_dependingGems->show();
+        }
+        else
+        {
+            m_dependingGems->hide();
+        }
 
         // Additional information
         m_versionLabel->setText(QString("Gem Version: %1").arg(m_model->GetVersion(modelIndex)));
@@ -126,6 +144,7 @@ namespace O3DE::ProjectManager
         {
             QHBoxLayout* licenseHLayout = new QHBoxLayout();
             licenseHLayout->setMargin(0);
+            licenseHLayout->setAlignment(Qt::AlignLeft);
             m_mainLayout->addLayout(licenseHLayout);
 
             QLabel* licenseLabel = CreateStyledLabel(licenseHLayout, s_baseFontSize, s_headerColor);
@@ -134,8 +153,7 @@ namespace O3DE::ProjectManager
             m_licenseLinkLabel = new LinkLabel("", QUrl(), s_baseFontSize);
             licenseHLayout->addWidget(m_licenseLinkLabel);
 
-            QSpacerItem* licenseSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding);
-            licenseHLayout->addSpacerItem(licenseSpacer);
+            licenseHLayout->addStretch();
 
             m_mainLayout->addSpacing(5);
         }
@@ -146,8 +164,7 @@ namespace O3DE::ProjectManager
             linksHLayout->setMargin(0);
             m_mainLayout->addLayout(linksHLayout);
 
-            QSpacerItem* spacerLeft = new QSpacerItem(0, 0, QSizePolicy::Expanding);
-            linksHLayout->addSpacerItem(spacerLeft);
+            linksHLayout->addStretch();
 
             m_directoryLinkLabel = new LinkLabel("View in Directory");
             linksHLayout->addWidget(m_directoryLinkLabel);
@@ -155,8 +172,7 @@ namespace O3DE::ProjectManager
             m_documentationLinkLabel  = new LinkLabel("Read Documentation");
             linksHLayout->addWidget(m_documentationLinkLabel);
 
-            QSpacerItem* spacerRight = new QSpacerItem(0, 0, QSizePolicy::Expanding);
-            linksHLayout->addSpacerItem(spacerRight);
+            linksHLayout->addStretch();
 
             m_mainLayout->addSpacing(8);
         }
@@ -170,28 +186,29 @@ namespace O3DE::ProjectManager
         m_mainLayout->addSpacing(10);
 
         // Requirements
-        m_reqirementsTitleLabel = GemInspector::CreateStyledLabel(m_mainLayout, 16, s_headerColor);
+        m_requirementsTitleLabel = GemInspector::CreateStyledLabel(m_mainLayout, 16, s_headerColor);
 
-        QHBoxLayout* requrementsLayout = new QHBoxLayout();
-        requrementsLayout->setAlignment(Qt::AlignTop);
-        requrementsLayout->setMargin(0);
-        requrementsLayout->setSpacing(0);
+        QHBoxLayout* requirementsLayout = new QHBoxLayout();
+        requirementsLayout->setAlignment(Qt::AlignTop);
+        requirementsLayout->setMargin(0);
+        requirementsLayout->setSpacing(0);
 
-        m_reqirementsIconLabel = new QLabel();
-        m_reqirementsIconLabel->setPixmap(QIcon(":/Warning.svg").pixmap(24, 24));
-        requrementsLayout->addWidget(m_reqirementsIconLabel);
+        m_requirementsIconLabel = new QLabel();
+        m_requirementsIconLabel->setPixmap(QIcon(":/Warning.svg").pixmap(24, 24));
+        requirementsLayout->addWidget(m_requirementsIconLabel);
 
-        m_reqirementsTextLabel = GemInspector::CreateStyledLabel(requrementsLayout, 10, s_textColor);
-        m_reqirementsTextLabel->setWordWrap(true);
-        m_reqirementsTextLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
-        m_reqirementsTextLabel->setOpenExternalLinks(true);
+        m_requirementsTextLabel = GemInspector::CreateStyledLabel(requirementsLayout, 10, s_textColor);
+        m_requirementsTextLabel->setWordWrap(true);
+        m_requirementsTextLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+        m_requirementsTextLabel->setOpenExternalLinks(true);
 
-        QSpacerItem* reqirementsSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding);
-        requrementsLayout->addSpacerItem(reqirementsSpacer);
+        QSpacerItem* requirementsSpacer = new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding);
+        requirementsLayout->addSpacerItem(requirementsSpacer);
 
-        m_mainLayout->addLayout(requrementsLayout);
+        m_mainLayout->addLayout(requirementsLayout);
 
-        m_mainLayout->addSpacing(20);
+        m_requirementsMainSpacer = new QSpacerItem(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
+        m_mainLayout->addSpacerItem(m_requirementsMainSpacer);
 
         // Depending gems
         m_dependingGems = new GemsSubWidget();
