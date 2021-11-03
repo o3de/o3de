@@ -50,7 +50,7 @@ namespace AZ
             }
             else
             {
-                //AZLOG_WARN("ScheduledEventHandle event pointer doesn't match to the pointer of handle to the event.");
+                AZLOG_WARN("ScheduledEventHandle event pointer doesn't match to the pointer of handle to the event.");
             }
         }
         return false; // Event has been deleted, so the handle class must be deleted after this function.
