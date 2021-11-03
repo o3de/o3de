@@ -419,31 +419,32 @@ namespace AZ
 
         AZ_MATH_INLINE bool Vec3::CmpAllEq(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllEq(arg1, arg2, 0x0FFF);
+            // Only check the first three bits for Vector3
+            return Sse::CmpAllEq(arg1, arg2, 0b0111);
         }
 
 
         AZ_MATH_INLINE bool Vec3::CmpAllLt(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllLt(arg1, arg2, 0x0FFF);
+            return Sse::CmpAllLt(arg1, arg2, 0b0111);
         }
 
 
         AZ_MATH_INLINE bool Vec3::CmpAllLtEq(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllLtEq(arg1, arg2, 0x0FFF);
+            return Sse::CmpAllLtEq(arg1, arg2, 0b0111);
         }
 
 
         AZ_MATH_INLINE bool Vec3::CmpAllGt(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllGt(arg1, arg2, 0x0FFF);
+            return Sse::CmpAllGt(arg1, arg2, 0b0111);
         }
 
 
         AZ_MATH_INLINE bool Vec3::CmpAllGtEq(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllGtEq(arg1, arg2, 0x0FFF);
+            return Sse::CmpAllGtEq(arg1, arg2, 0b0111);
         }
 
 
@@ -485,7 +486,7 @@ namespace AZ
 
         AZ_MATH_INLINE bool Vec3::CmpAllEq(Int32ArgType arg1, Int32ArgType arg2)
         {
-            return Sse::CmpAllEq(arg1, arg2, 0x0FFF);
+            return Sse::CmpAllEq(arg1, arg2, 0b0111);
         }
 
 

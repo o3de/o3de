@@ -12,11 +12,12 @@
 #include <AzCore/Utils/TypeHash.h>
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
-#include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/Prefab/EditorPrefabComponent.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
@@ -565,11 +566,20 @@ namespace AzToolsFramework
                 parentId = m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
             }
 
+            // If the parent entity isn't owned by a prefab instance, bail.
             InstanceOptionalReference owningInstanceOfParentEntity = GetOwnerInstanceByEntityId(parentId);
             if (!owningInstanceOfParentEntity)
             {
                 return AZ::Failure(AZStd::string::format(
                     "Cannot add entity because the owning instance of parent entity with id '%llu' could not be found.",
+                    static_cast<AZ::u64>(parentId)));
+            }
+
+            // If the parent entity is a closed container, bail.
+            if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get(); !containerEntityInterface->IsContainerOpen(parentId))
+            {
+                return AZ::Failure(AZStd::string::format(
+                    "Cannot add entity because the parent entity (id '%llu') is a closed container entity.",
                     static_cast<AZ::u64>(parentId)));
             }
             

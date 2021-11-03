@@ -45,6 +45,7 @@ AZ_POP_DISABLE_WARNING
 
 // AzCore
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -1684,6 +1685,11 @@ bool CCryEditApp::InitInstance()
     if (!initGameSystemOutcome.IsSuccess())
     {
         return false;
+    }
+
+    if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
+    {
+        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "LegacySystemInterfaceCreated", R"({})");
     }
 
     // Process some queued events come from system init

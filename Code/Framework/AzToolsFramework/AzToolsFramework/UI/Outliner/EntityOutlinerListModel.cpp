@@ -43,6 +43,7 @@
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserSourceDropBus.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -764,10 +765,21 @@ namespace AzToolsFramework
         return canHandleData;
     }
 
-    bool EntityOutlinerListModel::CanDropMimeDataAssets(const QMimeData* data, Qt::DropAction /*action*/, int /*row*/, int /*column*/, const QModelIndex& /*parent*/) const
+    bool EntityOutlinerListModel::CanDropMimeDataAssets(
+        const QMimeData* data,
+        [[maybe_unused]] Qt::DropAction action,
+        [[maybe_unused]] int row,
+        [[maybe_unused]] int column,
+        const QModelIndex& parent) const
     {
-        using namespace AzToolsFramework;
-        
+        // Disable dropping assets on closed container entities.
+        AZ::EntityId parentId = GetEntityFromIndex(parent);
+        if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+            !containerEntityInterface->IsContainerOpen(parentId))
+        {
+            return false;
+        }
+
         if (data->hasFormat(AssetBrowser::AssetBrowserEntry::GetMimeType()))
         {
             return DecodeAssetMimeData(data);
@@ -788,8 +800,15 @@ namespace AzToolsFramework
             return false;
         }
 
+        // If the parent entity is a closed container, bail.
+        if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+            !containerEntityInterface->IsContainerOpen(assignParentId))
+        {
+            return false;
+        }
+
         // Source Files
-        if (sourceFiles.size() > 0)
+        if (!sourceFiles.empty())
         {
             // Get position (center of viewport). If no viewport is available, (0,0,0) will be used.
             AZ::Vector3 viewportCenterPosition = AZ::Vector3::CreateZero();
@@ -969,6 +988,12 @@ namespace AzToolsFramework
 
         // Disable reparenting to the root level
         if (!newParentId.IsValid())
+        {
+            return false;
+        }
+
+        // If the new parent is a closed container, bail.
+        if (auto containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get(); !containerEntityInterface->IsContainerOpen(newParentId))
         {
             return false;
         }

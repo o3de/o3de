@@ -248,6 +248,7 @@ namespace Terrain
         {
             m_configuration.m_macroColorAsset = asset;
             m_colorImage = AZ::RPI::StreamingImage::FindOrCreate(m_configuration.m_macroColorAsset);
+            m_colorImage->GetRHIImage()->SetName(AZ::Name(m_configuration.m_macroColorAsset.GetHint()));
 
             // Clear the texture asset reference to make sure we don't prevent hot-reloading.
             m_configuration.m_macroColorAsset.Release();
@@ -256,6 +257,7 @@ namespace Terrain
         {
             m_configuration.m_macroNormalAsset = asset;
             m_normalImage = AZ::RPI::StreamingImage::FindOrCreate(m_configuration.m_macroNormalAsset);
+            m_normalImage->GetRHIImage()->SetName(AZ::Name(m_configuration.m_macroNormalAsset.GetHint()));
 
             // Clear the texture asset reference to make sure we don't prevent hot-reloading.
             m_configuration.m_macroColorAsset.Release();
