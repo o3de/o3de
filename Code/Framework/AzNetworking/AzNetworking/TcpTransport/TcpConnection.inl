@@ -15,16 +15,6 @@ namespace AzNetworking
         return m_socket.get();
     }
 
-    inline void TcpConnection::SetTimeoutId(TimeoutId timeoutId)
-    {
-        m_timeoutId = timeoutId;
-    }
-
-    inline TimeoutId TcpConnection::GetTimeoutId() const
-    {
-        return m_timeoutId;
-    }
-
     inline bool TcpConnection::IsOpen() const
     {
         return m_socket->IsOpen();

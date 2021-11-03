@@ -241,6 +241,10 @@ namespace Multiplayer
         {
             AZ::Entity* entity = it->second;
             NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
+            if (netBindComponent == nullptr)
+            {
+                continue;
+            }
             AZ::Aabb entityBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(entity->GetId());
             entityBounds.Expand(AZ::Vector3(0.01f));
             if (netBindComponent->GetNetEntityRole() == NetEntityRole::Authority)

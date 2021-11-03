@@ -1107,7 +1107,6 @@ namespace Multiplayer
     void MultiplayerSystemComponent::OnAutonomousEntityReplicatorCreated()
     {
         m_autonomousEntityReplicatorCreatedHandler.Disconnect();
-        //m_networkEntityManager.GetNetworkEntityAuthorityTracker()->ResetTimeoutTime(AZ::TimeMs{ 2000 });
         m_clientMigrationEndEvent.Signal();
     }
 

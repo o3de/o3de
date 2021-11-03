@@ -79,7 +79,7 @@ namespace AzNetworking
             AZLOG(NET_Acks, "Unacked packet count exceeded, sending client heartbeat (curr %u : max %u)", m_unackedPacketCount, static_cast<uint32_t>(net_UdpMaxUnackedPacketCount));
             // This simply times out unreliable chunks that haven't completed within our timeout delay
             m_fragmentQueue.Update();
-            SendUnreliablePacket(CorePackets::HeartbeatPacket());
+            SendUnreliablePacket(CorePackets::HeartbeatPacket(false));
         }
     }
 
@@ -289,7 +289,10 @@ namespace AzNetworking
             {
                 return PacketDispatchResult::Failure;
             }
-            // Do nothing, we've already processed our ack packets
+            if (packet.GetRequestResponse())
+            {
+                SendUnreliablePacket(CorePackets::HeartbeatPacket(false));
+            }
             return PacketDispatchResult::Success;
         }
         break;

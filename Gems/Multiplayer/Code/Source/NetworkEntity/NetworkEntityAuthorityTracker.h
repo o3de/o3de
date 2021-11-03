@@ -29,37 +29,13 @@ namespace Multiplayer
         HostId GetEntityAuthorityManager(ConstNetworkEntityHandle entityHandle) const;
 
     private:
-
-        HostId GetEntityAuthorityManagerInternal(ConstNetworkEntityHandle entityHandle) const;
-
         NetworkEntityAuthorityTracker& operator= (const NetworkEntityAuthorityTracker&) = delete;
 
-        struct TimeoutData final
-        {
-            TimeoutData() = default;
-            TimeoutData(ConstNetworkEntityHandle entityHandle, const HostId& previousOwner);
-            ConstNetworkEntityHandle m_entityHandle;
-            HostId m_previousOwner = InvalidHostId;
-        };
-
-        struct NetworkEntityTimeoutFunctor final
-            : public AzNetworking::ITimeoutHandler
-        {
-            NetworkEntityTimeoutFunctor(NetworkEntityAuthorityTracker& networkEntityAuthorityTracker, INetworkEntityManager& m_networkEntityManager);
-            AzNetworking::TimeoutResult HandleTimeout(AzNetworking::TimeoutQueue::TimeoutItem& item) override;
-        private:
-            AZ_DISABLE_COPY_MOVE(NetworkEntityTimeoutFunctor);
-            NetworkEntityAuthorityTracker& m_networkEntityAuthorityTracker;
-            INetworkEntityManager& m_networkEntityManager;
-        };
-
-        using TimeoutDataMap = AZStd::unordered_map<NetEntityId, TimeoutData>;
+        using TimeoutDataMap = AZStd::unordered_set<NetEntityId>;
         using EntityAuthorityMap = AZStd::unordered_map<NetEntityId, AZStd::vector<HostId>>;
 
         TimeoutDataMap m_timeoutDataMap;
         EntityAuthorityMap m_entityAuthorityMap;
         INetworkEntityManager& m_networkEntityManager;
-        AzNetworking::TimeoutQueue m_timeoutQueue;
     };
 }
-
