@@ -54,6 +54,10 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_MeshAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_MeshAdded as test_module
 
+    @pytest.mark.test_case_id("C36525663")
+    class AtomEditorComponents_OcclusionCullingPlaneAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_OcclusionCullingPlaneAdded as test_module
+
     @pytest.mark.test_case_id("C32078125")
     class AtomEditorComponents_PhysicalSkyAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_PhysicalSkyAdded as test_module
