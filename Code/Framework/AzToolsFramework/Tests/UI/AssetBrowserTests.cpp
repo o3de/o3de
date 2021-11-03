@@ -49,7 +49,6 @@ namespace UnitTest
         void SetUpEditorFixtureImpl() override;
         void TearDownEditorFixtureImpl() override;
 
-    protected:
         //! Creates a Mock Scan Folder
         void AddScanFolder(AZ::s64 folderID, AZStd::string folderPath, AZStd::string displayName, FolderType folderType = FolderType::File);
 
@@ -61,13 +60,15 @@ namespace UnitTest
         void CreateProduct(AZ::s64 productID, AZ::Uuid sourceUuid, AZStd::string productName);
 
         void SetupAssetBrowser();
-        void PrintModel(const QAbstractItemModel* model);
+        void PrintModel(const QAbstractItemModel* model, AZStd::function<void(const QString&)> printer);
         QModelIndex GetModelIndex(const QAbstractItemModel* model, int targetDepth, int row = 0);
 
-        AZStd::shared_ptr<AzToolsFramework::AssetBrowser::RootAssetBrowserEntry> GetRootEntry()
-        {
-            return m_assetBrowserComponent->GetAssetBrowserModel()->GetRootEntry();
-        }
+        AZStd::shared_ptr<AzToolsFramework::AssetBrowser::RootAssetBrowserEntry> GetRootEntry();
+
+    private:
+        AZStd::vector<QString> GetVectorFromFormattedString(const QString& formattedString);
+
+    protected:
 
         AZStd::unique_ptr<AzToolsFramework::AssetBrowser::SearchWidget> m_searchWidget;
         AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserComponent> m_assetBrowserComponent;
@@ -174,53 +175,39 @@ namespace UnitTest
 
         GetRootEntry()->AddProduct(product);
     }
-
+#pragma optimize("", off)
     void AssetBrowserTest::SetupAssetBrowser()
     {
-        /*
-         * RootEntries : 1
-         * Folders : 4
-         * SourceEntries : 5
-         * ProductEntries : 9
-         *
-         *
-         *RootEntry
-         *|
-         *|-D:/dev/o3de/GameProject
-         *| |
-         *| |-Assets (folder)
-         *| | |
-         *| | |-Source_0
-         *| | | |
-         *| | | |-product_0_0
-         *| | | |-product_0_1
-         *| | | |-product_0_2
-         *| | | |-product_0_3
-         *| | |
-         *| | |-Source_1
-         *| | | |
-         *| | | |-product_1_0
-         *| | | |-product_1_1
-         *| |
-         *| |
-         *| |-Scripts (Folder)
-         *| | | |
-         *| | | |-Source_2
-         *| | | | |
-         *| | | | |-Product_2_0
-         *| | | | |-Product_2_1
-         *| | | | |-Product_2_2
-         *| | | |
-         *| | | |-Source_3
-         *| | | |
-         *| |
-         *| |-Misc (folder)
-         *| | | |-Source_4
-         *| | | | |
-         *| | | | |-Product_4_0
-         *| | | | |-Product_4_1
-         *| | | | |-Product_4_2
-         */
+
+        //RootEntries : 1 | Folders : 4 | SourceEntries : 5 | ProductEntries : 9
+        QString testHierarchy  = R"(
+        D:
+          \\
+            dev
+              o3de
+                GameProject
+                  Assets
+                    Source_1
+                      Product_1_1
+                      Product_1_0
+                    Source_0
+                      Product_0_3
+                      Product_0_2
+                      Product_0_1
+                      Product_0_0
+                  Scripts
+                    Source_3
+                    Source_2
+                      Product_2_2
+                      Product_2_1
+                      Product_2_0
+                  Misc
+                    Source_4
+                      Product_4_2
+                      Product_4_1
+                      Product_4_0 )";
+
+        [[maybe_unused]]AZStd::vector<QString> hierarchySections = GetVectorFromFormattedString(testHierarchy);
 
         namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 
@@ -250,9 +237,18 @@ namespace UnitTest
         AZ::Uuid sourceUuid_1 = CreateSourceEntry(m_sourceIDs.at(1), m_folderIds.at(0), "Source_1");
         CreateProduct(m_productIDs.at(0), sourceUuid_1, "Product_1_0");
         CreateProduct(m_productIDs.at(1), sourceUuid_1, "Product_1_1");
+
+        QString resultMessage = QString();
+        AZStd::function<void(const QString&)> printer = [&resultMessage](const QString& message)
+        {
+            resultMessage += message + "\n";
+        };
+        PrintModel(m_assetBrowserComponent->GetAssetBrowserModel(), printer);
+        [[maybe_unused]] AZStd::vector<QString> createdHierarchySections = GetVectorFromFormattedString(resultMessage);
+
     }
 
-    void AssetBrowserTest::PrintModel(const QAbstractItemModel* model)
+    void AssetBrowserTest::PrintModel(const QAbstractItemModel* model, AZStd::function<void(const QString&)> printer)
     {
         AZStd::deque<AZStd::pair<QModelIndex, int>> indices;
         indices.push_back({ model->index(0, 0), 0 });
@@ -266,7 +262,9 @@ namespace UnitTest
             {
                 indentString += "  ";
             }
-            qDebug() << (indentString + index.data(Qt::DisplayRole).toString()) << index.internalId();
+            const QString message = indentString + index.data(Qt::DisplayRole).toString();
+            printer(message);
+
             for (int i = 0; i < model->rowCount(index); ++i)
             {
                 indices.emplace_front(model->index(i, 0, index), depth + 1);
@@ -293,6 +291,24 @@ namespace UnitTest
             }
         }
         return QModelIndex();
+    }
+
+    AZStd::shared_ptr<AzToolsFramework::AssetBrowser::RootAssetBrowserEntry> AssetBrowserTest::GetRootEntry()
+    {
+        return m_assetBrowserComponent->GetAssetBrowserModel()->GetRootEntry();
+    }
+
+    AZStd::vector<QString> AssetBrowserTest::GetVectorFromFormattedString(const QString& formattedString)
+    {
+        AZStd::vector<QString> hierarchySections;
+        QStringList splittedList = formattedString.split('\n', Qt::SkipEmptyParts);
+
+        for (auto&& str : splittedList)
+        {
+            str.replace(" ", "");
+            hierarchySections.push_back(str);
+        }
+        return hierarchySections;
     }
 
     TEST_F(AssetBrowserTest, CheckCorrectNumberOfEntriesInTableView)
