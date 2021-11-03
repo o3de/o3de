@@ -368,7 +368,7 @@
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
   },
-  "test_install_profile_vs2019_pipe": {
+  "install_profile_vs2019_pipe": {
     "TAGS": [
       "nightly-incremental",
       "nightly-clean"
@@ -399,7 +399,6 @@
     },
     "COMMAND": "build_windows.cmd",
     "PARAMETERS": {
-      "COMMAND_CWD": "!WORKSPACE!\\!PROJECT_REPOSITORY_NAME!",
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
       "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DCMAKE_MODULE_PATH=!WORKSPACE!/o3de/cmake",
@@ -411,11 +410,11 @@
   "project_engineinstall_profile_vs2019": {
     "TAGS": [],
     "PIPELINE_ENV": {
-      "EXECUTE_FROM_PROJECT": "1",
-      "CWD": "!WORKSPACE!\\!PROJECT_REPOSITORY_NAME!"
+      "EXECUTE_FROM_PROJECT": "1"
     },
     "COMMAND": "build_windows.cmd",
     "PARAMETERS": {
+      "COMMAND_CWD": "!WORKSPACE!\\!PROJECT_REPOSITORY_NAME!",
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
       "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DCMAKE_MODULE_PATH=!WORKSPACE!/o3de/install/cmake",
