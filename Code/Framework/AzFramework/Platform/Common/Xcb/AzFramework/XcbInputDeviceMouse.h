@@ -161,9 +161,6 @@ namespace AzFramework
         //! Will be true if the xinput2 extension could be initialized.
         static bool m_xInputInitialized;
 
-        //! The window that had focus
-        xcb_window_t m_prevConstraintWindow;
-
         //! The current window that has focus
         xcb_window_t m_focusWindow;
 

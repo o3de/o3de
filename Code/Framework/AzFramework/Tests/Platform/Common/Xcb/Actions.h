@@ -60,3 +60,10 @@ ACTION_TEMPLATE(ReturnMalloc,
     *value = T{ p0, p1, p2, p3, p4, p5 };
     return value;
 }
+ACTION_TEMPLATE(ReturnMalloc,
+                HAS_1_TEMPLATE_PARAMS(typename, T),
+                AND_7_VALUE_PARAMS(p0, p1, p2, p3, p4, p5, p6)) {
+    T* value = static_cast<T*>(malloc(sizeof(T)));
+    *value = T{ p0, p1, p2, p3, p4, p5, p6 };
+    return value;
+}

@@ -13,18 +13,68 @@
 
 namespace AzFramework
 {
-    xcb_window_t GetSystemCursorFocusWindow()
+    xcb_window_t GetSystemCursorFocusWindow(xcb_connection_t* connection)
     {
         void* systemCursorFocusWindow = nullptr;
         AzFramework::InputSystemCursorConstraintRequestBus::BroadcastResult(
             systemCursorFocusWindow, &AzFramework::InputSystemCursorConstraintRequests::GetSystemCursorConstraintWindow);
 
-        if (!systemCursorFocusWindow)
+        if (systemCursorFocusWindow)
         {
-            return XCB_NONE;
+            return static_cast<xcb_window_t>(reinterpret_cast<uint64_t>(systemCursorFocusWindow));
         }
 
-        return static_cast<xcb_window_t>(reinterpret_cast<uint64_t>(systemCursorFocusWindow));
+        // EWMH-compliant window managers set the "_NET_ACTIVE_WINDOW" property
+        // of the X server's root window to the currently active window. This
+        // retrieves value of that property.
+
+        // Get the atom for the _NET_ACTIVE_WINDOW property
+        constexpr int propertyNameLength = 18;
+        xcb_generic_error_t* error = nullptr;
+        XcbStdFreePtr<xcb_intern_atom_reply_t> activeWindowAtom {xcb_intern_atom_reply(
+            connection,
+            xcb_intern_atom(connection, /*only_if_exists=*/ 1, propertyNameLength, "_NET_ACTIVE_WINDOW"),
+            &error
+        )};
+        if (!activeWindowAtom || error)
+        {
+            if (error)
+            {
+                AZ_Warning("XcbInput", false, "Retrieving _NET_ACTIVE_WINDOW atom failed : Error code %d", error->error_code);
+                free(error);
+            }
+            return XCB_WINDOW_NONE;
+        }
+
+        // Get the root window
+        const xcb_window_t rootWId = xcb_setup_roots_iterator(xcb_get_setup(connection)).data->root;
+
+        // Fetch the value of the root window's _NET_ACTIVE_WINDOW property
+        XcbStdFreePtr<xcb_get_property_reply_t> property {xcb_get_property_reply(
+            connection,
+            xcb_get_property(
+                /*c=*/connection,
+                /*_delete=*/ 0,
+                /*window=*/rootWId,
+                /*property=*/activeWindowAtom->atom,
+                /*type=*/XCB_ATOM_WINDOW,
+                /*long_offset=*/0,
+                /*long_length=*/1
+            ),
+            &error
+        )};
+
+        if (!property || error)
+        {
+            if (error)
+            {
+                AZ_Warning("XcbInput", false, "Retrieving _NET_ACTIVE_WINDOW atom failed : Error code %d", error->error_code);
+                free(error);
+            }
+            return XCB_WINDOW_NONE;
+        }
+
+        return *static_cast<xcb_window_t*>(xcb_get_property_value(property.get()));
     }
 
     xcb_connection_t* XcbInputDeviceMouse::s_xcbConnection = nullptr;
@@ -36,8 +86,7 @@ namespace AzFramework
         : InputDeviceMouse::Implementation(inputDevice)
         , m_systemCursorState(SystemCursorState::Unknown)
         , m_systemCursorPositionNormalized(0.5f, 0.5f)
-        , m_prevConstraintWindow(XCB_NONE)
-        , m_focusWindow(XCB_NONE)
+        , m_focusWindow(XCB_WINDOW_NONE)
         , m_cursorShown(true)
     {
         XcbEventHandlerBus::Handler::BusConnect();
@@ -271,7 +320,7 @@ namespace AzFramework
         {
             m_systemCursorState = systemCursorState;
 
-            m_focusWindow = GetSystemCursorFocusWindow();
+            m_focusWindow = GetSystemCursorFocusWindow(s_xcbConnection);
 
             HandleCursorState(m_focusWindow, systemCursorState);
         }
@@ -279,50 +328,10 @@ namespace AzFramework
 
     void XcbInputDeviceMouse::HandleCursorState(xcb_window_t window, SystemCursorState systemCursorState)
     {
-        bool confined = false, cursorShown = true;
-        switch (systemCursorState)
-        {
-        case SystemCursorState::ConstrainedAndHidden:
-            {
-                //!< Constrained to the application's main window and hidden
-                confined = true;
-                cursorShown = false;
-            }
-            break;
-        case SystemCursorState::ConstrainedAndVisible:
-            {
-                //!< Constrained to the application's main window and visible
-                confined = true;
-            }
-            break;
-        case SystemCursorState::UnconstrainedAndHidden:
-            {
-                //!< Free to move outside the main window but hidden while inside
-                cursorShown = false;
-            }
-            break;
-        case SystemCursorState::UnconstrainedAndVisible:
-            {
-                //!< Free to move outside the application's main window and visible
-            }
-        case SystemCursorState::Unknown:
-        default:
-            break;
-        }
-
-        // ATTN GetSystemCursorFocusWindow when getting out of the play in editor will return XCB_NONE
-        // We need however the window id to reset the cursor.
-        if (XCB_NONE == window && (confined || cursorShown))
-        {
-            // Reuse the previous window to reset states.
-            window = m_prevConstraintWindow;
-            m_prevConstraintWindow = XCB_NONE;
-        }
-        else
-        {
-            // Remember the window we used to modify cursor and barrier states.
-            m_prevConstraintWindow = window;
-        }
+        const bool confined = (systemCursorState == SystemCursorState::ConstrainedAndHidden) ||
+            (systemCursorState == SystemCursorState::ConstrainedAndVisible);
+        const bool cursorShown = (systemCursorState == SystemCursorState::ConstrainedAndVisible) ||
+            (systemCursorState == SystemCursorState::UnconstrainedAndVisible);
 
         CreateBarriers(window, confined);
         ShowCursor(window, cursorShown);
@@ -336,26 +345,26 @@ namespace AzFramework
     void XcbInputDeviceMouse::SetSystemCursorPositionNormalizedInternal(xcb_window_t window, AZ::Vector2 positionNormalized)
     {
         // TODO Basically not done at all. Added only the basic functions needed.
-        const XcbStdFreePtr<xcb_get_geometry_reply_t> xkbGeometryReply{ xcb_get_geometry_reply(
+        const XcbStdFreePtr<xcb_get_geometry_reply_t> xcbGeometryReply{ xcb_get_geometry_reply(
             s_xcbConnection, xcb_get_geometry(s_xcbConnection, window), nullptr) };
 
-        if (!xkbGeometryReply)
+        if (!xcbGeometryReply)
         {
             return;
         }
 
-        const int16_t x = static_cast<int16_t>(positionNormalized.GetX() * xkbGeometryReply->width);
-        const int16_t y = static_cast<int16_t>(positionNormalized.GetY() * xkbGeometryReply->height);
+        const int16_t x = static_cast<int16_t>(positionNormalized.GetX() * xcbGeometryReply->width);
+        const int16_t y = static_cast<int16_t>(positionNormalized.GetY() * xcbGeometryReply->height);
 
-        xcb_warp_pointer(s_xcbConnection, XCB_NONE, window, 0, 0, 0, 0, x, y);
+        xcb_warp_pointer(s_xcbConnection, XCB_WINDOW_NONE, window, 0, 0, 0, 0, x, y);
 
         xcb_flush(s_xcbConnection);
     }
 
     void XcbInputDeviceMouse::SetSystemCursorPositionNormalized(AZ::Vector2 positionNormalized)
     {
-        const xcb_window_t window = GetSystemCursorFocusWindow();
-        if (XCB_NONE == window)
+        const xcb_window_t window = GetSystemCursorFocusWindow(s_xcbConnection);
+        if (XCB_WINDOW_NONE == window)
         {
             return;
         }
@@ -397,8 +406,8 @@ namespace AzFramework
 
     AZ::Vector2 XcbInputDeviceMouse::GetSystemCursorPositionNormalized() const
     {
-        const xcb_window_t window = GetSystemCursorFocusWindow();
-        if (XCB_NONE == window)
+        const xcb_window_t window = GetSystemCursorFocusWindow(s_xcbConnection);
+        if (XCB_WINDOW_NONE == window)
         {
             return AZ::Vector2::CreateZero();
         }
@@ -549,7 +558,7 @@ namespace AzFramework
                 ProcessRawEventQueues();
                 ResetInputChannelStates();
 
-                m_focusWindow = XCB_NONE;
+                m_focusWindow = XCB_WINDOW_NONE;
 
                 auto* interface = AzFramework::XcbConnectionManagerInterface::Get();
                 interface->SetEnableXInput(interface->GetXcbConnection(), false);

@@ -28,7 +28,10 @@ namespace AzFramework
     public:
         void SetUp() override
         {
+            using testing::Eq;
+            using testing::Field;
             using testing::Return;
+            using testing::StrEq;
             using testing::_;
 
             XcbBaseTestFixture::SetUp();
@@ -61,6 +64,37 @@ namespace AzFramework
                     /*major_version=*/(uint16_t)2,
                     /*minor_version=*/(uint16_t)2
                 ));
+
+            // Set the default focus window
+            EXPECT_CALL(m_interface, xcb_intern_atom(&m_connection, 1, 18, StrEq("_NET_ACTIVE_WINDOW")))
+                .WillRepeatedly(Return(xcb_intern_atom_cookie_t{/*.sequence=*/ 1}));
+            ON_CALL(m_interface, xcb_intern_atom_reply(&m_connection, Field(&xcb_intern_atom_cookie_t::sequence, Eq(1)), _))
+                .WillByDefault(ReturnMalloc<xcb_intern_atom_reply_t>(
+                    /*response_type=*/(uint8_t)XCB_INTERN_ATOM,
+                    /*pad0=*/(uint8_t)0,
+                    /*sequence=*/(uint16_t)1,
+                    /*length=*/0u,
+                    /*xcb_atom_t=*/s_netActiveWindowAtom
+                ));
+            ON_CALL(m_interface, xcb_get_property(&m_connection, 0, s_rootWindow, s_netActiveWindowAtom, XCB_ATOM_WINDOW, 0, 1))
+                .WillByDefault(Return(xcb_get_property_cookie_t{/*.sequence=*/ s_getActiveWindowPropertySequence}));
+            ON_CALL(m_interface, xcb_get_property_reply(&m_connection, Field(&xcb_get_property_cookie_t::sequence, Eq(s_getActiveWindowPropertySequence)), _))
+                .WillByDefault(ReturnMalloc<xcb_get_property_reply_t>(
+                    /*response_type=*/(uint8_t)XCB_GET_PROPERTY,
+                    /*format=*/(uint8_t)0,
+                    /*sequence=*/(uint16_t)s_getActiveWindowPropertySequence,
+                    /*length=*/0u,
+                    /*type=*/XCB_ATOM_WINDOW,
+                    /*bytes_after=*/0u,
+                    /*value_len=*/1u
+                ));
+            ON_CALL(m_interface, xcb_get_property_value(Field(&xcb_get_property_reply_t::sequence, Eq(s_getActiveWindowPropertySequence))))
+                .WillByDefault(Return(const_cast<xcb_window_t*>(&s_nullWindow)));
+
+            ON_CALL(m_interface, xcb_get_geometry(&m_connection, _))
+                .WillByDefault(Return(xcb_get_geometry_cookie_t{/*.sequence=*/1}));
+            ON_CALL(m_interface, xcb_get_geometry_reply(&m_connection, Field(&xcb_get_geometry_cookie_t::sequence, Eq(1)), _))
+                .WillByDefault(ReturnMalloc<xcb_get_geometry_reply_t>(s_defaultWindowGeometry));
         }
 
         void PumpApplication()
@@ -73,10 +107,13 @@ namespace AzFramework
     protected:
         static constexpr inline uint8_t s_xinputMajorOpcode = 131;
         static constexpr inline xcb_window_t s_rootWindow = 1;
+        static constexpr inline xcb_window_t s_nullWindow = XCB_WINDOW_NONE;
         static constexpr inline xcb_input_device_id_t s_virtualCorePointerId = 2;
         static constexpr inline xcb_input_device_id_t s_physicalPointerDeviceId = 3;
         static constexpr inline uint16_t s_screenWidthInPixels = 3840;
         static constexpr inline uint16_t s_screenHeightInPixels = 2160;
+        static constexpr inline uint16_t s_getActiveWindowPropertySequence = 2160;
+        static constexpr inline xcb_atom_t s_netActiveWindowAtom = 1;
         static constexpr inline xcb_setup_t s_xcbSetup{
             /*.status=*/1,
             /*.pad0=*/0,
@@ -108,6 +145,19 @@ namespace AzFramework
             /*.length=*/0,
             /*.present=*/1,
             /*.major_opcode=*/s_xinputMajorOpcode,
+        };
+        static constexpr inline xcb_get_geometry_reply_t s_defaultWindowGeometry{
+            /*.response_type=*/XCB_GET_GEOMETRY,
+            /*.depth=*/0,
+            /*.sequence=*/1,
+            /*.length=*/0,
+            /*.root=*/s_rootWindow,
+            /*.x=*/100,
+            /*.y=*/100,
+            /*.width=*/100,
+            /*.height=*/100,
+            /*.border_width=*/3,
+            /*.pad0[2]=*/{},
         };
         XcbTestApplication m_application{
             /*enabledGamepadsCount=*/0,
@@ -398,4 +448,98 @@ namespace AzFramework
         EXPECT_THAT(xMotionChannel->GetValue(), FloatEq(0.0f));
         EXPECT_THAT(yMotionChannel->GetValue(), FloatEq(0.0f));
     }
+
+    struct GetCursorPositionParam
+    {
+        int16_t m_x;
+        int16_t m_y;
+    };
+
+    class XcbGetSystemCursorPositionTests
+        : public XcbInputDeviceMouseTests
+        , public testing::WithParamInterface<GetCursorPositionParam>
+    {
+    };
+
+    TEST_P(XcbGetSystemCursorPositionTests, GetSystemCursorPositionNormalizedReturnsCorrectValue)
+    {
+        using testing::Eq;
+        using testing::Field;
+        using testing::Return;
+        using testing::_;
+
+        xcb_window_t focusWindow = 42;
+        const xcb_query_pointer_reply_t queryPointerReply{
+            /*.response_type=*/XCB_QUERY_POINTER,
+            /*.same_screen=*/1,
+            /*.sequence=*/0,
+            /*.length=*/1,
+            /*.root=*/s_rootWindow,
+            /*.child=*/focusWindow,
+            /*.root_x=*/static_cast<int16_t>(GetParam().m_x + s_defaultWindowGeometry.x),
+            /*.root_y=*/static_cast<int16_t>(GetParam().m_y + s_defaultWindowGeometry.y),
+            /*.win_x=*/GetParam().m_x,
+            /*.win_y=*/GetParam().m_y,
+            /*.mask=*/{},
+            /*.pad0[2]=*/{},
+        };
+
+        // Querying the root window's pointer gives its absolute value
+        const xcb_query_pointer_reply_t rootWindowQueryPointerReply{
+            /*.response_type=*/XCB_QUERY_POINTER,
+            /*.same_screen=*/1,
+            /*.sequence=*/0,
+            /*.length=*/1,
+            /*.root=*/s_rootWindow,
+            /*.child=*/s_rootWindow,
+            /*.root_x=*/static_cast<int16_t>(GetParam().m_x + s_defaultWindowGeometry.x),
+            /*.root_y=*/static_cast<int16_t>(GetParam().m_y + s_defaultWindowGeometry.y),
+            /*.win_x=*/static_cast<int16_t>(GetParam().m_x + s_defaultWindowGeometry.x),
+            /*.win_y=*/static_cast<int16_t>(GetParam().m_y + s_defaultWindowGeometry.y),
+            /*.mask=*/{},
+            /*.pad0[2]=*/{},
+        };
+
+        EXPECT_CALL(m_interface, xcb_get_property_value(Field(&xcb_get_property_reply_t::sequence, Eq(s_getActiveWindowPropertySequence))))
+            .WillRepeatedly(Return(&focusWindow));
+
+        EXPECT_CALL(m_interface, xcb_query_pointer(&m_connection, focusWindow))
+            .WillRepeatedly(Return(xcb_query_pointer_cookie_t{/*.sequence=*/1}));
+        EXPECT_CALL(m_interface, xcb_query_pointer_reply(&m_connection, Field(&xcb_query_pointer_cookie_t::sequence, 1), _))
+            .WillRepeatedly(ReturnMalloc<xcb_query_pointer_reply_t>(queryPointerReply));
+
+        EXPECT_CALL(m_interface, xcb_query_pointer(&m_connection, s_rootWindow))
+            .WillRepeatedly(Return(xcb_query_pointer_cookie_t{/*.sequence=*/2}));
+        EXPECT_CALL(m_interface, xcb_query_pointer_reply(&m_connection, Field(&xcb_query_pointer_cookie_t::sequence, 2), _))
+            .WillRepeatedly(ReturnMalloc<xcb_query_pointer_reply_t>(rootWindowQueryPointerReply));
+
+        m_application.Start();
+        InputSystemCursorRequestBus::Event(
+            InputDeviceMouse::Id,
+            &InputSystemCursorRequests::SetSystemCursorState,
+            SystemCursorState::ConstrainedAndHidden);
+
+        AZ::Vector2 systemCursorPositionNormalized = AZ::Vector2::CreateZero();
+        InputSystemCursorRequestBus::EventResult(
+            systemCursorPositionNormalized,
+            InputDeviceMouse::Id,
+            &InputSystemCursorRequests::GetSystemCursorPositionNormalized);
+
+        EXPECT_THAT(systemCursorPositionNormalized, ::testing::AllOf(
+            testing::Property(&AZ::Vector2::GetX, testing::FloatEq(static_cast<float>(GetParam().m_x) / s_defaultWindowGeometry.width)),
+            testing::Property(&AZ::Vector2::GetY, testing::FloatEq(static_cast<float>(GetParam().m_y) / s_defaultWindowGeometry.height))
+        ));
+    }
+
+    INSTANTIATE_TEST_CASE_P(
+        AllPointerPositions,
+        XcbGetSystemCursorPositionTests,
+        testing::Values(
+            // Default mocked window geometry sets width and height to 100, all
+            // parameter values should be within [0, 100)
+            GetCursorPositionParam{ 50, 50 },
+            GetCursorPositionParam{ 25, 25 },
+            GetCursorPositionParam{ 0, 100 }
+        )
+    );
 } // namespace AzFramework

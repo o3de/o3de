@@ -82,6 +82,19 @@ public:
         uint16_t src_height,
         int16_t dst_x,
         int16_t dst_y));
+    MOCK_CONST_METHOD4(xcb_intern_atom, xcb_intern_atom_cookie_t(xcb_connection_t* c, uint8_t only_if_exists, uint16_t name_len, const char* name));
+    MOCK_CONST_METHOD3(xcb_intern_atom_reply, xcb_intern_atom_reply_t*(xcb_connection_t* c, xcb_intern_atom_cookie_t cookie, xcb_generic_error_t** e));
+    MOCK_CONST_METHOD7(xcb_get_property, xcb_get_property_cookie_t(
+        xcb_connection_t* c,
+        uint8_t _delete,
+        xcb_window_t window,
+        xcb_atom_t property,
+        xcb_atom_t type,
+        uint32_t long_offset,
+        uint32_t long_length));
+    MOCK_CONST_METHOD3(xcb_get_property_reply, xcb_get_property_reply_t*(xcb_connection_t* c, xcb_get_property_cookie_t cookie, xcb_generic_error_t** e));
+    MOCK_CONST_METHOD1(xcb_get_property_value, void*(const xcb_get_property_reply_t* R));
+    MOCK_CONST_METHOD1(xcb_generate_id, uint32_t(xcb_connection_t *c));
 
     // xcb-xkb
     MOCK_CONST_METHOD3(xcb_xkb_use_extension, xcb_xkb_use_extension_cookie_t(xcb_connection_t* c, uint16_t wantedMajor, uint16_t wantedMinor));
@@ -108,6 +121,20 @@ public:
     MOCK_CONST_METHOD3(xcb_xfixes_query_version_reply, xcb_xfixes_query_version_reply_t*(xcb_connection_t* c, xcb_xfixes_query_version_cookie_t cookie, xcb_generic_error_t** e));
     MOCK_CONST_METHOD2(xcb_xfixes_show_cursor_checked, xcb_void_cookie_t(xcb_connection_t* c, xcb_window_t window));
     MOCK_CONST_METHOD2(xcb_xfixes_hide_cursor_checked, xcb_void_cookie_t(xcb_connection_t* c, xcb_window_t window));
+    MOCK_CONST_METHOD2(xcb_xfixes_delete_pointer_barrier_checked, xcb_void_cookie_t(xcb_connection_t* c, xcb_xfixes_barrier_t barrier));
+    MOCK_CONST_METHOD5(xcb_translate_coordinates, xcb_translate_coordinates_cookie_t(xcb_connection_t* c, xcb_window_t src_window, xcb_window_t dst_window, int16_t src_x, int16_t src_y));
+    MOCK_CONST_METHOD3(xcb_translate_coordinates_reply, xcb_translate_coordinates_reply_t*(xcb_connection_t* c, xcb_translate_coordinates_cookie_t cookie, xcb_generic_error_t** e));
+    MOCK_CONST_METHOD10(xcb_xfixes_create_pointer_barrier_checked, xcb_void_cookie_t(
+        xcb_connection_t* c,
+        xcb_xfixes_barrier_t barrier,
+        xcb_window_t window,
+        uint16_t x1,
+        uint16_t y1,
+        uint16_t x2,
+        uint16_t y2,
+        uint32_t directions,
+        uint16_t num_devices,
+        const uint16_t* devices));
 
     // xcb-xinput
     MOCK_CONST_METHOD3(xcb_input_xi_query_version, xcb_input_xi_query_version_cookie_t(xcb_connection_t* c, uint16_t major_version, uint16_t minor_version));
