@@ -174,7 +174,7 @@ namespace SandboxEditor
             return SandboxEditor::CameraScrollSpeed();
         };
 
-        const auto pivotFn = []
+        const auto pivotFn = [](const AZ::Vector3& pivotFallback = AZ::Vector3::CreateZero())
         {
             // use the manipulator transform as the pivot point
             AZStd::optional<AZ::Transform> entityPivot;
@@ -187,8 +187,8 @@ namespace SandboxEditor
                 return entityPivot->GetTranslation();
             }
 
-            // otherwise just use the identity
-            return AZ::Vector3::CreateZero();
+            // otherwise use the fallback
+            return pivotFallback;
         };
 
         m_firstPersonFocusCamera =
@@ -201,7 +201,8 @@ namespace SandboxEditor
         m_orbitCamera->SetPivotFn(
             [pivotFn]([[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& direction)
             {
-                return pivotFn();
+                const auto pivot = position + direction * 20.0f;
+                return pivotFn(pivot);
             });
 
         m_orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(SandboxEditor::CameraOrbitLookChannelId());
