@@ -24,6 +24,12 @@ namespace AZ
     //! Using int64_t as the underlying type, this is good to represent approximately 292,471 years
     AZ_TYPE_SAFE_INTEGRAL(TimeUs, int64_t);
 
+    namespace Time
+    {
+        static const AZ::TimeMs ZeroTimeMs = AZ::TimeMs{ 0 };
+        static const AZ::TimeUs ZeroTimeUs = AZ::TimeUs{ 0 };
+    }
+
     //! @class ITime
     //! @brief This is an AZ::Interface<> for managing time related operations.
     //! AZ::ITime and associated types may not operate in realtime. These abstractions are to allow our application
@@ -104,6 +110,9 @@ namespace AZ
         virtual int32_t GetSimulationTickRate() const = 0;
 
         AZ_DISABLE_COPY_MOVE(ITime);
+
+        static const AZ::TimeMs ZeroTimeMs = AZ::TimeMs{ 0 };
+        static const AZ::TimeUs ZeroTimeUs = AZ::TimeUs{ 0 };
     };
 
     // EBus wrapper for ScriptCanvas

@@ -56,7 +56,7 @@ inline void Gestures::RecognizerClickOrTap::Config::Reflect(AZ::ReflectContext* 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline Gestures::RecognizerClickOrTap::RecognizerClickOrTap(const Config& config)
     : m_config(config)
-    , m_timeOfLastEvent(AZ::TimeMs{ 0 })
+    , m_timeOfLastEvent(AZ::Time::ZeroTimeMs)
     , m_positionOfFirstEvent()
     , m_positionOfLastEvent()
     , m_currentCount(0)

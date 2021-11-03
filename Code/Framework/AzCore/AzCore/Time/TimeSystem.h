@@ -58,27 +58,27 @@ namespace AZ
     private:
         //! Used to calculate the delta time between calls to GetElapsedTimeMs/TimeUs().
         //! Mutable to allow GetElapsedTimeMs/TimeUs() to be a const functions.
-        mutable TimeUs m_lastInvokedTimeUs = AZ::TimeUs{ 0 };
+        mutable TimeUs m_lastInvokedTimeUs = AZ::Time::ZeroTimeUs;
 
         //! Accumulates the delta time of GetElapsedTimeMs/TimeUs() calls.
         //! Mutable to allow GetElapsedTimeMs/TimeUs() to be a const functions.
-        mutable TimeUs m_accumulatedTimeUs = AZ::TimeUs{ 0 };
+        mutable TimeUs m_accumulatedTimeUs = AZ::Time::ZeroTimeUs;
 
         //! The current game tick delta time.
         //! Can be affected by time system cvars.
         //! Updated in AdvanceTickDeltaTimes().
-        TimeUs m_simulationTickDeltaTimeUs = AZ::TimeUs{ 0 };
+        TimeUs m_simulationTickDeltaTimeUs = AZ::Time::ZeroTimeUs;
 
         //! The current real tick delta time.
         //! Will not be affected by time system cvars.
         //! Updated in AdvanceTickDeltaTimes().
-        TimeUs m_realTickDeltaTimeUs = AZ::TimeUs{ 0 };
+        TimeUs m_realTickDeltaTimeUs = AZ::Time::ZeroTimeUs;
 
-        TimeUs m_lastSimulationTickTimeUs = AZ::TimeUs{ 0 }; //!< Used to determine the game tick delta time (affected by cvars).
-        TimeUs m_lastRealTickTimeUs = AZ::TimeUs{ 0 }; //!< Used to determine the real game tick delta time (not affected by cvars).
+        TimeUs m_lastSimulationTickTimeUs = AZ::Time::ZeroTimeUs; //!< Used to determine the game tick delta time (affected by cvars).
+        TimeUs m_lastRealTickTimeUs = AZ::Time::ZeroTimeUs; //!< Used to determine the real game tick delta time (not affected by cvars).
 
-        TimeUs m_simulationTickDeltaOverride = AZ::TimeUs{ 0 }; //<! Stores the TimeUs value of the t_simulationTickDeltaOverride cvar.
-        TimeUs m_simulationTickLimitTimeUs = AZ::TimeUs{ 0 }; //<! Stores the TimeUs value of the t_simulationTickRate cvar.
+        TimeUs m_simulationTickDeltaOverride = AZ::Time::ZeroTimeUs; //<! Stores the TimeUs value of the t_simulationTickDeltaOverride cvar.
+        TimeUs m_simulationTickLimitTimeUs = AZ::Time::ZeroTimeUs; //<! Stores the TimeUs value of the t_simulationTickRate cvar.
         int32_t m_simulationTickLimitRate = 0; //<! Stores the simulation rate limit in frames per second.
     };
 }

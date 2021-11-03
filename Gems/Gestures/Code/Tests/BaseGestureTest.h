@@ -20,7 +20,7 @@ namespace GesturesTests
             return m_realElapsedTime;
         }
 
-        AZ::TimeMs m_realElapsedTime = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_realElapsedTime = AZ::Time::ZeroTimeMs;
     };
 } // namespace GesturesTests
 

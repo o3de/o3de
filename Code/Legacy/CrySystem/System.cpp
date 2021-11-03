@@ -1385,7 +1385,7 @@ const char* CSystem::GetSystemGlobalStateName(const ESystemGlobalState systemGlo
 
 void CSystem::SetSystemGlobalState(const ESystemGlobalState systemGlobalState)
 {
-    static AZ::TimeMs s_startTime = AZ::TimeMs{ 0 };
+    static AZ::TimeMs s_startTime = AZ::Time::ZeroTimeMs;
     if (systemGlobalState != m_systemGlobalState)
     {
         const AZ::TimeMs endTime = AZ::GetRealElapsedTimeMs();

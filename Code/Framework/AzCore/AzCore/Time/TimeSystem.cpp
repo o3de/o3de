@@ -49,11 +49,6 @@ namespace AZ
 
     AZ_CVAR(int, t_simulationTickRate, 0, cvar_t_simulationTickRate_Changed, AZ::ConsoleFunctorFlags::Null,
         "The minimum rate to force the game simulation tick to run. 0 for as fast as possible. 30 = ~33ms, 60 = ~16ms");
-    
-    namespace Constants
-    {
-        static const AZ::TimeUs ZeroTimeUs = AZ::TimeUs{ 0 };
-    }
 
     void TimeSystem::Reflect(AZ::ReflectContext* context)
     {
@@ -133,7 +128,7 @@ namespace AZ
         m_lastRealTickTimeUs = currentTimeUs;
 
         //game time
-        if (m_simulationTickDeltaOverride > Constants::ZeroTimeUs)
+        if (m_simulationTickDeltaOverride > AZ::Time::ZeroTimeUs)
         {
             m_simulationTickDeltaTimeUs = m_simulationTickDeltaOverride;
             m_lastSimulationTickTimeUs = m_simulationTickDeltaTimeUs;
@@ -162,7 +157,7 @@ namespace AZ
         {
             const TimeUs currentTimeUs = AZ::GetRealElapsedTimeUs();
             const TimeUs timeUntilNextTick = (m_lastSimulationTickTimeUs + m_simulationTickLimitTimeUs) - currentTimeUs;
-            if (timeUntilNextTick > ZeroTimeUs)
+            if (timeUntilNextTick > AZ::Time::ZeroTimeUs)
             {
                 AZ_TracePrintf("tick", "Sleeping for %.2f", AZ::TimeUsToSecondsDouble(timeUntilNextTick));
                 AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(static_cast<int64_t>(timeUntilNextTick)));
@@ -208,7 +203,7 @@ namespace AZ
         }
         else
         {
-            m_simulationTickLimitTimeUs = Constants::ZeroTimeUs;
+            m_simulationTickLimitTimeUs = AZ::Time::ZeroTimeUs;
         }
     }
 

@@ -44,7 +44,7 @@ inline void Gestures::RecognizerDrag::Config::Reflect(AZ::ReflectContext* contex
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline Gestures::RecognizerDrag::RecognizerDrag(const Config& config)
     : m_config(config)
-    , m_startTime(AZ::TimeMs{ 0 })
+    , m_startTime(AZ::Time::ZeroTimeMs)
     , m_startPosition()
     , m_currentPosition()
     , m_currentState(State::Idle)

@@ -44,7 +44,7 @@ inline void Gestures::RecognizerHold::Config::Reflect(AZ::ReflectContext* contex
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline Gestures::RecognizerHold::RecognizerHold(const Config& config)
     : m_config(config)
-    , m_startTime(AZ::TimeMs{ 0 })
+    , m_startTime(AZ::Time::ZeroTimeMs)
     , m_startPosition()
     , m_currentPosition()
     , m_currentState(State::Idle)

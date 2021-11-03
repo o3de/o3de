@@ -935,9 +935,9 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
         }
         else if (dwCVarState == 2)     // Log_IncludeTime
         {
-            static AZ::TimeMs lasttime = AZ::TimeMs{ 0 };
+            static AZ::TimeMs lasttime = AZ::Time::ZeroTimeMs;
             const AZ::TimeMs currenttime = AZ::GetRealElapsedTimeMs();
-            if (lasttime != AZ::TimeMs{ 0 })
+            if (lasttime != AZ::Time::ZeroTimeMs)
             {
                 timeStr.clear();
                 uint32 dwMs = aznumeric_cast<uint32>(currenttime - lasttime);
@@ -962,9 +962,9 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
 #endif
             tempString = LogStringType(sTime) + tempString;
 
-            static AZ::TimeMs lasttime = AZ::TimeMs{ 0 };
+            static AZ::TimeMs lasttime = AZ::Time::ZeroTimeMs;
             const AZ::TimeMs currenttime = AZ::GetRealElapsedTimeMs();
-            if (lasttime != AZ::TimeMs{ 0 })
+            if (lasttime != AZ::Time::ZeroTimeMs)
             {
                 timeStr.clear();
                 uint32 dwMs = (uint32)(currenttime - lasttime);
@@ -977,9 +977,9 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
         {
             static bool bFirst = true;
 
-            static AZ::TimeMs lasttime = AZ::TimeMs{ 0 };
+            static AZ::TimeMs lasttime = AZ::Time::ZeroTimeMs;
             const AZ::TimeMs currenttime = AZ::GetRealElapsedTimeMs();
-            if (lasttime != AZ::TimeMs{ 0 })
+            if (lasttime != AZ::Time::ZeroTimeMs)
             {
                 timeStr.clear();
                 uint32 dwMs = (uint32)(currenttime - lasttime);

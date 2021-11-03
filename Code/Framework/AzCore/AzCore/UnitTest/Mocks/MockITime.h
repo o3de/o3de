@@ -55,37 +55,37 @@ namespace AZ
 
         virtual AZ::TimeMs GetElapsedTimeMs() const override
         {
-            return AZ::TimeMs{ 0 };
+            return AZ::Time::ZeroTimeMs;
         }
 
         virtual AZ::TimeUs GetElapsedTimeUs() const override
         {
-            return AZ::TimeUs{ 0 };
+            return AZ::Time::ZeroTimeUs;
         }
 
         virtual AZ::TimeMs GetRealElapsedTimeMs() const override
         {
-            return AZ::TimeMs{ 0 };
+            return AZ::Time::ZeroTimeMs;
         }
 
         virtual AZ::TimeUs GetRealElapsedTimeUs() const override
         {
-            return AZ::TimeUs{ 0 };
+            return AZ::Time::ZeroTimeUs;
         }
 
         virtual AZ::TimeMs GetSimulationTickDeltaTimeMs() const override
         {
-            return AZ::TimeMs{ 0 };
+            return AZ::Time::ZeroTimeMs;
         }
 
         virtual AZ::TimeMs GetRealTickDeltaTimeMs() const override
         {
-            return AZ::TimeMs{ 0 };
+            return AZ::Time::ZeroTimeMs;
         }
 
         virtual AZ::TimeMs GetLastSimulationTickTime() const override
         {
-            return AZ::TimeMs{ 0 };
+            return AZ::Time::ZeroTimeMs;
         }
 
         virtual void SetSimulationTickDeltaOverride([[maybe_unused]]TimeMs timeMs) override
@@ -94,7 +94,7 @@ namespace AZ
 
         virtual TimeMs GetSimulationTickDeltaOverride() const override
         {
-            return AZ::TimeMs{ 0 }; 
+            return AZ::Time::ZeroTimeMs; 
         }
 
         virtual void SetSimulationTickScale([[maybe_unused]] float scale) override

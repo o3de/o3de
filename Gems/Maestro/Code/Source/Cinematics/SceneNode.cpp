@@ -417,7 +417,7 @@ void CAnimSceneNode::Animate(SAnimContext& ec)
             {
                 m_simulationTickOverrideBackup = timeSystem->GetSimulationTickDeltaOverride();
                 // if set, disable fixed time step cvar so timewarping will have an affect.
-                timeSystem->SetSimulationTickDeltaOverride(AZ::ZeroTimeMs);
+                timeSystem->SetSimulationTickDeltaOverride(AZ::Time::ZeroTimeMs);
 
                 m_timeScaleBackup = timeSystem->GetSimulationTickScale();
                 timeSystem->SetSimulationTickScale(timeScale);

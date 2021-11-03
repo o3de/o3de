@@ -32,7 +32,7 @@ namespace UnitTest
             m_timeMs += AZ::SecondsToTimeMs(sec);
         }
 
-        AZ::TimeMs m_timeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_timeMs = AZ::Time::ZeroTimeMs;
     };
 
     class TrackEventHandler
