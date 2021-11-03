@@ -298,7 +298,7 @@ namespace UnitTest
     TEST_F(AssetBrowserTest, CheckCorrectNumberOfEntriesInTableView)
     {
         m_filterModel->FilterUpdatedSlotImmediate();
-        int tableViewRowcount = m_tableModel->rowCount();
+        const int tableViewRowcount = m_tableModel->rowCount();
 
         // RowCount should be 17 -> 5 SourceEntries + 12 ProductEntries)
         EXPECT_EQ(tableViewRowcount, 17);
@@ -320,7 +320,7 @@ namespace UnitTest
         m_searchWidget->SetTextFilter(QString("source_1"));
         m_filterModel->FilterUpdatedSlotImmediate();
 
-        int tableViewRowcount = m_tableModel->rowCount();
+        const int tableViewRowcount = m_tableModel->rowCount();
         EXPECT_EQ(tableViewRowcount, 3);
     }
 
@@ -333,7 +333,7 @@ namespace UnitTest
         // Since the folder is empty it shouldn't be added to the model.
         EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(), 1);
 
-        AZ::Uuid sourceUuid = CreateSourceEntry(123, 20, "DummyFile");
+        CreateSourceEntry(123, newFolderId, "DummyFile");
 
         // When we add a file to the folder it should be added to the model
         EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(), 2);
@@ -361,7 +361,6 @@ namespace UnitTest
         // Adding 5 more entries
         EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(AssetFolderIndex), 7);
 
-        UnitTest::ErrorHandler errorHandler("File 123 already exists");
         // Try to create a file that already exist.
         AZ_TEST_START_TRACE_SUPPRESSION;
         CreateSourceEntry(sourceUniqueId.at(0), assetFolderId, "DummyFle_1");
