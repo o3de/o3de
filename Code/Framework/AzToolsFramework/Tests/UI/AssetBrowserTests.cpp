@@ -175,7 +175,7 @@ namespace UnitTest
 
         GetRootEntry()->AddProduct(product);
     }
-#pragma optimize("", off)
+
     void AssetBrowserTest::SetupAssetBrowser()
     {
 
