@@ -76,7 +76,6 @@ namespace EMotionFX
         gEMFX.Get()->SetRecorder              (Recorder::Create());
         gEMFX.Get()->SetMotionInstancePool    (MotionInstancePool::Create());
         gEMFX.Get()->SetDebugDraw             (aznew DebugDraw());
-        gEMFX.Get()->SetRenderActorSettings   (new AZ::Render::RenderActorSettings());
         gEMFX.Get()->SetGlobalSimulationSpeed (1.0f);
 
         // set the number of threads
@@ -125,7 +124,6 @@ namespace EMotionFX
         m_recorder               = nullptr;
         m_motionInstancePool     = nullptr;
         m_debugDraw              = nullptr;
-        m_renderActorSettings    = nullptr;
         m_unitType               = MCore::Distance::UNITTYPE_METERS;
         m_globalSimulationSpeed  = 1.0f;
         m_isInEditorMode        = false;
@@ -138,6 +136,8 @@ namespace EMotionFX
         {
             RegisterMemoryCategories(MCore::GetMemoryTracker());
         }
+
+        m_renderActorSettings = AZStd::make_unique<AZ::Render::RenderActorSettings>();
     }
 
 
@@ -170,8 +170,7 @@ namespace EMotionFX
         delete m_debugDraw;
         m_debugDraw = nullptr;
 
-        delete m_renderActorSettings;
-        m_renderActorSettings = nullptr;
+        m_renderActorSettings.reset();
 
         m_eventManager->Destroy();
         m_eventManager = nullptr;
@@ -314,11 +313,6 @@ namespace EMotionFX
     void EMotionFXManager::SetDebugDraw(DebugDraw* draw)
     {
         m_debugDraw = draw;
-    }
-
-    void EMotionFXManager::SetRenderActorSettings(AZ::Render::RenderActorSettings* settings)
-    {
-        m_renderActorSettings = settings;
     }
 
     // set the motion instance pool
