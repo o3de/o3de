@@ -96,10 +96,15 @@ namespace AzToolsFramework
             static void ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities);
             static void ContextMenu_InstantiatePrefab();
             static void ContextMenu_InstantiateProceduralPrefab();
+            static void ContextMenu_ClosePrefab();
             static void ContextMenu_EditPrefab(AZ::EntityId containerEntity);
             static void ContextMenu_SavePrefab(AZ::EntityId containerEntity);
             static void ContextMenu_DeleteSelected();
             static void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);
+
+            // Shortcut setup handlers
+            void InitializeShortcuts();
+            void UninitializeShortcuts();
 
             // Prompt and resolve dialogs
             static bool QueryUserForPrefabSaveLocation(
@@ -139,6 +144,8 @@ namespace AzToolsFramework
             AZStd::unique_ptr<AzQtComponents::Card> ConstructUnsavedPrefabsCard(TemplateId templateId);
             AZStd::unique_ptr<QDialog> ConstructSavePrefabDialog(TemplateId templateId, bool useSaveAllPrefabsPreference);
             void SavePrefabsInDialog(QDialog* unsavedPrefabsDialog);
+
+            AZStd::vector<AZStd::unique_ptr<QAction>> m_actions;
 
             static const AZStd::string s_prefabFileExtension;
 
