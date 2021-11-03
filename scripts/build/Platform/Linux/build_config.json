@@ -217,7 +217,7 @@
   },
   "install_profile": {
     "TAGS": [],
-    "COMMAND": "build_linux.cmd",
+    "COMMAND": "build_linux.sh",
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build/linux",
@@ -241,7 +241,7 @@
   },
   "project_generate": {
     "TAGS": [],
-    "COMMAND": "python_linux.cmd",
+    "COMMAND": "python_linux.sh",
     "PARAMETERS": {
       "SCRIPT_PATH": "install/scripts/o3de.py",
       "SCRIPT_PARAMETERS": "create-project -pp ${WORKSPACE}/${PROJECT_REPOSITORY_NAME} --force"
@@ -249,7 +249,7 @@
   },
   "project_engineinstall_profile": {
     "TAGS": [],
-    "COMMAND": "build_linux.cmd",
+    "COMMAND": "build_linux.sh",
     "PARAMETERS": {
       "COMMAND_CWD": "${WORKSPACE}/${PROJECT_REPOSITORY_NAME}",
       "CONFIGURATION": "profile",

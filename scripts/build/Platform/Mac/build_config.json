@@ -165,7 +165,7 @@
   },
   "install_profile": {
     "TAGS": [],
-    "COMMAND": "build_mac.cmd",
+    "COMMAND": "build_mac.sh",
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build/mac",
@@ -190,7 +190,7 @@
   },
   "project_generate": {
     "TAGS": [],
-    "COMMAND": "python_mac.cmd",
+    "COMMAND": "python_mac.sh",
     "PARAMETERS": {
       "SCRIPT_PATH": "install/scripts/o3de.py",
       "SCRIPT_PARAMETERS": "create-project -pp ${WORKSPACE}/${PROJECT_REPOSITORY_NAME} --force"
@@ -198,7 +198,7 @@
   },
   "project_engineinstall_profile": {
     "TAGS": [],
-    "COMMAND": "build_mac.cmd",
+    "COMMAND": "build_mac.sh",
     "PARAMETERS": {
       "COMMAND_CWD": "${WORKSPACE}/${PROJECT_REPOSITORY_NAME}",
       "CONFIGURATION": "profile",
