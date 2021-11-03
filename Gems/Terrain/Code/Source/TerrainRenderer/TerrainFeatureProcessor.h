@@ -71,18 +71,18 @@ namespace Terrain
 
         struct ShaderTerrainData // Must align with struct in Object Srg
         {
-            AZStd::array<float, 2> m_uvMin;
-            AZStd::array<float, 2> m_uvMax;
-            AZStd::array<float, 2> m_uvStep;
-            float m_sampleSpacing;
-            float m_heightScale;
+            AZStd::array<float, 2> m_uvMin{ 0.0f, 0.0f };
+            AZStd::array<float, 2> m_uvMax{ 1.0f, 1.0f };
+            AZStd::array<float, 2> m_uvStep{ 1.0f, 1.0f };
+            float m_sampleSpacing{ 1.0f };
+            float m_heightScale{ 1.0f };
         };
 
-        struct ShaderMacroMaterialData
+        struct ShaderMacroMaterialData // Must align with struct in Object Srg
         {
-            AZStd::array<float, 2> m_uvMin;
-            AZStd::array<float, 2> m_uvMax;
-            float m_normalFactor;
+            AZStd::array<float, 2> m_uvMin{ 0.0f, 0.0f };
+            AZStd::array<float, 2> m_uvMax{ 1.0f, 1.0f };
+            float m_normalFactor{ 0.0f };
             uint32_t m_flipNormalX{ 0 }; // bool in shader
             uint32_t m_flipNormalY{ 0 }; // bool in shader
             uint32_t m_mapsInUse{ 0b00 }; // 0b01 = color, 0b10 = normal

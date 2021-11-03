@@ -199,6 +199,9 @@ namespace AZ
             //! Retrieves a PassTemplate from the library
             virtual const AZStd::shared_ptr<PassTemplate> GetPassTemplate(const Name& name) const = 0;
 
+            //! See remarks in PassLibrary.h for the function with this name.
+            virtual void RemovePassTemplate(const Name& name) = 0;
+
             //! Removes all references to the given pass from the pass library
             virtual void RemovePassFromLibrary(Pass* pass) = 0;
                         
