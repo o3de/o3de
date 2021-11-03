@@ -65,6 +65,8 @@ namespace O3DE::ProjectManager
         m_summaryLabel->setText(m_model->GetSummary(modelIndex));
         m_summaryLabel->adjustSize();
 
+        m_licenseLinkLabel->setText(m_model->GetLicenseText(modelIndex));
+        m_licenseLinkLabel->SetUrl(m_model->GetLicenseLink(modelIndex));
         m_directoryLinkLabel->SetUrl(m_model->GetDirectoryLink(modelIndex));
         m_documentationLinkLabel->SetUrl(m_model->GetDocLink(modelIndex));
 
@@ -108,17 +110,35 @@ namespace O3DE::ProjectManager
     {
         // Gem name, creator and summary
         m_nameLabel = CreateStyledLabel(m_mainLayout, 18, s_headerColor);
-        m_creatorLabel = CreateStyledLabel(m_mainLayout, 12, s_headerColor);
+        m_creatorLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_headerColor);
         m_mainLayout->addSpacing(5);
 
         // TODO: QLabel seems to have issues determining the right sizeHint() for our font with the given font size.
         // This results into squeezed elements in the layout in case the text is a little longer than a sentence.
-        m_summaryLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
+        m_summaryLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_headerColor);
         m_mainLayout->addWidget(m_summaryLabel);
         m_summaryLabel->setWordWrap(true);
         m_summaryLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
         m_summaryLabel->setOpenExternalLinks(true);
         m_mainLayout->addSpacing(5);
+
+        // License
+        {
+            QHBoxLayout* licenseHLayout = new QHBoxLayout();
+            licenseHLayout->setMargin(0);
+            m_mainLayout->addLayout(licenseHLayout);
+
+            QLabel* licenseLabel = CreateStyledLabel(licenseHLayout, s_baseFontSize, s_headerColor);
+            licenseLabel->setText("License: ");
+
+            m_licenseLinkLabel = new LinkLabel("", QUrl(), s_baseFontSize);
+            licenseHLayout->addWidget(m_licenseLinkLabel);
+
+            QSpacerItem* licenseSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding);
+            licenseHLayout->addSpacerItem(licenseSpacer);
+
+            m_mainLayout->addSpacing(5);
+        }
 
         // Directory and documentation links
         {
@@ -144,7 +164,7 @@ namespace O3DE::ProjectManager
         // Separating line
         QFrame* hLine = new QFrame();
         hLine->setFrameShape(QFrame::HLine);
-        hLine->setStyleSheet("color: #666666;");
+        hLine->setObjectName("horizontalSeparatingLine");
         m_mainLayout->addWidget(hLine);
 
         m_mainLayout->addSpacing(10);
@@ -183,8 +203,8 @@ namespace O3DE::ProjectManager
         QLabel* additionalInfoLabel = CreateStyledLabel(m_mainLayout, 14, s_headerColor);
         additionalInfoLabel->setText("Additional Information");
 
-        m_versionLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
-        m_lastUpdatedLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
-        m_binarySizeLabel = CreateStyledLabel(m_mainLayout, 12, s_textColor);
+        m_versionLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
+        m_lastUpdatedLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
+        m_binarySizeLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
     }
 } // namespace O3DE::ProjectManager

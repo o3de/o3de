@@ -36,6 +36,9 @@ namespace O3DE::ProjectManager
         void Update(const QModelIndex& modelIndex);
         static QLabel* CreateStyledLabel(QLayout* layout, int fontSize, const QString& colorCodeString);
 
+        // Fonts
+        inline constexpr static int s_baseFontSize = 12;
+
         // Colors
         inline constexpr static const char* s_headerColor = "#FFFFFF";
         inline constexpr static const char* s_textColor = "#DDDDDD";
@@ -57,6 +60,7 @@ namespace O3DE::ProjectManager
         QLabel* m_nameLabel = nullptr;
         QLabel* m_creatorLabel = nullptr;
         QLabel* m_summaryLabel = nullptr;
+        LinkLabel* m_licenseLinkLabel = nullptr;
         LinkLabel* m_directoryLinkLabel = nullptr;
         LinkLabel* m_documentationLinkLabel = nullptr;
 
