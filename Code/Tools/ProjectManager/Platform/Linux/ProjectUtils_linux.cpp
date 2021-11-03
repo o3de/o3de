@@ -94,5 +94,10 @@ namespace O3DE::ProjectManager
                 QProcessEnvironment::systemEnvironment(),
                 QObject::tr("Running get_python script..."));
         }
+
+        AZ::IO::FixedMaxPath GetEditorDirectory()
+        {
+            return AZ::Utils::GetExecutableDirectory();
+        }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager
