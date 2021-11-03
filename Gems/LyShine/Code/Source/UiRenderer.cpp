@@ -52,7 +52,7 @@ bool UiRenderer::IsReady()
     return m_isRPIReady;
 }
 
-void UiRenderer::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapScene)
+void UiRenderer::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
 {
     // At this point the RPI is ready for use
 
@@ -64,16 +64,17 @@ void UiRenderer::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstra
     if (m_viewportContext)
     {
         // Create a new scene based on the user specified viewport context
-        m_scene = CreateScene(m_viewportContext);
+        m_ownedScene = CreateScene(m_viewportContext);
+        m_scene = m_ownedScene.get();
     }
     else
     {
         // No viewport context specified, use default scene
-        m_scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
+        m_scene = bootstrapScene;
     }
 
     // Create a dynamic draw context for UI Canvas drawing for the scene
-    m_dynamicDraw = CreateDynamicDrawContext(m_scene, uiShader);
+    m_dynamicDraw = CreateDynamicDrawContext(uiShader);
 
     if (m_dynamicDraw)
     {
@@ -93,6 +94,7 @@ AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportCon
 {
     // Create a scene with the necessary feature processors
     AZ::RPI::SceneDescriptor sceneDesc;
+    sceneDesc.m_nameId = AZ::Name("UiRenderer");
     AZ::RPI::ScenePtr atomScene = AZ::RPI::Scene::CreateScene(sceneDesc);
     atomScene->EnableAllFeatureProcessors(); // LYSHINE_ATOM_TODO - have a UI pipeline and enable only needed fps
 
@@ -116,7 +118,6 @@ AZ::RPI::ScenePtr UiRenderer::CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportCon
 }
 
 AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContext(
-    AZ::RPI::ScenePtr scene,
     AZ::Data::Instance<AZ::RPI::Shader> uiShader)
 {
     // Find the pass that renders the UI canvases after the rtt passes
@@ -144,7 +145,7 @@ AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> UiRenderer::CreateDynamicDrawContext(
     else
     {
         // Render target support is disabled
-        dynamicDraw->SetOutputScope(m_scene.get());
+        dynamicDraw->SetOutputScope(m_scene);
     }
     dynamicDraw->EndInit();
 

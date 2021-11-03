@@ -1149,7 +1149,9 @@ namespace Terrain
                     sectorData.m_srg->SetConstant(m_terrainDataIndex, terrainDataForSrg);
 
                     AZStd::array<ShaderMacroMaterialData, MaxMaterialsPerSector> macroMaterialData;
-                    for (uint32_t i = 0; i < sectorData.m_macroMaterials.size(); ++i)
+
+                    uint32_t i = 0;
+                    for (; i < sectorData.m_macroMaterials.size(); ++i)
                     {
                         const MacroMaterialData& materialData = m_macroMaterials.GetData(sectorData.m_macroMaterials.at(i));
                         ShaderMacroMaterialData& shaderData = macroMaterialData.at(i);
@@ -1177,6 +1179,11 @@ namespace Terrain
 
                         // set flags for which images are used.
                         shaderData.m_mapsInUse = (colorImageView ? ColorImageUsed : 0) | (normalImageView ? NormalImageUsed : 0);
+                    }
+                    for (; i < sectorData.m_macroMaterials.capacity(); ++i)
+                    {
+                        sectorData.m_srg->SetImageView(m_macroColorMapIndex, nullptr, i);
+                        sectorData.m_srg->SetImageView(m_macroNormalMapIndex, nullptr, i);
                     }
 
                     sectorData.m_srg->SetConstantArray(m_macroMaterialDataIndex, macroMaterialData);

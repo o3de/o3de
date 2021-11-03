@@ -45,9 +45,11 @@ namespace Multiplayer
         //! @}
 
     private:
+        void ActivateDedicatedEditorServer() const;
 
         AzNetworking::INetworkInterface* m_networkEditorInterface = nullptr;
         AZStd::vector<uint8_t> m_buffer;
         AZ::IO::ByteContainerStream<AZStd::vector<uint8_t>> m_byteStream;
+        mutable bool m_isActivated = false;
     };
 }

@@ -9,6 +9,7 @@
 #include <Launcher.h>
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
@@ -663,6 +664,8 @@ namespace O3DELauncher
     #else
         systemInitParams.pSystem = CreateSystemInterface(systemInitParams);
     #endif // !defined(AZ_MONOLITHIC_BUILD)
+
+        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "LegacySystemInterfaceCreated", R"({})");
 
         ReturnCode status = ReturnCode::Success;
 

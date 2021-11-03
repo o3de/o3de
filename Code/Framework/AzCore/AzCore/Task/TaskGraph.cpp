@@ -20,6 +20,46 @@ namespace AZ
         m_semaphore.acquire();
     }
 
+    void TaskGraphEvent::IncWaitCount()
+    {
+        // guess zero to optimize for single task graph using an event, if multiple are using it then this will take 2+ comp_exch calls
+        int expectedValue = 0;
+        while(!m_waitCount.compare_exchange_weak(expectedValue, expectedValue + 1))
+        {
+             // value will be negative once event is ready to signal or has been signaled. Shouldn't happen.
+            AZ_Assert(expectedValue >= 0, "Called TaskGraphEvent::IncWaitCount on a signalled event");
+            if (expectedValue < 0) // event already signaled, skip
+            {
+                return;
+            }
+        };
+    }
+
+    void TaskGraphEvent::Signal()
+    {
+        // guess one to optimize for single task graph using an event, if multiple are using it then this will take 2+ comp_exch calls
+        int expectedValue = 1;
+        while(!m_waitCount.compare_exchange_weak(expectedValue, expectedValue - 1))
+        {
+            // It's an error for Signal to be called if no one is waiting, or the event has already been signaled
+            AZ_Assert(expectedValue > 0, "Called TaskGraphEvent::Signal when event is either signaled or unused");
+            if (expectedValue < 0) // return if already signaled
+            {
+                return;
+            }
+        };
+
+        if (expectedValue == 1) // This call to Signal decremented the value to 0.
+        {
+            expectedValue = 0;
+            // validate no one incremented the wait count and mark signalling state
+            if (m_waitCount.compare_exchange_strong(expectedValue, -1))
+            {
+                m_semaphore.release();
+            }
+        }
+    }
+
     void TaskToken::PrecedesInternal(TaskToken& comesAfter)
     {
         AZ_Assert(!m_parent.m_submitted, "Cannot mutate a TaskGraph that was previously submitted.");

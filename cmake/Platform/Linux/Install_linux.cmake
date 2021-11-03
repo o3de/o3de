@@ -22,9 +22,12 @@ endfunction()]])
 
 function(ly_setup_runtime_dependencies_copy_function_override)
     string(CONFIGURE "${ly_copy_template}" ly_copy_function_linux @ONLY)
-    ly_install(CODE "${ly_copy_function_linux}" 
-        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-    )
+    foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+        string(TOUPPER ${conf} UCONF)
+        ly_install(CODE "${ly_copy_function_linux}" 
+            COMPONENT  ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+        )
+    endforeach()
 endfunction()
 
 include(cmake/Platform/Common/Install_common.cmake)

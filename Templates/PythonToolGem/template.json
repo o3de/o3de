@@ -13,6 +13,12 @@
     "icon_path": "preview.png",
     "copyFiles": [
         {
+            "file": ".gitignore",
+            "origin": ".gitignore",
+            "isTemplated": false,
+            "isOptional": false
+        },
+        {
             "file": "CMakeLists.txt",
             "origin": "CMakeLists.txt",
             "isTemplated": true,
@@ -103,6 +109,12 @@
             "isOptional": false
         },
         {
+            "file": "Code/Source/${Name}.qrc",
+            "origin": "Code/Source/${Name}.qrc",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
             "file": "Code/Source/${Name}EditorModule.cpp",
             "origin": "Code/Source/${Name}EditorModule.cpp",
             "isTemplated": true,
@@ -124,6 +136,12 @@
             "file": "Code/Source/${Name}ModuleInterface.h",
             "origin": "Code/Source/${Name}ModuleInterface.h",
             "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "Code/Source/toolbar_icon.svg",
+            "origin": "Code/Source/toolbar_icon.svg",
+            "isTemplated": false,
             "isOptional": false
         },
         {

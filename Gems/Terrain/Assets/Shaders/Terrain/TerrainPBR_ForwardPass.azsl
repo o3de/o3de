@@ -23,11 +23,9 @@ struct VSOutput
 {
     float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
-    float3 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV2;
     float2 m_uv : UV1;
+    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV2;
 };
 
 option bool o_debugDetailMaterialIds = false;
@@ -50,9 +48,9 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
     float down  = GetHeight(origUv + terrainData.m_uvStep * float2( 0.0f,  1.0f));
     float left  = GetHeight(origUv + terrainData.m_uvStep * float2(-1.0f,  0.0f));
 
-    OUT.m_bitangent = normalize(float3(0.0, terrainData.m_sampleSpacing * 2.0f, down - up));
-    OUT.m_tangent = normalize(float3(terrainData.m_sampleSpacing * 2.0f, 0.0, right - left));
-    OUT.m_normal = cross(OUT.m_tangent, OUT.m_bitangent);
+    float3 bitangent = normalize(float3(0.0, terrainData.m_sampleSpacing * 2.0f, down - up));
+    float3 tangent = normalize(float3(terrainData.m_sampleSpacing * 2.0f, 0.0, right - left));
+    OUT.m_normal = normalize(cross(tangent, bitangent));
     OUT.m_uv = uv;
 
     // directional light shadow 
@@ -78,18 +76,14 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     surface.position = IN.m_worldPosition.xyz;
     float viewDistance = length(ViewSrg::m_worldPosition - surface.position);
     float detailFactor = saturate((viewDistance - TerrainMaterialSrg::m_detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
-
-    ObjectSrg::TerrainData terrainData = ObjectSrg::m_terrainData;
-    float2 origUv = lerp(terrainData.m_uvMin, terrainData.m_uvMax, IN.m_uv);
-    origUv.y = 1.0 - origUv.y;
     float2 detailUv = IN.m_uv * TerrainMaterialSrg::m_detailTextureMultiplier;
     
     // ------- Normal -------
-    float3 macroNormal = IN.m_normal;
+    float3 macroNormal = normalize(IN.m_normal);
     
     // ------- Macro Color / Normal -------
     float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
-    [unroll] for (uint i = 0; i < 4; ++i)
+    [unroll] for (uint i = 0; i < 4 && (i < ObjectSrg::m_macroMaterialCount); ++i)
     {
         float2 macroUvMin = ObjectSrg::m_macroMaterialData[i].m_uvMin;
         float2 macroUvMax = ObjectSrg::m_macroMaterialData[i].m_uvMax;
