@@ -101,7 +101,7 @@ namespace AZ
 
     TimeMs TimeSystem::GetRealElapsedTimeMs() const
     {
-        return static_cast<TimeMs>(AZStd::GetTimeNowMicroSecond() / 1000);
+        return AZ::TimeUsToMs(GetRealElapsedTimeUs());
     }
 
     TimeUs TimeSystem::GetRealElapsedTimeUs() const
@@ -144,7 +144,7 @@ namespace AZ
 
         if (!AZ::IsClose(t_simulationTickScale, 1.0f))
         {
-            const float floatDelta = AZStd::GetMax(static_cast<float>(m_simulationTickDeltaTimeUs) * t_simulationTickScale, 1.0f);
+            const double floatDelta = AZStd::GetMax(static_cast<double>(m_simulationTickDeltaTimeUs) * static_cast<double>(t_simulationTickScale), 1.0);
             m_simulationTickDeltaTimeUs = static_cast<TimeUs>(static_cast<int64_t>(floatDelta));
         }
         m_lastSimulationTickTimeUs = currentTimeUs;
@@ -160,7 +160,7 @@ namespace AZ
         // sleeping if there's still time remaining.
         if (t_simulationTickRate > 0)
         {
-            const TimeUs currentTimeUs = static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
+            const TimeUs currentTimeUs = AZ::GetRealElapsedTimeUs();
             const TimeUs timeUntilNextTick = (m_lastSimulationTickTimeUs + m_simulationTickLimitTimeUs) - currentTimeUs;
             if (timeUntilNextTick > ZeroTimeUs)
             {
