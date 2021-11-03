@@ -7,7 +7,7 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <Atom/Utils/AssetSystemStub.h>
+#include <Atom/Utils/TestUtils/AssetSystemStub.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 
 namespace UnitTest

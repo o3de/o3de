@@ -30,7 +30,7 @@ ly_add_target(
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_target(
-        NAME Atom_Utils.Editor.Static STATIC
+        NAME Atom_Utils.TestUtils.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             atom_utils_editor_files.cmake

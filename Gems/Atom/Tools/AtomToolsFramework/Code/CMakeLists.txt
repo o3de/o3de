@@ -81,7 +81,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzTestShared
                 Gem::AtomToolsFramework.Static
-                Gem::Atom_Utils.Editor.Static
+                Gem::Atom_Utils.TestUtils.Static
     )
 
     ly_add_googletest(
