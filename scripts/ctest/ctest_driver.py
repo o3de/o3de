@@ -63,7 +63,7 @@ def _get_only_failed(cmake_build_path):
     
     # Test strings will be in the format of "<Run Number>:<CTest Module Name>::TEST_RUN"
     module_regex = '^\d+:(.+)::TEST_RUN$'
-    print("Running failed tests:")
+    print("List of failed tests:")
     for test_line in failed_tests_list_lines:
         module_name = re.search(module_regex, test_line).group(1)
         failed_test_modules.append(module_name)
@@ -257,7 +257,7 @@ def main():
     args, unknown_args = parser.parse_known_args()
 
     if not args.repeat and (args.only_failed or args.soft_repeat_timeout):
-        parser.error('The --only-failed and --soft-repeat-timeout option requires the --repeat option. Use --rerun-failed to run without the --repeat option.')
+        parser.error('The --only-failed and --soft-repeat-timeout option requires the --repeat option.')
 
     # handle the CTEST executable.
     # we always obey command line, and its an error if the command line has
