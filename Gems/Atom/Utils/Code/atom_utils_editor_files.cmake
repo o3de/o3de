@@ -7,6 +7,6 @@
 #
 
 set(FILES
-    Include/Atom/Utils/AssetSystemStub.h
-    Source/AssetSystemStub.cpp
+    Include/Atom/Utils/TestUtils/AssetSystemStub.h
+    Source/TestUtils/AssetSystemStub.cpp
 )
