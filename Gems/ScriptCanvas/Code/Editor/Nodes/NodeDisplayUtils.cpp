@@ -445,6 +445,7 @@ namespace ScriptCanvasEditor::Nodes
         key << "EBusHandler" << busName.c_str() << "details";
 
         GraphCanvas::TranslationRequests::Details details;
+        details.Name = busName.data();
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
         GraphCanvas::NodeRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeRequests::SetTooltip, details.Tooltip);
@@ -477,6 +478,8 @@ namespace ScriptCanvasEditor::Nodes
         key << "EBusHandler" << busName.c_str() << "methods" << eventName << "details";
 
         GraphCanvas::TranslationRequests::Details details;
+        details.Name = eventName.c_str();
+        details.Subtitle = busName.c_str();
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
         // Set the name

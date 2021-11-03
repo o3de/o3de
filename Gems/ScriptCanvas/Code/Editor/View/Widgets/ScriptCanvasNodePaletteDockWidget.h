@@ -225,6 +225,9 @@ namespace ScriptCanvasEditor
             QAction* m_previousCycleAction;
 
             bool     m_ignoreSelectionChanged;
+
+            QMenu* m_contextMenu;
+            QAction* m_openTranslationData;
         };
     }    
 }

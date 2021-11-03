@@ -660,6 +660,11 @@ namespace ScriptCanvasEditor
             , m_previousCycleAction(nullptr)
             , m_ignoreSelectionChanged(false)
         {
+            
+            GraphCanvas::NodePaletteTreeView* treeView = GetTreeView();
+
+            treeView->setContextMenuPolicy(Qt::ContextMenuPolicy::ActionsContextMenu);
+
             if (!paletteConfig.m_isInContextMenu)
             {
                 QMenu* creationMenu = new QMenu();
@@ -677,7 +682,7 @@ namespace ScriptCanvasEditor
 
                 AddSearchCustomizationWidget(m_newCustomEvent);
 
-                GraphCanvas::NodePaletteTreeView* treeView = GetTreeView();
+                
 
                 {
                     m_nextCycleAction = new QAction(treeView);
@@ -699,6 +704,16 @@ namespace ScriptCanvasEditor
 
                 QObject::connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &NodePaletteDockWidget::OnTreeSelectionChanged);
                 QObject::connect(treeView, &GraphCanvas::NodePaletteTreeView::OnTreeItemDoubleClicked, this, &NodePaletteDockWidget::HandleTreeItemDoubleClicked);
+
+                {
+                    m_openTranslationData = new QAction(treeView);
+                    m_openTranslationData->setText("Open Translation Data");
+
+                    //m_nextCycleAction->setShortcut(QKeySequence(Qt::Key_F8));
+                    treeView->addAction(m_openTranslationData);
+
+                    QObject::connect(m_openTranslationData, &QAction::triggered, this, []() {});
+                }
             }
 
             ConfigureSearchCustomizationMargins(QMargins(0, 0, 0, 0), 0);
