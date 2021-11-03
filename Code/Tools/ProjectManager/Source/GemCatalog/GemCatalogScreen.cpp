@@ -92,7 +92,7 @@ namespace O3DE::ProjectManager
         FillModel(projectPath);
 
         m_proxyModel->ResetFilters();
-        m_proxModel->sort(/*column=*/0);
+        m_proxyModel->sort(/*column=*/0);
 
         if (m_filterWidget)
         {
@@ -150,6 +150,7 @@ namespace O3DE::ProjectManager
                 {
                     m_gemModel->AddGem(gemInfoResult.GetValue<GemInfo>());
                     m_gemModel->UpdateGemDependencies();
+                    m_proxyModel->sort(/*column=*/0);
                 }
             }
         }
@@ -206,7 +207,7 @@ namespace O3DE::ProjectManager
         }
 
         m_gemModel->UpdateGemDependencies();
-        m_proxModel->sort(/*column=*/0);
+        m_proxyModel->sort(/*column=*/0);
     }
 
     void GemCatalogScreen::OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies) 
