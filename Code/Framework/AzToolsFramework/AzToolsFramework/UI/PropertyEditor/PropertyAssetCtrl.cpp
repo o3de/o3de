@@ -1387,7 +1387,10 @@ namespace AzToolsFramework
                     QDataStream stream(&pixmapBytes, QIODevice::ReadOnly);
                     QPixmap pixmap;
                     stream >> pixmap;
-                    GUI->SetBrowseButtonIcon(pixmap);
+                    if (!pixmap.isNull())
+                    {
+                        GUI->SetBrowseButtonIcon(pixmap);
+                    }
                 }
             }
         }
@@ -1417,6 +1420,8 @@ namespace AzToolsFramework
         }
         else if (attrib == AZ_CRC_CE("ThumbnailIcon"))
         {
+            GUI->SetCustomThumbnailEnabled(false);
+
             AZStd::string iconPath;
             if (attrValue->Read<AZStd::string>(iconPath) && !iconPath.empty())
             {
@@ -1434,8 +1439,11 @@ namespace AzToolsFramework
                     QDataStream stream(&pixmapBytes, QIODevice::ReadOnly);
                     QPixmap pixmap;
                     stream >> pixmap;
-                    GUI->SetCustomThumbnailEnabled(true);
-                    GUI->SetCustomThumbnailPixmap(pixmap);
+                    if (!pixmap.isNull())
+                    {
+                        GUI->SetCustomThumbnailEnabled(true);
+                        GUI->SetCustomThumbnailPixmap(pixmap);
+                    }
                 }
             }
         }

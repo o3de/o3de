@@ -47,7 +47,8 @@ namespace Terrain
 
         void RegisterArea(AZ::EntityId areaId) override;
         void UnregisterArea(AZ::EntityId areaId) override;
-        void RefreshArea(AZ::EntityId areaId) override;
+        void RefreshArea(
+            AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask) override;
 
         ///////////////////////////////////////////
         // TerrainDataRequestBus::Handler Impl
@@ -164,6 +165,7 @@ namespace Terrain
 
         bool m_terrainSettingsDirty = true;
         bool m_terrainHeightDirty = false;
+        bool m_terrainSurfacesDirty = false;
         AZ::Aabb m_dirtyRegion;
 
         mutable AZStd::shared_mutex m_areaMutex;

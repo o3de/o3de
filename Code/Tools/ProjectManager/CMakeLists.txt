@@ -34,6 +34,7 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
+            Platform/${PAL_PLATFORM_NAME}
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::Qt::Core

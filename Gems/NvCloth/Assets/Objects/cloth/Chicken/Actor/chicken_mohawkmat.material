@@ -1,8 +1,8 @@
 {
     "description": "",
-    "materialType": "Materials/Types/StandardPBR.materialtype",
     "parentMaterial": "",
-    "propertyLayoutVersion": 3,
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 4,
     "properties": {
         "baseColor": {
             "color": [
@@ -22,11 +22,8 @@
             "intensity": 6.742737293243408,
             "textureMap": "Objects/cloth/Chicken/Actor/chicken_diff.png"
         },
-        "opacity": {
-            "alphaSource": "None",
-            "doubleSided": true,
-            "factor": 1.0,
-            "mode": "Blended"
+        "general": {
+            "doubleSided": true
         }
     }
 }
