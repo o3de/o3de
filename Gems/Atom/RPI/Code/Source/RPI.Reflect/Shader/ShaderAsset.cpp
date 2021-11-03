@@ -108,7 +108,6 @@ namespace AZ
 
         ShaderAsset::~ShaderAsset()
         {
-            Data::AssetBus::Handler::BusDisconnect();
             ShaderVariantFinderNotificationBus::Handler::BusDisconnect();
             AssetInitBus::Handler::BusDisconnect();
         }
@@ -570,46 +569,16 @@ namespace AZ
 
         bool ShaderAsset::PostLoadInit()
         {
-            // Once the ShaderAsset is loaded, it is necessary to listen for changes in the Root Variant Asset.
-            Data::AssetBus::Handler::BusConnect(GetRootVariant().GetId());
             ShaderVariantFinderNotificationBus::Handler::BusConnect(GetId());
-                        
             AssetInitBus::Handler::BusDisconnect();
-
             return true;
         }
-        
-        void ShaderAsset::ReinitializeRootShaderVariant(Data::Asset<Data::AssetData> asset)
-        {
-            Data::Asset<ShaderVariantAsset> shaderVariantAsset = { asset.GetAs<ShaderVariantAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
-            AZ_Assert(shaderVariantAsset->GetStableId() == RootShaderVariantStableId, "Was expecting to update the root variant");
-            SupervariantIndex supervariantIndex = GetSupervariantIndexFromAssetId(asset.GetId());
-            GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()].m_rootShaderVariantAsset = asset;
-            ShaderReloadNotificationBus::Event(GetId(), &ShaderReloadNotificationBus::Events::OnShaderAssetReinitialized, Data::Asset<ShaderAsset>{ this, AZ::Data::AssetLoadBehavior::PreLoad } );
-        }
 
-        ///////////////////////////////////////////////////////////////////////
-        // AssetBus overrides...
-        void ShaderAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+
+        void ShaderAsset::UpdateRootShaderVariantAsset(SupervariantIndex supervariantIndex, Data::Asset<ShaderVariantAsset> newRootVariant)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->ShaderAsset::OnAssetReloaded %s", this, asset.GetHint().c_str());
-            ReinitializeRootShaderVariant(asset);
+            GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()].m_rootShaderVariantAsset = newRootVariant;
         }
-        void ShaderAsset::OnAssetReady(Data::Asset<Data::AssetData> asset)
-        {
-            // We have to listen to OnAssetReady, OnAssetReloaded isn't enough, because of the following scenario:
-            // The user changes a .shader file, which causes the AP to rebuild the ShaderAsset and root ShaderVariantAsset.
-            // 1) Thread A creates the new ShaderAsset, loads it, and gets the old ShaderVariantAsset.
-            // 2) Thread B creates the new ShaderVariantAsset, loads it, and calls OnAssetReloaded.
-            // 3) Main thread calls ShaderAsset::PostLoadInit which connects to the AssetBus but it's too late to receive OnAssetReloaded, 
-            //    so it continues using the old ShaderVariantAsset instead of the new one.
-            // The OnAssetReady bus function is called automatically whenever a connection to AssetBus is made, so listening to this gives
-            // us the opportunity to assign the appropriate ShaderVariantAsset.
-            
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->ShaderAsset::OnAssetReady %s", this, asset.GetHint().c_str());
-            ReinitializeRootShaderVariant(asset);
-        }
-        ///////////////////////////////////////////////////////////////////////
         
         ///////////////////////////////////////////////////////////////////
         /// ShaderVariantFinderNotificationBus overrides
@@ -628,7 +597,6 @@ namespace AZ
                 m_shaderVariantTree = shaderVariantTreeAsset;
             }
             lock.unlock();
-            ShaderReloadNotificationBus::Event(GetId(), &ShaderReloadNotificationBus::Events::OnShaderAssetReinitialized, Data::Asset<ShaderAsset>{ this, AZ::Data::AssetLoadBehavior::PreLoad });
         }
 
         ///////////////////////////////////////////////////////////////////
