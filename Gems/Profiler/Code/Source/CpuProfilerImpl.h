@@ -64,7 +64,7 @@ namespace Profiler
         // Keeps track of regions that completed (i.e regions that was pushed and popped from the stack)
         // Intermediate storage point for the CachedTimeRegions, when the stack is empty, all entries will be
         // copied to the map.
-        AZStd::fixed_vector<CachedTimeRegion, TimeRegionStackSize> m_cachedTimeRegions;
+        AZStd::vector<CachedTimeRegion> m_cachedTimeRegions;
         AZStd::mutex m_cachedTimeRegionMutex;
 
         // Dirty flag which is set when the CpuProfiler's enabled state is set from false to true
