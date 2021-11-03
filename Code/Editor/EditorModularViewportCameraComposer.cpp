@@ -201,8 +201,7 @@ namespace SandboxEditor
         m_orbitCamera->SetPivotFn(
             [pivotFn]([[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& direction)
             {
-                const auto pivot = position + direction * 20.0f;
-                return pivotFn(pivot);
+                return pivotFn(position + direction * SandboxEditor::CameraDefaultOrbitDistance());
             });
 
         m_orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(SandboxEditor::CameraOrbitLookChannelId());

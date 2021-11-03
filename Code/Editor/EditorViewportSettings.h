@@ -105,6 +105,9 @@ namespace SandboxEditor
     SANDBOX_API bool CameraCaptureCursorForLook();
     SANDBOX_API void SetCameraCaptureCursorForLook(bool capture);
 
+    SANDBOX_API float CameraDefaultOrbitDistance();
+    SANDBOX_API void SetCameraDefaultOrbitDistance(float distance);
+
     SANDBOX_API AzFramework::InputChannelId CameraTranslateForwardChannelId();
     SANDBOX_API void SetCameraTranslateForwardChannelId(AZStd::string_view cameraTranslateForwardId);
 
