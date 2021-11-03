@@ -169,10 +169,11 @@ namespace AzToolsFramework
         void PrefabIntegrationManager::InitializeShortcuts()
         {
             // Open/Edit Prefab (+)
+            // We also support = to enable easier editing on compact US keyboards.
             {
                 m_actions.emplace_back(AZStd::make_unique<QAction>(nullptr));
 
-                m_actions.back()->setShortcuts({ QKeySequence(Qt::Key_Plus) });
+                m_actions.back()->setShortcuts({ QKeySequence(Qt::Key_Plus), QKeySequence(Qt::Key_Equal) });
                 m_actions.back()->setText("Open/Edit Prefab");
                 m_actions.back()->setStatusTip("Edit the prefab in focus mode.");
 
