@@ -10,6 +10,8 @@
 #include <QProcessEnvironment>
 #include <QDir>
 
+#include <AzCore/Utils/Utils.h>
+
 namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
