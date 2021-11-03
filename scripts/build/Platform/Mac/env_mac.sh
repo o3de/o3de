@@ -13,3 +13,8 @@ if ! command -v cmake &> /dev/null; then
     echo "[ci_build] CMake not found"
     exit 1
 fi
+
+if [[ -z "${COMMAND_CWD}" ]]; then
+    echo [ci_build] Changing CWD to ${COMMAND_CWD}
+    cd ${COMMAND_CWD}
+fi

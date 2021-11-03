@@ -13,7 +13,6 @@ IF NOT %ERRORLEVEL%==0 (
     GOTO :error
 )
 
-ECHO "COMMAND_CWD = %COMMAND_CWD%"
 IF NOT "%COMMAND_CWD%"=="" (
     ECHO [ci_build] Changing CWD to %COMMAND_CWD%
     CD %COMMAND_CWD%
