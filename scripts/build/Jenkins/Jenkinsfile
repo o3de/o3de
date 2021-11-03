@@ -551,7 +551,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         CreateSetupStage(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, envVars, onlyMountEBSVolume).call()
 
                         if(build_job.value.steps) { //this is a pipe with many steps so create all the build stages
-                            pipelineEnvVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.values.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
+                            pipelineEnvVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                             build_job.value.steps.each { build_step ->
                                 build_job_name = build_step
                                 // This adition of maps makes it that the right operand will override entries if they overlap with the left operand
