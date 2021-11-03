@@ -59,7 +59,7 @@ namespace AzToolsFramework::Prefab
         connect(m_backButton, &QToolButton::clicked, this,
             [&]()
             {
-                m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab();
+                m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(m_editorEntityContextId);
             }
         );
 

@@ -148,6 +148,7 @@ namespace AzToolsFramework
             AZStd::vector<AZStd::unique_ptr<QAction>> m_actions;
 
             static const AZStd::string s_prefabFileExtension;
+            static AzFramework::EntityContextId s_editorEntityContextId;
 
             static ContainerEntityInterface* s_containerEntityInterface;
             static EditorEntityUiInterface* s_editorEntityUiInterface;

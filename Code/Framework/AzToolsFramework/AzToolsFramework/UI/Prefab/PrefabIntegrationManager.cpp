@@ -62,6 +62,8 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        AzFramework::EntityContextId PrefabIntegrationManager::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+
         ContainerEntityInterface* PrefabIntegrationManager::s_containerEntityInterface = nullptr;
         EditorEntityUiInterface* PrefabIntegrationManager::s_editorEntityUiInterface = nullptr;
         PrefabFocusPublicInterface* PrefabIntegrationManager::s_prefabFocusPublicInterface = nullptr;
@@ -136,6 +138,9 @@ namespace AzToolsFramework
                 AZ_Assert(false, "Prefab - could not get PrefabFocusPublicInterface on PrefabIntegrationManager construction.");
                 return;
             }
+
+            // Get EditorEntityContextId
+            EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
             // Initialize Editor functionality for the Prefab Focus Handler
             auto prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
@@ -254,16 +259,13 @@ namespace AzToolsFramework
             AzFramework::ApplicationRequests::Bus::BroadcastResult(
                 prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
 
-            auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-            EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
             // Create Prefab
             {
                 if (!selectedEntities.empty())
                 {
                     // Hide if the only selected entity is the Focused Instance Container
                     if (selectedEntities.size() > 1 ||
-                        selectedEntities[0]  != s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId))
+                        selectedEntities[0] != s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId))
                     {
                         bool layerInSelection = false;
 
@@ -381,7 +383,8 @@ namespace AzToolsFramework
             QObject::connect(deleteAction, &QAction::triggered, deleteAction, [] { ContextMenu_DeleteSelected(); });
 
             if (selectedEntities.empty() ||
-                (selectedEntities.size() == 1 && selectedEntities[0] == s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId)))
+                (selectedEntities.size() == 1 &&
+                 selectedEntities[0] == s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId)))
             {
                 deleteAction->setDisabled(true);
             }
@@ -392,7 +395,7 @@ namespace AzToolsFramework
                 AZ::EntityId selectedEntityId = selectedEntities[0];
 
                 if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) &&
-                    selectedEntityId != s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId))
+                    selectedEntityId != s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId))
                 {
                     QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
                     QObject::connect(
@@ -429,12 +432,9 @@ namespace AzToolsFramework
             const AZStd::string prefabFilesPath = "@projectroot@/Prefabs";
 
             // Remove focused instance container entity if it's part of the list
-            auto editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-            EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
             auto focusedContainerIter = AZStd::find(
                 selectedEntities.begin(), selectedEntities.end(),
-                s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId));
+                s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId));
             if (focusedContainerIter != selectedEntities.end())
             {
                 selectedEntities.erase(focusedContainerIter);
@@ -588,7 +588,7 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::ContextMenu_ClosePrefab()
         {
-            s_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab();
+            s_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(s_editorEntityContextId);
         }
 
         void PrefabIntegrationManager::ContextMenu_EditPrefab(AZ::EntityId containerEntity)

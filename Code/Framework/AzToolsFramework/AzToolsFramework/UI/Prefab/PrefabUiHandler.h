@@ -49,6 +49,8 @@ namespace AzToolsFramework
         static QModelIndex GetLastVisibleChild(const QModelIndex& parent);
         static QModelIndex Internal_GetLastVisibleChild(const QAbstractItemModel* model, const QModelIndex& index);
 
+        static AzFramework::EntityContextId s_editorEntityContextId;
+
         static constexpr int m_prefabCapsuleRadius = 6;
         static constexpr int m_prefabBorderThickness = 2;
         static const QColor m_backgroundColor;

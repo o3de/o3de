@@ -86,7 +86,8 @@ namespace AzToolsFramework::Prefab
         return AZ::Success();
     }
 
-    PrefabFocusOperationResult PrefabFocusHandler::FocusOnParentOfFocusedPrefab()
+    PrefabFocusOperationResult PrefabFocusHandler::FocusOnParentOfFocusedPrefab(
+        [[maybe_unused]] AzFramework::EntityContextId entityContextId)
     {
         // If only one instance is in the hierarchy, this operation is invalid
         size_t hierarchySize = m_instanceFocusHierarchy.size();
