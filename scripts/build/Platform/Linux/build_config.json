@@ -222,7 +222,6 @@
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build/linux",
         "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE",
-        "CMAKE_LY_PROJECTS": "",
         "CMAKE_TARGET": "install"
     }
   },
@@ -256,7 +255,6 @@
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_PARALLEL_LINK_JOBS=4 -DCMAKE_MODULE_PATH=${WORKSPACE}/o3de/install/cmake",
-      "CMAKE_LY_PROJECTS": "",
       "CMAKE_TARGET": "all"
     }
   }
