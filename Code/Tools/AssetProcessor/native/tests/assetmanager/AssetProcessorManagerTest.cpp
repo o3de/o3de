@@ -4226,12 +4226,20 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
     if (!AZ::IO::SystemFile::Delete(productPath.toUtf8().constData()))
     {
         AZStd::thread workerThread;
+        bool threadStarted = false;
 
-        m_callback = [&product, &workerThread]() {
-            workerThread = AZStd::thread([&product]() {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(60));
-                product.close();
-            });
+        m_callback = [&product, &workerThread, &threadStarted]() {
+            // This callback will be called multiple times when AP retries the delete, make sure we only start the thread once
+            if (!threadStarted)
+            {
+                threadStarted = true;
+                workerThread = AZStd::thread(
+                    [&product]()
+                    {
+                        AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(60));
+                        product.close();
+                    });
+            }
         };
 
         QMetaObject::invokeMethod(
