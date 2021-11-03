@@ -450,7 +450,7 @@ def UploadAPLogs(Map options, String branchName, String jobName, String workspac
             def command = "${pythonPath} -u ${s3UploadScriptPath} --base_dir ${apLogsPath} " +
                           "--file_regex \".*\" --bucket ${env.AP_LOGS_S3_BUCKET} " +
                           "--search_subdirectories True --key_prefix ${env.JENKINS_JOB_NAME}/${branchName}/${env.BUILD_NUMBER}/${jobName} " +
-                          "--extra_args {\"ACL\": \"bucket-owner-full-control\"}"
+                          '--extra_args {\\"ACL\\":\\"bucket-owner-full-control\\"}'
             palSh(command, "Uploading AP logs for job ${jobName} for branch ${branchName}", false)
             }
         }
