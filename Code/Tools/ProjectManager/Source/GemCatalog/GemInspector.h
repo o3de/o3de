@@ -40,6 +40,9 @@ namespace O3DE::ProjectManager
         inline constexpr static const char* s_headerColor = "#FFFFFF";
         inline constexpr static const char* s_textColor = "#DDDDDD";
 
+    signals:
+        void TagClicked(const QString& tag);
+
     private slots:
         void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
