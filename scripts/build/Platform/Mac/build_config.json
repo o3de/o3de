@@ -171,7 +171,7 @@
         "OUTPUT_DIRECTORY": "build/mac",
         "CMAKE_OPTIONS": "-G Xcode -DLY_DISABLE_TEST_MODULES=TRUE",
         "CMAKE_LY_PROJECTS": "",
-        "CMAKE_TARGET": "INSTALL"
+        "CMAKE_TARGET": "install"
     }
   },
   "install_profile_pipe": {
@@ -205,7 +205,7 @@
       "OUTPUT_DIRECTORY": "build/mac",
       "CMAKE_OPTIONS": "-G Xcode -DCMAKE_MODULE_PATH=${WORKSPACE}/o3de/install/cmake",
       "CMAKE_LY_PROJECTS": "",
-      "CMAKE_TARGET": "all"
+      "CMAKE_TARGET": "ALL_BUILD"
     }
   }
 }

@@ -19,7 +19,7 @@ if ! command -v ninja &> /dev/null; then
     exit 1
 fi
 
-if [[ -n "${COMMAND_CWD}" ]]; then
-    echo [ci_build] Changing CWD to ${COMMAND_CWD}
-    cd ${COMMAND_CWD}
+if [[ -n "$COMMAND_CWD" ]]; then
+    echo [ci_build] Changing CWD to $COMMAND_CWD
+    cd $COMMAND_CWD
 fi
