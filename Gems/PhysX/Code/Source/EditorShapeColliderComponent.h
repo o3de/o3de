@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzFramework/Physics/Shape.h>
@@ -90,12 +91,15 @@ namespace PhysX
         void UpdateBoxConfig(const AZ::Vector3& scale);
         void UpdateCapsuleConfig(const AZ::Vector3& scale);
         void UpdateSphereConfig(const AZ::Vector3& scale);
+        void UpdateCylinderConfig(const AZ::Vector3& scale);
         void UpdatePolygonPrismDecomposition();
         void UpdatePolygonPrismDecomposition(const AZ::PolygonPrismPtr polygonPrismPtr);
 
-        void RefreshUiProperties();
+        // Helper function to set a specific shape configuration
+        template<typename ConfigType>
+        void SetShapeConfig(ShapeType shapeType, const ConfigType& shapeConfig);
 
-        void UpdateCylinderConfig(const AZ::Vector3& scale);
+        void RefreshUiProperties();
 
         AZ::u32 OnSubdivisionCountChange();
         AZ::Crc32 SubdivisionCountVisibility();
@@ -154,4 +158,28 @@ namespace PhysX
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.
         AZ::Vector3 m_currentNonUniformScale = AZ::Vector3::CreateOne(); //!< Caches the current non-uniform scale.
     };
+
+    template<typename ConfigType>
+    void EditorShapeColliderComponent::SetShapeConfig(ShapeType shapeType, const ConfigType& shapeConfig)
+    {
+        if (m_shapeType != shapeType)
+        {
+            m_shapeConfigs.clear();
+            m_shapeType = shapeType;
+        }
+
+        if (m_shapeConfigs.empty())
+        {
+            m_shapeConfigs.emplace_back(AZStd::make_shared<ConfigType>(shapeConfig));
+        }
+        else
+        {
+            AZ_Assert(m_shapeConfigs.back()->GetShapeType() == shapeConfig.GetShapeType(),
+                "Expected Physics shape configuration with shape type %d but found one with shape type %d.",
+                static_cast<int>(shapeConfig.GetShapeType()), static_cast<int>(m_shapeConfigs.back()->GetShapeType()));
+            ConfigType& configuration =
+                static_cast<ConfigType&>(*m_shapeConfigs.back());
+            configuration = shapeConfig;
+        }
+    }
 } // namespace PhysX

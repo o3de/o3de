@@ -14,7 +14,7 @@
 #include <Atom/RPI.Public/Buffer/Buffer.h>
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
-#include <Atom/RPI.Public/Pass/RenderPass.h>
+#include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -131,7 +131,7 @@ namespace AZ
             Data::AssetBus::Handler::BusDisconnect();
         }
 
-        void ImageAttachmentPreviewPass::PreviewImageAttachmentForPass(RenderPass* pass, const PassAttachment* passAttachment)
+        void ImageAttachmentPreviewPass::PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment)
         {
             if (passAttachment->GetAttachmentType() != RHI::AttachmentType::Image)
             {
@@ -244,7 +244,7 @@ namespace AZ
             m_needsShaderLoad = false;
 
             // Load Shader
-            const char* ShaderPath = "shader/imagepreview.azshader";
+            const char* ShaderPath = "shaders/imagepreview.azshader";
             Data::Asset<ShaderAsset> shaderAsset = RPI::FindShaderAsset(ShaderPath);
             m_shader = Shader::FindOrCreate(shaderAsset);
             if (m_shader == nullptr)

@@ -143,6 +143,7 @@ namespace Blast
     void BlastSystemComponent::Deactivate()
     {
         AZ_PROFILE_FUNCTION(Physics);
+        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         BlastSystemRequestBus::Handler::BusDisconnect();
@@ -254,19 +255,22 @@ namespace Blast
             BlastFamilyComponentRequestBus::Broadcast(
                 &BlastFamilyComponentRequests::FillDebugRenderBuffer, buffer, m_debugRenderMode);
 
-            // This is a system component, and thus is not associated with a specific scene, so use the default scene
+            // This is a system component, and thus is not associated with a specific scene, so use the bootstrap scene
             // for the debug drawing
-            const auto defaultScene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
-            auto drawQueue = AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(defaultScene);
-
-            for (DebugLine& line : buffer.m_lines)
+            const auto mainScene = AZ::RPI::RPISystemInterface::Get()->GetSceneByName(AZ::Name("Main"));
+            if (mainScene)
             {
-                AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArguments;
-                drawArguments.m_verts = &line.m_p0;
-                drawArguments.m_vertCount = 2;
-                drawArguments.m_colors = &line.m_color;
-                drawArguments.m_colorCount = 1;
-                drawQueue->DrawLines(drawArguments);
+                auto drawQueue = AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(mainScene);
+
+                for (DebugLine& line : buffer.m_lines)
+                {
+                    AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArguments;
+                    drawArguments.m_verts = &line.m_p0;
+                    drawArguments.m_vertCount = 2;
+                    drawArguments.m_colors = &line.m_color;
+                    drawArguments.m_colorCount = 1;
+                    drawQueue->DrawLines(drawArguments);
+                }
             }
         }
     }

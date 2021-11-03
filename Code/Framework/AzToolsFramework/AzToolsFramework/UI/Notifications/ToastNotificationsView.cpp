@@ -63,6 +63,12 @@ namespace AzToolsFramework
 
     ToastId ToastNotificationsView::ShowToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration)
     {
+        // reject duplicate messages
+        if (m_rejectDuplicates && DuplicateNotificationInQueue(toastConfiguration))
+        {
+            return ToastId();
+        }
+
         ToastId toastId = CreateToastNotification(toastConfiguration); 
         m_queuedNotifications.emplace_back(toastId);
 
@@ -70,8 +76,26 @@ namespace AzToolsFramework
         {
             DisplayQueuedNotification();
         }
+        else if (m_queuedNotifications.size() >= m_maxQueuedNotifications)
+        {
+            // hiding the active toast will cause the next toast to be displayed
+            HideToastNotification(m_activeNotification);
+        }
 
         return toastId;
+    }
+
+    bool ToastNotificationsView::DuplicateNotificationInQueue(const AzQtComponents::ToastConfiguration& toastConfiguration)
+    {
+        for (auto iter : m_notifications)
+        {
+            if (iter.second && iter.second->IsDuplicate(toastConfiguration))
+            {
+                return true; 
+            }
+        }
+
+        return false;
     }
 
     ToastId ToastNotificationsView::ShowToastAtCursor(const AzQtComponents::ToastConfiguration& toastConfiguration)
@@ -105,7 +129,7 @@ namespace AzToolsFramework
 
     ToastId ToastNotificationsView::CreateToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration)
     {
-        AzQtComponents::ToastNotification* notification = aznew AzQtComponents::ToastNotification(parentWidget(), toastConfiguration);
+        AzQtComponents::ToastNotification* notification = new AzQtComponents::ToastNotification(this, toastConfiguration);
         ToastId toastId = AZ::Entity::MakeId();
         m_notifications[toastId] = notification;
 
@@ -176,5 +200,25 @@ namespace AzToolsFramework
         {
             DisplayQueuedNotification();
         }
+    }
+
+    void ToastNotificationsView::SetOffset(const QPoint& offset)
+    {
+        m_offset = offset;
+    }
+
+    void ToastNotificationsView::SetAnchorPoint(const QPointF& anchorPoint)
+    {
+        m_anchorPoint = anchorPoint;
+    }
+
+    void ToastNotificationsView::SetMaxQueuedNotifications(AZ::u32 maxQueuedNotifications)
+    {
+        m_maxQueuedNotifications = maxQueuedNotifications;
+    }
+
+    void ToastNotificationsView::SetRejectDuplicates(bool rejectDuplicates)
+    {
+        m_rejectDuplicates = rejectDuplicates;
     }
 }

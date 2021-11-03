@@ -16,7 +16,7 @@ EMPTY_JSON = readJSON text: '{}'
 ENGINE_REPOSITORY_NAME = 'o3de'
 
 // Branches with build snapshots
-BUILD_SNAPSHOTS = ['development', 'stabilization/2106']
+BUILD_SNAPSHOTS = ['development', 'stabilization/2110']
 
 // Build snapshots with empty snapshot (for use with 'SNAPSHOT' pipeline paramater)
 BUILD_SNAPSHOTS_WITH_EMPTY = BUILD_SNAPSHOTS + ''
@@ -100,6 +100,10 @@ def IsJobEnabled(branchName, buildTypeMap, pipelineName, platformName) {
     } else {
         return params[platformName] && buildTypeMap.value.TAGS && buildTypeMap.value.TAGS.contains(pipelineName)
     }
+}
+
+def IsAPLogUpload(branchName, jobName) {
+    return !IsPullRequest(branchName) && jobName.toLowerCase().contains('asset') && env.AP_LOGS_S3_BUCKET
 }
 
 def GetRunningPipelineName(JENKINS_JOB_NAME) {
@@ -431,6 +435,27 @@ def ExportTestScreenshots(Map options, String branchName, String platformName, S
     }
 }
 
+def UploadAPLogs(Map options, String branchName, String jobName, String workspace, Map params) {
+    dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+        projects = params.CMAKE_LY_PROJECTS.split(",")
+        projects.each{ project ->
+            def apLogsPath = "${project}/user/log"
+            def s3UploadScriptPath = "scripts/build/tools/upload_to_s3.py"
+            if(env.IS_UNIX) {
+                pythonPath = "${options.PYTHON_DIR}/python.sh"
+            }
+            else {
+                pythonPath = "${options.PYTHON_DIR}/python.cmd"
+            }
+            def command = "${pythonPath} -u ${s3UploadScriptPath} --base_dir ${apLogsPath} " +
+                          "--file_regex \".*\" --bucket ${env.AP_LOGS_S3_BUCKET} " +
+                          "--search_subdirectories True --key_prefix ${env.JENKINS_JOB_NAME}/${branchName}/${env.BUILD_NUMBER}/${jobName} " +
+                          "--extra_args {\"ACL\": \"bucket-owner-full-control\"}"
+            palSh(command, "Uploading AP logs for job ${jobName} for branch ${branchName}", false)
+            }
+        }
+    }
+
 def PostBuildCommonSteps(String workspace, boolean mount = true) {
     echo 'Starting post-build common steps...'
 
@@ -494,6 +519,14 @@ def CreateExportTestScreenshotsStage(Map pipelineConfig, String branchName, Stri
     }
 }
 
+def CreateUploadAPLogsStage(Map pipelineConfig, String branchName, String jobName, String workspace, Map params) {
+    return {
+        stage("${jobName}_upload_ap_logs") {
+            UploadAPLogs(pipelineConfig, branchName, jobName, workspace, params)
+        }
+    }
+}
+
 def CreateTeardownStage(Map environmentVars) {
     return {
         stage('Teardown') {
@@ -542,6 +575,9 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                             if (causes.contains('RemovedNodeCause')) {
                                 error "Node disconnected during build: ${e}"  // Error raised to retry stage on a new node
                             }
+                        }
+                        if (IsAPLogUpload(branchName, build_job_name)) {
+                            CreateUploadAPLogsStage(pipelineConfig, branchName, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
                         }
                         // All other errors will be raised outside the retry block
                         currentResult = envVars['ON_FAILURE_MARK'] ?: 'FAILURE'
@@ -770,6 +806,7 @@ try {
         platform.value.build_types.each { build_job ->
             if (IsJobEnabled(branchName, build_job, pipelineName, platform.key)) {   // User can filter jobs, jobs are tagged by pipeline
                 def envVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
+                envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
                 envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
                 someBuildHappened = true
 

@@ -37,7 +37,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "debug",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
     }
@@ -53,7 +53,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
     }
@@ -80,10 +80,10 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E Gem::EMotionFX.Editor.Tests -LE (SUITE_sandbox|SUITE_awsi) -L FRAMEWORK_googletest",
+      "CTEST_OPTIONS": "-E Gem::EMotionFX.Editor.Tests -LE (SUITE_sandbox|SUITE_awsi) -L FRAMEWORK_googletest --no-tests=error",
       "TEST_RESULTS": "True"
     }
   },
@@ -96,7 +96,7 @@
       "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-E Gem::EMotionFX.Editor.Tests -LE (SUITE_sandbox|SUITE_awsi) -L FRAMEWORK_googletest",
+      "CTEST_OPTIONS": "-E Gem::EMotionFX.Editor.Tests -LE (SUITE_sandbox|SUITE_awsi) -L FRAMEWORK_googletest --no-tests=error",
       "TEST_RESULTS": "True"
     }
   },
@@ -110,7 +110,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "AssetProcessorBatch",
       "ASSET_PROCESSOR_BINARY": "bin/profile/AssetProcessorBatch",
@@ -142,10 +142,10 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
-      "CTEST_OPTIONS": "-L (SUITE_periodic)",
+      "CTEST_OPTIONS": "-L (SUITE_periodic) --no-tests=error",
       "TEST_RESULTS": "True"
     }
   },
@@ -162,10 +162,10 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
-      "CTEST_OPTIONS": "-L (SUITE_sandbox)"
+      "CTEST_OPTIONS": "-L (SUITE_sandbox) --no-tests=error"
     }
   },
   "benchmark_test_profile": {
@@ -178,10 +178,10 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
-      "CTEST_OPTIONS": "-L (SUITE_benchmark)",
+      "CTEST_OPTIONS": "-L (SUITE_benchmark) --no-tests=error",
       "TEST_RESULTS": "True"
     }
   },
@@ -195,7 +195,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "release",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
     }
@@ -210,7 +210,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "release",
       "OUTPUT_DIRECTORY": "build/mono_linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_MONOLITHIC_GAME=TRUE -DLY_UNITY_BUILD=TRUE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_MONOLITHIC_GAME=TRUE -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
     }

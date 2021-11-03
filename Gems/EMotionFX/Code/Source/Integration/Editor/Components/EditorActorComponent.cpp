@@ -180,6 +180,7 @@ namespace EMotionFX
             , m_lodLevel(0)
             , m_actorAsset(AZ::Data::AssetLoadBehavior::NoLoad)
         {
+            m_debugRenderFlags[RENDER_SOLID] = true;
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -604,11 +605,10 @@ namespace EMotionFX
                 m_renderActorInstance->OnTick(deltaTime);
                 m_renderActorInstance->UpdateBounds();
 
-                RenderActorInstance::DebugOptions debugOptions;
-                debugOptions.m_drawAABB = m_renderBounds;
-                debugOptions.m_drawSkeleton = m_renderSkeleton;
-                debugOptions.m_emfxDebugDraw = true;
-                m_renderActorInstance->DebugDraw(debugOptions);
+                m_debugRenderFlags[RENDER_AABB] = m_renderBounds;
+                m_debugRenderFlags[RENDER_LINESKELETON] = m_renderSkeleton;
+                m_debugRenderFlags[RENDER_EMFX_DEBUG] = true;
+                m_renderActorInstance->DebugDraw(m_debugRenderFlags);
             }
         }
 
@@ -950,6 +950,11 @@ namespace EMotionFX
             {
                 LmbrCentral::AttachmentComponentRequestBus::Event(attachment, &LmbrCentral::AttachmentComponentRequestBus::Events::Reattach, true);
             }
+        }
+
+        void EditorActorComponent::SetRenderFlag(ActorRenderFlagBitset renderFlags)
+        {
+            m_debugRenderFlags = renderFlags;
         }
     } //namespace Integration
 } // namespace EMotionFX

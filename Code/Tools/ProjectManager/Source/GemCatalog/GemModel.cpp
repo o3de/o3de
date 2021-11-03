@@ -10,6 +10,7 @@
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 
 namespace O3DE::ProjectManager
 {
@@ -26,6 +27,14 @@ namespace O3DE::ProjectManager
 
     void GemModel::AddGem(const GemInfo& gemInfo)
     {
+        if (FindIndexByNameString(gemInfo.m_name).isValid())
+        {
+            // do not add gems with duplicate names
+            // this can happen by mistake or when a gem repo has a gem with the same name as a local gem
+            AZ_TracePrintf("GemModel", "Ignoring duplicate gem: %s", gemInfo.m_name.toUtf8().constData());
+            return;
+        }
+
         QStandardItem* item = new QStandardItem();
 
         item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
@@ -59,6 +68,7 @@ namespace O3DE::ProjectManager
     void GemModel::Clear()
     {
         clear();
+        m_nameToIndexMap.clear();
     }
 
     void GemModel::UpdateGemDependencies()
@@ -275,9 +285,11 @@ namespace O3DE::ProjectManager
 
     void GemModel::SetIsAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)
     {
+        // get the gemName first, because the modelIndex data change after adding because of filters
+        QString gemName = modelIndex.data(RoleName).toString();
         model.setData(modelIndex, isAdded, RoleIsAdded);
 
-        UpdateDependencies(model, modelIndex);
+        UpdateDependencies(model, gemName, isAdded);
     }
 
     bool GemModel::HasDependentGems(const QModelIndex& modelIndex) const
@@ -293,29 +305,58 @@ namespace O3DE::ProjectManager
         return false;
     }
 
-    void GemModel::UpdateDependencies(QAbstractItemModel& model, const QModelIndex& modelIndex)
+    void GemModel::UpdateDependencies(QAbstractItemModel& model, const QString& gemName, bool isAdded)
     {
         GemModel* gemModel = GetSourceModel(&model);
         AZ_Assert(gemModel, "Failed to obtain GemModel");
 
+        QModelIndex modelIndex = gemModel->FindIndexByNameString(gemName);
+
         QVector<QModelIndex> dependencies = gemModel->GatherGemDependencies(modelIndex);
-        if (IsAdded(modelIndex))
+        uint32_t numChangedDependencies = 0;
+
+        if (isAdded)
         {
             for (const QModelIndex& dependency : dependencies)
             {
-                SetIsAddedDependency(*gemModel, dependency, true);
+                if (!IsAddedDependency(dependency))
+                {
+                    SetIsAddedDependency(*gemModel, dependency, true);
+
+                    // if the gem was already added then the state didn't really change
+                    if (!IsAdded(dependency))
+                    {
+                        numChangedDependencies++;
+                    }
+                }
             }
         }
         else
         {
             // still a dependency if some added gem depends on this one 
-            SetIsAddedDependency(model, modelIndex, gemModel->HasDependentGems(modelIndex));
+            bool hasDependentGems = gemModel->HasDependentGems(modelIndex);
+            if (IsAddedDependency(modelIndex) != hasDependentGems)
+            {
+                SetIsAddedDependency(*gemModel, modelIndex, hasDependentGems);
+            }
 
             for (const QModelIndex& dependency : dependencies)
             {
-                SetIsAddedDependency(*gemModel, dependency, gemModel->HasDependentGems(dependency));
+                hasDependentGems = gemModel->HasDependentGems(dependency);
+                if (IsAddedDependency(dependency) != hasDependentGems)
+                {
+                    SetIsAddedDependency(*gemModel, dependency, hasDependentGems);
+
+                    // if the gem was already added then the state didn't really change
+                    if (!IsAdded(dependency))
+                    {
+                        numChangedDependencies++;
+                    }
+                }
             }
         }
+
+        gemModel->emit gemStatusChanged(gemName, numChangedDependencies);
     }
 
     void GemModel::SetIsAddedDependency(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)
@@ -488,5 +529,4 @@ namespace O3DE::ProjectManager
         }
         return result;
     }
-
 } // namespace O3DE::ProjectManager

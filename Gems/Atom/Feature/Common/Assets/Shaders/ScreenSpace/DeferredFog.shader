@@ -23,8 +23,8 @@
     "DrawList" : "forward",
 
     "CompilerHints" : { 
-        "DxcDisableOptimizations" : false,
-        "DxcGenerateDebugInfo" : false
+        "DisableOptimizations" : false,
+        "GenerateDebugInfo" : false
     },
 
     "ProgramSettings":

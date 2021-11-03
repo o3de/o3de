@@ -29,11 +29,11 @@ namespace AzFramework
         AcceptMatchRequest() = default;
         virtual ~AcceptMatchRequest() = default;
 
-        // Player response to accept or reject match
+        //! Player response to accept or reject match
         bool m_acceptMatch;
-        // A list of unique identifiers for players delivering the response
+        //! A list of unique identifiers for players delivering the response
         AZStd::vector<AZStd::string> m_playerIds;
-        // A unique identifier for a matchmaking ticket
+        //! A unique identifier for a matchmaking ticket
         AZStd::string m_ticketId;
     };
 
@@ -47,7 +47,7 @@ namespace AzFramework
         StartMatchmakingRequest() = default;
         virtual ~StartMatchmakingRequest() = default;
 
-        // A unique identifier for a matchmaking ticket
+        //! A unique identifier for a matchmaking ticket
         AZStd::string m_ticketId;
     };
 
@@ -61,7 +61,7 @@ namespace AzFramework
         StopMatchmakingRequest() = default;
         virtual ~StopMatchmakingRequest() = default;
 
-        // A unique identifier for a matchmaking ticket
+        //! A unique identifier for a matchmaking ticket
         AZStd::string m_ticketId;
     };
 } // namespace AzFramework
