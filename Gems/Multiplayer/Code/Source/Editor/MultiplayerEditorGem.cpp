@@ -25,6 +25,7 @@ namespace Multiplayer
             m_descriptors.end(),
             {
                 MultiplayerEditorSystemComponent::CreateDescriptor(),
+                PythonEditorFuncs::CreateDescriptor()
             });
     }
 

@@ -7,23 +7,74 @@
  */
 
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
+#include <AzCore/Module/Environment.h>
 
 namespace AZ
 {
     namespace RPI
     {
-        bool ShaderReloadDebugTracker::s_enabled = false;
-        int ShaderReloadDebugTracker::s_indent = 0;
+        namespace ShaderReloadDebugTrackerInternal
+        {
+            static const char EnabledVariableName[] = "ShaderReloadDebugTracker enabled";
+            static const char IndentVariableName[] = "ShaderReloadDebugTracker indent";
+
+            static EnvironmentVariable<bool> s_enabled;
+            static EnvironmentVariable<int> s_indent;
+        }
+
+        void ShaderReloadDebugTracker::Init()
+        {
+            ShaderReloadDebugTrackerInternal::s_enabled = AZ::Environment::CreateVariable<bool>(ShaderReloadDebugTrackerInternal::EnabledVariableName);
+            ShaderReloadDebugTrackerInternal::s_indent = AZ::Environment::CreateVariable<int>(ShaderReloadDebugTrackerInternal::IndentVariableName);
+
+            ShaderReloadDebugTrackerInternal::s_enabled.Get() = false;
+            ShaderReloadDebugTrackerInternal::s_indent.Get() = 0;
+        }
+
+        void ShaderReloadDebugTracker::Shutdown()
+        {
+            ShaderReloadDebugTrackerInternal::s_enabled.Reset();
+            ShaderReloadDebugTrackerInternal::s_indent.Reset();
+        }
+        
+        void ShaderReloadDebugTracker::MakeReady()
+        {
+            if (!ShaderReloadDebugTrackerInternal::s_enabled.IsValid())
+            {
+                ShaderReloadDebugTrackerInternal::s_enabled = AZ::Environment::FindVariable<bool>(ShaderReloadDebugTrackerInternal::EnabledVariableName);
+                ShaderReloadDebugTrackerInternal::s_indent = AZ::Environment::FindVariable<int>(ShaderReloadDebugTrackerInternal::IndentVariableName);
+            }
+        }
 
         bool ShaderReloadDebugTracker::IsEnabled()
         {
 #ifdef AZ_ENABLE_SHADER_RELOAD_DEBUG_TRACKER
+            MakeReady();
+
             // Set this to true in the debugger to turn on hot reload tracing.
             // If needed, we could hook this up to a CVar.
-            return s_enabled;
+            return ShaderReloadDebugTrackerInternal::s_enabled.Get();
 #else
             return false;
 #endif
+        }
+        
+        void ShaderReloadDebugTracker::AddIndent()
+        {
+            MakeReady();
+            ShaderReloadDebugTrackerInternal::s_indent.Get() += IndentSpaces;
+        }
+
+        void ShaderReloadDebugTracker::RemoveIndent()
+        {
+            MakeReady();
+            ShaderReloadDebugTrackerInternal::s_indent.Get() -= IndentSpaces;
+        }
+        
+        int ShaderReloadDebugTracker::GetIndent()
+        {
+            MakeReady();
+            return ShaderReloadDebugTrackerInternal::s_indent.Get();
         }
 
         ShaderReloadDebugTracker::ScopedSection::~ScopedSection()
