@@ -436,8 +436,16 @@ namespace AzToolsFramework
 
     bool PrefabUiHandler::OnEntityDoubleClick(AZ::EntityId entityId) const
     {
-        // Focus on this prefab
-        m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
+        if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+        {
+            // Focus on this prefab
+            m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
+        }
+        else
+        {
+            // Close this prefab and focus on the parent
+            m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab();
+        }
 
         // Don't propagate event.
         return true;
