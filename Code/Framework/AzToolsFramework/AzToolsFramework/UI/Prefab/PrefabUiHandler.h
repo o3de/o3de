@@ -10,6 +10,8 @@
 
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
 
+#include <AzFramework/Entity/EntityContextBus.h>
+
 namespace AzToolsFramework
 {
 
