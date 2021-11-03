@@ -17,7 +17,7 @@
 
 #include <stdio.h>
 
-namespace AZ
+namespace AZ::Debug
 {
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
     LONG WINAPI ExceptionHandler(PEXCEPTION_POINTERS ExceptionInfo);
@@ -26,94 +26,91 @@ namespace AZ
 
     constexpr int g_maxMessageLength = 4096;
 
-    namespace Debug
+    namespace Platform
     {
-        namespace Platform
-        {
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
-            bool IsDebuggerPresent()
+        bool IsDebuggerPresent()
+        {
+            return ::IsDebuggerPresent() ? true : false;
+        }
+
+        void HandleExceptions(bool isEnabled)
+        {
+            if (isEnabled)
             {
-                return ::IsDebuggerPresent() ? true : false;
+                g_previousExceptionHandler = ::SetUnhandledExceptionFilter(&ExceptionHandler);
             }
-
-            void HandleExceptions(bool isEnabled)
+            else
             {
-                if (isEnabled)
-                {
-                    g_previousExceptionHandler = ::SetUnhandledExceptionFilter(&ExceptionHandler);
-                }
-                else
-                {
-                    ::SetUnhandledExceptionFilter(g_previousExceptionHandler);
-                    g_previousExceptionHandler = NULL;
-                }
-            }
-
-            bool AttachDebugger()
-            {
-                if (IsDebuggerPresent())
-                {
-                    return true;
-                }
-
-                // Launch vsjitdebugger.exe, this app is always present in System32 folder
-                // with an installation of any version of visual studio.
-                // It will open a debugging dialog asking the user what debugger to use
-
-                STARTUPINFOW startupInfo = {0};
-                startupInfo.cb = sizeof(startupInfo);
-                PROCESS_INFORMATION processInfo = {0};
-
-                wchar_t cmdline[MAX_PATH];
-                swprintf_s(cmdline, L"vsjitdebugger.exe -p %li", ::GetCurrentProcessId());
-                bool success = ::CreateProcessW(
-                    NULL,           // No module name (use command line)
-                    cmdline,        // Command line
-                    NULL,           // Process handle not inheritable
-                    NULL,           // Thread handle not inheritable
-                    FALSE,          // No handle inheritance
-                    0,              // No creation flags
-                    NULL,           // Use parent's environment block
-                    NULL,           // Use parent's starting directory 
-                    &startupInfo,   // Pointer to STARTUPINFO structure
-                    &processInfo);  // Pointer to PROCESS_INFORMATION structure
-
-                if (success)
-                {
-                    ::WaitForSingleObject(processInfo.hProcess, INFINITE);
-                    ::CloseHandle(processInfo.hProcess);
-                    ::CloseHandle(processInfo.hThread);
-                    return true;
-                }
-                return false;
-            }
-
-            void DebugBreak()
-            {
-                __debugbreak();
-            }
-#endif // AZ_ENABLE_DEBUG_TOOLS
-
-            void Terminate(int exitCode)
-            {
-                TerminateProcess(GetCurrentProcess(), exitCode);
-            }
-
-            void OutputToDebugger([[maybe_unused]] const char* window, const char* message)
-            {
-                AZStd::fixed_wstring<g_maxMessageLength> tmpW;
-                if(window)
-                {
-                    AZStd::to_wstring(tmpW, window);
-                    tmpW += L": ";
-                    OutputDebugStringW(tmpW.c_str());
-                    tmpW.clear();
-                }
-                AZStd::to_wstring(tmpW, message);
-                OutputDebugStringW(tmpW.c_str());
+                ::SetUnhandledExceptionFilter(g_previousExceptionHandler);
+                g_previousExceptionHandler = NULL;
             }
         }
-    }
+
+        bool AttachDebugger()
+        {
+            if (IsDebuggerPresent())
+            {
+                return true;
+            }
+
+            // Launch vsjitdebugger.exe, this app is always present in System32 folder
+            // with an installation of any version of visual studio.
+            // It will open a debugging dialog asking the user what debugger to use
+
+            STARTUPINFOW startupInfo = {0};
+            startupInfo.cb = sizeof(startupInfo);
+            PROCESS_INFORMATION processInfo = {0};
+
+            wchar_t cmdline[MAX_PATH];
+            swprintf_s(cmdline, L"vsjitdebugger.exe -p %li", ::GetCurrentProcessId());
+            bool success = ::CreateProcessW(
+                NULL,           // No module name (use command line)
+                cmdline,        // Command line
+                NULL,           // Process handle not inheritable
+                NULL,           // Thread handle not inheritable
+                FALSE,          // No handle inheritance
+                0,              // No creation flags
+                NULL,           // Use parent's environment block
+                NULL,           // Use parent's starting directory
+                &startupInfo,   // Pointer to STARTUPINFO structure
+                &processInfo);  // Pointer to PROCESS_INFORMATION structure
+
+            if (success)
+            {
+                ::WaitForSingleObject(processInfo.hProcess, INFINITE);
+                ::CloseHandle(processInfo.hProcess);
+                ::CloseHandle(processInfo.hThread);
+                return true;
+            }
+            return false;
+        }
+
+        void DebugBreak()
+        {
+            __debugbreak();
+        }
+#endif // AZ_ENABLE_DEBUG_TOOLS
+
+        void Terminate(int exitCode)
+        {
+            TerminateProcess(GetCurrentProcess(), exitCode);
+        }
+
+        void OutputToDebugger([[maybe_unused]] const char* window, const char* message)
+        {
+            AZStd::fixed_wstring<g_maxMessageLength> tmpW;
+            if(window)
+            {
+                AZStd::to_wstring(tmpW, window);
+                tmpW += L": ";
+                OutputDebugStringW(tmpW.c_str());
+                tmpW.clear();
+            }
+            AZStd::to_wstring(tmpW, message);
+            OutputDebugStringW(tmpW.c_str());
+        }
+    } // namespace Platform
 
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
 
@@ -187,6 +184,8 @@ namespace AZ
         azsnprintf(message, g_maxMessageLength, "Exception : 0x%lX - '%s' [%p]\n", ExceptionInfo->ExceptionRecord->ExceptionCode, GetExeptionName(ExceptionInfo->ExceptionRecord->ExceptionCode), ExceptionInfo->ExceptionRecord->ExceptionAddress);
         Debug::Trace::Instance().Output(nullptr, message);
 
+        Debug::Trace::Instance().PrintCallstack(nullptr, 0, ExceptionInfo->ContextRecord);
+
         EBUS_EVENT(Debug::TraceMessageDrillerBus, OnException, message);
 
         bool result = false;
@@ -198,7 +197,7 @@ namespace AZ
             // if someone ever returns TRUE we assume that they somehow handled this exception and continue.
             return EXCEPTION_CONTINUE_EXECUTION;
         }
-        Debug::Trace::Instance().PrintCallstack(nullptr, 0, ExceptionInfo->ContextRecord);
+        
         Debug::Trace::Instance().Output(nullptr, "==================================================================\n");
 
         // allowing continue of execution is not valid here.  This handler gets called for serious exceptions.
@@ -211,4 +210,4 @@ namespace AZ
     }
 
 #endif
-}
+} // namspace AZ::Debug

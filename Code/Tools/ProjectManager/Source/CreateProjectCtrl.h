@@ -62,9 +62,6 @@ namespace O3DE::ProjectManager
         QPushButton* m_secondaryButton = nullptr;
 #endif // TEMPLATE_GEM_CONFIGURATION_ENABLED
 
-        QString m_projectTemplatePath;
-        ProjectInfo m_projectInfo;
-        
         NewProjectSettingsScreen* m_newProjectSettingsScreen = nullptr;
         GemCatalogScreen* m_gemCatalogScreen = nullptr;
     };

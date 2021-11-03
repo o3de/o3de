@@ -239,15 +239,16 @@ void UiCanvasAssetRefComponent::Activate()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasAssetRefComponent::Deactivate()
 {
-#if !defined(DEDICATED_SERVER)
-    if (m_canvasEntityId.IsValid())
+    if (!gEnv->IsDedicated())
     {
-        gEnv->pLyShine->ReleaseCanvasDeferred(m_canvasEntityId);
-        m_canvasEntityId.SetInvalid();
-    }
+        if (m_canvasEntityId.IsValid())
+        {
+            gEnv->pLyShine->ReleaseCanvasDeferred(m_canvasEntityId);
+            m_canvasEntityId.SetInvalid();
+        }
 
-    UiCanvasAssetRefBus::Handler::BusDisconnect();
-    UiCanvasRefBus::Handler::BusDisconnect();
-    UiCanvasManagerNotificationBus::Handler::BusDisconnect();
-#endif
+        UiCanvasAssetRefBus::Handler::BusDisconnect();
+        UiCanvasRefBus::Handler::BusDisconnect();
+        UiCanvasManagerNotificationBus::Handler::BusDisconnect();
+    }
 }

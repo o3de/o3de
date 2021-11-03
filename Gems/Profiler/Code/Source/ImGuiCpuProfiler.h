@@ -107,6 +107,9 @@ namespace Profiler
         //! Draws the statistical view of the CPU profiling data.
         void DrawStatisticsView();
 
+        //! Generates the full output timestamped file path based on nameHint
+        AZStd::string GenerateOutputFile(const char* nameHint);
+
         //! Callback invoked when the "Load File" button is pressed in the file picker.
         void LoadFile();
 
@@ -214,7 +217,7 @@ namespace Profiler
         AZStd::vector<CpuTimingEntry> m_cpuTimingStatisticsWhenPause;
         AZStd::sys_time_t m_frameToFrameTime{};
 
-        AZStd::string m_lastCapturedFilePath;
+        AZ::IO::FixedMaxPath m_lastCapturedFilePath;
 
         bool m_showFilePicker = false;
 

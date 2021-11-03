@@ -80,7 +80,7 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::ReinitForProject(const QString& projectPath)
     {
-        m_gemModel->clear();
+        m_gemModel->Clear();
         m_gemsToRegisterWithProject.clear();
         FillModel(projectPath);
 
@@ -145,10 +145,11 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemCatalogScreen::OnGemStatusChanged(const QModelIndex& modelIndex, uint32_t numChangedDependencies) 
+    void GemCatalogScreen::OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies) 
     {
         if (m_notificationsEnabled)
         {
+            QModelIndex modelIndex = m_gemModel->FindIndexByNameString(gemName);
             bool added = GemModel::IsAdded(modelIndex);
             bool dependency = GemModel::IsAddedDependency(modelIndex);
 
@@ -233,7 +234,11 @@ namespace O3DE::ProjectManager
                 const QVector<GemInfo> allRepoGemInfos = allRepoGemInfosResult.GetValue();
                 for (const GemInfo& gemInfo : allRepoGemInfos)
                 {
-                    m_gemModel->AddGem(gemInfo);
+                    // do not add gems that have already been downloaded
+                    if (!m_gemModel->FindIndexByNameString(gemInfo.m_name).isValid())
+                    {
+                        m_gemModel->AddGem(gemInfo);
+                    }
                 }
             }
             else
@@ -257,7 +262,8 @@ namespace O3DE::ProjectManager
                         GemModel::SetWasPreviouslyAdded(*m_gemModel, modelIndex, true);
                         GemModel::SetIsAdded(*m_gemModel, modelIndex, true);
                     }
-                    else
+                    // ${Name} is a special name used in templates and is not really an error
+                    else if (enabledGemName != "${Name}")
                     {
                         AZ_Warning("ProjectManager::GemCatalog", false,
                             "Cannot find entry for gem with name '%s'. The CMake target name probably does not match the specified name in the gem.json.",

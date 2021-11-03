@@ -218,9 +218,11 @@ namespace Terrain
 
         const AZ::Transform transform = AZ::Transform::CreateTranslation(worldBounds.GetCenter());
         
-        AZ::Vector2 queryResolution = AZ::Vector2(1.0f);
+        AZ::Vector2 queryResolution2D = AZ::Vector2(1.0f);
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
+            queryResolution2D, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
+        // Currently query resolution is multidimensional but the rendering system only supports this changing in one dimension.
+        float queryResolution = queryResolution2D.GetX();
 
         // Sectors need to be rebuilt if the world bounds change in the x/y, or the sample spacing changes.
         m_areaData.m_rebuildSectors = m_areaData.m_rebuildSectors ||
@@ -228,16 +230,11 @@ namespace Terrain
             m_areaData.m_terrainBounds.GetMin().GetY() != worldBounds.GetMin().GetY() ||
             m_areaData.m_terrainBounds.GetMax().GetX() != worldBounds.GetMax().GetX() ||
             m_areaData.m_terrainBounds.GetMax().GetY() != worldBounds.GetMax().GetY() ||
-            m_areaData.m_sampleSpacing != queryResolution.GetX();
+            m_areaData.m_sampleSpacing != queryResolution;
 
         m_areaData.m_transform = transform;
         m_areaData.m_terrainBounds = worldBounds;
-        m_areaData.m_heightmapImageWidth = aznumeric_cast<uint32_t>(worldBounds.GetXExtent() / queryResolution.GetX());
-        m_areaData.m_heightmapImageHeight = aznumeric_cast<uint32_t>(worldBounds.GetYExtent() / queryResolution.GetY());
-        m_areaData.m_updateWidth = aznumeric_cast<uint32_t>(m_dirtyRegion.GetXExtent() / queryResolution.GetX());
-        m_areaData.m_updateHeight = aznumeric_cast<uint32_t>(m_dirtyRegion.GetYExtent() / queryResolution.GetY());
-        // Currently query resolution is multidimensional but the rendering system only supports this changing in one dimension.
-        m_areaData.m_sampleSpacing = queryResolution.GetX();
+        m_areaData.m_sampleSpacing = queryResolution;
         m_areaData.m_heightmapUpdated = true;
     }
 
@@ -778,32 +775,43 @@ namespace Terrain
 
     void TerrainFeatureProcessor::UpdateTerrainData()
     {
-        uint32_t width = m_areaData.m_updateWidth;
-        uint32_t height = m_areaData.m_updateHeight;
-        const AZ::Aabb& worldBounds = m_areaData.m_terrainBounds;
+
         const float queryResolution = m_areaData.m_sampleSpacing;
+        const AZ::Aabb& worldBounds = m_areaData.m_terrainBounds;
 
-        const AZ::RHI::Size worldSize = AZ::RHI::Size(m_areaData.m_heightmapImageWidth, m_areaData.m_heightmapImageHeight, 1);
+        int32_t heightmapImageXStart = aznumeric_cast<int32_t>(AZStd::ceilf(worldBounds.GetMin().GetX() / queryResolution));
+        int32_t heightmapImageXEnd = aznumeric_cast<int32_t>(AZStd::floorf(worldBounds.GetMax().GetX() / queryResolution)) + 1;
+        int32_t heightmapImageYStart = aznumeric_cast<int32_t>(AZStd::ceilf(worldBounds.GetMin().GetY() / queryResolution));
+        int32_t heightmapImageYEnd = aznumeric_cast<int32_t>(AZStd::floorf(worldBounds.GetMax().GetY() / queryResolution)) + 1;
+        uint32_t heightmapImageWidth = heightmapImageXEnd - heightmapImageXStart;
+        uint32_t heightmapImageHeight = heightmapImageYEnd - heightmapImageYStart;
 
-        if (!m_areaData.m_heightmapImage || m_areaData.m_heightmapImage->GetDescriptor().m_size != worldSize)
+        const AZ::RHI::Size heightmapSize = AZ::RHI::Size(heightmapImageWidth, heightmapImageHeight, 1);
+
+        if (!m_areaData.m_heightmapImage || m_areaData.m_heightmapImage->GetDescriptor().m_size != heightmapSize)
         {
-            // World size changed, so the whole world needs updating.
-            width = worldSize.m_width;
-            height = worldSize.m_height;
-            m_dirtyRegion = worldBounds;
-
             const AZ::Data::Instance<AZ::RPI::AttachmentImagePool> imagePool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
             AZ::RHI::ImageDescriptor imageDescriptor = AZ::RHI::ImageDescriptor::Create2D(
-                AZ::RHI::ImageBindFlags::ShaderRead, width, height, AZ::RHI::Format::R16_UNORM
+                AZ::RHI::ImageBindFlags::ShaderRead, heightmapSize.m_width, heightmapSize.m_height, AZ::RHI::Format::R16_UNORM
             );
 
             const AZ::Name TerrainHeightmapName = AZ::Name(TerrainHeightmapChars);
             m_areaData.m_heightmapImage = AZ::RPI::AttachmentImage::Create(*imagePool.get(), imageDescriptor, TerrainHeightmapName, nullptr, nullptr);
             AZ_Error(TerrainFPName, m_areaData.m_heightmapImage, "Failed to initialize the heightmap image.");
+            
+            // World size changed, so the whole height map needs updating.
+            m_dirtyRegion = worldBounds;
         }
+        
+        int32_t xStart = aznumeric_cast<int32_t>(AZStd::ceilf(m_dirtyRegion.GetMin().GetX() / queryResolution));
+        int32_t xEnd = aznumeric_cast<int32_t>(AZStd::floorf(m_dirtyRegion.GetMax().GetX() / queryResolution)) + 1;
+        int32_t yStart = aznumeric_cast<int32_t>(AZStd::ceilf(m_dirtyRegion.GetMin().GetY() / queryResolution));
+        int32_t yEnd = aznumeric_cast<int32_t>(AZStd::floorf(m_dirtyRegion.GetMax().GetY() / queryResolution)) + 1;
+        uint32_t updateWidth = xEnd - xStart;
+        uint32_t updateHeight = yEnd - yStart;
 
         AZStd::vector<uint16_t> pixels;
-        pixels.reserve(width * height);
+        pixels.reserve(updateWidth * updateHeight);
 
         {
             // Block other threads from accessing the surface data bus while we are in GetHeightFromFloats (which may call into the SurfaceData bus).
@@ -815,18 +823,17 @@ namespace Terrain
             auto& surfaceDataContext = SurfaceData::SurfaceDataSystemRequestBus::GetOrCreateContext(false);
             typename SurfaceData::SurfaceDataSystemRequestBus::Context::DispatchLockGuard scopeLock(surfaceDataContext.m_contextMutex);
 
-            for (uint32_t y = 0; y < height; y++)
+            for (int32_t y = yStart; y < yEnd; y++)
             {
-                for (uint32_t x = 0; x < width; x++)
+                for (int32_t x = xStart; x < xEnd; x++)
                 {
                     bool terrainExists = true;
                     float terrainHeight = 0.0f;
+                    float xPos = x * queryResolution;
+                    float yPos = y * queryResolution;
                     AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                         terrainHeight, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats,
-                        (x * queryResolution) + m_dirtyRegion.GetMin().GetX(),
-                        (y * queryResolution) + m_dirtyRegion.GetMin().GetY(),
-                        AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT,
-                        &terrainExists);
+                        xPos, yPos, AzFramework::Terrain::TerrainDataRequests::Sampler::EXACT, &terrainExists);
 
                     const float clampedHeight = AZ::GetClamp((terrainHeight - worldBounds.GetMin().GetZ()) / worldBounds.GetExtents().GetZ(), 0.0f, 1.0f);
                     const float expandedHeight = AZStd::roundf(clampedHeight * AZStd::numeric_limits<uint16_t>::max());
@@ -839,16 +846,18 @@ namespace Terrain
 
         if (m_areaData.m_heightmapImage)
         {
-            const float left = (m_dirtyRegion.GetMin().GetX() - worldBounds.GetMin().GetX()) / queryResolution;
-            const float top = (m_dirtyRegion.GetMin().GetY() - worldBounds.GetMin().GetY()) / queryResolution;
+            constexpr uint32_t BytesPerPixel = sizeof(uint16_t);
+            const float left = xStart - (worldBounds.GetMin().GetX() / queryResolution);
+            const float top = yStart - (worldBounds.GetMin().GetY() / queryResolution);
+
             AZ::RHI::ImageUpdateRequest imageUpdateRequest;
             imageUpdateRequest.m_imageSubresourcePixelOffset.m_left = aznumeric_cast<uint32_t>(left);
             imageUpdateRequest.m_imageSubresourcePixelOffset.m_top = aznumeric_cast<uint32_t>(top);
-            imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerRow = width * sizeof(uint16_t);
-            imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerImage = width * height * sizeof(uint16_t);
-            imageUpdateRequest.m_sourceSubresourceLayout.m_rowCount = height;
-            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_width = width;
-            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_height = height;
+            imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerRow = updateWidth * BytesPerPixel;
+            imageUpdateRequest.m_sourceSubresourceLayout.m_bytesPerImage = updateWidth * updateHeight * BytesPerPixel;
+            imageUpdateRequest.m_sourceSubresourceLayout.m_rowCount = updateHeight;
+            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_width = updateWidth;
+            imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_height = updateHeight;
             imageUpdateRequest.m_sourceSubresourceLayout.m_size.m_depth = 1;
             imageUpdateRequest.m_sourceData = pixels.data();
             imageUpdateRequest.m_image = m_areaData.m_heightmapImage->GetRHIImage();
@@ -1106,6 +1115,12 @@ namespace Terrain
                 m_areaData.m_heightmapUpdated = false;
                 m_areaData.m_macroMaterialsUpdated = false;
 
+                AZStd::array<float, 2> uvStep =
+                {
+                    1.0f / aznumeric_cast<uint32_t>(m_areaData.m_terrainBounds.GetXExtent() / m_areaData.m_sampleSpacing),
+                    1.0f / aznumeric_cast<uint32_t>(m_areaData.m_terrainBounds.GetYExtent() / m_areaData.m_sampleSpacing),
+                };
+
                 for (SectorData& sectorData : m_sectorData)
                 {
                     ShaderTerrainData terrainDataForSrg;
@@ -1123,11 +1138,7 @@ namespace Terrain
                         ((yPatch + GridMeters) - terrainBounds.GetMin().GetY()) / terrainBounds.GetYExtent()
                     };
 
-                    terrainDataForSrg.m_uvStep =
-                    {
-                        1.0f / m_areaData.m_heightmapImageWidth,
-                        1.0f / m_areaData.m_heightmapImageHeight,
-                    };
+                    terrainDataForSrg.m_uvStep = uvStep;
 
                     AZ::Transform transform = m_areaData.m_transform;
                     transform.SetTranslation(xPatch, yPatch, m_areaData.m_transform.GetTranslation().GetZ());
@@ -1138,7 +1149,9 @@ namespace Terrain
                     sectorData.m_srg->SetConstant(m_terrainDataIndex, terrainDataForSrg);
 
                     AZStd::array<ShaderMacroMaterialData, MaxMaterialsPerSector> macroMaterialData;
-                    for (uint32_t i = 0; i < sectorData.m_macroMaterials.size(); ++i)
+
+                    uint32_t i = 0;
+                    for (; i < sectorData.m_macroMaterials.size(); ++i)
                     {
                         const MacroMaterialData& materialData = m_macroMaterials.GetData(sectorData.m_macroMaterials.at(i));
                         ShaderMacroMaterialData& shaderData = macroMaterialData.at(i);
@@ -1166,6 +1179,11 @@ namespace Terrain
 
                         // set flags for which images are used.
                         shaderData.m_mapsInUse = (colorImageView ? ColorImageUsed : 0) | (normalImageView ? NormalImageUsed : 0);
+                    }
+                    for (; i < sectorData.m_macroMaterials.capacity(); ++i)
+                    {
+                        sectorData.m_srg->SetImageView(m_macroColorMapIndex, nullptr, i);
+                        sectorData.m_srg->SetImageView(m_macroNormalMapIndex, nullptr, i);
                     }
 
                     sectorData.m_srg->SetConstantArray(m_macroMaterialDataIndex, macroMaterialData);

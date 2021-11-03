@@ -832,7 +832,7 @@ QAction* LevelEditorMenuHandler::CreateViewPaneAction(const QtViewPane* view)
 
         if (view->m_options.showOnToolsToolbar)
         {
-            action->setIcon(QIcon(view->m_options.toolbarIcon));
+            action->setIcon(QIcon(view->m_options.toolbarIcon.c_str()));
         }
 
         m_actionManager->AddAction(view->m_id, action);

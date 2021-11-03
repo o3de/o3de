@@ -29,17 +29,17 @@ namespace AzFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         //////////////////////////////////////////////////////////////////////////
 
-        // OnMatchAcceptance is fired when match is found and pending on acceptance
-        // Use this notification to accept found match
+        //! OnMatchAcceptance is fired when match is found and pending on acceptance
+        //! Use this notification to accept found match
         virtual void OnMatchAcceptance() = 0;
 
-        // OnMatchComplete is fired when match is complete
+        //! OnMatchComplete is fired when match is complete
         virtual void OnMatchComplete() = 0;
 
-        // OnMatchError is fired when match is processed with error
+        //! OnMatchError is fired when match is processed with error
         virtual void OnMatchError() = 0;
 
-        // OnMatchFailure is fired when match is failed to complete
+        //! OnMatchFailure is fired when match is failed to complete
         virtual void OnMatchFailure() = 0;
     };
     using MatchmakingNotificationBus = AZ::EBus<MatchmakingNotifications>;
