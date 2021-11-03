@@ -19,7 +19,10 @@
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 #include <Atom/RPI.Public/Material/MaterialReloadNotificationBus.h>
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
+#include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/IndexedDataVector.h>
+#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
+#include <Atom/Feature/Utils/SparseVector.h>
 
 namespace AZ::RPI
 {
@@ -125,17 +128,19 @@ namespace Terrain
             UseTextureHeight =     0b0000'0000'0000'0000'0000'0000'0010'0000,
             UseTextureSpecularF0 = 0b0000'0000'0000'0000'0000'0000'0100'0000,
 
-            FlipNormalX =          0b0000'0000'0000'0000'0000'0000'1000'0000,
-            FlipNormalY =          0b0000'0000'0000'0000'0000'0001'0000'0000,
+            FlipNormalX =          0b0000'0000'0000'0001'0000'0000'0000'0000,
+            FlipNormalY =          0b0000'0000'0000'0010'0000'0000'0000'0000,
 
-            BlendModeMask =        0b0000'0000'0000'0000'0000'0110'0000'0000,
+            BlendModeMask =        0b0000'0000'0000'1100'0000'0000'0000'0000,
             BlendModeLerp =        0b0000'0000'0000'0000'0000'0000'0000'0000,
-            BlendModeLinearLight = 0b0000'0000'0000'0000'0000'0010'0000'0000,
-            BlendModeMultiply =    0b0000'0000'0000'0000'0000'0100'0000'0000,
-            BlendModeOverlay =     0b0000'0000'0000'0000'0000'0110'0000'0000,
+            BlendModeLinearLight = 0b0000'0000'0000'0100'0000'0000'0000'0000,
+            BlendModeMultiply =    0b0000'0000'0000'1000'0000'0000'0000'0000,
+            BlendModeOverlay =     0b0000'0000'0000'1100'0000'0000'0000'0000,
         };
 
-        struct DetailMaterialShaderProperties
+        static constexpr uint16_t InvalidDetailImageIndex = 0xFFFF;
+
+        struct DetailMaterialShaderData
         {
             // Uv
             AZStd::array<float, 12> m_uvTransform
@@ -162,7 +167,18 @@ namespace Terrain
             // Flags
             DetailTextureFlags m_flags{ 0 };
 
-            float m_padding; // 16 byte aligned
+            // Image indices
+            uint16_t m_colorImageIndex{ InvalidDetailImageIndex };
+            uint16_t m_normalImageIndex{ InvalidDetailImageIndex };
+            uint16_t m_roughnessImageIndex{ InvalidDetailImageIndex };
+            uint16_t m_metalnessImageIndex{ InvalidDetailImageIndex };
+            uint16_t m_specularF0ImageIndex{ InvalidDetailImageIndex };
+            uint16_t m_occlusionImageIndex{ InvalidDetailImageIndex };
+            uint16_t m_heightImageIndex{ InvalidDetailImageIndex };
+
+            // 16 byte aligned
+            uint16_t m_padding1; 
+            uint32_t m_padding2;
         };
 
         struct DetailMaterialData
@@ -177,8 +193,6 @@ namespace Terrain
             AZ::Data::Instance<AZ::RPI::Image> m_specularF0Image;
             AZ::Data::Instance<AZ::RPI::Image> m_occlusionImage;
             AZ::Data::Instance<AZ::RPI::Image> m_heightImage;
-
-            DetailMaterialShaderProperties m_properties; // maps directly to shader
         };
 
         struct DetailMaterialSurface
@@ -249,7 +263,7 @@ namespace Terrain
         void TerrainSurfaceDataUpdated(const AZ::Aabb& dirtyRegion);
 
         uint16_t CreateOrUpdateDetailMaterial(MaterialInstance material);
-        void UpdateDetailMaterialData(DetailMaterialData& materialData, MaterialInstance material);
+        void UpdateDetailMaterialData(uint16_t detailMaterialIndex, MaterialInstance material);
         void CheckUpdateDetailTexture(const Aabb2i& newBounds, const Vector2i& newCenter);
         void UpdateDetailTexture(const Aabb2i& updateArea, const Aabb2i& textureBounds, const Vector2i& centerPixel);
         uint16_t GetDetailMaterialForSurfaceTypeAndPosition(AZ::Crc32 surfaceType, const AZ::Vector2& position);
@@ -312,6 +326,7 @@ namespace Terrain
         TerrainAreaData m_areaData;
         AZ::Aabb m_dirtyRegion{ AZ::Aabb::CreateNull() };
         AZ::Aabb m_dirtyDetailRegion{ AZ::Aabb::CreateNull() };
+        bool m_updateDetailMaterialBuffer{ false };
 
         Aabb2i m_detailTextureBounds;
         Vector2i m_detailTextureCenter;
@@ -322,7 +337,9 @@ namespace Terrain
         AZStd::vector<SectorData> m_sectorData;
 
         AZ::Render::IndexedDataVector<MacroMaterialData> m_macroMaterials;
-        AZ::Render::IndexedDataVector<DetailMaterialData> m_detailMaterials;
+        AZ::Render::MultiIndexedDataVector<DetailMaterialData, DetailMaterialShaderData> m_detailMaterials;
         AZ::Render::IndexedDataVector<DetailMaterialListRegion> m_detailMaterialRegions;
+        AZ::Render::SparseVector<AZ::Data::Instance<AZ::RPI::Image>> m_detailMaterialTextures;
+        AZ::Render::GpuBufferHandler m_detailMaterialDataBuffer;
     };
 }

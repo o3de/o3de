@@ -166,6 +166,7 @@ namespace Terrain
             return;
         }
         OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
+
     }
 
     void TerrainFeatureProcessor::Deactivate()
@@ -398,138 +399,170 @@ namespace Terrain
         static constexpr uint16_t InvalidDetailMaterial = 0xFFFF;
         uint16_t detailMaterialId = InvalidDetailMaterial;
 
-        for (DetailMaterialData& detailMaterial : m_detailMaterials.GetDataVector())
-        {
+        m_detailMaterials.ForEach<0>([&](const DetailMaterialData& detailMaterial) {
             if (detailMaterial.m_assetId == material->GetAssetId())
             {
-                UpdateDetailMaterialData(detailMaterial, material);
-                detailMaterialId = m_detailMaterials.GetIndexForData(&detailMaterial);
-                break;
+                detailMaterialId = m_detailMaterials.GetIndexForData<0>(&detailMaterial);
+                UpdateDetailMaterialData(detailMaterialId, material);
+                return false; // break out of loop
             }
-        }
+            return true; // continue searching
+        });
 
         if (detailMaterialId == InvalidDetailMaterial)
         {
             detailMaterialId = m_detailMaterials.GetFreeSlotIndex();
-            UpdateDetailMaterialData(m_detailMaterials.GetData(detailMaterialId), material);
+            UpdateDetailMaterialData(detailMaterialId, material);
         }
         return detailMaterialId;
     }
 
-    void TerrainFeatureProcessor::UpdateDetailMaterialData(DetailMaterialData& materialData, MaterialInstance material)
+    void TerrainFeatureProcessor::UpdateDetailMaterialData(uint16_t detailMaterialIndex, MaterialInstance material)
     {
-        if (materialData.m_materialChangeId != material->GetCurrentChangeId())
+        DetailMaterialData& materialData = m_detailMaterials.GetData<0>(detailMaterialIndex);
+        DetailMaterialShaderData& shaderData = m_detailMaterials.GetData<1>(detailMaterialIndex);
+
+        if (materialData.m_materialChangeId == material->GetCurrentChangeId())
         {
-            materialData = DetailMaterialData();
-            DetailTextureFlags& flags = materialData.m_properties.m_flags;
-            materialData.m_materialChangeId = material->GetCurrentChangeId();
-            materialData.m_assetId = material->GetAssetId();
-            
-            auto getIndex = [&](const char* const indexName) -> AZ::RPI::MaterialPropertyIndex
-            {
-                const AZ::RPI::MaterialPropertyIndex index = material->FindPropertyIndex(AZ::Name(indexName));
-                AZ_Warning(TerrainFPName, index.IsValid(), "Failed to find shader input constant %s.", indexName);
-                return index;
-            };
-
-            auto applyProperty = [&](const char* const indexName, auto& ref) -> void
-            {
-                const auto index = getIndex(indexName);
-                if (index.IsValid())
-                {
-                    using TypeRefRemoved = AZStd::remove_cvref_t<decltype(ref)>;
-                    ref = material->GetPropertyValue(index).GetValue<TypeRefRemoved>();
-                }
-            };
-            
-            auto applyFlag = [&](const char* const indexName, DetailTextureFlags flagToSet) -> void
-            {
-                const auto index = getIndex(indexName);
-                if (index.IsValid())
-                {
-                    bool flagValue = material->GetPropertyValue(index).GetValue<bool>();
-                    flags = DetailTextureFlags(flagValue ? flags | flagToSet : flags);
-                }
-            };
-
-            auto getEnumName = [&](const char* const indexName) -> const AZStd::string_view
-            {
-                const auto index = getIndex(indexName);
-                if (index.IsValid())
-                {
-                    uint32_t enumIndex = material->GetPropertyValue(index).GetValue<uint32_t>();
-                    const AZ::Name& enumName = material->GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetEnumName(enumIndex);
-                    return enumName.GetStringView();
-                }
-                return "";
-            };
-
-            using namespace DetailMaterialInputs;
-            applyProperty(BaseColorMap, materialData.m_colorImage);
-            applyFlag(BaseColorUseTexture, DetailTextureFlags::UseTextureBaseColor);
-            applyProperty(BaseColorFactor, materialData.m_properties.m_baseColorFactor);
-
-            const AZStd::string_view& blendModeString = getEnumName(BaseColorBlendMode);
-            if (blendModeString == "Multiply")
-            {
-                flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeMultiply);
-            }
-            else if (blendModeString == "LinearLight")
-            {
-                flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeLinearLight);
-            }
-            else if (blendModeString == "Lerp")
-            {
-                flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeLerp);
-            }
-            else if (blendModeString == "Overlay")
-            {
-                flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeOverlay);
-            }
-            
-            applyProperty(MetallicMap, materialData.m_metalnessImage);
-            applyFlag(MetallicUseTexture, DetailTextureFlags::UseTextureMetallic);
-            applyProperty(MetallicFactor, materialData.m_properties.m_metalFactor);
-            
-            applyProperty(RoughnessMap, materialData.m_roughnessImage);
-            applyFlag(RoughnessUseTexture, DetailTextureFlags::UseTextureRoughness);
-
-            if ((flags & DetailTextureFlags::UseTextureRoughness) > 0)
-            {
-                float lowerBound = 0.0;
-                float upperBound = 1.0;
-                applyProperty(RoughnessLowerBound, lowerBound);
-                applyProperty(RoughnessUpperBound, upperBound);
-                materialData.m_properties.m_roughnessBias = lowerBound;
-                materialData.m_properties.m_roughnessScale = upperBound - lowerBound;
-            }
-            else
-            {
-                materialData.m_properties.m_roughnessBias = 0.0;
-                applyProperty(RoughnessFactor, materialData.m_properties.m_roughnessScale);
-            }
-            
-            applyProperty(SpecularF0Map, materialData.m_specularF0Image);
-            applyFlag(SpecularF0UseTexture, DetailTextureFlags::UseTextureSpecularF0);
-            applyProperty(SpecularF0Factor, materialData.m_properties.m_specularF0Factor);
-            
-            applyProperty(NormalMap, materialData.m_normalImage);
-            applyFlag(NormalUseTexture, DetailTextureFlags::UseTextureNormal);
-            applyProperty(NormalFactor, materialData.m_properties.m_normalFactor);
-            applyFlag(NormalFlipX, DetailTextureFlags::FlipNormalX);
-            applyFlag(NormalFlipY, DetailTextureFlags::FlipNormalY);
-            
-            applyProperty(DiffuseOcclusionMap, materialData.m_occlusionImage);
-            applyFlag(DiffuseOcclusionUseTexture, DetailTextureFlags::UseTextureOcclusion);
-            applyProperty(DiffuseOcclusionFactor, materialData.m_properties.m_occlusionFactor);
-            
-            applyProperty(HeightMap, materialData.m_heightImage);
-            applyFlag(HeightUseTexture, DetailTextureFlags::UseTextureHeight);
-            applyProperty(HeightFactor, materialData.m_properties.m_heightFactor);
-            applyProperty(HeightOffset, materialData.m_properties.m_heightOffset);
-            applyProperty(HeightBlendFactor, materialData.m_properties.m_heightBlendFactor);
-
+            return; // material hasn't changed, nothing to do
         }
+
+        materialData.m_materialChangeId = material->GetCurrentChangeId();
+        materialData.m_assetId = material->GetAssetId();
+            
+        DetailTextureFlags& flags = shaderData.m_flags;
+            
+        auto getIndex = [&](const char* const indexName) -> AZ::RPI::MaterialPropertyIndex
+        {
+            const AZ::RPI::MaterialPropertyIndex index = material->FindPropertyIndex(AZ::Name(indexName));
+            AZ_Warning(TerrainFPName, index.IsValid(), "Failed to find shader input constant %s.", indexName);
+            return index;
+        };
+
+        auto applyProperty = [&](const char* const indexName, auto& ref) -> void
+        {
+            const auto index = getIndex(indexName);
+            if (index.IsValid())
+            {
+                using TypeRefRemoved = AZStd::remove_cvref_t<decltype(ref)>;
+                ref = material->GetPropertyValue(index).GetValue<TypeRefRemoved>();
+            }
+        };
+
+        auto applyImage = [&](const char* const indexName, AZ::Data::Instance<AZ::RPI::Image>& ref, const char* const usingFlagName, DetailTextureFlags flagToSet, uint16_t& imageIndex) -> void
+        {
+            // Determine if an image exists and if its using flag allows it to be used.
+            const auto index = getIndex(indexName);
+            const auto useTextureIndex = getIndex(usingFlagName);
+            bool useTextureValue = true;
+            if (useTextureIndex.IsValid())
+            {
+                useTextureValue = material->GetPropertyValue(index).GetValue<bool>();
+            }
+            if (index.IsValid() && useTextureValue)
+            {
+                ref = material->GetPropertyValue(index).GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
+            }
+            useTextureValue = useTextureValue && ref;
+            flags = DetailTextureFlags(useTextureValue ? (flags | flagToSet) : (flags & ~flagToSet));
+
+            // Update m_detailMaterialTextures depending on if the image is used
+            if (ref)
+            {
+                if (imageIndex == InvalidDetailImageIndex)
+                {
+                    imageIndex = aznumeric_cast<uint16_t>(m_detailMaterialTextures.Reserve());
+                }
+                m_detailMaterialTextures.GetElement(imageIndex) = ref;
+            }
+            else if (imageIndex != InvalidDetailImageIndex)
+            {
+                m_detailMaterialTextures.Release(imageIndex);
+                imageIndex = InvalidDetailImageIndex;
+            }
+        };
+            
+        auto applyFlag = [&](const char* const indexName, DetailTextureFlags flagToSet) -> void
+        {
+            const auto index = getIndex(indexName);
+            if (index.IsValid())
+            {
+                bool flagValue = material->GetPropertyValue(index).GetValue<bool>();
+                flags = DetailTextureFlags(flagValue ? flags | flagToSet : flags);
+            }
+        };
+
+        auto getEnumName = [&](const char* const indexName) -> const AZStd::string_view
+        {
+            const auto index = getIndex(indexName);
+            if (index.IsValid())
+            {
+                uint32_t enumIndex = material->GetPropertyValue(index).GetValue<uint32_t>();
+                const AZ::Name& enumName = material->GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetEnumName(enumIndex);
+                return enumName.GetStringView();
+            }
+            return "";
+        };
+
+        using namespace DetailMaterialInputs;
+        applyImage(BaseColorMap, materialData.m_colorImage, BaseColorUseTexture, DetailTextureFlags::UseTextureBaseColor, shaderData.m_colorImageIndex);
+        applyProperty(BaseColorFactor, shaderData.m_baseColorFactor);
+
+        const AZStd::string_view& blendModeString = getEnumName(BaseColorBlendMode);
+        if (blendModeString == "Multiply")
+        {
+            flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeMultiply);
+        }
+        else if (blendModeString == "LinearLight")
+        {
+            flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeLinearLight);
+        }
+        else if (blendModeString == "Lerp")
+        {
+            flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeLerp);
+        }
+        else if (blendModeString == "Overlay")
+        {
+            flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeOverlay);
+        }
+            
+        applyImage(MetallicMap, materialData.m_metalnessImage, MetallicUseTexture, DetailTextureFlags::UseTextureMetallic, shaderData.m_metalnessImageIndex);
+        applyProperty(MetallicFactor, shaderData.m_metalFactor);
+            
+        applyImage(RoughnessMap, materialData.m_roughnessImage, RoughnessUseTexture, DetailTextureFlags::UseTextureRoughness, shaderData.m_roughnessImageIndex);
+
+        if ((flags & DetailTextureFlags::UseTextureRoughness) > 0)
+        {
+            float lowerBound = 0.0;
+            float upperBound = 1.0;
+            applyProperty(RoughnessLowerBound, lowerBound);
+            applyProperty(RoughnessUpperBound, upperBound);
+            shaderData.m_roughnessBias = lowerBound;
+            shaderData.m_roughnessScale = upperBound - lowerBound;
+        }
+        else
+        {
+            shaderData.m_roughnessBias = 0.0;
+            applyProperty(RoughnessFactor, shaderData.m_roughnessScale);
+        }
+            
+        applyImage(SpecularF0Map, materialData.m_specularF0Image, SpecularF0UseTexture, DetailTextureFlags::UseTextureSpecularF0, shaderData.m_specularF0ImageIndex);
+        applyProperty(SpecularF0Factor, shaderData.m_specularF0Factor);
+            
+        applyImage(NormalMap, materialData.m_normalImage, NormalUseTexture, DetailTextureFlags::UseTextureNormal, shaderData.m_normalImageIndex);
+        applyProperty(NormalFactor, shaderData.m_normalFactor);
+        applyFlag(NormalFlipX, DetailTextureFlags::FlipNormalX);
+        applyFlag(NormalFlipY, DetailTextureFlags::FlipNormalY);
+            
+        applyImage(DiffuseOcclusionMap, materialData.m_occlusionImage, DiffuseOcclusionUseTexture, DetailTextureFlags::UseTextureOcclusion, shaderData.m_occlusionImageIndex);
+        applyProperty(DiffuseOcclusionFactor, shaderData.m_occlusionFactor);
+            
+        applyImage(HeightMap, materialData.m_heightImage, HeightUseTexture, DetailTextureFlags::UseTextureHeight, shaderData.m_heightImageIndex);
+        applyProperty(HeightFactor, shaderData.m_heightFactor);
+        applyProperty(HeightOffset, shaderData.m_heightOffset);
+        applyProperty(HeightBlendFactor, shaderData.m_heightBlendFactor);
+
+        m_updateDetailMaterialBuffer = true;
     }
 
     void TerrainFeatureProcessor::CheckUpdateDetailTexture(const Aabb2i& newBounds, const Vector2i& newCenter)
@@ -905,6 +938,14 @@ namespace Terrain
         m_detailHalfPixelUvPropertyIndex = m_materialInstance->GetMaterialPropertiesLayout()->FindPropertyIndex(AZ::Name(MaterialInputs::DetailHalfPixelUv));
         AZ_Error(TerrainFPName, m_detailHalfPixelUvPropertyIndex.IsValid(), "Failed to find material input constant %s.", MaterialInputs::DetailHalfPixelUv);
 
+        // Set up the gpu buffer for detail material data
+        AZ::Render::GpuBufferHandler::Descriptor desc;
+        desc.m_bufferName = "Detail Material Data";
+        desc.m_bufferSrgName = "m_detailMaterialData";
+        desc.m_elementSize = sizeof(DetailMaterialShaderData);
+        desc.m_srgLayout = layout.get();
+        m_detailMaterialDataBuffer = AZ::Render::GpuBufferHandler(desc);
+
         // Find any macro materials that have already been created.
         TerrainMacroMaterialRequestBus::EnumerateHandlers(
             [&](TerrainMacroMaterialRequests* handler)
@@ -1187,6 +1228,12 @@ namespace Terrain
 
                     sectorData.m_srg->Compile();
                 }
+            }
+
+            if (m_updateDetailMaterialBuffer)
+            {
+                m_updateDetailMaterialBuffer = false;
+                m_detailMaterialDataBuffer.UpdateBuffer(m_detailMaterials.GetDataVector<1>());
             }
         }
 
