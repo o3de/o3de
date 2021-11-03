@@ -193,6 +193,24 @@ namespace Terrain
         maxHeightBounds = heightfieldAabb.GetZExtent() / 2.0f;
     }
 
+    float TerrainPhysicsColliderComponent::GetHeightfieldMinHeight() const
+    {
+        AZ::Aabb heightfieldAabb = GetHeightfieldAabb();
+
+        // Because our terrain heights are relative to the center of the bounding box, the min and max allowable heights are also
+        // relative to the center.  They are also clamped to the size of the bounding box.
+        return -(heightfieldAabb.GetZExtent() / 2.0f);
+    }
+
+    float TerrainPhysicsColliderComponent::GetHeightfieldMaxHeight() const
+    {
+        AZ::Aabb heightfieldAabb = GetHeightfieldAabb();
+
+        // Because our terrain heights are relative to the center of the bounding box, the min and max allowable heights are also
+        // relative to the center.  They are also clamped to the size of the bounding box.
+        return heightfieldAabb.GetZExtent() / 2.0f;
+    }
+
     AZ::Transform TerrainPhysicsColliderComponent::GetHeightfieldTransform() const
     {
         // We currently don't support rotation of terrain heightfields.
@@ -296,6 +314,22 @@ namespace Terrain
 
         numColumns = aznumeric_cast<int32_t>((bounds.GetMax().GetX() - bounds.GetMin().GetX()) / gridResolution.GetX());
         numRows = aznumeric_cast<int32_t>((bounds.GetMax().GetY() - bounds.GetMin().GetY()) / gridResolution.GetY());
+    }
+
+    int32_t TerrainPhysicsColliderComponent::GetHeightfieldGridColumns() const
+    {
+        const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
+        const AZ::Aabb bounds = GetHeightfieldAabb();
+
+        return aznumeric_cast<int32_t>((bounds.GetMax().GetX() - bounds.GetMin().GetX()) / gridResolution.GetX());
+    }
+
+    int32_t TerrainPhysicsColliderComponent::GetHeightfieldGridRows() const
+    {
+        const AZ::Vector2 gridResolution = GetHeightfieldGridSpacing();
+        const AZ::Aabb bounds = GetHeightfieldAabb();
+
+        return aznumeric_cast<int32_t>((bounds.GetMax().GetY() - bounds.GetMin().GetY()) / gridResolution.GetY());
     }
 
     AZStd::vector<Physics::MaterialId> TerrainPhysicsColliderComponent::GetMaterialList() const

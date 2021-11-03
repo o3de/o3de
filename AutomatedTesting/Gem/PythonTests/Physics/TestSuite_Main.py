@@ -92,3 +92,8 @@ class TestAutomation(TestAutomationBase):
     def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
         self._run_test(request, workspace, editor, test_module)
+        
+    @revert_physics_config
+    def test_AxisAlignedBoxShape_ConfigurationWorks(self, request, workspace, editor, launcher_platform):
+        from .tests.heightfield import AxisAlignedBoxShape_ConfigurationWorks as test_module
+        self._run_test(request, workspace, editor, test_module)
