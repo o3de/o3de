@@ -34,6 +34,9 @@ namespace O3DE::ProjectManager
         m_gemModel = new GemModel(this);
         m_proxModel = new GemSortFilterProxyModel(m_gemModel, this);
 
+        // default to sort by gem name
+        m_proxModel->setSortRole(GemModel::RoleName);
+
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setMargin(0);
         vLayout->setSpacing(0);
@@ -93,6 +96,8 @@ namespace O3DE::ProjectManager
         }
 
         m_proxModel->ResetFilters();
+        m_proxModel->sort(/*column=*/0);
+
         m_filterWidget = new GemFilterWidget(m_proxModel);
         m_filterWidgetLayout->addWidget(m_filterWidget);
 
@@ -198,6 +203,7 @@ namespace O3DE::ProjectManager
         }
 
         m_gemModel->UpdateGemDependencies();
+        m_proxModel->sort(/*column=*/0);
     }
 
     void GemCatalogScreen::OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies) 

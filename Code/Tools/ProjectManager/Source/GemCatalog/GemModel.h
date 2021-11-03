@@ -26,6 +26,31 @@ namespace O3DE::ProjectManager
         explicit GemModel(QObject* parent = nullptr);
         QItemSelectionModel* GetSelectionModel() const;
 
+        enum UserRole
+        {
+            RoleName = Qt::UserRole,
+            RoleDisplayName,
+            RoleCreator,
+            RoleGemOrigin,
+            RolePlatforms,
+            RoleSummary,
+            RoleWasPreviouslyAdded,
+            RoleWasPreviouslyAddedDependency,
+            RoleIsAdded,
+            RoleIsAddedDependency,
+            RoleDirectoryLink,
+            RoleDocLink,
+            RoleDependingGems,
+            RoleVersion,
+            RoleLastUpdated,
+            RoleBinarySize,
+            RoleFeatures,
+            RoleTypes,
+            RolePath,
+            RoleRequirement,
+            RoleDownloadStatus
+        };
+
         void AddGem(const GemInfo& gemInfo);
         void Clear();
         void UpdateGemDependencies();
@@ -87,31 +112,6 @@ namespace O3DE::ProjectManager
         void FindGemDisplayNamesByNameStrings(QStringList& inOutGemNames);
         void GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems);
         QStringList GetDependingGems(const QModelIndex& modelIndex);
-
-        enum UserRole
-        {
-            RoleName = Qt::UserRole,
-            RoleDisplayName,
-            RoleCreator,
-            RoleGemOrigin,
-            RolePlatforms,
-            RoleSummary,
-            RoleWasPreviouslyAdded,
-            RoleWasPreviouslyAddedDependency,
-            RoleIsAdded,
-            RoleIsAddedDependency,
-            RoleDirectoryLink,
-            RoleDocLink,
-            RoleDependingGems,
-            RoleVersion,
-            RoleLastUpdated,
-            RoleBinarySize,
-            RoleFeatures,
-            RoleTypes,
-            RolePath,
-            RoleRequirement,
-            RoleDownloadStatus
-        };
 
         QHash<QString, QModelIndex> m_nameToIndexMap;
         QItemSelectionModel* m_selectionModel = nullptr;
