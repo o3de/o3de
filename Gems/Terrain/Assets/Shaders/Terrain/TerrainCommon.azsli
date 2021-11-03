@@ -15,8 +15,6 @@
 
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
-    row_major float3x4 m_modelToWorld;
-
     struct TerrainData
     {
         float2 m_uvMin;
@@ -36,6 +34,8 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         uint m_mapsInUse;
     };
 
+    row_major float3x4 m_modelToWorld;
+
     TerrainData m_terrainData;
 
     MacroMaterialData m_macroMaterialData[4];
@@ -43,7 +43,7 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 
     Texture2D m_macroColorMap[4];
     Texture2D m_macroNormalMap[4];
-    
+
     // The below shouldn't be in this SRG but needs to be for now because the lighting functions depend on them.
 
     //! Reflection Probe (smallest probe volume that overlaps the object position)
@@ -90,10 +90,64 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     }
 }
 
+enum DetailTextureFlags
+{
+    UseTextureBaseColor =  0x00000001, //0b0000'0000'0000'0000'0000'0000'0000'0001
+    UseTextureNormal =     0x00000002, //0b0000'0000'0000'0000'0000'0000'0000'0010
+    UseTextureMetallic =   0x00000004, //0b0000'0000'0000'0000'0000'0000'0000'0100
+    UseTextureRoughness =  0x00000008, //0b0000'0000'0000'0000'0000'0000'0000'1000
+    UseTextureOcclusion =  0x00000010, //0b0000'0000'0000'0000'0000'0000'0001'0000
+    UseTextureHeight =     0x00000020, //0b0000'0000'0000'0000'0000'0000'0010'0000
+    UseTextureSpecularF0 = 0x00000040, //0b0000'0000'0000'0000'0000'0000'0100'0000
+
+    FlipNormalX =          0x00010000, //0b0000'0000'0000'0001'0000'0000'0000'0000
+    FlipNormalY =          0x00020000, //0b0000'0000'0000'0010'0000'0000'0000'0000
+
+    BlendModeMask =        0x000C0000, //0b0000'0000'0000'1100'0000'0000'0000'0000
+    BlendModeLerp =        0x00000000, //0b0000'0000'0000'0000'0000'0000'0000'0000
+    BlendModeLinearLight = 0x00040000, //0b0000'0000'0000'0100'0000'0000'0000'0000
+    BlendModeMultiply =    0x00080000, //0b0000'0000'0000'1000'0000'0000'0000'0000
+    BlendModeOverlay =     0x000C0000, //0b0000'0000'0000'1100'0000'0000'0000'0000
+};
+
 ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 {
+    struct DetailMaterialData
+    {
+        // Uv
+        row_major float3x4 m_uvTransform;
+
+        // Factor / Scale / Bias for input textures
+        float m_baseColorFactor;
+        float m_normalFactor;
+        float m_metalFactor;
+        float m_roughnessScale;
+
+        float m_roughnessBias;
+        float m_specularF0Factor;
+        float m_occlusionFactor;
+        float m_heightFactor;
+
+        float m_heightOffset;
+        float m_heightBlendFactor;
+
+        // Flags
+        uint m_flags; // see DetailTextureFlags
+
+        // Image indices
+        uint m_colorNormalImageIndices;
+        uint m_roughnessMetalnessImageIndices;
+        uint m_specularF0OcclusionImageIndices;
+        uint m_heightImageIndex; // only first 16 bits used
+
+        // 16 byte aligned
+        uint m_padding;
+    };
+
+    StructuredBuffer<DetailMaterialData> m_detailMaterialData;
     Texture2D m_heightmapImage;
     Texture2D<uint4> m_detailMaterialIdImage;
+
     float2 m_detailMaterialIdImageCenter;
     float m_detailTextureMultiplier;
     float m_detailFadeDistance;
@@ -232,9 +286,10 @@ float4x4 GetObject_WorldMatrix()
 
 float GetHeight(float2 origUv)
 {
-    float2 uv = clamp(origUv + (ObjectSrg::m_terrainData.m_uvStep * 0.5f), 0.0f, 1.0f);
+    float2 halfStep = ObjectSrg::m_terrainData.m_uvStep * 0.5;
+    float2 uv = origUv * (1.0 - ObjectSrg::m_terrainData.m_uvStep) + halfStep;
+    
     float height = 0.0f;
-
     if (o_useTerrainSmoothing)
     {
         float2 textureSize;
