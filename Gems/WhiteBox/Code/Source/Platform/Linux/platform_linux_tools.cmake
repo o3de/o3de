@@ -8,7 +8,7 @@
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
-    ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev3-windows TARGETS OpenMesh PACKAGE_HASH 7a6309323ad03bfc646bd04ecc79c3711de6790e4ff5a72f83a8f5a8f496d684)
+    ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev3-linux TARGETS OpenMesh PACKAGE_HASH 805bd0b24911bb00c7f575b8c3f10d7ea16548a5014c40811894a9445f17a126)
 
     set(LY_BUILD_DEPENDENCIES
         PRIVATE
