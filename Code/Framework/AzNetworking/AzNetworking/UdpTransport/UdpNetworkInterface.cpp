@@ -31,7 +31,7 @@ namespace AzNetworking
 
     AZ_CVAR(bool, net_UdpTimeoutConnections, true, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Boolean value on whether we should timeout Udp connections");
     AZ_CVAR(AZ::TimeMs, net_UdpPacketTimeSliceMs, AZ::TimeMs{ 8 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The number of milliseconds to allow for packet processing");
-    AZ_CVAR(int32_t, net_UdpUnackedHeartbeats, 3, nullptr, AZ::ConsoleFunctorFlags::Null, "The number of heartbeats to attempt to send to keep a connection alive before giving up");
+    AZ_CVAR(int32_t, net_UdpUnackedHeartbeats, 5, nullptr, AZ::ConsoleFunctorFlags::Null, "The number of heartbeats to attempt to send to keep a connection alive before giving up");
     AZ_CVAR(AZ::TimeMs, net_UdpDefaultTimeoutMs, AZ::TimeMs{ 10 * 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Time in milliseconds before we timeout an idle Udp connection");
     AZ_CVAR(AZ::TimeMs, net_MinPacketTimeoutMs, AZ::TimeMs{ 200 }, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Minimum time to wait before timing out an unacked packet");
     AZ_CVAR(int32_t, net_MaxTimeoutsPerFrame, 1000, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Maximum number of packet timeouts to allow to process in a single frame");
