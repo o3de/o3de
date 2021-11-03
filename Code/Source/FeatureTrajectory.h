@@ -55,7 +55,7 @@ namespace EMotionFX
             struct EMFX_API Sample
             {
                 AZ::Vector3 m_position;
-                AZ::Vector3 m_direction;
+                AZ::Vector3 m_velocity;
                 AZ::Vector3 m_facingDirection;
                 float m_speed;
 
@@ -94,6 +94,12 @@ namespace EMotionFX
             void SetFutureTimeRange(float timeInSeconds);
             void SetFacingAxis(const Axis axis);
 
+            size_t GetNumFutureSamples() const { return m_numFutureSamples; }
+            size_t GetNumPastSamples() const { return m_numPastSamples; }
+
+            float GetFutureTimeRange() const { return m_futureTimeRange; }
+            float GetPastTimeRange() const { return m_pastTimeRange; }
+
             AZ::Vector3 CalculateFacingDirectionWorldSpace(const Pose& pose, Axis facingAxis, size_t jointIndex) const;
             //float CalculateFacingAngle(const Transform& invBaseTransform, const Pose& pose, const AZ::Vector3& velocityDirection) const;
 
@@ -113,7 +119,7 @@ namespace EMotionFX
             using SplineToFeatureMatrixIndex = AZStd::function<size_t(size_t)>;
             float CalculateCost(const FeatureMatrix& featureMatrix,
                 size_t frameIndex,
-                const Transform invRootTransform,
+                const Transform& invRootTransform,
                 const AZStd::vector<BehaviorInstance::SplinePoint>& controlSplinePoints,
                 const SplineToFeatureMatrixIndex& splineToFeatureMatrixIndex) const;
 
