@@ -101,38 +101,37 @@ namespace EMotionFX
             midSample.m_position = invRootTransform.TransformPoint(currentPosition);
 
             // Calculate the linear velocity of the sample point in the middle.
-            CalculateVelocity(m_nodeIndex, context.m_pose, context.m_nextPose, context.m_timeDelta, midSample.m_direction, midSample.m_speed);
-            midSample.m_direction = invRootTransform.TransformVector(midSample.m_direction);
+            CalculateVelocity(m_nodeIndex, context.m_pose, context.m_nextPose, context.m_timeDelta, midSample.m_velocity, midSample.m_speed);
+            midSample.m_velocity = invRootTransform.TransformVector(midSample.m_velocity);
 
             // Calculate the facing direction.
             AZ::Vector3 facingDirectionWorldSpace = CalculateFacingDirectionWorldSpace(*context.m_pose, m_facingAxis, m_nodeIndex);
-            midSample.m_facingDirection = invRootTransform.TransformVector(facingDirectionWorldSpace);
+            midSample.m_facingDirection = AZ::Vector3::CreateZero();
 
             // Sample the past.
             Motion* sourceMotion = currentFrame.GetSourceMotion();
-            const float pastFrameTime = m_pastTimeRange / static_cast<float>(m_numPastSamples - 1);
-            const float lastHistorySampleTime = currentFrame.GetSampleTime() - pastFrameTime;
-            float sampleTime = AZ::GetMax(0.0f, lastHistorySampleTime);
-            SamplePose(sampleTime, bindPose, sourceMotion, context.m_motionInstance, &samplePose->GetPose());
+            const float pastFrameTimeDelta = m_pastTimeRange / static_cast<float>(m_numPastSamples - 1);
+            SamplePose(currentFrame.GetSampleTime(), bindPose, sourceMotion, context.m_motionInstance, &samplePose->GetPose());
             for (size_t i = 0; i < m_numPastSamples; ++i)
             {
-                const size_t sampleIndex = m_numPastSamples - i - 1;
+                const size_t sampleIndex = CalcPastFrameDataIndex(i);
                 Sample sample;
 
-                sampleTime = AZ::GetMax(0.0f, lastHistorySampleTime - i * pastFrameTime);
+                // Increase the sample index by one as the zeroth past/future sample actually needs one time delta time difference to the current frame.
+                const float sampleTime = AZ::GetMax(0.0f, currentFrame.GetSampleTime() - (i+1)  * pastFrameTimeDelta);
                 SamplePose(sampleTime, bindPose, sourceMotion, context.m_motionInstance, &nextSamplePose->GetPose());
 
                 // Extract the position.
                 sample.m_position = invRootTransform.TransformPoint(samplePose->GetPose().GetWorldSpaceTransform(m_nodeIndex).m_position);
 
                 // Calculate the velocity
-                CalculateVelocity(m_nodeIndex, &samplePose->GetPose(), &nextSamplePose->GetPose(), pastFrameTime, sample.m_direction, sample.m_speed);
+                CalculateVelocity(m_nodeIndex, &samplePose->GetPose(), &nextSamplePose->GetPose(), pastFrameTimeDelta, sample.m_velocity, sample.m_speed);
                 const Transform invSampleTransform = samplePose->GetPose().GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-                sample.m_direction = invSampleTransform.TransformVector(sample.m_direction);
+                sample.m_velocity = invSampleTransform.TransformVector(sample.m_velocity);
 
                 // Calculate the facing direction.
                 facingDirectionWorldSpace = CalculateFacingDirectionWorldSpace(samplePose->GetPose(), m_facingAxis, m_nodeIndex);
-                midSample.m_facingDirection = invSampleTransform.TransformVector(facingDirectionWorldSpace);
+                sample.m_facingDirection = AZ::Vector3::CreateZero();
 
                 *samplePose = *nextSamplePose;
 
@@ -140,29 +139,28 @@ namespace EMotionFX
             }
 
             // Sample into the future.
-            const float futureFrameTime = m_futureTimeRange / (float)(m_numFutureSamples - 1);
-            sampleTime = AZ::GetMin(currentFrame.GetSampleTime(), sourceMotion->GetDuration());
-            SamplePose(sampleTime, bindPose, sourceMotion, context.m_motionInstance, &samplePose->GetPose());
+            const float futureFrameTimeDelta = m_futureTimeRange / (float)(m_numFutureSamples - 1);
+            SamplePose(currentFrame.GetSampleTime(), bindPose, sourceMotion, context.m_motionInstance, &samplePose->GetPose());
             for (size_t i = 0; i < m_numFutureSamples; ++i)
             {
                 const size_t sampleIndex = CalcFutureFrameDataIndex(i);
                 Sample sample;
 
                 // Sample the value at the future sample point.
-                sampleTime = AZ::GetMin(currentFrame.GetSampleTime() + i * futureFrameTime, sourceMotion->GetDuration());
+                const float sampleTime = AZ::GetMin(currentFrame.GetSampleTime() + (i+1) * futureFrameTimeDelta, sourceMotion->GetDuration());
                 SamplePose(sampleTime, bindPose, sourceMotion, context.m_motionInstance, &nextSamplePose->GetPose());
 
                 // Extract the position.
                 sample.m_position = invRootTransform.TransformPoint(samplePose->GetPose().GetWorldSpaceTransform(m_nodeIndex).m_position);
 
                 // Calculate the velocity
-                CalculateVelocity(m_nodeIndex, &samplePose->GetPose(), &nextSamplePose->GetPose(), futureFrameTime, sample.m_direction, sample.m_speed);
+                CalculateVelocity(m_nodeIndex, &samplePose->GetPose(), &nextSamplePose->GetPose(), futureFrameTimeDelta, sample.m_velocity, sample.m_speed);
                 const Transform invSampleTransform = samplePose->GetPose().GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-                sample.m_direction = invSampleTransform.TransformVector(sample.m_direction);
+                sample.m_velocity = invSampleTransform.TransformVector(sample.m_velocity);
 
                 // Calculate the facing direction.
                 facingDirectionWorldSpace = CalculateFacingDirectionWorldSpace(samplePose->GetPose(), m_facingAxis, m_nodeIndex);
-                midSample.m_facingDirection = invSampleTransform.TransformVector(facingDirectionWorldSpace);
+                sample.m_facingDirection = AZ::Vector3::CreateZero();
 
                 *samplePose = *nextSamplePose;
 
@@ -266,7 +264,7 @@ namespace EMotionFX
         size_t FeatureTrajectory::CalcPastFrameDataIndex(size_t historyFrameIndex) const
         {
             AZ_Assert(historyFrameIndex < m_numPastSamples, "The history frame index is out of range");
-            return historyFrameIndex;
+            return m_numPastSamples - historyFrameIndex - 1;
         }
 
         size_t FeatureTrajectory::CalcFutureFrameDataIndex(size_t futureFrameIndex) const
@@ -282,45 +280,57 @@ namespace EMotionFX
             return 2.0f - (1.0f - dotResult);
         }
         */
-        float FeatureTrajectory::CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const
+
+        float FeatureTrajectory::CalculateCost(const FeatureMatrix& featureMatrix,
+            size_t frameIndex,
+            const Transform& invRootTransform,
+            const AZStd::vector<BehaviorInstance::SplinePoint>& controlPoints,
+            const SplineToFeatureMatrixIndex& splineToFeatureMatrixIndex) const
         {
-            //AZ_Assert(context.m_controlSpline->m_futureSplinePoints.size() == m_numFutureSamples, "Spline number of future points does not match trajecotry frame data number of future points.");
-            //AZ_Assert(context.m_controlSpline->m_pastSplinePoints.size() == m_numPastSamples, "Spline number of past points does not match trajecotry frame data number of past points.");
-
-            const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-
-            float futureCost = 0.0f;
-            for (size_t i = 0; i < context.m_controlSpline->m_futureSplinePoints.size(); ++i)
+            float result = 0.0f;
+            AZ::Vector3 lastSplinePoint, lastSamplePos;
+            for (size_t i = 0; i < controlPoints.size(); ++i)
             {
-                const BehaviorInstance::SplinePoint& splinePoint = context.m_controlSpline->m_futureSplinePoints[i];
-                const Sample futureSample = GetFeatureData(context.m_featureMatrix, frameIndex, CalcFutureFrameDataIndex(i));
-                const AZ::Vector3 splinePointPos = invRootTransform.TransformPoint(splinePoint.m_position); // Convert so it is relative to where we are and pointing to.
-                const float posDistance = (futureSample.m_position - splinePointPos).GetLength();
-                futureCost += posDistance;
+                const BehaviorInstance::SplinePoint& controlPoint = controlPoints[i];
+                const Sample sample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i));
+                const AZ::Vector3 splinePointPos = invRootTransform.TransformPoint(controlPoint.m_position); // Convert so it is relative to where we are and pointing to.
+
+                if (i != 0)
+                {
+                    const AZ::Vector3 splinePointDelta = splinePointPos - lastSplinePoint;
+                    const AZ::Vector3 sampleDelta = sample.m_position - lastSamplePos;
+
+                    const float posDistance = (sample.m_position - splinePointPos).GetLength();
+                    const float posDeltaDistance = (splinePointDelta - sampleDelta).GetLength();
+
+                    float rotDistance = 0.0f;
+                    if (posDeltaDistance < AZ::Constants::FloatEpsilon)
+                    {
+                        rotDistance = GetNormalizedDirectionDifference(splinePointDelta, sampleDelta);
+                    }
+
+                    result += posDistance + rotDistance + posDeltaDistance;
+                }
+
+                lastSplinePoint = splinePointPos;
+                lastSamplePos = sample.m_position;
             }
 
-            return futureCost;
+            return result;
+        }
+
+        float FeatureTrajectory::CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const
+        {
+            AZ_Assert(context.m_controlSpline->m_futureSplinePoints.size() == m_numFutureSamples, "Spline number of future points does not match trajecotry frame data number of future points.");
+            const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
+            return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_controlSpline->m_futureSplinePoints, AZStd::bind(&FeatureTrajectory::CalcFutureFrameDataIndex, this, AZStd::placeholders::_1));
         }
 
         float FeatureTrajectory::CalculatePastFrameCost(size_t frameIndex, const FrameCostContext& context) const
         {
-            //AZ_Assert(context.m_controlSpline->m_futureSplinePoints.size() == m_numFutureSamples, "Spline number of future points does not match trajecotry frame data number of future points.");
-            //AZ_Assert(context.m_controlSpline->m_pastSplinePoints.size() == m_numPastSamples, "Spline number of past points does not match trajecotry frame data number of past points.");
-
+            AZ_Assert(context.m_controlSpline->m_pastSplinePoints.size() == m_numPastSamples, "Spline number of past points does not match trajecotry frame data number of past points.");
             const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-
-            float pastCost = 0.0f;
-            for (size_t i = 0; i < context.m_controlSpline->m_pastSplinePoints.size(); ++i)
-            {
-                const size_t splinePointIndex = context.m_controlSpline->m_pastSplinePoints.size() - 1 - i;
-                const BehaviorInstance::SplinePoint& splinePoint = context.m_controlSpline->m_pastSplinePoints[splinePointIndex];
-                const Sample sample = GetFeatureData(context.m_featureMatrix, frameIndex, CalcPastFrameDataIndex(i));
-                const AZ::Vector3 splinePointPos = invRootTransform.TransformPoint(splinePoint.m_position); // Convert so it is relative to where we are and pointing to.
-                const float posDistance = (sample.m_position - splinePointPos).GetLength();
-                pastCost += posDistance;
-            }
-
-            return pastCost;
+            return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_controlSpline->m_pastSplinePoints, AZStd::bind(&FeatureTrajectory::CalcPastFrameDataIndex, this, AZStd::placeholders::_1));
         }
 
         void FeatureTrajectory::Reflect(AZ::ReflectContext* context)
@@ -392,20 +402,20 @@ namespace EMotionFX
 
         FeatureTrajectory::Sample FeatureTrajectory::GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex) const
         {
-            Sample result;
             const size_t columnOffset = m_featureColumnOffset + sampleIndex * Sample::s_componentsPerSample;
-            result.m_position           = featureMatrix.GetVector3(frameIndex, columnOffset + 0);
-            result.m_direction          = featureMatrix.GetVector3(frameIndex, columnOffset + 3);
-            result.m_facingDirection    = featureMatrix.GetVector3(frameIndex, columnOffset + 6);
-            result.m_speed              = featureMatrix(frameIndex,            columnOffset + 9);
-            return result;
+            return {
+                /*.m_position           =*/ featureMatrix.GetVector3(frameIndex, columnOffset + 0),
+                /*.m_velocity           =*/ featureMatrix.GetVector3(frameIndex, columnOffset + 3),
+                /*.m_facingDirection    =*/ featureMatrix.GetVector3(frameIndex, columnOffset + 6),
+                /*.m_speed              =*/ featureMatrix(frameIndex,            columnOffset + 9),
+            };
         }
 
         void FeatureTrajectory::SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex, const Sample& sample)
         {
             const size_t columnOffset = m_featureColumnOffset + sampleIndex * Sample::s_componentsPerSample;
             featureMatrix.SetVector3(frameIndex, columnOffset + 0, sample.m_position);
-            featureMatrix.SetVector3(frameIndex, columnOffset + 3 , sample.m_direction);
+            featureMatrix.SetVector3(frameIndex, columnOffset + 3 , sample.m_velocity);
             featureMatrix.SetVector3(frameIndex, columnOffset + 6, sample.m_facingDirection);
             featureMatrix(frameIndex,            columnOffset + 9) = sample.m_speed;
         }

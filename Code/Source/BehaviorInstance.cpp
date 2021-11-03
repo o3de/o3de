@@ -104,9 +104,11 @@ namespace EMotionFX
             draw->Lock();
 
             // Draw.
-            const AZ::RPI::ScenePtr defaultScene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
-            AZ::RPI::AuxGeomDrawPtr drawQueue = AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(defaultScene);
-            m_behavior->DebugDraw(drawQueue, *draw, this);
+            const AZ::RPI::Scene* defaultScene = AZ::RPI::RPISystemInterface::Get()->GetSceneByName(AZ::Name(AzFramework::Scene::MainSceneName));
+            if (AZ::RPI::AuxGeomDrawPtr drawQueue = AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(defaultScene))
+            {
+                m_behavior->DebugDraw(drawQueue, *draw, this);
+            }
 
             // End drawing.
             draw->Unlock();
