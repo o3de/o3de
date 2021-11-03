@@ -199,6 +199,28 @@ namespace AZ
             {
                 return m_indices.at(index);
             }
+            
+            template<size_t Index, typename DataType>
+            IndexType GetIndexForData(const DataType* data) const
+            {
+                if (data >= &AZStd::get<Index>(m_data).front() && data <= &AZStd::get<Index>(m_data).back())
+                {
+                    return m_dataToIndices.at(data - &AZStd::get<Index>(m_data).front());
+                }
+                return NoFreeSlot;
+            }
+
+            template<size_t Index, typename LambdaType>
+            void ForEach(LambdaType lambda) const
+            {
+                for (auto& item : AZStd::get<Index>(m_data))
+                {
+                    if (!lambda(item))
+                    {
+                        break;
+                    }
+                }
+            }
 
         private:
             using Fn = void(&)(AZStd::vector<Ts>& ...);
