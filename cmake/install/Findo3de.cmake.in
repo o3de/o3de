@@ -12,7 +12,15 @@ include(FindPackageHandleStandardArgs)
 
 # This will be called from within the installed engine's CMakeLists.txt
 macro(ly_find_o3de_packages)
-@FIND_PACKAGES_PLACEHOLDER@
+    if(LY_MONOLITHIC_GAME)
+        set(monolithic_file "${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Monolithic/o3de_subdirectories_${PAL_PLATFORM_NAME_LOWERCASE}.cmake")
+        if(NOT EXISTS ${monolithic_file})
+            message(FATAL_ERROR "O3DE SDK was not generated to support monolithic builds")
+        endif()
+        include("${monolithic_file}")
+    else()
+        include("${LY_ROOT_FOLDER}/cmake/Platform/${PAL_PLATFORM_NAME}/Default/o3de_subdirectories_${PAL_PLATFORM_NAME_LOWERCASE}.cmake")
+    endif()
     find_package(LauncherGenerator)
 endmacro()
 

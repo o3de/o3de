@@ -9,41 +9,38 @@
 #include "BundlingSystemComponent.h"
 
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include <AzFramework/Asset/AssetBundleManifest.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-
-#include <ISystem.h>
-#include <IConsole.h>
-
 #include <AzFramework/Archive/IArchive.h>
+
 
 namespace LmbrCentral
 {
     const char bundleRoot[] = "@products@";
 
+    // Calls the LoadBundles method
+    static void ConsoleCommandLoadBundles(const AZ::ConsoleCommandContainer& commandArgs);
+    // Calls the UnloadBundles method
+    static void ConsoleCommandUnloadBundles(const AZ::ConsoleCommandContainer& commandArgs);
+
+    AZ_CONSOLEFREEFUNC("loadbundles", ConsoleCommandLoadBundles, AZ::ConsoleFunctorFlags::Null, "Load Asset Bundles");
+    AZ_CONSOLEFREEFUNC("unloadbundles", ConsoleCommandUnloadBundles, AZ::ConsoleFunctorFlags::Null, "Unload Asset Bundles");
+
     void BundlingSystemComponent::Activate()
     {
         BundlingSystemRequestBus::Handler::BusConnect();
-        CrySystemEventBus::Handler::BusConnect();
         AZ::IO::ArchiveNotificationBus::Handler::BusConnect();
     }
 
     void BundlingSystemComponent::Deactivate()
     {
         AZ::IO::ArchiveNotificationBus::Handler::BusDisconnect();
-        CrySystemEventBus::Handler::BusDisconnect();
         BundlingSystemRequestBus::Handler::BusDisconnect();
-    }
-
-    void BundlingSystemComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams)
-    {
-        AZ_UNUSED(systemInitParams);
-
-        system.GetIConsole()->AddCommand("loadbundles", ConsoleCommandLoadBundles);
-        system.GetIConsole()->AddCommand("unloadbundles", ConsoleCommandUnloadBundles);
     }
 
     void BundlingSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -58,7 +55,7 @@ namespace LmbrCentral
 
     AZStd::vector<AZStd::string> BundlingSystemComponent::GetBundleList(const char* bundlePath, const char* bundleExtension) const
     {
-        AZStd::string fileFilter{ AZStd::string::format("*%s",bundleExtension) };
+        AZStd::string fileFilter{ AZStd::string::format("*%s", bundleExtension) };
         AZStd::vector<AZStd::string> bundleList;
 
         AZ::IO::FileIOBase::GetInstance()->FindFiles(bundlePath, fileFilter.c_str(), [&bundleList](const char* foundPath) -> bool
@@ -73,29 +70,28 @@ namespace LmbrCentral
         return bundleList;
     }
 
-    void BundlingSystemComponent::ConsoleCommandLoadBundles(IConsoleCmdArgs* pCmdArgs)
+    void ConsoleCommandLoadBundles(const AZ::ConsoleCommandContainer& commandArgs)
     {
         const char defaultBundleFolder[] = "bundles";
         const char defaultBundleExtension[] = ".pak";
 
-        const char* bundleFolder = pCmdArgs->GetArgCount() > 1 ? pCmdArgs->GetArg(1) : defaultBundleFolder;
-        const char* bundleExtension = pCmdArgs->GetArgCount() > 2 ? pCmdArgs->GetArg(2) : defaultBundleExtension;
+        AZ::CVarFixedString bundleFolder = commandArgs.size() > 0 ? AZ::CVarFixedString(commandArgs[0]) : defaultBundleFolder;
+        AZ::CVarFixedString bundleExtension = commandArgs.size() > 1 ? AZ::CVarFixedString(commandArgs[1]) : defaultBundleExtension;
 
-        BundlingSystemRequestBus::Broadcast(&BundlingSystemRequestBus::Events::LoadBundles, bundleFolder, bundleExtension);
+        BundlingSystemRequestBus::Broadcast(&BundlingSystemRequestBus::Events::LoadBundles, bundleFolder.c_str(), bundleExtension.c_str());
     }
 
-    void BundlingSystemComponent::ConsoleCommandUnloadBundles(IConsoleCmdArgs* pCmdArgs)
+    void ConsoleCommandUnloadBundles([[maybe_unused]] const AZ::ConsoleCommandContainer& commandArgs)
     {
-        AZ_UNUSED(pCmdArgs);
         BundlingSystemRequestBus::Broadcast(&BundlingSystemRequestBus::Events::UnloadBundles);
     }
 
     void BundlingSystemComponent::UnloadBundles()
     {
-        ISystem* crySystem{ GetISystem() };
-        if (!crySystem)
+        auto archive = AZ::Interface<AZ::IO::IArchive>::Get();
+        if (!archive)
         {
-            AZ_Error("BundlingSystem", false, "Couldn't Get ISystem to unload bundles!");
+            AZ_Error("BundlingSystem", false, "Couldn't Get IArchive to load bundles!");
             return;
         }
         if (!m_bundleModeBundles.size())
@@ -106,7 +102,7 @@ namespace LmbrCentral
         AZStd::lock_guard<AZStd::mutex> openBundleLock(m_bundleModeMutex);
         for (const auto& thisBundle : m_bundleModeBundles)
         {
-            if (crySystem->GetIPak()->ClosePack(thisBundle.c_str()))
+            if (archive->ClosePack(thisBundle.c_str()))
             {
                 AZ_TracePrintf("BundlingSystem", "Unloaded %s\n",thisBundle.c_str());
             }
@@ -128,15 +124,8 @@ namespace LmbrCentral
             return;
         }
 
-        ISystem* crySystem{ GetISystem() };
-        if (!crySystem)
-        {
-            AZ_Error("BundlingSystem", false, "Couldn't Get ISystem to load bundles!");
-            return;
-        }
-
-        auto cryPak = crySystem->GetIPak();
-        if (!cryPak)
+        auto archive = AZ::Interface<AZ::IO::IArchive>::Get();
+        if (!archive)
         {
             AZ_Error("BundlingSystem", false, "Couldn't Get IArchive to load bundles!");
             return;
@@ -152,8 +141,8 @@ namespace LmbrCentral
                 }
             }
             AZStd::string bundlePath;
-            AzFramework::StringFunc::Path::Join(bundleRoot, thisBundle.c_str(), bundlePath);
-            if (cryPak->OpenPack(bundleRoot, thisBundle.c_str()))
+            AZ::StringFunc::Path::Join(bundleRoot, thisBundle.c_str(), bundlePath);
+            if (archive->OpenPack(bundleRoot, thisBundle.c_str()))
             {
                 AZ_TracePrintf("BundlingSystem", "Loaded bundle %s\n",bundlePath.c_str());
                 m_bundleModeBundles.emplace_back(AZStd::move(bundlePath));
@@ -230,28 +219,21 @@ namespace LmbrCentral
 
     void BundlingSystemComponent::OpenDependentBundles(const char* bundleName, AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest)
     {
-        ISystem* crySystem{ GetISystem() };
-        if (!crySystem)
-        {
-            AZ_Error("BundlingSystem", false, "Couldn't Get ISystem to load dependent bundles for %s", bundleName);
-            return;
-        }
-
-        auto cryPak{ crySystem->GetIPak() };
-        if (!cryPak)
+        auto archive = AZ::Interface<AZ::IO::IArchive>::Get();
+        if (!archive)
         {
             AZ_Error("BundlingSystem", false, "Couldn't Get IArchive to load dependent bundles for %s", bundleName);
             return;
         }
 
         AZStd::string folderPath;
-        AzFramework::StringFunc::Path::GetFolderPath(bundleName, folderPath);
+        AZ::StringFunc::Path::GetFolderPath(bundleName, folderPath);
         for (const auto& thisBundle : bundleManifest->GetDependentBundleNames())
         {
             AZStd::string bundlePath;
-            AzFramework::StringFunc::Path::Join(folderPath.c_str(), thisBundle.c_str(), bundlePath);
+            AZ::StringFunc::Path::Join(folderPath.c_str(), thisBundle.c_str(), bundlePath);
 
-            if (!cryPak->OpenPack(bundleRoot, bundlePath.c_str()))
+            if (!archive->OpenPack(bundleRoot, bundlePath.c_str()))
             {
                 // We're not bailing here intentionally - try to open the remaining bundles
                 AZ_Warning("BundlingSystem", false, "Failed to open dependent bundle %s of bundle %s", bundlePath.c_str(), bundleName);
@@ -300,28 +282,21 @@ namespace LmbrCentral
 
     void BundlingSystemComponent::CloseDependentBundles(const char* bundleName, AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest)
     {
-        ISystem* crySystem{ GetISystem() };
-        if (!crySystem)
-        {
-            AZ_Error("BundlingSystem", false, "Couldn't get ISystem to close dependent bundles for %s", bundleName);
-            return;
-        }
-
-        auto cryPak{ crySystem->GetIPak() };
-        if (!cryPak)
+        auto archive = AZ::Interface<AZ::IO::IArchive>::Get();
+        if (!archive)
         {
             AZ_Error("BundlingSystem", false, "Couldn't get IArchive to close dependent bundles for %s", bundleName);
             return;
         }
 
         AZStd::string folderPath;
-        AzFramework::StringFunc::Path::GetFolderPath(bundleName, folderPath);
+        AZ::StringFunc::Path::GetFolderPath(bundleName, folderPath);
         for (const auto& thisBundle : bundleManifest->GetDependentBundleNames())
         {
             AZStd::string bundlePath;
-            AzFramework::StringFunc::Path::Join(folderPath.c_str(), thisBundle.c_str(), bundlePath);
+            AZ::StringFunc::Path::Join(folderPath.c_str(), thisBundle.c_str(), bundlePath);
 
-            if (!cryPak->ClosePack(bundlePath.c_str()))
+            if (!archive->ClosePack(bundlePath.c_str()))
             {
                 // We're not bailing here intentionally - try to close the remaining bundles
                 AZ_Warning("BundlingSystem", false, "Failed to close dependent bundle %s of bundle %s", bundlePath.c_str(), bundleName);
