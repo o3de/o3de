@@ -150,18 +150,23 @@ namespace Terrain
                 0.0, 0.0, 1.0, 0.0,
             };
 
+            float m_baseColorRed{ 1.0f };
+            float m_baseColorGreen{ 1.0f };
+            float m_baseColorBlue{ 1.0f };
+
             // Factor / Scale / Bias for input textures
             float m_baseColorFactor{ 1.0f };
+
             float m_normalFactor{ 1.0f };
             float m_metalFactor{ 1.0f };
             float m_roughnessScale{ 1.0f };
-
             float m_roughnessBias{ 0.0f };
+
             float m_specularF0Factor{ 1.0f };
             float m_occlusionFactor{ 1.0f };
             float m_heightFactor{ 1.0f };
-
             float m_heightOffset{ 0.0f };
+
             float m_heightBlendFactor{ 0.5f };
 
             // Flags
@@ -172,19 +177,23 @@ namespace Terrain
             uint16_t m_normalImageIndex{ InvalidDetailImageIndex };
             uint16_t m_roughnessImageIndex{ InvalidDetailImageIndex };
             uint16_t m_metalnessImageIndex{ InvalidDetailImageIndex };
+
             uint16_t m_specularF0ImageIndex{ InvalidDetailImageIndex };
             uint16_t m_occlusionImageIndex{ InvalidDetailImageIndex };
             uint16_t m_heightImageIndex{ InvalidDetailImageIndex };
 
             // 16 byte aligned
-            uint16_t m_padding1; 
+            uint16_t m_padding1;
             uint32_t m_padding2;
+            uint32_t m_padding3;
         };
 
         struct DetailMaterialData
         {
             AZ::Data::AssetId m_assetId;
             AZ::RPI::Material::ChangeId m_materialChangeId{AZ::RPI::Material::DEFAULT_CHANGE_ID};
+            uint32_t refCount = 0;
+            uint16_t m_detailMaterialBufferIndex{ 0xFFFF };
 
             AZ::Data::Instance<AZ::RPI::Image> m_colorImage;
             AZ::Data::Instance<AZ::RPI::Image> m_normalImage;
@@ -263,6 +272,7 @@ namespace Terrain
         void TerrainSurfaceDataUpdated(const AZ::Aabb& dirtyRegion);
 
         uint16_t CreateOrUpdateDetailMaterial(MaterialInstance material);
+        void CheckDetailMaterialForDeletion(uint16_t detailMaterialId);
         void UpdateDetailMaterialData(uint16_t detailMaterialIndex, MaterialInstance material);
         void CheckUpdateDetailTexture(const Aabb2i& newBounds, const Vector2i& newCenter);
         void UpdateDetailTexture(const Aabb2i& updateArea, const Aabb2i& textureBounds, const Vector2i& centerPixel);
@@ -302,11 +312,12 @@ namespace Terrain
         AZ::RHI::ShaderInputConstantIndex m_macroMaterialCountIndex;
         AZ::RHI::ShaderInputImageIndex m_macroColorMapIndex;
         AZ::RHI::ShaderInputImageIndex m_macroNormalMapIndex;
-        AZ::RPI::MaterialPropertyIndex m_heightmapPropertyIndex;
-        AZ::RPI::MaterialPropertyIndex m_detailMaterialIdPropertyIndex;
-        AZ::RPI::MaterialPropertyIndex m_detailCenterPropertyIndex;
-        AZ::RPI::MaterialPropertyIndex m_detailAabbPropertyIndex;
-        AZ::RPI::MaterialPropertyIndex m_detailHalfPixelUvPropertyIndex;
+        AZ::RHI::ShaderInputImageIndex m_heightmapPropertyIndex;
+        AZ::RHI::ShaderInputImageIndex m_detailMaterialIdPropertyIndex;
+        AZ::RHI::ShaderInputBufferIndex m_detailMaterialDataIndex;
+        AZ::RHI::ShaderInputConstantIndex m_detailCenterPropertyIndex;
+        AZ::RHI::ShaderInputConstantIndex m_detailAabbPropertyIndex;
+        AZ::RHI::ShaderInputConstantIndex m_detailHalfPixelUvPropertyIndex;
 
         AZ::Data::Instance<AZ::RPI::Model> m_patchModel;
         AZ::Vector3 m_previousCameraPosition = AZ::Vector3(AZStd::numeric_limits<float>::max(), 0.0, 0.0);
@@ -332,13 +343,15 @@ namespace Terrain
         Vector2i m_detailTextureCenter;
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailTextureImage;
         AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
-        bool m_forceRebuildDrawPackets = false;
+        bool m_forceRebuildDrawPackets{ false };
+        bool m_imagesSetOnViewSrg{ false };
 
         AZStd::vector<SectorData> m_sectorData;
 
         AZ::Render::IndexedDataVector<MacroMaterialData> m_macroMaterials;
-        AZ::Render::MultiIndexedDataVector<DetailMaterialData, DetailMaterialShaderData> m_detailMaterials;
+        AZ::Render::IndexedDataVector<DetailMaterialData> m_detailMaterials;
         AZ::Render::IndexedDataVector<DetailMaterialListRegion> m_detailMaterialRegions;
+        AZ::Render::SparseVector<DetailMaterialShaderData> m_detailMaterialShaderData;
         AZ::Render::SparseVector<AZ::Data::Instance<AZ::RPI::Image>> m_detailMaterialTextures;
         AZ::Render::GpuBufferHandler m_detailMaterialDataBuffer;
     };

@@ -115,24 +115,33 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     surface.vertexNormal = normalize(IN.m_normal);
 
     // ------- Base Color -------
-    float3 detailColor = GetBaseColorInput(TerrainMaterialSrg::m_baseColorMap, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
-    float3 blendedColor = BlendBaseColor(lerp(detailColor, TerrainMaterialSrg::m_baseColor.rgb, detailFactor), macroColor, TerrainMaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
+    float3 blendedColor = macroColor;
 
-    // ------- Debug detail materials using random colors -------
-    // This assigns a random color to each material, turns off any kind of distance fading, and draws a black line at the texture edges.
-    if (o_debugDetailMaterialIds) 
+    float2 detailRegionMin = ViewSrg::m_detailAabb.xy;
+    float2 detailRegionMax = ViewSrg::m_detailAabb.zw;
+    float2 detailRegionUv = (surface.position.xy - detailRegionMin) / (detailRegionMax - detailRegionMin);
+    if (all(detailRegionUv > ViewSrg::m_detailHalfPixelUv) && all(detailRegionUv < 1.0 - ViewSrg::m_detailHalfPixelUv))
     {
-        float2 detailRegionMin = TerrainMaterialSrg::m_detailAabb.xy;
-        float2 detailRegionMax = TerrainMaterialSrg::m_detailAabb.zw;
-        float2 detailRegionUv = (surface.position.xy - detailRegionMin) / (detailRegionMax - detailRegionMin);
-        if (all(detailRegionUv > TerrainMaterialSrg::m_detailHalfPixelUv) && all(detailRegionUv < 1.0 - TerrainMaterialSrg::m_detailHalfPixelUv))
-        {
-            detailRegionUv += TerrainMaterialSrg::m_detailMaterialIdImageCenter - (0.5);
+        detailRegionUv += ViewSrg::m_detailMaterialIdImageCenter - (0.5);
 
-            uint material1 = TerrainMaterialSrg::m_detailMaterialIdImage.GatherRed(TerrainMaterialSrg::m_detailSampler, detailRegionUv, 0).r;
-            uint material2 = TerrainMaterialSrg::m_detailMaterialIdImage.GatherGreen(TerrainMaterialSrg::m_detailSampler, detailRegionUv, 0).r;
-            float blend = float(TerrainMaterialSrg::m_detailMaterialIdImage.GatherBlue(TerrainMaterialSrg::m_detailSampler, detailRegionUv, 0).r) / 0xFF;
-            
+        uint material1 = ViewSrg::m_detailMaterialIdImage.GatherRed(ViewSrg::DetailSampler, detailRegionUv, 0).r;
+        uint material2 = ViewSrg::m_detailMaterialIdImage.GatherGreen(ViewSrg::DetailSampler, detailRegionUv, 0).r;
+        float blend = float(ViewSrg::m_detailMaterialIdImage.GatherBlue(ViewSrg::DetailSampler, detailRegionUv, 0).r) / 0xFF;
+        
+        // ------- Debug detail materials using random colors -------
+        // This assigns a random color to each material, turns off any kind of distance fading, and draws a black line at the texture edges.
+        if (!o_debugDetailMaterialIds)
+        {
+            float3 detailColor = ViewSrg::m_detailMaterialData[material1].m_baseColor;
+            if (material2 != 255)
+            {
+                // blend with material 2
+            }
+
+            blendedColor = BlendBaseColor(lerp(detailColor, TerrainMaterialSrg::m_baseColor.rgb, detailFactor), macroColor, TerrainMaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, true);
+        }
+        else
+        {
             float3 material1Color = float3(0.1, 0.1, 0.1);
             float3 material2Color = float3(0.1, 0.1, 0.1);
 

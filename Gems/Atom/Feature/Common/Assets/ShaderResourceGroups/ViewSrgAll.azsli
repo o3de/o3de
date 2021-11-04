@@ -12,4 +12,5 @@
 
 #ifdef AZ_COLLECTING_PARTIAL_SRGS
 #include <Atom/Feature/Common/Assets/ShaderResourceGroups/ViewSrg.azsli>
+#include <Terrain/Assets/Shaders/Terrain/ViewSrg.azsli> // Temporary until gem partial view srgs can be included automatically.
 #endif
