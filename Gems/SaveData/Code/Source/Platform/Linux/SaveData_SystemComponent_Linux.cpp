@@ -166,7 +166,7 @@ namespace SaveData
         AZ::IO::Path saveDataFilePath = m_saveDataDirectoryPathAbsolute;
         if (localUserId != AzFramework::LocalUserIdNone)
         {
-            saveDataFilePath /= AZStd::string::format("User_%u\\", localUserId);
+            saveDataFilePath /= AZStd::string::format("User_%u", localUserId);
         }
         saveDataFilePath /= dataBufferName;
         return saveDataFilePath;
