@@ -32,6 +32,82 @@ xcb_generic_error_t* xcb_request_check(xcb_connection_t* c, xcb_void_cookie_t co
 {
     return MockXcbInterface::Instance()->xcb_request_check(c, cookie);
 }
+const xcb_setup_t* xcb_get_setup(xcb_connection_t *c)
+{
+    return MockXcbInterface::Instance()->xcb_get_setup(c);
+}
+xcb_screen_iterator_t xcb_setup_roots_iterator(const xcb_setup_t* R)
+{
+    return MockXcbInterface::Instance()->xcb_setup_roots_iterator(R);
+}
+const xcb_query_extension_reply_t* xcb_get_extension_data(xcb_connection_t* c, xcb_extension_t* ext)
+{
+    return MockXcbInterface::Instance()->xcb_get_extension_data(c, ext);
+}
+int xcb_flush(xcb_connection_t *c)
+{
+    return MockXcbInterface::Instance()->xcb_flush(c);
+}
+xcb_query_pointer_cookie_t xcb_query_pointer(xcb_connection_t* c, xcb_window_t window)
+{
+    return MockXcbInterface::Instance()->xcb_query_pointer(c, window);
+}
+xcb_query_pointer_reply_t* xcb_query_pointer_reply(xcb_connection_t* c, xcb_query_pointer_cookie_t cookie, xcb_generic_error_t** e)
+{
+    return MockXcbInterface::Instance()->xcb_query_pointer_reply(c, cookie, e);
+}
+xcb_get_geometry_cookie_t xcb_get_geometry(xcb_connection_t* c, xcb_drawable_t drawable)
+{
+    return MockXcbInterface::Instance()->xcb_get_geometry(c, drawable);
+}
+xcb_get_geometry_reply_t* xcb_get_geometry_reply(xcb_connection_t* c, xcb_get_geometry_cookie_t cookie, xcb_generic_error_t** e)
+{
+    return MockXcbInterface::Instance()->xcb_get_geometry_reply(c, cookie, e);
+}
+xcb_void_cookie_t xcb_warp_pointer(
+    xcb_connection_t* c,
+    xcb_window_t src_window,
+    xcb_window_t dst_window,
+    int16_t src_x,
+    int16_t src_y,
+    uint16_t src_width,
+    uint16_t src_height,
+    int16_t dst_x,
+    int16_t dst_y)
+{
+    return MockXcbInterface::Instance()->xcb_warp_pointer(c, src_window, dst_window, src_x, src_y, src_width, src_height, dst_x, dst_y);
+}
+xcb_intern_atom_cookie_t xcb_intern_atom(xcb_connection_t* c, uint8_t only_if_exists, uint16_t name_len, const char* name)
+{
+    return MockXcbInterface::Instance()->xcb_intern_atom(c, only_if_exists, name_len, name);
+}
+xcb_intern_atom_reply_t* xcb_intern_atom_reply(xcb_connection_t* c, xcb_intern_atom_cookie_t cookie, xcb_generic_error_t** e)
+{
+    return MockXcbInterface::Instance()->xcb_intern_atom_reply(c, cookie, e);
+}
+xcb_get_property_cookie_t xcb_get_property(
+    xcb_connection_t* c,
+    uint8_t _delete,
+    xcb_window_t window,
+    xcb_atom_t property,
+    xcb_atom_t type,
+    uint32_t long_offset,
+    uint32_t long_length)
+{
+    return MockXcbInterface::Instance()->xcb_get_property(c, _delete, window, property, type, long_offset, long_length);
+}
+xcb_get_property_reply_t* xcb_get_property_reply(xcb_connection_t* c, xcb_get_property_cookie_t cookie, xcb_generic_error_t** e)
+{
+    return MockXcbInterface::Instance()->xcb_get_property_reply(c, cookie, e);
+}
+void* xcb_get_property_value(const xcb_get_property_reply_t* R)
+{
+    return MockXcbInterface::Instance()->xcb_get_property_value(R);
+}
+uint32_t xcb_generate_id(xcb_connection_t *c)
+{
+    return MockXcbInterface::Instance()->xcb_generate_id(c);
+}
 
 // ----------------------------------------------------------------------------
 // xcb-xkb
@@ -114,6 +190,78 @@ xkb_state_component xkb_state_update_mask(
 {
     return MockXcbInterface::Instance()->xkb_state_update_mask(
         state, depressed_mods, latched_mods, locked_mods, depressed_layout, latched_layout, locked_layout);
+}
+
+// ----------------------------------------------------------------------------
+// xcb-xfixes
+xcb_xfixes_query_version_cookie_t xcb_xfixes_query_version(
+    xcb_connection_t* c, uint32_t client_major_version, uint32_t client_minor_version)
+{
+    return MockXcbInterface::Instance()->xcb_xfixes_query_version(c, client_major_version, client_minor_version);
+}
+xcb_xfixes_query_version_reply_t* xcb_xfixes_query_version_reply(
+    xcb_connection_t* c, xcb_xfixes_query_version_cookie_t cookie, xcb_generic_error_t** e)
+{
+    return MockXcbInterface::Instance()->xcb_xfixes_query_version_reply(c, cookie, e);
+}
+xcb_void_cookie_t xcb_xfixes_show_cursor_checked(xcb_connection_t* c, xcb_window_t window)
+{
+    return MockXcbInterface::Instance()->xcb_xfixes_show_cursor_checked(c, window);
+}
+xcb_void_cookie_t xcb_xfixes_hide_cursor_checked(xcb_connection_t* c, xcb_window_t window)
+{
+    return MockXcbInterface::Instance()->xcb_xfixes_hide_cursor_checked(c, window);
+}
+xcb_void_cookie_t xcb_xfixes_delete_pointer_barrier_checked(xcb_connection_t* c, xcb_xfixes_barrier_t barrier)
+{
+    return MockXcbInterface::Instance()->xcb_xfixes_delete_pointer_barrier_checked(c, barrier);
+}
+xcb_translate_coordinates_cookie_t xcb_translate_coordinates(xcb_connection_t* c, xcb_window_t src_window, xcb_window_t dst_window, int16_t src_x, int16_t src_y)
+{
+    return MockXcbInterface::Instance()->xcb_translate_coordinates(c, src_window, dst_window, src_x, src_y);
+}
+xcb_translate_coordinates_reply_t* xcb_translate_coordinates_reply(xcb_connection_t* c, xcb_translate_coordinates_cookie_t cookie, xcb_generic_error_t** e)
+{
+    return MockXcbInterface::Instance()->xcb_translate_coordinates_reply(c, cookie, e);
+}
+xcb_void_cookie_t xcb_xfixes_create_pointer_barrier_checked(
+    xcb_connection_t* c,
+    xcb_xfixes_barrier_t barrier,
+    xcb_window_t window,
+    uint16_t x1,
+    uint16_t y1,
+    uint16_t x2,
+    uint16_t y2,
+    uint32_t directions,
+    uint16_t num_devices,
+    const uint16_t* devices)
+{
+    return MockXcbInterface::Instance()->xcb_xfixes_create_pointer_barrier_checked(c, barrier, window, x1, y1, x2, y2, directions, num_devices, devices);
+}
+
+// ----------------------------------------------------------------------------
+// xcb-xinput
+xcb_input_xi_query_version_cookie_t xcb_input_xi_query_version(xcb_connection_t* c, uint16_t major_version, uint16_t minor_version)
+{
+    return MockXcbInterface::Instance()->xcb_input_xi_query_version(c, major_version, minor_version);
+}
+xcb_input_xi_query_version_reply_t* xcb_input_xi_query_version_reply(
+    xcb_connection_t* c, xcb_input_xi_query_version_cookie_t cookie, xcb_generic_error_t** e)
+{
+    return MockXcbInterface::Instance()->xcb_input_xi_query_version_reply(c, cookie, e);
+}
+xcb_void_cookie_t xcb_input_xi_select_events(
+    xcb_connection_t* c, xcb_window_t window, uint16_t num_mask, const xcb_input_event_mask_t* masks)
+{
+    return MockXcbInterface::Instance()->xcb_input_xi_select_events(c, window, num_mask, masks);
+}
+int xcb_input_raw_button_press_axisvalues_length (const xcb_input_raw_button_press_event_t *R)
+{
+    return MockXcbInterface::Instance()->xcb_input_raw_button_press_axisvalues_length(R);
+}
+xcb_input_fp3232_t* xcb_input_raw_button_press_axisvalues_raw(const xcb_input_raw_button_press_event_t* R)
+{
+    return MockXcbInterface::Instance()->xcb_input_raw_button_press_axisvalues_raw(R);
 }
 
 }
