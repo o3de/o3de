@@ -9,7 +9,6 @@ import pytest
 from ly_test_tools.o3de.editor_test import EditorSharedTest, EditorTestSuite
 
 
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
