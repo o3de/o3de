@@ -25,11 +25,15 @@ class LicenseScanner:
     """
 
     DEFAULT_CONFIG_FILE = 'scanner_config.json'
+    DEFAULT_EXCLUDE_FILE = '.gitignore'
+    DEFAULT_PACKAGE_INFO_FILE = 'PackageInfo.json'
 
     def __init__(self, config_file=None):
         self.config_file = config_file
         self.config_data = self._load_config()
-        self.file_regex = self._load_file_regex()
+        self.file_regex = self._load_file_regex(self.config_data['license_patterns'])
+        self.package_info = self._load_file_regex(self.config_data['package_patterns'])
+        self.excluded_directories = self._load_file_regex(self.config_data['excluded_directories'])
 
     def _load_config(self):
         """Load config from the provided file. Sets default file if one is not provided."""
@@ -44,45 +48,56 @@ class LicenseScanner:
             print('Config file cannot be found')
             raise
 
-    def _load_file_regex(self):
+    def _load_file_regex(self, patterns):
         """Returns regex object with case-insensitive matching from the list of filename patterns."""
         regex_patterns = []
-        if 'license_patterns' in self.config_data:
-            for pattern in self.config_data['license_patterns']:
-                regex_patterns.append(fnmatch.translate(pattern))
-        elif 'package_patterns' in self.config_data:
-            for pattern in self.config_data['package_patterns']:
-                regex_patterns.append(fnmatch.translate(pattern))
-        else:
-            print('Invalid or no key values found in config file! Use "license_patterns" for licenses, "package_patterns" for 3p packages')
-            raise KeyError
+        for pattern in patterns:
+            regex_patterns.append(fnmatch.translate(pattern))
+        
+        if not regex_patterns:
+            print(f'Warning: No patterns from {patterns} found')
+            return None
 
         return re.compile('|'.join(regex_patterns), re.IGNORECASE)
 
-    def scan(self, path=os.curdir):
-        """Scan directory tree for filenames matching file_regex.
+    def scan(self, paths=os.curdir):
+        """Scan directory tree for filenames matching file_regex, package info, and exclusion files.
 
-        :param path: Path of the directory to run scanner
+        :param paths: Paths of the directory to run scanner
         :return: Package paths and their corresponding file contents
         :rtype: Ordered dict
         """
         files = 0
         matching_files = OrderedDict()
+        excluded_directories = None
 
-        for dirpath, dirnames, filenames in os.walk(path):
-            dirnames.sort(key=str.casefold) # Ensure that results are sorted
-            for file in filenames:
-                if self.file_regex.match(file):
-                    matching_file_content = self._get_file_contents(os.path.join(dirpath, file))
-                    rel_dirpath = os.path.relpath(dirpath, path)  # Limit path inside scanned directory
-                    matching_files[rel_dirpath] = matching_file_content
-                    files += 1
-                    print(f'Matching file: {os.path.join(dirpath, file)}')
+        if self.package_info is None:
+            self.package_info = self.DEFAULT_PACKAGE_INFO_FILE
 
-            # Remove directories that should not be scanned
-            for dir in self.config_data['excluded_directories']:
-                if dir in dirnames:
-                    dirnames.remove(dir)
+        for path in paths:
+            for dirpath, dirnames, filenames in os.walk(path, topdown=True):
+                dirnames.sort(key=str.casefold) # Ensure that results are sorted
+                for file in filenames:
+                    if self.file_regex.match(file) or self.package_info.match(file):
+                        file_path = os.path.join(dirpath, file)
+                        matching_file_content = self._get_file_contents(file_path)
+                        matching_files[file_path] = matching_file_content
+                        files += 1
+                        print(f'Matching file: {file_path}')
+                        if self.package_info.match(file):
+                            dirnames[:] = [] # Stop scanning subdirectories if package info file found
+                    if self.DEFAULT_EXCLUDE_FILE in file and not self.excluded_directories:
+                        ignore_list = self._get_file_contents(os.path.join(dirpath, file)).splitlines()
+                        ignore_list.append('.git') # .gitignore doesn't usually have .git in its exclusions
+                        excluded_directories = self._load_file_regex(ignore_list)
+
+                # Remove directories that should not be scanned
+                if self.excluded_directories:
+                    excluded_directories = self.excluded_directories
+                for dir in dirnames:
+                    if excluded_directories.match(dir):
+                        dirnames.remove(dir)
+
         print(f'{files} files found.')
         return matching_files
 
@@ -105,7 +120,7 @@ class LicenseScanner:
             for directory, license in licenses.items():
                 license_output = '\n\n'.join([
                     f'{license_separator}',
-                    f'Package path: {directory}',
+                    f'Package path: {os.path.relpath(directory)}',
                     'License:',
                     f'{license}\n'
                 ])
@@ -125,12 +140,14 @@ class LicenseScanner:
         package_json = []
         with open(filepath, 'w', encoding='utf8') as pf:
             for directory, package in packages.items():
-                package_obj = json.loads(package)
-                package_json.append(package_obj)
-                if dirpath:
-                    license_path = os.path.join(directory, pathlib.Path(package_obj['LicenseFile'])) # Gets relative path
-                    license_content = self._get_file_contents(os.path.join(dirpath, license_path))
+                if dirpath and self.package_info.match(os.path.basename(directory)):
+                    package_obj = json.loads(package)
+                    package_json.append(package_obj)
+                    license_path = os.path.join(os.path.dirname(directory), pathlib.Path(package_obj['LicenseFile']))
+                    license_content = self._get_file_contents(license_path)
                     licenses[license_path] = license_content
+                else:
+                    licenses[directory] = package
             pf.write(json.dumps(package_json, indent=4))
         return licenses
 
@@ -141,7 +158,7 @@ def parse_args():
     parser.add_argument('--config-file', '-c', type=pathlib.Path, help='Config file for LicenseScanner')
     parser.add_argument('--license-file-path', '-l', type=pathlib.Path, help='Create license file in the provided path')
     parser.add_argument('--package-file-path', '-p', type=pathlib.Path, help='Create package summary file in the provided path')
-    parser.add_argument('--scan-path', '-s', default=os.curdir, type=pathlib.Path, help='Path to scan')
+    parser.add_argument('--scan-path', '-s', default=os.curdir, type=pathlib.Path, nargs='+', help='Path to scan, multiple space separated paths can be used')
     return parser.parse_args()
 
 

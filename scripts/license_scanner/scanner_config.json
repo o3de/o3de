@@ -3,12 +3,13 @@
         ".git",
         ".venv",
         "build",
-        "license_scanner",
-        "python",
-        "Qt*"
+        "license_scanner"
     ],
     "license_patterns": [
         "LICENSE*",
         "COPYING*"
+    ],
+    "package_patterns": [
+        "PackageInfo.json"
     ]
 }
