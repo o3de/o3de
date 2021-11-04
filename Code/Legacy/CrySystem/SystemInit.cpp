@@ -70,9 +70,6 @@
 #include "windows.h"
 #include <float.h>
 
-// To enable profiling with vtune (https://software.intel.com/en-us/intel-vtune-amplifier-xe), make sure the line below is not commented out
-//#define  PROFILE_WITH_VTUNE
-
 #endif //WIN32
 
 #include <IRenderer.h>
@@ -679,33 +676,6 @@ bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
     }
 
     return result;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CSystem::InitVTuneProfiler()
-{
-#ifdef PROFILE_WITH_VTUNE
-
-    WIN_HMODULE hModule = LoadDLL("VTuneApi.dll");
-    if (!hModule)
-    {
-        return false;
-    }
-
-        VTPause = (VTuneFunction) CryGetProcAddress(hModule, "VTPause");
-        VTResume = (VTuneFunction) CryGetProcAddress(hModule, "VTResume");
-        if (!VTPause || !VTResume)
-        {
-        AZ_Assert(false, "VTune did not initialize correctly.")
-        return false;
-    }
-    else
-    {
-        AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "VTune API Initialized");
-    }
-#endif //PROFILE_WITH_VTUNE
-
-    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1681,8 +1651,6 @@ void CSystem::CreateSystemVars()
     // used in define MEMORY_DEBUG_POINT()
     m_sys_memory_debug = REGISTER_INT("sys_memory_debug", 0, VF_CHEAT,
             "Enables to activate low memory situation is specific places in the code (argument defines which place), 0=off");
-
-    REGISTER_CVAR2("sys_vtune", &g_cvars.sys_vtune, 0, VF_NULL, "");
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_17

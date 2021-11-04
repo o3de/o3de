@@ -739,24 +739,6 @@ public:
 #undef GetUserName
 #endif
 
-
-struct IProfilingSystem
-{
-    // <interfuscator:shuffle>
-    virtual ~IProfilingSystem() {}
-    //////////////////////////////////////////////////////////////////////////
-    // VTune Profiling interface.
-
-    // Summary:
-    //   Resumes vtune data collection.
-    virtual void VTuneResume() = 0;
-    // Summary:
-    //   Pauses vtune data collection.
-    virtual void VTunePause() = 0;
-    //////////////////////////////////////////////////////////////////////////
-    // </interfuscator:shuffle>
-};
-
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Description:
@@ -851,7 +833,6 @@ struct ISystem
     virtual IMovieSystem* GetIMovieSystem() = 0;
     virtual ::IConsole* GetIConsole() = 0;
     virtual IRemoteConsole* GetIRemoteConsole() = 0;
-    virtual IProfilingSystem* GetIProfilingSystem() = 0;
     virtual ISystemEventDispatcher* GetISystemEventDispatcher() = 0;
 
     virtual ITimer* GetITimer() = 0;
