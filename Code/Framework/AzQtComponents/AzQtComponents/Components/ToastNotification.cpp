@@ -22,11 +22,11 @@ namespace AzQtComponents
         , m_closeOnClick(true)
         , m_ui(new Ui::ToastNotification())
         , m_fadeAnimation(nullptr)
+        , m_configuration(toastConfiguration)
     {
         setProperty("HasNoWindowDecorations", true);
 
         setAttribute(Qt::WA_ShowWithoutActivating);
-        setAttribute(Qt::WA_DeleteOnClose);
 
         m_borderRadius = toastConfiguration.m_borderRadius;
         if (m_borderRadius > 0)
@@ -80,7 +80,13 @@ namespace AzQtComponents
     }
 
     ToastNotification::~ToastNotification()
-    {        
+    {
+    }
+
+    bool ToastNotification::IsDuplicate(const ToastConfiguration& toastConfiguration)
+    {
+        return toastConfiguration.m_title == m_configuration.m_title 
+            && toastConfiguration.m_description == m_configuration.m_description;
     }
 
     void ToastNotification::paintEvent(QPaintEvent* event)

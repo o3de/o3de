@@ -61,14 +61,14 @@ namespace AZ
         uint32_t m_index;
     };
 
-    // A TaskGraphEvent may be used to block until a task graph has finished executing. Usage
+    // A TaskGraphEvent may be used to block until one or more task graphs has finished executing. Usage
     // is NOT recommended for the majority of tasks (prefer to simply containing expanding/contracting
     // the graph without synchronization over the course of the frame). However, the event
     // is useful for the edges of the computation graph.
     //
     // You are responsible for ensuring the event object lifetime exceeds the task graph lifetime.
     //
-    // After the TaskGraphEvent is signaled, you are allowed to reuse the same TaskGraphEvent
+    // After the TaskGraphEvent is signaled, you are NOT allowed to reuse the same TaskGraphEvent
     // for a future submission.
     class TaskGraphEvent
     {
@@ -81,10 +81,12 @@ namespace AZ
         friend class TaskGraph;
         friend class TaskExecutor;
 
+        void IncWaitCount();
         void Signal();
 
         AZStd::binary_semaphore m_semaphore;
-        TaskExecutor* m_executor = nullptr;
+        AZStd::atomic_int       m_waitCount = 0;
+        TaskExecutor*           m_executor = nullptr;
     };
 
     // The TaskGraph encapsulates a set of tasks and their interdependencies. After adding

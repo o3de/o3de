@@ -8,6 +8,7 @@
 
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorPickEntitySelection.h>
@@ -187,10 +188,13 @@ namespace UnitTest
             ASSERT_NE(m_viewportEditorModeTracker, nullptr);
             m_viewportEditorModes = m_viewportEditorModeTracker->GetViewportEditorModes({AzToolsFramework::GetEntityContextId()});
             ASSERT_NE(m_viewportEditorModes, nullptr);
+            m_focusModeInterface = AZ::Interface<AzToolsFramework::FocusModeInterface>::Get();
+            ASSERT_NE(m_focusModeInterface, nullptr);
         }
 
         ViewportEditorModeTrackerInterface* m_viewportEditorModeTracker = nullptr;
         const ViewportEditorModesInterface* m_viewportEditorModes = nullptr;
+        AzToolsFramework::FocusModeInterface* m_focusModeInterface = nullptr;
     };
 
     TEST_F(ViewportEditorModesTestsFixture, NumberOfEditorModesIsEqualTo4)
@@ -522,32 +526,48 @@ namespace UnitTest
     }
 
     TEST_F(
-        ViewportEditorModeTrackerIntegrationTestFixture, EnteringComponentModeAfterInitialStateHasViewportEditorModesDefaultAndComponentModeActive)
+        ViewportEditorModeTrackerIntegrationTestFixture,
+        EnteringComponentModeAfterInitialStateHasViewportEditorModesDefaultAndComponentModeActive)
     {
         // When component mode is entered
         AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
             &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::BeginComponentMode,
             AZStd::vector<AzToolsFramework::ComponentModeFramework::EntityAndComponentModeBuilders>{});
 
-        bool inComponentMode = false;
-        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::BroadcastResult(
-            inComponentMode, &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::InComponentMode);
-
         // Expect to be in component mode
-        EXPECT_TRUE(inComponentMode);
+        EXPECT_TRUE(AzToolsFramework::ComponentModeFramework::InComponentMode());
 
         // Expect the default and component viewport editor modes to be active
         EXPECT_TRUE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Default));
         EXPECT_TRUE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Component));
-
-        // Do not expect the pick and focus viewport editor modes to be active
         EXPECT_FALSE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Pick));
         EXPECT_FALSE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Focus));
     }
 
     TEST_F(
         ViewportEditorModeTrackerIntegrationTestFixture,
-        EnteringEditorPickEntitySelectionAfterInitialStateHasOnlyViewportEditorModePickModeActive)
+        ExitingComponentModeAfterEnteringFrominitialStateHasViewportEditorModesDefaultActive)
+    {
+        // When component mode is entered and exited
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::BeginComponentMode,
+            AZStd::vector<AzToolsFramework::ComponentModeFramework::EntityAndComponentModeBuilders>{});
+
+        EXPECT_TRUE(AzToolsFramework::ComponentModeFramework::InComponentMode());
+
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::EndComponentMode);
+
+        // Expect to not be in component mode
+        EXPECT_FALSE(AzToolsFramework::ComponentModeFramework::InComponentMode());
+
+        // Expect only the default viewport editor mode to be active
+        ExpectOnlyModeActive(*m_viewportEditorModes, ViewportEditorMode::Default);
+    }
+
+    TEST_F(
+        ViewportEditorModeTrackerIntegrationTestFixture,
+        EnteringEditorPickEntitySelectionAfterInitialStateHasOnlyViewportEditorModePickActive)
     {
         // When entering pick mode
         using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
@@ -563,6 +583,96 @@ namespace UnitTest
         ExpectOnlyModeActive(*m_viewportEditorModes, ViewportEditorMode::Pick);
     }
 
-    // FocusMode integration tests will follow (LYN-6995)
+    TEST_F(
+        ViewportEditorModeTrackerIntegrationTestFixture,
+        EnteringEditorDefaultEntitySelectionFromEditorPickEntitySelectionHasOnlyViewportEditorModeDefaultActive)
+    {
+        // When pick mode is entered and exited
+        using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
+        EditorInteractionSystemViewportSelectionRequestBus::Event(
+            AzToolsFramework::GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetHandler,
+            [](const AzToolsFramework::EditorVisibleEntityDataCache* entityDataCache,
+               [[maybe_unused]] AzToolsFramework::ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+            {
+                return AZStd::make_unique<AzToolsFramework::EditorPickEntitySelection>(entityDataCache, viewportEditorModeTracker);
+            });
 
+        EditorInteractionSystemViewportSelectionRequestBus::Event(
+            AzToolsFramework::GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetHandler,
+            [](const AzToolsFramework::EditorVisibleEntityDataCache* entityDataCache,
+               [[maybe_unused]] AzToolsFramework::ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+            {
+                return AZStd::make_unique<AzToolsFramework::EditorDefaultSelection>(entityDataCache, viewportEditorModeTracker);
+            });
+
+        // Expect only the default viewport editor mode to be active
+        ExpectOnlyModeActive(*m_viewportEditorModes, ViewportEditorMode::Default);
+    }
+
+    TEST_F(ViewportEditorModeTrackerIntegrationTestFixture, EnteringFocusModeAfterInitialStateHasViewportEditorModeDefaultAndPickActive)
+    {
+        // When entering focus mode
+        m_focusModeInterface->SetFocusRoot(AZ::EntityId{ 1 });
+
+        // Expect the default and focus viewport editor modes to be active
+        EXPECT_TRUE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Default));
+        EXPECT_TRUE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Focus));
+        EXPECT_FALSE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Pick));
+        EXPECT_FALSE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Component));
+    }
+
+    TEST_F(
+        ViewportEditorModeTrackerIntegrationTestFixture,
+        ExitingFocusModeAfterEnteringFromInitialStateHasOnlyViewportEditorModeDefaultActive)
+    {
+        // When entering and leaving focus mode
+        m_focusModeInterface->SetFocusRoot(AZ::EntityId{ 1 });
+        m_focusModeInterface->SetFocusRoot(AZ::EntityId());
+
+        // Expect only the default mode to be active
+        ExpectOnlyModeActive(*m_viewportEditorModes, ViewportEditorMode::Default);
+    }
+
+     TEST_F(ViewportEditorModeTrackerIntegrationTestFixture, EnteringComponentModeFromFocusModeStateHasViewportEditorModeDefaultAndFocusAndComponentActive)
+    {
+        // When entering component mode from focus mode
+        m_focusModeInterface->SetFocusRoot(AZ::EntityId{ 1 });
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::BeginComponentMode,
+            AZStd::vector<AzToolsFramework::ComponentModeFramework::EntityAndComponentModeBuilders>{});
+
+        // Expect to be in component mode
+        EXPECT_TRUE(AzToolsFramework::ComponentModeFramework::InComponentMode());
+
+        // Expect the default, focus and component viewport editor modes to be active
+        EXPECT_TRUE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Default));
+        EXPECT_TRUE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Focus));
+        EXPECT_TRUE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Component));
+        EXPECT_FALSE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Pick));
+    }
+
+    TEST_F(
+        ViewportEditorModeTrackerIntegrationTestFixture,
+        ExitingComponentModeAfterEnteringFromFocusModeHasViewportEditorModeDefaultAndFocusActive)
+    {
+        // When entering and leaving component mode from focus mode
+        m_focusModeInterface->SetFocusRoot(AZ::EntityId{ 1 });
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::BeginComponentMode,
+            AZStd::vector<AzToolsFramework::ComponentModeFramework::EntityAndComponentModeBuilders>{});
+
+        EXPECT_TRUE(AzToolsFramework::ComponentModeFramework::InComponentMode());
+
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::EndComponentMode);
+
+        // Expect to not be in component mode
+        EXPECT_FALSE(AzToolsFramework::ComponentModeFramework::InComponentMode());
+
+        // Expect the default and focus viewport editor modes to be active
+        EXPECT_TRUE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Default));
+        EXPECT_TRUE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Focus));
+        EXPECT_FALSE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Component));
+        EXPECT_FALSE(m_viewportEditorModes->IsModeActive(ViewportEditorMode::Pick));
+    }
 } // namespace UnitTest

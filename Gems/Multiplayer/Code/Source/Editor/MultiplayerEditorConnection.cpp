@@ -9,6 +9,7 @@
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/INetworkSpawnableLibrary.h>
 #include <Multiplayer/MultiplayerConstants.h>
+#include <Multiplayer/MultiplayerEditorServerBus.h>
 #include <Editor/MultiplayerEditorConnection.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
 
@@ -17,7 +18,6 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzFramework/Spawnable/Spawnable.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/Framework/INetworking.h>
 
@@ -26,6 +26,7 @@ namespace Multiplayer
     using namespace AzNetworking;
 
     AZ_CVAR(bool, editorsv_isDedicated, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Whether to init as a server expecting data from an Editor. Do not modify unless you're sure of what you're doing.");
+    AZ_CVAR(uint16_t, editorsv_port, DefaultServerEditorPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that the multiplayer editor gem will bind to for traffic.");
 
     MultiplayerEditorConnection::MultiplayerEditorConnection()
         : m_byteStream(&m_buffer)
@@ -33,23 +34,42 @@ namespace Multiplayer
         m_networkEditorInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
             AZ::Name(MpEditorInterfaceName), ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
         m_networkEditorInterface->SetTimeoutMs(AZ::TimeMs{ 0 }); // Disable timeouts on this network interface
-        if (editorsv_isDedicated)
+        ActivateDedicatedEditorServer();
+    }
+
+    void MultiplayerEditorConnection::ActivateDedicatedEditorServer() const
+    {
+        if (m_isActivated || !editorsv_isDedicated)
         {
-            uint16_t editorServerPort = DefaultServerEditorPort;
-            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
-            {
-                console->GetCvarValue("editorsv_port", editorServerPort);
-            }
-            AZ_Assert(m_networkEditorInterface, "MP Editor Network Interface was unregistered before Editor Server could start listening.");
-            m_networkEditorInterface->Listen(editorServerPort);
+            return;
+        }
+        m_isActivated = true;
+        
+        AZ_Assert(m_networkEditorInterface, "MP Editor Network Interface was unregistered before Editor Server could start listening.")
+
+        // Check if there's already an Editor out there waiting to connect
+        const ConnectionId editorServerToEditorConnectionId =
+            m_networkEditorInterface->Connect(IpAddress(LocalHost.data(), editorsv_port, ProtocolType::Tcp));
+
+        // If there wasn't an Editor waiting for this server to start, then assume this is an editor-server launched by hand... listen
+        // and wait for the editor to request a connection
+        if (editorServerToEditorConnectionId == InvalidConnectionId)
+        {
+            m_networkEditorInterface->Listen(editorsv_port);
+            AZ_Printf("MultiplayerEditorConnection", "Editor-server activation did not find an editor in game-mode willing to connect; we'll instead wait and listen for an editor trying to connect to us.")
+        }
+        else
+        {
+            m_networkEditorInterface->SendReliablePacket(editorServerToEditorConnectionId, MultiplayerEditorPackets::EditorServerReadyForLevelData());
+            AZ_Printf("MultiplayerEditorConnection", "Editor-server activation has found and connected to the editor.")
         }
     }
-  
+
     bool MultiplayerEditorConnection::HandleRequest
     (
         [[maybe_unused]] AzNetworking::IConnection* connection,
         [[maybe_unused]] const IPacketHeader& packetHeader,
-        [[maybe_unused]] MultiplayerEditorPackets::EditorServerInit& packet
+        [[maybe_unused]] MultiplayerEditorPackets::EditorServerLevelData& packet
     )
     {
         // Editor Server Init is intended for non-release targets
@@ -76,7 +96,7 @@ namespace Multiplayer
                 AZ::Data::AssetData* assetDatum = AZ::Utils::LoadObjectFromStream<AZ::Data::AssetData>(m_byteStream, nullptr);
                 if (!assetDatum)
                 {
-                    AZLOG_ERROR("EditorServerInit packet contains no asset data. Asset: %s", assetHint.c_str());
+                    AZLOG_ERROR("EditorServerLevelData packet contains no asset data. Asset: %s", assetHint.c_str())
                     return false;
                 }
                 assetSize = m_byteStream.GetCurPos() - assetSize;
@@ -105,23 +125,35 @@ namespace Multiplayer
 
             // Load the level via the root spawnable that was registered
             const AZ::CVarFixedString loadLevelString = "LoadLevel Root.spawnable";
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(loadLevelString.c_str());
+            const auto console = AZ::Interface<AZ::IConsole>::Get();
+            console->PerformCommand(loadLevelString.c_str());
 
             // Setup the normal multiplayer connection
             AZ::Interface<IMultiplayer>::Get()->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
             INetworkInterface* networkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpNetworkInterfaceName));
 
-            uint16_t serverPort = DefaultServerPort;
-            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
+            uint16_t sv_port = DefaultServerPort;
+            if (console->GetCvarValue("sv_port", sv_port) != AZ::GetValueResult::Success)
             {
-                console->GetCvarValue("sv_port", serverPort);
+                AZ_Assert(false,
+                    "MultiplayerEditorConnection::HandleRequest for EditorServerLevelData failed! Could not find the sv_port cvar; we won't be able to listen on the correct port for incoming network messages! Please update this code to use a valid cvar!")
             }
-            networkInterface->Listen(serverPort);
+            
+            networkInterface->Listen(sv_port);
 
-            AZLOG_INFO("Editor Server completed asset receive, responding to Editor...");
+            AZLOG_INFO("Editor Server completed receiving the editor's level assets, responding to Editor...");
             return connection->SendReliablePacket(MultiplayerEditorPackets::EditorServerReady());
         }
 
+        return true;
+    }
+
+    bool MultiplayerEditorConnection::HandleRequest(
+        [[maybe_unused]] AzNetworking::IConnection* connection,
+        [[maybe_unused]] const AzNetworking::IPacketHeader& packetHeader,
+        [[maybe_unused]] MultiplayerEditorPackets::EditorServerReadyForLevelData& packet)
+    {
+        MultiplayerEditorServerRequestBus::Broadcast(&MultiplayerEditorServerRequestBus::Events::SendEditorServerLevelDataPacket, connection);
         return true;
     }
 
@@ -132,22 +164,34 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerEditorPackets::EditorServerReady& packet
     )
     {
-        if (connection->GetConnectionRole() == ConnectionRole::Connector)
-        {
-            // Receiving this packet means Editor sync is done, disconnect
-            connection->Disconnect(AzNetworking::DisconnectReason::TerminatedByClient, AzNetworking::TerminationEndpoint::Local);
+        // Receiving this packet means Editor sync is done, disconnect
+        connection->Disconnect(AzNetworking::DisconnectReason::TerminatedByClient, AzNetworking::TerminationEndpoint::Local);
+        const auto console = AZ::Interface<AZ::IConsole>::Get();
+        AZ::CVarFixedString editorsv_serveraddr = AZ::CVarFixedString(LocalHost);
+        uint16_t sv_port = DefaultServerEditorPort;
 
-            if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
-            {
-                AZ::CVarFixedString remoteAddress;
-                uint16_t remotePort;
-                if (console->GetCvarValue("editorsv_serveraddr", remoteAddress) != AZ::GetValueResult::ConsoleVarNotFound &&
-                    console->GetCvarValue("sv_port", remotePort) != AZ::GetValueResult::ConsoleVarNotFound)
-                    {
-                        // Connect the Editor to the editor server for Multiplayer simulation
-                        AZ::Interface<IMultiplayer>::Get()->Connect(remoteAddress.c_str(), remotePort);
-                    }
-            }
+        if (console->GetCvarValue("sv_port", sv_port) != AZ::GetValueResult::Success)
+        {
+            AZ_Assert(false,
+                "MultiplayerEditorConnection::HandleRequest for EditorServerReady failed! Could not find the sv_port cvar; we may not be able to "
+                "connect to the correct port for incoming network messages! Please update this code to use a valid cvar!")
+        }
+
+        if (console->GetCvarValue("editorsv_serveraddr", editorsv_serveraddr) != AZ::GetValueResult::Success)
+        {
+            AZ_Assert(false,
+                "MultiplayerEditorConnection::HandleRequest for EditorServerReady failed! Could not find the editorsv_serveraddr cvar; we may not be able to "
+                "connect to the correct port for incoming network messages! Please update this code to use a valid cvar!")
+        }
+        
+        // Connect the Editor to the editor server for Multiplayer simulation
+        if (AZ::Interface<IMultiplayer>::Get()->Connect(editorsv_serveraddr.c_str(), sv_port))
+        {
+            AZ_Printf("MultiplayerEditorConnection", "Editor-server ready. Editor has successfully connected to the editor-server's network simulation.")
+        }
+        else
+        {
+            AZ_Warning("MultiplayerEditorConnection", false, "MultiplayerEditorConnection::HandleRequest for EditorServerReady failed! Connecting to the editor-server's network simulation failed.")
         }
         return true;
     }
@@ -171,26 +215,5 @@ namespace Multiplayer
     {
         return MultiplayerEditorPackets::DispatchPacket(connection, packetHeader, serializer, *this);
     }
-
-    void MultiplayerEditorConnection::OnPacketLost([[maybe_unused]] IConnection* connection, [[maybe_unused]] PacketId packetId)
-    {
-        ;
-    }
-
-    void MultiplayerEditorConnection::OnDisconnect([[maybe_unused]] AzNetworking::IConnection* connection, [[maybe_unused]] DisconnectReason reason, [[maybe_unused]] TerminationEndpoint endpoint)
-    {
-        bool editorLaunch = false;
-        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console)
-        {
-            console->GetCvarValue("editorsv_launch", editorLaunch);
-        }
-
-        if (editorsv_isDedicated && editorLaunch && m_networkEditorInterface->GetConnectionSet().GetConnectionCount() == 1)
-        {
-            if (m_networkEditorInterface->GetPort() != 0)
-            {
-                m_networkEditorInterface->StopListening();
-            }
-        }
-    }
+    
 }

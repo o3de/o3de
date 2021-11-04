@@ -11,12 +11,13 @@ add_subdirectory(NumericalMethods)
 ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # for PAL_TRAIT_PHYSX_SUPPORTED
-set(PHYSX_ENABLE_RUNNING_BENCHMARKS OFF CACHE BOOL "Adds a target to allow running of the physx benchmarks.")
+set(LY_PHYSX_ENABLE_RUNNING_BENCHMARKS OFF CACHE BOOL "Adds a target to allow running of the physx benchmarks.")
 
 if(PAL_TRAIT_PHYSX_SUPPORTED)
     set(physx_dependency 3rdParty::PhysX)
     set(physx_files physx_files.cmake)
     set(physx_shared_files physx_shared_files.cmake)
+    set(physx_mock_files physx_mocks_files.cmake)
     set(physx_editor_files physx_editor_files.cmake)
 else()
     set(physx_files physx_unsupported_files.cmake)
@@ -152,6 +153,17 @@ endif()
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
+        NAME PhysX.Mocks HEADERONLY
+        NAMESPACE Gem
+        OUTPUT_NAME PhysX.Mocks.Gem
+        FILES_CMAKE
+            physx_mocks_files.cmake
+        INCLUDE_DIRECTORIES
+            INTERFACE
+                Mocks
+    )
+
+    ly_add_target(
         NAME PhysX.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         OUTPUT_NAME PhysX.Tests.Gem
@@ -185,7 +197,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     # Only add the physx benchmarks if this flag is set. The benchmark code is still built, as it is part of the PhysX.Tests project.
     # Currently jenkins has a 1500sec(25min) timeout, our benchmarks can sometimes take over 1500sec and cause a build failure for timeout.
     # Jenkins currently doesn't upload the results of the benchmarks, so this is ok.
-    if(PHYSX_ENABLE_RUNNING_BENCHMARKS)
+    if(LY_PHYSX_ENABLE_RUNNING_BENCHMARKS)
         ly_add_googlebenchmark(
             NAME Gem::PhysX.Benchmarks
             TARGET Gem::PhysX.Tests
@@ -213,6 +225,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     AZ::AzToolsFrameworkTestCommon
                     Gem::PhysX.Static
+                    Gem::PhysX.Mocks
                     Gem::PhysX.Editor.Static
             RUNTIME_DEPENDENCIES
                 Gem::LmbrCentral.Editor

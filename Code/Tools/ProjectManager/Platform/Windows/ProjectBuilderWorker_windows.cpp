@@ -21,8 +21,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(QStringList{ ProjectCMakeCommand,
                                         "-B", targetBuildPath,
                                         "-S", m_projectInfo.m_path,
-                                        QString("-DLY_3RDPARTY_PATH=").append(thirdPartyPath),
-                                        "-DLY_UNITY_BUILD=ON" } );
+                                        QString("-DLY_3RDPARTY_PATH=").append(thirdPartyPath) } );
     }
 
     AZ::Outcome<QStringList, QString> ProjectBuilderWorker::ConstructCmakeBuildCommandArguments() const
