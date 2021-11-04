@@ -161,14 +161,17 @@ namespace Terrain
         // make this list a prioritized list from top to bottom for any points that overlap.
         for (auto& gradientId : m_configuration.m_gradientEntities)
         {
-            // If gradients ever provide bounds, or if we add a value threshold in this component, it would be possible for terrain
-            // to *not* exist at a specific point.
-            terrainExists = true;
+            if (gradientId.IsValid())
+            {
+                // If gradients ever provide bounds, or if we add a value threshold in this component, it would be possible for terrain
+                // to *not* exist at a specific point.
+                terrainExists = true;
 
-            float sample = 0.0f;
-            GradientSignal::GradientRequestBus::EventResult(
-                sample, gradientId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
-            maxSample = AZ::GetMax(maxSample, sample);
+                float sample = 0.0f;
+                GradientSignal::GradientRequestBus::EventResult(
+                    sample, gradientId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
+                maxSample = AZ::GetMax(maxSample, sample);
+            }
         }
 
         const float height = AZ::Lerp(m_cachedShapeBounds.GetMin().GetZ(), m_cachedShapeBounds.GetMax().GetZ(), maxSample);
