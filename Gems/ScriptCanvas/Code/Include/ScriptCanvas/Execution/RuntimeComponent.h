@@ -96,24 +96,4 @@ namespace ScriptCanvas
         AZ::EntityId m_scriptCanvasId;
         RuntimeDataOverrides m_runtimeOverrides;
     };
-
-
-    class TestAssetHolder
-    {
-    public:
-        AZ_RTTI(TestAssetHolder, "{C340861D-B20A-406A-8D31-02E0297FD1E5}");
-        AZ_CLASS_ALLOCATOR(TestAssetHolder, AZ::SystemAllocator, 0);
-
-        virtual ~TestAssetHolder() {}
-
-        TestAssetHolder()
-            : prototypeEntity(AZ::Data::AssetLoadBehavior::NoLoad)
-        {}
-
-        // Prototype entity for creating instances of the action
-        AZ::Data::Asset<AZ::DynamicSliceAsset> prototypeEntity;
-
-        static void Reflect(AZ::ReflectContext* context);
-
-    };
 }
