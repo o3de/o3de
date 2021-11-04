@@ -23,7 +23,6 @@
 #include <QStandardPaths>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QSet>
 #include <QHash>
 
 namespace O3DE::ProjectManager
@@ -160,6 +159,7 @@ namespace O3DE::ProjectManager
     {
         QHash<QString, GemInfo> gemInfoHash;
 
+        // create a hash with the gem name as key
         AZ::Outcome<QVector<GemInfo>, AZStd::string> allGemInfosResult = PythonBindingsInterface::Get()->GetAllGemInfos(projectPath);
         if (allGemInfosResult.IsSuccess())
         {
@@ -170,6 +170,7 @@ namespace O3DE::ProjectManager
             }
         }
 
+        // add all the gem repos into the hash
         AZ::Outcome<QVector<GemInfo>, AZStd::string> allRepoGemInfosResult = PythonBindingsInterface::Get()->GetAllGemRepoGemsInfos();
         if (allRepoGemInfosResult.IsSuccess())
         {
@@ -183,24 +184,32 @@ namespace O3DE::ProjectManager
             }
         }
 
-        // remove rows for gems that were removed and not project dependencies
+        // remove gems from the model that no longer exist in the hash and are not project dependencies
         int i = 0;
         while (i < m_gemModel->rowCount())
         {
             QModelIndex index = m_gemModel->index(i,0);
             QString gemName = m_gemModel->GetName(index);
-            if (!gemInfoHash.contains(gemName) && !m_gemModel->IsAdded(index) && !m_gemModel->IsAddedDependency(index))
+            const bool gemFound = gemInfoHash.contains(gemName);
+            if (!gemFound && !m_gemModel->IsAdded(index) && !m_gemModel->IsAddedDependency(index))
             {
                 m_gemModel->removeRow(i);
             }
             else
             {
+                if (!gemFound && (m_gemModel->IsAdded(index) || !m_gemModel->IsAddedDependency(index)))
+                {
+                    const QString error = tr("Gem %1 was removed or unregistered, but is still used by the project.").arg(gemName);
+                    AZ_Warning("Project Manager", false, error.toUtf8().constData());
+                    QMessageBox::warning(this, tr("Gem not found"), error.toUtf8().constData());
+                }
+
                 gemInfoHash.remove(gemName);
                 i++;
             }
         }
 
-        // add new rows
+        // add all gems remaining in the hash that were not removed
         for(auto iter = gemInfoHash.begin(); iter != gemInfoHash.end(); ++iter)
         {
             m_gemModel->AddGem(iter.value());
@@ -208,6 +217,10 @@ namespace O3DE::ProjectManager
 
         m_gemModel->UpdateGemDependencies();
         m_proxyModel->sort(/*column=*/0);
+
+        // temporary, until we can refresh filter counts 
+        m_proxyModel->ResetFilters();
+        m_filterWidget->ResetAllFilters();
     }
 
     void GemCatalogScreen::OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies) 

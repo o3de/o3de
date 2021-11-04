@@ -52,6 +52,11 @@ namespace O3DE::ProjectManager
         Reinit();
     }
 
+    void GemRepoScreen::NotifyCurrentScreen()
+    {
+        Reinit();
+    }
+
     void GemRepoScreen::Reinit()
     {
         m_gemRepoModel->clear();

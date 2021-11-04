@@ -38,6 +38,8 @@ namespace O3DE::ProjectManager
 
         GemRepoModel* GetGemRepoModel() const { return m_gemRepoModel; }
 
+        void NotifyCurrentScreen() override;
+
     signals:
         void OnRefresh();
 
@@ -46,6 +48,7 @@ namespace O3DE::ProjectManager
         void HandleRemoveRepoButton(const QModelIndex& modelIndex);
         void HandleRefreshAllButton();
         void HandleRefreshRepoButton(const QModelIndex& modelIndex);
+
 
     private:
         void FillModel();

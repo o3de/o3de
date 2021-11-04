@@ -51,13 +51,11 @@ namespace O3DE::ProjectManager
 
         m_gemRepoScreen = new GemRepoScreen(this);
         m_stack->addWidget(m_gemRepoScreen);
+
         vLayout->addWidget(m_stack);
 
-
         connect(m_gemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
-        connect(
-            m_gemRepoScreen, &GemRepoScreen::OnRefresh,
-            [this]()
+        connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, [this]()
             {
                 const QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
                 m_gemCatalogScreen->Refresh(projectTemplatePath + "/Template");
@@ -135,6 +133,9 @@ namespace O3DE::ProjectManager
 
         // Gather the enabled gems from the default project template when starting the create new project workflow.
         ReinitGemCatalogForSelectedTemplate();
+
+        // make sure the gem repo has the latest details
+        m_gemRepoScreen->Reinit();
     }
 
     void CreateProjectCtrl::HandleBackButton()

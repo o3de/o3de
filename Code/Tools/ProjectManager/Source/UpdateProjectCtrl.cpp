@@ -43,6 +43,7 @@ namespace O3DE::ProjectManager
         m_gemRepoScreen = new GemRepoScreen(this);
 
         connect(m_gemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &UpdateProjectCtrl::OnChangeScreenRequest);
+        connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, [this](){ m_gemCatalogScreen->Refresh(m_projectInfo.m_path); });
 
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");
@@ -101,6 +102,9 @@ namespace O3DE::ProjectManager
 
         // Gather the available gems that will be shown in the gem catalog.
         m_gemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
+
+        // make sure the gem repo has the latest repo details
+        m_gemRepoScreen->Reinit();
     }
 
     void UpdateProjectCtrl::OnChangeScreenRequest(ProjectManagerScreen screen)
