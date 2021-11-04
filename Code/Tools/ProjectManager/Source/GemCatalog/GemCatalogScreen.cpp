@@ -197,7 +197,7 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                if (!gemFound && (m_gemModel->IsAdded(index) || !m_gemModel->IsAddedDependency(index)))
+                if (!gemFound && (m_gemModel->IsAdded(index) || m_gemModel->IsAddedDependency(index)))
                 {
                     const QString error = tr("Gem %1 was removed or unregistered, but is still used by the project.").arg(gemName);
                     AZ_Warning("Project Manager", false, error.toUtf8().constData());
