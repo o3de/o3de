@@ -50,6 +50,9 @@ namespace Profiler
         // Tries to flush the map to the passed parameter, only if the thread's mutex is unlocked
         void TryFlushCachedMap(CpuProfiler::ThreadTimeRegionMap& cachedRegionMap);
 
+        // Clears m_cachedTimeRegions and resets m_cachedDataLimitReached flag.
+        void ResetCachedData();
+
         AZStd::thread_id m_executingThreadId;
         // Keeps track of the current thread's stack depth
         uint32_t m_stackLevel = 0u;
@@ -64,7 +67,7 @@ namespace Profiler
         // Keeps track of regions that completed (i.e regions that was pushed and popped from the stack)
         // Intermediate storage point for the CachedTimeRegions, when the stack is empty, all entries will be
         // copied to the map.
-        AZStd::vector<CachedTimeRegion> m_cachedTimeRegions;
+        AZStd::fixed_vector<CachedTimeRegion, TimeRegionStackSize> m_cachedTimeRegions;
         AZStd::mutex m_cachedTimeRegionMutex;
 
         // Dirty flag which is set when the CpuProfiler's enabled state is set from false to true
@@ -75,6 +78,9 @@ namespace Profiler
 
         // Keep track of the regions that have hit the size limit so we don't have to lock to check
         AZStd::map<AZStd::string, bool> m_hitSizeLimitMap;
+
+        // Keeps track of the first time cached data limit was reached.
+        bool m_cachedDataLimitReached = false;
     };
 
     //! CpuProfiler will keep track of the registered threads, and
