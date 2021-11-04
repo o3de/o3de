@@ -188,7 +188,7 @@ namespace O3DE::ProjectManager
             toastConfiguration.m_customIconImage = ":/gem.svg";
             toastConfiguration.m_borderRadius = 4;
             toastConfiguration.m_duration = AZStd::chrono::milliseconds(3000);
-            //m_notificationsView->ShowToastNotification(toastConfiguration);
+            m_notificationsView->ShowToastNotification(toastConfiguration);
         }
     }
 
