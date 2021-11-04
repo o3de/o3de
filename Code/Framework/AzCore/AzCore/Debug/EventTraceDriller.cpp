@@ -15,15 +15,15 @@ namespace AZ::Debug
 {
     namespace Crc
     {
-        const u32 EventTraceDriller = AZ_CRC_CE("EventTraceDriller");
-        const u32 Slice = AZ_CRC_CE("Slice");
-        const u32 ThreadInfo = AZ_CRC_CE("ThreadInfo");
-        const u32 Name = AZ_CRC_CE("Name");
-        const u32 Category = AZ_CRC_CE("Category");
-        const u32 ThreadId = AZ_CRC_CE("ThreadId");
-        const u32 Timestamp = AZ_CRC_CE("Timestamp");
-        const u32 Duration = AZ_CRC_CE("Duration");
-        const u32 Instant = AZ_CRC_CE("Instant");
+        constexpr u32 EventTraceDriller = AZ_CRC_CE("EventTraceDriller");
+        constexpr u32 Slice = AZ_CRC_CE("Slice");
+        constexpr u32 ThreadInfo = AZ_CRC_CE("ThreadInfo");
+        constexpr u32 Name = AZ_CRC_CE("Name");
+        constexpr u32 Category = AZ_CRC_CE("Category");
+        constexpr u32 ThreadId = AZ_CRC_CE("ThreadId");
+        constexpr u32 Timestamp = AZ_CRC_CE("Timestamp");
+        constexpr u32 Duration = AZ_CRC_CE("Duration");
+        constexpr u32 Instant = AZ_CRC_CE("Instant");
     }
 
     EventTraceDriller::EventTraceDriller()

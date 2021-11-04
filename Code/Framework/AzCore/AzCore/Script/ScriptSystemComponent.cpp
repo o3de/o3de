@@ -227,7 +227,7 @@ void ScriptSystemComponent::RestoreDefaultRequireHook(ScriptContextId id)
 void ScriptSystemComponent::UseInMemoryRequireHook(const InMemoryScriptModules& modules, ScriptContextId id)
 {
     auto context = GetContext(id);
-    if(!context)
+    if (nullptr == context)
     {
         return;
     }

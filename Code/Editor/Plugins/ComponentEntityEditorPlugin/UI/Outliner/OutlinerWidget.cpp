@@ -124,7 +124,7 @@ namespace
 
     QModelIndex nextIndexForTree(bool direction, OutlinerTreeView *tree, QModelIndex current)
     {
-        if(direction)
+        if (direction)
         {
             return tree->indexAbove(current);
         }

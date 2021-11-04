@@ -10,124 +10,125 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/std/algorithm.h>
 
+namespace AZ::JsonSerializationResult::Internal
+{
+    template<typename StringType>
+    void AppendToString(AZ::JsonSerializationResult::ResultCode code,
+        StringType& target, AZStd::string_view path)
+    {
+        if (code.GetTask() == static_cast<Tasks>(0))
+        {
+            target.append("The result code wasn't initialized");
+            return;
+        }
+
+        target.append("The operation ");
+        switch (code.GetProcessing())
+        {
+        case Processing::Halted:
+            target.append("has halted during ");
+            break;
+        case Processing::Altered:
+            target.append("has taken an alternative approach for ");
+            break;
+        case Processing::PartialAlter:
+            target.append("has taken a partially alternative approach for ");
+            break;
+        case Processing::Completed:
+            target.append("has completed ");
+            break;
+        default:
+            target.append("has unknown processing status for ");
+            break;
+        }
+
+        switch (code.GetTask())
+        {
+        case Tasks::RetrieveInfo:
+            target.append("a retrieve info operation ");
+            break;
+        case Tasks::CreateDefault:
+            target.append("a create default operation ");
+            break;
+        case Tasks::Convert:
+            target.append("a convert operation ");
+            break;
+        case Tasks::ReadField:
+            target.append("a read field operation ");
+            break;
+        case Tasks::WriteValue:
+            target.append("a write value operation ");
+            break;
+        case Tasks::Merge:
+            target.append("a merge operation ");
+            break;
+        case Tasks::CreatePatch:
+            target.append("a create patch operation ");
+            break;
+        case Tasks::Import:
+            target.append("an import operation");
+            break;
+        default:
+            target.append("an unknown operation ");
+            break;
+        }
+
+        if (!path.empty())
+        {
+            target.append("for '");
+            target.append(path.begin(), path.end());
+            target.append("' ");
+        }
+
+        switch (code.GetOutcome())
+        {
+        case Outcomes::Success:
+            target.append("which resulted in success");
+            break;
+        case Outcomes::DefaultsUsed:
+            target.append("by using only default values");
+            break;
+        case Outcomes::PartialDefaults:
+            target.append("by using one or more default values");
+            break;
+        case Outcomes::Skipped:
+            target.append("because a field or value was skipped");
+            break;
+        case Outcomes::PartialSkip:
+            target.append("because one or more fields or values were skipped");
+            break;
+        case Outcomes::Unavailable:
+            target.append("because the target was unavailable");
+            break;
+        case Outcomes::Unsupported:
+            target.append("because the action was unsupported");
+            break;
+        case Outcomes::TypeMismatch:
+            target.append("because the source and target are unrelated types");
+            break;
+        case Outcomes::TestFailed:
+            target.append("because a test against a value failed");
+            break;
+        case Outcomes::Missing:
+            target.append("because a required field or value was missing");
+            break;
+        case Outcomes::Invalid:
+            target.append("because a field or element has an invalid value");
+            break;
+        case Outcomes::Unknown:
+            target.append("because information was missing");
+            break;
+        case Outcomes::Catastrophic:
+            target.append("because a catastrophic issue was encountered");
+            break;
+        default:
+            break;
+        }
+    }
+} // namespace AZ::JsonSerializationResult::Internal
+
 namespace AZ::JsonSerializationResult
 {
-    namespace Internal
-    {
-        template<typename StringType>
-        void AppendToString(AZ::JsonSerializationResult::ResultCode code,
-            StringType& target, AZStd::string_view path)
-        {
-            if (code.GetTask() == static_cast<Tasks>(0))
-            {
-                target.append("The result code wasn't initialized");
-                return;
-            }
-
-            target.append("The operation ");
-            switch (code.GetProcessing())
-            {
-            case Processing::Halted:
-                target.append("has halted during ");
-                break;
-            case Processing::Altered:
-                target.append("has taken an alternative approach for ");
-                break;
-            case Processing::PartialAlter:
-                target.append("has taken a partially alternative approach for ");
-                break;
-            case Processing::Completed:
-                target.append("has completed ");
-                break;
-            default:
-                target.append("has unknown processing status for ");
-                break;
-            }
-
-            switch (code.GetTask())
-            {
-            case Tasks::RetrieveInfo:
-                target.append("a retrieve info operation ");
-                break;
-            case Tasks::CreateDefault:
-                target.append("a create default operation ");
-                break;
-            case Tasks::Convert:
-                target.append("a convert operation ");
-                break;
-            case Tasks::ReadField:
-                target.append("a read field operation ");
-                break;
-            case Tasks::WriteValue:
-                target.append("a write value operation ");
-                break;
-            case Tasks::Merge:
-                target.append("a merge operation ");
-                break;
-            case Tasks::CreatePatch:
-                target.append("a create patch operation ");
-                break;
-            case Tasks::Import:
-                target.append("an import operation");
-                break;
-            default:
-                target.append("an unknown operation ");
-                break;
-            }
-
-            if (!path.empty())
-            {
-                target.append("for '");
-                target.append(path.begin(), path.end());
-                target.append("' ");
-            }
-
-            switch (code.GetOutcome())
-            {
-            case Outcomes::Success:
-                target.append("which resulted in success");
-                break;
-            case Outcomes::DefaultsUsed:
-                target.append("by using only default values");
-                break;
-            case Outcomes::PartialDefaults:
-                target.append("by using one or more default values");
-                break;
-            case Outcomes::Skipped:
-                target.append("because a field or value was skipped");
-                break;
-            case Outcomes::PartialSkip:
-                target.append("because one or more fields or values were skipped");
-                break;
-            case Outcomes::Unavailable:
-                target.append("because the target was unavailable");
-                break;
-            case Outcomes::Unsupported:
-                target.append("because the action was unsupported");
-                break;
-            case Outcomes::TypeMismatch:
-                target.append("because the source and target are unrelated types");
-                break;
-            case Outcomes::TestFailed:
-                target.append("because a test against a value failed");
-                break;
-            case Outcomes::Missing:
-                target.append("because a required field or value was missing");
-                break;
-            case Outcomes::Invalid:
-                target.append("because a field or element has an invalid value");
-                break;
-            case Outcomes::Unknown:
-                target.append("because information was missing");
-                break;
-            case Outcomes::Catastrophic:
-                target.append("because a catastrophic issue was encountered");
-                break;
-            default:
-                break;
-            }
-        }
-    } // namespace JsonSerializationResultInternal
 
     ResultCode::ResultCode(Tasks task)
         : m_code(0)

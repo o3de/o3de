@@ -144,7 +144,7 @@ namespace AZ
     void DataNodeTree::Build(const void* rootClassPtr, const Uuid& rootClassId)
     {
         AZ_PROFILE_FUNCTION(AzCore);
-        using namespace AZ::Edit;
+
         m_root.Reset();
         m_currentNode = nullptr;
 

@@ -19,7 +19,7 @@ namespace AZ
         nodeStack.push_back(m_dataContainer);
 
         SerializeContext::EnumerateInstanceCallContext callContext(
-            [this,&nodeStack](void* instance_pointer, const SerializeContext::ClassData* classData, const SerializeContext::ClassElement* classElement)->bool
+            [this, &nodeStack](void* instance_pointer, const SerializeContext::ClassData* classData, const SerializeContext::ClassElement* classElement)->bool
             {
                 return ElementBegin(&nodeStack,instance_pointer,classData,classElement);
             },

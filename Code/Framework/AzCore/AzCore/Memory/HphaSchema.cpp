@@ -140,8 +140,8 @@ namespace AZ {
         class const_iterator;
         class iterator
         {
-            using reference = T &;
-            using pointer = T *;
+            using reference = T&;
+            using pointer = T*;
             friend class const_iterator;
             T* mPtr;
         public:
