@@ -99,7 +99,11 @@ namespace ScriptCanvasEditor
         }
 
         const auto& asString = fileStringOutcome.GetValue();
-        DataPtr scriptCanvasData = Graph::Create();
+        DataPtr scriptCanvasData = AZStd::make_shared<ScriptCanvas::ScriptCanvasData>();
+        if (!scriptCanvasData)
+        {
+            return AZ::Failure(AZStd::string("failed to allocate ScriptCanvas::ScriptCanvasData after loading source file"));
+        }
         
         AZ::SerializeContext* serializeContext = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
