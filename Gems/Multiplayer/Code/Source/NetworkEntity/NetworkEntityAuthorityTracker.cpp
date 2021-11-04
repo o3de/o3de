@@ -9,6 +9,7 @@
 #include <Source/NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <Multiplayer/Components/NetBindComponent.h>
 #include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
+#include <Multiplayer/EntityDomains/IEntityDomain.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/EBus/IEventScheduler.h>
@@ -17,12 +18,18 @@
 
 namespace Multiplayer
 {
-    AZ_CVAR(AZ::TimeMs, net_EntityMigrationTimeoutMs, AZ::TimeMs{ 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Time to wait for a new authority to attach to an entity before we delete the entity");
+    AZ_CVAR(AZ::TimeMs, net_DefaultEntityMigrationTimeoutMs, AZ::TimeMs{ 1000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Time to wait for a new authority to attach to an entity before we delete the entity");
 
     NetworkEntityAuthorityTracker::NetworkEntityAuthorityTracker(INetworkEntityManager& networkEntityManager)
         : m_networkEntityManager(networkEntityManager)
+        , m_timeoutTimeMs(net_DefaultEntityMigrationTimeoutMs)
     {
         ;
+    }
+
+    void NetworkEntityAuthorityTracker::SetTimeoutTimeMs(AZ::TimeMs timeoutTimeMs)
+    {
+        m_timeoutTimeMs = timeoutTimeMs;
     }
 
     bool NetworkEntityAuthorityTracker::AddEntityAuthorityManager(ConstNetworkEntityHandle entityHandle, const HostId& newOwner)
@@ -92,7 +99,7 @@ namespace Multiplayer
                             "Trying to add something twice to the timeout map, this is unexpected"
                         );
                         m_timeoutDataMap.insert(entityHandle.GetNetEntityId());
-                        AZ::Interface<AZ::IEventScheduler>::Get()->AddCallback([this, netEntityId = entityHandle.GetNetEntityId(), previousOwner]
+                        AZ::Interface<AZ::IEventScheduler>::Get()->AddCallback([this, netEntityId = entityHandle.GetNetEntityId()]
                             {
                                 auto timeoutData = m_timeoutDataMap.find(netEntityId);
                                 if (timeoutData != m_timeoutDataMap.end())
@@ -109,19 +116,13 @@ namespace Multiplayer
                                         }
                                         if (networkRole != NetEntityRole::Authority)
                                         {
-                                            AZLOG_ERROR
-                                            (
-                                                "Timed out entity id %llu during migration previous owner %s, removing it",
-                                                aznumeric_cast<AZ::u64>(entityHandle.GetNetEntityId()),
-                                                previousOwner.GetString().c_str()
-                                            );
-                                            m_networkEntityManager.MarkForRemoval(entityHandle);
+                                            m_networkEntityManager.GetEntityDomain()->HandleLossOfAuthoritativeReplicator(entityHandle);
                                         }
                                     }
                                 }
                             },
                             AZ::Name("Entity authority removal functor"),
-                            net_EntityMigrationTimeoutMs
+                            m_timeoutTimeMs
                         );
                     }
                     else

@@ -26,14 +26,9 @@ namespace Multiplayer
         return true;
     }
 
-    void FullOwnershipEntityDomain::ActivateTracking([[maybe_unused]] const INetworkEntityManager::OwnedEntitySet& ownedEntitySet)
+    void FullOwnershipEntityDomain::HandleLossOfAuthoritativeReplicator([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle)
     {
-        ;
-    }
-
-    const IEntityDomain::EntitiesNotInDomain& FullOwnershipEntityDomain::RetrieveEntitiesNotInDomain() const
-    {
-        return m_entitiesNotInDomain;
+        AZ_Assert(false, "FullOwnershipEntityDomain has authoritative control over all entities, something unexpected has happened");
     }
 
     void FullOwnershipEntityDomain::DebugDraw() const

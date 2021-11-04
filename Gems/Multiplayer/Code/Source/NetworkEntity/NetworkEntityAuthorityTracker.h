@@ -23,6 +23,7 @@ namespace Multiplayer
     public:
         NetworkEntityAuthorityTracker(INetworkEntityManager& networkEntityManager);
 
+        void SetTimeoutTimeMs(AZ::TimeMs timeoutTimeMs);
         bool DoesEntityHaveOwner(ConstNetworkEntityHandle entityHandle) const;
         bool AddEntityAuthorityManager(ConstNetworkEntityHandle entityHandle, const HostId& newOwner);
         void RemoveEntityAuthorityManager(ConstNetworkEntityHandle entityHandle, const HostId& previousOwner);
@@ -37,5 +38,7 @@ namespace Multiplayer
         TimeoutDataMap m_timeoutDataMap;
         EntityAuthorityMap m_entityAuthorityMap;
         INetworkEntityManager& m_networkEntityManager;
+
+        AZ::TimeMs m_timeoutTimeMs = AZ::TimeMs{ 0 };
     };
 }
