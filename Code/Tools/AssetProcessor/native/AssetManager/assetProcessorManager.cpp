@@ -3624,6 +3624,19 @@ namespace AssetProcessor
                         }
                     }
 
+                    // Filter out any excluded files
+                    for (auto itr = resolvedDependencyList.begin(); itr != resolvedDependencyList.end();)
+                    {
+                        if (m_platformConfig->IsFileExcluded(*itr))
+                        {
+                            itr = resolvedDependencyList.erase(itr);
+                        }
+                        else
+                        {
+                            ++itr;
+                        }
+                    }
+
                     // Convert to relative paths
                     for (auto dependencyItr = resolvedDependencyList.begin(); dependencyItr != resolvedDependencyList.end();) 
                     {

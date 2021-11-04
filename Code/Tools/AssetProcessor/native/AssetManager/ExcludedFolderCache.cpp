@@ -9,6 +9,7 @@
 #include <QDirIterator>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <native/AssetManager/ExcludedFolderCache.h>
+#include <utilities/assetUtils.h>
 
 namespace AssetProcessor
 {
