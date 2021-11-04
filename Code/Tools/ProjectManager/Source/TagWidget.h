@@ -25,6 +25,12 @@ namespace O3DE::ProjectManager
     public:
         explicit TagWidget(const QString& text, QWidget* parent = nullptr);
         ~TagWidget() = default;
+
+    signals:
+        void TagClicked(const QString& tag);
+
+    protected:
+        void mousePressEvent(QMouseEvent* event) override;
     };
 
     // Widget containing multiple tags, automatically wrapping based on the size
@@ -38,5 +44,8 @@ namespace O3DE::ProjectManager
         ~TagContainerWidget() = default;
 
         void Update(const QStringList& tags);
+
+    signals:
+        void TagClicked(const QString& tag);
     };
 } // namespace O3DE::ProjectManager
