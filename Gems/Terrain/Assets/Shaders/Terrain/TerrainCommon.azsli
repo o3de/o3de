@@ -112,59 +112,9 @@ enum DetailTextureFlags
 
 ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 {
-    struct DetailMaterialData
-    {
-        // Uv
-        row_major float3x4 m_uvTransform;
-
-        // Factor / Scale / Bias for input textures
-        float m_baseColorFactor;
-        float m_normalFactor;
-        float m_metalFactor;
-        float m_roughnessScale;
-
-        float m_roughnessBias;
-        float m_specularF0Factor;
-        float m_occlusionFactor;
-        float m_heightFactor;
-
-        float m_heightOffset;
-        float m_heightBlendFactor;
-
-        // Flags
-        uint m_flags; // see DetailTextureFlags
-
-        // Image indices
-        uint m_colorNormalImageIndices;
-        uint m_roughnessMetalnessImageIndices;
-        uint m_specularF0OcclusionImageIndices;
-        uint m_heightImageIndex; // only first 16 bits used
-
-        // 16 byte aligned
-        uint m_padding;
-    };
-
-    StructuredBuffer<DetailMaterialData> m_detailMaterialData;
-    Texture2D m_heightmapImage;
-    Texture2D<uint4> m_detailMaterialIdImage;
-
-    float2 m_detailMaterialIdImageCenter;
     float m_detailTextureMultiplier;
     float m_detailFadeDistance;
     float m_detailFadeLength;
-
-    float4 m_detailAabb;
-    float m_detailHalfPixelUv;
-
-    Sampler HeightmapSampler
-    {
-        MinFilter = Linear;
-        MagFilter = Linear;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
-    };
 
     Sampler m_sampler
     {
@@ -174,15 +124,6 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
         MagFilter = Linear;
         MipFilter = Linear;
         MaxAnisotropy = 16;
-    };
-
-    Sampler m_detailSampler
-    {
-        AddressU = Wrap;
-        AddressV = Wrap;
-        MinFilter = Point;
-        MagFilter = Point;
-        MipFilter = Point;
     };
 
     // Base Color
@@ -293,12 +234,12 @@ float GetHeight(float2 origUv)
     if (o_useTerrainSmoothing)
     {
         float2 textureSize;
-        TerrainMaterialSrg::m_heightmapImage.GetDimensions(textureSize.x, textureSize.y);
-        height = SampleBSpline5Tap(TerrainMaterialSrg::m_heightmapImage, TerrainMaterialSrg::HeightmapSampler, uv, textureSize, rcp(textureSize));
+        ViewSrg::m_heightmapImage.GetDimensions(textureSize.x, textureSize.y);
+        height = SampleBSpline5Tap(ViewSrg::m_heightmapImage, ViewSrg::HeightmapSampler, uv, textureSize, rcp(textureSize));
     }
     else
     {
-        height = TerrainMaterialSrg::m_heightmapImage.SampleLevel(TerrainMaterialSrg::HeightmapSampler, uv, 0).r;
+        height = ViewSrg::m_heightmapImage.SampleLevel(ViewSrg::HeightmapSampler, uv, 0).r;
     }
 
     return ObjectSrg::m_terrainData.m_heightScale * (height - 0.5f);
