@@ -88,6 +88,16 @@ namespace EMotionFX
             // It contains the value for each dimension.
             const size_t numValuesInKdTree = m_behavior->GetFeatures().CalcNumDataDimensionsForKdTree(m_behavior->GetFeatures());
             m_queryFeatureValues.resize(numValuesInKdTree);
+
+            // Initialize the trajectory history.
+            size_t rootJointIndex = m_actorInstance->GetActor()->GetMotionExtractionNodeIndex();
+            if (rootJointIndex == InvalidIndex32)
+            {
+                rootJointIndex = 0;
+            }
+            m_trajectoryHistory.Init(*m_actorInstance->GetTransformData()->GetCurrentPose(),
+                rootJointIndex,
+                m_trajectorySecsToTrack);
         }
 
         void BehaviorInstance::DebugDraw()
@@ -212,6 +222,11 @@ namespace EMotionFX
             {
                 currentFrameIndex = 0;
             }
+
+            // Add the sample from the last frame (post-motion extraction)
+            m_trajectoryHistory.AddSample(*m_actorInstance->GetTransformData()->GetCurrentPose());
+            // Update the time. After this there is no sample for the updated time in the history as we're about to prepare this with the current update.
+            m_trajectoryHistory.Update(timePassedInSeconds);
 
             // Calculate the new time value of the motion, but don't set it yet (the syncing might adjust this again)
             m_motionInstance->SetFreezeAtLastFrame(true);

@@ -11,250 +11,141 @@
 */
 
 #include <TrajectoryHistory.h>
-#include <EMotionFX/Source/DebugDraw.h>
+#include <EMotionFX/Source/ActorInstance.h>
+#include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <AzCore/std/algorithm.h>
 
-namespace EMotionFX
+namespace EMotionFX::MotionMatching
 {
-    namespace MotionMatching
+    void TrajectoryHistory::Init(const Pose& pose, size_t jointIndex, float numSecondsToTrack)
     {
-        void TrajectoryHistory::Init(size_t jointIndex, size_t maxNumSamples, float numSecondsToTrack)
+        AZ_Assert(numSecondsToTrack > 0.0f, "Number of seconds to track has to be greater than zero.");
+        Clear();
+        m_numSecondsToTrack = numSecondsToTrack;
+        m_jointIndex = jointIndex;
+
+        // Pre-fill the history with samples from the current joint position.
+        PrefillSamples(pose, /*timeDelta=*/1.0f / 60.0f);
+    }
+
+    void TrajectoryHistory::AddSample(const Pose& pose)
+    {
+        const AZ::Vector3 position = pose.GetWorldSpaceTransform(m_jointIndex).m_position;
+
+        // The new key will be added at the end of the keytrack.
+        m_keytrack.AddKey(m_currentTime, position);
+
+        while (m_keytrack.GetNumKeys() > 2 &&
+            ((m_keytrack.GetKey(m_keytrack.GetNumKeys() - 2)->GetTime() - m_keytrack.GetFirstTime()) > m_numSecondsToTrack))
         {
-            AZ_Assert(maxNumSamples > 0, "Max number of samples cannot be zero.");
-            AZ_Assert(numSecondsToTrack > 0.0f, "Number of seconds to track has to be greater than zero.");
-            Clear();
-            m_times.resize(maxNumSamples);
-            m_positions.resize(maxNumSamples);
-            m_numSecondsToTrack = numSecondsToTrack;
-            m_jointIndex = jointIndex;
+            m_keytrack.RemoveKey(0); // Remove first (oldest) key
+        }
+    }
+
+    void TrajectoryHistory::PrefillSamples(const Pose& pose, float timeDelta)
+    {
+        const size_t numKeyframes = aznumeric_caster<>(m_numSecondsToTrack / timeDelta);
+        for (size_t i = 0; i < numKeyframes; ++i)
+        {
+            AddSample(pose);
+            Update(timeDelta);
+        }
+    }
+
+    void TrajectoryHistory::Clear()
+    {
+        m_jointIndex = 0;
+        m_currentTime = 0.0f;
+        m_keytrack.ClearKeys();
+    }
+
+    void TrajectoryHistory::Update(float timeDelta)
+    {
+        m_currentTime += timeDelta;
+    }
+
+    AZ::Vector3 TrajectoryHistory::Sample(float time) const
+    {
+        if (m_keytrack.GetNumKeys() == 0)
+        {
+            return AZ::Vector3::CreateZero();
         }
 
-        void TrajectoryHistory::AddSample(const Pose& pose)
-        {
-            AZ_Assert(m_times.size() == m_positions.size(), "Expecting the size of m_times to be equal to m_positions.");
+        return m_keytrack.GetValueAtTime(m_keytrack.GetLastTime() - time);
+    }
 
-            // Check if the time passed since the last sample is smaller than the sample rate.
-            // Because if so, let's not record this sample yet, as otherwise we get too many samples for the number of seconds we try to record.
-            if (m_numSamples > 0)
+    AZ::Vector3 TrajectoryHistory::SampleNormalized(float normalizedTime) const
+    {
+        const float firstTime = m_keytrack.GetFirstTime();
+        const float lastTime = m_keytrack.GetLastTime();
+        const float range = lastTime - firstTime;
+
+        const float time = (1.0f - normalizedTime) * range + firstTime;
+        return m_keytrack.GetValueAtTime(time);
+    }
+
+    void TrajectoryHistory::DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
+        [[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw,
+        const AZ::Color& color,
+        float timeStart) const
+    {
+        const size_t numKeyframes = m_keytrack.GetNumKeys();
+        if (numKeyframes == 0)
+        {
+            return;
+        }
+
+        // Clip some of the newest samples.
+        const float adjustedLastTime = m_keytrack.GetLastTime() - timeStart;
+        size_t adjustedLastKey = m_keytrack.FindKeyNumber(adjustedLastTime);
+        if (adjustedLastKey == InvalidIndex)
+        {
+            adjustedLastKey = m_keytrack.GetNumKeys() - 1;
+        }
+        const float firstTime = m_keytrack.GetFirstTime();
+        const float range = adjustedLastTime - firstTime;
+
+        for (size_t i = 0; i < adjustedLastKey; ++i)
+        {
+            const float time = m_keytrack.GetKey(i)->GetTime();
+            const float normalized = (time - firstTime) / range;
+            if (normalized < 0.3f)
             {
-                const float timeSinceLastSample = m_currentTime - m_times[m_endIndex];
-                const float spacingBetweenSamples = m_numSecondsToTrack / static_cast<float>(m_numSamples);
-                AZ_Assert(timeSinceLastSample >= 0.0f, "Time since last sample has to be zero or larger.");
-                if (timeSinceLastSample < spacingBetweenSamples)
-                {
-                    return;
-                }
+                continue;
             }
 
-            // Update the start and end indices by wrapping them if needed as we're a ring/circle buffer.
-            m_numSamples++;
-            if (m_numSamples < GetMaxNumSamples())
-            {
-                AZ_Assert(m_startIndex == 0, "Expected the start index to be zero.");
-                m_endIndex++;
-            }
-            else
-            {
-                m_endIndex = WrapIndex(m_endIndex + 1);
-                m_startIndex = WrapIndex(m_startIndex + 1);
-                m_numSamples = GetMaxNumSamples();
-                AZ_Assert(m_startIndex != m_endIndex, "Expected start and end index to not be the same.");
-            }
+            // Decrease size and fade out alpha the older the sample is.
+            AZ::Color finalColor = color;
+            finalColor.SetA(finalColor.GetA() * 0.6f * normalized);
+            const float markerSize = m_debugMarkerSize * 0.7f * normalized;
 
-            // Store the values.
-            m_times[m_endIndex] = m_currentTime;
-            m_positions[m_endIndex] = pose.GetWorldSpaceTransform(m_jointIndex).m_position;
-
-            //AZ_Assert(GetMinSampleTime() <= GetMaxSampleTime(), "Expected the minimum sample time to be smaller than the maximum sample time.");
+            const AZ::Vector3 currentPosition = m_keytrack.GetKey(i)->GetValue();
+            drawQueue->DrawSphere(currentPosition,
+                markerSize,
+                finalColor,
+                AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
+                AZ::RPI::AuxGeomDraw::DepthTest::Off);
         }
+    }
 
-        void TrajectoryHistory::Clear()
+    void TrajectoryHistory::DebugDrawSampled([[maybe_unused]] AZ::RPI::AuxGeomDrawPtr& drawQueue,
+        EMotionFX::DebugDraw::ActorInstanceData& draw,
+        size_t numSamples,
+        const AZ::Color& color) const
+    {
+        AZ::Vector3 lastPos = SampleNormalized(0.0f);
+        for (size_t i = 0; i < numSamples; ++i)
         {
-            m_jointIndex = 0;
-            m_startIndex = 0;
-            m_endIndex = 0;
-            m_numSamples = 0;
-            m_minSampleTime = 0.0f;
-            m_maxSampleTime = 0.0f;
-            m_currentTime = 0.0f;
-        }
-
-        void TrajectoryHistory::Update(float timePassedInSeconds)
-        {
-            m_currentTime += timePassedInSeconds;
-        }
-
-        AZStd::tuple<size_t, size_t> TrajectoryHistory::FindSampleIndices(float sampleTime) const
-        {
-            AZ_Assert(m_numSamples > 1, "Expecting more than one sample.");
-
-            if (sampleTime <= m_times[m_startIndex])
+            const float sampleTime = i / static_cast<float>(numSamples - 1);
+            const AZ::Vector3 currentPos = SampleNormalized(sampleTime);
+            if (i > 0)
             {
-                return { m_startIndex, m_startIndex };
+                draw.DrawLine(lastPos, currentPos, color);
             }
 
-            if (sampleTime > m_times[m_endIndex])
-            {
-                return { m_endIndex, m_endIndex };
-            }
-
-            for (size_t i = 0; i < m_numSamples - 1; ++i)
-            {
-                const size_t firstIndex = WrapIndex(m_startIndex + i);
-                const size_t secondIndex = WrapIndex(m_startIndex + i + 1);
-                if (m_times[firstIndex] <= sampleTime &&
-                    m_times[secondIndex] > sampleTime)
-                {
-                    return { firstIndex, secondIndex };
-                }
-            }
-
-            return { m_endIndex, m_endIndex };
+            draw.DrawMarker(currentPos, color, m_debugMarkerSize);
+            lastPos = currentPos;
         }
-
-        AZ::Vector3 TrajectoryHistory::SampleNormalized(float normalizedTime) const
-        {
-            //AZ_Assert(normalizedTime >= 0.0f && normalizedTime <= 1.0f, "Sample time has to be in range of 0 to 1.");
-            if (m_numSamples == 0)
-            {
-                return AZ::Vector3::CreateZero();
-            }
-
-            if (m_numSamples == 1)
-            {
-                return m_positions[m_endIndex];
-            }
-
-            // Calculate the sample time.
-            const float maxTime = GetMaxSampleTime();
-            const float minTime = maxTime - m_numSecondsToTrack;
-            const float sampleTime = maxTime - (normalizedTime * m_numSecondsToTrack);
-            const float sampleTimeClamped = AZ::GetClamp(sampleTime, minTime, maxTime);
-
-            // Find the two keys to interpoalte between.
-            size_t firstSampleIndex;
-            size_t secondSampleIndex;
-            std::tie(firstSampleIndex, secondSampleIndex) = FindSampleIndices(sampleTimeClamped);
-            const float firstSampleTime = m_times[firstSampleIndex];
-            const float secondSampleTime = m_times[secondSampleIndex];
-
-            // Interpolate betwen the two samples.
-            const float spacingBetweenSamples = (secondSampleTime - firstSampleTime);
-            if (spacingBetweenSamples > 0.0f)
-            {
-                const float alpha = (sampleTimeClamped - firstSampleTime) / spacingBetweenSamples;
-                return m_positions[firstSampleIndex].Lerp(m_positions[secondSampleIndex], alpha);
-            }
-            else
-            {
-                return m_positions[firstSampleIndex];
-            }
-        }
-
-        void TrajectoryHistory::DebugDraw(ActorInstance* actorInstance, const AZ::Color& color)
-        {
-            if (m_numSamples <= 1)
-            {
-                return;
-            }
-
-            // Start drawing.
-            EMotionFX::DebugDraw& drawSystem = GetDebugDraw();
-            drawSystem.Lock();
-            EMotionFX::DebugDraw::ActorInstanceData* draw = drawSystem.GetActorInstanceData(actorInstance);
-            draw->Lock();
-
-            for (size_t i = 0; i < m_numSamples - 1; ++i)
-            {
-                const size_t sampleIndex = WrapIndex(m_startIndex + i);
-                const size_t nextSampleIndex = WrapIndex(m_startIndex + i + 1);
-                draw->DrawLine(m_positions[sampleIndex], m_positions[nextSampleIndex], color);
-            }
-
-            for (size_t i = 0; i < m_numSamples; ++i)
-            {
-                const size_t sampleIndex = WrapIndex(m_startIndex + i);
-                draw->DrawMarker(m_positions[sampleIndex], AZ::Colors::White, 0.015f);
-            }
-
-            // End drawing.
-            draw->Unlock();
-            drawSystem.Unlock();
-        }
-
-        void TrajectoryHistory::DebugDrawSampled(ActorInstance* actorInstance, size_t numSamples, const AZ::Color& color)
-        {
-            if (m_numSamples <= 1)
-            {
-                return;
-            }
-
-            // Start drawing.
-            EMotionFX::DebugDraw& drawSystem = GetDebugDraw();
-            drawSystem.Lock();
-            EMotionFX::DebugDraw::ActorInstanceData* draw = drawSystem.GetActorInstanceData(actorInstance);
-            draw->Lock();
-
-            // Draw the samples.
-            numSamples = AZ::GetMin(numSamples, m_numSamples);
-            AZ::Vector3 lastPos;
-            for (size_t i = 0; i < numSamples; ++i)
-            {
-                const float sampleTime = i / static_cast<float>(numSamples - 1);
-                const AZ::Vector3 currentPos = SampleNormalized(sampleTime);
-                if (i > 0)
-                {
-                    draw->DrawLine(lastPos, currentPos, color);
-                }
-
-                draw->DrawMarker(currentPos, AZ::Colors::Yellow, 0.02f);
-                lastPos = currentPos;
-            }
-
-            // End drawing.
-            draw->Unlock();
-            drawSystem.Unlock();
-        }
-
-        size_t TrajectoryHistory::GetNumSamples() const
-        {
-            return m_numSamples;
-        }
-
-        size_t TrajectoryHistory::GetMaxNumSamples() const
-        {
-            return m_times.size();
-        }
-
-        float TrajectoryHistory::GetNumSecondsToTrack() const
-        {
-            return m_numSecondsToTrack;
-        }
-
-        float TrajectoryHistory::GetMinSampleTime() const
-        {
-            return m_times[m_startIndex];
-        }
-
-        float TrajectoryHistory::GetMaxSampleTime() const
-        {
-            return m_times[m_endIndex];
-        }
-
-        size_t TrajectoryHistory::WrapIndex(size_t index) const
-        {
-            return index % GetMaxNumSamples();
-        }
-
-        float TrajectoryHistory::GetCurrentTime() const
-        {
-            return m_currentTime;
-        }
-
-        size_t TrajectoryHistory::GetJointIndex() const
-        {
-            return m_jointIndex;
-        }
-    } // namespace MotionMatching
-} // namespace EMotionFX
+    }
+} // namespace EMotionFX::MotionMatching

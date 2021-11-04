@@ -12,53 +12,58 @@
 
 #pragma once
 
-#include <EMotionFX/Source/EMotionFXConfig.h>
-#include <EMotionFX/Source/Pose.h>
-
-#include <AzCore/std/containers/vector.h>
-#include <AzCore/std/tuple.h>
-
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 
+#include <EMotionFX/Source/DebugDraw.h>
+#include <EMotionFX/Source/Pose.h>
+#include <EMotionFX/Source/KeyTrackLinearDynamic.h>
 
-namespace EMotionFX
+#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
+#include <Atom/RPI.Public/Scene.h>
+
+namespace EMotionFX::MotionMatching
 {
-    namespace MotionMatching
+    //! Used to store the trajectory history for the root motion (motion extraction node).
+    //! The trajectory history is independent of the trajectory feature and captures a sample with every engine tick.
+    //! The recorded history needs to record and track at least the time the trajectory feature/query requires.
+    class EMFX_API TrajectoryHistory
     {
-        class EMFX_API TrajectoryHistory
-        {
-        public:
-            void Init(size_t jointIndex, size_t maxNumSamples, float numSecondsToTrack);
-            void Clear();
-            void Update(float timePassedInSeconds);
-            void AddSample(const Pose& pose);
-            void DebugDraw(ActorInstance* actorInstance, const AZ::Color& color);
-            void DebugDrawSampled(ActorInstance* actorInstance, size_t numSamples, const AZ::Color& color);
-            AZ::Vector3 SampleNormalized(float normalizedTime) const; // The normalizedTime parameter should be in range of 0 to 1.
+    public:
+        void Init(const Pose& pose, size_t jointIndex, float numSecondsToTrack);
+        void Clear();
 
-            size_t GetNumSamples() const;
-            size_t GetMaxNumSamples() const;
-            float GetNumSecondsToTrack() const;
-            float GetMinSampleTime() const;
-            float GetMaxSampleTime() const;
-            float GetCurrentTime() const;
-            size_t GetJointIndex() const;
+        void Update(float timeDelta);
+        void AddSample(const Pose& pose);
 
-        private:
-            size_t WrapIndex(size_t index) const;
-            AZStd::tuple<size_t, size_t> FindSampleIndices(float sampleTime) const;
+        //! time in range [0, m_numSecondsToTrack]
+        AZ::Vector3 Sample(float time) const;
 
-            AZStd::vector<float> m_times;
-            AZStd::vector<AZ::Vector3> m_positions;
-            size_t m_jointIndex = 0;
-            size_t m_startIndex = 0;
-            size_t m_endIndex = 0;
-            size_t m_numSamples = 30;
-            float m_currentTime = 0.0f;
-            float m_numSecondsToTrack = 1.0f;
-            float m_minSampleTime = 0.0f;
-            float m_maxSampleTime = 0.0f;
-        };
-    } // namespace MotionMatching
-} // namespace EMotionFX
+        //! time in range [0, 1] where 0 is the current character position and 1 the oldest keyframe in the trajectory history
+        AZ::Vector3 SampleNormalized(float normalizedTime) const;
+
+        float GetNumSecondsToTrack() const { return m_numSecondsToTrack; }
+        float GetCurrentTime() const { return m_currentTime; }
+        size_t GetJointIndex() const { return m_jointIndex; }
+
+        void DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
+            EMotionFX::DebugDraw::ActorInstanceData& draw,
+            const AZ::Color& color,
+            float timeStart = 0.0f) const;
+        void DebugDrawSampled(AZ::RPI::AuxGeomDrawPtr& drawQueue,
+            EMotionFX::DebugDraw::ActorInstanceData& draw,
+            size_t numSamples,
+            const AZ::Color& color) const;
+
+    private:
+        void PrefillSamples(const Pose& pose, float timeDelta);
+
+        KeyTrackLinearDynamic<AZ::Vector3> m_keytrack;
+        float m_numSecondsToTrack = 0.0f;
+        size_t m_jointIndex = 0;
+        float m_currentTime = 0.0f;
+
+        static constexpr float m_debugMarkerSize = 0.02f;
+    };
+} // namespace EMotionFX::MotionMatching

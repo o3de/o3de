@@ -136,14 +136,6 @@ namespace EMotionFX
             initSettings.m_behavior = m_behavior;
             m_behaviorInstance->Init(initSettings);
 
-            // Initialize the root history to store 30 samples maximum, for one second of history data.
-            size_t rootJointIndex = actorInstance->GetActor()->GetMotionExtractionNodeIndex();
-            if (rootJointIndex == InvalidIndex32)
-            {
-                rootJointIndex = 0;
-            }
-            m_rootHistory.Init(rootJointIndex, /*maxNumSamples*/30, /*numSecondsToTrack*/1.0f);
-
             const float initTime = timer.GetDeltaTimeInSeconds();
             const size_t memUsage = m_behavior->GetData().CalcMemoryUsageInBytes();
             AZ_Printf("EMotionFX", "[MotionMatching] Finished in %.2f seconds (mem usage=%d bytes or %.2f mb)", initTime, memUsage, memUsage / (float)(1024 * 1024));
@@ -169,20 +161,14 @@ namespace EMotionFX
                 return;
             }
 
-            MotionMatching::BehaviorInstance* behaviorInstance = uniqueData->m_behaviorInstance;
-            behaviorInstance->Update(timePassedInSeconds);
-
             AZ::Vector3 targetPos = AZ::Vector3::CreateZero();
             TryGetInputVector3(animGraphInstance, INPUTPORT_TARGETPOS, targetPos);
 
-            // Update the root history data.
-            MotionMatching::TrajectoryHistory& rootHistory = uniqueData->m_rootHistory;
-            ActorInstance* actorInstance = behaviorInstance->GetActorInstance();
-            rootHistory.AddSample(*actorInstance->GetTransformData()->GetCurrentPose());
-            rootHistory.Update(timePassedInSeconds);
+            MotionMatching::BehaviorInstance* behaviorInstance = uniqueData->m_behaviorInstance;
+            behaviorInstance->Update(timePassedInSeconds);
 
             // Register the current actor instance position to the history data of the spline.
-            uniqueData->m_behavior->BuildControlSpline(uniqueData->m_behaviorInstance, m_controlSplineMode, targetPos, rootHistory, timePassedInSeconds, m_pathRadius, m_pathSpeed);
+            uniqueData->m_behavior->BuildControlSpline(uniqueData->m_behaviorInstance, m_controlSplineMode, targetPos, behaviorInstance->GetTrajectoryHistory(), timePassedInSeconds, m_pathRadius, m_pathSpeed);
 
             // set the current time to the new calculated time
             uniqueData->ClearInheritFlags();
