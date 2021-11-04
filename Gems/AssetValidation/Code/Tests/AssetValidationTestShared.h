@@ -150,7 +150,7 @@ struct AssetValidationTest
 
             auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
                 + "/project_path";
-            m_registry.Set(projectPathKey, "AutomatedTesting");
+            m_registry.Set(projectPathKey, (AZ::IO::FixedMaxPath(GetEngineRoot()) / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
 
             // Set the engine root to the temporary directory and re-update the runtime file paths
