@@ -45,6 +45,13 @@ namespace AzGameFramework
             enginePakPath = AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / "engine.pak";
             m_archive->OpenPack("@products@", enginePakPath.Native());
         }
+
+        // By default, load all archives in the products folder.
+        // If you want to adjust this for your project, make sure that the archive containing
+        // the bootstrap for the settings registry is still loaded here, and any archives containing
+        // assets used early in startup, like default shaders, are loaded here.
+        constexpr AZStd::string_view paksFolder = "@products@/*.pak"; // (@products@ assumed)
+        m_archive->OpenPacks(paksFolder);
     }
 
     GameApplication::~GameApplication()
@@ -82,7 +89,7 @@ namespace AzGameFramework
 
         // Used the lowercase the platform name since the bootstrap.game.<config>.<platform>.setreg is being loaded
         // from the asset cache root where all the files are in lowercased from regardless of the filesystem case-sensitivity
-        static constexpr char filename[] = "bootstrap.game." AZ_BUILD_CONFIGURATION_TYPE "." AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER ".setreg";
+        static constexpr char filename[] = "bootstrap.game." AZ_BUILD_CONFIGURATION_TYPE  ".setreg";
 
         AZ::IO::FixedMaxPath cacheRootPath;
         if (registry.Get(cacheRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder))

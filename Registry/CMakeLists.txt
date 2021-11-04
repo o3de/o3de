@@ -12,6 +12,11 @@ endif()
 
 ly_install_directory(DIRECTORIES .)
 
-ly_install_directory(DIRECTORIES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/Registry
-    DESTINATION ${runtime_output_directory}
-)
+foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+    string(TOUPPER ${conf} UCONF)
+    string(REPLACE "$<CONFIG>" "${conf}" output ${runtime_output_directory})
+    ly_install_directory(DIRECTORIES ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${conf}/Registry
+        DESTINATION ${output}
+        COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+    )
+endforeach()

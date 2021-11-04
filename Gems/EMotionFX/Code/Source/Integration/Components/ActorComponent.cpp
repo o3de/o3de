@@ -576,7 +576,7 @@ namespace EMotionFX
 
                 // The configuration stores some debug option. When that is enabled, we override it on top of the render flags.
                 m_debugRenderFlags[RENDER_AABB] = m_debugRenderFlags[RENDER_AABB] || m_configuration.m_renderBounds;
-                m_debugRenderFlags[RENDER_SKELETON] = m_debugRenderFlags[RENDER_SKELETON] || m_configuration.m_renderSkeleton;
+                m_debugRenderFlags[RENDER_LINESKELETON] = m_debugRenderFlags[RENDER_LINESKELETON] || m_configuration.m_renderSkeleton;
                 m_debugRenderFlags[RENDER_EMFX_DEBUG] = true;
                 m_renderActorInstance->DebugDraw(m_debugRenderFlags);
             }

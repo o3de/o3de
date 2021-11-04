@@ -34,7 +34,8 @@ namespace UnitTest
 
         MOCK_METHOD1(RegisterArea, void(AZ::EntityId areaId));
         MOCK_METHOD1(UnregisterArea, void(AZ::EntityId areaId));
-        MOCK_METHOD1(RefreshArea, void(AZ::EntityId areaId));
+        MOCK_METHOD2(RefreshArea,
+            void(AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask));
     };
 
     class MockTerrainDataNotificationListener : public AzFramework::Terrain::TerrainDataNotificationBus::Handler

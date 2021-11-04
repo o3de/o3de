@@ -42,6 +42,10 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_GridAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_GridAdded as test_module
 
+    @pytest.mark.test_case_id("C36525671")
+    class AtomEditorComponents_HDRColorGradingAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_HDRColorGradingAdded as test_module
+
     @pytest.mark.test_case_id("C32078117")
     class AtomEditorComponents_LightAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_LightAdded as test_module
@@ -53,6 +57,10 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C32078124")
     class AtomEditorComponents_MeshAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_MeshAdded as test_module
+
+    @pytest.mark.test_case_id("C36525663")
+    class AtomEditorComponents_OcclusionCullingPlaneAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_OcclusionCullingPlaneAdded as test_module
 
     @pytest.mark.test_case_id("C32078125")
     class AtomEditorComponents_PhysicalSkyAdded(EditorSharedTest):

@@ -42,4 +42,5 @@ set(FILES
     Source/Integration/Rendering/RenderActorInstance.cpp
     Source/Integration/Rendering/RenderBackendManager.h
     Source/Integration/Rendering/RenderBackendManager.cpp
+    Source/Integration/Rendering/RenderActorSettings.h
 )

@@ -3,8 +3,29 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-"""
 
+This file provides editor testing functionality to easily write automated editor tests for O3DE.
+For using these utilities, you can subclass your test suite from EditorTestSuite, this allows an easy way of
+specifying python test scripts that the editor will run without needing to write any boilerplace code.
+It supports out of the box parallelization(running multiple editor instances at once), batching(running multiple tests
+in the same editor instance) and crash detection.
+Usage example:
+   class MyTestSuite(EditorTestSuite):
+
+       class MyFirstTest(EditorSingleTest):
+           from . import script_to_be_run_by_editor as test_module
+
+       class MyTestInParallel_1(EditorParallelTest):
+           from . import another_script_to_be_run_by_editor as test_module
+
+       class MyTestInParallel_2(EditorParallelTest):
+           from . import yet_another_script_to_be_run_by_editor as test_module
+
+
+EditorTestSuite does introspection of the defined classes inside of it and automatically prepares the tests,
+parallelizing/batching as required
+"""
+from __future__ import annotations
 import pytest
 from _pytest.skipping import pytest_runtest_setup as skipping_pytest_runtest_setup
 
@@ -25,30 +46,11 @@ import re
 import ly_test_tools.environment.file_system as file_system
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.process_utils as process_utils
+import ly_test_tools.o3de.editor_test
+import ly_test_tools.o3de.editor_test_utils as editor_utils
 
 from ly_test_tools.o3de.asset_processor import AssetProcessor
 from ly_test_tools.launchers.exceptions import WaitTimeoutError
-from . import editor_test_utils as editor_utils
-
-# This file provides editor testing functionality to easily write automated editor tests for O3DE.
-# For using these utilities, you can subclass your test suite from EditorTestSuite, this allows an easy way of specifying 
-# python test scripts that the editor will run without needing to write any boilerplace code.
-# It supports out of the box parallelization(running multiple editor instances at once), batching(running multiple tests in the same editor instance) and
-# crash detection.
-# Usage example:
-#    class MyTestSuite(EditorTestSuite):
-#   
-#        class MyFirstTest(EditorSingleTest):
-#            from . import script_to_be_run_by_editor as test_module
-#   
-#        class MyTestInParallel_1(EditorParallelTest):
-#            from . import another_script_to_be_run_by_editor as test_module
-#        
-#        class MyTestInParallel_2(EditorParallelTest):
-#            from . import yet_another_script_to_be_run_by_editor as test_module
-#
-#
-# EditorTestSuite does introspection of the defined classes inside of it and automatically prepares the tests, parallelizing/batching as required
 
 # This file contains no tests, but with this we make sure it won't be picked up by the runner since the file ends with _test
 __test__ = False
@@ -109,12 +111,22 @@ class EditorBatchedTest(EditorSharedTest):
 class Result:
     class Base:
         def get_output_str(self):
+            # type () -> str
+            """
+            Checks if the output attribute exists and returns it.
+            :return: Either the output string or a no output message
+            """
             if hasattr(self, "output") and self.output is not None:
                 return self.output
             else:
                 return "-- No output --"
             
         def get_editor_log_str(self):
+            # type () -> str
+            """
+            Checks if the editor_log attribute exists and returns it.
+            :return: Either the editor_log string or a no output message
+            """
             if hasattr(self, "editor_log") and self.editor_log is not None:
                 return self.editor_log
             else:
@@ -122,7 +134,14 @@ class Result:
 
     class Pass(Base):
         @classmethod
-        def create(cls, test_spec : EditorTestBase, output : str, editor_log : str):
+        def create(cls, test_spec: EditorTestBase, output: str, editor_log: str) -> Pass:
+            """
+            Creates a Pass object with a given test spec, output string, and editor log string.
+            :test_spec: The type of EditorTestBase
+            :output: The test output
+            :editor_log: The editor log's output
+            :return: the Pass object
+            """
             r = cls()
             r.test_spec = test_spec
             r.output = output
@@ -141,7 +160,14 @@ class Result:
 
     class Fail(Base):       
         @classmethod
-        def create(cls, test_spec : EditorTestBase, output, editor_log : str):
+        def create(cls, test_spec: EditorTestBase, output: str, editor_log: str) -> Fail:
+            """
+            Creates a Fail object with a given test spec, output string, and editor log string.
+            :test_spec: The type of EditorTestBase
+            :output: The test output
+            :editor_log: The editor log's output
+            :return: the Fail object
+            """
             r = cls()
             r.test_spec = test_spec
             r.output = output
@@ -164,7 +190,17 @@ class Result:
 
     class Crash(Base):
         @classmethod
-        def create(cls, test_spec : EditorTestBase, output : str, ret_code : int, stacktrace : str, editor_log : str):
+        def create(cls, test_spec: EditorTestBase, output: str, ret_code: int, stacktrace: str, editor_log: str) -> Crash:
+            """
+            Creates a Crash object with a given test spec, output string, and editor log string. This also includes the
+            return code and stacktrace.
+            :test_spec: The type of EditorTestBase
+            :output: The test output
+            :ret_code: The test's return code
+            :stacktrace: The test's stacktrace if available
+            :editor_log: The editor log's output
+            :return: The Crash object
+            """
             r = cls()
             r.output = output
             r.test_spec = test_spec
@@ -190,12 +226,20 @@ class Result:
                 f"--------------\n"
                 f"{self.get_editor_log_str()}\n"
             )
-            crash_str = "-- No crash information found --"
             return output
 
     class Timeout(Base):
         @classmethod
-        def create(cls, test_spec : EditorTestBase, output : str, time_secs : float, editor_log : str):
+        def create(cls, test_spec: EditorTestBase, output: str, time_secs: float, editor_log: str) -> Timeout:
+            """
+            Creates a Timeout object with a given test spec, output string, and editor log string. The timeout time
+            should be provided in seconds
+            :test_spec: The type of EditorTestBase
+            :output: The test output
+            :time_secs: The timeout duration in seconds
+            :editor_log: The editor log's output
+            :return: The Timeout object
+            """
             r = cls()
             r.output = output
             r.test_spec = test_spec
@@ -219,14 +263,22 @@ class Result:
 
     class Unknown(Base):
         @classmethod
-        def create(cls, test_spec : EditorTestBase, output : str, extra_info : str, editor_log : str):
+        def create(cls, test_spec: EditorTestBase, output: str, extra_info: str, editor_log: str) -> Unknown:
+            """
+            Creates an Unknown test results object if something goes wrong.
+            :test_spec: The type of EditorTestBase
+            :output: The test output
+            :extra_info: Any extra information as a string
+            :editor_log: The editor log's output
+            :return: The Unknown object
+            """
             r = cls()
             r.output = output
             r.test_spec = test_spec
             r.editor_log = editor_log
             r.extra_info = extra_info
             return r
-            
+
         def __str__(self):
             output = (
                 f"Unknown test result, possible cause: {self.extra_info}\n"
@@ -262,7 +314,19 @@ class EditorTestSuite():
     _TEST_FAIL_RETCODE = 0xF # Return code for test failure
 
     @pytest.fixture(scope="class")
-    def editor_test_data(self, request):
+    def editor_test_data(self, request: Request) -> TestData:
+        """
+        Yields a per-testsuite structure to store the data of each test result and an AssetProcessor object that will be
+        re-used on the whole suite
+        :request: The Pytest request
+        :yield: The TestData object
+        """
+        yield from self._editor_test_data(request)
+
+    def _editor_test_data(self, request: Request) -> TestData:
+        """
+        A wrapper function for unit testing to call directly
+        """
         class TestData():
             def __init__(self):
                 self.results = {} # Dict of str(test_spec.__name__) -> Result
@@ -444,9 +508,15 @@ class EditorTestSuite():
         return EditorTestSuite.EditorTestClass(name, collector)
 
     @classmethod
-    def pytest_custom_modify_items(cls, session, items, config):
-        # Add here the runners functions and filter the tests that will be run.
-        # The runners will be added if they have any selected tests
+    def pytest_custom_modify_items(cls, session: Session, items: list[EditorTestBase], config: Config) -> None:
+        """
+        Adds the runners' functions and filters the tests that will run. The runners will be added if they have any
+        selected tests
+        :param session: The Pytest Session
+        :param items: The test case functions
+        :param config: The Pytest Config object
+        :return: None
+        """
         new_items = []
         for runner in cls._runners:
             runner.tests[:] = cls.filter_session_shared_tests(items, runner.tests)
@@ -462,24 +532,50 @@ class EditorTestSuite():
         items[:] = items + new_items
 
     @classmethod
-    def get_single_tests(cls):
+    def get_single_tests(cls) -> list[EditorSingleTest]:
+        """
+        Grabs all of the EditorSingleTests subclassed tests from the EditorTestSuite class
+        Usage example:
+           class MyTestSuite(EditorTestSuite):
+               class MyFirstTest(EditorSingleTest):
+                   from . import script_to_be_run_by_editor as test_module
+        :return: The list of single tests
+        """
         single_tests = [c[1] for c in cls.__dict__.items() if inspect.isclass(c[1]) and issubclass(c[1], EditorSingleTest)]
         return single_tests
         
     @classmethod
-    def get_shared_tests(cls):
+    def get_shared_tests(cls) -> list[EditorSharedTest]:
+        """
+        Grabs all of the EditorSharedTests from the EditorTestSuite
+        Usage example:
+           class MyTestSuite(EditorTestSuite):
+               class MyFirstTest(EditorSharedTest):
+                   from . import script_to_be_run_by_editor as test_module
+        :return: The list of shared tests
+        """
         shared_tests = [c[1] for c in cls.__dict__.items() if inspect.isclass(c[1]) and issubclass(c[1], EditorSharedTest)]
         return shared_tests
 
     @classmethod
-    def get_session_shared_tests(cls, session):
+    def get_session_shared_tests(cls, session: Session) -> list[EditorTestBase]:
+        """
+        Filters and returns all of the shared tests in a given session.
+        :session: The test session
+        :return: The list of tests
+        """
         shared_tests = cls.get_shared_tests()
         return cls.filter_session_shared_tests(session, shared_tests)
 
     @staticmethod
-    def filter_session_shared_tests(session_items, shared_tests):
-        # Retrieve the test sub-set that was collected
-        # this can be less than the original set if were overriden via -k argument or similars
+    def filter_session_shared_tests(session_items: list[EditorTestBase], shared_tests: list[EditorSharedTest]) -> list[EditorTestBase]:
+        """
+        Retrieve the test sub-set that was collected this can be less than the original set if were overriden via -k
+        argument or similars
+        :session_items: The tests in a session to run
+        :shared_tests: All of the shared tests
+        :return: The list of filtered tests
+        """
         def will_run(item):
             try:
                 skipping_pytest_runtest_setup(item)
@@ -488,13 +584,20 @@ class EditorTestSuite():
                 return False
         
         session_items_by_name = { item.originalname:item for item in session_items }
-        selected_shared_tests = [test for test in shared_tests if test.__name__ in session_items_by_name.keys() and will_run(session_items_by_name[test.__name__])]
+        selected_shared_tests = [test for test in shared_tests if test.__name__ in session_items_by_name.keys() and
+                                 will_run(session_items_by_name[test.__name__])]
         return selected_shared_tests
         
     @staticmethod
-    def filter_shared_tests(shared_tests, is_batchable=False, is_parallelizable=False):
-        # Retrieve the test sub-set that was collected
-        # this can be less than the original set if were overriden via -k argument or similars
+    def filter_shared_tests(shared_tests: list[EditorSharedTest], is_batchable: bool = False,
+                            is_parallelizable: bool = False) -> list[EditorSharedTest]:
+        """
+        Filters and returns all tests based off of if they are batchable and/or parallelizable
+        :shared_tests: All shared tests
+        :is_batchable: Filter to batchable tests
+        :is_parallelizable: Filter to parallelizable tests
+        :return: The list of filtered tests
+        """
         return [
             t for t in shared_tests if (
                 getattr(t, "is_batchable", None) is is_batchable
@@ -504,9 +607,14 @@ class EditorTestSuite():
         ]
 
     ### Utils ###
-
-    # Prepares the asset processor for the test
-    def _prepare_asset_processor(self, workspace, editor_test_data):
+    def _prepare_asset_processor(self, workspace: AbstractWorkspace, editor_test_data: TestData) -> None:
+        """
+        Prepares the asset processor for the test depending on whether or not the process is open and if the current
+        test owns it.
+        :workspace: The workspace object in case an AssetProcessor object needs to be created
+        :editor_test_data: The test data from calling editor_test_data()
+        :return: None
+        """
         try:
             # Start-up an asset processor if we are not running one
             # If another AP process exist, don't kill it, as we don't own it
@@ -524,15 +632,28 @@ class EditorTestSuite():
             editor_test_data.asset_processor = None
             raise ex
 
-    def _setup_editor_test(self, editor, workspace, editor_test_data):
+    def _setup_editor_test(self, editor: Editor, workspace: AbstractWorkspace, editor_test_data: TestData) -> None:
+        """
+        Sets up an editor test by preparing the Asset Processor, killing all other O3DE processes, and configuring
+        :editor: The launcher Editor object
+        :workspace: The test Workspace object
+        :editor_test_data: The TestData from calling editor_test_data()
+        :return: None
+        """
         self._prepare_asset_processor(workspace, editor_test_data)
         editor_utils.kill_all_ly_processes(include_asset_processor=False)
         editor.configure_settings()
 
-    # Utility function for parsing the output information from the editor.
-    # It deserializes the JSON content printed in the output for every test and returns that information.
     @staticmethod
-    def _get_results_using_output(test_spec_list, output, editor_log_content):
+    def _get_results_using_output(test_spec_list: list[EditorTestBase], output: str, editor_log_content: str) -> dict[str, Result]:
+        """
+        Utility function for parsing the output information from the editor. It deserializes the JSON content printed in
+        the output for every test and returns that information.
+        :test_spec_list: The list of EditorTests
+        :output: The Editor from Editor.get_output()
+        :editor_log_content: The contents of the editor log as a string
+        :return: A dict of the tests and their respective Result objects
+        """
         results = {}
         pattern = re.compile(r"JSON_START\((.+?)\)JSON_END")
         out_matches = pattern.finditer(output)
@@ -558,7 +679,9 @@ class EditorTestSuite():
         for test_spec in test_spec_list:
             name = editor_utils.get_module_filename(test_spec.test_module)
             if name not in found_jsons.keys():
-                results[test_spec.__name__] = Result.Unknown.create(test_spec, output, "Couldn't find any test run information on stdout", editor_log_content)
+                results[test_spec.__name__] = Result.Unknown.create(test_spec, output,
+                                                                    "Couldn't find any test run information on stdout",
+                                                                    editor_log_content)
             else:
                 result = None
                 json_result = found_jsons[name]
@@ -581,9 +704,14 @@ class EditorTestSuite():
 
         return results
 
-    # Fails the test if the test result is not a PASS, specifying the information
     @staticmethod
-    def _report_result(name : str, result : Result.Base):
+    def _report_result(name: str, result: Result) -> None:
+        """
+        Fails the test if the test result is not a PASS, specifying the information
+        :name: Name of the test
+        :result: The Result object which denotes if the test passed or not
+        :return: None
+        """
         if isinstance(result, Result.Pass):
             output_str = f"Test {name}:\n{str(result)}"
             print(output_str)
@@ -592,10 +720,19 @@ class EditorTestSuite():
             pytest.fail(error_str)
 
     ### Running tests ###
-    # Starts the editor with the given test and retuns an result dict with a single element specifying the result
-    def _exec_editor_test(self, request, workspace, editor, run_id : int, log_name : str,
-                          test_spec : EditorTestBase, cmdline_args : List[str] = []):
-
+    def _exec_editor_test(self, request: Request, workspace: AbstractWorkspace, editor: Editor, run_id: int,
+                          log_name: str, test_spec: EditorTestBase, cmdline_args: list[str] = []) -> dict[str, Result]:
+        """
+        Starts the editor with the given test and retuns an result dict with a single element specifying the result
+        :request: The pytest request
+        :workspace: The LyTestTools Workspace object
+        :editor: The LyTestTools Editor object
+        :run_id: The unique run id
+        :log_name: The name of the editor log to retrieve
+        :test_spec: The type of EditorTestBase
+        :cmdline_args: Any additional command line args
+        :return: a dictionary of Result objects
+        """
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
         test_spec_uses_null_renderer = getattr(test_spec, "use_null_renderer", None)
         if test_spec_uses_null_renderer or (test_spec_uses_null_renderer is None and self.use_null_renderer):
@@ -629,12 +766,14 @@ class EditorTestSuite():
             else:
                 has_crashed = return_code != EditorTestSuite._TEST_FAIL_RETCODE
                 if has_crashed:
-                    test_result = Result.Crash.create(test_spec, output, return_code, editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG), None)
+                    test_result = Result.Crash.create(test_spec, output, return_code, editor_utils.retrieve_crash_output
+                    (run_id, workspace, self._TIMEOUT_CRASH_LOG), None)
                     editor_utils.cycle_crash_report(run_id, workspace)
                 else:
                     test_result = Result.Fail.create(test_spec, output, editor_log_content)
         except WaitTimeoutError:
-            editor.kill()            
+            output = editor.get_output()
+            editor.kill()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             test_result = Result.Timeout.create(test_spec, output, test_spec.timeout, editor_log_content)
     
@@ -643,11 +782,21 @@ class EditorTestSuite():
         results[test_spec.__name__] = test_result
         return results
 
-    # Starts an editor executable with a list of tests and returns a dict of the result of every test ran within that editor
-    # instance. In case of failure this function also parses the editor output to find out what specific tests failed
-    def _exec_editor_multitest(self, request, workspace, editor, run_id : int, log_name : str,
-                               test_spec_list : List[EditorTestBase], cmdline_args=[]):
-
+    def _exec_editor_multitest(self, request: Request, workspace: AbstractWorkspace, editor: Editor, run_id: int, log_name: str,
+                               test_spec_list: list[EditorTestBase], cmdline_args: list[str] = []) -> dict[str, Result]:
+        """
+        Starts an editor executable with a list of tests and returns a dict of the result of every test ran within that
+        editor instance. In case of failure this function also parses the editor output to find out what specific tests
+        failed.
+        :request: The pytest request
+        :workspace: The LyTestTools Workspace object
+        :editor: The LyTestTools Editor object
+        :run_id: The unique run id
+        :log_name: The name of the editor log to retrieve
+        :test_spec_list: A list of EditorTestBase tests to run in the same editor instance
+        :cmdline_args: Any additional command line args
+        :return: A dict of Result objects
+        """
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
         if self.use_null_renderer:
             test_cmdline_args += ["-rhi=null"]
@@ -695,50 +844,66 @@ class EditorTestSuite():
                         if isinstance(result, Result.Unknown):
                             if not crashed_result:
                                 # The first test with "Unknown" result (no data in output) is likely the one that crashed
-                                crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
+                                crash_error = editor_utils.retrieve_crash_output(run_id, workspace,
+                                                                                 self._TIMEOUT_CRASH_LOG)
                                 editor_utils.cycle_crash_report(run_id, workspace)
-                                results[test_spec_name] = Result.Crash.create(result.test_spec, output, return_code, crash_error, result.editor_log)
+                                results[test_spec_name] = Result.Crash.create(result.test_spec, output, return_code,
+                                                                              crash_error, result.editor_log)
                                 crashed_result = result
                             else:
-                                # If there are remaning "Unknown" results, these couldn't execute because of the crash, update with info about the offender 
-                                results[test_spec_name].extra_info = f"This test has unknown result, test '{crashed_result.test_spec.__name__}' crashed before this test could be executed"
-
+                                # If there are remaning "Unknown" results, these couldn't execute because of the crash,
+                                # update with info about the offender
+                                results[test_spec_name].extra_info = f"This test has unknown result," \
+                                                                     f"test '{crashed_result.test_spec.__name__}'" \
+                                                                     f"crashed before this test could be executed"
                     # if all the tests ran, the one that has caused the crash is the last test
                     if not crashed_result:
                         crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
                         editor_utils.cycle_crash_report(run_id, workspace)
-                        results[test_spec_name] = Result.Crash.create(crashed_result.test_spec, output, return_code, crash_error, crashed_result.editor_log)
-
-
+                        results[test_spec_name] = Result.Crash.create(crashed_result.test_spec, output, return_code,
+                                                                      crash_error, crashed_result.editor_log)
         except WaitTimeoutError:            
             editor.kill()
-
             output = editor.get_output()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
 
             # The editor timed out when running the tests, get the data from the output to find out which ones ran
             results = self._get_results_using_output(test_spec_list, output, editor_log_content)
             assert len(results) == len(test_spec_list), "bug in _get_results_using_output(), the number of results don't match the tests ran"
-            
             # Similar logic here as crashes, the first test that has no result is the one that timed out
             timed_out_result = None
             for test_spec_name, result in results.items():
                 if isinstance(result, Result.Unknown):
                     if not timed_out_result:
-                        results[test_spec_name] = Result.Timeout.create(result.test_spec, result.output, self.timeout_editor_shared_test, result.editor_log)
+                        results[test_spec_name] = Result.Timeout.create(result.test_spec, result.output,
+                                                                        self.timeout_editor_shared_test,
+                                                                        result.editor_log)
                         timed_out_result = result
                     else:
-                        # If there are remaning "Unknown" results, these couldn't execute because of the timeout, update with info about the offender 
-                        results[test_spec_name].extra_info = f"This test has unknown result, test '{timed_out_result.test_spec.__name__}' timed out before this test could be executed"
-
+                        # If there are remaning "Unknown" results, these couldn't execute because of the timeout,
+                        # update with info about the offender
+                        results[test_spec_name].extra_info = f"This test has unknown result, test " \
+                                                             f"'{timed_out_result.test_spec.__name__}' timed out " \
+                                                             f"before this test could be executed"
             # if all the tests ran, the one that has caused the timeout is the last test, as it didn't close the editor
             if not timed_out_result:
-                results[test_spec_name] = Result.Timeout.create(timed_out_result.test_spec, results[test_spec_name].output, self.timeout_editor_shared_test, result.editor_log)
+                results[test_spec_name] = Result.Timeout.create(timed_out_result.test_spec,
+                                                                results[test_spec_name].output,
+                                                                self.timeout_editor_shared_test, result.editor_log)
 
         return results
     
-    # Runs a single test (one editor, one test) with the given specs
-    def _run_single_test(self, request, workspace, editor, editor_test_data, test_spec : EditorSingleTest):
+    def _run_single_test(self, request: Request, workspace: AbstractWorkspace, editor: Editor,
+                         editor_test_data: TestData, test_spec: EditorSingleTest) -> None:
+        """
+        Runs a single test (one editor, one test) with the given specs
+        :request: The Pytest Request
+        :workspace: The LyTestTools Workspace object
+        :editor: The LyTestTools Editor object
+        :editor_test_data: The TestData from calling editor_test_data()
+        :test_spec: The test class that should be a subclass of EditorSingleTest
+        :return: None
+        """
         self._setup_editor_test(editor, workspace, editor_test_data)
         extra_cmdline_args = []
         if hasattr(test_spec, "extra_cmdline_args"):
@@ -749,18 +914,39 @@ class EditorTestSuite():
         test_name, test_result = next(iter(results.items()))
         self._report_result(test_name, test_result)
 
-    # Runs a batch of tests in one single editor with the given spec list (one editor, multiple tests)
-    def _run_batched_tests(self, request, workspace, editor, editor_test_data, test_spec_list : List[EditorSharedTest], extra_cmdline_args=[]):
+    def _run_batched_tests(self, request: Request, workspace: AbstractWorkspace, editor: Editor, editor_test_data: TestData,
+                           test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = []) -> None:
+        """
+        Runs a batch of tests in one single editor with the given spec list (one editor, multiple tests)
+        :request: The Pytest Request
+        :workspace: The LyTestTools Workspace object
+        :editor: The LyTestTools Editor object
+        :editor_test_data: The TestData from calling editor_test_data()
+        :test_spec_list: A list of EditorSharedTest tests to run
+        :extra_cmdline_args: Any extra command line args in a list
+        :return: None
+        """
         if not test_spec_list:
             return
 
         self._setup_editor_test(editor, workspace, editor_test_data)
-        results = self._exec_editor_multitest(request, workspace, editor, 1, "editor_test.log", test_spec_list, extra_cmdline_args)
+        results = self._exec_editor_multitest(request, workspace, editor, 1, "editor_test.log", test_spec_list,
+                                              extra_cmdline_args)
         assert results is not None
         editor_test_data.results.update(results)
 
-    # Runs multiple editors with one test on each editor (multiple editor, one test each)
-    def _run_parallel_tests(self, request, workspace, editor, editor_test_data, test_spec_list : List[EditorSharedTest], extra_cmdline_args=[]):
+    def _run_parallel_tests(self, request: Request, workspace: AbstractWorkspace, editor: Editor, editor_test_data: TestData,
+                            test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = []) -> None:
+        """
+        Runs multiple editors with one test on each editor (multiple editor, one test each)
+        :request: The Pytest Request
+        :workspace: The LyTestTools Workspace object
+        :editor: The LyTestTools Editor object
+        :editor_test_data: The TestData from calling editor_test_data()
+        :test_spec_list: A list of EditorSharedTest tests to run
+        :extra_cmdline_args: Any extra command line args in a list
+        :return: None
+        """
         if not test_spec_list:
             return
 
@@ -778,7 +964,8 @@ class EditorTestSuite():
             for i in range(total_threads):
                 def make_func(test_spec, index, my_editor):
                     def run(request, workspace, extra_cmdline_args):
-                        results = self._exec_editor_test(request, workspace, my_editor, index+1, f"editor_test.log", test_spec, extra_cmdline_args)
+                        results = self._exec_editor_test(request, workspace, my_editor, index+1, f"editor_test.log",
+                                                         test_spec, extra_cmdline_args)
                         assert results is not None
                         results_per_thread[index] = results
                     return run
@@ -796,8 +983,18 @@ class EditorTestSuite():
             for result in results_per_thread:
                 editor_test_data.results.update(result)
 
-    # Runs multiple editors with a batch of tests for each editor (multiple editor, multiple tests each)
-    def _run_parallel_batched_tests(self, request, workspace, editor, editor_test_data, test_spec_list : List[EditorSharedTest], extra_cmdline_args=[]):
+    def _run_parallel_batched_tests(self, request: Request, workspace: AbstractWorkspace, editor: Editor, editor_test_data: TestData,
+                                    test_spec_list: list[EditorSharedTest], extra_cmdline_args: list[str] = []) -> None:
+        """
+        Runs multiple editors with a batch of tests for each editor (multiple editor, multiple tests each)
+        :request: The Pytest Request
+        :workspace: The LyTestTools Workspace object
+        :editor: The LyTestTools Editor object
+        :editor_test_data: The TestData from calling editor_test_data()
+        :test_spec_list: A list of EditorSharedTest tests to run
+        :extra_cmdline_args: Any extra command line args in a list
+        :return: None
+        """
         if not test_spec_list:
             return
 
@@ -813,7 +1010,9 @@ class EditorTestSuite():
                 def run(request, workspace, extra_cmdline_args):
                     results = None
                     if len(test_spec_list_for_editor) > 0:
-                        results = self._exec_editor_multitest(request, workspace, my_editor, index+1, f"editor_test.log", test_spec_list_for_editor, extra_cmdline_args)
+                        results = self._exec_editor_multitest(request, workspace, my_editor, index+1,
+                                                              f"editor_test.log", test_spec_list_for_editor,
+                                                              extra_cmdline_args)
                         assert results is not None
                     else:
                         results = {}
@@ -833,8 +1032,12 @@ class EditorTestSuite():
         for result in results_per_thread:
             editor_test_data.results.update(result)
 
-    # Retrieves the number of parallel preference cmdline overrides
-    def _get_number_parallel_editors(self, request):
+    def _get_number_parallel_editors(self, request: Request) -> int:
+        """
+        Retrieves the number of parallel preference cmdline overrides
+        :request: The Pytest Request
+        :return: The number of parallel editors to use
+        """
         parallel_editors_value = request.config.getoption("--editors-parallel", None)
         if parallel_editors_value:
             return int(parallel_editors_value)

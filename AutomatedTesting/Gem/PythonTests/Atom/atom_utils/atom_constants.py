@@ -218,6 +218,7 @@ class AtomComponentProperties:
         properties = {
             'name': 'HDR Color Grading',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable HDR color grading': 'Controller|Configuration|Enable HDR color grading',
         }
         return properties[property]
 

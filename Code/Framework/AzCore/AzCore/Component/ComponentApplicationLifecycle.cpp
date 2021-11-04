@@ -56,15 +56,21 @@ namespace AZ::ComponentApplicationLifecycle
     }
 
     bool RegisterHandler(AZ::SettingsRegistryInterface& settingsRegistry, AZ::SettingsRegistryInterface::NotifyEventHandler& handler,
-        AZ::SettingsRegistryInterface::NotifyCallback callback, AZStd::string_view eventName)
+        AZ::SettingsRegistryInterface::NotifyCallback callback, AZStd::string_view eventName, bool autoRegisterEvent)
     {
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
         using Type = AZ::SettingsRegistryInterface::Type;
         using NotifyEventHandler = AZ::SettingsRegistryInterface::NotifyEventHandler;
 
-        if (!ValidateEvent(settingsRegistry, eventName))
+        // Some systems may attempt to register a handler before the settings registry has been loaded
+        // If so, this flag lets them automatically register an event if it hasn't yet been registered.
+        // RegisterEvent calls validate event.
+        if ((!autoRegisterEvent && !ValidateEvent(settingsRegistry, eventName)) ||
+            (autoRegisterEvent && !RegisterEvent(settingsRegistry, eventName)))
         {
-            AZ_Warning("ComponentApplicationLifecycle", false, R"(Cannot register event %.*s. Name does is not a field of object "%.*s".)"
+            AZ_Warning(
+                "ComponentApplicationLifecycle", false,
+                R"(Cannot register event %.*s. Name is not a field of object "%.*s".)"
                 R"( Please make sure the entry exists in the '<engine-root>/Registry/application_lifecycle_events.setreg")"
                 " or in *.setreg within the project", AZ_STRING_ARG(eventName), AZ_STRING_ARG(ApplicationLifecycleEventRegistrationKey));
             return false;

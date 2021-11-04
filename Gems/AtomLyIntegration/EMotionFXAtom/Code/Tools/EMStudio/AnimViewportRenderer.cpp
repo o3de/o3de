@@ -37,14 +37,13 @@
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
-
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 
 namespace EMStudio
 {
-    static constexpr float DepthNear = 0.01f;
-
-    AnimViewportRenderer::AnimViewportRenderer(AZ::RPI::ViewportContextPtr viewportContext)
+    AnimViewportRenderer::AnimViewportRenderer(AZ::RPI::ViewportContextPtr viewportContext, const RenderOptions* renderOptions)
         : m_windowContext(viewportContext->GetWindowContext())
+        , m_renderOptions(renderOptions)
     {
         // Create a new entity context
         m_entityContext = AZStd::make_unique<AzFramework::EntityContext>();
@@ -60,6 +59,7 @@ namespace EMStudio
 
         // Create and register a scene with all available feature processors
         AZ::RPI::SceneDescriptor sceneDesc;
+        sceneDesc.m_nameId = AZ::Name("AnimViewport");
         m_scene = AZ::RPI::Scene::CreateScene(sceneDesc);
         m_scene->EnableAllFeatureProcessors();
 
@@ -128,10 +128,10 @@ namespace EMStudio
         AZ_Assert(m_gridEntity != nullptr, "Failed to create grid entity.");
 
         AZ::Render::GridComponentConfig gridConfig;
-        gridConfig.m_gridSize = 20.0f;
-        gridConfig.m_axisColor = AZ::Color(0.5f, 0.5f, 0.5f, 1.0f);
-        gridConfig.m_primaryColor = AZ::Color(0.3f, 0.3f, 0.3f, 1.0f);
-        gridConfig.m_secondaryColor = AZ::Color(0.5f, 0.5f, 0.5f, 1.0f);
+        gridConfig.m_secondarySpacing = m_renderOptions->GetGridUnitSize();
+        gridConfig.m_axisColor = m_renderOptions->GetMainAxisColor();
+        gridConfig.m_primaryColor = m_renderOptions->GetGridColor();
+        gridConfig.m_secondaryColor = m_renderOptions->GetSubStepColor();
         auto gridComponent = m_gridEntity->CreateComponent(AZ::Render::GridComponentTypeId);
         gridComponent->SetConfiguration(gridConfig);
 
@@ -227,8 +227,7 @@ namespace EMStudio
         AZ::TransformBus::Event(m_iblEntity->GetId(), &AZ::TransformBus::Events::SetLocalTM, iblTransform);
 
         const AZ::Matrix4x4 rotationMatrix = AZ::Matrix4x4::CreateIdentity();
-        AZ::RPI::ScenePtr scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
-        auto skyBoxFeatureProcessorInterface = scene->GetFeatureProcessor<AZ::Render::SkyBoxFeatureProcessorInterface>();
+        auto skyBoxFeatureProcessorInterface = m_scene->GetFeatureProcessor<AZ::Render::SkyBoxFeatureProcessorInterface>();
         skyBoxFeatureProcessorInterface->SetCubemapRotationMatrix(rotationMatrix);
     }
 
@@ -326,8 +325,8 @@ namespace EMStudio
                 ->GetOrCreateExposureControlSettingsInterface();
 
         Camera::Configuration cameraConfig;
-        cameraConfig.m_fovRadians = AZ::Constants::HalfPi;
-        cameraConfig.m_nearClipDistance = DepthNear;
+        cameraConfig.m_fovRadians = AZ::DegToRad(m_renderOptions->GetFOV());
+        cameraConfig.m_nearClipDistance = m_renderOptions->GetNearClipPlaneDistance();
 
         preset->ApplyLightingPreset(
             iblFeatureProcessor, m_skyboxFeatureProcessor, exposureControlSettingInterface, m_directionalLightFeatureProcessor,

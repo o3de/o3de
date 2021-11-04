@@ -105,10 +105,6 @@ struct IDataProbe;
 
 #define PHSYICS_OBJECT_ENTITY 0
 
-using VTuneFunction = void (__cdecl *)(void);
-extern VTuneFunction VTResume;
-extern VTuneFunction VTPause;
-
 #define MAX_STREAMING_POOL_INDEX 6
 #define MAX_THREAD_POOL_INDEX 6
 
@@ -139,7 +135,6 @@ struct SSystemCVars
     int sys_ai;
     int sys_entitysystem;
     int sys_trackview;
-    int sys_vtune;
     float sys_update_profile_time;
     int sys_limit_phys_thread_count;
     int sys_MaxFPS;
@@ -168,21 +163,6 @@ struct SSystemCVars
 extern SSystemCVars g_cvars;
 
 class CSystem;
-
-struct CProfilingSystem
-    : public IProfilingSystem
-{
-    //////////////////////////////////////////////////////////////////////////
-    // VTune Profiling interface.
-
-    // Summary:
-    //   Resumes vtune data collection.
-    void VTuneResume() override;
-    // Summary:
-    //   Pauses vtune data collection.
-    void VTunePause() override;
-    //////////////////////////////////////////////////////////////////////////
-};
 
 class AssetSystem;
 
@@ -262,7 +242,6 @@ public:
     IViewSystem* GetIViewSystem() override;
     ILevelSystem* GetILevelSystem() override;
     ISystemEventDispatcher* GetISystemEventDispatcher() override { return m_pSystemEventDispatcher; }
-    IProfilingSystem* GetIProfilingSystem() override { return &m_ProfilingSystem; }
     //////////////////////////////////////////////////////////////////////////
     // retrieves the perlin noise singleton instance
     CPNoise3* GetNoiseGen() override;
@@ -564,8 +543,6 @@ private: // ------------------------------------------------------
     ESystemConfigSpec m_nMaxConfigSpec;
     ESystemConfigPlatform m_ConfigPlatform;
 
-    CProfilingSystem m_ProfilingSystem;
-
     // Pause mode.
     bool m_bPaused;
     bool m_bNoUpdate;
@@ -588,9 +565,7 @@ public:
     const SFileVersion& GetProductVersion() override;
     const SFileVersion& GetBuildVersion() override;
 
-    bool InitVTuneProfiler();
-
-    void OpenBasicPaks();
+    void OpenPlatformPaks();
     void OpenLanguagePak(const char* sLanguage);
     void OpenLanguageAudioPak(const char* sLanguage);
     void GetLocalizedPath(const char* sLanguage, AZStd::string& sLocalizedPath);
