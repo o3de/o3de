@@ -12,7 +12,6 @@
 
 #if defined(AZ_RESTRICTED_PLATFORM) || defined(AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS)
 #undef AZ_RESTRICTED_SECTION
-#define SYSTEMINIT_CPP_SECTION_1 1
 #define SYSTEMINIT_CPP_SECTION_2 2
 #define SYSTEMINIT_CPP_SECTION_3 3
 #define SYSTEMINIT_CPP_SECTION_4 4
@@ -167,30 +166,6 @@ void CryEngineSignalHandler(int signal)
 #define CRYENGINE_DEFAULT_LOCALIZATION_LANG "en-US"
 
 #define LOCALIZATION_TRANSLATIONS_LIST_FILE_NAME "Libs/Localization/localization.xml"
-
-//////////////////////////////////////////////////////////////////////////
-#if defined(WIN32) || defined(LINUX) || defined(APPLE)
-#   define DLL_INITFUNC_RENDERER "PackageRenderConstructor"
-#   define DLL_INITFUNC_SOUND "CreateSoundSystem"
-#   define DLL_INITFUNC_FONT "CreateCryFontInterface"
-#   define DLL_INITFUNC_3DENGINE "CreateCry3DEngine"
-#   define DLL_INITFUNC_UI "CreateLyShineInterface"
-#define AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_1
-#include AZ_RESTRICTED_FILE(SystemInit_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-#   define DLL_INITFUNC_RENDERER  (LPCSTR)1
-#   define DLL_INITFUNC_RENDERER  (LPCSTR)1
-#   define DLL_INITFUNC_SOUND     (LPCSTR)1
-#   define DLL_INITFUNC_PHYSIC    (LPCSTR)1
-#   define DLL_INITFUNC_FONT      (LPCSTR)1
-#   define DLL_INITFUNC_3DENGINE  (LPCSTR)1
-#   define DLL_INITFUNC_UI        (LPCSTR)1
-#endif
 
 #define AZ_TRACE_SYSTEM_WINDOW AZ::Debug::Trace::GetDefaultSystemWindow()
 
