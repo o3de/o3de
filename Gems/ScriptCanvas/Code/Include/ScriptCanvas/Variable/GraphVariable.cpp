@@ -493,14 +493,6 @@ namespace ScriptCanvas
         return m_sortPriority;
     }
 
-    bool GraphVariable::IsInFunction() const
-    {
-        AZ::Data::AssetType assetType = AZ::Data::AssetType::CreateNull();
-        ScriptCanvas::GraphRequestBus::EventResult(assetType, m_scriptCanvasId, &ScriptCanvas::GraphRequests::GetAssetType);
-
-        return assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>();
-    }
-
     AZ::u32 GraphVariable::OnInitialValueSourceChanged()
     {
         VariableNotificationBus::Event(GetGraphScopedId(), &VariableNotifications::OnVariableInitialValueSourceChanged);

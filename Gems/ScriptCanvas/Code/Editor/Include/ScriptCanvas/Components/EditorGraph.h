@@ -304,11 +304,11 @@ namespace ScriptCanvasEditor
         void OnUndoRedoEnd() override;
         ////
 
-        void SetAssetType(AZ::Data::AssetType);
-
         void ReportError(const ScriptCanvas::Node& node, const AZStd::string& errorSource, const AZStd::string& errorMessage) override;
 
         const GraphStatisticsHelper& GetNodeUsageStatistics() const;
+
+        void MarkOwnership(ScriptCanvas::ScriptCanvasData& owner);
 
         // Finds and returns all nodes within the graph that are of the specified type
         template <typename NodeType>
@@ -393,5 +393,6 @@ namespace ScriptCanvasEditor
         bool m_saveFormatConverted = true;
 
         ScriptCanvasEditor::SourceHandle m_assetId;
+        ScriptCanvas::ScriptCanvasData* m_owner;
     };
 }

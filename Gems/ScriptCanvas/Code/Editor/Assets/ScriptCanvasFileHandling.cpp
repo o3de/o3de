@@ -132,6 +132,9 @@ namespace ScriptCanvasEditor
         {
             entity->Init();
             entity->Activate();
+
+            auto graph = entity->FindComponent<ScriptCanvasEditor::Graph>();
+            graph->MarkOwnership(*scriptCanvasData);
         }
 
         return AZ::Success(ScriptCanvasEditor::SourceHandle(scriptCanvasData, {}, path));

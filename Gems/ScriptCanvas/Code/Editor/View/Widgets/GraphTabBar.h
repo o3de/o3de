@@ -35,6 +35,7 @@ namespace ScriptCanvasEditor
             QWidget* m_hostWidget = nullptr;
             CanvasWidget* m_canvasWidget = nullptr;
             Tracker::ScriptCanvasFileState m_fileState = Tracker::ScriptCanvasFileState::INVALID;
+            QString m_name;
         };
 
         class GraphTabBar
@@ -47,6 +48,11 @@ namespace ScriptCanvasEditor
 
             GraphTabBar(QWidget* parent = nullptr);
             ~GraphTabBar() override = default;
+
+            AZStd::optional<GraphTabMetadata> GetTabData(int index) const;
+            AZStd::optional<GraphTabMetadata> GetTabData(ScriptCanvasEditor::SourceHandle assetId) const;
+            void SetTabData(const GraphTabMetadata& data, int index);
+            void SetTabData(const GraphTabMetadata& data, ScriptCanvasEditor::SourceHandle assetId);
 
             void AddGraphTab(ScriptCanvasEditor::SourceHandle assetId);
             void CloseTab(int index);
@@ -78,6 +84,8 @@ namespace ScriptCanvasEditor
             // The host widget field of the tabMetadata is not used and will not overwrite the tab data
             void SetTabText(int tabIndex, const QString& path, Tracker::ScriptCanvasFileState fileState = Tracker::ScriptCanvasFileState::INVALID);
 
+            void UpdateFileState(const ScriptCanvasEditor::SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState);
+
         Q_SIGNALS:
             void TabInserted(int index);
             void TabRemoved(int index);
@@ -101,8 +109,6 @@ namespace ScriptCanvasEditor
             // Called when the selected tab changes
             void currentChangedTab(int index);
             
-            void SetFileState(ScriptCanvasEditor::SourceHandle, Tracker::ScriptCanvasFileState fileState);
-
             int m_signalSaveOnChangeTo = -1;
         };
     }

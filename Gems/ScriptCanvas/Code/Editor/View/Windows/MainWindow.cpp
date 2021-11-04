@@ -1102,7 +1102,7 @@ namespace ScriptCanvasEditor
         {
             ScopedUndoBatch scopedUndoBatch("Modify Graph Canvas Scene");
             UndoRequestBus::Event(scriptCanvasId, &UndoRequests::AddGraphItemChangeUndo, "Graph Change");
-            MarkAssetModified(m_activeGraph);
+            UpdateFileState(m_activeGraph, Tracker::ScriptCanvasFileState::MODIFIED);
         }
 
         const bool forceTimer = true;
@@ -1111,7 +1111,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::SignalSceneDirty(ScriptCanvasEditor::SourceHandle assetId)
     {
-        MarkAssetModified(assetId);
+        UpdateFileState(assetId, Tracker::ScriptCanvasFileState::MODIFIED);
     }
 
     void MainWindow::PushPreventUndoStateUpdate()
@@ -1132,25 +1132,9 @@ namespace ScriptCanvasEditor
         m_preventUndoStateUpdateCount = 0;
     }
 
-    void MainWindow::MarkAssetModified(const ScriptCanvasEditor::SourceHandle& /*assetId*/)
+    void MainWindow::UpdateFileState(const ScriptCanvasEditor::SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState)
     {
-// #sc_editor_asset        if (!assetId.IsValid())
-//         {
-//             return;
-//         }
-// 
-//         ScriptCanvasMemoryAsset::pointer memoryAsset;
-//         AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, assetId);
-// 
-//         if (memoryAsset)
-//         {
-//             const auto& memoryAssetId = memoryAsset->GetId();
-//             const Tracker::ScriptCanvasFileState& fileState = GetAssetFileState(memoryAssetId);
-//             if (fileState != Tracker::ScriptCanvasFileState::NEW)
-//             {
-//                 AssetTrackerRequestBus::Broadcast(&AssetTrackerRequests::UpdateFileState, memoryAssetId, Tracker::ScriptCanvasFileState::MODIFIED);
-//             }
-//         }
+        m_tabBar->UpdateFileState(assetId, fileState);
     }
 
     void MainWindow::RefreshScriptCanvasAsset(const AZ::Data::Asset<ScriptCanvas::ScriptCanvasAssetBase>& /*asset*/)
@@ -4392,13 +4376,10 @@ namespace ScriptCanvasEditor
         }
     }
 
-    ScriptCanvasEditor::Tracker::ScriptCanvasFileState MainWindow::GetAssetFileState(ScriptCanvasEditor::SourceHandle /*assetId*/) const
+    ScriptCanvasEditor::Tracker::ScriptCanvasFileState MainWindow::GetAssetFileState(ScriptCanvasEditor::SourceHandle assetId) const
     {
-        // #sc_editor_asset
-        return Tracker::ScriptCanvasFileState::INVALID;
-        // Tracker::ScriptCanvasFileState fileState = Tracker::ScriptCanvasFileState::INVALID;
-        // AssetTrackerRequestBus::BroadcastResult(fileState, &AssetTrackerRequests::GetFileState, assetId);
-        // return fileState;
+        auto dataOptional = m_tabBar->GetTabData(assetId);
+        return dataOptional ? dataOptional->m_fileState : Tracker::ScriptCanvasFileState::INVALID;
     }
 
     void MainWindow::AssignGraphToEntityImpl(const AZ::EntityId& entityId)
