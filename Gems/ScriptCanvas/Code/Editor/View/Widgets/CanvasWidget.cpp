@@ -36,7 +36,7 @@ namespace ScriptCanvasEditor
 {
     namespace Widget
     {
-        CanvasWidget::CanvasWidget(const AZ::Data::AssetId& assetId, QWidget* parent)
+        CanvasWidget::CanvasWidget(const ScriptCanvasEditor::SourceHandle& assetId, QWidget* parent)
             : QWidget(parent)
             , ui(new Ui::CanvasWidget())
             , m_attached(false)
@@ -78,7 +78,7 @@ namespace ScriptCanvasEditor
             m_scriptCanvasId = scriptCanvasId;
         }
 
-        void CanvasWidget::SetAssetId(const AZ::Data::AssetId& assetId)
+        void CanvasWidget::SetAssetId(const ScriptCanvasEditor::SourceHandle& assetId)
         {
             m_assetId = assetId;
         }

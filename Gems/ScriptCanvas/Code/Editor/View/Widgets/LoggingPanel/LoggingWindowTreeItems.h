@@ -131,7 +131,12 @@ namespace ScriptCanvasEditor
         AZ_CLASS_ALLOCATOR(ExecutionLogTreeItem, AZ::SystemAllocator, 0);
         AZ_RTTI(ExecutionLogTreeItem, "{71139142-A30C-4A16-81CC-D51314AEAF7D}", DebugLogTreeItem);
 
-        ExecutionLogTreeItem(const LoggingDataId& loggingDataId, const ScriptCanvas::NodeTypeIdentifier& nodeType, const ScriptCanvas::GraphInfo& graphInfo, const ScriptCanvas::NamedNodeId& nodeId);
+        ExecutionLogTreeItem
+            ( const LoggingDataId& loggingDataId
+            , const ScriptCanvas::NodeTypeIdentifier& nodeType
+            , const SourceHandle& graphInfo
+            , const ScriptCanvas::NamedNodeId& nodeId);
+
         ~ExecutionLogTreeItem() override = default;
 
         QVariant Data(const QModelIndex& index, int role) const override final;
@@ -163,7 +168,7 @@ namespace ScriptCanvasEditor
         ////
 
         const ScriptCanvas::GraphIdentifier& GetGraphIdentifier() const;
-        const AZ::Data::AssetId& GetAssetId() const;
+        AZ::Data::AssetId GetAssetId() const;
 
         AZ::EntityId        GetScriptCanvasAssetNodeId() const;
         GraphCanvas::NodeId GetGraphCanvasNodeId() const;
@@ -184,7 +189,8 @@ namespace ScriptCanvasEditor
 
         LoggingDataId                       m_loggingDataId;
         ScriptCanvas::NodeTypeIdentifier    m_nodeType;
-        ScriptCanvas::GraphInfo             m_graphInfo;
+        SourceHandle                        m_graphInfo;
+        ScriptCanvas::GraphIdentifier       m_graphIdentifier;
         QString                             m_sourceEntityName;
         QString                             m_graphName;
         QString                             m_relativeGraphPath;

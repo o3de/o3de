@@ -124,6 +124,12 @@ namespace ScriptCanvasEditor
             }
         }
 
+        if (auto entity = scriptCanvasData->GetScriptCanvasEntity())
+        {
+            entity->Init();
+            entity->Activate();
+        }
+
         return AZ::Success(ScriptCanvasEditor::SourceHandle(scriptCanvasData, {}, path));
     }
 }
