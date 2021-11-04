@@ -33,3 +33,12 @@ class ${SanitizedCppName}Dialog(QDialog):
         self.mainLayout.addWidget(self.helpLabel, 0, Qt.AlignCenter)
 
         self.setLayout(self.mainLayout)
+
+
+if __name__ == "__main__":
+    # Create a new instance of the tool if launched from the Python Scripts window,
+    # which allows for quick iteration without having to close/re-launch the Editor
+    test_dialog = ${SanitizedCppName}Dialog()
+    test_dialog.setWindowTitle("${SanitizedCppName}")
+    test_dialog.show()
+    test_dialog.adjustSize()

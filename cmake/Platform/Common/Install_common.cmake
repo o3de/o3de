@@ -157,16 +157,15 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     endif()
 
     # Includes need additional processing to add the install root
-    if(include_directories)
-        foreach(include ${include_directories})
-            string(GENEX_STRIP ${include} include_genex_expr)
-            if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
-                # Make the include path relative to the source dir where the target will be declared
-                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
-                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${target_include}\n")
-            endif()
-        endforeach()
-    endif()
+    foreach(include IN LISTS include_directories)
+        string(GENEX_STRIP ${include} include_genex_expr)
+        if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
+            # Make the include path relative to the source dir where the target will be declared
+            cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
+            list(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${target_include}")
+        endif()
+    endforeach()
+    list(JOIN INCLUDE_DIRECTORIES_PLACEHOLDER "\n" INCLUDE_DIRECTORIES_PLACEHOLDER)
 
     string(REPEAT " " 8 PLACEHOLDER_INDENT)
     get_target_property(RUNTIME_DEPENDENCIES_PLACEHOLDER ${TARGET_NAME} MANUALLY_ADDED_DEPENDENCIES)
@@ -178,27 +177,27 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     endif()
 
     string(REPEAT " " 12 PLACEHOLDER_INDENT)
-    get_target_property(inteface_build_dependencies_props ${TARGET_NAME} INTERFACE_LINK_LIBRARIES)
+    get_property(interface_build_dependencies_props TARGET ${TARGET_NAME} PROPERTY LY_DELAYED_LINK)
     unset(INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
-    if(inteface_build_dependencies_props)
-        foreach(build_dependency ${inteface_build_dependencies_props})
+    if(interface_build_dependencies_props)
+        cmake_parse_arguments(build_deps "" "" "PRIVATE;PUBLIC;INTERFACE" ${interface_build_dependencies_props})
+        # Interface and public dependencies should always be exposed
+        set(build_deps_target ${build_deps_INTERFACE})
+        if(build_deps_PUBLIC)
+            set(build_deps_target "${build_deps_target};${build_deps_PUBLIC}")
+        endif()
+        # Private dependencies should only be exposed if it is a static library, since in those cases, link 
+        # dependencies are transfered to the downstream dependencies
+        if("${target_type}" STREQUAL "STATIC_LIBRARY")
+            set(build_deps_target "${build_deps_target};${build_deps_PRIVATE}")
+        endif()
+        foreach(build_dependency IN LISTS build_deps_target)
             # Skip wrapping produced when targets are not created in the same directory
-            if(NOT ${build_dependency} MATCHES "^::@")
+            if(build_dependency)
                 list(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${build_dependency}")
             endif()
         endforeach()
     endif()
-    # We also need to pass the private link libraries since we will use that to generate the runtime dependencies
-    get_target_property(private_build_dependencies_props ${TARGET_NAME} LINK_LIBRARIES)
-    if(private_build_dependencies_props)
-        foreach(build_dependency ${private_build_dependencies_props})
-            # Skip wrapping produced when targets are not created in the same directory
-            if(NOT ${build_dependency} MATCHES "^::@")
-                list(APPEND INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${PLACEHOLDER_INDENT}${build_dependency}")
-            endif()
-        endforeach()
-    endif()
-    list(REMOVE_DUPLICATES INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
     list(JOIN INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "\n" INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
 
     string(REPEAT " " 8 PLACEHOLDER_INDENT)
@@ -322,7 +321,7 @@ include(Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cm
     file(CONFIGURE OUTPUT "${target_install_source_dir}/Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake" CONTENT [[
 @cmake_copyright_comment@
 if(LY_MONOLITHIC_GAME)
-    include(Platform/${PAL_PLATFORM_NAME}/Monolithic/permutation.cmake)
+    include(Platform/${PAL_PLATFORM_NAME}/Monolithic/permutation.cmake OPTIONAL)
 else()
     include(Platform/${PAL_PLATFORM_NAME}/Default/permutation.cmake)
 endif()
@@ -354,29 +353,6 @@ endif()
 
 endfunction()
 
-#! ly_setup_o3de_install: orchestrates the installation of the different parts. This is the entry point from the root CMakeLists.txt
-function(ly_setup_o3de_install)
-
-    ly_setup_subdirectories()
-    ly_setup_cmake_install()
-    ly_setup_runtime_dependencies()
-    ly_setup_assets()
-
-    # Misc
-    install(FILES
-        ${LY_ROOT_FOLDER}/pytest.ini
-        ${LY_ROOT_FOLDER}/LICENSE.txt
-        ${LY_ROOT_FOLDER}/README.md
-        DESTINATION .
-        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-    )
-
-    if(COMMAND ly_post_install_steps)
-        ly_post_install_steps()
-    endif()
-
-endfunction()
-
 #! ly_setup_cmake_install: install the "cmake" folder
 function(ly_setup_cmake_install)
 
@@ -385,8 +361,10 @@ function(ly_setup_cmake_install)
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         PATTERN "__pycache__" EXCLUDE
         PATTERN "Findo3de.cmake" EXCLUDE
+        PATTERN "cmake/ConfigurationTypes.cmake" EXCLUDE
         REGEX "3rdParty/Platform\/.*\/BuiltInPackages_.*\.cmake" EXCLUDE
     )
+
     # Connect configuration types
     install(FILES "${LY_ROOT_FOLDER}/cmake/install/ConfigurationTypes.cmake"
         DESTINATION cmake
@@ -446,6 +424,7 @@ function(ly_setup_cmake_install)
             list(APPEND additional_platform_files "${plat_files}")
         endforeach()
     endforeach()
+
     install(FILES ${additional_find_files}
         DESTINATION cmake/3rdParty
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
@@ -455,40 +434,68 @@ function(ly_setup_cmake_install)
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
-    # Findo3de.cmake file: we generate a different Findo3de.camke file than the one we have in cmake. This one is going to expose all
-    # targets that are pre-built
-    unset(FIND_PACKAGES_PLACEHOLDER)
-
-    # Add to the FIND_PACKAGES_PLACEHOLDER all directories in which ly_add_target were called in
-    get_property(all_subdirectories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
-    foreach(target_subdirectory IN LISTS all_subdirectories)
-        cmake_path(RELATIVE_PATH target_subdirectory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE relative_target_subdirectory)
-        string(APPEND FIND_PACKAGES_PLACEHOLDER "    add_subdirectory(${relative_target_subdirectory})\n")
-    endforeach()
-
+    # Findo3de.cmake file: we generate a different Findo3de.cmake file than the one we have in the source dir.
     configure_file(${LY_ROOT_FOLDER}/cmake/install/Findo3de.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/cmake/Findo3de.cmake @ONLY)
     install(FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/Findo3de.cmake"
         DESTINATION cmake
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
-    # BuiltInPackage_<platform>.cmake: since associations could happen in any cmake file across the engine. We collect
-    # all the associations in ly_associate_package and then generate them into BuiltInPackages_<platform>.cmake. This
-    # will consolidate all associations in one file
+    unset(find_subdirectories)
+    # Add to find_subdirectories all directories in which ly_add_target were called in
+    get_property(all_subdirectories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
+    foreach(target_subdirectory IN LISTS all_subdirectories)
+        cmake_path(RELATIVE_PATH target_subdirectory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE relative_target_subdirectory)
+        string(APPEND find_subdirectories "add_subdirectory(${relative_target_subdirectory})\n")
+    endforeach()
+    set(permutation_find_subdirectories ${CMAKE_CURRENT_BINARY_DIR}/cmake/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/o3de_subdirectories_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+    file(GENERATE OUTPUT ${permutation_find_subdirectories}
+        CONTENT 
+"# Generated by O3DE install\n
+${find_subdirectories}
+"
+    )
+    install(FILES "${permutation_find_subdirectories}"
+        DESTINATION cmake/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+    )
+
+    set(pal_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+    file(GENERATE OUTPUT ${pal_builtin_file}
+        CONTENT 
+"# Generated by O3DE install\n
+if(LY_MONOLITHIC_GAME)
+    include(cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Monolithic/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+else()
+    include(cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Default/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+endif()
+"
+    )
+    install(FILES "${pal_builtin_file}"
+        DESTINATION cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+    )
+
+    # ${LY_BUILD_PERMUTATION}/BuiltInPackage_<platform>.cmake: since associations could happen in any cmake file across the engine. We collect
+    # all the associations in ly_associate_package and then generate them into BuiltInPackages_<platform>.cmake. This will consolidate all 
+    # associations in one file
+    # Associations are sensitive to platform and build permutation, so we make different files for each.
     get_property(all_package_names GLOBAL PROPERTY LY_PACKAGE_NAMES)
+    list(REMOVE_DUPLICATES all_package_names)
     set(builtinpackages "# Generated by O3DE install\n\n")
     foreach(package_name IN LISTS all_package_names)
         get_property(package_hash GLOBAL PROPERTY LY_PACKAGE_HASH_${package_name})
         get_property(targets GLOBAL PROPERTY LY_PACKAGE_TARGETS_${package_name})
+        list(REMOVE_DUPLICATES targets)
         string(APPEND builtinpackages "ly_associate_package(PACKAGE_NAME ${package_name} TARGETS ${targets} PACKAGE_HASH ${package_hash})\n")
     endforeach()
 
-    set(pal_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-    file(GENERATE OUTPUT ${pal_builtin_file}
+    set(permutation_builtin_file ${CMAKE_CURRENT_BINARY_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+    file(GENERATE OUTPUT ${permutation_builtin_file}
         CONTENT ${builtinpackages}
     )
-    install(FILES "${pal_builtin_file}"
-        DESTINATION cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}
+    install(FILES "${permutation_builtin_file}"
+        DESTINATION cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/${LY_BUILD_PERMUTATION}
         COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
     )
 
@@ -632,6 +639,7 @@ function(ly_setup_assets)
             if (NOT gem_install_dest_dir)
                 cmake_path(SET gem_install_dest_dir .)
             endif()
+
             if(IS_DIRECTORY ${gem_absolute_path})
                 install(DIRECTORY "${gem_absolute_path}" 
                     DESTINATION ${gem_install_dest_dir}
@@ -702,4 +710,37 @@ function(ly_setup_subdirectory_enable_gems absolute_target_source_dir output_scr
         string(APPEND enable_gems_calls ${enable_gems_command})
     endforeach()
     set(${output_script} ${enable_gems_calls} PARENT_SCOPE)
+endfunction()
+
+#! ly_setup_o3de_install: orchestrates the installation of the different parts. This is the entry point from the root CMakeLists.txt
+function(ly_setup_o3de_install)
+
+    ly_setup_subdirectories()
+    ly_setup_cmake_install()
+    ly_setup_runtime_dependencies()
+    ly_setup_assets()
+
+    # Misc
+    install(FILES
+        ${LY_ROOT_FOLDER}/pytest.ini
+        ${LY_ROOT_FOLDER}/LICENSE.txt
+        ${LY_ROOT_FOLDER}/README.md
+        DESTINATION .
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+    )
+
+    # Inject other build directories
+    foreach(external_dir ${LY_INSTALL_EXTERNAL_BUILD_DIRS})
+        install(CODE 
+"set(LY_CORE_COMPONENT_ALREADY_INCLUDED TRUE)
+include(${external_dir}/cmake_install.cmake)
+set(LY_CORE_COMPONENT_ALREADY_INCLUDED FALSE)"
+            ALL_COMPONENTS
+        )
+    endforeach()
+
+    if(COMMAND ly_post_install_steps)
+        ly_post_install_steps()
+    endif()
+
 endfunction()

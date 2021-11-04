@@ -175,6 +175,7 @@ namespace O3DE::ProjectManager
 
         // Depending gems
         m_dependingGems = new GemsSubWidget();
+        connect(m_dependingGems, &GemsSubWidget::TagClicked, this, [=](const QString& tag){ emit TagClicked(tag); });
         m_mainLayout->addWidget(m_dependingGems);
         m_mainLayout->addSpacing(20);
 
