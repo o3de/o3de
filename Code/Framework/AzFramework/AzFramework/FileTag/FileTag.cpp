@@ -10,11 +10,11 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/string/wildcard.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/std/string/conversions.h>
-#include <AzCore/Utils/Utils.h>
 #include <AzCore/XML/rapidxml.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/FileTagAsset.h>
@@ -89,19 +89,19 @@ namespace AzFramework
         bool FileTagManager::Save(FileTagType fileTagType, const AZStd::string& destinationFilePath = AZStd::string())
         {
             AzFramework::FileTag::FileTagAsset* fileTagAsset = GetFileTagAsset(fileTagType);
-            AZStd::string filePathToSave = destinationFilePath;
+            AZ::IO::Path filePathToSave = destinationFilePath;
             if (filePathToSave.empty())
             {
                 filePathToSave = FileTagQueryManager::GetDefaultFileTagFilePath(fileTagType);
             }
 
-            if (!AzFramework::StringFunc::EndsWith(filePathToSave, AzFramework::FileTag::FileTagAsset::Extension()))
+            if (!filePathToSave.Extension().Native().ends_with(AzFramework::FileTag::FileTagAsset::Extension()))
             {
                 AZ_Error("FileTag", false, "Unable to save tag file (%s). Invalid file extension, file tag can only have (%s) extension.\n", filePathToSave.c_str(), AzFramework::FileTag::FileTagAsset::Extension());
                 return false;
             }
 
-            return AZ::Utils::SaveObjectToFile(filePathToSave, AZ::DataStream::StreamType::ST_XML, fileTagAsset);
+            return AZ::Utils::SaveObjectToFile(filePathToSave.Native(), AZ::DataStream::StreamType::ST_XML, fileTagAsset);
         }
 
         AZ::Outcome<AZStd::string, AZStd::string> FileTagManager::AddTagsInternal(AZStd::string filePath, FileTagType fileTagType, AZStd::vector<AZStd::string> fileTags, AzFramework::FileTag::FilePatternType filePatternType)
@@ -239,17 +239,22 @@ namespace AzFramework
             QueryFileTagsEventBus::Handler::BusDisconnect();
         }
 
-        AZStd::string FileTagQueryManager::GetDefaultFileTagFilePath(FileTagType fileTagType)
+        AZ::IO::Path FileTagQueryManager::GetDefaultFileTagFilePath(FileTagType fileTagType)
         {
-            auto destinationFilePath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / EngineAssetSourceRelPath;
+            AZ::IO::Path destinationFilePath;
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                settingsRegistry->Get(destinationFilePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            }
+            destinationFilePath /= EngineAssetSourceRelPath;
             destinationFilePath /= fileTagType == FileTagType::Exclude ? ExcludeFileName : IncludeFileName;
             destinationFilePath.ReplaceExtension(AzFramework::FileTag::FileTagAsset::Extension());
-            return destinationFilePath.String();
+            return destinationFilePath;
         }
 
         bool FileTagQueryManager::Load(const AZStd::string& filePath)
         {
-            AZStd::string fileToLoad = filePath;
+            AZ::IO::Path fileToLoad = filePath;
             if (fileToLoad.empty())
             {
                 fileToLoad = GetDefaultFileTagFilePath(m_fileTagType);

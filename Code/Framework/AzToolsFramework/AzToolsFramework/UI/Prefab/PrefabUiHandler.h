@@ -10,6 +10,8 @@
 
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiHandlerBase.h>
 
+#include <AzFramework/Entity/EntityContextBus.h>
+
 namespace AzToolsFramework
 {
 
@@ -48,6 +50,8 @@ namespace AzToolsFramework
         static bool IsLastVisibleChild(const QModelIndex& parent, const QModelIndex& child);
         static QModelIndex GetLastVisibleChild(const QModelIndex& parent);
         static QModelIndex Internal_GetLastVisibleChild(const QAbstractItemModel* model, const QModelIndex& index);
+
+        static AzFramework::EntityContextId s_editorEntityContextId;
 
         static constexpr int m_prefabCapsuleRadius = 6;
         static constexpr int m_prefabBorderThickness = 2;

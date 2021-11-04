@@ -45,6 +45,13 @@ namespace AzGameFramework
             enginePakPath = AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory()) / "engine.pak";
             m_archive->OpenPack("@products@", enginePakPath.Native());
         }
+
+        // By default, load all archives in the products folder.
+        // If you want to adjust this for your project, make sure that the archive containing
+        // the bootstrap for the settings registry is still loaded here, and any archives containing
+        // assets used early in startup, like default shaders, are loaded here.
+        constexpr AZStd::string_view paksFolder = "@products@/*.pak"; // (@products@ assumed)
+        m_archive->OpenPacks(paksFolder);
     }
 
     GameApplication::~GameApplication()

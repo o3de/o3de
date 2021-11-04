@@ -432,7 +432,8 @@ namespace AssetProcessor
                     file.Close();
 
                     const AZ::u32 hashedSpecialization = static_cast<AZ::u32>(AZStd::hash<AZStd::string_view>{}(specializationString));
-                    AZ_Assert(hashedSpecialization != 0, "Product ID generation failed for specialization %.*s. This can result in a product ID collision with other builders for this asset.",
+                    AZ_Assert(hashedSpecialization != 0, "Product ID generation failed for specialization %.*s."
+                        " This can result in a product ID collision with other builders for this asset.",
                         AZ_STRING_ARG(specializationString));
                     response.m_outputProducts.emplace_back(outputPath, m_assetType, hashedSpecialization);
                     response.m_outputProducts.back().m_dependenciesHandled = true;

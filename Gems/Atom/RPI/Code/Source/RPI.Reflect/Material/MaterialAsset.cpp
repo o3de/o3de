@@ -237,7 +237,7 @@ namespace AZ
 
         void MaterialAsset::ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset)
         {
-            Data::Asset<MaterialTypeAsset> newMaterialTypeAsset = { asset.GetAs<MaterialTypeAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+            Data::Asset<MaterialTypeAsset> newMaterialTypeAsset = Data::static_pointer_cast<MaterialTypeAsset>(asset);
 
             if (newMaterialTypeAsset)
             {
