@@ -62,11 +62,11 @@ namespace Physics
         //! @param maxHeightBounds contains the maximum height that the heightfield can contain.
         virtual void GetHeightfieldHeightBounds(float& minHeightBounds, float& maxHeightBounds) const = 0;
 
-        //! Returns the height field min eight bounds.
+        //! Returns the height field min height bounds.
         //! @return the minimum height that the heightfield can contain.
         virtual float GetHeightfieldMinHeight() const = 0;
 
-        //! Returns the height field min and max height bounds.
+        //! Returns the height field max height bounds.
         //! @return the maximum height that the heightfield can contain.
         virtual float GetHeightfieldMaxHeight() const = 0;
 

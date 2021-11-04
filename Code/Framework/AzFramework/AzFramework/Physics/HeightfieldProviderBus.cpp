@@ -27,10 +27,8 @@ namespace Physics
                 ->Event("GetMaterialList", &Physics::HeightfieldProviderRequestsBus::Events::GetMaterialList)
                 ->Event("GetHeights", &Physics::HeightfieldProviderRequestsBus::Events::GetHeights)
                 ->Event("GetHeightsAndMaterials", &Physics::HeightfieldProviderRequestsBus::Events::GetHeightsAndMaterials)
-                ->Event("GetHeightfieldHeightBounds", &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldHeightBounds)
                 ->Event("GetHeightfieldMinHeight", &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldMinHeight)
                 ->Event("GetHeightfieldMaxHeight", &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldMaxHeight)
-                ->Event("GetHeightfieldGridSize", &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridSize)
                 ->Event("GetHeightfieldGridColumns", &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridColumns)
                 ->Event("GetHeightfieldGridRows", &Physics::HeightfieldProviderRequestsBus::Events::GetHeightfieldGridRows)
                 ;

@@ -44,13 +44,10 @@ def AxisAlignedBoxShape_ConfigurationWorks():
     from editor_python_test_tools.utils import Tracer
     import azlmbr.legacy.general as general
     import azlmbr.physics as physics
-    import azlmbr.math as math
+    import azlmbr.math as math2
     import azlmbr.bus as bus
     import sys
-
-    def value_is_close(value1, value2, tolerance):
-        return abs(value1 - value2) <= tolerance
-
+    import math
 
     SET_BOX_X_SIZE = 5.0
     SET_BOX_Y_SIZE = 6.0
@@ -68,33 +65,22 @@ def AxisAlignedBoxShape_ConfigurationWorks():
 
     # 3) Start the Tracer to catch any errors and warnings
     with Tracer() as section_tracer:
-        # 4) Add the PhysX Heightfield Collider, Axis Aligned Box Shape and Terrain Physics Heightfield Collider components
-        collider_component = test_entity.add_component("PhysX Heightfield Collider")
-        Report.result(Tests.add_physx_heightfield_collider, test_entity.has_component("PhysX Heightfield Collider"))
+        # 4) Add the Axis Aligned Box Shape and Terrain Physics Heightfield Collider components
         aaBoxShape_component = test_entity.add_component("Axis Aligned Box Shape")
         Report.result(Tests.add_axis_aligned_box_shape, test_entity.has_component("Axis Aligned Box Shape"))
         terrainPhysics_component = test_entity.add_component("Terrain Physics Heightfield Collider")
         Report.result(Tests.add_terrain_collider, test_entity.has_component("Terrain Physics Heightfield Collider"))
         # 5) Change the Axis Aligned Box Shape dimensions
-        aaBoxShape_component.set_component_property_value("Axis Aligned Box Shape|Box Configuration|Dimensions", math.Vector3(SET_BOX_X_SIZE, SET_BOX_Y_SIZE, 1.0))
-        add_check = aaBoxShape_component.get_component_property_value("Axis Aligned Box Shape|Box Configuration|Dimensions") == math.Vector3(SET_BOX_X_SIZE, SET_BOX_Y_SIZE, 1.0)
+        aaBoxShape_component.set_component_property_value("Axis Aligned Box Shape|Box Configuration|Dimensions", math2.Vector3(SET_BOX_X_SIZE, SET_BOX_Y_SIZE, 1.0))
+        add_check = aaBoxShape_component.get_component_property_value("Axis Aligned Box Shape|Box Configuration|Dimensions") == math2.Vector3(SET_BOX_X_SIZE, SET_BOX_Y_SIZE, 1.0)
         Report.result(Tests.box_dimensions_changed, add_check)
 
         # 6) Chaeck the Heightfield provider is returning the correct size
         columns = physics.HeightfieldProviderRequestsBus(bus.Broadcast, "GetHeightfieldGridColumns")
         rows = physics.HeightfieldProviderRequestsBus(bus.Broadcast, "GetHeightfieldGridRows")
 
-        Report.result(Tests.configuration_changed, value_is_close(columns, EXPECTED_COLUMN_SIZE, 0.001) and value_is_close(rows, EXPECTED_ROW_SIZE, 0.001))
-    
-    # 7) Verify there are no errors and warnings in the logs
-    success_condition = not (section_tracer.has_errors or section_tracer.has_warnings)
-    Report.result(Tests.no_errors_and_warnings_found, success_condition)
-    if not success_condition:
-        if section_tracer.has_warnings:
-            Report.info(f"Warnings found: {section_tracer.warnings}")
-        if section_tracer.has_errors:
-            Report.info(f"Errors found: {section_tracer.errors}")
-    
+        Report.result(Tests.configuration_changed, math.isclose(columns, EXPECTED_COLUMN_SIZE) and math.isclose(rows, EXPECTED_ROW_SIZE))
+        
 if __name__ == "__main__":
 
     from editor_python_test_tools.utils import Report

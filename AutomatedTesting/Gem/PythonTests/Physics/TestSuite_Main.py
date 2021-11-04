@@ -95,5 +95,5 @@ class TestAutomation(TestAutomationBase):
         
     @revert_physics_config
     def test_AxisAlignedBoxShape_ConfigurationWorks(self, request, workspace, editor, launcher_platform):
-        from .tests.heightfield import AxisAlignedBoxShape_ConfigurationWorks as test_module
+        from .tests.heightfield import TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges as test_module
         self._run_test(request, workspace, editor, test_module)
