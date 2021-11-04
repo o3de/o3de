@@ -6,7 +6,7 @@
  *
  */
 
-#include <Common/AssetSystemStub.h>
+#include <Atom/Utils/TestUtils/AssetSystemStub.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 namespace UnitTest
