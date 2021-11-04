@@ -188,14 +188,20 @@ namespace AZ
         }
 
         Outcome<Data::Asset<MaterialAsset>> MaterialSourceData::CreateMaterialAssetFromSourceData(
-            Data::AssetId assetId, AZStd::string_view materialSourceFilePath, bool elevateWarnings, bool includeMaterialPropertyNames) const
+            Data::AssetId assetId,
+            AZStd::string_view materialSourceFilePath,
+            bool elevateWarnings,
+            bool includeMaterialPropertyNames,
+            AZStd::unordered_set<AZStd::string>* sourceDependencies) const
         {
-            MaterialAssetCreator materialAssetCreator;
-            materialAssetCreator.SetElevateWarnings(elevateWarnings);
+            const auto materialTypeSourcePath = AssetUtils::ResolvePathReference(materialSourceFilePath, m_materialType);
+            const auto materialTypeAssetId = AssetUtils::MakeAssetId(materialTypeSourcePath, 0);
+            if (!materialTypeAssetId.IsSuccess())
+            {
+                return Failure();
+            }
 
-#if 1
             MaterialTypeSourceData materialTypeSourceData;
-            AZStd::string materialTypeSourcePath = AssetUtils::ResolvePathReference(materialSourceFilePath, m_materialType);
             if (!AZ::RPI::JsonUtils::LoadObjectFromFile(materialTypeSourcePath, materialTypeSourceData))
             {
                 return Failure();
@@ -203,21 +209,16 @@ namespace AZ
 
             materialTypeSourceData.ResolveUvEnums();
 
-            auto materialTypeAsset =
-                materialTypeSourceData.CreateMaterialTypeAsset(AZ::Uuid::CreateRandom(), materialTypeSourcePath, elevateWarnings);
+            const auto materialTypeAsset =
+                materialTypeSourceData.CreateMaterialTypeAsset(materialTypeAssetId.GetValue(), materialTypeSourcePath, elevateWarnings);
             if (!materialTypeAsset.IsSuccess())
             {
                 return Failure();
             }
-#else
-            auto materialTypeAsset = AssetUtils::LoadAsset<MaterialTypeAsset>(materialSourceFilePath, m_materialType);
-            if (!materialTypeAsset.IsSuccess())
-            {
-                return Failure();
-            }
-#endif
 
-            materialAssetCreator.Begin(assetId, *materialTypeAsset.GetValue().Get(), includeMaterialPropertyNames);
+            AZStd::unordered_set<AZStd::string> dependencies;
+            dependencies.insert(materialSourceFilePath);
+            dependencies.insert(materialTypeSourcePath);
 
             AZStd::vector<MaterialSourceData> parentSourceDataStack;
 
@@ -225,6 +226,13 @@ namespace AZ
             AZStd::string parentSourceAbsPath = AssetUtils::ResolvePathReference(materialSourceFilePath, parentSourceRelPath);
             while (!parentSourceRelPath.empty())
             {
+                if (dependencies.find(parentSourceAbsPath) != dependencies.end())
+                {
+                    return Failure();
+                }
+
+                dependencies.insert(parentSourceAbsPath);
+
                 MaterialSourceData parentSourceData;
                 if (!AZ::RPI::JsonUtils::LoadObjectFromFile(parentSourceAbsPath, parentSourceData))
                 {
@@ -232,19 +240,21 @@ namespace AZ
                 }
 
                 // Make sure the parent material has the same material type
-                auto materialTypeIdOutcome1 = AssetUtils::MakeAssetId(materialSourceFilePath, m_materialType, 0);
-                auto materialTypeIdOutcome2 = AssetUtils::MakeAssetId(parentSourceAbsPath, parentSourceData.m_materialType, 0);
-                if (!materialTypeIdOutcome1.IsSuccess() || !materialTypeIdOutcome2.IsSuccess() ||
-                    materialTypeIdOutcome1.GetValue() != materialTypeIdOutcome2.GetValue())
+                const auto parentTypeAssetId = AssetUtils::MakeAssetId(parentSourceAbsPath, parentSourceData.m_materialType, 0);
+                if (!parentTypeAssetId || parentTypeAssetId.GetValue() != materialTypeAssetId.GetValue())
                 {
                     AZ_Error("MaterialSourceData", false, "This material and its parent material do not share the same material type.");
                     return Failure();
                 }
 
-                parentSourceDataStack.push_back(parentSourceData);
                 parentSourceRelPath = parentSourceData.m_parentMaterial;
                 parentSourceAbsPath = AssetUtils::ResolvePathReference(parentSourceAbsPath, parentSourceRelPath);
+                parentSourceDataStack.emplace_back(AZStd::move(parentSourceData));
             }
+
+            MaterialAssetCreator materialAssetCreator;
+            materialAssetCreator.SetElevateWarnings(elevateWarnings);
+            materialAssetCreator.Begin(assetId, *materialTypeAsset.GetValue().Get(), includeMaterialPropertyNames);
 
             while (!parentSourceDataStack.empty())
             {
@@ -257,12 +267,15 @@ namespace AZ
             Data::Asset<MaterialAsset> material;
             if (materialAssetCreator.End(material))
             {
+                if (sourceDependencies)
+                {
+                    sourceDependencies->insert(dependencies.begin(), dependencies.end());
+                }
+
                 return Success(material);
             }
-            else
-            {
-                return Failure();
-            }
+
+            return Failure();
         }
 
         void MaterialSourceData::ApplyPropertiesToAssetCreator(

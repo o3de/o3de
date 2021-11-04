@@ -567,26 +567,26 @@ namespace MaterialEditor
         }
     }
 
-    void MaterialDocument::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID)
+    void MaterialDocument::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
     {
-        if (m_sourceAssetId.m_guid == sourceUUID)
+        auto sourcePath = AZ::RPI::AssetUtils::ResolvePathReference(scanFolder, relativePath);
+
+        if (m_absolutePath == sourcePath)
         {
             // ignore notifications caused by saving the open document
             if (!m_saveTriggeredInternally)
             {
                 AZ_TracePrintf("MaterialDocument", "Material document changed externally: '%s'.\n", m_absolutePath.c_str());
-                AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentExternallyModified, m_id);
+                AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+                    &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentExternallyModified, m_id);
             }
             m_saveTriggeredInternally = false;
         }
-    }
-
-    void MaterialDocument::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-        if (m_dependentAssetIds.find(asset->GetId()) != m_dependentAssetIds.end())
+        else if (m_sourceDependencies.find(sourcePath) != m_sourceDependencies.end())
         {
             AZ_TracePrintf("MaterialDocument", "Material document dependency changed: '%s'.\n", m_absolutePath.c_str());
-            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentDependencyModified, m_id);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+                &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentDependencyModified, m_id);
         }
     }
 
@@ -655,7 +655,6 @@ namespace MaterialEditor
             return false;
         }
 
-        m_sourceAssetId = sourceAssetInfo.m_assetId;
         m_relativePath = sourceAssetInfo.m_relativePath;
         if (!AzFramework::StringFunc::Path::Normalize(m_relativePath))
         {
@@ -722,14 +721,15 @@ namespace MaterialEditor
         // we can create the asset dynamically from the source data.
         // Long term, the material document should not be concerned with assets at all. The viewport window should be the
         // only thing concerned with assets or instances.
-        auto createResult = m_materialSourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom(), m_absolutePath, true);
-        if (!createResult)
+        auto materialAssetResult =
+            m_materialSourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom(), m_absolutePath, true, true, &m_sourceDependencies);
+        if (!materialAssetResult)
         {
             AZ_Error("MaterialDocument", false, "Material asset could not be created from source data: '%s'.", m_absolutePath.c_str());
             return false;
         }
 
-        m_materialAsset = createResult.GetValue();
+        m_materialAsset = materialAssetResult.GetValue();
         if (!m_materialAsset.IsReady())
         {
             AZ_Error("MaterialDocument", false, "Material asset is not ready: '%s'.", m_absolutePath.c_str());
@@ -743,28 +743,35 @@ namespace MaterialEditor
             return false;
         }
 
-        // track material type asset to notify when dependencies change
-        m_dependentAssetIds.insert(materialTypeAsset->GetId());
-        AZ::Data::AssetBus::MultiHandler::BusConnect(materialTypeAsset->GetId());
-
         AZStd::array_view<AZ::RPI::MaterialPropertyValue> parentPropertyValues = materialTypeAsset->GetDefaultPropertyValues();
         AZ::Data::Asset<MaterialAsset> parentMaterialAsset;
         if (!m_materialSourceData.m_parentMaterial.empty())
         {
-            // There is a parent for this material
-            auto parentMaterialResult = AssetUtils::LoadAsset<MaterialAsset>(m_absolutePath, m_materialSourceData.m_parentMaterial);
-            if (!parentMaterialResult)
+            AZ::RPI::MaterialSourceData parentMaterialSourceData;
+            const auto parentMaterialFilePath = AssetUtils::ResolvePathReference(m_absolutePath, m_materialSourceData.m_parentMaterial);
+            if (!AZ::RPI::JsonUtils::LoadObjectFromFile(parentMaterialFilePath, parentMaterialSourceData))
             {
-                AZ_Error("MaterialDocument", false, "Parent material asset could not be loaded: '%s'.", m_materialSourceData.m_parentMaterial.c_str());
+                AZ_Error("MaterialDocument", false, "Material parent source data could not be loaded for: '%s'.", parentMaterialFilePath.c_str());
                 return false;
             }
 
-            parentMaterialAsset = parentMaterialResult.GetValue();
-            parentPropertyValues = parentMaterialAsset->GetPropertyValues();
+            const auto parentMaterialAssetIdResult = AssetUtils::MakeAssetId(parentMaterialFilePath, 0);
+            if (!parentMaterialAssetIdResult)
+            {
+                AZ_Error("MaterialDocument", false, "Material parent asset ID could not be created: '%s'.", parentMaterialFilePath.c_str());
+                return false;
+            }
 
-            // track parent material asset to notify when dependencies change
-            m_dependentAssetIds.insert(parentMaterialAsset->GetId());
-            AZ::Data::AssetBus::MultiHandler::BusConnect(parentMaterialAsset->GetId());
+            auto parentMaterialAssetResult = m_materialSourceData.CreateMaterialAssetFromSourceData(
+                parentMaterialAssetIdResult.GetValue(), parentMaterialFilePath, true, true, &m_sourceDependencies);
+            if (!parentMaterialAssetResult)
+            {
+                AZ_Error("MaterialDocument", false, "Material parent asset could not be created from source data: '%s'.", parentMaterialFilePath.c_str());
+                return false;
+            }
+
+            parentMaterialAsset = parentMaterialAssetResult.GetValue();
+            parentPropertyValues = parentMaterialAsset->GetPropertyValues();
         }
 
         // Creating a material from a material asset will fail if a texture is referenced but not loaded 
@@ -913,15 +920,13 @@ namespace MaterialEditor
     void MaterialDocument::Clear()
     {
         AZ::TickBus::Handler::BusDisconnect();
-        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
 
         m_materialAsset = {};
         m_materialInstance = {};
         m_absolutePath.clear();
         m_relativePath.clear();
-        m_sourceAssetId = {};
-        m_dependentAssetIds.clear();
+        m_sourceDependencies.clear();
         m_saveTriggeredInternally = {};
         m_compilePending = {};
         m_properties.clear();

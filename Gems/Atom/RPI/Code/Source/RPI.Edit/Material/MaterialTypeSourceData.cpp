@@ -398,8 +398,6 @@ namespace AZ
                 if (shaderAssetResult)
                 {
                     auto shaderAsset = shaderAssetResult.GetValue();
-                    shaderAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
-
                     auto optionsLayout = shaderAsset->GetShaderOptionGroupLayout();
                     ShaderOptionGroup options{ optionsLayout };
                     for (auto& iter : shaderRef.m_shaderOptionValues)
@@ -501,7 +499,6 @@ namespace AZ
                             if (imageAssetResult)
                             {
                                 auto imageAsset = imageAssetResult.GetValue();
-                                imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
                                 materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
                             }
                             else

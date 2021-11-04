@@ -99,7 +99,8 @@ namespace AZ
                 Data::AssetId assetId,
                 AZStd::string_view materialSourceFilePath = "",
                 bool elevateWarnings = true,
-                bool includeMaterialPropertyNames = true) const;
+                bool includeMaterialPropertyNames = true,
+                AZStd::unordered_set<AZStd::string>* sourceDependencies = nullptr) const;
 
         private:
             void ApplyPropertiesToAssetCreator(
