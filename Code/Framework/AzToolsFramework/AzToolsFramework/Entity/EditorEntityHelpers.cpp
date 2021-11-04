@@ -470,6 +470,7 @@ namespace AzToolsFramework
         EditorEntityInfoRequestBus::EventResult(children, parentId, &EditorEntityInfoRequestBus::Events::GetChildren);
 
         // If Prefabs are enabled, don't check the order for an invalid parent, just return its children (i.e. the root container entity)
+        // There will currently always be one root container entity, so there's no order to retrieve
         if (!parentId.IsValid())
         {
             bool isPrefabEnabled = false;

@@ -44,12 +44,12 @@ def EntityOutliner_EntityOrdering():
     entity_outliner_model = entity_outliner.model()
 
     # Get the outliner index for the root prefab container entity
-    def get_prefab_container_index():
+    def get_root_prefab_container_index():
         return entity_outliner_model.index(0, 0)
 
-    # Get the outlienr index for the top level entity of a given name
+    # Get the outliner index for the top level entity of a given name
     def index_for_name(name):
-        root_index = get_prefab_container_index()
+        root_index = get_root_prefab_container_index()
         for row in range(entity_outliner_model.rowCount(root_index)):
             row_index = entity_outliner_model.index(row, 0, root_index)
             if row_index.data() == name:
@@ -59,7 +59,7 @@ def EntityOutliner_EntityOrdering():
     # Validate that the outliner top level entity order matches the expected order
     def verify_entities_sorted(expected_order):
         actual_order = []
-        root_index = get_prefab_container_index()
+        root_index = get_root_prefab_container_index()
         for row in range(entity_outliner_model.rowCount(root_index)):
             row_index = entity_outliner_model.index(row, 0, root_index)
             actual_order.append(row_index.data())
@@ -73,8 +73,9 @@ def EntityOutliner_EntityOrdering():
     # Creates an entity from the outliner context menu
     def create_entity():
         pyside_utils.trigger_context_menu_entry(
-            entity_outliner, "Create entity", index=get_prefab_container_index()
+            entity_outliner, "Create entity", index=get_root_prefab_container_index()
         )
+        # Wait a tick after entity creation to let events process
         general.idle_wait(0.0)
 
     # Moves an entity (wrapped by move_entity_before and move_entity_after)
