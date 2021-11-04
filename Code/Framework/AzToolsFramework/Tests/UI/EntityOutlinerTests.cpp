@@ -82,8 +82,8 @@ namespace UnitTest
             }
 
             auto transform = aznew AzToolsFramework::Components::TransformComponent;
-            transform->SetParent(parentId);
             entity->AddComponent(transform);
+            transform->SetParent(parentId);
 
             entity->Activate();
 
@@ -154,7 +154,7 @@ namespace UnitTest
     };
 
     // Test is temporarily disabled because it currently breaks with prefab propagation optimization code
-    TEST_F(EntityOutlinerTest, DISABLED_TestCreateFlatHierarchyUndoAndRedoWorks)
+    TEST_F(EntityOutlinerTest, TestCreateFlatHierarchyUndoAndRedoWorks)
     {
         constexpr size_t entityCount = 10;
 
@@ -178,7 +178,7 @@ namespace UnitTest
     }
 
     // Test is temporarily disabled because it currently breaks with prefab propagation optimization code
-    TEST_F(EntityOutlinerTest, DISABLED_TestCreateNestedHierarchyUndoAndRedoWorks)
+    TEST_F(EntityOutlinerTest, TestCreateNestedHierarchyUndoAndRedoWorks)
     {
         constexpr size_t depth = 5;
 
