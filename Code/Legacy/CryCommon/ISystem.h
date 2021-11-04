@@ -840,7 +840,6 @@ struct ISystem
     virtual bool CheckLogVerbosity(int verbosity) = 0;
 
     // return the related subsystem interface
-
     //
     virtual IViewSystem* GetIViewSystem() = 0;
     virtual ILevelSystem* GetILevelSystem() = 0;
@@ -856,13 +855,6 @@ struct ISystem
 
     virtual ITimer* GetITimer() = 0;
 
-    // Arguments:
-    //   bValue - Set to true when running on a cheat protected server or a client that is connected to it (not used in singleplayer).
-    virtual void SetForceNonDevMode(bool bValue) = 0;
-    // Return Value:
-    //   True when running on a cheat protected server or a client that is connected to it (not used in singleplayer).
-    virtual bool GetForceNonDevMode() const = 0;
-    virtual bool WasInDevMode() const = 0;
     virtual bool IsDevMode() const = 0;
     //////////////////////////////////////////////////////////////////////////
 
@@ -886,18 +878,6 @@ struct ISystem
     // Description:
     //   When ignore update sets to true, system will ignore and updates and render calls.
     virtual void IgnoreUpdates(bool bIgnore) = 0;
-
-    // Summary:
-    //   Sets the active process
-    // Arguments:
-    //   process - A pointer to a class that implement the IProcess interface.
-    virtual void SetIProcess(IProcess* process) = 0;
-
-    // Summary:
-    //   Gets the active process.
-    // Return Value:
-    //   A pointer to the current active process.
-    virtual IProcess* GetIProcess() = 0;
 
     // Return Value:
     //   True if system running in Test mode.
@@ -938,8 +918,6 @@ struct ISystem
     //   pCallback - 0 means normal LoadConfigVar behaviour is used
     virtual void LoadConfiguration(const char* sFilename, ILoadConfigurationEntrySink* pSink = 0, bool warnIfMissing = true) = 0;
 
-    virtual ESystemConfigSpec GetMaxConfigSpec() const = 0;
-
     //////////////////////////////////////////////////////////////////////////
 
     // Summary:
@@ -963,10 +941,6 @@ struct ISystem
     // Summary:
     //   Retrieves the perlin noise singleton instance.
     virtual CPNoise3* GetNoiseGen() = 0;
-
-    // Summary:
-    //   Retrieves system update counter.
-    virtual uint64 GetUpdateCounter() = 0;
 
     //////////////////////////////////////////////////////////////////////////
     // Error callback handling
@@ -999,13 +973,6 @@ struct ISystem
     // Typically it should only be called by CryAssert.
     virtual void SetAssertVisible(bool bAssertVisble) = 0;
     //////////////////////////////////////////////////////////////////////////
-
-    // Summary:
-    //  Enable/Disable drawing the console
-    virtual void SetConsoleDrawEnabled(bool enabled) = 0;
-
-    //  Enable/Disable drawing the UI
-    virtual void SetUIDrawEnabled(bool enabled) = 0;
 
     // Summary:
     //   Get the index of the currently running O3DE application. (0 = first instance, 1 = second instance, etc)
@@ -1055,12 +1022,6 @@ struct ISystem
 #endif
 
     // Summary:
-    //      Gets the root window message handler function
-    //      The returned pointer is platform-specific:
-    //      For Windows OS, the pointer is of type WNDPROC
-    virtual void* GetRootWindowMessageHandler() = 0;
-
-    // Summary:
     //      Register a IWindowMessageHandler that will be informed about window messages
     //      The delivered messages are platform-specific
     virtual void RegisterWindowMessageHandler(IWindowMessageHandler* pHandler) = 0;
@@ -1068,10 +1029,6 @@ struct ISystem
     // Summary:
     //      Unregister an IWindowMessageHandler that was previously registered using RegisterWindowMessageHandler
     virtual void UnregisterWindowMessageHandler(IWindowMessageHandler* pHandler) = 0;
-
-    // Create an instance of a Local File IO object (which reads directly off the local filesystem, instead of,
-    // for example, reading from the network or a pack or USB or such.
-    virtual std::shared_ptr<AZ::IO::FileIOBase> CreateLocalFileIO() = 0;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // EBus interface used to listen for cry system notifications
