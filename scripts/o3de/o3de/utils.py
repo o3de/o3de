@@ -117,15 +117,18 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
-def download_file(parsed_uri, download_path: pathlib.Path, download_progress_callback = None) -> int:
+def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite, download_progress_callback = None) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_path: location path on disk to download file
     :download_progress_callback: callback called with the download progress as a percentage, returns true to request to cancel the download
     """
-    if download_path.is_file():
+    if download_path.is_file() and not force_overwrite:
         logger.warn(f'File already downloaded to {download_path}.')
-    elif parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
+    elif download_path.is_file():
+        shutil.rmtree(download_path)
+
+    if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
         with urllib.request.urlopen(parsed_uri.geturl()) as s:
             download_file_size = 0
             try:
