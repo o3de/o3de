@@ -17,6 +17,7 @@
 #include <AzCore/RTTI/RTTI.h>
 
 #include <EMotionFX/Source/EMotionFXConfig.h>
+#include <TrajectoryHistory.h>
 
 namespace AZ
 {
@@ -73,8 +74,8 @@ namespace EMotionFX
 
             size_t GetLowestCostFrameIndex() const;
 
-            AZ_INLINE void SetTimeSinceLastFrameSwitch(float newTime) { m_timeSinceLastFrameSwitch = newTime; }
-            AZ_INLINE float GetTimeSinceLastFrameSwitch() const { return m_timeSinceLastFrameSwitch; }
+            void SetTimeSinceLastFrameSwitch(float newTime) { m_timeSinceLastFrameSwitch = newTime; }
+            float GetTimeSinceLastFrameSwitch() const { return m_timeSinceLastFrameSwitch; }
 
             void SetLowestCostSearchFrequency(float timeInSeconds) { m_lowestCostSearchFrequency = timeInSeconds; }
             float GetLowestCostSearchFrequency() const { return m_lowestCostSearchFrequency; }
@@ -84,9 +85,8 @@ namespace EMotionFX
             // TODO: This is a hack just to work around some limitations of the system now
             ControlSpline& GetControlSpline() { return m_controlSpline; }
             const ControlSpline& GetControlSpline() const { return m_controlSpline; }
-
-            AZ_INLINE float GetNewMotionTime() const { return m_newMotionTime; }
-            AZ_INLINE void SetNewMotionTime(float t) { m_newMotionTime = t; }
+            float GetNewMotionTime() const { return m_newMotionTime; }
+            void SetNewMotionTime(float t) { m_newMotionTime = t; }
 
             const Pose& GetBlendSourcePose() const { return m_blendSourcePose; }
 
@@ -98,6 +98,7 @@ namespace EMotionFX
             const AZStd::vector<float>& GetQueryFeatureValues() const { return m_queryFeatureValues; }
             AZStd::vector<float>& GetQueryFeatureValues() { return m_queryFeatureValues; }
 
+            const TrajectoryHistory& GetTrajectoryHistory() const { return m_trajectoryHistory; }
             Transform GetMotionExtractionDelta() const { return m_motionExtractionDelta; }
 
         private:
@@ -115,6 +116,8 @@ namespace EMotionFX
             AZStd::vector<float> m_queryFeatureValues;
             AZStd::vector<size_t> m_nearestFrames;
             ControlSpline m_controlSpline;
+            TrajectoryHistory m_trajectoryHistory;
+            static constexpr float m_trajectorySecsToTrack = 5.0f;
 
             float m_timeSinceLastFrameSwitch = 0.0f;
             float m_newMotionTime = 0.0f;

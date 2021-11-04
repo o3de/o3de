@@ -17,7 +17,6 @@
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <BehaviorInstance.h>
 #include <LocomotionBehavior.h>
-#include <TrajectoryHistory.h>
 #include <ImGuiMonitor.h>
 
 namespace EMotionFX
@@ -66,7 +65,6 @@ namespace EMotionFX
             public:
                 MotionMatching::BehaviorInstance* m_behaviorInstance = nullptr;
                 MotionMatching::LocomotionBehavior* m_behavior = nullptr;
-                MotionMatching::TrajectoryHistory m_rootHistory;
             };
 
             BlendTreeMotionMatchNode();
