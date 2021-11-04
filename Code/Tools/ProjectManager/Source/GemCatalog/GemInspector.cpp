@@ -55,7 +55,17 @@ namespace O3DE::ProjectManager
     void SetLabelElidedText(QLabel* label, QString text)
     {
         QFontMetrics nameFontMetrics(label->font());
-        label->setText(nameFontMetrics.elidedText(text, Qt::ElideRight, label->width()));
+        int labelWidth = label->width();
+
+        // Don't elide if the widgets are sized too small (sometimes occurs when loading gem catalog)
+        if (labelWidth > 100)
+        {
+            label->setText(nameFontMetrics.elidedText(text, Qt::ElideRight, labelWidth));
+        }
+        else
+        {
+            label->setText(text);
+        }
     }
 
     void GemInspector::Update(const QModelIndex& modelIndex)
@@ -84,7 +94,7 @@ namespace O3DE::ProjectManager
             m_requirementsTextLabel->show();
             m_requirementsMainSpacer->changeSize(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-            m_requirementsTitleLabel->setText("Requirement");
+            m_requirementsTitleLabel->setText(tr("Requirement"));
             m_requirementsTextLabel->setText(m_model->GetRequirement(modelIndex));
         }
         else
@@ -99,7 +109,7 @@ namespace O3DE::ProjectManager
         QStringList dependingGems = m_model->GetDependingGemNames(modelIndex);
         if (!dependingGems.isEmpty())
         {
-            m_dependingGems->Update("Depending Gems", "The following Gems will be automatically enabled with this Gem.", dependingGems);
+            m_dependingGems->Update(tr("Depending Gems"), tr("The following Gems will be automatically enabled with this Gem."), dependingGems);
             m_dependingGems->show();
         }
         else
@@ -108,9 +118,9 @@ namespace O3DE::ProjectManager
         }
 
         // Additional information
-        m_versionLabel->setText(QString("Gem Version: %1").arg(m_model->GetVersion(modelIndex)));
-        m_lastUpdatedLabel->setText(QString("Last Updated: %1").arg(m_model->GetLastUpdated(modelIndex)));
-        m_binarySizeLabel->setText(QString("Binary Size:  %1 KB").arg(m_model->GetBinarySizeInKB(modelIndex)));
+        m_versionLabel->setText(tr("Gem Version: %1").arg(m_model->GetVersion(modelIndex)));
+        m_lastUpdatedLabel->setText(tr("Last Updated: %1").arg(m_model->GetLastUpdated(modelIndex)));
+        m_binarySizeLabel->setText(tr("Binary Size:  %1 KB").arg(m_model->GetBinarySizeInKB(modelIndex)));
 
         m_mainWidget->adjustSize();
         m_mainWidget->show();
@@ -148,7 +158,7 @@ namespace O3DE::ProjectManager
             m_mainLayout->addLayout(licenseHLayout);
 
             QLabel* licenseLabel = CreateStyledLabel(licenseHLayout, s_baseFontSize, s_headerColor);
-            licenseLabel->setText("License: ");
+            licenseLabel->setText(tr("License: "));
 
             m_licenseLinkLabel = new LinkLabel("", QUrl(), s_baseFontSize);
             licenseHLayout->addWidget(m_licenseLinkLabel);
@@ -166,10 +176,10 @@ namespace O3DE::ProjectManager
 
             linksHLayout->addStretch();
 
-            m_directoryLinkLabel = new LinkLabel("View in Directory");
+            m_directoryLinkLabel = new LinkLabel(tr("View in Directory"));
             linksHLayout->addWidget(m_directoryLinkLabel);
             linksHLayout->addWidget(new QLabel("|"));
-            m_documentationLinkLabel  = new LinkLabel("Read Documentation");
+            m_documentationLinkLabel  = new LinkLabel(tr("Read Documentation"));
             linksHLayout->addWidget(m_documentationLinkLabel);
 
             linksHLayout->addStretch();
@@ -218,7 +228,7 @@ namespace O3DE::ProjectManager
 
         // Additional information
         QLabel* additionalInfoLabel = CreateStyledLabel(m_mainLayout, 14, s_headerColor);
-        additionalInfoLabel->setText("Additional Information");
+        additionalInfoLabel->setText(tr("Additional Information"));
 
         m_versionLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
         m_lastUpdatedLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
