@@ -31,7 +31,7 @@ namespace GraphCanvas
     
         NodeNudgingController();
         NodeNudgingController(const GraphId& graphId, const AZStd::unordered_set< NodeId >& rootElements);
-        ~NodeNudgingController() = default;
+        ~NodeNudgingController();
 
         void SetGraphId(const GraphId& graphId);
         
@@ -60,7 +60,7 @@ namespace GraphCanvas
         GraphId m_graphId;
         AZStd::unordered_set< NodeId > m_rootElements;
         
-        // Keeping track of a store of mainpulated bounding boxes
+        // Keeping track of a store of manipulated bounding boxes
         AZStd::unordered_map< NodeId, QRectF > m_originalBoundingBoxes;
 
         AZStd::unordered_map< NodeId, QRectF > m_cachedNodeElements;

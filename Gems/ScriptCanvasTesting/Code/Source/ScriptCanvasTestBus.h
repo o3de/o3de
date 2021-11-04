@@ -23,6 +23,8 @@ namespace ScriptCanvasTesting
 {
     void Reflect(AZ::ReflectContext* context);
 
+
+
     class GlobalBusTraits : public AZ::EBusTraits
     {
     public:

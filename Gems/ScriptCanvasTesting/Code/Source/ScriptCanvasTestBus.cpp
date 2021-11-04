@@ -23,7 +23,7 @@ namespace ScriptCanvasTesting
         ScriptCanvasTesting::PerformanceStressBusTraits::Reflect(context);
         ScriptCanvasTesting::NativeHandlingOnlyBusTraits::Reflect(context);
         ScriptCanvasTesting::TestTupleMethods::Reflect(context);
-
+        
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EnumProperty<(AZ::u32)TestEnum::Alpha>("ALPHA");

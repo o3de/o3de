@@ -669,6 +669,7 @@ namespace GraphCanvas
     {
         GeometryNotificationBus::Handler::BusDisconnect();
         SceneNotificationBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
     }
 
     void GestureSceneHelper::TrackElement(const AZ::EntityId& elementId)
@@ -1208,6 +1209,7 @@ namespace GraphCanvas
         SceneMimeDelegateRequestBus::Handler::BusDisconnect();
         SceneRequestBus::Handler::BusDisconnect();
         AssetEditorSettingsNotificationBus::Handler::BusDisconnect();
+        AZ::SystemTickBus::Handler::BusDisconnect();
 
         m_activeDelegates.clear();
 

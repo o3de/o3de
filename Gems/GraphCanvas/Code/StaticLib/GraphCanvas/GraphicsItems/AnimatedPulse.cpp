@@ -109,6 +109,8 @@ namespace GraphCanvas
 
     AnimatedPulse::~AnimatedPulse()
     {
+        PulseRequestBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
         AZ::SystemTickBus::Handler::BusDisconnect();
     }
 

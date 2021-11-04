@@ -18,6 +18,15 @@
 #include <ScriptCanvas/Execution/ExecutionBus.h>
 #include <ScriptCanvas/Execution/ExecutionContext.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
+// E:\github\o3de\Code\Framework\AzCore\AzCore\Asset\AssetSerializer.h
+#include <AzCore/Asset/AssetSerializer.h>
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(AZ::Data::Asset<AZ::DynamicSliceAsset>, "{D9A4EB57-198B-4A0D-B1FB-D1B11FF88C66}");
+}
+
+
 
 #if !defined(_RELEASE)
 #define SCRIPT_CANVAS_RUNTIME_ASSET_CHECK
@@ -149,6 +158,8 @@ namespace ScriptCanvas
 
     void RuntimeComponent::Reflect(AZ::ReflectContext* context)
     {
+        TestAssetHolder::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<RuntimeComponent, AZ::Component>()
@@ -177,6 +188,39 @@ namespace ScriptCanvas
 
         return true;
     }
+
+    void TestAssetHolder::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<AZ::SliceAsset>()
+                ;
+
+            serializeContext->Class<AZ::DynamicSliceAsset, AZ::SliceAsset>()
+                ;
+
+
+            serializeContext->Class<TestAssetHolder>()
+                ->Field("_prototypeEntity", &TestAssetHolder::prototypeEntity)
+                ;
+
+            if (auto editoContext = serializeContext->GetEditContext())
+            {
+                editoContext->Class<TestAssetHolder>("Parameters", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TestAssetHolder::prototypeEntity, "Prototype", "")
+                    ;
+            }
+        }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<TestAssetHolder>()
+                ;
+        }
+    }
 }
+
+
 
 #undef SCRIPT_CANVAS_RUNTIME_ASSET_CHECK

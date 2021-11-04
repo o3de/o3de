@@ -184,7 +184,7 @@ namespace GraphCanvas
         ConnectionUIRequestBus::Handler::BusDisconnect();
         ConnectionNotificationBus::Handler::BusDisconnect();
         StyleNotificationBus::Handler::BusDisconnect();
-
+        AZ::SystemTickBus::Handler::BusDisconnect();
         VisualNotificationBus::MultiHandler::BusDisconnect();
     }
 
