@@ -312,7 +312,7 @@ namespace AZ::SettingsRegistryMergeUtils
         }
 
         // Step 2 Check the project-path key
-        // This is the project path root key, as in passed from command-line or .setreg files.
+        // This is the project path root key, as passed from command-line or *.setreg files.
         settingsRegistry.Get(projectRoot.Native(), projectRootKey);
         return projectRoot;
     }
@@ -449,7 +449,7 @@ namespace AZ::SettingsRegistryMergeUtils
             settingsRegistry.MergeSettingsFile(projectJsonPath.Native(),
                 AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::ProjectSettingsRootKey);
         }
-        // Ifa project name isn't set the default will be set to the final path segment of the project path
+        // If a project name isn't set the default will be set to the final path segment of the project path
         if (FixedValueString projectName; !settingsRegistry.Get(projectName, projectNameKey))
         {
             projectName = projectPath.Filename().Native();
@@ -747,29 +747,29 @@ namespace AZ::SettingsRegistryMergeUtils
             }
 
             projectCachePath = projectCachePath.LexicallyNormal();
-        }
-
-        // Get the name of the asset platform assigned by the bootstrap. First check for platform version such as "windows_assets"
-        // and if that's missing just get "assets".
-        FixedValueString assetPlatform;
-        if (auto assetPlatformKey = FixedValueString::format("%s/%s_assets", BootstrapSettingsRootKey, AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER);
-            !registry.Get(assetPlatform, assetPlatformKey))
-        {
-            assetPlatformKey = FixedValueString::format("%s/assets", BootstrapSettingsRootKey);
-            registry.Get(assetPlatform, assetPlatformKey);
-        }
-        if (assetPlatform.empty())
-        {
-            // Use the platform codename to retrieve the default asset platform value
-            assetPlatform = AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
-        }
-
-        // Cache folders - sets up various paths in registry for the cache.
-        // Make sure the asset platform is set before setting these cache paths.
-        if (!assetPlatform.empty())
-        {
             registry.Set(FilePathKey_CacheProjectRootFolder, projectCachePath.Native());
-            registry.Set(FilePathKey_CacheRootFolder, (projectCachePath / assetPlatform).Native());
+
+            // Cache/<asset-platform> folder
+            // Get the name of the asset platform assigned by the bootstrap. First check for platform version such as "windows_assets"
+            // and if that's missing just get "assets".
+            FixedValueString assetPlatform;
+            if (auto assetPlatformKey = FixedValueString::format("%s/%s_assets", BootstrapSettingsRootKey, AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER);
+                !registry.Get(assetPlatform, assetPlatformKey))
+            {
+                assetPlatformKey = FixedValueString::format("%s/assets", BootstrapSettingsRootKey);
+                registry.Get(assetPlatform, assetPlatformKey);
+            }
+            if (assetPlatform.empty())
+            {
+                // Use the platform codename to retrieve the default asset platform value
+                assetPlatform = AZ::OSPlatformToDefaultAssetPlatform(AZ_TRAIT_OS_PLATFORM_CODENAME);
+            }
+
+            // Make sure the asset platform is set before setting cache path for the asset platform.
+            if (!assetPlatform.empty())
+            {
+                registry.Set(FilePathKey_CacheRootFolder, (projectCachePath / assetPlatform).Native());
+            }
         }
 
         // User folder
