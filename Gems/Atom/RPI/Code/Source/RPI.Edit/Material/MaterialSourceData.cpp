@@ -198,12 +198,14 @@ namespace AZ
             const auto materialTypeAssetId = AssetUtils::MakeAssetId(materialTypeSourcePath, 0);
             if (!materialTypeAssetId.IsSuccess())
             {
+                AZ_Error("MaterialSourceData", false, "Failed to create material type asset ID: '%s'.", materialTypeSourcePath.c_str());
                 return Failure();
             }
 
             MaterialTypeSourceData materialTypeSourceData;
             if (!AZ::RPI::JsonUtils::LoadObjectFromFile(materialTypeSourcePath, materialTypeSourceData))
             {
+                AZ_Error("MaterialSourceData", false, "Failed to load MaterialTypeSourceData: '%s'.", materialTypeSourcePath.c_str());
                 return Failure();
             }
 
@@ -213,45 +215,58 @@ namespace AZ
                 materialTypeSourceData.CreateMaterialTypeAsset(materialTypeAssetId.GetValue(), materialTypeSourcePath, elevateWarnings);
             if (!materialTypeAsset.IsSuccess())
             {
+                AZ_Error("MaterialSourceData", false, "Failed to create material type asset from source data: '%s'.", materialTypeSourcePath.c_str());
                 return Failure();
             }
 
+            // Track all of the material and material type assets loaded while trying to create a material asset from source data. This will
+            // be used for evaluating circular dependencies and returned for external monitoring or other use.
             AZStd::unordered_set<AZStd::string> dependencies;
             dependencies.insert(materialSourceFilePath);
             dependencies.insert(materialTypeSourcePath);
 
+            // Load and build a stack of MaterialSourceData from all of the parent materials in the hierarchy. Properties from the source
+            // data will be applied in reverse to the asset creator.
             AZStd::vector<MaterialSourceData> parentSourceDataStack;
 
             AZStd::string parentSourceRelPath = m_parentMaterial;
             AZStd::string parentSourceAbsPath = AssetUtils::ResolvePathReference(materialSourceFilePath, parentSourceRelPath);
             while (!parentSourceRelPath.empty())
             {
-                if (dependencies.find(parentSourceAbsPath) != dependencies.end())
+                if (!dependencies.insert(parentSourceAbsPath).second)
                 {
+                    AZ_Error("MaterialSourceData", false, "Detected circular dependency between materials: '%s' and '%s'.", materialSourceFilePath, parentSourceAbsPath.c_str());
                     return Failure();
                 }
-
-                dependencies.insert(parentSourceAbsPath);
 
                 MaterialSourceData parentSourceData;
                 if (!AZ::RPI::JsonUtils::LoadObjectFromFile(parentSourceAbsPath, parentSourceData))
                 {
+                    AZ_Error("MaterialSourceData", false, "Failed to load MaterialSourceData for parent material: '%s'.", parentSourceAbsPath.c_str());
                     return Failure();
                 }
 
-                // Make sure the parent material has the same material type
+                // Make sure that all materials in the hierarchy share the same material type
                 const auto parentTypeAssetId = AssetUtils::MakeAssetId(parentSourceAbsPath, parentSourceData.m_materialType, 0);
-                if (!parentTypeAssetId || parentTypeAssetId.GetValue() != materialTypeAssetId.GetValue())
+                if (!parentTypeAssetId)
+                {
+                    AZ_Error("MaterialSourceData", false, "Parent material asset ID isn't valid: '%s'.", parentSourceAbsPath.c_str());
+                    return Failure();
+                }
+
+                if (parentTypeAssetId.GetValue() != materialTypeAssetId.GetValue())
                 {
                     AZ_Error("MaterialSourceData", false, "This material and its parent material do not share the same material type.");
                     return Failure();
                 }
 
+                // Get the location of the next parent material and push the source data onto the stack 
                 parentSourceRelPath = parentSourceData.m_parentMaterial;
                 parentSourceAbsPath = AssetUtils::ResolvePathReference(parentSourceAbsPath, parentSourceRelPath);
                 parentSourceDataStack.emplace_back(AZStd::move(parentSourceData));
             }
 
+            // Create the material asset from all the previously loaded source data 
             MaterialAssetCreator materialAssetCreator;
             materialAssetCreator.SetElevateWarnings(elevateWarnings);
             materialAssetCreator.Begin(assetId, *materialTypeAsset.GetValue().Get(), includeMaterialPropertyNames);
