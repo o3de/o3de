@@ -315,13 +315,16 @@ function(ly_add_target)
     # Store the target so we can walk through all of them in LocationDependencies.cmake
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS ${interface_name})
 
-    # Store the aliased target into a DIRECTORY property
-    set_property(DIRECTORY APPEND PROPERTY LY_DIRECTORY_TARGETS ${interface_name})
-    # Store the directory path in a GLOBAL property so that it can be accessed
-    # in the layout install logic. Skip if the directory has already been added
-    get_property(ly_all_target_directories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
-    if(NOT CMAKE_CURRENT_SOURCE_DIR IN_LIST ly_all_target_directories)
-        set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGET_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
+    if(NOT ly_add_target_IMPORTED)
+        # Store the aliased target into a DIRECTORY property
+        set_property(DIRECTORY APPEND PROPERTY LY_DIRECTORY_TARGETS ${interface_name})
+
+        # Store the directory path in a GLOBAL property so that it can be accessed
+        # in the layout install logic. Skip if the directory has already been added
+        get_property(ly_all_target_directories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
+        if(NOT CMAKE_CURRENT_SOURCE_DIR IN_LIST ly_all_target_directories)
+            set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGET_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
+        endif()
     endif()
 
     # Custom commands need to be declared in the same folder as the target that they use. 
@@ -400,7 +403,7 @@ function(ly_target_link_libraries TARGET)
         message(FATAL_ERROR "You must provide a target")
     endif()
 
-    set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LINK_${TARGET} ${ARGN})
+    set_property(TARGET ${TARGET} APPEND PROPERTY LY_DELAYED_LINK ${ARGN})
     set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LINK_TARGETS ${TARGET}) # to walk them at the end
 
 endfunction()
@@ -427,7 +430,7 @@ function(ly_delayed_target_link_libraries)
     get_property(delayed_targets GLOBAL PROPERTY LY_DELAYED_LINK_TARGETS)
     foreach(target ${delayed_targets})
 
-        get_property(delayed_link GLOBAL PROPERTY LY_DELAYED_LINK_${target})
+        get_property(delayed_link TARGET ${target} PROPERTY LY_DELAYED_LINK)
         if(delayed_link)
 
             cmake_parse_arguments(ly_delayed_target_link_libraries "" "" "${visibilities}" ${delayed_link})
@@ -455,7 +458,6 @@ function(ly_delayed_target_link_libraries)
 
                 endforeach()
             endforeach()
-            set_property(GLOBAL PROPERTY LY_DELAYED_LINK_${target})
 
         endif()
 

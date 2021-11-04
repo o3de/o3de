@@ -28,15 +28,6 @@ namespace AZ
             //! Dump the PipelineStatistics from passes to a json file.
             virtual bool CapturePassPipelineStatistics(const AZStd::string& outputFilePath) = 0;
 
-            //! Dump a single frame of Cpu profiling data 
-            virtual bool CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath) = 0;
-
-            //! Start a multiframe capture of CPU profiling data.
-            virtual bool BeginContinuousCpuProfilingCapture() = 0;
-
-            //! End and dump an in-progress continuous capture.
-            virtual bool EndContinuousCpuProfilingCapture(const AZStd::string& outputFilePath) = 0;
-
             //! Dump the benchmark metadata to a json file.
             virtual bool CaptureBenchmarkMetadata(const AZStd::string& benchmarkName, const AZStd::string& outputFilePath) = 0;
         };
@@ -62,11 +53,6 @@ namespace AZ
             //! @param result Set to true if it's finished successfully
             //! @param info The output file path or error information which depends on the return.
             virtual void OnCaptureQueryPipelineStatisticsFinished(bool result, const AZStd::string& info) = 0;
-
-            //! Notify when the current CpuProfilingStatistics capture is finished
-            //! @param result Set to true if it's finished successfully
-            //! @param info The output file path or error information which depends on the return.
-            virtual void OnCaptureCpuProfilingStatisticsFinished(bool result, const AZStd::string& info) = 0;
 
             //! Notify when the current BenchmarkMetadata capture is finished
             //! @param result Set to true if it's finished successfully

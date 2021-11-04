@@ -10,6 +10,7 @@
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 
 namespace O3DE::ProjectManager
 {
@@ -26,6 +27,14 @@ namespace O3DE::ProjectManager
 
     void GemModel::AddGem(const GemInfo& gemInfo)
     {
+        if (FindIndexByNameString(gemInfo.m_name).isValid())
+        {
+            // do not add gems with duplicate names
+            // this can happen by mistake or when a gem repo has a gem with the same name as a local gem
+            AZ_TracePrintf("GemModel", "Ignoring duplicate gem: %s", gemInfo.m_name.toUtf8().constData());
+            return;
+        }
+
         QStandardItem* item = new QStandardItem();
 
         item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
@@ -48,6 +57,7 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_features, RoleFeatures);
         item->setData(gemInfo.m_path, RolePath);
         item->setData(gemInfo.m_requirement, RoleRequirement);
+        item->setData(gemInfo.m_downloadStatus, RoleDownloadStatus);
 
         appendRow(item);
 
@@ -58,6 +68,7 @@ namespace O3DE::ProjectManager
     void GemModel::Clear()
     {
         clear();
+        m_nameToIndexMap.clear();
     }
 
     void GemModel::UpdateGemDependencies()
@@ -130,6 +141,11 @@ namespace O3DE::ProjectManager
     GemInfo::Types GemModel::GetTypes(const QModelIndex& modelIndex)
     {
         return static_cast<GemInfo::Types>(modelIndex.data(RoleTypes).toInt());
+    }
+
+    GemInfo::DownloadStatus GemModel::GetDownloadStatus(const QModelIndex& modelIndex)
+    {
+        return static_cast<GemInfo::DownloadStatus>(modelIndex.data(RoleDownloadStatus).toInt());
     }
 
     QString GemModel::GetSummary(const QModelIndex& modelIndex)
@@ -269,9 +285,11 @@ namespace O3DE::ProjectManager
 
     void GemModel::SetIsAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)
     {
+        // get the gemName first, because the modelIndex data change after adding because of filters
+        QString gemName = modelIndex.data(RoleName).toString();
         model.setData(modelIndex, isAdded, RoleIsAdded);
 
-        UpdateDependencies(model, modelIndex);
+        UpdateDependencies(model, gemName, isAdded);
     }
 
     bool GemModel::HasDependentGems(const QModelIndex& modelIndex) const
@@ -287,29 +305,58 @@ namespace O3DE::ProjectManager
         return false;
     }
 
-    void GemModel::UpdateDependencies(QAbstractItemModel& model, const QModelIndex& modelIndex)
+    void GemModel::UpdateDependencies(QAbstractItemModel& model, const QString& gemName, bool isAdded)
     {
         GemModel* gemModel = GetSourceModel(&model);
         AZ_Assert(gemModel, "Failed to obtain GemModel");
 
+        QModelIndex modelIndex = gemModel->FindIndexByNameString(gemName);
+
         QVector<QModelIndex> dependencies = gemModel->GatherGemDependencies(modelIndex);
-        if (IsAdded(modelIndex))
+        uint32_t numChangedDependencies = 0;
+
+        if (isAdded)
         {
             for (const QModelIndex& dependency : dependencies)
             {
-                SetIsAddedDependency(*gemModel, dependency, true);
+                if (!IsAddedDependency(dependency))
+                {
+                    SetIsAddedDependency(*gemModel, dependency, true);
+
+                    // if the gem was already added then the state didn't really change
+                    if (!IsAdded(dependency))
+                    {
+                        numChangedDependencies++;
+                    }
+                }
             }
         }
         else
         {
             // still a dependency if some added gem depends on this one 
-            SetIsAddedDependency(model, modelIndex, gemModel->HasDependentGems(modelIndex));
+            bool hasDependentGems = gemModel->HasDependentGems(modelIndex);
+            if (IsAddedDependency(modelIndex) != hasDependentGems)
+            {
+                SetIsAddedDependency(*gemModel, modelIndex, hasDependentGems);
+            }
 
             for (const QModelIndex& dependency : dependencies)
             {
-                SetIsAddedDependency(*gemModel, dependency, gemModel->HasDependentGems(dependency));
+                hasDependentGems = gemModel->HasDependentGems(dependency);
+                if (IsAddedDependency(dependency) != hasDependentGems)
+                {
+                    SetIsAddedDependency(*gemModel, dependency, hasDependentGems);
+
+                    // if the gem was already added then the state didn't really change
+                    if (!IsAdded(dependency))
+                    {
+                        numChangedDependencies++;
+                    }
+                }
             }
         }
+
+        gemModel->emit gemStatusChanged(gemName, numChangedDependencies);
     }
 
     void GemModel::SetIsAddedDependency(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)
@@ -373,6 +420,11 @@ namespace O3DE::ProjectManager
         return previouslyAdded && !added;
     }
 
+    void GemModel::SetDownloadStatus(QAbstractItemModel& model, const QModelIndex& modelIndex, GemInfo::DownloadStatus status)
+    {
+        model.setData(modelIndex, status, RoleDownloadStatus);
+    }
+
     bool GemModel::HasRequirement(const QModelIndex& modelIndex)
     {
         return !modelIndex.data(RoleRequirement).toString().isEmpty();
@@ -384,6 +436,20 @@ namespace O3DE::ProjectManager
         {
             const QModelIndex modelIndex = index(row, 0);
             if (NeedsToBeAdded(modelIndex) && HasRequirement(modelIndex))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    bool GemModel::HasDependentGemsToRemove() const
+    {
+        for (int row = 0; row < rowCount(); ++row)
+        {
+            const QModelIndex modelIndex = index(row, 0);
+            if (GemModel::NeedsToBeRemoved(modelIndex, /*includeDependencies=*/true) &&
+                GemModel::WasPreviouslyAddedDependency(modelIndex))
             {
                 return true;
             }
@@ -463,5 +529,4 @@ namespace O3DE::ProjectManager
         }
         return result;
     }
-
 } // namespace O3DE::ProjectManager

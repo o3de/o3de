@@ -4,18 +4,21 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
+
+import json
+import math
 import os
 import time
-import math
+import traceback
+from typing import Callable, Tuple
 
 import azlmbr
 import azlmbr.legacy.general as general
+import azlmbr.multiplayer as multiplayer
 import azlmbr.debug
-import json
+import ly_test_tools.environment.waiter as waiter
+import ly_test_tools.environment.process_utils as process_utils
 
-import traceback
-
-from typing import Callable, Tuple
 
 class FailFast(Exception):
     """
@@ -65,6 +68,56 @@ class TestHelper:
         
         TestHelper.wait_for_condition(lambda : general.is_in_game_mode(), 1.0)
         Report.critical_result(msgtuple_success_fail, general.is_in_game_mode())
+
+    @staticmethod
+    def multiplayer_enter_game_mode(msgtuple_success_fail : Tuple[str, str], sv_default_player_spawn_asset : str):
+        # type: (tuple) -> None
+        """
+        :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
+        :param sv_default_player_spawn_asset: The path to the network player prefab that will be automatically spawned upon entering gamemode.  The engine default is "prefabs/player.network.spawnable" 
+
+        :return: None
+        """
+
+        # looks for an expected line in a list of tracers lines
+        # lines: the tracer list of lines to search. options are section_tracer.warnings, section_tracer.errors, section_tracer.asserts, section_tracer.prints
+        # return: true if the line is found, otherwise false
+        def find_expected_line(expected_line, lines):
+            found_lines = [printInfo.message.strip() for printInfo in lines]
+            return expected_line in found_lines
+
+        def wait_for_critical_expected_line(expected_line, lines, time_out):
+            TestHelper.wait_for_condition(lambda : find_expected_line(expected_line, lines), time_out)
+            Report.critical_result(("Found expected line: " + expected_line, "Failed to find expected line: " + expected_line), find_expected_line(expected_line, lines))
+
+        def wait_for_critical_unexpected_line(unexpected_line, lines, time_out):
+            TestHelper.wait_for_condition(lambda : find_expected_line(unexpected_line, lines), time_out)
+            Report.critical_result(("Unexpected line not found: " + unexpected_line, "Unexpected line found: " + unexpected_line), not find_expected_line(unexpected_line, lines))
+
+
+        Report.info("Entering game mode")
+        if sv_default_player_spawn_asset :
+            general.set_cvar("sv_defaultPlayerSpawnAsset", sv_default_player_spawn_asset)
+
+        with Tracer() as section_tracer:
+            # enter game-mode. 
+            # game-mode in multiplayer will also launch ServerLauncher.exe and connect to the editor
+            multiplayer.PythonEditorFuncs_enter_game_mode()
+
+            # make sure the server launcher binary exists
+            wait_for_critical_unexpected_line("LaunchEditorServer failed! The ServerLauncher binary is missing!", section_tracer.errors, 0.5)
+
+            # make sure the server launcher is running
+            waiter.wait_for(lambda: process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True), timeout=5.0, exc=AssertionError("AutomatedTesting.ServerLauncher has NOT launched!"), interval=1.0)
+
+            # make sure the editor connects to the editor-server and sends the level data packet
+            wait_for_critical_expected_line("Editor is sending the editor-server the level data packet.", section_tracer.prints, 5.0)
+
+            # make sure the editor finally connects to the editor-server network simulation
+            wait_for_critical_expected_line("Editor-server ready. Editor has successfully connected to the editor-server's network simulation.", section_tracer.prints, 5.0)
+
+        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 5.0)
+        Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())
 
     @staticmethod
     def exit_game_mode(msgtuple_success_fail : Tuple[str, str]):
@@ -127,6 +180,30 @@ class TestHelper:
                 if ret:
                     return True
 
+    @staticmethod
+    def close_error_windows():
+        """
+        Closes Error Report and Error Log windows that block focus if they are visible.
+        :return: None
+        """
+        if general.is_pane_visible("Error Report"):
+            general.close_pane("Error Report")
+        if general.is_pane_visible("Error Log"):
+            general.close_pane("Error Log")
+
+    @staticmethod
+    def close_display_helpers():
+        """
+        Closes helper gizmos, anti-aliasing, and FPS meters.
+        :return: None
+        """
+        if general.is_helpers_shown():
+            general.toggle_helpers()
+            general.idle_wait(1.0)
+        general.idle_wait(1.0)
+        general.run_console("r_displayInfo=0")
+        general.idle_wait(1.0)
+
 
 class Timeout:
     # type: (float) -> None
@@ -148,6 +225,7 @@ class Timeout:
     @property
     def timed_out(self):
         return time.time() > self.die_after
+
 
 class Report:
     _results = []
@@ -290,8 +368,8 @@ class Report:
         Report.info("   x: {:.2f}, y: {:.2f}, z: {:.2f}".format(vector3.x, vector3.y, vector3.z))
         if magnitude is not None:
             Report.info("   magnitude: {:.2f}".format(magnitude))
-            
-    
+
+
 '''
 Utility for scope tracing errors and warnings.
 Usage:
@@ -303,7 +381,7 @@ Usage:
 
     Report.result(Tests.warnings_not_found_in_section, not section_tracer.has_warnings)
 
-'''    
+'''
 class Tracer:
     def __init__(self):
         self.warnings = []
@@ -349,10 +427,10 @@ class Tracer:
             self.line = args[1]
             self.function = args[2]
             self.message = args[3]
-        
+
         def __str__(self):
             return f"Assert: [{self.filename}:{self.function}:{self.line}]: {self.message}"
-            
+
         def __repr__(self):
             return f"[Assert: {self.message}]"
 
@@ -360,21 +438,21 @@ class Tracer:
         def __init__(self, args):
             self.window = args[0]
             self.message = args[1]
-    
+
     def _on_warning(self, args):
         warningInfo = Tracer.WarningInfo(args)
         self.warnings.append(warningInfo)
         Report.info("Tracer caught Warning: %s" % warningInfo.message)
         self.has_warnings = True
         return False
-        
+
     def _on_error(self, args):
         errorInfo = Tracer.ErrorInfo(args)
         self.errors.append(errorInfo)
         Report.info("Tracer caught Error: %s" % errorInfo.message)
         self.has_errors = True
         return False
-        
+
     def _on_assert(self, args):
         assertInfo = Tracer.AssertInfo(args)
         self.asserts.append(assertInfo)
@@ -436,6 +514,7 @@ class AngleHelper:
 
 def vector3_str(vector3):
     return "(x: {:.2f}, y: {:.2f}, z: {:.2f})".format(vector3.x, vector3.y, vector3.z)
-    
+
+
 def aabb_str(aabb):
     return "[Min: %s, Max: %s]" % (vector3_str(aabb.min), vector3_str(aabb.max))

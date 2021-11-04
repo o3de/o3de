@@ -159,6 +159,11 @@ namespace AZ
                     AZ_Assert(false, "Scene was already registered");
                     return;
                 }
+                else if (!scene->GetName().IsEmpty() && scene->GetName() == sceneItem->GetName())
+                {
+                    // only report a warning if there is a scene with duplicated name
+                    AZ_Warning("RPISystem", false, "There is a registered scene with same name [%s]", scene->GetName().GetCStr());
+                }
             }
 
             m_scenes.push_back(scene);
@@ -177,27 +182,41 @@ namespace AZ
             AZ_Assert(false, "Can't unregister scene which wasn't registered");
         }
 
-        ScenePtr RPISystem::GetScene(const SceneId& sceneId) const
+        Scene* RPISystem::GetScene(const SceneId& sceneId) const
         {
             for (const auto& scene : m_scenes)
             {
                 if (scene->GetId() == sceneId)
+                {
+                    return scene.get();
+                }
+            }
+            return nullptr;
+        }
+
+        Scene* RPISystem::GetSceneByName(const AZ::Name& name) const
+        {
+            for (const auto& scene : m_scenes)
+            {
+                if (scene->GetName() == name)
+                {
+                    return scene.get();
+                }
+            }
+            return nullptr;
+        }
+        
+        ScenePtr RPISystem::GetDefaultScene() const
+        {
+            for (const auto& scene : m_scenes)
+            {
+                if (scene->GetName() == AZ::Name("Main"))
                 {
                     return scene;
                 }
             }
             return nullptr;
         }
-
-        ScenePtr RPISystem::GetDefaultScene() const
-        {
-            if (m_scenes.size() > 0)
-            {
-                return m_scenes[0];
-            }
-            return nullptr;
-        }
-
 
         RenderPipelinePtr RPISystem::GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle)
         {

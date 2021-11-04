@@ -1,7 +1,15 @@
 {
     "description": "Material Type with properties used to define Standard PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
+    "version": 4,
+    "versionUpdates": [
+        {
+            "toVersion": 4,
+            "actions": [
+                {"op": "rename", "from": "opacity.doubleSided", "to": "general.doubleSided"}
+            ]
+        }
+    ],
     "propertyLayout": {
-        "version": 3,
         "groups": [
             {
                 "name": "baseColor",
@@ -72,6 +80,12 @@
         ],
         "properties": {
             "general": [
+                {
+                    "name": "doubleSided",
+                    "displayName": "Double-sided",
+                    "description": "Whether to render back-faces or just front-faces.",
+                    "type": "Bool"
+                },
                 {
                     "name": "applySpecularAA",
                     "displayName": "Apply Specular AA",
@@ -651,12 +665,6 @@
                     }
                 },
                 {
-                    "name": "doubleSided",
-                    "displayName": "Double-sided",
-                    "description": "Whether to render back-faces or just front-faces.",
-                    "type": "Bool"
-                },
-                {
                     "name": "alphaAffectsSpecular",
                     "displayName": "Alpha affects specular",
                     "description": "How much the alpha value should also affect specular reflection. This should be 0.0 for materials where light can transmit through their physical surface (like glass), but 1.0 when alpha determines the very presence of a surface (like hair or grass)",
@@ -1099,15 +1107,6 @@
         {
             "type": "UseTexture",
             "args": {
-                "textureProperty": "metallic.textureMap",
-                "useTextureProperty": "metallic.useTexture",
-                "dependentProperties": ["metallic.textureMapUv"],
-                "shaderOption": "o_metallic_useTexture"
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
                 "textureProperty": "specularF0.textureMap",
                 "useTextureProperty": "specularF0.useTexture",
                 "dependentProperties": ["specularF0.textureMapUv"],
@@ -1169,6 +1168,12 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_Roughness.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "StandardPBR_Metallic.lua"
             }
         },
         {

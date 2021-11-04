@@ -3,13 +3,54 @@ Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-File to assist with common hydra component functions used across various Atom tests.
 """
+import datetime
 import os
+import zipfile
 
-from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
-helper = EditorTestHelper(log_prefix="Atom_EditorTestHelper")
+def create_screenshots_archive(screenshot_path):
+    """
+    Creates a new zip file archive at archive_path containing all files listed within archive_path.
+    :param screenshot_path: location containing the files to archive, the zip archive file will also be saved here.
+    :return: None, but creates a new zip file archive inside path containing all of the files inside archive_path.
+    """
+    files_to_archive = []
+
+    # Search for .png and .ppm files to add to the zip archive file.
+    for (folder_name, sub_folders, file_names) in os.walk(screenshot_path):
+        for file_name in file_names:
+            if file_name.endswith(".png") or file_name.endswith(".ppm"):
+                file_path = os.path.join(folder_name, file_name)
+                files_to_archive.append(file_path)
+
+    # Setup variables for naming the zip archive file.
+    timestamp = datetime.datetime.now().timestamp()
+    formatted_timestamp = datetime.datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d_%H-%M-%S")
+    screenshots_file = os.path.join(screenshot_path, f'screenshots_{formatted_timestamp}.zip')
+
+    # Write all of the valid .png and .ppm files to the archive file.
+    with zipfile.ZipFile(screenshots_file, 'w', compression=zipfile.ZIP_DEFLATED, allowZip64=True) as zip_archive:
+        for file_path in files_to_archive:
+            file_name = os.path.basename(file_path)
+            zip_archive.write(file_path, file_name)
+
+
+def golden_images_directory():
+    """
+    Uses this file location to return the valid location for golden image files.
+    :return: The path to the golden_images directory, but raises an IOError if the golden_images directory is missing.
+    """
+    current_file_directory = os.path.join(os.path.dirname(__file__))
+    golden_images_dir = os.path.join(current_file_directory, '..', 'golden_images')
+
+    if not os.path.exists(golden_images_dir):
+        raise IOError(
+            f'golden_images" directory was not found at path "{golden_images_dir}"'
+            f'Please add a "golden_images" directory inside: "{current_file_directory}"'
+        )
+
+    return golden_images_dir
 
 
 def create_basic_atom_level(level_name):
@@ -31,6 +72,9 @@ def create_basic_atom_level(level_name):
     import azlmbr.object
 
     import editor_python_test_tools.hydra_editor_utils as hydra
+    from editor_python_test_tools.editor_test_helper import EditorTestHelper
+
+    helper = EditorTestHelper(log_prefix="Atom_EditorTestHelper")
 
     # Create a new level.
     new_level_name = level_name
@@ -69,7 +113,6 @@ def create_basic_atom_level(level_name):
         general.close_pane("Error Log")
     general.idle_wait(1.0)
     general.run_console("r_displayInfo=0")
-    general.run_console("r_antialiasingmode=0")
     general.idle_wait(1.0)
 
     # Delete all existing entities & create default_level entity

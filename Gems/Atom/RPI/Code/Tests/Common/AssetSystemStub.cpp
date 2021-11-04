@@ -7,6 +7,7 @@
  */
 
 #include <Common/AssetSystemStub.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 
 namespace UnitTest
 {
@@ -36,12 +37,17 @@ namespace UnitTest
         // Because GetSourceInfoBySourcePath should always return 0 for the sub-id, since it's about the source file not product file.
         sourceInfo.m_assetInfo.m_assetId.m_subId = 0; 
 
-        m_sourceInfoMap.emplace(sourcePath, sourceInfo);
+        AZStd::string normalizedSourcePath = sourcePath;
+        AzFramework::StringFunc::Path::Normalize(normalizedSourcePath);
+        m_sourceInfoMap.emplace(normalizedSourcePath, sourceInfo);
     }
 
     bool AssetSystemStub::GetSourceInfoBySourcePath(const char* sourcePath, AZ::Data::AssetInfo& assetInfo, AZStd::string& watchFolder)
     {
-        auto iter = m_sourceInfoMap.find(sourcePath);
+        AZStd::string normalizedSourcePath = sourcePath;
+        AzFramework::StringFunc::Path::Normalize(normalizedSourcePath);
+
+        auto iter = m_sourceInfoMap.find(normalizedSourcePath);
 
         if (iter != m_sourceInfoMap.end())
         {
@@ -51,16 +57,6 @@ namespace UnitTest
         }
 
         return false;
-    }
-
-    const char* AssetSystemStub::GetAbsoluteDevGameFolderPath()
-    {
-        return nullptr;
-    }
-
-    const char* AssetSystemStub::GetAbsoluteDevRootFolderPath()
-    {
-        return nullptr;
     }
 
     bool AssetSystemStub::GetRelativeProductPathFromFullSourceOrProductPath([[maybe_unused]] const AZStd::string& fullPath, [[maybe_unused]] AZStd::string& relativeProductPath)

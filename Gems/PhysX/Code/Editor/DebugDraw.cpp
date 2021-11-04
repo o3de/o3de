@@ -148,16 +148,16 @@ namespace PhysX
                     using VisibilityFunc = bool(*)();
 
                     editContext->Class<Collider>(
-                        "PhysX Collider Debug Draw", "Manages global and per-collider debug draw settings and logic")
+                        "PhysX Collider Debug Draw", "Global and per-collider debug draw preferences.")
                         ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Collider::m_locallyEnabled, "Draw collider",
-                            "Shows the geometry for the collider in the viewport")
+                            "Display collider geometry in the viewport.")
                             ->Attribute(AZ::Edit::Attributes::CheckboxTooltip,
                                 "If set, the geometry of this collider is visible in the viewport. 'Draw Helpers' needs to be enabled to use.")
                             ->Attribute(AZ::Edit::Attributes::Visibility,
                                 VisibilityFunc{ []() { return IsGlobalColliderDebugCheck(GlobalCollisionDebugState::Manual); } })
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, &IsDrawColliderReadOnly)
                         ->DataElement(AZ::Edit::UIHandlers::Button, &Collider::m_globalButtonState, "Draw collider",
-                            "Shows the geometry for the collider in the viewport")
+                            "Display collider geometry in the viewport.")
                             ->Attribute(AZ::Edit::Attributes::ButtonText, "Global override")
                             ->Attribute(AZ::Edit::Attributes::ButtonTooltip,
                                 "A global setting is overriding this property (to disable the override, "
@@ -264,7 +264,11 @@ namespace PhysX
             case Physics::ShapeType::CookedMesh:
             {
                 const auto& cookedMeshConfig = static_cast<const Physics::CookedMeshShapeConfiguration&>(shapeConfig);
-                physx::PxBase* meshData = static_cast<physx::PxBase*>(cookedMeshConfig.GetCachedNativeMesh());
+                const physx::PxBase* constMeshData = static_cast<const physx::PxBase*>(cookedMeshConfig.GetCachedNativeMesh());
+
+                // Specifically removing the const from the meshData pointer because the physx APIs expect this pointer to be non-const.
+                physx::PxBase* meshData = const_cast<physx::PxBase*>(constMeshData);
+
                 if (meshData)
                 {
                     if (meshData->is<physx::PxTriangleMesh>())
@@ -676,7 +680,17 @@ namespace PhysX
             }
         }
 
-        AZ::Transform Collider::GetColliderLocalTransform(const Physics::ColliderConfiguration& colliderConfig,
+        void Collider::DrawHeightfield(
+            [[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay,
+            [[maybe_unused]] const Physics::ColliderConfiguration& colliderConfig,
+            [[maybe_unused]] const Physics::HeightfieldShapeConfiguration& heightfieldShapeConfig,
+            [[maybe_unused]] const AZ::Vector3& colliderScale,
+            [[maybe_unused]] const bool forceUniformScaling) const
+        {
+        }
+
+        AZ::Transform Collider::GetColliderLocalTransform(
+            const Physics::ColliderConfiguration& colliderConfig,
             const AZ::Vector3& colliderScale) const
         {
             // Apply entity world transform scale to collider offset

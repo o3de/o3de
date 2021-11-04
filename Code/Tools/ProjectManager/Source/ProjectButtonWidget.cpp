@@ -88,6 +88,7 @@ namespace O3DE::ProjectManager
         QHBoxLayout* horizontalButtonLayout = new QHBoxLayout();
         horizontalButtonLayout->addSpacing(34);
         m_actionButton = new QPushButton(tr("Project Action"), this);
+        m_actionButton->setObjectName("projectActionButton");
         m_actionButton->setVisible(false);
         horizontalButtonLayout->addWidget(m_actionButton);
         horizontalButtonLayout->addSpacing(34);
@@ -198,6 +199,7 @@ namespace O3DE::ProjectManager
             QMenu* menu = new QMenu(this);
             menu->addAction(tr("Edit Project Settings..."), this, [this]() { emit EditProject(m_projectInfo.m_path); });
             menu->addAction(tr("Build"), this, [this]() { emit BuildProject(m_projectInfo); });
+            menu->addAction(tr("Open CMake GUI..."), this, [this]() { emit OpenCMakeGUI(m_projectInfo); });
             menu->addSeparator();
             menu->addAction(tr("Open Project folder..."), this, [this]()
             { 
@@ -259,15 +261,39 @@ namespace O3DE::ProjectManager
         }
 
         projectActionButton->setText(text);
+        projectActionButton->setMenu(nullptr);
         m_actionButtonConnection = connect(projectActionButton, &QPushButton::clicked, lambda);
     }
 
-    void ProjectButton::SetProjectBuildButtonAction()
+    void ProjectButton::ShowDefaultBuildButton()
     {
-        m_projectImageLabel->GetWarningLabel()->setText(tr("Building project required."));
-        m_projectImageLabel->GetWarningIcon()->setVisible(true);
-        m_projectImageLabel->GetWarningLabel()->setVisible(true);
-        SetProjectButtonAction(tr("Build Project"), [this]() { emit BuildProject(m_projectInfo); });
+        QPushButton* projectActionButton = m_projectImageLabel->GetActionButton();
+        projectActionButton->setVisible(true);
+        projectActionButton->setText(tr("Build Project"));
+        disconnect(m_actionButtonConnection);
+
+        QMenu* menu = new QMenu(this);
+        QAction* autoBuildAction = menu->addAction(tr("Build Now"));
+        connect( autoBuildAction, &QAction::triggered, this, [this](){ emit BuildProject(m_projectInfo); });
+
+        QAction* openCMakeAction = menu->addAction(tr("Open CMake GUI..."));
+        connect( openCMakeAction, &QAction::triggered, this, [this](){ emit OpenCMakeGUI(m_projectInfo); });
+
+        projectActionButton->setMenu(menu);
+    }
+
+    void ProjectButton::ShowBuildRequired()
+    {
+        ShowWarning(true, tr("Building project required"));
+        ShowDefaultBuildButton();
+    }
+
+    void ProjectButton::ShowWarning(bool show, const QString& warning)
+    {
+        m_projectImageLabel->GetWarningLabel()->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+        m_projectImageLabel->GetWarningLabel()->setText(warning);
+        m_projectImageLabel->GetWarningLabel()->setVisible(show);
+        m_projectImageLabel->GetWarningIcon()->setVisible(show);
     }
 
     void ProjectButton::SetBuildLogsLink(const QUrl& logUrl)
@@ -279,18 +305,15 @@ namespace O3DE::ProjectManager
     {
         if (!logUrl.isEmpty())
         {
-            m_projectImageLabel->GetWarningLabel()->setText(tr("Failed to build. Click to <a href=\"logs\">view logs</a>."));
+            ShowWarning(show, tr("Failed to build. Click to <a href=\"logs\">view logs</a>."));
         }
         else
         {
-            m_projectImageLabel->GetWarningLabel()->setText(tr("Project failed to build."));
+            ShowWarning(show, tr("Project failed to build."));
         }
 
-        m_projectImageLabel->GetWarningLabel()->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-        m_projectImageLabel->GetWarningIcon()->setVisible(show);
-        m_projectImageLabel->GetWarningLabel()->setVisible(show);
-        m_projectImageLabel->SetLogUrl(logUrl);
-        SetProjectButtonAction(tr("Build Project"), [this]() { emit BuildProject(m_projectInfo); });
+        SetBuildLogsLink(logUrl);
+        ShowDefaultBuildButton();
     }
 
     void ProjectButton::SetProjectBuilding()

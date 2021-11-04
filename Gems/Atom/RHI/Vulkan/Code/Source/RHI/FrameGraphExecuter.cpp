@@ -31,7 +31,12 @@ namespace AZ
         {
             return static_cast<Device&>(Base::GetDevice());
         }
-
+        
+        FrameGraphExecuter::FrameGraphExecuter()
+        {
+            SetJobPolicy(RHI::JobPolicy::Parallel);
+        }
+        
         RHI::ResultCode FrameGraphExecuter::InitInternal(const RHI::FrameGraphExecuterDescriptor& descriptor)
         {
             const RHI::ConstPtr<RHI::PlatformLimitsDescriptor> rhiPlatformLimitsDescriptor = descriptor.m_platformLimitsDescriptor;
@@ -172,8 +177,8 @@ namespace AZ
             auto findIter = m_groupHandlers.find(group.GetGroupId());
             AZ_Assert(findIter != m_groupHandlers.end(), "Could not find group handler for groupId %d", group.GetGroupId().GetIndex());
             FrameGraphExecuteGroupHandlerBase* handler = findIter->second.get();
-            // Wait until all execute groups of the handler has finished.
-            if (handler->IsComplete())
+            // Wait until all execute groups of the handler has finished and also make sure that the handler itself hasn't executed already (which is possible for parallel encoding).
+            if (!handler->IsExecuted() && handler->IsComplete())
             {
                 // This will execute the recorded work into the queue.
                 handler->End();

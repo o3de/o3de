@@ -1195,7 +1195,7 @@ bool   CFileUtil::IsFileExclusivelyAccessable(const QString& strFilePath)
 //////////////////////////////////////////////////////////////////////////
 bool   CFileUtil::CreatePath(const QString& strPath)
 {
-#if defined(AZ_PLATFORM_MAC)
+#if !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
     bool pathCreated = true;
 
     QString cleanPath = QDir::cleanPath(strPath);
@@ -1252,7 +1252,7 @@ bool   CFileUtil::CreatePath(const QString& strPath)
     }
 
     return true;
-#endif
+#endif // !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
 }
 
 //////////////////////////////////////////////////////////////////////////

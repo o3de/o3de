@@ -42,5 +42,4 @@ namespace UnitTest
         AZ::Aabb GetWorldBounds() override;
         AZ::Aabb GetLocalBounds() override;
     };
-
 } // namespace UnitTest

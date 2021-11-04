@@ -19,42 +19,56 @@ namespace UnitTest
     class MockMultiplayer : public Multiplayer::IMultiplayer
     {
     public:
-        MOCK_CONST_METHOD0(GetCurrentBlendFactor, float ());
         MOCK_CONST_METHOD0(GetAgentType, Multiplayer::MultiplayerAgentType());
         MOCK_METHOD1(InitializeMultiplayer, void(Multiplayer::MultiplayerAgentType));
         MOCK_METHOD2(StartHosting, bool(uint16_t, bool));
-        MOCK_METHOD2(Connect, bool(AZStd::string, uint16_t));
+        MOCK_METHOD2(Connect, bool(const AZStd::string&, uint16_t));
         MOCK_METHOD1(Terminate, void(AzNetworking::DisconnectReason));
+        MOCK_METHOD1(AddClientMigrationStartEventHandler, void(Multiplayer::ClientMigrationStartEvent::Handler&));
+        MOCK_METHOD1(AddClientMigrationEndEventHandler, void(Multiplayer::ClientMigrationEndEvent::Handler&));
         MOCK_METHOD1(AddClientDisconnectedHandler, void(AZ::Event<>::Handler&));
-        MOCK_METHOD1(AddConnectionAcquiredHandler, void(AZ::Event<Multiplayer::MultiplayerAgentDatum>::Handler&));
-        MOCK_METHOD1(AddSessionInitHandler, void(AZ::Event<AzNetworking::INetworkInterface*>::Handler&));
-        MOCK_METHOD1(AddSessionShutdownHandler, void(AZ::Event<AzNetworking::INetworkInterface*>::Handler&));
+        MOCK_METHOD1(AddNotifyClientMigrationHandler, void(Multiplayer::NotifyClientMigrationEvent::Handler&));
+        MOCK_METHOD1(AddNotifyEntityMigrationEventHandler, void(Multiplayer::NotifyEntityMigrationEvent::Handler&));
+        MOCK_METHOD1(AddConnectionAcquiredHandler, void(Multiplayer::ConnectionAcquiredEvent::Handler&));
+        MOCK_METHOD1(AddServerAcceptanceReceivedHandler, void(Multiplayer::ServerAcceptanceReceivedEvent::Handler&));
+        MOCK_METHOD1(AddSessionInitHandler, void(Multiplayer::SessionInitEvent::Handler&));
+        MOCK_METHOD1(AddSessionShutdownHandler, void(Multiplayer::SessionShutdownEvent::Handler&));
+        MOCK_METHOD5(SendNotifyClientMigrationEvent, void(AzNetworking::ConnectionId, const Multiplayer::HostId&, uint64_t, Multiplayer::ClientInputId, Multiplayer::NetEntityId));
+        MOCK_METHOD2(SendNotifyEntityMigrationEvent, void(const Multiplayer::ConstNetworkEntityHandle&, const Multiplayer::HostId&));
         MOCK_METHOD1(SendReadyForEntityUpdates, void(bool));
         MOCK_CONST_METHOD0(GetCurrentHostTimeMs, AZ::TimeMs());
+        MOCK_CONST_METHOD0(GetCurrentBlendFactor, float());
         MOCK_METHOD0(GetNetworkTime, Multiplayer::INetworkTime* ());
         MOCK_METHOD0(GetNetworkEntityManager, Multiplayer::INetworkEntityManager* ());
         MOCK_METHOD1(SetFilterEntityManager, void(Multiplayer::IFilterEntityManager*));
         MOCK_METHOD0(GetFilterEntityManager, Multiplayer::IFilterEntityManager* ());
+        MOCK_METHOD2(RegisterPlayerIdentifierForRejoin, void(uint64_t, Multiplayer::NetEntityId));
+        MOCK_METHOD4(CompleteClientMigration, void(uint64_t, AzNetworking::ConnectionId, const Multiplayer::HostId&, Multiplayer::ClientInputId));
+        MOCK_METHOD1(SetShouldSpawnNetworkEntities, void(bool));
+        MOCK_CONST_METHOD0(GetShouldSpawnNetworkEntities, bool());
     };
 
     class MockNetworkEntityManager : public Multiplayer::INetworkEntityManager
     {
     public:
-        MOCK_METHOD2(RequestNetSpawnableInstantiation, AZStd::unique_ptr<AzFramework::EntitySpawnTicket> (const AZ::Data::Asset<AzFramework::Spawnable>&, const AZ::Transform&));
-        MOCK_METHOD4(
-            CreateEntitiesImmediate,
-            EntityList (const Multiplayer::PrefabEntityId&, Multiplayer::NetEntityRole, const AZ::Transform&, Multiplayer::AutoActivate));
-        MOCK_CONST_METHOD1(GetNetEntityIdById, Multiplayer::NetEntityId (const AZ::EntityId&));
+        MOCK_METHOD2(Initialize, void(const Multiplayer::HostId&, AZStd::unique_ptr<Multiplayer::IEntityDomain>));
+        MOCK_CONST_METHOD0(IsInitialized, bool());
+        MOCK_CONST_METHOD0(GetEntityDomain, Multiplayer::IEntityDomain*());
         MOCK_METHOD0(GetNetworkEntityTracker, Multiplayer::NetworkEntityTracker* ());
         MOCK_METHOD0(GetNetworkEntityAuthorityTracker, Multiplayer::NetworkEntityAuthorityTracker* ());
         MOCK_METHOD0(GetMultiplayerComponentRegistry, Multiplayer::MultiplayerComponentRegistry* ());
-        MOCK_CONST_METHOD0(GetHostId, Multiplayer::HostId());
+        MOCK_CONST_METHOD0(GetHostId, const Multiplayer::HostId&());
+        MOCK_CONST_METHOD1(GetEntity, Multiplayer::ConstNetworkEntityHandle(Multiplayer::NetEntityId));
+        MOCK_CONST_METHOD1(GetNetEntityIdById, Multiplayer::NetEntityId(const AZ::EntityId&));
         MOCK_METHOD3(CreateEntitiesImmediate, EntityList(const Multiplayer::PrefabEntityId&, Multiplayer::NetEntityRole, const AZ::
             Transform&));
+        MOCK_METHOD4(
+            CreateEntitiesImmediate,
+            EntityList(const Multiplayer::PrefabEntityId&, Multiplayer::NetEntityRole, const AZ::Transform&, Multiplayer::AutoActivate));
         MOCK_METHOD5(CreateEntitiesImmediate, EntityList(const Multiplayer::PrefabEntityId&, Multiplayer::NetEntityId, Multiplayer::
             NetEntityRole, Multiplayer::AutoActivate, const AZ::Transform&));
+        MOCK_METHOD2(RequestNetSpawnableInstantiation, AZStd::unique_ptr<AzFramework::EntitySpawnTicket>(const AZ::Data::Asset<AzFramework::Spawnable>&, const AZ::Transform&));
         MOCK_METHOD3(SetupNetEntity, void(AZ::Entity*, Multiplayer::PrefabEntityId, Multiplayer::NetEntityRole));
-        MOCK_CONST_METHOD1(GetEntity, Multiplayer::ConstNetworkEntityHandle(Multiplayer::NetEntityId));
         MOCK_CONST_METHOD0(GetEntityCount, uint32_t());
         MOCK_METHOD2(AddEntityToEntityMap, Multiplayer::NetworkEntityHandle(Multiplayer::NetEntityId, AZ::Entity*));
         MOCK_METHOD1(MarkForRemoval, void(const Multiplayer::ConstNetworkEntityHandle&));
@@ -73,6 +87,7 @@ namespace UnitTest
         MOCK_METHOD2(NotifyControllersActivated, void(const Multiplayer::ConstNetworkEntityHandle&, Multiplayer::EntityIsMigrating));
         MOCK_METHOD2(NotifyControllersDeactivated, void(const Multiplayer::ConstNetworkEntityHandle&, Multiplayer::EntityIsMigrating));
         MOCK_METHOD1(HandleLocalRpcMessage, void(Multiplayer::NetworkEntityRpcMessage&));
+        MOCK_CONST_METHOD0(DebugDraw, void());
     };
 
     class MockConnectionListener : public AzNetworking::IConnectionListener
@@ -88,6 +103,7 @@ namespace UnitTest
     class MockTime : public AZ::ITime
     {
     public:
+        MOCK_CONST_METHOD0(GetElapsedTimeUs, AZ::TimeUs());
         MOCK_CONST_METHOD0(GetElapsedTimeMs, AZ::TimeMs());
     };
 

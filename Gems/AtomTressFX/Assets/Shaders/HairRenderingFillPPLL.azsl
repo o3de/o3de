@@ -1,0 +1,203 @@
+/*
+ * Modifications Copyright (c) Contributors to the Open 3D Engine Project. 
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: (Apache-2.0 OR MIT) AND MIT
+ *
+ */
+ 
+//---------------------------------------------------------------------------------------
+// Shader code related to per-pixel linked lists.
+//-------------------------------------------------------------------------------------
+//
+// Copyright (c) 2019 Advanced Micro Devices, Inc. All rights reserved.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+//==============================================================================
+#include <Atom/Features/SrgSemantics.azsli>
+#include <HairRenderingSrgs.azsli>
+
+//!------------------------------ SRG Structure --------------------------------
+//! Per pass SRG the holds the dynamic shared read-write buffer shared 
+//!  across all dispatches and draw calls and used for all the dynamic buffers
+//!  that can change between passes due to the application of skinning, simulation 
+//!  and physics affect and is then read by the rendering shaders.  
+ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback 
+{   
+    //! This shared buffer needs to match the SharedBuffer structure  
+    //! shared between all draw calls / dispatches for the hair skinning
+    StructuredBuffer<int>           m_skinnedHairSharedBuffer;
+
+    //! Per Pixel Linked List data used by the render raster pass to generate per pixel  
+    //!  hair OIT data and shade it in the full screen resolve pass.
+    //! Originally used space3 for raster pass linked lists and space0 for the resolve pass.
+    RWTexture2D<uint>               m_fragmentListHead;
+    RWStructuredBuffer<PPLL_STRUCT> m_linkedListNodes;
+    RWBuffer<uint>                  m_linkedListCounter;
+
+    // Linear depth is used for getting the screen to world transform
+    Texture2D<float>                m_linearDepth;
+}
+
+//------------------------------------------------------------------------------
+// Originally marked for the TressFX raster pass at space3
+#define RWFragmentListHead          PassSrg::m_fragmentListHead
+#define LinkedListUAV               PassSrg::m_linkedListNodes
+#define LinkedListCounter           PassSrg::m_linkedListCounter
+//------------------------------------------------------------------------------
+
+
+//!=============================================================================
+//! 
+//!   Per Instance Space 1 - Dynamic Buffers for Hair Skinning and Simulation
+//! 
+//! ----------------------------------------------------------------------------
+struct StrandLevelData
+{
+    float4 skinningQuat;
+    float4 vspQuat;
+    float4 vspTranslation;
+};
+//!------------------------------ SRG Structure --------------------------------
+//! Per instance/draw SRG representing dynamic read-write set of buffers
+//!  that are unique per instance and are shared and changed between passes due 
+//!  to the application of skinning, simulation and physics affect.
+//! It is then also read by the rendering shaders. 
+//! This Srg is NOT shared by the passes since it requires having barriers between
+//!  both passes and draw calls, instead, all buffers are allocated from a single 
+//!  shared buffer (through BufferViews) and that buffer is then shared between 
+//!  the passes via the PerPass Srg frequency. 
+ShaderResourceGroup HairDynamicDataSrg : SRG_PerObject // space 1 - per instance / object
+{
+    Buffer<float4>      m_hairVertexPositions;
+    Buffer<float4>      m_hairVertexTangents;
+
+    //! Per hair object offset to the start location of each buffer within 
+    //! 'm_skinnedHairSharedBuffer'. The offset is in bytes!
+    uint m_positionBufferOffset;
+    uint m_tangentBufferOffset;
+};
+//------------------------------------------------------------------------------
+// Allow for the code to run with minimal changes - skinning / simulation compute passes
+
+// Usage of per-instance buffer
+#define g_GuideHairVertexPositions  HairDynamicDataSrg::m_hairVertexPositions
+#define g_GuideHairVertexTangents   HairDynamicDataSrg::m_hairVertexTangents
+
+//==============================================================================
+#include <HairStrands.azsli>        // VS resides here
+//==============================================================================
+
+// Allocate a new fragment location in fragment color, depth, and link buffers
+int AllocateFragment(int2 vScreenAddress)
+{
+    uint newAddress;
+    InterlockedAdd(LinkedListCounter[0], 1, newAddress);
+
+    if (newAddress < 0 || newAddress >= NodePoolSize)
+        newAddress = FRAGMENT_LIST_NULL;
+    return newAddress;
+}
+
+// Insert a new fragment at the head of the list. The old list head becomes the
+// the second fragment in the list and so on. Return the address of the *old* head.
+int MakeFragmentLink(int2 vScreenAddress, int nNewHeadAddress)
+{
+    int nOldHeadAddress;
+    InterlockedExchange(RWFragmentListHead[vScreenAddress], nNewHeadAddress, nOldHeadAddress);
+    return nOldHeadAddress;
+}
+
+// Write fragment attributes to list location. 
+void WriteFragmentAttributes(int nAddress, int nPreviousLink, float4 vData, float3 vColor3, float fDepth)
+{
+    PPLL_STRUCT element;
+    element.data = PackFloat4IntoUint(vData);
+    element.color = PackFloat3ByteIntoUint(vColor3, RenderParamsIndex);
+    element.depth = asuint(saturate(fDepth));
+    element.uNext = nPreviousLink;
+    LinkedListUAV[nAddress] = element;
+}
+
+
+// Use the following structure for debug purposes for outputting test results to RT
+// You can use depth, color or both when outputing and testing the calculation.
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+    float m_depth : SV_Depth;
+};
+
+
+//////////////////////////////////////////////////////////////
+// PPLL Fill PS
+// First pass of PPLL implementation
+// Builds up the linked list of hair fragments
+[earlydepthstencil]
+void PPLLFillPS(PS_INPUT_HAIR input)
+{
+    // Strand Color read in is either the BaseMatColor, or BaseMatColor modulated with a color read 
+    // from texture in the vertex shader for base color along with modulation by the tip color  
+    float4 strandColor = float4(input.StrandColor.rgb, MatBaseColor.a);
+
+    // If we are supporting strand UV texturing, further blend in the texture color/alpha
+    // Do this while computing NDC and coverage to hide latency from texture lookup
+    if (EnableStrandUV)
+    {
+        // Grab the uv in case we need it
+        float2 uv = float2(input.Tangent.w, input.StrandColor.w);
+
+        // Apply StrandUVTiling
+        float2 strandUV = float2(uv.x, (uv.y * StrandUVTilingFactor) - floor(uv.y * StrandUVTilingFactor));
+
+        strandColor.rgb *= StrandAlbedoTexture.Sample(LinearWrapSampler, strandUV).rgb;
+    }
+
+    //////////////////////////////////////////////////////////////////////
+    // [To Do] Hair: anti aliasing via coverage requires work and is disabled for now
+//    float3 vNDC = ScreenPosToNDC(PassSrg::m_linearDepth, input.Position.xy, input.Position.z);
+//    uint2  dimensions;
+//    PassSrg::m_linearDepth.GetDimensions(dimensions.x, dimensions.y);
+//    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, float2(dimensions.x, dimensions.y));
+    float coverage = 1.0;  
+    /////////////////////////////////////////////////////////////////////
+
+    // Update the alpha to have proper value (accounting for coverage, base alpha, and strand alpha)
+    float alpha = coverage * strandColor.w;
+
+    // Early out
+    if (alpha < 1.f / 255.f)
+    {
+        discard;
+    }
+
+    // Get the screen address
+    int2 vScreenAddress = int2(input.Position.xy);
+
+    // Allocate a new fragment
+    int nNewFragmentAddress = AllocateFragment(vScreenAddress);
+
+    int nOldFragmentAddress = MakeFragmentLink(vScreenAddress, nNewFragmentAddress);
+    WriteFragmentAttributes(nNewFragmentAddress, nOldFragmentAddress,
+        float4(input.Tangent.xyz * 0.5 + float3(0.5, 0.5, 0.5), alpha),
+        strandColor.xyz, 
+        input.Position.z
+    );
+}

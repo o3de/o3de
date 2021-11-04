@@ -91,12 +91,19 @@ namespace MaterialEditor
         return AZ::Crc32(AZStd::string::format("MaterialInspector::PropertyGroup::%s::%s", m_documentPath.c_str(), groupName.c_str()));
     }
 
-    bool MaterialInspector::CompareInstanceNodeProperties(
-        const AzToolsFramework::InstanceDataNode* source, const AzToolsFramework::InstanceDataNode* target) const
+    bool MaterialInspector::IsInstanceNodePropertyModifed(const AzToolsFramework::InstanceDataNode* node) const
     {
-        AZ_UNUSED(source);
-        const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(target);
-        return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
+        const AtomToolsFramework::DynamicProperty* property = AtomToolsFramework::FindDynamicPropertyForInstanceDataNode(node);
+        return property && !AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
+    }
+
+    const char* MaterialInspector::GetInstanceNodePropertyIndicator(const AzToolsFramework::InstanceDataNode* node) const
+    {
+        if (IsInstanceNodePropertyModifed(node))
+        {
+            return ":/Icons/changed_property.svg";
+        }
+        return ":/Icons/blank.png";
     }
 
     void MaterialInspector::AddOverviewGroup()
@@ -122,8 +129,8 @@ namespace MaterialEditor
 
         // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
         auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-            &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName),
-            [this](const auto source, const auto target) { return CompareInstanceNodeProperties(source, target); });
+            &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName), {},
+            [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
         AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupWidget);
     }
 
@@ -153,8 +160,8 @@ namespace MaterialEditor
 
         // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
         auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-            &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName),
-            [this](const auto source, const auto target) { return CompareInstanceNodeProperties(source, target); });
+            &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName), {},
+            [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
         AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupWidget);
     }
 
@@ -189,8 +196,8 @@ namespace MaterialEditor
 
             // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
             auto propertyGroupWidget = new AtomToolsFramework::InspectorPropertyGroupWidget(
-                &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName),
-                [this](const auto source, const auto target) { return CompareInstanceNodeProperties(source, target); });
+                &group, &group, group.TYPEINFO_Uuid(), this, this, GetGroupSaveStateKey(groupName), {},
+                [this](const auto node) { return GetInstanceNodePropertyIndicator(node); }, 0);
             AddGroup(groupName, groupDisplayName, groupDescription, propertyGroupWidget);
             
             bool isGroupVisible = false;

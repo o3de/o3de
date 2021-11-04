@@ -375,11 +375,9 @@ namespace AZ
             m_scene->RemoveRenderPipeline(m_nameId);
         }
 
-        void RenderPipeline::OnStartFrame(float time)
+        void RenderPipeline::OnStartFrame([[maybe_unused]] float time)
         {
             AZ_PROFILE_SCOPE(RPI, "RenderPipeline: OnStartFrame");
-
-            m_lastRenderStartTime = time;
 
             OnPassModified();
 

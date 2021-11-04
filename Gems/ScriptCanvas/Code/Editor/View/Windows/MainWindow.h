@@ -27,6 +27,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzQtComponents/Components/ToastNotification.h>
 
 #include <GraphCanvas/Components/Connections/ConnectionBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
@@ -51,8 +52,7 @@
 
 #include <Editor/View/Widgets/AssetGraphSceneDataBus.h>
 
-#include <Editor/View/Windows/Tools/UpgradeTool/UpgradeTool.h>
-#include <Editor/View/Windows/Tools/UpgradeTool/VersionExplorer.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/Controller.h>
 
 #if SCRIPTCANVAS_EDITOR
 #include <Include/EditorCoreAPI.h>
@@ -99,29 +99,24 @@ namespace ScriptCanvasEditor
 
     class ScriptCanvasAssetBrowserModel
         : public AzToolsFramework::AssetBrowser::AssetBrowserFilterModel
-        , private UpgradeNotifications::Bus::Handler
+        , private UpgradeNotificationsBus::Handler
     {
     public:
 
         explicit ScriptCanvasAssetBrowserModel(QObject* parent = nullptr)
             : AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent)
         {
-            UpgradeNotifications::Bus::Handler::BusConnect();
+            UpgradeNotificationsBus::Handler::BusConnect();
         }
 
         ~ScriptCanvasAssetBrowserModel() override
         {
-            UpgradeNotifications::Bus::Handler::BusDisconnect();
+            UpgradeNotificationsBus::Handler::BusDisconnect();
         }
 
         void OnUpgradeStart() override
         {
             AzToolsFramework::AssetBrowser::AssetBrowserComponentNotificationBus::Handler::BusDisconnect();
-        }
-        
-        void OnUpgradeComplete() override
-        {
-            AzToolsFramework::AssetBrowser::AssetBrowserComponentNotificationBus::Handler::BusConnect();
         }
     };
 
@@ -130,7 +125,7 @@ namespace ScriptCanvasEditor
     public:
         OnSaveToast(AZStd::string_view tabName, AZ::EntityId graphCanvasGraphId, bool saveSuccessful)
         {
-            GraphCanvas::ToastType toastType = GraphCanvas::ToastType::Information;
+            AzQtComponents::ToastType toastType = AzQtComponents::ToastType::Information;
             AZStd::string titleLabel = "Notification";
 
             AZStd::string description;
@@ -142,15 +137,12 @@ namespace ScriptCanvasEditor
             else
             {
                 description = AZStd::string::format("Failed to save %s", tabName.data());
-                toastType = GraphCanvas::ToastType::Error;
+                toastType = AzQtComponents::ToastType::Error;
             }
 
-            GraphCanvas::ToastConfiguration toastConfiguration(toastType, titleLabel, description);
+            AzQtComponents::ToastConfiguration toastConfiguration(toastType, titleLabel.c_str(), description.c_str());
 
-            toastConfiguration.SetCloseOnClick(true);
-            toastConfiguration.SetDuration(AZStd::chrono::milliseconds(5000));
-
-            GraphCanvas::ToastId validationToastId;
+            AzToolsFramework::ToastId validationToastId;
 
             GraphCanvas::ViewId viewId;
             GraphCanvas::SceneRequestBus::EventResult(viewId, graphCanvasGraphId, &GraphCanvas::SceneRequests::GetViewId);
@@ -673,7 +665,7 @@ namespace ScriptCanvasEditor
             AZStd::array<char, AZ::IO::MaxPathLength> assetRootArray;
             if (!AZ::IO::FileIOBase::GetInstance()->ResolvePath(ScriptCanvas::AssetDescription::GetSuggestedSavePath<GraphAssetType>(), assetRootArray.data(), assetRootArray.size()))
             {
-                AZ_ErrorOnce("Script Canvas", false, "Unable to resolve @devassets@ path");
+                AZ_ErrorOnce("Script Canvas", false, "Unable to resolve @projectroot@ path");
             }
 
             AZStd::string assetPath;
@@ -806,7 +798,5 @@ namespace ScriptCanvasEditor
         Workspace* m_workspace;
 
         void OnSaveCallback(bool saveSuccess, AZ::Data::AssetPtr, AZ::Data::AssetId previousFileAssetId);
-
-        void PromptForUpgrade();
     };
 }

@@ -95,6 +95,8 @@ GUIApplicationManager::~GUIApplicationManager()
 
 ApplicationManager::BeforeRunStatus GUIApplicationManager::BeforeRun()
 {
+    AssetProcessor::MessageInfoBus::Handler::BusConnect();
+
     ApplicationManager::BeforeRunStatus status = ApplicationManagerBase::BeforeRun();
     if (status != ApplicationManager::BeforeRunStatus::Status_Success)
     {
@@ -104,17 +106,16 @@ ApplicationManager::BeforeRunStatus GUIApplicationManager::BeforeRun()
     // The build process may leave behind some temporaries, try to delete them
     RemoveTemporaries();
 
-    QDir devRoot;
-    AssetUtilities::ComputeAssetRoot(devRoot);
+    QDir projectAssetRoot;
+    AssetUtilities::ComputeAssetRoot(projectAssetRoot);
 #if defined(EXTERNAL_CRASH_REPORTING)
-    CrashHandler::ToolsCrashHandler::InitCrashHandler("AssetProcessor", devRoot.absolutePath().toStdString());
+    CrashHandler::ToolsCrashHandler::InitCrashHandler("AssetProcessor", projectAssetRoot.absolutePath().toStdString());
 #endif
-    AssetProcessor::MessageInfoBus::Handler::BusConnect();
 
     // we have to monitor both the cache folder and the database file and restart AP if either of them gets deleted
     // It is important to note that we are monitoring the parent folder and not the actual cache folder itself since
     // we want to handle the use case on Mac OS if the user moves the cache folder to the trash.
-    m_qtFileWatcher.addPath(devRoot.absolutePath());
+    m_qtFileWatcher.addPath(projectAssetRoot.absolutePath());
 
     QDir projectCacheRoot;
     AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
@@ -436,98 +437,7 @@ bool GUIApplicationManager::OnError(const char* /*window*/, const char* message)
         connection = Qt::QueuedConnection;
     }
 
-    if (m_isCurrentlyLoadingGems)
-    {
-        // if something goes wrong during gem initialization, this is a special case and we need to be extra helpful.
-        const char* userSettingsFile = "_WAF_/user_settings.options";
-        const char* defaultSettingsFile = "_WAF_/default_settings.json";
-
-        QDir engineRoot;
-        AssetUtilities::ComputeEngineRoot(engineRoot);
-
-        QString settingsPath = engineRoot.absoluteFilePath(userSettingsFile);
-        QString friendlyErrorMessage;
-        bool usingDefaults = false;
-
-        if (QFile::exists(settingsPath))
-        {
-            QSettings loader(settingsPath, QSettings::IniFormat);
-            QVariant settingValue = loader.value("Game Projects/enabled_game_projects");
-            QStringList compiledProjects = settingValue.toStringList();
-
-            if (compiledProjects.isEmpty())
-            {
-                QByteArray byteArray;
-                QFile jsonFile;
-                jsonFile.setFileName(engineRoot.absoluteFilePath(defaultSettingsFile));
-                jsonFile.open(QIODevice::ReadOnly | QIODevice::Text);
-                byteArray = jsonFile.readAll();
-                jsonFile.close();
-
-                QJsonObject settingsObject = QJsonDocument::fromJson(byteArray).object();
-                QJsonArray projectsArray = settingsObject["Game Projects"].toArray();
-
-                if (!projectsArray.isEmpty())
-                {
-                    auto projectObject = projectsArray[0].toObject();
-                    QString projects = projectObject["default_value"].toString();
-
-                    if (!projects.isEmpty())
-                    {
-                        compiledProjects = projects.split(',');
-                        usingDefaults = true;
-                    }
-                }
-            }
-
-            for (int i = 0; i < compiledProjects.size(); ++i)
-            {
-                compiledProjects[i] = compiledProjects[i].trimmed();
-            }
-
-            QString enabledProject = AssetUtilities::ComputeProjectName();
-
-            if (!compiledProjects.contains(enabledProject))
-            {
-                QString projectSourceLine;
-
-                if (usingDefaults)
-                {
-                    projectSourceLine = QString("The currently compiled projects according to the defaults in %1 are '%2'").arg(defaultSettingsFile);
-                }
-                else
-                {
-                    projectSourceLine = QString("The currently compiled projects according to %1 are '%2'").arg(userSettingsFile);
-                }
-
-                projectSourceLine = projectSourceLine.arg(compiledProjects.join(", "));
-                friendlyErrorMessage = QString("An error occurred while loading gems.\n"
-                    "The enabled game project is not in the list of compiled projects.\n"
-                    "Please configure the enabled project to be compiled and rebuild or change the enabled project.\n"
-                    "The currently enabled game project (from bootstrap.cfg or /%4 command-line parameter) is '%1'.\n"
-                    "%2\n"
-                    "Full error text:\n"
-                    "%3"
-                ).arg(enabledProject).arg(projectSourceLine).arg(message).arg(AssetUtilities::ProjectPathOverrideParameter);
-            }
-        }
-
-        if (friendlyErrorMessage.isEmpty())
-        {
-            friendlyErrorMessage = QString("An error occurred while loading gems.\n"
-                "This can happen when new gems are added to a project, but those gems need to be built in order to function.\n"
-                "This can also happen when switching to a different project, one which uses gems which are not yet built.\n"
-                "To continue, please build the current project before attempting to run Asset Processor again.\n\n"
-                "Full error text:\n"
-                "%1").arg(message);
-        }
-        QMetaObject::invokeMethod(this, "ShowMessageBox", connection, Q_ARG(QString, QString("Error")), Q_ARG(QString, friendlyErrorMessage), Q_ARG(bool, true));
-    }
-    else
-    {
-        QMetaObject::invokeMethod(this, "ShowMessageBox", connection, Q_ARG(QString, QString("Error")), Q_ARG(QString, QString(message)), Q_ARG(bool, true));
-    }
-    
+    QMetaObject::invokeMethod(this, "ShowMessageBox", connection, Q_ARG(QString, QString("Error")), Q_ARG(QString, QString(message)), Q_ARG(bool, true));
 
     return true;
 }
@@ -615,7 +525,6 @@ void GUIApplicationManager::DirectoryChanged([[maybe_unused]] QString path)
 
 void GUIApplicationManager::FileChanged(QString path)
 {
-    QDir devRoot = ApplicationManager::GetSystemRoot();
     QDir projectCacheRoot;
     AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
     QString assetDbPath = projectCacheRoot.filePath("assetdb.sqlite");

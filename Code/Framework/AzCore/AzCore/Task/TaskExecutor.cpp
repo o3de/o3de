@@ -205,13 +205,13 @@ namespace AZ
                 }
                 m_active.store(true, AZStd::memory_order_release);
 
-                m_thread = AZStd::thread{ [this, &initSemaphore]
+                m_thread = AZStd::thread{ desc,
+                                          [this, &initSemaphore]
                                           {
                                               t_worker = this;
                                               initSemaphore.release();
                                               Run();
-                                          },
-                                          &desc };
+                                          } };
             }
 
             // Threads that wait on a graph to complete are disqualified from receiving tasks until the wait finishes
@@ -308,11 +308,11 @@ namespace AZ
 
     void TaskExecutor::SetInstance(TaskExecutor* executor)
     {
-        if (!executor)
+        if (!executor) // allow unsetting the executor
         {
             s_executor.Reset();
         }
-        else if (!s_executor) // ignore any calls to set after the first (this happens in unit tests that create new system entities)
+        else if (!s_executor) // ignore any extra executors after the first (this happens during unit tests)
         {
             s_executor = AZ::Environment::CreateVariable<TaskExecutor*>(s_executorName, executor);
         }
@@ -363,7 +363,11 @@ namespace AZ
     {
         ++m_graphsRemaining;
 
-        event->m_executor = this; // Used to validate event is not waited for inside a job
+        if (event)
+        {
+            event->IncWaitCount();
+            event->m_executor = this; // Used to validate event is not waited for inside a job
+        }
 
         // Submit all tasks that have no inbound edges
         for (Internal::Task& task : graph.Tasks())

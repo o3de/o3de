@@ -89,41 +89,54 @@ endif()
 
 set(_cmake_package_dest ${CPACK_BINARY_DIR}/${CPACK_CMAKE_PACKAGE_FILE})
 
-string(REPLACE "." ";" _version_componets "${CPACK_DESIRED_CMAKE_VERSION}")
-list(GET _version_componets 0 _major_version)
-list(GET _version_componets 1 _minor_version)
-
-set(_url_version_tag "v${_major_version}.${_minor_version}")
-set(_package_url "https://cmake.org/files/${_url_version_tag}/${CPACK_CMAKE_PACKAGE_FILE}")
-
-message(STATUS "Downloading CMake ${CPACK_DESIRED_CMAKE_VERSION} for packaging...")
-download_file(
-    URL ${_package_url}
-    TARGET_FILE ${_cmake_package_dest}
-    EXPECTED_HASH ${CPACK_CMAKE_PACKAGE_HASH}
-    RESULTS _results
-)
-list(GET _results 0 _status_code)
-
-if (${_status_code} EQUAL 0 AND EXISTS ${_cmake_package_dest})
-    message(STATUS "Package found and verified!")
-else()
-    file(REMOVE ${_cmake_package_dest})
-    list(REMOVE_AT _results 0)
-
-    set(_error_message "An error occurred, code ${_status_code}.  URL ${_package_url} - ${_results}")
-
-    if(${_status_code} EQUAL 1)
-        string(APPEND _error_message
-            "  Please double check the CPACK_CMAKE_PACKAGE_FILE and "
-            "CPACK_CMAKE_PACKAGE_HASH properties before trying again.")
+if(EXISTS ${_cmake_package_dest})
+    file(SHA256 ${_cmake_package_dest} hash_of_downloaded_file)
+    if (NOT "${hash_of_downloaded_file}" STREQUAL "${CPACK_CMAKE_PACKAGE_HASH}")
+        message(STATUS "CMake ${CPACK_DESIRED_CMAKE_VERSION} found at ${_cmake_package_dest} but expected hash missmatches, re-downloading...")
+        file(REMOVE ${_cmake_package_dest})
+    else()
+        message(STATUS "CMake ${CPACK_DESIRED_CMAKE_VERSION} found")
     endif()
+endif()
+if(NOT EXISTS ${_cmake_package_dest})
+    # download it
+    string(REPLACE "." ";" _version_componets "${CPACK_DESIRED_CMAKE_VERSION}")
+    list(GET _version_componets 0 _major_version)
+    list(GET _version_componets 1 _minor_version)
 
-    message(FATAL_ERROR ${_error_message})
+    set(_url_version_tag "v${_major_version}.${_minor_version}")
+    set(_package_url "https://cmake.org/files/${_url_version_tag}/${CPACK_CMAKE_PACKAGE_FILE}")
+
+    message(STATUS "Downloading CMake ${CPACK_DESIRED_CMAKE_VERSION} for packaging...")
+    download_file(
+        URL ${_package_url}
+        TARGET_FILE ${_cmake_package_dest}
+        EXPECTED_HASH ${CPACK_CMAKE_PACKAGE_HASH}
+        RESULTS _results
+    )
+    list(GET _results 0 _status_code)
+
+    if (${_status_code} EQUAL 0 AND EXISTS ${_cmake_package_dest})
+        message(STATUS "CMake ${CPACK_DESIRED_CMAKE_VERSION} found")
+    else()
+        file(REMOVE ${_cmake_package_dest})
+        list(REMOVE_AT _results 0)
+
+        set(_error_message "An error occurred, code ${_status_code}.  URL ${_package_url} - ${_results}")
+
+        if(${_status_code} EQUAL 1)
+            string(APPEND _error_message
+                "  Please double check the CPACK_CMAKE_PACKAGE_FILE and "
+                "CPACK_CMAKE_PACKAGE_HASH properties before trying again.")
+        endif()
+
+        message(FATAL_ERROR ${_error_message})
+    endif()
 endif()
 
-install(FILES ${_cmake_package_dest}
+ly_install(FILES ${_cmake_package_dest}
     DESTINATION ./Tools/Redistributables/CMake
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
 )
 
 # the version string and git tags are intended to be synchronized so it should be safe to use that instead
@@ -145,8 +158,9 @@ if(${CPACK_PACKAGE_VERSION} VERSION_GREATER "0.0.0.0")
     list(POP_FRONT _status _status_code)
 
     if (${_status_code} EQUAL 0 AND EXISTS ${_3rd_party_license_dest})
-        install(FILES ${_3rd_party_license_dest}
+        ly_install(FILES ${_3rd_party_license_dest}
             DESTINATION .
+            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
         )
     else()
         file(REMOVE ${_3rd_party_license_dest})
@@ -190,44 +204,69 @@ endif()
 # IMPORTANT: required to be included AFTER setting all property overrides
 include(CPack REQUIRED)
 
-function(ly_configure_cpack_component ly_configure_cpack_component_NAME)
-
-    set(options REQUIRED)
-    set(oneValueArgs DISPLAY_NAME DESCRIPTION LICENSE_NAME LICENSE_FILE)
-    set(multiValueArgs)
-
-    cmake_parse_arguments(ly_configure_cpack_component "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
-    # default to optional
-    set(component_type DISABLED)
-
-    if(ly_configure_cpack_component_REQUIRED)
-        set(component_type REQUIRED)
-    endif()
-
-    set(license_name ${DEFAULT_LICENSE_NAME})
-    set(license_file ${DEFAULT_LICENSE_FILE})
-
-    if(ly_configure_cpack_component_LICENSE_NAME AND ly_configure_cpack_component_LICENSE_FILE)
-        set(license_name ${ly_configure_cpack_component_LICENSE_NAME})
-        set(license_file ${ly_configure_cpack_component_LICENSE_FILE})
-    elseif(ly_configure_cpack_component_LICENSE_NAME OR ly_configure_cpack_component_LICENSE_FILE)
-        message(FATAL_ERROR "Invalid argument configuration. Both LICENSE_NAME and LICENSE_FILE must be set for ly_configure_cpack_component")
-    endif()
-
-    cpack_add_component(
-        ${ly_configure_cpack_component_NAME} ${component_type}
-        DISPLAY_NAME ${ly_configure_cpack_component_DISPLAY_NAME}
-        DESCRIPTION ${ly_configure_cpack_component_DESCRIPTION}
-    )
-endfunction()
-
 # configure ALL components here
-ly_configure_cpack_component(
-    ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} REQUIRED
-    DISPLAY_NAME "${PROJECT_NAME} Core"
-    DESCRIPTION "${PROJECT_NAME} Headers, Libraries and Tools"
-)
+file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}" "
+set(CPACK_COMPONENTS_ALL ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
+set(CPACK_COMPONENT_${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_DISPLAY_NAME \"Common files\")
+set(CPACK_COMPONENT_${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_DESCRIPTION \"${PROJECT_NAME} Headers, scripts and common files\")
+set(CPACK_COMPONENT_${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_REQUIRED TRUE)
+set(CPACK_COMPONENT_${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}_DISABLED FALSE)
+
+include(CPackComponents.cmake)
+")
+
+# Generate a file (CPackComponents.config) that we will include that defines the components 
+# for this build permutation. This way we can get components for other permutations being passed
+# through LY_INSTALL_EXTERNAL_BUILD_DIRS
+unset(cpack_components_contents)
+
+set(required "FALSE")
+set(disabled "FALSE")
+if(${LY_INSTALL_PERMUTATION_COMPONENT} STREQUAL DEFAULT)
+    set(required "TRUE")
+else()
+    set(disabled "TRUE")
+endif()
+string(APPEND cpack_components_contents "
+list(APPEND CPACK_COMPONENTS_ALL ${LY_INSTALL_PERMUTATION_COMPONENT})
+set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_DISPLAY_NAME \"${LY_BUILD_PERMUTATION} common files\")
+set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_DESCRIPTION \"${PROJECT_NAME} scripts and common files for ${LY_BUILD_PERMUTATION}\")
+set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_DEPENDS ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME})
+set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_REQUIRED ${required})
+set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_DISABLED ${disabled})
+")
+
+foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+    string(TOUPPER ${conf} UCONF)
+    set(required "FALSE")
+    set(disabled "FALSE")
+    if(${conf} STREQUAL profile AND ${LY_INSTALL_PERMUTATION_COMPONENT} STREQUAL DEFAULT)
+        set(required "TRUE")
+    else()
+        set(disabled "TRUE")
+    endif()
+
+    # Inject a check to not declare components that have not been built. We are using AzCore since that is a
+    # common target that will always be build, in every permutation and configuration
+    string(APPEND cpack_components_contents "
+if(EXISTS \"${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/${conf}/${CMAKE_STATIC_LIBRARY_PREFIX}AzCore${CMAKE_STATIC_LIBRARY_SUFFIX}\")
+    list(APPEND CPACK_COMPONENTS_ALL ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF})
+    set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_DISPLAY_NAME \"Binaries for ${LY_BUILD_PERMUTATION} ${conf}\")
+    set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_DESCRIPTION \"${PROJECT_NAME} libraries and applications for ${LY_BUILD_PERMUTATION} ${conf}\")
+    set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_DEPENDS ${LY_INSTALL_PERMUTATION_COMPONENT})
+    set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_REQUIRED ${required})
+    set(CPACK_COMPONENT_${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}_DISABLED ${disabled})
+endif()
+")
+endforeach()
+file(WRITE "${CMAKE_BINARY_DIR}/CPackComponents.cmake" ${cpack_components_contents})
+
+# Inject other build directories 
+foreach(external_dir ${LY_INSTALL_EXTERNAL_BUILD_DIRS})
+    file(APPEND "${CPACK_OUTPUT_CONFIG_FILE}"
+        "include(${external_dir}/CPackComponents.cmake)\n"
+    )
+endforeach()
 
 if(LY_INSTALLER_DOWNLOAD_URL)
     strip_trailing_slash(${LY_INSTALLER_DOWNLOAD_URL} LY_INSTALLER_DOWNLOAD_URL)

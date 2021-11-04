@@ -7,9 +7,9 @@
 #
 
 set(FILES
+    Include/AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentNotificationBus.h
     Include/AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentRequestBus.h
     Include/AtomLyIntegration/CommonFeatures/ReflectionProbe/EditorReflectionProbeBus.h
-    Include/AtomLyIntegration/CommonFeatures/Thumbnails/ThumbnailFeatureProcessorProviderBus.h
     Source/Module.cpp
     Source/Animation/EditorAttachmentComponent.h
     Source/Animation/EditorAttachmentComponent.cpp
@@ -31,6 +31,8 @@ set(FILES
     Source/ImageBasedLights/EditorImageBasedLightComponent.cpp
     Source/Material/EditorMaterialComponent.cpp
     Source/Material/EditorMaterialComponent.h
+    Source/Material/EditorMaterialComponentSerializer.cpp
+    Source/Material/EditorMaterialComponentSerializer.h
     Source/Material/EditorMaterialComponentUtil.cpp
     Source/Material/EditorMaterialComponentUtil.h
     Source/Material/EditorMaterialComponentSlot.cpp
@@ -45,8 +47,6 @@ set(FILES
     Source/Material/EditorMaterialSystemComponent.h
     Source/Material/MaterialBrowserInteractions.h
     Source/Material/MaterialBrowserInteractions.cpp
-    Source/Material/MaterialThumbnail.cpp
-    Source/Material/MaterialThumbnail.h
     Source/Mesh/EditorMeshComponent.h
     Source/Mesh/EditorMeshComponent.cpp
     Source/Mesh/EditorMeshStats.h
@@ -55,8 +55,6 @@ set(FILES
     Source/Mesh/EditorMeshSystemComponent.h
     Source/Mesh/EditorMeshStatsSerializer.cpp
     Source/Mesh/EditorMeshStatsSerializer.h
-    Source/Mesh/MeshThumbnail.h
-    Source/Mesh/MeshThumbnail.cpp
     Source/OcclusionCullingPlane/EditorOcclusionCullingPlaneComponent.h
     Source/OcclusionCullingPlane/EditorOcclusionCullingPlaneComponent.cpp
     Source/PostProcess/EditorPostFxLayerComponent.cpp
@@ -95,28 +93,19 @@ set(FILES
     Source/SkyBox/EditorHDRiSkyboxComponent.h
     Source/SkyBox/EditorPhysicalSkyComponent.cpp
     Source/SkyBox/EditorPhysicalSkyComponent.h
-    Source/Thumbnails/ThumbnailUtils.h
-    Source/Thumbnails/ThumbnailUtils.cpp
-    Source/Thumbnails/Preview/CommonPreviewer.cpp
-    Source/Thumbnails/Preview/CommonPreviewer.h
-    Source/Thumbnails/Preview/CommonPreviewer.ui
-    Source/Thumbnails/Preview/CommonPreviewerFactory.cpp
-    Source/Thumbnails/Preview/CommonPreviewerFactory.h
-    Source/Thumbnails/Rendering/CommonThumbnailRenderer.cpp
-    Source/Thumbnails/Rendering/CommonThumbnailRenderer.h
-    Source/Thumbnails/Rendering/ThumbnailRendererData.h
-    Source/Thumbnails/Rendering/ThumbnailRendererContext.h
-    Source/Thumbnails/Rendering/ThumbnailRendererSteps/ThumbnailRendererStep.h
-    Source/Thumbnails/Rendering/ThumbnailRendererSteps/InitializeStep.cpp
-    Source/Thumbnails/Rendering/ThumbnailRendererSteps/InitializeStep.h
-    Source/Thumbnails/Rendering/ThumbnailRendererSteps/FindThumbnailToRenderStep.cpp
-    Source/Thumbnails/Rendering/ThumbnailRendererSteps/FindThumbnailToRenderStep.h
-    Source/Thumbnails/Rendering/ThumbnailRendererSteps/WaitForAssetsToLoadStep.cpp
-    Source/Thumbnails/Rendering/ThumbnailRendererSteps/WaitForAssetsToLoadStep.h
-    Source/Thumbnails/Rendering/ThumbnailRendererSteps/CaptureStep.cpp
-    Source/Thumbnails/Rendering/ThumbnailRendererSteps/CaptureStep.h
-    Source/Thumbnails/Rendering/ThumbnailRendererSteps/ReleaseResourcesStep.cpp
-    Source/Thumbnails/Rendering/ThumbnailRendererSteps/ReleaseResourcesStep.h
+    Source/SharedPreview/SharedPreviewer.cpp
+    Source/SharedPreview/SharedPreviewer.h
+    Source/SharedPreview/SharedPreviewer.ui
+    Source/SharedPreview/SharedPreviewerFactory.cpp
+    Source/SharedPreview/SharedPreviewerFactory.h
+    Source/SharedPreview/SharedPreviewContent.cpp
+    Source/SharedPreview/SharedPreviewContent.h
+    Source/SharedPreview/SharedPreviewUtils.cpp
+    Source/SharedPreview/SharedPreviewUtils.h
+    Source/SharedPreview/SharedThumbnail.cpp
+    Source/SharedPreview/SharedThumbnail.h
+    Source/SharedPreview/SharedThumbnailRenderer.cpp
+    Source/SharedPreview/SharedThumbnailRenderer.h
     Source/Scripting/EditorEntityReferenceComponent.cpp
     Source/Scripting/EditorEntityReferenceComponent.h
     Source/SurfaceData/EditorSurfaceDataMeshComponent.cpp

@@ -13,6 +13,9 @@ endif()
 ly_add_target(
     NAME PrefabBuilder.Static STATIC
     NAMESPACE Gem
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
     FILES_CMAKE
         prefabbuilder_files.cmake
     BUILD_DEPENDENCIES
@@ -20,6 +23,9 @@ ly_add_target(
             AZ::AzCore
             AZ::AzToolsFramework
             AZ::AssetBuilderSDK
+            AZ::SceneCore
+            AZ::SceneData
+            3rdParty::RapidJSON
 )
 
 ly_add_target(
@@ -35,7 +41,8 @@ ly_add_target(
             Gem::PrefabBuilder.Static
 )
 
-# the prefab builder only needs to be active in builders
+# create an alias for the tool version
+ly_create_alias(NAME PrefabBuilder.Tools NAMESPACE Gem TARGETS Gem::PrefabBuilder.Builders)
 
 # we automatically add this gem, if it is present, to all our known set of builder applications:
 ly_enable_gems(GEMS PrefabBuilder)

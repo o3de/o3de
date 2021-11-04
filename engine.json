@@ -53,13 +53,12 @@
         "Gems/Multiplayer",
         "Gems/MultiplayerCompression",
         "Gems/NvCloth",
-        "Gems/PBSreferenceMaterials",
         "Gems/PhysX",
         "Gems/PhysXDebug",
-        "Gems/PhysXSamples",
         "Gems/Prefab",
         "Gems/Presence",
         "Gems/PrimitiveAssets",
+        "Gems/Profiler",
         "Gems/PythonAssetBuilder",
         "Gems/QtForPython",
         "Gems/SaveData",
@@ -94,6 +93,8 @@
         "Templates/AssetGem",
         "Templates/DefaultGem",
         "Templates/DefaultProject",
-        "Templates/MinimalProject"
+        "Templates/CppToolGem",
+        "Templates/MinimalProject",
+        "Templates/PythonToolGem"
     ]
 }

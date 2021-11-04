@@ -23,15 +23,13 @@ set(CPACK_WIX_ROOT ${LY_INSTALLER_WIX_ROOT})
 
 set(CPACK_GENERATOR WIX)
 
+set(CPACK_THREADS 0)
 set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-windows-x86_64")
 set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.zip")
 set(CPACK_CMAKE_PACKAGE_HASH "15a49e2ab81c1822d75b1b1a92f7863f58e31f6d6aac1c4103eef2b071be3112")
 
-# workaround for shortening the path cpack installs to by stripping the platform directory and forcing monolithic
-# mode to strip out component folders.  this unfortunately is the closest we can get to changing the install location
-# as CPACK_PACKAGING_INSTALL_PREFIX/CPACK_SET_DESTDIR isn't supported for the WiX generator
+# workaround for shortening the path cpack installs to by stripping the platform directory
 set(CPACK_TOPLEVEL_TAG "")
-set(CPACK_MONOLITHIC_INSTALL ON)
 
 # CPack will generate the WiX product/upgrade GUIDs further down the chain if they weren't supplied
 # however, they are unique for each run.  instead, let's do the auto generation here and add it to
@@ -107,8 +105,9 @@ set(_raw_text_license [[
         <Text Name="EulaAcceptance" X="42" Y="-56" Width="-42" Height="18" TabStop="yes" FontId="1" HideWhenDisabled="yes">#(loc.InstallEulaAcceptance)</Text>
 ]])
 
+# The offline installer generation will be a single monolithic MSI. The WIX burn tool for the bootstrapper EXE has a size limitation. 
+# So we will exclude the generation of the boostrapper EXE in the offline case.
 if(LY_INSTALLER_DOWNLOAD_URL)
-
     set(WIX_THEME_WARNING_IMAGE ${CPACK_SOURCE_DIR}/Platform/Windows/Packaging/warning.png)
 
     if(LY_INSTALLER_LICENSE_URL)
@@ -137,6 +136,10 @@ if(LY_INSTALLER_DOWNLOAD_URL)
 
     # the bootstrapper will at the very least need a different upgrade guid
     generate_wix_guid(CPACK_WIX_BOOTSTRAP_UPGRADE_GUID "${_guid_seed_base}_Bootstrap_UpgradeCode")
+
+    set(CPACK_PRE_BUILD_SCRIPTS
+        ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPreBuild.cmake
+    )
 
     set(CPACK_POST_BUILD_SCRIPTS
         ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPostBuild.cmake

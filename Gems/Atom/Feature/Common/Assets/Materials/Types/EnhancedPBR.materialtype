@@ -1,7 +1,15 @@
 {
     "description": "Material Type with properties used to define Enhanced PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model, with advanced features like subsurface scattering, transmission, and anisotropy.",
+    "version": 4,
+    "versionUpdates": [
+        {
+            "toVersion": 4,
+            "actions": [
+                {"op": "rename", "from": "opacity.doubleSided", "to": "general.doubleSided"}
+            ]
+        }
+    ],
     "propertyLayout": {
-        "version": 3,
         "groups": [
             {
                 "name": "baseColor",
@@ -92,6 +100,12 @@
         ],
         "properties": {
             "general": [
+                {
+                    "name": "doubleSided",
+                    "displayName": "Double-sided",
+                    "description": "Whether to render back-faces or just front-faces.",
+                    "type": "Bool"
+                },
                 {
                     "name": "applySpecularAA",
                     "displayName": "Apply Specular AA",
@@ -708,12 +722,6 @@
                         "type": "ShaderInput",
                         "name": "m_opacityFactor"
                     }
-                },
-                {
-                    "name": "doubleSided",
-                    "displayName": "Double-sided",
-                    "description": "Whether to render back-faces or just front-faces.",
-                    "type": "Bool"
                 },
                 {
                     "name": "alphaAffectsSpecular",
@@ -1569,15 +1577,6 @@
         {
             "type": "UseTexture",
             "args": {
-                "textureProperty": "metallic.textureMap",
-                "useTextureProperty": "metallic.useTexture",
-                "dependentProperties": ["metallic.textureMapUv"],
-                "shaderOption": "o_metallic_useTexture"
-            }
-        },
-        {
-            "type": "UseTexture",
-            "args": {
                 "textureProperty": "specularF0.textureMap",
                 "useTextureProperty": "specularF0.useTexture",
                 "dependentProperties": ["specularF0.textureMapUv"],
@@ -1639,6 +1638,12 @@
             "type": "Lua",
             "args": {
                 "file": "StandardPBR_Roughness.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "StandardPBR_Metallic.lua"
             }
         },
         {

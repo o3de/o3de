@@ -1,7 +1,0 @@
-<Material MtlFlags="524288" Shader="Illum" GenMask="201" StringGenMask="%ALLOW_SILHOUETTE_POM%BUMP_MAP" SurfaceType="mat_default" MatTemplate="" Diffuse="1,1,1" Specular="0.047775757,0.047775757,0.047775757" Emissive="0,0,0" Shininess="255" Opacity="1" LayerAct="1">
- <Textures>
-  <Texture Map="Diffuse" File="materials/pbs_reference/mixed_stones_diff.tif"/>
-  <Texture Map="Bumpmap" File="materials/pbs_reference/mixed_stones_ddna.tif"/>
- </Textures>
- <PublicParams SubsurfaceScatteringAmount="0" IndirectColor="0.0060405931,0.015175238,0.15105805"/>
-</Material>

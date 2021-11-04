@@ -389,7 +389,7 @@ namespace EMStudio
             // get the current actor and the number of clones
             EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
 
-            if (actor->GetIsOwnedByRuntime() || !actor->IsReady())
+            if (!actor->IsReady())
             {
                 continue;
             }
@@ -421,7 +421,7 @@ namespace EMStudio
 
             // At this point the render actor could point to an already deleted actor.
             // In case the actor got deleted we might get an unexpected flag as result.
-            if (!found || (found && actor->GetIsOwnedByRuntime()) || (!actor->IsReady()))
+            if (!found || (!actor->IsReady()))
             {
                 DestroyEMStudioActor(actor);
             }

@@ -67,7 +67,7 @@ namespace UnitTest
 
         AZ::IO::Path assetPath = AZStd::string_view{ AZ::Utils::GetProjectPath() };
         assetPath /= "Cache";
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", assetPath.c_str());
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetPath.c_str());
 
         m_jsonRegistrationContext = AZStd::make_unique<AZ::JsonRegistrationContext>();
         m_jsonSystemComponent = AZStd::make_unique<AZ::JsonSystemComponent>();
@@ -90,7 +90,7 @@ namespace UnitTest
         JobManagerThreadDesc threadDesc;
 #if AZ_TRAIT_SET_JOB_PROCESSOR_ID
         threadDesc.m_cpuId = 0; // Don't set processors IDs on windows
-#endif 
+#endif
 
         uint32_t numWorkerThreads = AZStd::thread::hardware_concurrency();
 
@@ -99,7 +99,7 @@ namespace UnitTest
             desc.m_workerThreads.push_back(threadDesc);
 #if AZ_TRAIT_SET_JOB_PROCESSOR_ID
             threadDesc.m_cpuId++;
-#endif 
+#endif
         }
 
         m_jobManager = AZStd::make_unique<JobManager>(desc);

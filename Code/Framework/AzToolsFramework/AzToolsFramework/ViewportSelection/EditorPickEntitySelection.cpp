@@ -21,7 +21,7 @@ namespace AzToolsFramework
         : m_editorHelpers(AZStd::make_unique<EditorHelpers>(entityDataCache))
         , m_viewportEditorModeTracker(viewportEditorModeTracker)
     {
-        m_viewportEditorModeTracker->ActivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Pick);
+        m_viewportEditorModeTracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Pick);
     }
 
     EditorPickEntitySelection::~EditorPickEntitySelection()
@@ -31,7 +31,7 @@ namespace AzToolsFramework
             ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetEntityHighlighted, m_hoveredEntityId, false);
         }
 
-        m_viewportEditorModeTracker->DeactivateMode({ /* DefaultViewportId */ }, ViewportEditorMode::Pick);
+        m_viewportEditorModeTracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Pick);
     }
 
     // note: entityIdUnderCursor is the authoritative entityId we get each frame by querying
@@ -80,7 +80,7 @@ namespace AzToolsFramework
 
         const AzFramework::CameraState cameraState = GetCameraState(viewportId);
 
-        m_cachedEntityIdUnderCursor = m_editorHelpers->HandleMouseInteraction(cameraState, mouseInteraction);
+        m_cachedEntityIdUnderCursor = m_editorHelpers->FindEntityIdUnderCursor(cameraState, mouseInteraction).ContainerAncestorEntityId();
 
         // when left clicking, if we successfully clicked an entity, assign that
         // to the entity field selected in the entity inspector (RPE)

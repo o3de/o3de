@@ -27,23 +27,20 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/std/chrono/chrono.h>
 
-namespace AZ 
+namespace AZ::Debug
 {
-    namespace Debug
-    {
-        namespace Platform
-        {
-#if defined(AZ_ENABLE_DEBUG_TOOLS)
-            bool AttachDebugger();
-            bool IsDebuggerPresent();
-            void HandleExceptions(bool isEnabled);
-            void DebugBreak();
-#endif
-            void Terminate(int exitCode);
-        }
-    }
+    struct StackFrame;
 
-    using namespace AZ::Debug;
+    namespace Platform
+    {
+#if defined(AZ_ENABLE_DEBUG_TOOLS)
+        bool AttachDebugger();
+        bool IsDebuggerPresent();
+        void HandleExceptions(bool isEnabled);
+        void DebugBreak();
+#endif
+        void Terminate(int exitCode);
+    }
 
     namespace DebugInternal
     {
@@ -58,7 +55,7 @@ namespace AZ
     // Globals
     const int       g_maxMessageLength = 4096;
     static const char*    g_dbgSystemWnd = "System";
-    Trace Debug::g_tracer;
+    Trace g_tracer;
     void* g_exceptionInfo = nullptr;
 
     // Environment var needed to track ignored asserts across systems and disable native UI under certain conditions
@@ -224,6 +221,8 @@ namespace AZ
 
     void Debug::Trace::Terminate(int exitCode)
     {
+        AZ_TracePrintf("Exit", "Called Terminate() with exit code: 0x%x", exitCode);
+        AZ::Debug::Trace::PrintCallstack("Exit");
         Platform::Terminate(exitCode);
     }
 
@@ -549,17 +548,19 @@ namespace AZ
     {
         StackFrame frames[25];
 
-        // Without StackFrame explicit alignment frames array is aligned to 4 bytes
-        // which causes the stack tracing to fail.
-        //size_t bla = AZStd::alignment_of<StackFrame>::value;
-        //printf("Alignment value %d address 0x%08x : 0x%08x\n",bla,frames);
         SymbolStorage::StackLine lines[AZ_ARRAY_SIZE(frames)];
+        unsigned int numFrames = 0;
 
         if (!nativeContext)
         {
-            suppressCount += 1; /// If we don't provide a context we will capture in the RecordFunction, so skip us (Trace::PrinCallstack).
+            suppressCount += 1; /// If we don't provide a context we will capture in the RecordFunction, so skip us (Trace::PrintCallstack).
+            numFrames = StackRecorder::Record(frames, AZ_ARRAY_SIZE(frames), suppressCount);
         }
-        unsigned int numFrames = StackRecorder::Record(frames, AZ_ARRAY_SIZE(frames), suppressCount, nativeContext);
+        else
+        {
+            numFrames = StackConverter::FromNative(frames, AZ_ARRAY_SIZE(frames), nativeContext);
+        }
+
         if (numFrames)
         {
             SymbolStorage::DecodeFrames(frames, numFrames, lines);
@@ -571,7 +572,9 @@ namespace AZ
                 }
 
                 azstrcat(lines[i], AZ_ARRAY_SIZE(lines[i]), "\n");
-                AZ_Printf(window, "%s", lines[i]); // feed back into the trace system so that listeners can get it.
+                // Use Output instead of AZ_Printf to be consistent with the exception output code and avoid
+                // this accidentally being suppressed as a normal message
+                Output(window, lines[i]);
             }
         }
     }
@@ -608,4 +611,4 @@ namespace AZ
             val.Set(level);
         }
     }
-} // namspace AZ
+} // namspace AZ::Debug
