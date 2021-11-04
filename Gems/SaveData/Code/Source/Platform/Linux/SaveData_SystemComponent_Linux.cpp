@@ -65,7 +65,7 @@ namespace SaveData
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The absolute path to the application's save data dircetory.
-        AZ::IO::Path m_saveDataDircetoryPathAbsolute;
+        AZ::IO::Path m_saveDataDirectoryPathAbsolute;
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -101,13 +101,9 @@ namespace SaveData
         char moduleFileName[AZ_MAX_PATH_LEN];
         AZ::Utils::GetExecutablePath(moduleFileName, AZ_MAX_PATH_LEN);
 
-        const AZStd::string moduleFileNameString(moduleFileName);
-        const size_t executableNameStart = moduleFileNameString.find_last_of('\\') + 1;
-        const size_t executableNameEnd = moduleFileNameString.find_last_of('.');
-        const size_t executableNameLength = executableNameEnd - executableNameStart;
-
-        AZ_Assert(executableNameLength > 0, "Could not extract executable name from: %s", moduleFileName);
-        return moduleFileNameString.substr(executableNameStart, executableNameLength);
+        AZ::IO::Path executableFullPath {moduleFileName};
+        AZStd::string moduleFileNameString {executableFullPath.Filename().Native()};
+        return moduleFileNameString;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,7 +115,7 @@ namespace SaveData
     ////////////////////////////////////////////////////////////////////////////////////////////////
     SaveDataSystemComponentLinux::SaveDataSystemComponentLinux(SaveDataSystemComponent& saveDataSystemComponent)
         : SaveDataSystemComponent::Implementation(saveDataSystemComponent)
-        , m_saveDataDircetoryPathAbsolute(GetDefaultLinuxUserSaveDataPath() /
+        , m_saveDataDirectoryPathAbsolute(GetDefaultLinuxUserSaveDataPath() /
                                           GetExecutableName().c_str() /
                                           DefaultSaveDataDirectoryName)
     {
@@ -153,21 +149,21 @@ namespace SaveData
 
         if (saveDataDirectoryBasicPath.IsAbsolute())
         {
-            m_saveDataDircetoryPathAbsolute = saveDataDirectoryBasicPath;
+            m_saveDataDirectoryPathAbsolute = saveDataDirectoryBasicPath;
         }
         else
         {
-            m_saveDataDircetoryPathAbsolute = GetDefaultLinuxUserSaveDataPath() / saveDataDirectoryBasicPath;
+            m_saveDataDirectoryPathAbsolute = GetDefaultLinuxUserSaveDataPath() / saveDataDirectoryBasicPath;
         }
 
-        AZ_Assert(!m_saveDataDircetoryPathAbsolute.empty(), "Cannot set an empty save data directory path.");
+        AZ_Assert(!m_saveDataDirectoryPathAbsolute.empty(), "Cannot set an empty save data directory path.");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     AZ::IO::Path SaveDataSystemComponentLinux::GetSaveDataFilePath(const AZStd::string& dataBufferName,
                                                                    AzFramework::LocalUserId localUserId)
     {
-        AZ::IO::Path saveDataFilePath = m_saveDataDircetoryPathAbsolute;
+        AZ::IO::Path saveDataFilePath = m_saveDataDirectoryPathAbsolute;
         if (localUserId != AzFramework::LocalUserIdNone)
         {
             saveDataFilePath /= AZStd::string::format("User_%u\\", localUserId);
