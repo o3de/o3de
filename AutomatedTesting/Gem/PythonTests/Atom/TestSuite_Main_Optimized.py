@@ -14,6 +14,10 @@ from ly_test_tools.o3de.editor_test import EditorSharedTest, EditorTestSuite
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
 
+    @pytest.mark.test_case_id("C36525657")
+    class AtomEditorComponents_BloomAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_BloomAdded as test_module
+
     @pytest.mark.test_case_id("C32078118")
     class AtomEditorComponents_DecalAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_DecalAdded as test_module
