@@ -7,28 +7,70 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 
 # fmt: off
-class Tests :
-    camera_component_added =                ("Camera component was added",                  "Camera component wasn't added")
-    camera_fov_set =                        ("Camera component FOV property set",           "Camera component FOV property wasn't set")
-    directional_light_component_added =     ("Directional Light component added",           "Directional Light component wasn't added")
-    enter_game_mode =                       ("Entered game mode",                           "Failed to enter game mode")
-    exit_game_mode =                        ("Exited game mode",                            "Couldn't exit game mode")
-    global_skylight_component_added =       ("Global Skylight (IBL) component added",       "Global Skylight (IBL) component wasn't added")
-    global_skylight_diffuse_image_set =     ("Global Skylight Diffuse Image property set",  "Global Skylight Diffuse Image property wasn't set")
-    global_skylight_specular_image_set =    ("Global Skylight Specular Image property set", "Global Skylight Specular Image property wasn't set")
-    ground_plane_material_asset_set =       ("Ground Plane Material Asset was set",         "Ground Plane Material Asset wasn't set")
-    ground_plane_material_component_added = ("Ground Plane Material component added",       "Ground Plane Material component wasn't added")
-    ground_plane_mesh_asset_set =           ("Ground Plane Mesh Asset property was set",    "Ground Plane Mesh Asset property wasn't set")
-    hdri_skybox_component_added =           ("HDRi Skybox component added",                 "HDRi Skybox component wasn't added")
-    hdri_skybox_cubemap_texture_set =       ("HDRi Skybox Cubemap Texture property set",    "HDRi Skybox Cubemap Texture property wasn't set")
-    mesh_component_added =                  ("Mesh component added",                        "Mesh component wasn't added")
-    no_assert_occurred =                    ("No asserts detected",                         "Asserts were detected")
-    no_error_occurred =                     ("No errors detected",                          "Errors were detected")
-    secondary_grid_spacing =                ("Secondary Grid Spacing set",                  "Secondary Grid Spacing not set")
-    sphere_material_component_added =       ("Sphere Material component added",             "Sphere Material component wasn't added")
-    sphere_material_set =                   ("Sphere Material Asset was set",               "Sphere Material Asset wasn't set")
-    sphere_mesh_asset_set =                 ("Sphere Mesh Asset was set",                   "Sphere Mesh Asset wasn't set")
-    viewport_set =                          ("Viewport set to correct size",                "Viewport not set to correct size")
+class Tests:
+    camera_component_added = (
+        "Camera component was added",
+        "Camera component wasn't added")
+    camera_fov_set = (
+        "Camera component FOV property set",
+        "Camera component FOV property wasn't set")
+    directional_light_component_added = (
+        "Directional Light component added",
+        "Directional Light component wasn't added")
+    enter_game_mode = (
+        "Entered game mode",
+        "Failed to enter game mode")
+    exit_game_mode = (
+        "Exited game mode",
+        "Couldn't exit game mode")
+    global_skylight_component_added = (
+        "Global Skylight (IBL) component added",
+        "Global Skylight (IBL) component wasn't added")
+    global_skylight_diffuse_image_set = (
+        "Global Skylight Diffuse Image property set",
+        "Global Skylight Diffuse Image property wasn't set")
+    global_skylight_specular_image_set = (
+        "Global Skylight Specular Image property set",
+        "Global Skylight Specular Image property wasn't set")
+    ground_plane_material_asset_set = (
+        "Ground Plane Material Asset was set",
+        "Ground Plane Material Asset wasn't set")
+    ground_plane_material_component_added = (
+        "Ground Plane Material component added",
+        "Ground Plane Material component wasn't added")
+    ground_plane_mesh_asset_set = (
+        "Ground Plane Mesh Asset property was set",
+        "Ground Plane Mesh Asset property wasn't set")
+    hdri_skybox_component_added = (
+        "HDRi Skybox component added",
+        "HDRi Skybox component wasn't added")
+    hdri_skybox_cubemap_texture_set = (
+        "HDRi Skybox Cubemap Texture property set",
+        "HDRi Skybox Cubemap Texture property wasn't set")
+    mesh_component_added = (
+        "Mesh component added",
+        "Mesh component wasn't added")
+    no_assert_occurred = (
+        "No asserts detected",
+        "Asserts were detected")
+    no_error_occurred = (
+        "No errors detected",
+        "Errors were detected")
+    secondary_grid_spacing = (
+        "Secondary Grid Spacing set",
+        "Secondary Grid Spacing not set")
+    sphere_material_component_added = (
+        "Sphere Material component added",
+        "Sphere Material component wasn't added")
+    sphere_material_set = (
+        "Sphere Material Asset was set",
+        "Sphere Material Asset wasn't set")
+    sphere_mesh_asset_set = (
+        "Sphere Mesh Asset was set",
+        "Sphere Mesh Asset wasn't set")
+    viewport_set = (
+        "Viewport set to correct size",
+        "Viewport not set to correct size")
 # fmt: on
 
 
@@ -77,12 +119,11 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
     import os
     from math import isclose
 
-    import azlmbr.asset as asset
-    import azlmbr.bus as bus
     import azlmbr.legacy.general as general
     import azlmbr.math as math
     import azlmbr.paths
 
+    from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper as helper
 
@@ -98,6 +139,11 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
     def initial_viewport_setup(screen_width, screen_height):
         general.set_viewport_size(screen_width, screen_height)
         general.update_viewport()
+        helper.wait_for_condition(
+            function=lambda: isclose(a=general.get_viewport_size().x, b=SCREEN_WIDTH, rel_tol=0.1)
+                             and isclose(a=general.get_viewport_size().y, b=SCREEN_HEIGHT, rel_tol=0.1),
+            timeout_in_seconds=4.0
+        )
         result = isclose(
             a=general.get_viewport_size().x, b=SCREEN_WIDTH, rel_tol=0.1) and isclose(
             a=general.get_viewport_size().y, b=SCREEN_HEIGHT, rel_tol=0.1)
@@ -151,11 +197,10 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         # 8. Set the Cubemap Texture property of the HDRi Skybox component.
         global_skylight_image_asset_path = os.path.join(
             "LightingPresets", "greenwich_park_02_4k_iblskyboxcm_iblspecular.exr.streamingimage")
-        global_skylight_image_asset = asset.AssetCatalogRequestBus(
-            bus.Broadcast, "GetAssetIdByPath", global_skylight_image_asset_path, math.Uuid(), False)
+        global_skylight_image_asset = Asset.find_asset_by_path(global_skylight_image_asset_path, False)
         hdri_skybox_cubemap_texture_property = "Controller|Configuration|Cubemap Texture"
         hdri_skybox_component.set_component_property_value(
-            hdri_skybox_cubemap_texture_property, global_skylight_image_asset)
+            hdri_skybox_cubemap_texture_property, global_skylight_image_asset.id)
         Report.result(
             Tests.hdri_skybox_cubemap_texture_set,
             hdri_skybox_component.get_component_property_value(
@@ -191,11 +236,10 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         # 12. Set the Material Asset property of the Material component for the Ground Plane Entity.
         ground_plane_entity.set_local_uniform_scale(32.0)
         ground_plane_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_chrome.azmaterial")
-        ground_plane_material_asset = asset.AssetCatalogRequestBus(
-            bus.Broadcast, "GetAssetIdByPath", ground_plane_material_asset_path, math.Uuid(), False)
+        ground_plane_material_asset = Asset.find_asset_by_path(ground_plane_material_asset_path, False)
         ground_plane_material_asset_property = "Default Material|Material Asset"
         ground_plane_material_component.set_component_property_value(
-            ground_plane_material_asset_property, ground_plane_material_asset)
+            ground_plane_material_asset_property, ground_plane_material_asset.id)
         Report.result(
             Tests.ground_plane_material_asset_set,
             ground_plane_material_component.get_component_property_value(
@@ -205,11 +249,10 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
         ground_plane_mesh_component = ground_plane_entity.add_component(MESH_COMPONENT_NAME)
         Report.result(Tests.mesh_component_added, ground_plane_entity.has_component(MESH_COMPONENT_NAME))
         ground_plane_mesh_asset_path = os.path.join("Objects", "plane.azmodel")
-        ground_plane_mesh_asset = asset.AssetCatalogRequestBus(
-            bus.Broadcast, "GetAssetIdByPath", ground_plane_mesh_asset_path, math.Uuid(), False)
+        ground_plane_mesh_asset = Asset.find_asset_by_path(ground_plane_mesh_asset_path, False)
         ground_plane_mesh_asset_property = "Controller|Configuration|Mesh Asset"
         ground_plane_mesh_component.set_component_property_value(
-            ground_plane_mesh_asset_property, ground_plane_mesh_asset)
+            ground_plane_mesh_asset_property, ground_plane_mesh_asset.id)
         Report.result(
             Tests.ground_plane_mesh_asset_set,
             ground_plane_mesh_component.get_component_property_value(
@@ -235,20 +278,18 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
         # 17. Set the Material Asset property of the Material component for the Sphere Entity.
         sphere_material_asset_path = os.path.join("Materials", "Presets", "PBR", "metal_brass_polished.azmaterial")
-        sphere_material_asset = asset.AssetCatalogRequestBus(
-            bus.Broadcast, "GetAssetIdByPath", sphere_material_asset_path, math.Uuid(), False)
+        sphere_material_asset = Asset.find_asset_by_path(sphere_material_asset_path, False)
         sphere_material_asset_property = "Default Material|Material Asset"
-        sphere_material_component.set_component_property_value(sphere_material_asset_property, sphere_material_asset)
+        sphere_material_component.set_component_property_value(sphere_material_asset_property, sphere_material_asset.id)
         Report.result(Tests.sphere_material_set, sphere_material_component.get_component_property_value(
             sphere_material_asset_property) == sphere_material_asset)
 
         # 18. Add Mesh component to Sphere Entity and set the Mesh Asset property for the Mesh component.
         sphere_mesh_component = sphere_entity.add_component(MESH_COMPONENT_NAME)
         sphere_mesh_asset_path = os.path.join("Models", "sphere.azmodel")
-        sphere_mesh_asset = asset.AssetCatalogRequestBus(
-            bus.Broadcast, "GetAssetIdByPath", sphere_mesh_asset_path, math.Uuid(), False)
+        sphere_mesh_asset = Asset.find_asset_by_path(sphere_mesh_asset_path, False)
         sphere_mesh_asset_property = "Controller|Configuration|Mesh Asset"
-        sphere_mesh_component.set_component_property_value(sphere_mesh_asset_property, sphere_mesh_asset)
+        sphere_mesh_component.set_component_property_value(sphere_mesh_asset_property, sphere_mesh_asset.id)
         Report.result(Tests.sphere_mesh_asset_set, sphere_mesh_component.get_component_property_value(
             sphere_mesh_asset_property) == sphere_mesh_asset)
 
