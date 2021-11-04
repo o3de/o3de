@@ -16,7 +16,7 @@
 
 #include <QItemSelection>
 #include <QScrollArea>
-#include <QWidget>
+#include <QSpacerItem>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
@@ -68,7 +68,6 @@ namespace O3DE::ProjectManager
         QLabel* m_requirementsTitleLabel = nullptr;
         QLabel* m_requirementsIconLabel = nullptr;
         QLabel* m_requirementsTextLabel = nullptr;
-
         QSpacerItem* m_requirementsMainSpacer = nullptr;
 
         // Depending and conflicting gems
