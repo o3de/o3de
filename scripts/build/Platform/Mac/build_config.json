@@ -192,7 +192,7 @@
     "TAGS": [],
     "COMMAND": "python_mac.sh",
     "PARAMETERS": {
-      "SCRIPT_PATH": "install/scripts/o3de.py",
+      "SCRIPT_PATH": "install/O3DE_SDK.app/Contents/Engine/scripts/o3de.py",
       "SCRIPT_PARAMETERS": "create-project -pp ${WORKSPACE}/${PROJECT_REPOSITORY_NAME} --force"
     }
   },
@@ -203,7 +203,7 @@
       "COMMAND_CWD": "${WORKSPACE}/${PROJECT_REPOSITORY_NAME}",
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/mac",
-      "CMAKE_OPTIONS": "-G Xcode -DCMAKE_MODULE_PATH=${WORKSPACE}/o3de/install/cmake",
+      "CMAKE_OPTIONS": "-G Xcode -DCMAKE_MODULE_PATH=${WORKSPACE}/o3de/install/O3DE_SDK.app/Contents/Engine/cmake",
       "CMAKE_LY_PROJECTS": "",
       "CMAKE_TARGET": "ALL_BUILD"
     }
