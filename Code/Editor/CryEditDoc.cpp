@@ -399,9 +399,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
 
         int t0 = GetTickCount();
 
-#ifdef PROFILE_LOADING_WITH_VTUNE
-        VTResume();
-#endif
         // Load level-specific audio data.
         AZStd::string levelFileName{ fileName.toUtf8().constData() };
         AZStd::to_lower(levelFileName.begin(), levelFileName.end());
@@ -474,10 +471,6 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
         }
 
         CSurfaceTypeValidator().Validate();
-
-#ifdef PROFILE_LOADING_WITH_VTUNE
-        VTPause();
-#endif
 
         LogLoadTime(GetTickCount() - t0);
         // Loaded with success, remove event from log file

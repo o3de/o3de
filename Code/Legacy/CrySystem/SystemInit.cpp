@@ -1675,8 +1675,6 @@ void CSystem::CreateSystemVars()
     m_sys_memory_debug = REGISTER_INT("sys_memory_debug", 0, VF_CHEAT,
             "Enables to activate low memory situation is specific places in the code (argument defines which place), 0=off");
 
-    REGISTER_CVAR2("sys_vtune", &g_cvars.sys_vtune, 0, VF_NULL, "");
-
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_17
 #include AZ_RESTRICTED_FILE(SystemInit_cpp)

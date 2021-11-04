@@ -135,7 +135,6 @@ struct SSystemCVars
     int sys_ai;
     int sys_entitysystem;
     int sys_trackview;
-    int sys_vtune;
     float sys_update_profile_time;
     int sys_limit_phys_thread_count;
     int sys_MaxFPS;
