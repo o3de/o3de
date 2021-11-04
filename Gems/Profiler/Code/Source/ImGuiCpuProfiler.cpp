@@ -10,9 +10,9 @@
 
 #include <ImGuiCpuProfiler.h>
 
-#include <Profiler/ProfilerBus.h>
 #include <CpuProfilerImpl.h>
 
+#include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/JSON/filereadstream.h>
 #include <AzCore/Outcome/Outcome.h>
@@ -26,8 +26,6 @@
 
 namespace Profiler
 {
-    static constexpr const char* defaultSaveLocation = "@user@/Profiler";
-
     namespace CpuProfilerImGuiHelper
     {
         float TicksToMs(double ticks)
@@ -156,16 +154,7 @@ namespace Profiler
 
         if (m_captureToFile)
         {
-            AZStd::string timeString;
-            AZStd::to_string(timeString, AZStd::GetTimeNowSecond());
-
-            const AZStd::string frameDataFilePath = AZStd::string::format("%s/cpu_single_%s.json", defaultSaveLocation, timeString.c_str());
-
-            char resolvedPath[AZ::IO::MaxPathLength];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
-            m_lastCapturedFilePath = resolvedPath;
-
-            ProfilerRequestBus::Broadcast(&ProfilerRequestBus::Events::CaptureCpuProfilingStatistics, frameDataFilePath);
+            AZ::Debug::ProfilerSystemInterface::Get()->CaptureFrame(GenerateOutputFile("single"));
         }
         m_captureToFile = false;
 
@@ -206,24 +195,15 @@ namespace Profiler
         bool isInProgress = CpuProfiler::Get()->IsContinuousCaptureInProgress();
         if (ImGui::Button(isInProgress ? "End" : "Begin"))
         {
+            auto profilerSystem = AZ::Debug::ProfilerSystemInterface::Get();
             if (isInProgress)
             {
-                AZStd::string timeString;
-                AZStd::to_string(timeString, AZStd::GetTimeNowSecond());
-
-                const AZStd::string frameDataFilePath = AZStd::string::format("%s/cpu_multi_%s.json", defaultSaveLocation, timeString.c_str());
-
-                char resolvedPath[AZ::IO::MaxPathLength];
-                AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
-                m_lastCapturedFilePath = resolvedPath;
-
-                ProfilerRequestBus::Broadcast(&ProfilerRequestBus::Events::EndContinuousCpuProfilingCapture, frameDataFilePath);
-
+                profilerSystem->EndCapture();
                 m_paused = true;
             }
             else
             {
-                ProfilerRequestBus::Broadcast(&ProfilerRequestBus::Events::BeginContinuousCpuProfilingCapture);
+                profilerSystem->StartCapture(GenerateOutputFile("multi"));
             }
         }
 
@@ -235,8 +215,10 @@ namespace Profiler
             // Only update the cached file list when opened so that we aren't making IO calls on every frame.
             m_cachedCapturePaths.clear();
 
+            AZ::IO::FixedMaxPathString captureOutput = AZ::Debug::GetProfilerCaptureLocation();
+
             auto* base = AZ::IO::FileIOBase::GetInstance();
-            base->FindFiles(defaultSaveLocation, "*.json",
+            base->FindFiles(captureOutput.c_str(), "*.json",
                 [&paths = m_cachedCapturePaths](const char* path) -> bool
                 {
                     auto foundPath = AZ::IO::Path(path);
@@ -416,6 +398,18 @@ namespace Profiler
             ImGui::ListBox("", &m_currentFileIndex, getter, &m_cachedCapturePaths, aznumeric_cast<int>(m_cachedCapturePaths.size()));
         }
         ImGui::End();
+    }
+
+    AZStd::string ImGuiCpuProfiler::GenerateOutputFile(const char* nameHint)
+    {
+        AZ::IO::FixedMaxPathString captureOutput = AZ::Debug::GetProfilerCaptureLocation();
+
+        const AZ::IO::FixedMaxPathString frameDataFilePath =
+            AZ::IO::FixedMaxPathString::format("%s/cpu_%s_%lld.json", captureOutput.c_str(), nameHint, AZStd::GetTimeNowSecond());
+
+        AZ::IO::FileIOBase::GetInstance()->ResolvePath(m_lastCapturedFilePath, frameDataFilePath.c_str());
+
+        return m_lastCapturedFilePath.String();
     }
 
     void ImGuiCpuProfiler::LoadFile()

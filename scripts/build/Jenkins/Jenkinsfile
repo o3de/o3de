@@ -16,7 +16,7 @@ EMPTY_JSON = readJSON text: '{}'
 ENGINE_REPOSITORY_NAME = 'o3de'
 
 // Branches with build snapshots
-BUILD_SNAPSHOTS = ['development', 'stabilization/2106']
+BUILD_SNAPSHOTS = ['development', 'stabilization/2110']
 
 // Build snapshots with empty snapshot (for use with 'SNAPSHOT' pipeline paramater)
 BUILD_SNAPSHOTS_WITH_EMPTY = BUILD_SNAPSHOTS + ''
@@ -450,7 +450,7 @@ def UploadAPLogs(Map options, String branchName, String jobName, String workspac
             def command = "${pythonPath} -u ${s3UploadScriptPath} --base_dir ${apLogsPath} " +
                           "--file_regex \".*\" --bucket ${env.AP_LOGS_S3_BUCKET} " +
                           "--search_subdirectories True --key_prefix ${env.JENKINS_JOB_NAME}/${branchName}/${env.BUILD_NUMBER}/${jobName} " +
-                          "--extra-args {\"ACL\": \"bucket-owner-full-control\"}"
+                          '--extra_args {\\"ACL\\":\\"bucket-owner-full-control\\"}'
             palSh(command, "Uploading AP logs for job ${jobName} for branch ${branchName}", false)
             }
         }

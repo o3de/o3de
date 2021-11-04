@@ -119,7 +119,12 @@ namespace AZ
             AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
             AzFramework::AssetSystemRequestBus::BroadcastResult(
                 status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, path);
-            AZ_Error("RPIUtils", status == AzFramework::AssetSystem::AssetStatus_Compiled, "Could not compile image at '%s'", path.data());
+
+            // When running with no Asset Processor (for example in release), CompileAssetSync will return AssetStatus_Unknown.
+            AZ_Error(
+                "RPIUtils",
+                status == AzFramework::AssetSystem::AssetStatus_Compiled || status == AzFramework::AssetSystem::AssetStatus_Unknown,
+                "Could not compile image at '%s'", path.data());
 
             Data::AssetId streamingImageAssetId;
             Data::AssetCatalogRequestBus::BroadcastResult(

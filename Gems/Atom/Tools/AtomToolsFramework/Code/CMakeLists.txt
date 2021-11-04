@@ -61,3 +61,31 @@ ly_add_target(
         PRIVATE
             Gem::AtomToolsFramework.Static
 )
+
+################################################################################
+# Tests
+################################################################################
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+
+    ly_add_target(
+        NAME AtomToolsFramework.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAMESPACE Gem
+        FILES_CMAKE
+            atomtoolsframework_tests_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+                Tests
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzTest
+                AZ::AzTestShared
+                Gem::AtomToolsFramework.Static
+                Gem::Atom_Utils.TestUtils.Static
+    )
+
+    ly_add_googletest(
+        NAME Gem::AtomToolsFramework.Tests
+    )
+
+endif()

@@ -159,6 +159,7 @@ namespace AssetProcessor
         builderDesc.m_busId = m_builderId;
         builderDesc.m_createJobFunction = AZStd::bind(&SettingsRegistryBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDesc.m_processJobFunction = AZStd::bind(&SettingsRegistryBuilder::ProcessJob, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
+        builderDesc.m_version = 1;
 
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDesc);
         
@@ -301,7 +302,6 @@ namespace AssetProcessor
         if (!platformCodes.empty())
         {
             AZStd::string_view platform = platformCodes.front();
-            constexpr AZ::u32 productSubID = 0;
             for (size_t i = 0; i < AZStd::size(specializations); ++i)
             {
                 const AZ::SettingsRegistryInterface::Specializations& specialization = specializations[i];
@@ -413,7 +413,8 @@ namespace AssetProcessor
                         return;
                     }
 
-                    outputPath += specialization.GetSpecialization(0); // Append configuration
+                    AZStd::string_view specializationString(specialization.GetSpecialization(0));
+                    outputPath += specializationString; // Append configuration
                     outputPath += ".setreg";
 
                     AZ::IO::SystemFile file;
@@ -430,7 +431,10 @@ namespace AssetProcessor
                     }
                     file.Close();
 
-                    response.m_outputProducts.emplace_back(outputPath, m_assetType, productSubID + aznumeric_cast<AZ::u32>(i));
+                    AZ::u32 hashedSpecialization = static_cast<AZ::u32>(AZStd::hash<AZStd::string_view>{}(specializationString));
+                    AZ_Assert(hashedSpecialization != 0, "Product ID generation failed for specialization %.*s. This can result in a product ID collision with other builders for this asset.",
+                        AZ_STRING_ARG(specializationString));
+                    response.m_outputProducts.emplace_back(outputPath, m_assetType, hashedSpecialization);
                     response.m_outputProducts.back().m_dependenciesHandled = true;
 
                     outputPath.erase(extensionOffset);

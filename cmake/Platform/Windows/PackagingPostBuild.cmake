@@ -32,9 +32,6 @@ set(_addtional_defines
     -dCPACK_RESOURCE_PATH=${CPACK_SOURCE_DIR}/Platform/Windows/Packaging
 )
 
-file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
-file(TO_NATIVE_PATH "${_root_path}/scripts/signer/Platform/Windows/signer.ps1" _sign_script)
-
 if(CPACK_LICENSE_URL)
     list(APPEND _addtional_defines -dCPACK_LICENSE_URL=${CPACK_LICENSE_URL})
 endif()
@@ -58,28 +55,41 @@ set(_light_command
     -o "${_bootstrap_output_file}"
 )
 
-set(_signing_command
-    psexec.exe
-    -accepteula 
-    -nobanner 
-    -s
-    powershell.exe
-    -NoLogo
-    -ExecutionPolicy Bypass 
-    -File ${_sign_script}
-)
+if(CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
+    file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
+    file(TO_NATIVE_PATH "${_root_path}/scripts/signer/Platform/Windows/signer.ps1" _sign_script)
 
-message(STATUS "Signing package files in ${_cpack_wix_out_dir}")
-execute_process(
-    COMMAND ${_signing_command} -packagePath ${_cpack_wix_out_dir}
-    RESULT_VARIABLE _signing_result
-    ERROR_VARIABLE _signing_errors
-    OUTPUT_VARIABLE _signing_output
-    ECHO_OUTPUT_VARIABLE
-)
+    unset(_signing_command)
+    find_program(_psiexec_path psexec.exe)
+    if(_psiexec_path)
+        list(APPEND _signing_command
+            ${_psiexec_path}
+            -accepteula 
+            -nobanner 
+            -s
+        )
+    endif()
 
-if(NOT ${_signing_result} EQUAL 0)
-    message(FATAL_ERROR "An error occurred during signing package files.  ${_signing_errors}")
+    find_program(_powershell_path powershell.exe REQUIRED)
+    list(APPEND _signing_command
+        ${_powershell_path}
+        -NoLogo
+        -ExecutionPolicy Bypass 
+        -File ${_sign_script}
+    )
+
+    message(STATUS "Signing package files in ${_cpack_wix_out_dir}")
+    execute_process(
+        COMMAND ${_signing_command} -packagePath ${_cpack_wix_out_dir}
+        RESULT_VARIABLE _signing_result
+        ERROR_VARIABLE _signing_errors
+        OUTPUT_VARIABLE _signing_output
+        ECHO_OUTPUT_VARIABLE
+    )
+
+    if(NOT ${_signing_result} EQUAL 0)
+        message(FATAL_ERROR "An error occurred during signing package files.  ${_signing_errors}")
+    endif()
 endif()
 
 message(STATUS "Creating Bootstrap Installer...")
@@ -107,17 +117,19 @@ file(COPY ${_bootstrap_output_file}
 
 message(STATUS "Bootstrap installer generated to ${CPACK_PACKAGE_DIRECTORY}/${_bootstrap_filename}")
 
-message(STATUS "Signing bootstrap installer in ${CPACK_PACKAGE_DIRECTORY}")
-execute_process(
-    COMMAND ${_signing_command} -bootstrapPath ${CPACK_PACKAGE_DIRECTORY}/${_bootstrap_filename}
-    RESULT_VARIABLE _signing_result
-    ERROR_VARIABLE _signing_errors
-    OUTPUT_VARIABLE _signing_output
-    ECHO_OUTPUT_VARIABLE
-)
+if(CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
+    message(STATUS "Signing bootstrap installer in ${CPACK_PACKAGE_DIRECTORY}")
+    execute_process(
+        COMMAND ${_signing_command} -bootstrapPath ${CPACK_PACKAGE_DIRECTORY}/${_bootstrap_filename}
+        RESULT_VARIABLE _signing_result
+        ERROR_VARIABLE _signing_errors
+        OUTPUT_VARIABLE _signing_output
+        ECHO_OUTPUT_VARIABLE
+    )
 
-if(NOT ${_signing_result} EQUAL 0)
-    message(FATAL_ERROR "An error occurred during signing bootstrap installer.  ${_signing_errors}")
+    if(NOT ${_signing_result} EQUAL 0)
+        message(FATAL_ERROR "An error occurred during signing bootstrap installer.  ${_signing_errors}")
+    endif()
 endif()
 
 # use the internal default path if somehow not specified from cpack_configure_downloads

@@ -7,24 +7,23 @@
 // related to the event
 {
     "O3DE" : {
-        "Runtime": {
-            "Application": {
-                "LifecycleEvents": {
-                    "SystemComponentsActivated": {},
-                    "SystemComponentsDeactivated": {},
-                    "ReflectionManagerAvailable": {},
-                    "ReflectionManagerUnavailable": {},
-                    "SystemAllocatorCreated": {},
-                    "SystemAllocatorPendingDestruction": {},
-                    "SettingsRegistryAvailable": {},
-                    "SettingsRegistryUnavailable": {},
-                    "ConsoleAvailable": {},
-                    "ConsoleUnavailable": {},
-                    "GemsLoaded": {},
-                    "GemsUnloaded": {},
-                    "FileIOAvailable": {},
-                    "FileIOUnavailable": {}
-                }
+        "Application": {
+            "LifecycleEvents": {
+                "SystemComponentsActivated": {},
+                "SystemComponentsDeactivated": {},
+                "ReflectionManagerAvailable": {},
+                "ReflectionManagerUnavailable": {},
+                "SystemAllocatorCreated": {},
+                "SystemAllocatorPendingDestruction": {},
+                "SettingsRegistryAvailable": {},
+                "SettingsRegistryUnavailable": {},
+                "ConsoleAvailable": {},
+                "ConsoleUnavailable": {},
+                "GemsLoaded": {},
+                "GemsUnloaded": {},
+                "FileIOAvailable": {},
+                "FileIOUnavailable": {},
+                "LegacySystemInterfaceCreated": {}
             }
         }
     }
