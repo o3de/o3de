@@ -100,7 +100,7 @@ namespace AZ
                     ->Field("pipelineStateType", &ShaderAsset::m_pipelineStateType)
                     ->Field("shaderOptionGroupLayout", &ShaderAsset::m_shaderOptionGroupLayout)
                     ->Field("drawListName", &ShaderAsset::m_drawListName)
-                    ->Field("shaderAssetBuildTimestamp", &ShaderAsset::m_shaderAssetBuildTimestamp)
+                    ->Field("shaderAssetBuildTimestamp", &ShaderAsset::m_buildTimestamp)
                     ->Field("perAPIShaderData", &ShaderAsset::m_perAPIShaderData)
                     ;
             }
@@ -134,11 +134,11 @@ namespace AZ
             return m_drawListName;
         }
 
-        AZStd::sys_time_t ShaderAsset::GetShaderAssetBuildTimestamp() const
+        AZStd::sys_time_t ShaderAsset::GetBuildTimestamp() const
         {
-            return m_shaderAssetBuildTimestamp;
+            return m_buildTimestamp;
         }
-
+        
         void ShaderAsset::SetReady()
         {
             m_status = AssetStatus::Ready;
@@ -256,7 +256,7 @@ namespace AZ
                 }
                 return GetRootVariant(supervariantIndex);
             }
-            else if (variant->GetBuildTimestamp() >= m_shaderAssetBuildTimestamp)
+            else if (variant->GetBuildTimestamp() >= m_buildTimestamp)
             {
                 return variant;
             }
@@ -264,7 +264,6 @@ namespace AZ
             {
                 // When rebuilding shaders we may be in a state where the ShaderAsset and root ShaderVariantAsset have been rebuilt and reloaded, but some (or all)
                 // shader variants haven't been built yet. Since we want to use the latest version of the shader code, ignore the old variants and fall back to the newer root variant instead.
-                AZ_Warning("ShaderAsset", false, "ShaderAsset and ShaderVariantAsset are out of sync; defaulting to root shader variant. (This is common while reloading shaders).");
                 return GetRootVariant(supervariantIndex);
             }
         }

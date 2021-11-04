@@ -107,7 +107,7 @@ ly_add_target(
             Gem::Atom_RHI.Reflect
             Gem::Atom_RHI_DX12.Reflect
             3rdParty::d3dx12
-            ${AFTERMATH_BUILD_DEPENDENCY}           
+            ${AFTERMATH_BUILD_DEPENDENCY}
     COMPILE_DEFINITIONS 
         PRIVATE
             ${USE_NSIGHT_AFTERMATH_DEFINE}
@@ -128,7 +128,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-        
             Gem::Atom_RHI.Reflect
             Gem::Atom_RHI.Public
             Gem::Atom_RHI_DX12.Reflect

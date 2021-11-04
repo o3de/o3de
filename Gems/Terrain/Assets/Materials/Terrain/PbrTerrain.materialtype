@@ -1,7 +1,7 @@
 {
     "description": "A material for rendering terrain with a physically-based rendering (PBR) material shading model.",
+    "version": 1,
     "propertyLayout": {
-        "version": 1,
         "groups": [
             {
                 "id": "settings",
@@ -92,11 +92,56 @@
                 {
                     "id": "heightmapImage",
                     "displayName": "Heightmap Image",
-                    "description": "Heightmap of the terrain, controlled by the runtime.",
+                    "description": "Heightmap of the terrain. Controlled by the runtime.",
+                    "visibility": "Hidden",
                     "type": "Image",
                     "connection": {
                         "type": "ShaderInput",
                         "id": "m_heightmapImage"
+                    }
+                },
+                {
+                    "id": "detailMaterialIdImage",
+                    "displayName": "Detail Material Id Image",
+                    "description": "Texture containing detail material Ids and weights. Controlled by the runtime.",
+                    "visibility": "Hidden",
+                    "type": "Image",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailMaterialIdImage"
+                    }
+                },
+                {
+                    "id": "detailMaterialIdCenter",
+                    "displayName": "Detail Material Id Image Center",
+                    "description": "The center position of the detail material Id image. Controlled by the runtime.",
+                    "visibility": "Hidden",
+                    "type": "Vector2",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailMaterialIdImageCenter"
+                    }
+                },
+                {
+                    "id": "detailAabb",
+                    "displayName": "Detail material bounds in 2d",
+                    "description": "The 2d world space bounds of the detail id material. Controlled by the runtime.",
+                    "visibility": "Hidden",
+                    "type": "Vector4",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailAabb"
+                    }
+                },
+                {
+                    "id": "detailHalfPixelUv",
+                    "displayName": "Detail texture half pixel uv size",
+                    "description": "Uv size of a half pixel in the detail material id texture. Controlled by the runtime.",
+                    "visibility": "Hidden",
+                    "type": "float",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailHalfPixelUv"
                     }
                 },
                 {

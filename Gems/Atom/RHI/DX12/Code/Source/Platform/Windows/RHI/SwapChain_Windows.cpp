@@ -82,9 +82,6 @@ namespace AZ
                     // ALT+ENTER fullscreen switching using IDXGIFactory::MakeWindowAssociation (see also implementation of SwapChain::PresentInternal).
                     // You must call the MakeWindowAssociation method after the creation of the swap chain, and on the factory object associated with the
                     // target HWND swap chain, which you can guarantee by calling the IDXGIObject::GetParent method on the swap chain to locate the factory.
-                    //
-                    // ToDo: ATOM-14673 We should handle ALT+ENTER in the windows message loop and call AzFramework::NativeWindow::ToggleFullScreenState in
-                    // response, but that will have to wait until the WndProc function moves out of CrySystem (ideally into AzFramework::ApplicationWindows).
                     IDXGIFactoryX* parentFactory = nullptr;
                     m_swapChain->GetParent(__uuidof(IDXGIFactoryX), (void **)&parentFactory);
                     DX12::AssertSuccess(parentFactory->MakeWindowAssociation(reinterpret_cast<HWND>(window), DXGI_MWA_NO_ALT_ENTER));

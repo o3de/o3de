@@ -13,6 +13,7 @@
 #include <QIcon>
 #include <QToolButton>
 #include <QPropertyAnimation>
+#include <QPainter>
 
 namespace AzQtComponents
 {
@@ -21,11 +22,18 @@ namespace AzQtComponents
         , m_closeOnClick(true)
         , m_ui(new Ui::ToastNotification())
         , m_fadeAnimation(nullptr)
+        , m_configuration(toastConfiguration)
     {
         setProperty("HasNoWindowDecorations", true);
 
         setAttribute(Qt::WA_ShowWithoutActivating);
-        setAttribute(Qt::WA_DeleteOnClose);
+
+        m_borderRadius = toastConfiguration.m_borderRadius;
+        if (m_borderRadius > 0)
+        {
+            setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
+            setAttribute(Qt::WA_TranslucentBackground);
+        }
 
         m_ui->setupUi(this);
 
@@ -53,6 +61,13 @@ namespace AzQtComponents
         m_ui->titleLabel->setText(toastConfiguration.m_title);
         m_ui->mainLabel->setText(toastConfiguration.m_description);
 
+        // hide the optional description if none is provided so the title is centered vertically
+        if (toastConfiguration.m_description.isEmpty())
+        {
+            m_ui->mainLabel->setVisible(false);
+            m_ui->verticalLayout->removeWidget(m_ui->mainLabel);
+        }
+
         m_lifeSpan.setInterval(aznumeric_cast<int>(toastConfiguration.m_duration.count()));
         m_closeOnClick = toastConfiguration.m_closeOnClick;
 
@@ -65,7 +80,31 @@ namespace AzQtComponents
     }
 
     ToastNotification::~ToastNotification()
-    {        
+    {
+    }
+
+    bool ToastNotification::IsDuplicate(const ToastConfiguration& toastConfiguration)
+    {
+        return toastConfiguration.m_title == m_configuration.m_title 
+            && toastConfiguration.m_description == m_configuration.m_description;
+    }
+
+    void ToastNotification::paintEvent(QPaintEvent* event)
+    {
+        if (m_borderRadius > 0)
+        {
+            QPainter p(this);
+            p.setPen(Qt::transparent);
+            QColor painterColor;
+            painterColor.setRgbF(0, 0, 0, 255);
+            p.setBrush(painterColor);
+            p.setRenderHint(QPainter::Antialiasing);
+            p.drawRoundedRect(rect(), m_borderRadius, m_borderRadius);
+        }
+        else
+        {
+            QDialog::paintEvent(event);
+        }
     }
 
     void ToastNotification::ShowToastAtCursor()

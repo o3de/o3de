@@ -9,7 +9,8 @@
 #pragma once
 
 #include <Multiplayer/IMultiplayer.h>
-
+#include <Multiplayer/MultiplayerEditorServerBus.h>
+#include <Multiplayer/Editor/MultiplayerPythonEditorEventsBus.h>
 #include <IEditor.h>
 
 #include <Editor/MultiplayerEditorConnection.h>
@@ -29,12 +30,28 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
+    //! A component to reflect scriptable commands for the Editor
+    class PythonEditorFuncs : public AZ::Component
+    {
+    public:
+        AZ_COMPONENT(PythonEditorFuncs, "{22AEEA59-94E6-4033-B67D-7C8FBB84DF0D}")
+
+        SANDBOX_API static void Reflect(AZ::ReflectContext* context);
+
+        // AZ::Component ...
+        void Activate() override {}
+        void Deactivate() override {}
+    };
+
+
     //! Multiplayer system component wraps the bridging logic between the game and transport layer.
     class MultiplayerEditorSystemComponent final
         : public AZ::Component
+        , public MultiplayerEditorLayerPythonRequestBus::Handler
         , private AzFramework::GameEntityContextEventBus::Handler
         , private AzToolsFramework::EditorEvents::Bus::Handler
         , private IEditorNotifyListener
+        , private MultiplayerEditorServerRequestBus::Handler
     {
     public:
         AZ_COMPONENT(MultiplayerEditorSystemComponent, "{9F335CC0-5574-4AD3-A2D8-2FAEF356946C}");
@@ -61,6 +78,12 @@ namespace Multiplayer
         void NotifyRegisterViews() override;
         //! @}
 
+        //! MultiplayerEditorLayerPythonRequestBus::Handler overrides.
+        //! @{
+        void EnterGameMode() override;
+        bool IsInGameMode() override;
+        //! @}
+
     private:    
         //! EditorEvents::Handler overrides
         //! @{
@@ -71,6 +94,11 @@ namespace Multiplayer
         //! @{
         void OnGameEntitiesStarted() override;
         void OnGameEntitiesReset() override;
+        //! @}
+
+        //! MultiplayerEditorServerRequestBus::Handler
+        //! @{
+        void SendEditorServerLevelDataPacket(AzNetworking::IConnection* connection) override;
         //! @}
 
         IEditor* m_editor = nullptr;

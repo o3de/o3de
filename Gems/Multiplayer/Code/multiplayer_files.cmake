@@ -13,6 +13,7 @@ set(FILES
     Include/Multiplayer/MultiplayerConstants.h
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
+    Include/Multiplayer/MultiplayerEditorServerBus.h
     Include/Multiplayer/Components/LocalPredictionPlayerInputComponent.h
     Include/Multiplayer/Components/MultiplayerComponent.h
     Include/Multiplayer/Components/MultiplayerComponentRegistry.h
@@ -45,6 +46,10 @@ set(FILES
     Include/Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h
     Include/Multiplayer/NetworkInput/IMultiplayerComponentInput.h
     Include/Multiplayer/NetworkInput/NetworkInput.h
+    Include/Multiplayer/NetworkInput/NetworkInputArray.h
+    Include/Multiplayer/NetworkInput/NetworkInputChild.h
+    Include/Multiplayer/NetworkInput/NetworkInputHistory.h
+    Include/Multiplayer/NetworkInput/NetworkInputMigrationVector.h
     Include/Multiplayer/NetworkTime/INetworkTime.h
     Include/Multiplayer/NetworkTime/RewindableArray.h
     Include/Multiplayer/NetworkTime/RewindableArray.inl
@@ -114,13 +119,9 @@ set(FILES
     Source/NetworkEntity/NetworkSpawnableLibrary.h
     Source/NetworkInput/NetworkInput.cpp
     Source/NetworkInput/NetworkInputArray.cpp
-    Source/NetworkInput/NetworkInputArray.h
     Source/NetworkInput/NetworkInputChild.cpp
-    Source/NetworkInput/NetworkInputChild.h
     Source/NetworkInput/NetworkInputHistory.cpp
-    Source/NetworkInput/NetworkInputHistory.h
     Source/NetworkInput/NetworkInputMigrationVector.cpp
-    Source/NetworkInput/NetworkInputMigrationVector.h
     Source/NetworkTime/NetworkTime.cpp
     Source/NetworkTime/NetworkTime.h
     Source/Pipeline/NetworkSpawnableHolderComponent.cpp

@@ -94,7 +94,14 @@ namespace AzFramework
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceGamepad::InputDeviceGamepad(AZ::u32 index)
-        : InputDevice(InputDeviceId(Name, index))
+        : InputDeviceGamepad(InputDeviceId(Name, index)) // Delegated constructor
+    {
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    InputDeviceGamepad::InputDeviceGamepad(const InputDeviceId& inputDeviceId,
+                                           ImplementationFactory implementationFactory)
+        : InputDevice(inputDeviceId)
         , m_allChannelsById()
         , m_buttonChannelsById()
         , m_triggerChannelsById()
@@ -144,8 +151,8 @@ namespace AzFramework
             m_thumbStickDirectionChannelsById[channelId] = channel;
         }
 
-        // Create the platform specific implementation
-        m_pimpl.reset(Implementation::Create(*this));
+        // Create the platform specific or custom implementation
+        m_pimpl.reset(implementationFactory ? implementationFactory(*this) : nullptr);
 
         // Connect to the haptic feedback request bus
         InputHapticFeedbackRequestBus::Handler::BusConnect(GetInputDeviceId());

@@ -41,6 +41,8 @@ set(FILES
     Component/ComponentApplication.cpp
     Component/ComponentApplication.h
     Component/ComponentApplicationBus.h
+    Component/ComponentApplicationLifecycle.cpp
+    Component/ComponentApplicationLifecycle.h
     Component/ComponentBus.cpp
     Component/ComponentBus.h
     Component/ComponentExport.h
@@ -106,6 +108,8 @@ set(FILES
     Debug/Profiler.inl
     Debug/Profiler.h
     Debug/ProfilerBus.h
+    Debug/ProfilerReflection.cpp
+    Debug/ProfilerReflection.h
     Debug/StackTracer.h
     Debug/EventTrace.h
     Debug/EventTrace.cpp
@@ -121,6 +125,8 @@ set(FILES
     Debug/TraceMessagesDrillerBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
+    DOM/DomVisitor.cpp
+    DOM/DomVisitor.h
     Driller/DefaultStringPool.h
     Driller/Driller.cpp
     Driller/Driller.h
@@ -452,6 +458,7 @@ set(FILES
     RTTI/BehaviorContext.h
     RTTI/BehaviorContextUtilities.h
     RTTI/BehaviorContextUtilities.cpp
+    RTTI/BehaviorInterfaceProxy.h
     RTTI/BehaviorObjectSignals.h
     RTTI/TypeSafeIntegral.h
     Script/ScriptAsset.cpp
@@ -522,6 +529,8 @@ set(FILES
     Serialization/Json/IntSerializer.cpp
     Serialization/Json/JsonDeserializer.h
     Serialization/Json/JsonDeserializer.cpp
+    Serialization/Json/JsonImporter.cpp
+    Serialization/Json/JsonImporter.h
     Serialization/Json/JsonMerger.h
     Serialization/Json/JsonMerger.cpp
     Serialization/Json/JsonSerialization.h

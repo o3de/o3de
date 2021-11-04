@@ -183,6 +183,14 @@ namespace AzFramework
         static void Reflect(AZ::ReflectContext* context);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
+        // Foward declare the internal Implementation class so it can be passed into the constructor
+        class Implementation;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Alias for the function type used to create a custom implementation for this input device
+        using ImplementationFactory = Implementation*(InputDeviceGamepad&);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         explicit InputDeviceGamepad();
 
@@ -190,6 +198,13 @@ namespace AzFramework
         //! Constructor
         //! \param[in] index Index of the game-pad device
         explicit InputDeviceGamepad(AZ::u32 index);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Constructor
+        //! \param[in] inputDeviceId Id of the input device
+        //! \param[in] implementationFactory Optional override of the default Implementation::Create
+        explicit InputDeviceGamepad(const InputDeviceId& inputDeviceId,
+                                    ImplementationFactory implementationFactory = &Implementation::Create);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Disable copying

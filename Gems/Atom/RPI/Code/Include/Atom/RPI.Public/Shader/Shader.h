@@ -154,6 +154,8 @@ namespace AZ
 
             ConstPtr<RHI::PipelineLibraryData> LoadPipelineLibrary() const;
             void SavePipelineLibrary() const;
+            
+            const ShaderVariant& GetVariantInternal(ShaderVariantStableId shaderVariantStableId);
 
             ///////////////////////////////////////////////////////////////////
             /// AssetBus overrides
