@@ -62,9 +62,11 @@ namespace AZ::Render
             for (uint32_t i = 0; i < numRadiusLines; ++i)
             {
                 float radiusLineAngle = float(i) / numRadiusLines * Constants::TwoPi;
+                float cosAngle = cos(radiusLineAngle);
+                float sinAngle = sin(radiusLineAngle);
                 debugDisplay.DrawLine(
-                    Vector3(cos(radiusLineAngle) * topRadius, sin(radiusLineAngle) * topRadius, 0),
-                    Vector3(cos(radiusLineAngle) * bottomRadius, sin(radiusLineAngle) * bottomRadius, height)
+                    Vector3(cosAngle * topRadius, sinAngle * topRadius, 0),
+                    Vector3(cosAngle * bottomRadius,sinAngle * bottomRadius, height)
                 );
             }
         };
