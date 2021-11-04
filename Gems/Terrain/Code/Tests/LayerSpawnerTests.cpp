@@ -190,7 +190,7 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerTransformChangedUpdatesTerrainSyst
     CreateMockTerrainSystem();
 
     // The TransformChanged call should refresh the area.
-    EXPECT_CALL(*m_terrainSystem, RefreshArea(_)).Times(1);
+    EXPECT_CALL(*m_terrainSystem, RefreshArea(_, _)).Times(1);
 
     AddLayerSpawnerAndShapeComponentToEntity();
 
@@ -211,7 +211,7 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerShapeChangedUpdatesTerrainSystem)
     CreateMockTerrainSystem();
 
     // The ShapeChanged call should refresh the area.
-    EXPECT_CALL(*m_terrainSystem, RefreshArea(_)).Times(1);
+    EXPECT_CALL(*m_terrainSystem, RefreshArea(_, _)).Times(1);
 
     AddLayerSpawnerAndShapeComponentToEntity();
 

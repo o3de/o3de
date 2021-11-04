@@ -46,8 +46,9 @@ namespace O3DE::ProjectManager
         DownloadController* GetDownloadController() const { return m_downloadController; }
 
     public slots:
-        void OnGemStatusChanged(const QModelIndex& modelIndex, uint32_t numChangedDependencies);
+        void OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies);
         void OnAddGemClicked();
+        void SelectGem(const QString& gemName);
 
     protected:
         void hideEvent(QHideEvent* event) override;
@@ -68,7 +69,7 @@ namespace O3DE::ProjectManager
         GemInspector* m_gemInspector = nullptr;
         GemModel* m_gemModel = nullptr;
         GemCatalogHeaderWidget* m_headerWidget = nullptr;
-        GemSortFilterProxyModel* m_proxModel = nullptr;
+        GemSortFilterProxyModel* m_proxyModel = nullptr;
         QVBoxLayout* m_filterWidgetLayout = nullptr;
         GemFilterWidget* m_filterWidget = nullptr;
         DownloadController* m_downloadController = nullptr;

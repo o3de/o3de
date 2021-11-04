@@ -59,12 +59,11 @@ namespace AzToolsFramework::Prefab
         connect(m_backButton, &QToolButton::clicked, this,
             [&]()
             {
-                if (int length = m_prefabFocusPublicInterface->GetPrefabFocusPathLength(m_editorEntityContextId); length > 1)
-                {
-                    m_prefabFocusPublicInterface->FocusOnPathIndex(m_editorEntityContextId, length - 2);
-                }
+                m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(m_editorEntityContextId);
             }
         );
+
+        m_backButton->setToolTip("Up one level (-)");
     }
 
     void PrefabViewportFocusPathHandler::OnPrefabFocusChanged()

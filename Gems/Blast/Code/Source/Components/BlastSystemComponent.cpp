@@ -143,6 +143,7 @@ namespace Blast
     void BlastSystemComponent::Deactivate()
     {
         AZ_PROFILE_FUNCTION(Physics);
+        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
         BlastSystemRequestBus::Handler::BusDisconnect();

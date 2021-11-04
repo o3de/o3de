@@ -47,53 +47,60 @@ namespace AZ::Render
         return m_shapeBus->GetRadius() * GetTransform().GetUniformScale();
     }
 
-    void DiskLightDelegate::DrawDebugDisplay(const Transform& transform, const Color& /*color*/, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
+    void DiskLightDelegate::DrawDebugDisplay(const Transform& transform, [[maybe_unused]]const Color&, AzFramework::DebugDisplayRequests& debugDisplay, bool isSelected) const
     {
-        if (isSelected)
+        debugDisplay.PushMatrix(transform);
+        const float radius = GetConfig()->m_attenuationRadius;
+        const float shapeRadius = m_shapeBus->GetRadius();
+
+        auto DrawConicalFrustum = [&debugDisplay](uint32_t numRadiusLines, const Color& color, float brightness, float topRadius, float bottomRadius, float height)
         {
-            debugDisplay.PushMatrix(transform);
-            float radius = GetConfig()->m_attenuationRadius;
+            const Color displayColor = Color(color.GetAsVector3() * brightness);
+            debugDisplay.SetColor(displayColor);
+            debugDisplay.DrawWireDisk(Vector3(0.0, 0.0, height), Vector3::CreateAxisZ(), bottomRadius);
 
-            if (GetConfig()->m_enableShutters)
+            for (uint32_t i = 0; i < numRadiusLines; ++i)
             {
-
-                float innerRadians = DegToRad(GetConfig()->m_innerShutterAngleDegrees);
-                float outerRadians = DegToRad(GetConfig()->m_outerShutterAngleDegrees);
-
-                // Draw a cone using the cone angle and attenuation radius
-                innerRadians = GetMin(innerRadians, outerRadians);
-                float coneRadiusInner = sin(innerRadians) * radius;
-                float coneHeightInner = cos(innerRadians) * radius;
-                float coneRadiusOuter = sin(outerRadians) * radius;
-                float coneHeightOuter = cos(outerRadians) * radius;
-
-                auto DrawConicalFrustum = [&debugDisplay](uint32_t numRadiusLines, float topRadius, float bottomRadius, float height, float brightness)
-                {
-                    debugDisplay.SetColor(Color(brightness, brightness, brightness, 1.0f));
-                    debugDisplay.DrawWireDisk(Vector3(0.0, 0.0, height), Vector3::CreateAxisZ(), bottomRadius);
-            
-                    for (uint32_t i = 0; i < numRadiusLines; ++i)
-                    {
-                        float radiusLineAngle = float(i) / numRadiusLines * Constants::TwoPi;
-                        debugDisplay.DrawLine(
-                            Vector3(cos(radiusLineAngle) * topRadius, sin(radiusLineAngle) * topRadius, 0),
-                            Vector3(cos(radiusLineAngle) * bottomRadius, sin(radiusLineAngle) * bottomRadius, height)
-                        );
-                    }
-                };
-            
-                DrawConicalFrustum(16, m_shapeBus->GetRadius(), m_shapeBus->GetRadius() + coneRadiusInner, coneHeightInner, 1.0f);
-                DrawConicalFrustum(16, m_shapeBus->GetRadius(), m_shapeBus->GetRadius() + coneRadiusOuter, coneHeightOuter, 0.65f);
-
+                float radiusLineAngle = float(i) / numRadiusLines * Constants::TwoPi;
+                float cosAngle = cos(radiusLineAngle);
+                float sinAngle = sin(radiusLineAngle);
+                debugDisplay.DrawLine(
+                    Vector3(cosAngle * topRadius, sinAngle * topRadius, 0),
+                    Vector3(cosAngle * bottomRadius,sinAngle * bottomRadius, height)
+                );
             }
-            else
-            {
-                debugDisplay.DrawWireDisk(Vector3::CreateZero(), Vector3::CreateAxisZ(), radius);
-                debugDisplay.DrawArc(Vector3::CreateZero(), radius, 270.0f, 180.0f, 3.0f, 0);
-                debugDisplay.DrawArc(Vector3::CreateZero(), radius, 0.0f, 180.0f, 3.0f, 1);
-            }
-            debugDisplay.PopMatrix();
+        };
+
+        const Color coneColor = isSelected ? Color::CreateOne() : Color(0.0f, 0.75f, 0.75f, 1.0);
+        const uint32_t innerConeLines = 8;
+        float innerRadians, outerRadians;
+        if (GetConfig()->m_enableShutters)
+        {   // With shutters enabled, draw inner and outer debug display frustums
+            innerRadians = DegToRad(GetConfig()->m_innerShutterAngleDegrees);
+            outerRadians = DegToRad(GetConfig()->m_outerShutterAngleDegrees);
+
+            // Draw a cone using the cone angle and attenuation radius
+            innerRadians = GetMin(innerRadians, outerRadians);
+
+            float coneRadiusOuter = sin(outerRadians) * radius;
+            float coneHeightOuter = cos(outerRadians) * radius;
+
+            // Outer cone frustum 'faded' debug cone
+            const uint32_t outerConeLines = 9;
+            DrawConicalFrustum(outerConeLines, coneColor, 0.75f, shapeRadius, shapeRadius + coneRadiusOuter, coneHeightOuter);
         }
+        else
+        {   // Generic debug display frustum 
+            const float coneAngle = 25.0f;
+            innerRadians = DegToRad(coneAngle);   // 25 degrees debug display
+        }
+
+        // Inner cone frustum
+        float coneRadiusInner = sin(innerRadians) * radius;
+        float coneHeightInner = cos(innerRadians) * radius;
+        DrawConicalFrustum(innerConeLines, coneColor, 1.0f, shapeRadius, shapeRadius + coneRadiusInner, coneHeightInner);
+
+        debugDisplay.PopMatrix();
     }
     
     void DiskLightDelegate::SetEnableShutters(bool enabled)

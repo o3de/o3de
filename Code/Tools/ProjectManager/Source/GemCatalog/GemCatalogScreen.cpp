@@ -30,7 +30,7 @@ namespace O3DE::ProjectManager
         : ScreenWidget(parent)
     {
         m_gemModel = new GemModel(this);
-        m_proxModel = new GemSortFilterProxyModel(m_gemModel, this);
+        m_proxyModel = new GemSortFilterProxyModel(m_gemModel, this);
 
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setMargin(0);
@@ -39,7 +39,7 @@ namespace O3DE::ProjectManager
 
         m_downloadController = new DownloadController();
 
-        m_headerWidget = new GemCatalogHeaderWidget(m_gemModel, m_proxModel, m_downloadController);
+        m_headerWidget = new GemCatalogHeaderWidget(m_gemModel, m_proxyModel, m_downloadController);
         vLayout->addWidget(m_headerWidget);
 
         connect(m_gemModel, &GemModel::gemStatusChanged, this, &GemCatalogScreen::OnGemStatusChanged);
@@ -50,9 +50,11 @@ namespace O3DE::ProjectManager
         hLayout->setMargin(0);
         vLayout->addLayout(hLayout);
 
-        m_gemListView = new GemListView(m_proxModel, m_proxModel->GetSelectionModel(), this);
+        m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), this);
         m_gemInspector = new GemInspector(m_gemModel, this);
         m_gemInspector->setFixedWidth(240);
+
+        connect(m_gemInspector, &GemInspector::TagClicked, this, &GemCatalogScreen::SelectGem);
 
         QWidget* filterWidget = new QWidget(this);
         filterWidget->setFixedWidth(240);
@@ -61,7 +63,7 @@ namespace O3DE::ProjectManager
         m_filterWidgetLayout->setSpacing(0);
         filterWidget->setLayout(m_filterWidgetLayout);
 
-        GemListHeaderWidget* listHeaderWidget = new GemListHeaderWidget(m_proxModel);
+        GemListHeaderWidget* listHeaderWidget = new GemListHeaderWidget(m_proxyModel);
 
         QVBoxLayout* middleVLayout = new QVBoxLayout();
         middleVLayout->setMargin(0);
@@ -80,19 +82,21 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::ReinitForProject(const QString& projectPath)
     {
-        m_gemModel->clear();
+        m_gemModel->Clear();
         m_gemsToRegisterWithProject.clear();
         FillModel(projectPath);
 
+        m_proxyModel->ResetFilters();
+
         if (m_filterWidget)
         {
-            m_filterWidget->hide();
-            m_filterWidget->deleteLater();
+            m_filterWidget->ResetAllFilters();
         }
-
-        m_proxModel->ResetFilters();
-        m_filterWidget = new GemFilterWidget(m_proxModel);
-        m_filterWidgetLayout->addWidget(m_filterWidget);
+        else
+        {
+            m_filterWidget = new GemFilterWidget(m_proxyModel);
+            m_filterWidgetLayout->addWidget(m_filterWidget);
+        }
 
         m_headerWidget->ReinitForProject();
 
@@ -145,10 +149,11 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemCatalogScreen::OnGemStatusChanged(const QModelIndex& modelIndex, uint32_t numChangedDependencies)
+    void GemCatalogScreen::OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies) 
     {
         if (m_notificationsEnabled)
         {
+            QModelIndex modelIndex = m_gemModel->FindIndexByNameString(gemName);
             bool added = GemModel::IsAdded(modelIndex);
             bool dependency = GemModel::IsAddedDependency(modelIndex);
 
@@ -170,7 +175,7 @@ namespace O3DE::ProjectManager
                 if (added && GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded)
                 {
                     m_downloadController->AddGemDownload(GemModel::GetName(modelIndex));
-                    GemModel::SetDownloadStatus(*m_proxModel, modelIndex, GemInfo::DownloadStatus::Downloading);
+                    GemModel::SetDownloadStatus(*m_proxyModel, modelIndex, GemInfo::DownloadStatus::Downloading);
                 }
             }
 
@@ -190,6 +195,20 @@ namespace O3DE::ProjectManager
             toastConfiguration.m_duration = AZStd::chrono::milliseconds(3000);
             m_notificationsView->ShowToastNotification(toastConfiguration);
         }
+    }
+
+    void GemCatalogScreen::SelectGem(const QString& gemName)
+    {
+        QModelIndex modelIndex = m_gemModel->FindIndexByNameString(gemName);
+        if (!m_proxyModel->filterAcceptsRow(modelIndex.row(), QModelIndex()))
+        {
+            m_proxyModel->ResetFilters();
+            m_filterWidget->ResetAllFilters();
+        }
+
+        QModelIndex proxyIndex = m_proxyModel->mapFromSource(modelIndex);
+        m_proxyModel->GetSelectionModel()->select(proxyIndex, QItemSelectionModel::ClearAndSelect);
+        m_gemListView->scrollTo(proxyIndex);
     }
 
     void GemCatalogScreen::hideEvent(QHideEvent* event)
@@ -234,7 +253,11 @@ namespace O3DE::ProjectManager
                 const QVector<GemInfo> allRepoGemInfos = allRepoGemInfosResult.GetValue();
                 for (const GemInfo& gemInfo : allRepoGemInfos)
                 {
-                    m_gemModel->AddGem(gemInfo);
+                    // do not add gems that have already been downloaded
+                    if (!m_gemModel->FindIndexByNameString(gemInfo.m_name).isValid())
+                    {
+                        m_gemModel->AddGem(gemInfo);
+                    }
                 }
             }
             else
@@ -258,7 +281,8 @@ namespace O3DE::ProjectManager
                         GemModel::SetWasPreviouslyAdded(*m_gemModel, modelIndex, true);
                         GemModel::SetIsAdded(*m_gemModel, modelIndex, true);
                     }
-                    else
+                    // ${Name} is a special name used in templates and is not really an error
+                    else if (enabledGemName != "${Name}")
                     {
                         AZ_Warning("ProjectManager::GemCatalog", false,
                             "Cannot find entry for gem with name '%s'. The CMake target name probably does not match the specified name in the gem.json.",
