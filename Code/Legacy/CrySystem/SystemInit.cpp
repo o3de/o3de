@@ -170,8 +170,6 @@ void CryEngineSignalHandler(int signal)
 
 //////////////////////////////////////////////////////////////////////////
 #if defined(WIN32) || defined(LINUX) || defined(APPLE)
-#   define DLL_MODULE_INIT_ISYSTEM "ModuleInitISystem"
-#   define DLL_MODULE_SHUTDOWN_ISYSTEM "ModuleShutdownISystem"
 #   define DLL_INITFUNC_RENDERER "PackageRenderConstructor"
 #   define DLL_INITFUNC_SOUND "CreateSoundSystem"
 #   define DLL_INITFUNC_FONT "CreateCryFontInterface"
@@ -185,8 +183,6 @@ void CryEngineSignalHandler(int signal)
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #else
-#   define DLL_MODULE_INIT_ISYSTEM (LPCSTR)2
-#   define DLL_MODULE_SHUTDOWN_ISYSTEM (LPCSTR)3
 #   define DLL_INITFUNC_RENDERER  (LPCSTR)1
 #   define DLL_INITFUNC_RENDERER  (LPCSTR)1
 #   define DLL_INITFUNC_SOUND     (LPCSTR)1
@@ -1473,8 +1469,6 @@ void CSystem::CreateSystemVars()
     // used in define MEMORY_DEBUG_POINT()
     m_sys_memory_debug = REGISTER_INT("sys_memory_debug", 0, VF_CHEAT,
             "Enables to activate low memory situation is specific places in the code (argument defines which place), 0=off");
-
-    REGISTER_CVAR2("sys_vtune", &g_cvars.sys_vtune, 0, VF_NULL, "");
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_17
