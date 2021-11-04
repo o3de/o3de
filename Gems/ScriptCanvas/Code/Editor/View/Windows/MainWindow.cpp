@@ -1278,16 +1278,9 @@ namespace ScriptCanvasEditor
             AddRecentFile(assetPath.c_str());
         }
 
-        if (!m_isRestoringWorkspace)
-        {
-            SetActiveAsset(fileAssetId);
-        }
-
         GraphCanvas::GraphId graphCanvasGraphId = GetGraphCanvasGraphId(scriptCanvasAsset.Get()->GetScriptCanvasId());
         GraphCanvas::AssetEditorNotificationBus::Event(ScriptCanvasEditor::AssetEditorId, &GraphCanvas::AssetEditorNotifications::OnGraphLoaded, graphCanvasGraphId);
-
         GeneralAssetNotificationBus::Event(fileAssetId, &GeneralAssetNotifications::OnAssetVisualized);
-
         return AZ::Success(outTabIndex);
     }
 
@@ -1504,14 +1497,14 @@ namespace ScriptCanvasEditor
         }
 
         m_errorFilePath.clear();
-        m_activeGraph = ScriptCanvasEditor::SourceHandle(outcome.TakeValue(), assetInfo.m_assetId.m_guid, fullPath);
+        auto activeGraph = ScriptCanvasEditor::SourceHandle(outcome.TakeValue(), assetInfo.m_assetId.m_guid, fullPath);
         
-        auto openOutcome = OpenScriptCanvasAsset(m_activeGraph);
+        auto openOutcome = OpenScriptCanvasAsset(activeGraph);
         if (openOutcome)
         {
             RunGraphValidation(false);
-            SetRecentAssetId(m_activeGraph);
-            SetActiveAsset(m_activeGraph);
+            SetActiveAsset(activeGraph);
+            SetRecentAssetId(activeGraph);
         }
         else
         {

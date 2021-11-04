@@ -490,7 +490,7 @@ namespace ScriptCanvasEditor
         EditorGraphRequestBus::Handler::BusDisconnect();
         SceneCounterRequestBus::Handler::BusDisconnect();
         NodeCreationNotificationBus::Handler::BusDisconnect();
-
+        AZ::SystemTickBus::Handler::BusDisconnect();
         GraphCanvas::SceneNotificationBus::Handler::BusDisconnect();
 
         GraphCanvas::GraphModelRequestBus::Handler::BusDisconnect();
