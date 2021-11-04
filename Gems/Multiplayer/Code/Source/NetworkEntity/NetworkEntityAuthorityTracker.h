@@ -13,6 +13,7 @@
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzNetworking/DataStructures/TimeoutQueue.h>
 #include <Source/NetworkEntity/NetworkEntityTracker.h>
+#include <Multiplayer/NetworkEntity/INetworkEntityManager.h>
 
 namespace Multiplayer
 {
@@ -32,10 +33,9 @@ namespace Multiplayer
     private:
         NetworkEntityAuthorityTracker& operator= (const NetworkEntityAuthorityTracker&) = delete;
 
-        using TimeoutDataMap = AZStd::unordered_set<NetEntityId>;
         using EntityAuthorityMap = AZStd::unordered_map<NetEntityId, AZStd::vector<HostId>>;
 
-        TimeoutDataMap m_timeoutDataMap;
+        NetEntityIdSet m_timedOutNetEntityIds;
         EntityAuthorityMap m_entityAuthorityMap;
         INetworkEntityManager& m_networkEntityManager;
 

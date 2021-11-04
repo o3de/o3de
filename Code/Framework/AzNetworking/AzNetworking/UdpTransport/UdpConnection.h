@@ -148,7 +148,7 @@ namespace AzNetworking
         uint32_t   m_connectionMtu = MaxUdpTransmissionUnit;
 
         TimeoutId m_timeoutId;
-        int32_t   m_timeoutCounter = 0;
+        uint32_t  m_timeoutCounter = 0;
     };
 }
 

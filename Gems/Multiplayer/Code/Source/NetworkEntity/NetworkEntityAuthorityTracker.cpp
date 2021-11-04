@@ -35,8 +35,8 @@ namespace Multiplayer
     bool NetworkEntityAuthorityTracker::AddEntityAuthorityManager(ConstNetworkEntityHandle entityHandle, const HostId& newOwner)
     {
         bool ret = false;
-        auto timeoutData = m_timeoutDataMap.find(entityHandle.GetNetEntityId());
-        if (timeoutData != m_timeoutDataMap.end())
+        auto timeoutData = m_timedOutNetEntityIds.find(entityHandle.GetNetEntityId());
+        if (timeoutData != m_timedOutNetEntityIds.end())
         {
             AZLOG
             (
@@ -45,7 +45,7 @@ namespace Multiplayer
                 aznumeric_cast<AZ::u64>(entityHandle.GetNetEntityId()),
                 newOwner.GetString().c_str()
             );
-            m_timeoutDataMap.erase(timeoutData);
+            m_timedOutNetEntityIds.erase(timeoutData);
             ret = true;
         }
 
@@ -95,16 +95,16 @@ namespace Multiplayer
                     {
                         AZ_Assert
                         (
-                            m_timeoutDataMap.find(entityHandle.GetNetEntityId()) == m_timeoutDataMap.end(),
+                            m_timedOutNetEntityIds.find(entityHandle.GetNetEntityId()) == m_timedOutNetEntityIds.end(),
                             "Trying to add something twice to the timeout map, this is unexpected"
                         );
-                        m_timeoutDataMap.insert(entityHandle.GetNetEntityId());
+                        m_timedOutNetEntityIds.insert(entityHandle.GetNetEntityId());
                         AZ::Interface<AZ::IEventScheduler>::Get()->AddCallback([this, netEntityId = entityHandle.GetNetEntityId()]
                             {
-                                auto timeoutData = m_timeoutDataMap.find(netEntityId);
-                                if (timeoutData != m_timeoutDataMap.end())
+                                auto timeoutData = m_timedOutNetEntityIds.find(netEntityId);
+                                if (timeoutData != m_timedOutNetEntityIds.end())
                                 {
-                                    m_timeoutDataMap.erase(timeoutData);
+                                    m_timedOutNetEntityIds.erase(timeoutData);
                                     ConstNetworkEntityHandle entityHandle = m_networkEntityManager.GetEntity(netEntityId);
                                     if (auto entity = entityHandle.GetEntity())
                                     {
