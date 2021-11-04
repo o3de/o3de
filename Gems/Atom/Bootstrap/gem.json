@@ -2,6 +2,7 @@
     "gem_name": "Atom_Bootstrap",
     "display_name": "Atom Bootstrap",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "",

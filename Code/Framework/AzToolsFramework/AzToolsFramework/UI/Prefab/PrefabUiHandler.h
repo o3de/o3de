@@ -36,9 +36,12 @@ namespace AzToolsFramework
         QString GenerateItemTooltip(AZ::EntityId entityId) const override;
         QIcon GenerateItemIcon(AZ::EntityId entityId) const override;
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
-        void PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
-            const QModelIndex& descendantIndex) const override;
         void PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        void PaintDescendantForeground(
+            QPainter* painter,
+            const QStyleOptionViewItem& option,
+            const QModelIndex& index,
+            const QModelIndex& descendantIndex) const override;
         bool OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
         void OnOutlinerItemCollapse(const QModelIndex& index) const override;
         bool OnEntityDoubleClick(AZ::EntityId entityId) const override;
