@@ -1121,8 +1121,8 @@ inline ISystem* GetISystem()
 
 // Description:
 //   This function must be called once by each module at the beginning, to setup global pointers.
-extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, const char* moduleName);
-extern "C" AZ_DLL_EXPORT void ModuleShutdownISystem(ISystem* pSystem);
+void ModuleInitISystem(ISystem* pSystem, const char* moduleName);
+void ModuleShutdownISystem(ISystem* pSystem);
 extern "C" AZ_DLL_EXPORT void InjectEnvironment(void* env);
 extern "C" AZ_DLL_EXPORT void DetachEnvironment();
 
