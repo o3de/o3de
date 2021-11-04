@@ -18,9 +18,6 @@
 #include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 
-#include <AzCore/Slice/SliceAsset.h>
-
-
 namespace ScriptCanvas
 {
     using VariableIdMap = AZStd::unordered_map<VariableId, VariableId>;
