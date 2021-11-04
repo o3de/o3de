@@ -70,9 +70,6 @@
 #include "windows.h"
 #include <float.h>
 
-// To enable profiling with vtune (https://software.intel.com/en-us/intel-vtune-amplifier-xe), make sure the line below is not commented out
-//#define  PROFILE_WITH_VTUNE
-
 #endif //WIN32
 
 #include <IRenderer.h>
@@ -702,33 +699,6 @@ bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
     }
 
     return result;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CSystem::InitVTuneProfiler()
-{
-#ifdef PROFILE_WITH_VTUNE
-
-    WIN_HMODULE hModule = LoadDLL("VTuneApi.dll");
-    if (!hModule)
-    {
-        return false;
-    }
-
-        VTPause = (VTuneFunction) CryGetProcAddress(hModule, "VTPause");
-        VTResume = (VTuneFunction) CryGetProcAddress(hModule, "VTResume");
-        if (!VTPause || !VTResume)
-        {
-        AZ_Assert(false, "VTune did not initialize correctly.")
-        return false;
-    }
-    else
-    {
-        AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "VTune API Initialized");
-    }
-#endif //PROFILE_WITH_VTUNE
-
-    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////

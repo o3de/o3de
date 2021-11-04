@@ -60,15 +60,6 @@
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 #include <LmbrCentral/Rendering/EditorLightComponentBus.h> // for LmbrCentral::EditorLightComponentRequestBus
 
-//#define PROFILE_LOADING_WITH_VTUNE
-
-// profilers api.
-//#include "pure.h"
-#ifdef PROFILE_LOADING_WITH_VTUNE
-#include "C:\Program Files\Intel\Vtune\Analyzer\Include\VTuneApi.h"
-#pragma comment(lib,"C:\\Program Files\\Intel\\Vtune\\Analyzer\\Lib\\VTuneApi.lib")
-#endif
-
 static const char* kAutoBackupFolder = "_autobackup";
 static const char* kHoldFolder = "$tmp_hold"; // conform to the ignored file types $tmp[0-9]*_ regex
 static const char* kSaveBackupFolder = "_savebackup";
