@@ -554,7 +554,7 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                             pipelineEnvVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                             build_job.value.steps.each { build_step ->
                                 build_job_name = build_step
-                                // This adition of maps makes it that the right operand will override entries if they overlap with the left operand
+                                // This addition of maps makes it that the right operand will override entries if they overlap with the left operand
                                 envVars = pipelineEnvVars + GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, platform.value.build_types[build_step].PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                                 try {
                                     CreateBuildStage(pipelineConfig,  platform.key, build_step, envVars).call()
