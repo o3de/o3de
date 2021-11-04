@@ -303,8 +303,6 @@ public:
     void SetVersionInfo(const char* const szVersion);
 #endif
 
-    void ShutdownModuleLibraries();
-
 #if defined(WIN32)
     friend LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 #endif
@@ -323,8 +321,6 @@ private:
     // Release all resources.
     void ShutDown();
 
-    bool LoadEngineDLLs();
-
     //! @name Initialization routines
     //@{
     bool InitConsole();
@@ -340,11 +336,8 @@ private:
     void CreateSystemVars();
     void CreateAudioVars();
 
-    AZStd::unique_ptr<AZ::DynamicModuleHandle> LoadDLL(const char* dllName);
-
     void FreeLib(AZStd::unique_ptr<AZ::DynamicModuleHandle>& hLibModule);
 
-    bool UnloadDLL(const char* dllName);
     void QueryVersionInfo();
     void LogVersion();
     void LogBuildInfo();
@@ -358,8 +351,6 @@ private:
     void UpdateAudioSystems();
 
     void AddCVarGroupDirectory(const AZStd::string& sPath) override;
-
-    AZStd::unique_ptr<AZ::DynamicModuleHandle> LoadDynamiclibrary(const char* dllName) const;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEM_H_SECTION_3
@@ -415,9 +406,6 @@ private: // ------------------------------------------------------
     int                   m_ttMemStatSS;              //!< Time to memstat screenshot
     bool                  m_bDrawConsole;              //!< Set to true if OK to draw the console.
     bool                  m_bDrawUI;                   //!< Set to true if OK to draw UI.
-
-
-    std::map<AZ::Crc32, AZStd::unique_ptr<AZ::DynamicModuleHandle> > m_moduleDLLHandles;
 
     //! current active process
     IProcess* m_pProcess;
