@@ -548,7 +548,7 @@ namespace ScriptCanvasEditor
         //! \param asset asset to save
         void GetSuggestedFullFilenameToSaveAs(const ScriptCanvasEditor::SourceHandle& assetId, AZStd::string& filePath, AZStd::string& fileFilter);
 
-        void MarkAssetModified(const ScriptCanvasEditor::SourceHandle& assetId);
+        void UpdateFileState(const ScriptCanvasEditor::SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState);
 
         // QMainWindow
         void closeEvent(QCloseEvent *event) override;

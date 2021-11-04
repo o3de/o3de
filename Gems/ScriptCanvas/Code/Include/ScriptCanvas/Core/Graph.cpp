@@ -1190,11 +1190,6 @@ namespace ScriptCanvas
         m_isObserved = isObserved;
     }
 
-    AZ::Data::AssetType Graph::GetAssetType() const
-    {
-        return m_assetType;
-    }
-
     void Graph::VersioningRemoveSlot(ScriptCanvas::Node& scriptCanvasNode, const SlotId& slotId)
     {
         bool deletedSlot = true;

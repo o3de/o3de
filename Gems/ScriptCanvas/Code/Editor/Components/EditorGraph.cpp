@@ -1030,14 +1030,16 @@ namespace ScriptCanvasEditor
     {
         AZStd::any* connectionUserData = nullptr;
         GraphCanvas::ConnectionRequestBus::EventResult(connectionUserData, connectionId, &GraphCanvas::ConnectionRequests::GetUserData);
-        auto scConnectionId = connectionUserData && connectionUserData->is<AZ::EntityId>() ? *AZStd::any_cast<AZ::EntityId>(connectionUserData) : AZ::EntityId();
+        auto scConnectionId = connectionUserData && connectionUserData->is<AZ::EntityId>()
+            ? *AZStd::any_cast<AZ::EntityId>(connectionUserData)
+            : AZ::EntityId();
 
-        ScriptCanvas::Connection* connection = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Connection>(scConnectionId);
-
-        if (connection)
+        if (ScriptCanvas::Connection* connection = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvas::Connection>(scConnectionId))
         {
-            ScriptCanvas::GraphNotificationBus::Event(GetScriptCanvasId(), &ScriptCanvas::GraphNotifications::OnDisonnectionComplete, connectionId);
-
+            ScriptCanvas::GraphNotificationBus::Event
+                ( GetScriptCanvasId()
+                , &ScriptCanvas::GraphNotifications::OnDisonnectionComplete
+                , connectionId);
             DisconnectById(scConnectionId);
         }
     }
@@ -1047,17 +1049,22 @@ namespace ScriptCanvasEditor
         if (AZ::Entity* entity = aznew AZ::Entity("Script Canvas Graph"))
         {
             auto graph = entity->CreateComponent<ScriptCanvasEditor::Graph>();
-            graph->SetAssetType(azrtti_typeid<ScriptCanvasAsset>());
             entity->CreateComponent<EditorGraphVariableManagerComponent>(graph->GetScriptCanvasId());
 
             if (ScriptCanvas::DataPtr data = AZStd::make_shared<ScriptCanvas::ScriptCanvasData>())
             {
                 data->m_scriptCanvasEntity.reset(entity);
+                graph->MarkOwnership(*data);
                 return data;
             }
         }
 
         return nullptr;
+    }
+
+    void Graph::MarkOwnership(ScriptCanvas::ScriptCanvasData& owner)
+    {
+        m_owner = &owner;
     }
 
     bool Graph::CreateConnection(const GraphCanvas::ConnectionId& connectionId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint)
@@ -1342,8 +1349,8 @@ namespace ScriptCanvasEditor
 
     void Graph::SignalDirty()
     {
-        // #sc_editor_asset
-        // GeneralRequestBus::Broadcast(&GeneralRequests::SignalSceneDirty, GetAssetId());
+        SourceHandle handle(ScriptCanvas::DataPtr(m_owner), {}, {});
+        GeneralRequestBus::Broadcast(&GeneralRequests::SignalSceneDirty, handle);
     }
 
     void Graph::HighlightNodesByType(const ScriptCanvas::NodeTypeIdentifier& nodeTypeIdentifier)
@@ -3372,11 +3379,6 @@ namespace ScriptCanvasEditor
         {
             nodePair.second->SignalDeserialized();
         }
-    }
-
-    void Graph::SetAssetType(AZ::Data::AssetType assetType)
-    {
-        m_assetType = assetType;
     }
 
     void Graph::ReportError(const ScriptCanvas::Node& node, const AZStd::string& errorSource, const AZStd::string& errorMessage)

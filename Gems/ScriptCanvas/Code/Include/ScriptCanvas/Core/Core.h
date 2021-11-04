@@ -360,6 +360,7 @@ namespace ScriptCanvasEditor
 namespace ScriptCanvas
 {
     class ScriptCanvasData
+        : public AZStd::enable_shared_from_this<ScriptCanvasData>
     {
     public:
 

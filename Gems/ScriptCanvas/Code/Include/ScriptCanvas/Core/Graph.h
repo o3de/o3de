@@ -187,8 +187,6 @@ namespace ScriptCanvas
 
         bool IsGraphObserved() const override;
         void SetIsGraphObserved(bool isObserved) override;
-
-        AZ::Data::AssetType GetAssetType() const override;
         ////
 
         const AZStd::unordered_map<AZ::EntityId, Node* >& GetNodeMapping() const { return m_nodeMapping; }
@@ -198,7 +196,7 @@ namespace ScriptCanvas
 
         GraphData m_graphData;
         AZ::Data::AssetType m_assetType;
-
+        
     private:
         ScriptCanvasId m_scriptCanvasId;
         ExecutionMode m_executionMode = ExecutionMode::Interpreted;

@@ -173,13 +173,11 @@ namespace ScriptCanvasEditor
         outCreatableTypes.insert(m_creatableTypes.begin(), m_creatableTypes.end());
     }
 
-    void SystemComponent::CreateEditorComponentsOnEntity(AZ::Entity* entity, const AZ::Data::AssetType& assetType)
+    void SystemComponent::CreateEditorComponentsOnEntity(AZ::Entity* entity, [[maybe_unused]] const AZ::Data::AssetType& assetType)
     {
         if (entity)
         {
             auto graph = entity->CreateComponent<Graph>();
-            graph->SetAssetType(assetType);
-
             entity->CreateComponent<EditorGraphVariableManagerComponent>(graph->GetScriptCanvasId());
         }
     }

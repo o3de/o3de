@@ -105,6 +105,44 @@ namespace ScriptCanvasEditor
             return nullptr;
         }
 
+        AZStd::optional<GraphTabMetadata> GraphTabBar::GetTabData(int tabIndex) const
+        {
+            if (tabIndex < count())
+            {
+                if (QVariant tabDataVariant = tabData(tabIndex); tabDataVariant.isValid())
+                {
+                    return tabDataVariant.value<GraphTabMetadata>();
+                }
+            }
+
+            return AZStd::nullopt;
+        }
+
+        AZStd::optional<GraphTabMetadata> GraphTabBar::GetTabData(ScriptCanvasEditor::SourceHandle assetId) const
+        {
+            return GetTabData(FindTab(assetId));
+        }
+
+        void GraphTabBar::SetTabData(const GraphTabMetadata& metadata, int tabIndex)
+        {
+            if (tabIndex < count())
+            {
+                setTabData(tabIndex, QVariant::fromValue(metadata));
+            }
+        }
+
+        void GraphTabBar::SetTabData(const GraphTabMetadata& metadata, ScriptCanvasEditor::SourceHandle assetId)
+        {
+            auto index = FindTab(assetId);
+            auto replacement = GetTabData(assetId);
+
+            if (index >= 0 && replacement)
+            {
+                replacement->m_assetId = assetId;
+                SetTabData(metadata, index);
+            }
+        }
+
         int GraphTabBar::InsertGraphTab(int tabIndex, ScriptCanvasEditor::SourceHandle assetId)
         {
             if (!SelectTab(assetId))
@@ -119,6 +157,7 @@ namespace ScriptCanvasEditor
                 
                 AZStd::string tabName;
                 AzFramework::StringFunc::Path::GetFileName(assetId.Path().c_str(), tabName);
+                metaData.m_name = tabName.c_str();
                
                 // #sc_editor_asset filestate
                 Tracker::ScriptCanvasFileState fileState = Tracker::ScriptCanvasFileState::INVALID;
@@ -381,6 +420,23 @@ namespace ScriptCanvasEditor
             Q_EMIT TabRemoved(index);
         }
 
+        void GraphTabBar::UpdateFileState(const ScriptCanvasEditor::SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState)
+        {
+            auto tabData = GetTabData(assetId);
+            if (tabData && tabData->m_fileState != fileState)
+            {
+                int index = FindTab(assetId);
+                tabData->m_fileState = fileState;
+                SetTabData(*tabData, assetId);
+                SetTabText(index, tabData->m_name, fileState);
+
+                if (index == currentIndex())
+                {
+                    Q_EMIT OnActiveFileStateChanged();
+                }
+            }
+        }
+
         void GraphTabBar::currentChangedTab(int index)
         {
             if (index < 0)
@@ -404,25 +460,6 @@ namespace ScriptCanvasEditor
                 m_signalSaveOnChangeTo = -1;
                 Q_EMIT SaveTab(m_signalSaveOnChangeTo);
             }
-        }
-
-        void GraphTabBar::SetFileState(ScriptCanvasEditor::SourceHandle, Tracker::ScriptCanvasFileState )
-        {
-            // #sc_editor_asset
-            // int index = FindTab(assetId);
-
-//             if (index >= 0 && index < count())
-//             {
-//                 QVariant tabdata = tabData(index);
-//                 if (tabdata.isValid())
-//                 {
-//                     auto tabAssetId = tabdata.value<GraphTabMetadata>();
-// 
-//                     AZStd::string tabName;
-//                     AssetTrackerRequestBus::BroadcastResult(tabName, &AssetTrackerRequests::GetTabName, tabAssetId);
-//                     SetTabText(index, tabName.c_str(), fileState);
-//                 }
-//             }
         }
 
         #include <Editor/View/Widgets/moc_GraphTabBar.cpp>
