@@ -160,6 +160,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Public
                 Gem::Atom_RHI.Public
                 Gem::Atom_RPI.Edit
+                Gem::Atom_Utils.TestUtils.Static
     )
     ly_add_googletest(
         NAME Gem::Atom_RPI.Tests
