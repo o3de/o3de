@@ -95,6 +95,7 @@ namespace AZ
             //! resolving file-relative paths.
             //! @param elevateWarnings Indicates whether to treat warnings as errors
             //! @param includeMaterialPropertyNames Indicates whether to save material property names into the material asset file
+            //! @param sourceDependencies if not null, will be populated with a set of all of the loaded material and material type paths
             Outcome<Data::Asset<MaterialAsset>> CreateMaterialAssetFromSourceData(
                 Data::AssetId assetId,
                 AZStd::string_view materialSourceFilePath = "",
