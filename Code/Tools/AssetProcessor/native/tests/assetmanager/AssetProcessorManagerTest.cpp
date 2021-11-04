@@ -4139,11 +4139,19 @@ struct LockedFileTest
         switch (message.GetMessageType())
         {
         case SourceFileNotificationMessage::MessageType:
-            if (const auto sourceFileMessage = azrtti_cast<const SourceFileNotificationMessage*>(&message);
-                sourceFileMessage != nullptr && sourceFileMessage->m_type == SourceFileNotificationMessage::NotificationType::FileRemoved
-                && m_callback)
+            if (const auto sourceFileMessage = azrtti_cast<const SourceFileNotificationMessage*>(&message); sourceFileMessage != nullptr &&
+                sourceFileMessage->m_type == SourceFileNotificationMessage::NotificationType::FileRemoved)
             {
-                m_callback();
+                // The File Remove message will occur before an attempt to delete the file
+                // Wait for more than 1 File Remove message.
+                // This indicates the AP has attempted to delete the file once, failed to do so and is now retrying
+                ++m_deleteCounter;
+
+                if(m_deleteCounter > 1 && m_callback)
+                {
+                    m_callback();
+                    m_callback = {}; // Unset it to be safe, we only intend to run the callback once
+                }
             }
             break;
         default:
@@ -4167,6 +4175,7 @@ struct LockedFileTest
         ModtimeScanningTest::TearDown();
     }
 
+    AZStd::atomic_int m_deleteCounter{ 0 };
     AZStd::function<void()> m_callback;
 };
 
@@ -4206,6 +4215,10 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeleteFails)
 
 TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
 {
+    // This test is intended to verify the AP will successfully retry deleting a source asset
+    // when one of its product assets is locked temporarily
+    // We'll lock the file by holding it open
+
     auto theFile = m_data->m_absolutePath[1].toUtf8();
     const char* theFileString = theFile.constData();
     auto [sourcePath, productPath] = *m_data->m_productPaths.find(theFileString);
@@ -4218,19 +4231,22 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
     ASSERT_GT(m_data->m_productPaths.size(), 0);
     QFile product(productPath);
 
+    // Open the file and keep it open to lock it
+    // We'll start a thread later to unlock the file
+    // This will allow us to test how AP handles trying to delete a locked file
     ASSERT_TRUE(product.open(QIODevice::ReadOnly));
 
     // Check if we can delete the file now, if we can't, proceed with the test
     // If we can, it means the OS running this test doesn't lock open files so there's nothing to test
     if (!AZ::IO::SystemFile::Delete(productPath.toUtf8().constData()))
     {
-        AZStd::thread workerThread;
+        m_deleteCounter = 0;
 
-        m_callback = [&product, &workerThread]() {
-            workerThread = AZStd::thread([&product]() {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(60));
-                product.close();
-            });
+        // Set up a callback which will fire after at least 1 retry
+        // Unlock the file at that point so AP can successfully delete it
+        m_callback = [&product]()
+        {
+            product.close();
         };
 
         QMetaObject::invokeMethod(
@@ -4240,8 +4256,9 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
 
         EXPECT_FALSE(QFile::exists(productPath));
         EXPECT_EQ(m_data->m_deletedSources.size(), 1);
-
-        workerThread.join();
+        
+        EXPECT_GT(m_deleteCounter, 1); // Make sure the AP tried more than once to delete the file
+        m_errorAbsorber->ExpectAsserts(0);
     }
     else
     {
