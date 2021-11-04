@@ -16,6 +16,7 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Asset/AssetCommon.h>
 
+#include <ScriptCanvas/Core/Core.h>
 #include <Editor/Assets/ScriptCanvasAssetTracker.h>
 #endif
 
@@ -26,11 +27,13 @@ namespace ScriptCanvasEditor
 {
     namespace Widget
     {
+        class CanvasWidget;
+
         struct GraphTabMetadata
         {
-            AZ::Data::AssetId m_assetId;
+            SourceHandle m_assetId;
             QWidget* m_hostWidget = nullptr;
-            QString m_tabName;
+            CanvasWidget* m_canvasWidget = nullptr;
             Tracker::ScriptCanvasFileState m_fileState = Tracker::ScriptCanvasFileState::INVALID;
         };
 
@@ -46,16 +49,22 @@ namespace ScriptCanvasEditor
             ~GraphTabBar() override = default;
 
             void AddGraphTab(ScriptCanvasEditor::SourceHandle assetId);
+            void CloseTab(int index);
+            void CloseAllTabs();
+
             int InsertGraphTab(int tabIndex, ScriptCanvasEditor::SourceHandle assetId);
             bool SelectTab(ScriptCanvasEditor::SourceHandle assetId);
 
-            void ConfigureTab(int tabIndex, ScriptCanvasEditor::SourceHandle fileAssetId, const AZStd::string& tabName);
+           // void ConfigureTab(int tabIndex, ScriptCanvasEditor::SourceHandle fileAssetId, const AZStd::string& tabName);
 
             int FindTab(ScriptCanvasEditor::SourceHandle assetId) const;
+            ScriptCanvasEditor::SourceHandle FindTabByPath(AZStd::string_view path) const;
             ScriptCanvasEditor::SourceHandle FindAssetId(int tabIndex);
+            ScriptCanvas::ScriptCanvasId FindScriptCanvasIdFromGraphCanvasId(const GraphCanvas::GraphId& graphCanvasGraphId) const;
 
-            void CloseTab(int index);
-            void CloseAllTabs();
+            void ClearTabView(int tabIndex);
+            CanvasWidget* ModOrCreateTabView(int tabIndex);
+            CanvasWidget* ModTabView(int tabIndex);
 
             void OnContextMenu(const QPoint& point);
 

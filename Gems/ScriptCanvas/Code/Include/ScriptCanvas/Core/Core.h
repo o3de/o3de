@@ -326,7 +326,11 @@ namespace ScriptCanvasEditor
 
         SourceHandle() = default;
 
+        SourceHandle(const SourceHandle& data, const AZ::Uuid& id, AZStd::string_view path);
+
         SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, AZStd::string_view path);
+
+        bool AnyEquals(const SourceHandle& other) const;
 
         void Clear();
 
@@ -391,9 +395,26 @@ namespace AZStd
     {
         using argument_type = ScriptCanvas::SlotId;
         using result_type = AZStd::size_t;
-        AZ_FORCE_INLINE size_t operator()(const argument_type& ref) const
+
+        inline size_t operator()(const argument_type& ref) const
         {
             return AZStd::hash<AZ::Uuid>()(ref.m_id);
+        }
+    };
+
+    template<>
+    struct hash<ScriptCanvasEditor::SourceHandle>
+    {
+        using argument_type = ScriptCanvasEditor::SourceHandle;
+        using result_type = AZStd::size_t;
+
+        inline size_t operator()(const argument_type& handle) const
+        {
+            size_t h = 0;
+            hash_combine(h, handle.Id());
+            hash_combine(h, handle.Path());
+            hash_combine(h, handle.Get());
+            return h;
         }
     };
 }

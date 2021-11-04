@@ -163,7 +163,7 @@ namespace ScriptCanvasEditor
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
-        using BusIdType = AZ::Data::AssetId;
+        using BusIdType = SourceHandle;
 
         virtual void OnAssetVisualized() {};
         virtual void OnAssetUnloaded() {};

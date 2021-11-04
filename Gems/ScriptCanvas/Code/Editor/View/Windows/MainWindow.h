@@ -230,7 +230,7 @@ namespace ScriptCanvasEditor
         , private VariablePaletteRequestBus::Handler
         , private ScriptCanvas::BatchOperationNotificationBus::Handler
         , private AssetGraphSceneBus::Handler
-        , private AssetTrackerNotificationBus::MultiHandler
+        //, private AssetTrackerNotificationBus::MultiHandler
 #if SCRIPTCANVAS_EDITOR
         //, public IEditorNotifyListener
 #endif
@@ -421,7 +421,7 @@ namespace ScriptCanvasEditor
         //! GeneralRequestBus
         AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const SourceHandle& assetId) override;
         AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(SourceHandle scriptCanvasAssetId, int tabIndex = -1) override;
-        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(const ScriptCanvasMemoryAsset& scriptCanvasAsset, int tabIndex = -1);
+        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetImplementation(const SourceHandle& sourceHandle, int tabIndex = -1);
         int CloseScriptCanvasAsset(const SourceHandle& assetId) override;
         bool CreateScriptCanvasAssetFor(const TypeDefs::EntityComponentId& requestingEntityId) override;
 
@@ -556,8 +556,7 @@ namespace ScriptCanvasEditor
         
         bool ActivateAndSaveAsset(const ScriptCanvasEditor::SourceHandle& unsavedAssetId, const Callbacks::OnSave& onSave);
 
-        void SaveNewAsset(AZStd::string_view path, ScriptCanvasEditor::SourceHandle assetId, const Callbacks::OnSave& onSave);
-        void SaveAsset(ScriptCanvasEditor::SourceHandle assetId, const Callbacks::OnSave& onSave);
+        void SaveAs(AZStd::string_view path, ScriptCanvasEditor::SourceHandle assetId, const Callbacks::OnSave& onSave);
 
         void OpenFile(const char* fullPath);
         void CreateMenus();

@@ -190,11 +190,26 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
+    SourceHandle::SourceHandle(const SourceHandle& data, const AZ::Uuid& id, AZStd::string_view path)
+        : m_data(data.m_data)
+        , m_id(id)
+        , m_path(path)
+    {
+
+    }
+
     SourceHandle::SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, AZStd::string_view path)
         : m_data(graph)
         , m_id(id)
         , m_path(path)
     {}
+
+    bool SourceHandle::AnyEquals(const SourceHandle& other) const
+    {
+        return m_data == other.m_data
+            || m_id == other.m_id
+            || m_path == other.m_path;
+    }
 
     void SourceHandle::Clear()
     {
