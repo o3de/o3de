@@ -297,40 +297,6 @@ namespace UnitTest
         return hierarchySections;
     }
 
-    TEST_F(AssetBrowserTest, CheckSetupIsCorrect)
-    {
-        // Get Vector from the default assetBrowserHeirarchy
-        AZStd::vector<QString> hierarchySections = GetVectorFromFormattedString(m_assetBrowserHierarchy);
-
-        // Get the vector from the created assetBrowserHeirarchy
-        QString resultMessage = QString();
-        AZStd::function<void(const QString&)> printer = [&resultMessage](const QString& message)
-        {
-            resultMessage += message + "\n";
-        };
-        PrintModel(m_assetBrowserComponent->GetAssetBrowserModel(), printer);
-        AZStd::vector<QString> createdHierarchySections = GetVectorFromFormattedString(resultMessage);
-
-        auto isSetupCorrect = [&hierarchySections, &createdHierarchySections]()
-        {
-            if (hierarchySections.size() != createdHierarchySections.size())
-            {
-                return false;
-            }
-
-            bool isHierarchyEqual = AZStd::equal(
-                AZStd::cbegin(hierarchySections), AZStd::cend(hierarchySections), AZStd::cbegin(createdHierarchySections),
-                [](const QString& originalSection, const QString& createdSection)
-                {
-                    return originalSection == createdSection;
-                });
-
-            return isHierarchyEqual;
-        };
-
-        EXPECT_TRUE(isSetupCorrect());
-    }
-
     TEST_F(AssetBrowserTest, CheckCorrectNumberOfEntriesInTableView)
     {
         m_filterModel->FilterUpdatedSlotImmediate();
