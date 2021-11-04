@@ -99,7 +99,7 @@ namespace O3DE::ProjectManager
         m_nameLabel->setObjectName("gemRepoInspectorNameLabel");
         m_mainLayout->addWidget(m_nameLabel);
 
-        m_repoLinkLabel = new LinkLabel(tr("Repo Url"), QUrl(""), 12, this);
+        m_repoLinkLabel = new LinkLabel(tr("Repo Url"), QUrl(), 12, this);
         m_mainLayout->addWidget(m_repoLinkLabel);
         m_mainLayout->addSpacing(5);
 
