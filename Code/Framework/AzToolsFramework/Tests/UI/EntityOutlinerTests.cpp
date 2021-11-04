@@ -153,7 +153,6 @@ namespace UnitTest
         AzToolsFramework::UndoSystem::UndoStack* m_undoStack = nullptr;
     };
 
-    // Test is temporarily disabled because it currently breaks with prefab propagation optimization code
     TEST_F(EntityOutlinerTest, TestCreateFlatHierarchyUndoAndRedoWorks)
     {
         constexpr size_t entityCount = 10;
@@ -177,7 +176,6 @@ namespace UnitTest
         }
     }
 
-    // Test is temporarily disabled because it currently breaks with prefab propagation optimization code
     TEST_F(EntityOutlinerTest, TestCreateNestedHierarchyUndoAndRedoWorks)
     {
         constexpr size_t depth = 5;
