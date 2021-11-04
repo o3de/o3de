@@ -319,14 +319,10 @@ namespace AZ::SettingsRegistryMergeUtils
 
     //! The algorithm that is used to find the project cache is as follows
     //! 1. The "{BootstrapSettingsRootKey}/project_cache_path" is checked for the path
-    //! 2. One time only this function is it scans upwards for a "Cache" directory from
-    //! the executable directory
-    //! If a directory is found it injects it into the back of the command line parameters
+    //! 2. Otherwise append the ProductCacheDirectoryName constant to the <project-path>
     static AZ::IO::FixedMaxPath FindProjectCachePath(SettingsRegistryInterface& settingsRegistry, const AZ::IO::FixedMaxPath& projectPath)
     {
-        static constexpr AZStd::string_view InternalScanUpProjectCacheRootKey{ "/O3DE/Runtime/Internal/project_cache_root_scan_up_path" };
         using FixedValueString = SettingsRegistryInterface::FixedValueString;
-        using Type = SettingsRegistryInterface::Type;
 
         constexpr auto projectCachePathKey = FixedValueString(BootstrapSettingsRootKey) + "/project_cache_path";
 
@@ -336,23 +332,7 @@ namespace AZ::SettingsRegistryMergeUtils
             return projectCachePath;
         }
 
-        // Step 2 Fallback to scanning upwards to locate the nearest "Cache" directory
-        // This step occurs only once via setting the InternalScanUp* key
-        if (settingsRegistry.GetType(InternalScanUpProjectCacheRootKey) == Type::NoType)
-        {
-            AZ::IO::FixedMaxPath projectCachePath = Internal::ScanUpRootLocator(Internal::ProductCacheDirectoryName)
-                / Internal::ProductCacheDirectoryName;
-            settingsRegistry.Set(InternalScanUpProjectCacheRootKey, projectCachePath.Native());
-            if (!projectCachePath.empty() && AZ::IO::SystemFile::IsDirectory(projectCachePath.c_str()))
-            {
-                settingsRegistry.Set(projectCachePathKey, projectCachePath.c_str());
-                // Inject the project root at the end of the command line settings
-                Internal::InjectSettingToCommandLineBack(settingsRegistry, projectCachePathKey, projectCachePath.Native());
-                return projectCachePath;
-            }
-        }
-
-        // Step 3 Append the "Cache" directory to the project-path
+        // Step 2 Append the "Cache" directory to the project-path
         return projectPath / Internal::ProductCacheDirectoryName;
     }
 
