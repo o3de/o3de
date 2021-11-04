@@ -113,7 +113,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         QWidget m_uiOverlay; //!< The UI Overlay which displays Viewport UI Elements.
         QGridLayout m_fullScreenLayout; //!< The layout which extends across the full screen.
         ViewportUiDisplayLayout m_uiOverlayLayout; //!< The layout used for optionally anchoring Viewport UI Elements.
-        QLabel m_componentModeBorderText; //!< The text used for the Component Mode border.
+        QLabel m_viewportBorderText; //!< The text used for the viewport border.
 
         QWidget* m_renderOverlay;
         QPointer<QWidget> m_fullScreenWidget; //!< Reference to the widget attached to m_fullScreenLayout if any.
