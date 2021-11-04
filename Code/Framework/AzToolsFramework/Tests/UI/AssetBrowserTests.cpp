@@ -62,13 +62,11 @@ namespace UnitTest
         void SetupAssetBrowser();
         void PrintModel(const QAbstractItemModel* model, AZStd::function<void(const QString&)> printer);
         QModelIndex GetModelIndex(const QAbstractItemModel* model, int targetDepth, int row = 0);
-
         AZStd::shared_ptr<AzToolsFramework::AssetBrowser::RootAssetBrowserEntry> GetRootEntry();
-
-    private:
         AZStd::vector<QString> GetVectorFromFormattedString(const QString& formattedString);
 
     protected:
+        QString m_assetBrowserHierarchy = QString();
 
         AZStd::unique_ptr<AzToolsFramework::AssetBrowser::SearchWidget> m_searchWidget;
         AZStd::unique_ptr<AzToolsFramework::AssetBrowser::AssetBrowserComponent> m_assetBrowserComponent;
@@ -178,11 +176,10 @@ namespace UnitTest
 
     void AssetBrowserTest::SetupAssetBrowser()
     {
-
-        //RootEntries : 1 | Folders : 4 | SourceEntries : 5 | ProductEntries : 9
-        QString testHierarchy  = R"(
+        // RootEntries : 1 | Folders : 4 | SourceEntries : 5 | ProductEntries : 9
+        m_assetBrowserHierarchy = R"(
         D:
-          \\
+          \
             dev
               o3de
                 GameProject
@@ -206,8 +203,6 @@ namespace UnitTest
                       Product_4_2
                       Product_4_1
                       Product_4_0 )";
-
-        [[maybe_unused]]AZStd::vector<QString> hierarchySections = GetVectorFromFormattedString(testHierarchy);
 
         namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 
@@ -237,15 +232,6 @@ namespace UnitTest
         AZ::Uuid sourceUuid_1 = CreateSourceEntry(m_sourceIDs.at(1), m_folderIds.at(0), "Source_1");
         CreateProduct(m_productIDs.at(0), sourceUuid_1, "Product_1_0");
         CreateProduct(m_productIDs.at(1), sourceUuid_1, "Product_1_1");
-
-        QString resultMessage = QString();
-        AZStd::function<void(const QString&)> printer = [&resultMessage](const QString& message)
-        {
-            resultMessage += message + "\n";
-        };
-        PrintModel(m_assetBrowserComponent->GetAssetBrowserModel(), printer);
-        [[maybe_unused]] AZStd::vector<QString> createdHierarchySections = GetVectorFromFormattedString(resultMessage);
-
     }
 
     void AssetBrowserTest::PrintModel(const QAbstractItemModel* model, AZStd::function<void(const QString&)> printer)
@@ -303,12 +289,46 @@ namespace UnitTest
         AZStd::vector<QString> hierarchySections;
         QStringList splittedList = formattedString.split('\n', Qt::SkipEmptyParts);
 
-        for (auto&& str : splittedList)
+        for (auto& str : splittedList)
         {
             str.replace(" ", "");
             hierarchySections.push_back(str);
         }
         return hierarchySections;
+    }
+
+    TEST_F(AssetBrowserTest, CheckSetupIsCorrect)
+    {
+        // Get Vector from the default assetBrowserHeirarchy
+        AZStd::vector<QString> hierarchySections = GetVectorFromFormattedString(m_assetBrowserHierarchy);
+
+        // Get the vector from the created assetBrowserHeirarchy
+        QString resultMessage = QString();
+        AZStd::function<void(const QString&)> printer = [&resultMessage](const QString& message)
+        {
+            resultMessage += message + "\n";
+        };
+        PrintModel(m_assetBrowserComponent->GetAssetBrowserModel(), printer);
+        AZStd::vector<QString> createdHierarchySections = GetVectorFromFormattedString(resultMessage);
+
+        auto isSetupCorrect = [&hierarchySections, &createdHierarchySections]()
+        {
+            if (hierarchySections.size() != createdHierarchySections.size())
+            {
+                return false;
+            }
+
+            bool isHierarchyEqual = AZStd::equal(
+                AZStd::cbegin(hierarchySections), AZStd::cend(hierarchySections), AZStd::cbegin(createdHierarchySections),
+                [](const QString& originalSection, const QString& createdSection)
+                {
+                    return originalSection == createdSection;
+                });
+
+            return isHierarchyEqual;
+        };
+
+        EXPECT_TRUE(isSetupCorrect());
     }
 
     TEST_F(AssetBrowserTest, CheckCorrectNumberOfEntriesInTableView)
