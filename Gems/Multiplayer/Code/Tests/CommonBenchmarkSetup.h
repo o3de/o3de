@@ -270,6 +270,9 @@ namespace Multiplayer
             [[maybe_unused]] EntityIsMigrating entityIsMigrating) override {}
         void HandleLocalRpcMessage(
             [[maybe_unused]] NetworkEntityRpcMessage& message) override {}
+        void HandleEntitiesExitDomain(const NetEntityIdSet&) override {}
+        void ForceAssumeAuthority(const ConstNetworkEntityHandle&) override {}
+        void SetMigrateTimeoutTimeMs(AZ::TimeMs) override {}
 
         mutable AZStd::map<NetEntityId, AZ::Entity*> m_networkEntityMap;
 
