@@ -6,6 +6,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 
+#fmt: off
+
+
 class Tests:
     creation_undo = (
         "UNDO Entity creation success",
@@ -40,6 +43,9 @@ class Tests:
     deletion_redo = (
         "REDO deletion success",
         "REDO deletion failed")
+
+
+#fmt: on
 
 
 def AtomEditorComponents_HDRiSkybox_AddedToEntity():
