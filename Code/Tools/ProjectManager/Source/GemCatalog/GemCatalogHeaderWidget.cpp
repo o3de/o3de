@@ -214,9 +214,9 @@ namespace O3DE::ProjectManager
             // Setup gem download rows for gems that are already in the queue
             const AZStd::vector<QString>& downloadQueue = m_downloadController->GetDownloadQueue();
 
-            for (int downloadingGemNumber = 0; downloadingGemNumber < downloadQueue.size(); ++downloadingGemNumber)
+            for (const QString& gemName : downloadQueue)
             {
-                GemDownloadAdded(downloadQueue[downloadingGemNumber]);
+                GemDownloadAdded(gemName);
             }
         }
 
@@ -229,24 +229,28 @@ namespace O3DE::ProjectManager
 
     void CartOverlayWidget::GemDownloadAdded(const QString& gemName)
     {
+        // Containing widget for the current download item
         QWidget* newGemDownloadWidget = new QWidget();
         newGemDownloadWidget->setObjectName(gemName);
-        QVBoxLayout* downloadingGemLayout = new QVBoxLayout();
+        QVBoxLayout* downloadingGemLayout = new QVBoxLayout(newGemDownloadWidget);
         newGemDownloadWidget->setLayout(downloadingGemLayout);
-        QHBoxLayout* nameProgressLayout = new QHBoxLayout();
-        TagWidget* newTag = new TagWidget(gemName);
+
+        // Gem name, progress string, cancel
+        QHBoxLayout* nameProgressLayout = new QHBoxLayout(newGemDownloadWidget);
+        TagWidget* newTag = new TagWidget(gemName, newGemDownloadWidget);
         nameProgressLayout->addWidget(newTag);
-        QLabel* progress = new QLabel(tr("Queued"));
+        QLabel* progress = new QLabel(tr("Queued"), newGemDownloadWidget);
         progress->setObjectName("DownloadProgressLabel");
         nameProgressLayout->addWidget(progress);
-        QSpacerItem* spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
-        nameProgressLayout->addSpacerItem(spacer);
-        QLabel* cancelText = new QLabel(QString("<a href=\"%1\">Cancel</a>").arg(gemName));
+        nameProgressLayout->addStretch();
+        QLabel* cancelText = new QLabel(tr("<a href=\"%1\">Cancel</a>").arg(gemName), newGemDownloadWidget);
         cancelText->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
         connect(cancelText, &QLabel::linkActivated, this, &CartOverlayWidget::OnCancelDownloadActivated);
         nameProgressLayout->addWidget(cancelText);
         downloadingGemLayout->addLayout(nameProgressLayout);
-        QProgressBar* downloadProgessBar = new QProgressBar();
+
+        // Progress bar
+        QProgressBar* downloadProgessBar = new QProgressBar(newGemDownloadWidget);
         downloadProgessBar->setObjectName("DownloadProgressBar");
         downloadingGemLayout->addWidget(downloadProgessBar);
         downloadProgessBar->setValue(0);
@@ -265,20 +269,10 @@ namespace O3DE::ProjectManager
     void CartOverlayWidget::GemDownloadRemoved(const QString& gemName)
     {
         QWidget* gemToRemove = m_downloadingListWidget->findChild<QWidget*>(gemName);
-        QLayout* gemToRemoveLayout = gemToRemove ? gemToRemove->layout() : nullptr;
-
-        if (gemToRemoveLayout)
+        if (gemToRemove)
         {
-            QLayoutItem* rowLayoutItem = nullptr;
-            while ((rowLayoutItem = gemToRemoveLayout->layout()->takeAt(0)) != nullptr)
-            {
-                rowLayoutItem->widget()->deleteLater();
-            }
-            gemToRemoveLayout->layout()->deleteLater();
             gemToRemove->deleteLater();
         }
-
-        const AZStd::vector<QString>& downloadQueue = m_downloadController->GetDownloadQueue();
 
         if (m_downloadController->IsDownloadQueueEmpty())
         {
@@ -286,10 +280,11 @@ namespace O3DE::ProjectManager
         }
         else
         {
+            size_t downloadQueueSize = m_downloadController->GetDownloadQueue().size();
             QLabel* numDownloads = m_downloadingListWidget->findChild<QLabel*>("NumDownloadsInProgressLabel");
             numDownloads->setText(QString("%1 %2")
-                                      .arg(downloadQueue.size())
-                                      .arg(downloadQueue.size() == 1 ? tr("download in progress...") : tr("downloads in progress...")));
+                                      .arg(downloadQueueSize)
+                                      .arg(downloadQueueSize == 1 ? tr("download in progress...") : tr("downloads in progress...")));
         }
     }
 
