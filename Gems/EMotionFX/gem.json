@@ -2,6 +2,7 @@
     "gem_name": "EMotionFX",
     "display_name": "EMotion FX Animation",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The EMotion FX Animation Gem provides Open 3D Engine's animation system for rigged actors and includes Animation Editor, a tool for creating animated behaviors, simulated objects, and colliders for rigged actors.",

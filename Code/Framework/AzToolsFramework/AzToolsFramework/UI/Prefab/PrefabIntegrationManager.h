@@ -14,6 +14,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserSourceDropBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/UI/Prefab/LevelRootUiHandler.h>
@@ -56,6 +57,7 @@ namespace AzToolsFramework
             , public PrefabInstanceContainerNotificationBus::Handler
             , public PrefabIntegrationInterface
             , public QObject
+            , private EditorEntityContextNotificationBus::Handler
         {
         public:
             AZ_CLASS_ALLOCATOR(PrefabIntegrationManager, AZ::SystemAllocator, 0);
@@ -75,6 +77,10 @@ namespace AzToolsFramework
 
             // EntityOutlinerSourceDropHandlingBus overrides ...
             void HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const override;
+
+            // EditorEntityContextNotificationBus overrides ...
+            void OnStartPlayInEditorBegin() override;
+            void OnStopPlayInEditor() override;
 
             // PrefabInstanceContainerNotificationBus overrides ...
             void OnPrefabComponentActivate(AZ::EntityId entityId) override;
