@@ -12,10 +12,10 @@ import pytest
 import os
 import sys
 
-from .utils.FileManagement import FileManagement as fm
-from ly_test_tools import LAUNCHERS
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../Physics')
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
+from utils.FileManagement import FileManagement as fm
+from ly_test_tools import LAUNCHERS
 
 from base import TestAutomationBase
 
