@@ -60,7 +60,7 @@ namespace AZ
             }
         }
 
-        AZStd::sys_time_t ShaderVariantAsset::GetBuildTimestamp() const
+        AZ::u64 ShaderVariantAsset::GetBuildTimestamp() const
         {
             return m_buildTimestamp;
         }
