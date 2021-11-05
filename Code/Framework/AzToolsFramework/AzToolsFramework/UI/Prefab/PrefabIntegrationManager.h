@@ -97,6 +97,8 @@ namespace AzToolsFramework
             static void ContextMenu_InstantiatePrefab();
             static void ContextMenu_InstantiateProceduralPrefab();
             static void ContextMenu_EditPrefab(AZ::EntityId containerEntity);
+            static void ContextMenu_OpenPrefabInstance(AZ::EntityId containerEntity);
+            static void ContextMenu_ClosePrefabInstance(AZ::EntityId containerEntity);
             static void ContextMenu_SavePrefab(AZ::EntityId containerEntity);
             static void ContextMenu_DeleteSelected();
             static void ContextMenu_DetachPrefab(AZ::EntityId containerEntity);

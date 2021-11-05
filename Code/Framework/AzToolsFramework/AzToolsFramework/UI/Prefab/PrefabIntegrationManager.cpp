@@ -267,6 +267,40 @@ namespace AzToolsFramework
                             itemWasShown = true;
                         }
 
+                        // Open Prefab Instance
+                        if (prefabWipFeaturesEnabled)
+                        {
+                            if (!s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
+                            {
+                                if (s_containerEntityInterface->IsContainerOpen(selectedEntity))
+                                {
+                                    QAction* overrideAction = menu->addAction(QObject::tr("Open Prefab Instance for Overrides"));
+                                    overrideAction->setToolTip(
+                                        QObject::tr("Edit the prefab instance as seen by the currently focused prefab."));
+
+                                    QObject::connect(
+                                        overrideAction, &QAction::triggered, overrideAction,
+                                        [selectedEntity]
+                                        {
+                                            ContextMenu_OpenPrefabInstance(selectedEntity);
+                                        });
+                                }
+                                else
+                                {
+                                    QAction* overrideAction = menu->addAction(QObject::tr("Close Prefab Instance for Overrides"));
+
+                                    QObject::connect(
+                                        overrideAction, &QAction::triggered, overrideAction,
+                                        [selectedEntity]
+                                        {
+                                            ContextMenu_ClosePrefabInstance(selectedEntity);
+                                        });
+                                }
+
+                                itemWasShown = true;
+                            }
+                        }
+
                         // Save Prefab
                         AZ::IO::Path prefabFilePath = s_prefabPublicInterface->GetOwningInstancePrefabPath(selectedEntity);
                         auto dirtyOutcome = s_prefabPublicInterface->HasUnsavedChanges(prefabFilePath);
@@ -503,6 +537,16 @@ namespace AzToolsFramework
         void PrefabIntegrationManager::ContextMenu_EditPrefab(AZ::EntityId containerEntity)
         {
             s_prefabFocusPublicInterface->FocusOnOwningPrefab(containerEntity);
+        }
+
+        void PrefabIntegrationManager::ContextMenu_OpenPrefabInstance(AZ::EntityId containerEntity)
+        {
+            s_containerEntityInterface->SetContainerOpen(containerEntity, true);
+        }
+
+        void PrefabIntegrationManager::ContextMenu_ClosePrefabInstance(AZ::EntityId containerEntity)
+        {
+            s_containerEntityInterface->SetContainerOpen(containerEntity, false);
         }
 
         void PrefabIntegrationManager::ContextMenu_SavePrefab(AZ::EntityId containerEntity)
