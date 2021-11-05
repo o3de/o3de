@@ -142,14 +142,15 @@ class LicenseScanner:
         """
         licenses = OrderedDict()
         package_json = []
+
         with open(filepath, 'w', encoding='utf8') as pf:
             for directory, package in packages.items():
                 if self.package_info.match(os.path.basename(directory)):
                     package_obj = json.loads(package)
                     package_json.append(package_obj)
-                if get_contents:
-                    license_path = os.path.join(os.path.dirname(directory), pathlib.Path(package_obj['LicenseFile']))
-                    licenses[license_path] = self._get_file_contents(license_path)
+                    if get_contents:
+                        license_path = os.path.join(os.path.dirname(directory), pathlib.Path(package_obj['LicenseFile']))
+                        licenses[license_path] = self._get_file_contents(license_path)
                 else:
                     licenses[directory] = package
             pf.write(json.dumps(package_json, indent=4))
