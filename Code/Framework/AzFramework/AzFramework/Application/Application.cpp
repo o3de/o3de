@@ -69,6 +69,7 @@
 #include <AzCore/Console/Console.h>
 #include <AzFramework/Viewport/ViewportBus.h>
 #include <GridMate/Memory.h>
+#include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 #include "Application.h"
 #include <AzFramework/AzFrameworkModule.h>
@@ -318,6 +319,7 @@ namespace AzFramework
         AzFramework::SurfaceData::SurfaceTagWeight::Reflect(context);
         AzFramework::SurfaceData::SurfacePoint::Reflect(context);
         AzFramework::Terrain::TerrainDataRequests::Reflect(context);
+        Physics::HeightfieldProviderRequests::Reflect(context);
 
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
