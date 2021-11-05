@@ -26,6 +26,8 @@ namespace Physics
 
     struct HeightMaterialPoint
     {
+        static void Reflect(AZ::ReflectContext* context);
+
         AZ_RTTI(HeightMaterialPoint, "{DF167ED4-24E6-4F7B-8AB7-42622F7DBAD3}");
         float m_height{ 0.0f }; //!< Holds the height of this point in the heightfield relative to the heightfield entity location.
         QuadMeshType m_quadMeshType{ QuadMeshType::SubdivideUpperLeftToBottomRight }; //!< By default, create two triangles like this |\|, where this point is in the upper left corner.
@@ -33,11 +35,11 @@ namespace Physics
         uint16_t m_padding{ 0 }; //!< available for future use.
 
         HeightMaterialPoint(
-            float height = 0.0f, QuadMeshType type = QuadMeshType::SubdivideUpperLeftToBottomRight, uint8_t index = 0, uint16_t padding = 0)
-            : m_padding(padding)
-            , m_materialIndex(index)
+            float height = 0.0f, QuadMeshType type = QuadMeshType::SubdivideUpperLeftToBottomRight, uint8_t index = 0)
+            : m_height(height)
             , m_quadMeshType(type)
-            , m_height(height)
+            , m_materialIndex(index)
+            , m_padding(0)
         {
         }
     };

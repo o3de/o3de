@@ -320,6 +320,7 @@ namespace AzFramework
         AzFramework::SurfaceData::SurfacePoint::Reflect(context);
         AzFramework::Terrain::TerrainDataRequests::Reflect(context);
         Physics::HeightfieldProviderRequests::Reflect(context);
+        Physics::HeightMaterialPoint::Reflect(context);
 
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {

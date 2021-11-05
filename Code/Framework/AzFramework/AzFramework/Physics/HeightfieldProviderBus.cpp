@@ -35,4 +35,12 @@ namespace Physics
         }
     }
 
+    void HeightMaterialPoint::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<Physics::HeightMaterialPoint>()->Attribute(AZ::Script::Attributes::Category, "Physics");
+        }
+    }
+
 } // namespace Physics

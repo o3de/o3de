@@ -8,9 +8,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #fmt: off
 class Tests():
     create_test_entity                      = ("Entity created successfully",    "Failed to create Entity")
-    add_physx_heightfield_collider          = ("PhysX Heightfield Collider component added", "Failed to add PhysX Heightfield Collider component")
     add_axis_aligned_box_shape              = ("Axis Aligned Box Shape component added", "Failed to add Axis Aligned Box Shape component")
-    add_terrain_collider                    = ("Terrain Physics Heightfield Collider component added", "Failed to add ATerrain Physics Heightfield Collider component")
+    add_terrain_collider                    = ("Terrain Physics Heightfield Collider component added", "Failed to add a Terrain Physics Heightfield Collider component")
     box_dimensions_changed                  = ("Aabb dimensions changed successfully", "Failed change Aabb dimensions")
     configuration_changed                   = ("Terrain size changed successfully", "Failed terrain size change")
     no_errors_and_warnings_found            = ("No errors and warnings found",   "Found errors and warnings")
@@ -29,7 +28,7 @@ def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
      1) Load the base level
      2) Create test entity
      3) Start the Tracer to catch any errors and warnings
-     4) Add the PhysX Heightfield Collider, Axis Aligned Box Shape and Terrain Physics Heightfield Collider components
+     4) Add the Axis Aligned Box Shape and Terrain Physics Heightfield Collider components
      5) Change the Axis Aligned Box Shape dimensions
      6) Chaeck the Heightfield provider is returning the correct size
      7) Verify there are no errors and warnings in the logs
@@ -44,7 +43,7 @@ def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
     from editor_python_test_tools.utils import Tracer
     import azlmbr.legacy.general as general
     import azlmbr.physics as physics
-    import azlmbr.math as math2
+    import azlmbr.math as azmath
     import azlmbr.bus as bus
     import sys
     import math
@@ -70,11 +69,11 @@ def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
         terrainPhysics_component = test_entity.add_component("Terrain Physics Heightfield Collider")
         Report.result(Tests.add_terrain_collider, test_entity.has_component("Terrain Physics Heightfield Collider"))
         # 5) Change the Axis Aligned Box Shape dimensions
-        aaBoxShape_component.set_component_property_value("Axis Aligned Box Shape|Box Configuration|Dimensions", math2.Vector3(SET_BOX_X_SIZE, SET_BOX_Y_SIZE, 1.0))
-        add_check = aaBoxShape_component.get_component_property_value("Axis Aligned Box Shape|Box Configuration|Dimensions") == math2.Vector3(SET_BOX_X_SIZE, SET_BOX_Y_SIZE, 1.0)
+        aaBoxShape_component.set_component_property_value("Axis Aligned Box Shape|Box Configuration|Dimensions", azmath.Vector3(SET_BOX_X_SIZE, SET_BOX_Y_SIZE, 1.0))
+        add_check = aaBoxShape_component.get_component_property_value("Axis Aligned Box Shape|Box Configuration|Dimensions") == azmath.Vector3(SET_BOX_X_SIZE, SET_BOX_Y_SIZE, 1.0)
         Report.result(Tests.box_dimensions_changed, add_check)
 
-        # 6) Chaeck the Heightfield provider is returning the correct size
+        # 6) Check the Heightfield provider is returning the correct size
         columns = physics.HeightfieldProviderRequestsBus(bus.Broadcast, "GetHeightfieldGridColumns")
         rows = physics.HeightfieldProviderRequestsBus(bus.Broadcast, "GetHeightfieldGridRows")
 

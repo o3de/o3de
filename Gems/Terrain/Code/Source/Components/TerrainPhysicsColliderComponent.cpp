@@ -195,16 +195,16 @@ namespace Terrain
 
     float TerrainPhysicsColliderComponent::GetHeightfieldMinHeight() const
     {
-        float minHeightBounds;
-        float maxHeightBounds;
+        float minHeightBounds{ 0.0f };
+        float maxHeightBounds{ 0.0f };
         GetHeightfieldHeightBounds(minHeightBounds, maxHeightBounds);
         return minHeightBounds;
     }
 
     float TerrainPhysicsColliderComponent::GetHeightfieldMaxHeight() const
     {
-        float minHeightBounds;
-        float maxHeightBounds;
+        float minHeightBounds{ 0.0f };
+        float maxHeightBounds{ 0.0f };
         GetHeightfieldHeightBounds(minHeightBounds, maxHeightBounds);
         return maxHeightBounds;
     }
@@ -316,8 +316,8 @@ namespace Terrain
 
     int32_t TerrainPhysicsColliderComponent::GetHeightfieldGridColumns() const
     {
-        int32_t numColumns;
-        int32_t numRows;
+        int32_t numColumns{ 0 };
+        int32_t numRows{ 0 };
 
         GetHeightfieldGridSize(numColumns, numRows);
         return numColumns;
@@ -325,8 +325,8 @@ namespace Terrain
 
     int32_t TerrainPhysicsColliderComponent::GetHeightfieldGridRows() const
     {
-        int32_t numColumns;
-        int32_t numRows;
+        int32_t numColumns{ 0 };
+        int32_t numRows{ 0 };
 
         GetHeightfieldGridSize(numColumns, numRows);
         return numRows;
