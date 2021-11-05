@@ -355,7 +355,7 @@ namespace AZ
                 return;
             }
 
-            // Get the time stamp string as sys_time_t, and also convert back to string to make sure it was converted correctly.
+            // Get the time stamp string as u64, and also convert back to string to make sure it was converted correctly.
             AZ::u64 shaderAssetBuildTimestamp = 0;
             auto shaderAssetBuildTimestampIterator = request.m_jobDescription.m_jobParameters.find(ShaderAssetBuildTimestampParam);
             if (shaderAssetBuildTimestampIterator != request.m_jobDescription.m_jobParameters.end())
