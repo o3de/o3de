@@ -166,13 +166,26 @@ namespace AzToolsFramework
             bool IsCyclicalDependencyFound(
                 InstanceOptionalConstReference instance, const AZStd::unordered_set<AZ::IO::Path>& templateSourcePaths);
 
-            static void Internal_HandleContainerOverride(
+            // Legacy - Create the appropriate patches to handle the entity changes.
+            PrefabOperationResult CreatePatch(
+                AZ::Entity* entity,
+                InstanceOptionalReference owningInstance,
+                UndoSystem::URSequencePoint* parentUndoBatch);
+
+            // Create the appropriate patches to handle the entity changes, using Prefab Focus to determine
+            // Whether the change should affect the template itself or should be stored as an override.
+            PrefabOperationResult CreatePatchBasedOnPrefabFocus(
+                AZ::Entity* entity,
+                InstanceOptionalReference owningInstance,
+                UndoSystem::URSequencePoint* parentUndoBatch);
+
+            static void InternalHandleEntityOverride(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch,
                 const LinkId linkId, InstanceOptionalReference parentInstance = AZStd::nullopt);
-            static void Internal_HandleEntityChange(
+            static void InternalHandleEntityChange(
                 UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
                 PrefabDom& afterState, InstanceOptionalReference instance = AZStd::nullopt);
-            void Internal_HandleInstanceChange(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
+            void InternalHandleInstanceChange(UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId);
 
             void UpdateLinkPatchesWithNewEntityAliases(
                 PrefabDom& linkPatch,

@@ -11,6 +11,8 @@
 #include <AzCore/JSON/writer.h>
 #include <AzCore/Utils/TypeHash.h>
 
+#include <AzFramework/API/ApplicationAPI.h>
+
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -655,6 +657,167 @@ namespace AzToolsFramework
                 return AZ::Success();
             }
 
+            bool prefabWipFeaturesEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+            PrefabOperationResult result;
+
+            if (prefabWipFeaturesEnabled)
+            {
+                result = CreatePatchBasedOnPrefabFocus(entity, owningInstance, parentUndoBatch);
+            }
+            else
+            {
+                result = CreatePatch(entity, owningInstance, parentUndoBatch);
+            }
+
+            if (!result.IsSuccess())
+            {
+                return result;
+            }
+
+            m_prefabUndoCache.UpdateCache(entityId);
+
+            return AZ::Success();
+        }
+
+        PrefabOperationResult PrefabPublicHandler::CreatePatchBasedOnPrefabFocus(
+            AZ::Entity* entity,
+            InstanceOptionalReference owningInstance,
+            UndoSystem::URSequencePoint* parentUndoBatch)
+        {
+            AZ::EntityId entityId = entity->GetId();
+
+            PrefabDom beforeState;
+            AZ::EntityId beforeParentId;
+            m_prefabUndoCache.Retrieve(entityId, beforeState, beforeParentId);
+
+            PrefabDom afterState;
+            AZ::EntityId afterParentId;
+            AZ::TransformBus::EventResult(afterParentId, entityId, &AZ::TransformBus::Events::GetParentId);
+
+            m_instanceToTemplateInterface->GenerateDomForEntity(afterState, *entity);
+
+            PrefabDom patch;
+            m_instanceToTemplateInterface->GeneratePatch(patch, beforeState, afterState);
+            m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, entityId);
+
+            if (patch.IsArray() && !patch.Empty() && beforeState.IsObject())
+            {
+                AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
+                AZ::EntityId focusedInstanceContainerEntityId =
+                    m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+
+                bool isInstanceContainerEntity = IsInstanceContainerEntity(entityId) && !IsLevelInstanceContainerEntity(entityId);
+                bool isInFocusTree = m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId);
+                bool isOwnedByFocusedPrefabInstance = m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId);
+                bool isNewParentOwnedByDifferentInstance = false;
+
+                if (beforeParentId != afterParentId)
+                {
+                    // If the entity parent changed, verify if the owning instance changed too
+                    InstanceOptionalReference beforeOwningInstance = m_instanceEntityMapperInterface->FindOwningInstance(beforeParentId);
+                    InstanceOptionalReference afterOwningInstance = m_instanceEntityMapperInterface->FindOwningInstance(afterParentId);
+
+                    if (beforeOwningInstance.has_value() && afterOwningInstance.has_value() &&
+                        (&beforeOwningInstance->get() != &afterOwningInstance->get()))
+                    {
+                        isNewParentOwnedByDifferentInstance = true;
+
+                        // Detect loops. Assert if an instance has been re-parented in such a way to generate circular dependencies.
+                        AZStd::vector<Instance*> instancesInvolved;
+
+                        if (isInstanceContainerEntity)
+                        {
+                            instancesInvolved.push_back(&owningInstance->get());
+                        }
+                        else
+                        {
+                            // Retrieve all nested instances that are part of the subtree under the current entity.
+                            EntityList entities;
+                            PrefabOperationResult retrieveEntitiesAndInstancesOutcome = RetrieveAndSortPrefabEntitiesAndInstances(
+                                { entity }, beforeOwningInstance->get(), entities, instancesInvolved);
+                            if (!retrieveEntitiesAndInstancesOutcome.IsSuccess())
+                            {
+                                return retrieveEntitiesAndInstancesOutcome;
+                            }
+                        }
+
+                        for (Instance* instance : instancesInvolved)
+                        {
+                            const PrefabDom& templateDom = m_prefabSystemComponentInterface->FindTemplateDom(instance->GetTemplateId());
+                            AZStd::unordered_set<AZ::IO::Path> templatePaths;
+                            PrefabDomUtils::GetTemplateSourcePaths(templateDom, templatePaths);
+
+                            if (IsCyclicalDependencyFound(afterOwningInstance->get(), templatePaths))
+                            {
+                                // Cancel the operation by restoring the previous parent
+                                AZ::TransformBus::Event(entityId, &AZ::TransformBus::Events::SetParent, beforeParentId);
+                                m_prefabUndoCache.UpdateCache(entityId);
+
+                                // Skip the creation of an undo node
+                                return AZ::Failure(AZStd::string::format(
+                                    "Reparent Prefab operation aborted - Cyclical dependency detected\n(%s depends on %s).",
+                                    instance->GetTemplateSourcePath().Native().c_str(),
+                                    afterOwningInstance->get().GetTemplateSourcePath().Native().c_str()));
+                            }
+                        }
+                    }
+                }
+
+                if (isInFocusTree && !isOwnedByFocusedPrefabInstance)
+                {
+                    // Store change as override
+                    AZ_TracePrintf("PREFAB EDIT", "OVERRIDE");
+
+                    if (isNewParentOwnedByDifferentInstance)
+                    {
+                        InternalHandleInstanceChange(parentUndoBatch, entity, beforeParentId, afterParentId);
+
+                        PrefabDom afterStateafterReparenting;
+                        m_instanceToTemplateInterface->GenerateDomForEntity(afterStateafterReparenting, *entity);
+
+                        PrefabDom newPatch;
+                        m_instanceToTemplateInterface->GeneratePatch(newPatch, afterState, afterStateafterReparenting);
+                        m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(newPatch, entityId);
+
+                        InstanceOptionalReference owningInstanceAfterReparenting =
+                            m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+
+                        InternalHandleEntityOverride(
+                            parentUndoBatch, entityId, newPatch, owningInstanceAfterReparenting->get().GetLinkId());
+                    }
+                    else
+                    {
+                        InternalHandleEntityOverride(
+                            parentUndoBatch, entityId, patch, owningInstance->get().GetLinkId(),
+                            m_prefabFocusInterface->GetFocusedPrefabInstance(editorEntityContextId));
+                    }
+                }
+                else
+                {
+                    // Store change to owning prefab
+                    AZ_TracePrintf("PREFAB EDIT", "TEMPLATE");
+
+                    InternalHandleEntityChange(parentUndoBatch, entityId, beforeState, afterState, owningInstance);
+
+                    if (isNewParentOwnedByDifferentInstance)
+                    {
+                        InternalHandleInstanceChange(parentUndoBatch, entity, beforeParentId, afterParentId);
+                    }
+                }
+            }
+
+            return AZ::Success();
+        }
+
+        PrefabOperationResult PrefabPublicHandler::CreatePatch(
+            AZ::Entity* entity,
+            InstanceOptionalReference owningInstance,
+            UndoSystem::URSequencePoint* parentUndoBatch)
+        {
+            AZ::EntityId entityId = entity->GetId();
+
             PrefabDom beforeState;
             AZ::EntityId beforeParentId;
             m_prefabUndoCache.Retrieve(entityId, beforeState, beforeParentId);
@@ -685,7 +848,7 @@ namespace AzToolsFramework
                     {
                         isNewParentOwnedByDifferentInstance = true;
 
-                        // Detect loops. Assert if an instance has been reparented in such a way to generate circular dependencies.
+                        // Detect loops. Assert if an instance has been re-parented in such a way to generate circular dependencies.
                         AZStd::vector<Instance*> instancesInvolved;
 
                         if (isInstanceContainerEntity)
@@ -706,8 +869,7 @@ namespace AzToolsFramework
 
                         for (Instance* instance : instancesInvolved)
                         {
-                            const PrefabDom& templateDom =
-                                m_prefabSystemComponentInterface->FindTemplateDom(instance->GetTemplateId());
+                            const PrefabDom& templateDom = m_prefabSystemComponentInterface->FindTemplateDom(instance->GetTemplateId());
                             AZStd::unordered_set<AZ::IO::Path> templatePaths;
                             PrefabDomUtils::GetTemplateSourcePaths(templateDom, templatePaths);
 
@@ -731,7 +893,7 @@ namespace AzToolsFramework
                 {
                     if (isNewParentOwnedByDifferentInstance)
                     {
-                        Internal_HandleInstanceChange(parentUndoBatch, entity, beforeParentId, afterParentId);
+                        InternalHandleInstanceChange(parentUndoBatch, entity, beforeParentId, afterParentId);
 
                         PrefabDom afterStateafterReparenting;
                         m_instanceToTemplateInterface->GenerateDomForEntity(afterStateafterReparenting, *entity);
@@ -743,32 +905,30 @@ namespace AzToolsFramework
                         InstanceOptionalReference owningInstanceAfterReparenting =
                             m_instanceEntityMapperInterface->FindOwningInstance(entityId);
 
-                        Internal_HandleContainerOverride(
+                        InternalHandleEntityOverride(
                             parentUndoBatch, entityId, newPatch, owningInstanceAfterReparenting->get().GetLinkId());
                     }
                     else
                     {
-                        Internal_HandleContainerOverride(
+                        InternalHandleEntityOverride(
                             parentUndoBatch, entityId, patch, owningInstance->get().GetLinkId(), owningInstance->get().GetParentInstance());
                     }
                 }
                 else
                 {
-                    Internal_HandleEntityChange(parentUndoBatch, entityId, beforeState, afterState, owningInstance);
+                    InternalHandleEntityChange(parentUndoBatch, entityId, beforeState, afterState, owningInstance);
 
                     if (isNewParentOwnedByDifferentInstance)
                     {
-                        Internal_HandleInstanceChange(parentUndoBatch, entity, beforeParentId, afterParentId);
+                        InternalHandleInstanceChange(parentUndoBatch, entity, beforeParentId, afterParentId);
                     }
                 }
             }
 
-            m_prefabUndoCache.UpdateCache(entityId);
-
             return AZ::Success();
         }
 
-        void PrefabPublicHandler::Internal_HandleContainerOverride(
+        void PrefabPublicHandler::InternalHandleEntityOverride(
             UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, const PrefabDom& patch,
             const LinkId linkId, InstanceOptionalReference parentInstance)
         {
@@ -780,7 +940,7 @@ namespace AzToolsFramework
             linkUpdate->Redo(parentInstance);
         }
 
-        void PrefabPublicHandler::Internal_HandleEntityChange(
+        void PrefabPublicHandler::InternalHandleEntityChange(
             UndoSystem::URSequencePoint* undoBatch, AZ::EntityId entityId, PrefabDom& beforeState,
             PrefabDom& afterState, InstanceOptionalReference instance)
         {
@@ -792,7 +952,7 @@ namespace AzToolsFramework
             state->Redo(instance);
         }
 
-        void PrefabPublicHandler::Internal_HandleInstanceChange(
+        void PrefabPublicHandler::InternalHandleInstanceChange(
             UndoSystem::URSequencePoint* undoBatch, AZ::Entity* entity, AZ::EntityId beforeParentId, AZ::EntityId afterParentId)
         {
             // If the entity parent changed, verify if the owning instance changed too
