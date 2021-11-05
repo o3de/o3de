@@ -341,38 +341,4 @@ namespace UnitTest
         EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(), 2);
     }
 
-    TEST_F(AssetBrowserTest, CheckSourceAddition)
-    {
-        // Get the asset Folder which should have 2 child entries
-        QModelIndex AssetFolderIndex = GetModelIndex(m_assetBrowserComponent->GetAssetBrowserModel(), 5, 2);
-
-        // Unique set of Ids for the sourcefiles
-        QVector<int> sourceUniqueId = { 123, 124, 125, 126, 127 };
-
-        // ID of the folder that contains the files
-        const int assetFolderId = 13;
-
-        EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(AssetFolderIndex), 2);
-
-        CreateSourceEntry(sourceUniqueId.at(0), assetFolderId, "DummyFle_1");
-        CreateSourceEntry(sourceUniqueId.at(1), assetFolderId, "DummyFle_2");
-        CreateSourceEntry(sourceUniqueId.at(2), assetFolderId, "DummyFle_3");
-        CreateSourceEntry(sourceUniqueId.at(3), assetFolderId, "DummyFle_4");
-        CreateSourceEntry(sourceUniqueId.at(4), assetFolderId, "DummyFle_5");
-
-        // Adding 5 more entries
-        EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(AssetFolderIndex), 7);
-
-        // Try to create a file that already exist.
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        CreateSourceEntry(sourceUniqueId.at(0), assetFolderId, "DummyFle_1");
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-
-        // Remove file that generates the product and adding it again.
-        GetRootEntry()->RemoveFile(sourceUniqueId.at(1));
-        CreateSourceEntry(sourceUniqueId.at(1), assetFolderId, "DummyFle_2");
-
-        EXPECT_EQ(m_assetBrowserComponent->GetAssetBrowserModel()->rowCount(AssetFolderIndex), 7);
-    }
-
 } // namespace UnitTest
