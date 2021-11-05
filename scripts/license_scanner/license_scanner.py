@@ -37,7 +37,7 @@ class LicenseScanner:
 
     def _load_config(self):
         """Load config from the provided file. Sets default file if one is not provided."""
-        if self.config_file is None:
+        if not self.config_file:
             script_directory = os.path.dirname(os.path.abspath(__file__))  # Default file expected in same dir as script
             self.config_file = os.path.join(script_directory, self.DEFAULT_CONFIG_FILE)
 
@@ -71,8 +71,11 @@ class LicenseScanner:
         matching_files = OrderedDict()
         excluded_directories = None
 
-        if self.package_info is None:
+        if not self.package_info:
             self.package_info = self.DEFAULT_PACKAGE_INFO_FILE
+
+        if not self.excluded_directories:
+            print(f'No excluded directory in config, looking for {self.DEFAULT_EXCLUDE_FILE} instead')
 
         for path in paths:
             for dirpath, dirnames, filenames in os.walk(path, topdown=True):
@@ -118,16 +121,17 @@ class LicenseScanner:
         license_separator = '------------------------------------'
         with open(filepath, 'w', encoding='utf8') as lf:
             for directory, license in licenses.items():
-                license_output = '\n\n'.join([
-                    f'{license_separator}',
-                    f'Package path: {os.path.relpath(directory)}',
-                    'License:',
-                    f'{license}\n'
-                ])
+                if not self.package_info.match(os.path.basename(directory)):
+                    license_output = '\n\n'.join([
+                        f'{license_separator}',
+                        f'Package path: {os.path.relpath(directory)}',
+                        'License:',
+                        f'{license}\n'
+                    ])
                 lf.write(license_output)
         return None
     
-    def create_package_file(self, packages, filepath='SPDX-Licenses.json', dirpath=None):
+    def create_package_file(self, packages, filepath='SPDX-Licenses.json', get_contents=False):
         """Creates file with all the provided SPDX package info summaries in json.
         Optional dirpath parameter will follow the license file path in the package info and return its contents in a dictionary
 
@@ -140,12 +144,12 @@ class LicenseScanner:
         package_json = []
         with open(filepath, 'w', encoding='utf8') as pf:
             for directory, package in packages.items():
-                if dirpath and self.package_info.match(os.path.basename(directory)):
+                if self.package_info.match(os.path.basename(directory)):
                     package_obj = json.loads(package)
                     package_json.append(package_obj)
+                if get_contents:
                     license_path = os.path.join(os.path.dirname(directory), pathlib.Path(package_obj['LicenseFile']))
-                    license_content = self._get_file_contents(license_path)
-                    licenses[license_path] = license_content
+                    licenses[license_path] = self._get_file_contents(license_path)
                 else:
                     licenses[directory] = package
             pf.write(json.dumps(package_json, indent=4))
@@ -173,7 +177,7 @@ def main():
         if args.package_file_path:
             ls.create_package_file(scanned_path_data, args.package_file_path)
         if args.license_file_path and args.package_file_path:
-            license_files = ls.create_package_file(scanned_path_data, args.package_file_path, args.scan_path)
+            license_files = ls.create_package_file(scanned_path_data, args.package_file_path, True)
             ls.create_license_file(license_files, args.license_file_path)
     except FileNotFoundError as e:
         print(f'Type: {type(e).__name__}, Error: {e}')
