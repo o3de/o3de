@@ -84,7 +84,9 @@ namespace Multiplayer
 
         void DispatchLocalDeferredRpcMessages();
         void UpdateEntityDomain();
-        void OnEntityExitDomain(NetEntityId entityId);
+        void OnEntityExitDomain(NetEntityId entityId, const IEntityDomain::EntitiesNotInDomain& entitiesNotInDomain);
+
+        bool IsHierarchySafeToExit(NetworkEntityHandle& entityHandle, const IEntityDomain::EntitiesNotInDomain& entitiesNotInDomain);
 
         //! RootSpawnableNotificationBus
         //! @{
