@@ -6,7 +6,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 
-# fmt: off
 class Tests:
     camera_component_added = (
         "Camera component was added",
@@ -125,7 +124,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
     from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.utils import Report, Tracer, TestHelper as helper
+    from editor_python_test_tools.utils import Report, Tracer, TestHelper
 
     from Atom.atom_utils.atom_constants import AtomComponentProperties
     from Atom.atom_utils.screenshot_utils import ScreenshotHelper
@@ -138,7 +137,7 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
     def initial_viewport_setup(screen_width, screen_height):
         general.set_viewport_size(screen_width, screen_height)
         general.update_viewport()
-        helper.wait_for_condition(
+        TestHelper.wait_for_condition(
             function=lambda: isclose(a=general.get_viewport_size().x, b=SCREEN_WIDTH, rel_tol=0.1)
                         and isclose(a=general.get_viewport_size().y, b=SCREEN_HEIGHT, rel_tol=0.1),
             timeout_in_seconds=4.0
@@ -147,13 +146,13 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
     with Tracer() as error_tracer:
         # Test setup begins.
         # Setup: Wait for Editor idle loop before executing Python hydra scripts then open "Base" level.
-        helper.init_idle()
-        helper.open_level("", "Base")
+        TestHelper.init_idle()
+        TestHelper.open_level("", "Base")
 
         # Test steps begin.
         # 1. Close error windows and display helpers then update the viewport size.
-        helper.close_error_windows()
-        helper.close_display_helpers()
+        TestHelper.close_error_windows()
+        TestHelper.close_display_helpers()
         initial_viewport_setup(SCREEN_WIDTH, SCREEN_HEIGHT)
         general.update_viewport()
 
@@ -308,20 +307,22 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
             AtomComponentProperties.camera('Field of view')) == camera_fov_value)
 
         # 21. Enter game mode.
-        helper.enter_game_mode(Tests.enter_game_mode)
-        helper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
+        TestHelper.enter_game_mode(Tests.enter_game_mode)
+        TestHelper.wait_for_condition(function=lambda: general.is_in_game_mode(), timeout_in_seconds=4.0)
 
         # 22. Take screenshot.
         ScreenshotHelper(general.idle_wait_frames).capture_screenshot_blocking(f"{SCREENSHOT_NAME}.ppm")
 
         # 23. Exit game mode.
-        helper.exit_game_mode(Tests.exit_game_mode)
-        helper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
+        TestHelper.exit_game_mode(Tests.exit_game_mode)
+        TestHelper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=4.0)
 
         # 24. Look for errors.
-        helper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
-        Report.result(Tests.no_assert_occurred, not error_tracer.has_asserts)
-        Report.result(Tests.no_error_occurred, not error_tracer.has_errors)
+        TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
+        for error_info in error_tracer.errors:
+            Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
+        for assert_info in error_tracer.asserts:
+            Report.info(f"Assert: {assert_info.filename} {assert_info.function} | {assert_info.message}")
 
 
 if __name__ == "__main__":
