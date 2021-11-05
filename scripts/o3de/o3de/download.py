@@ -158,7 +158,14 @@ def download_engine(engine_name: str,
                     skip_auto_register: bool,
                     force_overwrite: bool,
                     download_progress_callback = None) -> int:
-    return download_o3de_object(engine_name, 'engines', dest_path, 'engine', 'engine_name', skip_auto_register, force_overwrite, download_progress_callback)
+    return download_o3de_object(engine_name,
+                                'engines',
+                                dest_path,
+                                'engine',
+                                'engine_name',
+                                skip_auto_register,
+                                force_overwrite,
+                                download_progress_callback)
 
 
 def download_project(project_name: str,
@@ -166,7 +173,14 @@ def download_project(project_name: str,
                      skip_auto_register: bool,
                      force_overwrite: bool,
                      download_progress_callback = None) -> int:
-    return download_o3de_object(project_name, 'projects', dest_path, 'project', 'project_name', skip_auto_register, force_overwrite, download_progress_callback)
+    return download_o3de_object(project_name,
+                                'projects',
+                                dest_path,
+                                'project',
+                                'project_name',
+                                skip_auto_register,
+                                force_overwrite,
+                                download_progress_callback)
 
 
 def download_gem(gem_name: str,
@@ -174,7 +188,14 @@ def download_gem(gem_name: str,
                  skip_auto_register: bool,
                  force_overwrite: bool,
                  download_progress_callback = None) -> int:
-    return download_o3de_object(gem_name, 'gems', dest_path, 'gem', 'gem_name', skip_auto_register, force_overwrite, download_progress_callback)
+    return download_o3de_object(gem_name,
+                                'gems',
+                                dest_path,
+                                'gem',
+                                'gem_name',
+                                skip_auto_register,
+                                force_overwrite,
+                                download_progress_callback)
 
 
 def download_template(template_name: str,
@@ -182,7 +203,14 @@ def download_template(template_name: str,
                       skip_auto_register: bool,
                       force_overwrite: bool,
                       download_progress_callback = None) -> int:
-    return download_o3de_object(template_name, 'templates', dest_path, 'template', 'template_name', skip_auto_register, force_overwrite, download_progress_callback)
+    return download_o3de_object(template_name,
+                                'templates',
+                                dest_path,
+                                'template',
+                                'template_name',
+                                skip_auto_register,
+                                force_overwrite,
+                                download_progress_callback)
 
 
 
@@ -191,7 +219,14 @@ def download_restricted(restricted_name: str,
                         skip_auto_register: bool,
                         force_overwrite: bool,
                         download_progress_callback = None) -> int:
-    return download_o3de_object(restricted_name, 'restricted', dest_path, 'restricted', 'restricted_name', skip_auto_register, force_overwrite, download_progress_callback)
+    return download_o3de_object(restricted_name,
+                                'restricted',
+                                dest_path,
+                                'restricted',
+                                'restricted_name',
+                                skip_auto_register,
+                                force_overwrite,
+                                download_progress_callback)
 
 def is_o3de_object_update_available(object_name: str, downloadable_kwarg_key, local_last_updated: str) -> bool:
     downloadable_object_data = get_downloadable(**{downloadable_kwarg_key : object_name})
