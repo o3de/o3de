@@ -19,18 +19,18 @@ namespace HttpRequestor
         // Initializing ctor
 
         //! @param URI A universal resource indicator representing an endpoint.
-        //! @param method The http verb to use, for example HTTP_GET.
+        //! @param method The HTTP method to configure.
         //! @param callback The callback method to receive a HTTP call's response.
         TextParameters(const AZStd::string& URI, Aws::Http::HttpMethod method, const TextCallback& callback);
 
         //! @param URI A universal resource indicator representing an endpoint.
-        //! @param method The http verb to use, for example HTTP_GET.
+        //! @param method The HTTP method to configure.
         //! @param headers A map of header names and values to use.
         //! @param callback The callback method to receive a HTTP call's response.
         TextParameters(const AZStd::string& URI, Aws::Http::HttpMethod method, const Headers& headers, const TextCallback& callback);
 
         //! @param URI A universal resource indicator representing an endpoint.
-        //! @param method The http verb to use, for example HTTP_POST.
+        //! @param method The HTTP method to configure.
         //! @param headers A map of header names and values to use.
         //! @param body An data to associate with an HTTP call.
         //! @param callback The callback method to receive a HTTP call's response.
@@ -50,36 +50,35 @@ namespace HttpRequestor
         TextParameters& operator=(TextParameters&&) = default;
 
         //! Get the URI in string form as an recipient of the HTTP connection.
-        //! @return URI as string
         const Aws::String& GetURI() const
         {
             return m_URI;
         }
 
-        //! Get the method of which the HTTP request will take. GET, POST, DELETE, PUT, or HEAD.
-        //! @return The http method to use
+        //! Get the HTTP method configured to use for a request.
         Aws::Http::HttpMethod GetMethod() const
         {
             return m_method;
         }
 
-        //! Get the list of extra headers to include in the request
-        //! @return map of header name and values to use.
+        //! Get the list of extra headers to send as part of a request.
+        //! @return A map of header-value pairs.
         const Headers& GetHeaders() const
         {
             return m_headers;
         }
 
-        //! Get the stream for the body of the request
-        //! @return a content body stream that can be used to send the body to the endpoint.
+        //! Get an input stream that can be used to send the body of a request.
+        //! @return A string stream representing a request body.
         const std::shared_ptr<std::stringstream>& GetBodyStream() const
         {
             return m_bodyStream;
         }
 
-        //! Get the callback function of which to feed back the TEXT that the HTTP call resulted in.
-        //! The function also requires the HTTPResponseCode indicating if the call was successful or failed.
-        //! @return the callback function to use to return the response from the endpoint.
+        //! Get the callback function for processing text returned in an HTTP response.
+        //! Callback functions are responsible for correctly interpreting the HTTP response code, and should communicate any
+        //! failures.
+        //! @return The callback function to process endpoint responses with.
         const TextCallback& GetCallback() const
         {
             return m_callback;
