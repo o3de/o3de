@@ -59,6 +59,8 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_path, RolePath);
         item->setData(gemInfo.m_requirement, RoleRequirement);
         item->setData(gemInfo.m_downloadStatus, RoleDownloadStatus);
+        item->setData(gemInfo.m_licenseText, RoleLicenseText);
+        item->setData(gemInfo.m_licenseLink, RoleLicenseLink);
 
         appendRow(item);
 
@@ -247,6 +249,16 @@ namespace O3DE::ProjectManager
     QString GemModel::GetRequirement(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleRequirement).toString();
+    }
+
+    QString GemModel::GetLicenseText(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleLicenseText).toString();
+    }
+
+    QString GemModel::GetLicenseLink(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleLicenseLink).toString();
     }
 
     GemModel* GemModel::GetSourceModel(QAbstractItemModel* model)

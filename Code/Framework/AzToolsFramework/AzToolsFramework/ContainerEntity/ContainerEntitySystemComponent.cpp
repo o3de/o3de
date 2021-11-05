@@ -142,6 +142,15 @@ namespace AzToolsFramework
         Clear(editorEntityContextId);
     }
 
+    void ContainerEntitySystemComponent::RefreshAllContainerEntities([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
+    {
+        for (AZ::EntityId containerEntityId : m_containers)
+        {
+            ContainerEntityNotificationBus::Broadcast(
+                &ContainerEntityNotificationBus::Events::OnContainerEntityStatusChanged, containerEntityId, m_openContainers.contains(containerEntityId));
+        }
+    }
+
     ContainerEntityOperationResult ContainerEntitySystemComponent::Clear(AzFramework::EntityContextId entityContextId)
     {
         // We don't yet support multiple entity contexts, so only clear the default.

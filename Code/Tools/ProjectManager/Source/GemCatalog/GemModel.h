@@ -48,7 +48,9 @@ namespace O3DE::ProjectManager
             RoleTypes,
             RolePath,
             RoleRequirement,
-            RoleDownloadStatus
+            RoleDownloadStatus,
+            RoleLicenseText,
+            RoleLicenseLink
         };
 
         void AddGem(const GemInfo& gemInfo);
@@ -75,6 +77,8 @@ namespace O3DE::ProjectManager
         static QStringList GetFeatures(const QModelIndex& modelIndex);
         static QString GetPath(const QModelIndex& modelIndex);
         static QString GetRequirement(const QModelIndex& modelIndex);
+        static QString GetLicenseText(const QModelIndex& modelIndex);
+        static QString GetLicenseLink(const QModelIndex& modelIndex);
         static GemModel* GetSourceModel(QAbstractItemModel* model);
         static const GemModel* GetSourceModel(const QAbstractItemModel* model);
 
