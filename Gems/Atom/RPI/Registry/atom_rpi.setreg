@@ -3,7 +3,7 @@
         "Atom": {
             "RPI": {
                 "Initialization": {
-                    "CommonSrgsShaderAssetPath": "shader/sceneandviewsrgs.azshader",
+                    "CommonSrgsShaderAssetPath": "shaders/sceneandviewsrgs.azshader",
                     "ImageSystemDescriptor": {
                         "AssetStreamingImagePoolSize": 2147483648, // 2 * 1024 * 1024 * 1024
                         "SystemStreamingImagePoolSize": 134217728, // 128 * 1024 * 1024

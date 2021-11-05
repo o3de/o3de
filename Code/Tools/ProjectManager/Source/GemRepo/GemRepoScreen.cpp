@@ -126,6 +126,36 @@ namespace O3DE::ProjectManager
         }
     }
 
+    void GemRepoScreen::HandleRefreshAllButton()
+    {
+        bool refreshResult = PythonBindingsInterface::Get()->RefreshAllGemRepos();
+        Reinit();
+
+        if (!refreshResult)
+        {
+            QMessageBox::critical(
+                this, tr("Operation failed"), QString("Some repos failed to refresh."));
+        }
+    }
+
+    void GemRepoScreen::HandleRefreshRepoButton(const QModelIndex& modelIndex)
+    {
+        const QString repoUri = m_gemRepoModel->GetRepoUri(modelIndex);
+
+        AZ::Outcome<void, AZStd::string> refreshResult = PythonBindingsInterface::Get()->RefreshGemRepo(repoUri);
+        if (refreshResult.IsSuccess())
+        {
+            Reinit();
+        }
+        else
+        {
+            QMessageBox::critical(
+                this, tr("Operation failed"),
+                QString("Failed to refresh gem repo %1<br>Error:<br>%2")
+                    .arg(m_gemRepoModel->GetName(modelIndex), refreshResult.GetError().c_str()));
+        }
+    }
+
     void GemRepoScreen::FillModel()
     {
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> allGemRepoInfosResult = PythonBindingsInterface::Get()->GetAllGemRepoInfos();
@@ -237,6 +267,8 @@ namespace O3DE::ProjectManager
         m_AllUpdateButton->setObjectName("gemRepoHeaderRefreshButton");
         topMiddleHLayout->addWidget(m_AllUpdateButton);
 
+        connect(m_AllUpdateButton, &QPushButton::clicked, this, &GemRepoScreen::HandleRefreshAllButton);
+
         topMiddleHLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
         QPushButton* addRepoButton = new QPushButton(tr("Add Repository"), this);
@@ -257,29 +289,29 @@ namespace O3DE::ProjectManager
         m_gemRepoHeaderTable->setObjectName("gemRepoHeaderTable");
         m_gemRepoListHeader = m_gemRepoHeaderTable->horizontalHeader();
         m_gemRepoListHeader->setObjectName("gemRepoListHeader");
+        m_gemRepoListHeader->setDefaultAlignment(Qt::AlignLeft);
         m_gemRepoListHeader->setSectionResizeMode(QHeaderView::ResizeMode::Fixed);
 
         // Insert columns so the header labels will show up
         m_gemRepoHeaderTable->insertColumn(0);
         m_gemRepoHeaderTable->insertColumn(1);
         m_gemRepoHeaderTable->insertColumn(2);
-        m_gemRepoHeaderTable->insertColumn(3);
-        m_gemRepoHeaderTable->setHorizontalHeaderLabels({ tr("Enabled"), tr("Repository Name"), tr("Creator"), tr("Updated") });
+        m_gemRepoHeaderTable->setHorizontalHeaderLabels({ tr("Repository Name"), tr("Creator"), tr("Updated") });
 
-        const int headerExtraMargin = 10;
-        m_gemRepoListHeader->resizeSection(0, GemRepoItemDelegate::s_buttonWidth + GemRepoItemDelegate::s_buttonSpacing - 3);
-        m_gemRepoListHeader->resizeSection(1, GemRepoItemDelegate::s_nameMaxWidth + GemRepoItemDelegate::s_contentSpacing - headerExtraMargin);
-        m_gemRepoListHeader->resizeSection(2, GemRepoItemDelegate::s_creatorMaxWidth + GemRepoItemDelegate::s_contentSpacing - headerExtraMargin);
-        m_gemRepoListHeader->resizeSection(3, GemRepoItemDelegate::s_updatedMaxWidth + GemRepoItemDelegate::s_contentSpacing - headerExtraMargin);
+        const int headerExtraMargin = 18;
+        m_gemRepoListHeader->resizeSection(0, GemRepoItemDelegate::s_nameMaxWidth + GemRepoItemDelegate::s_contentSpacing + headerExtraMargin);
+        m_gemRepoListHeader->resizeSection(1, GemRepoItemDelegate::s_creatorMaxWidth + GemRepoItemDelegate::s_contentSpacing);
+        m_gemRepoListHeader->resizeSection(2, GemRepoItemDelegate::s_updatedMaxWidth + GemRepoItemDelegate::s_contentSpacing);
 
         // Required to set stylesheet in code as it will not be respected if set in qss
-        m_gemRepoHeaderTable->horizontalHeader()->setStyleSheet("QHeaderView::section { background-color:transparent; color:white; font-size:12px; text-align:left; border-style:none; }");
+        m_gemRepoHeaderTable->horizontalHeader()->setStyleSheet("QHeaderView::section { background-color:transparent; color:white; font-size:12px; border-style:none; }");
         middleVLayout->addWidget(m_gemRepoHeaderTable);
 
         m_gemRepoListView = new GemRepoListView(m_gemRepoModel, m_gemRepoModel->GetSelectionModel(), this);
         middleVLayout->addWidget(m_gemRepoListView);
 
         connect(m_gemRepoListView, &GemRepoListView::RemoveRepo, this, &GemRepoScreen::HandleRemoveRepoButton);
+        connect(m_gemRepoListView, &GemRepoListView::RefreshRepo, this, &GemRepoScreen::HandleRefreshRepoButton);
 
         hLayout->addLayout(middleVLayout);
 

@@ -56,6 +56,22 @@ namespace AZ
         {
             m_toVersion = toVersion;
         }
+        
+        bool MaterialVersionUpdate::ApplyPropertyRenames(AZ::Name& propertyId) const
+        {
+            bool renamed = false;
+
+            for (const auto& action : m_actions)
+            {
+                if (action.m_fromPropertyId == propertyId)
+                {
+                    propertyId = action.m_toPropertyId;
+                    renamed = true;
+                }
+            }
+
+            return renamed;
+        }
 
         bool MaterialVersionUpdate::ApplyVersionUpdates(MaterialAsset& materialAsset) const
         {

@@ -29,6 +29,7 @@
 #include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/MotionData/MotionDataFactory.h>
+#include <Integration/Rendering/RenderActorSettings.h>
 
 namespace EMotionFX
 {
@@ -135,6 +136,8 @@ namespace EMotionFX
         {
             RegisterMemoryCategories(MCore::GetMemoryTracker());
         }
+
+        m_renderActorSettings = AZStd::make_unique<AZ::Render::RenderActorSettings>();
     }
 
 
@@ -167,6 +170,7 @@ namespace EMotionFX
         delete m_debugDraw;
         m_debugDraw = nullptr;
 
+        m_renderActorSettings.reset();
 
         m_eventManager->Destroy();
         m_eventManager = nullptr;

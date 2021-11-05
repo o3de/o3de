@@ -6,20 +6,24 @@
  *
  */
 
-#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/Math/MatrixUtils.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/View.h>
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
 #include <EMStudio/AnimViewportWidget.h>
 #include <EMStudio/AnimViewportRenderer.h>
 #include <EMStudio/AnimViewportSettings.h>
+#include <EMStudio/AtomRenderPlugin.h>
 
 namespace EMStudio
 {
-    AnimViewportWidget::AnimViewportWidget(QWidget* parent)
-        : AtomToolsFramework::RenderViewportWidget(parent)
+    AnimViewportWidget::AnimViewportWidget(AtomRenderPlugin* parentPlugin)
+        : AtomToolsFramework::RenderViewportWidget(parentPlugin->GetInnerWidget())
+        , m_plugin(parentPlugin)
     {
         setObjectName(QString::fromUtf8("AtomViewportWidget"));
         QSizePolicy qSize(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -30,8 +34,9 @@ namespace EMStudio
         setAutoFillBackground(false);
         setStyleSheet(QString::fromUtf8(""));
 
-        m_renderer = AZStd::make_unique<AnimViewportRenderer>(GetViewportContext());
+        m_renderer = AZStd::make_unique<AnimViewportRenderer>(GetViewportContext(), m_plugin->GetRenderOptions());
 
+        LoadRenderFlags();
         SetupCameras();
         SetupCameraController();
         Reinit();
@@ -41,6 +46,7 @@ namespace EMStudio
 
     AnimViewportWidget::~AnimViewportWidget()
     {
+        SaveRenderFlags();
         AnimViewportRequestBus::Handler::BusDisconnect();
     }
 
@@ -50,7 +56,14 @@ namespace EMStudio
         {
             ResetCamera();
         }
+
         m_renderer->Reinit();
+        m_renderer->UpdateActorRenderFlag(m_renderFlags);
+    }
+
+    EMotionFX::ActorRenderFlagBitset AnimViewportWidget::GetRenderFlags() const
+    {
+        return m_renderFlags;
     }
 
     void AnimViewportWidget::SetupCameras()
@@ -123,7 +136,7 @@ namespace EMStudio
         SetCameraViewMode(CameraViewMode::DEFAULT);
     }
 
-    void AnimViewportWidget::SetCameraViewMode([[maybe_unused]]CameraViewMode mode)
+    void AnimViewportWidget::SetCameraViewMode(CameraViewMode mode)
     {
         // Set the camera view mode.
         const AZ::Vector3 targetPosition = m_renderer->GetCharacterCenter();
@@ -154,5 +167,61 @@ namespace EMStudio
             break;
         }
         GetViewportContext()->SetCameraTransform(AZ::Transform::CreateLookAt(cameraPosition, targetPosition));
+    }
+
+    void AnimViewportWidget::OnTick(float deltaTime, AZ::ScriptTimePoint time)
+    {
+        RenderViewportWidget::OnTick(deltaTime, time);
+        CalculateCameraProjection();
+    }
+
+    void AnimViewportWidget::CalculateCameraProjection()
+    {
+        auto viewportContext = GetViewportContext();
+        auto windowSize = viewportContext->GetViewportSize();
+        // Prevent devided by zero
+        const float height = AZStd::max<float>(aznumeric_cast<float>(windowSize.m_height), 1.0f);
+        const float aspectRatio = aznumeric_cast<float>(windowSize.m_width) / height;
+
+        const RenderOptions* renderOptions = m_plugin->GetRenderOptions();
+        AZ::Matrix4x4 viewToClipMatrix;
+        AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::DegToRad(renderOptions->GetFOV()), aspectRatio,
+            renderOptions->GetNearClipPlaneDistance(), renderOptions->GetFarClipPlaneDistance(), true);
+
+        viewportContext->GetDefaultView()->SetViewToClipMatrix(viewToClipMatrix);
+    }
+
+    void AnimViewportWidget::ToggleRenderFlag(EMotionFX::ActorRenderFlag flag)
+    {
+        m_renderFlags[flag] = !m_renderFlags[flag];
+        m_renderer->UpdateActorRenderFlag(m_renderFlags);
+    }
+
+    void AnimViewportWidget::LoadRenderFlags()
+    {
+        AZStd::string renderFlagsFilename(EMStudioManager::GetInstance()->GetAppDataFolder());
+        renderFlagsFilename += "AnimViewportRenderFlags.cfg";
+        QSettings settings(renderFlagsFilename.c_str(), QSettings::IniFormat, this);
+
+        for (uint32 i = 0; i < EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS; ++i)
+        {
+            QString name = QString(i);
+            const bool isEnabled = settings.value(name).toBool();
+            m_renderFlags[i] = isEnabled;
+        }
+        m_renderer->UpdateActorRenderFlag(m_renderFlags);
+    }
+
+    void AnimViewportWidget::SaveRenderFlags()
+    {
+        AZStd::string renderFlagsFilename(EMStudioManager::GetInstance()->GetAppDataFolder());
+        renderFlagsFilename += "AnimViewportRenderFlags.cfg";
+        QSettings settings(renderFlagsFilename.c_str(), QSettings::IniFormat, this);
+
+        for (uint32 i = 0; i < EMotionFX::ActorRenderFlag::NUM_RENDERFLAGS; ++i)
+        {
+            QString name = QString(i);
+            settings.setValue(name, (bool)m_renderFlags[i]);
+        }
     }
 } // namespace EMStudio

@@ -150,22 +150,43 @@ foreach(project ${LY_PROJECTS})
     # Get project name
     o3de_read_json_key(project_name ${full_directory_path}/project.json "project_name")
 
+    # The cmake tar command has a bit of a flaw
+    # Any paths within the archive files it creates are relative to the current working directory.
+    # That means with the setup of:
+    # cwd = "<project-path>/Cache/pc"
+    # project product assets = "<project-path>/Cache/pc/*"
+    # cmake dependency registry files  = "<project-path>/build/bin/Release/Registry/*"
+    # Running the tar command would result in the assets being placed in the to layout
+    # correctly, but the registry files
+    # engine.pak/
+    #    ../...build/bin/Release/Registry/cmake_dependencies.*.setreg -> Not correct
+    #    project.json -> Correct
+
     # Generate pak for project in release installs
     cmake_path(RELATIVE_PATH CMAKE_RUNTIME_OUTPUT_DIRECTORY BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE install_base_runtime_output_directory)
     set(install_engine_pak_template [=[
 if("${CMAKE_INSTALL_CONFIG_NAME}" MATCHES "^([Rr][Ee][Ll][Ee][Aa][Ss][Ee])$")
     set(install_output_folder "${CMAKE_INSTALL_PREFIX}/@install_base_runtime_output_directory@/@PAL_PLATFORM_NAME@/${CMAKE_INSTALL_CONFIG_NAME}/@LY_BUILD_PERMUTATION@")
     set(install_pak_output_folder "${install_output_folder}/Cache/@LY_ASSET_DEPLOY_ASSET_TYPE@")
+    set(runtime_output_directory_RELEASE @CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE@)
     if(NOT DEFINED LY_ASSET_DEPLOY_ASSET_TYPE)
         set(LY_ASSET_DEPLOY_ASSET_TYPE @LY_ASSET_DEPLOY_ASSET_TYPE@)
     endif()
     message(STATUS "Generating ${install_pak_output_folder}/engine.pak from @full_directory_path@/Cache/${LY_ASSET_DEPLOY_ASSET_TYPE}")
     file(MAKE_DIRECTORY "${install_pak_output_folder}")
     cmake_path(SET cache_product_path "@full_directory_path@/Cache/${LY_ASSET_DEPLOY_ASSET_TYPE}")
+    # Copy the generated cmake_dependencies.*.setreg files for loading gems in non-monolithic to the cache
+    file(GLOB gem_source_paths_setreg "${runtime_output_directory_RELEASE}/Registry/*.setreg")
+    # The MergeSettingsToRegistry_TargetBuildDependencyRegistry function looks for lowercase "registry"
+    # So make sure the to copy it to a lowercase path, so that it works on non-case sensitive filesystems
+    file(MAKE_DIRECTORY "${cache_product_path}/registry")
+    file(COPY ${gem_source_paths_setreg} DESTINATION "${cache_product_path}/registry")
+
     file(GLOB product_assets "${cache_product_path}/*")
-    if(product_assets)
+    list(APPEND pak_artifacts ${product_assets})
+    if(pak_artifacts)
         execute_process(
-            COMMAND ${CMAKE_COMMAND} -E tar "cf" "${install_pak_output_folder}/engine.pak" --format=zip -- ${product_assets}
+            COMMAND ${CMAKE_COMMAND} -E tar "cf" "${install_pak_output_folder}/engine.pak" --format=zip -- ${pak_artifacts}
             WORKING_DIRECTORY "${cache_product_path}"
             RESULT_VARIABLE archive_creation_result
         )

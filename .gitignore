@@ -12,6 +12,7 @@ Editor/EditorEventLog.xml
 Editor/EditorLayout.xml
 **/*egg-info/**
 **/*egg-link
+**/[Rr]estricted
 UserSettings.xml
 [Uu]ser/
 FrameCapture/**

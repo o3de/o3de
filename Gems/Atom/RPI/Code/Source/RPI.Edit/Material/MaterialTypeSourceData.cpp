@@ -164,16 +164,14 @@ namespace AZ
         const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName, uint32_t materialTypeVersion) const
         {
             auto groupIter = m_propertyLayout.m_properties.find(groupName);
-            if (groupIter == m_propertyLayout.m_properties.end())
+            if (groupIter != m_propertyLayout.m_properties.end())
             {
-                return nullptr;
-            }
-
-            for (const PropertyDefinition& property : groupIter->second)
-            {
-                if (property.m_name == propertyName)
+                for (const PropertyDefinition& property : groupIter->second)
                 {
-                    return &property;
+                    if (property.m_name == propertyName)
+                    {
+                        return &property;
+                    }
                 }
             }
 
@@ -185,16 +183,14 @@ namespace AZ
             // Do the search again with the new names
 
             groupIter = m_propertyLayout.m_properties.find(propertyId.GetGroupName().GetStringView());
-            if (groupIter == m_propertyLayout.m_properties.end())
+            if (groupIter != m_propertyLayout.m_properties.end())
             {
-                return nullptr;
-            }
-
-            for (const PropertyDefinition& property : groupIter->second)
-            {
-                if (property.m_name == propertyId.GetPropertyName().GetStringView())
+                for (const PropertyDefinition& property : groupIter->second)
                 {
-                    return &property;
+                    if (property.m_name == propertyId.GetPropertyName().GetStringView())
+                    {
+                        return &property;
+                    }
                 }
             }
 
@@ -302,48 +298,6 @@ namespace AZ
                     }
                 }
             }
-        }
-
-        bool MaterialTypeSourceData::ConvertPropertyValueToSourceDataFormat(const PropertyDefinition& propertyDefinition, MaterialPropertyValue& propertyValue) const
-        {
-            if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Enum && propertyValue.Is<uint32_t>())
-            {
-                const uint32_t index = propertyValue.GetValue<uint32_t>();
-                if (index >= propertyDefinition.m_enumValues.size())
-                {
-                    AZ_Error("Material source data", false, "Invalid value for material enum property: '%s'.", propertyDefinition.m_name.c_str());
-                    return false;
-                }
-
-                propertyValue = propertyDefinition.m_enumValues[index];
-                return true;
-            }
-
-            // Image asset references must be converted from asset IDs to a relative source file path
-            if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Image && propertyValue.Is<Data::Asset<ImageAsset>>())
-            {
-                const Data::Asset<ImageAsset>& imageAsset = propertyValue.GetValue<Data::Asset<ImageAsset>>();
-
-                Data::AssetInfo imageAssetInfo;
-                if (imageAsset.GetId().IsValid())
-                {
-                    bool result = false;
-                    AZStd::string rootFilePath;
-                    const AZStd::string platformName = ""; // Empty for default
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetInfoById,
-                        imageAsset.GetId(), imageAsset.GetType(), platformName, imageAssetInfo, rootFilePath);
-                    if (!result)
-                    {
-                        AZ_Error("Material source data", false, "Image asset could not be found for property: '%s'.", propertyDefinition.m_name.c_str());
-                        return false;
-                    }
-                }
-
-                propertyValue = imageAssetInfo.m_relativePath;
-                return true;
-            }
-
-            return true;
         }
 
         Outcome<Data::Asset<MaterialTypeAsset>> MaterialTypeSourceData::CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath, bool elevateWarnings) const

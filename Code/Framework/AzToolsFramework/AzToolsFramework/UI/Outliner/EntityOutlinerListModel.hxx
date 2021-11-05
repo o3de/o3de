@@ -72,6 +72,13 @@ namespace AzToolsFramework
             ColumnCount                 //!< Total number of columns
         };
 
+        enum ReparentForInvalid 
+        {
+            None,                       //!< For an invalid location the entity does not change location
+            AppendEnd,                  //!< Append Item to end of target parent list
+            AppendBeginning,            //!< Append Item to the beginning of target parent list
+        };
+
         // Note: the ColumnSortIndex column isn't shown, hence the -1 and the need for a separate counter.
         // A wrong column count number causes refresh issues and hover mismatch on model update.
         static const int VisibleColumnCount = ColumnCount - 1;
@@ -162,7 +169,7 @@ namespace AzToolsFramework
 
         // Buffer Processing Slots - These are called using single-shot events when the buffers begin to fill.
         bool CanReparentEntities(const AZ::EntityId& newParentId, const EntityIdList& selectedEntityIds) const;
-        bool ReparentEntities(const AZ::EntityId& newParentId, const EntityIdList& selectedEntityIds, const AZ::EntityId& beforeEntityId = AZ::EntityId());
+        bool ReparentEntities(const AZ::EntityId& newParentId, const EntityIdList& selectedEntityIds, const AZ::EntityId& beforeEntityId = AZ::EntityId(), ReparentForInvalid forInvalid = None);
 
         //! Use the current filter setting and re-evaluate the filter.
         void InvalidateFilter();

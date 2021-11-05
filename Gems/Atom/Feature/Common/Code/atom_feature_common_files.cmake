@@ -243,6 +243,8 @@ set(FILES
     Source/PostProcessing/LookModificationTransformPass.h
     Source/PostProcessing/LuminanceHistogramGeneratorPass.h
     Source/PostProcessing/LuminanceHistogramGeneratorPass.cpp
+    Source/PostProcessing/NewDepthOfFieldPasses.cpp
+    Source/PostProcessing/NewDepthOfFieldPasses.h
     Source/PostProcessing/PostProcessingShaderOptionBase.cpp
     Source/PostProcessing/PostProcessingShaderOptionBase.h
     Source/PostProcessing/SMAABasePass.cpp
