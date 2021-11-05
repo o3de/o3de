@@ -34,7 +34,7 @@ echo     DCCSI_MAYA_VERSION = %DCCSI_MAYA_VERSION%
 IF EXIST "%~dp0Project_Env.bat" CALL %~dp0Project_Env.bat
 
 echo ________________________________
-echo Launching Maya %DCCSI_MAYA_VERSION% for O3DE: %O#DE_PROJECT%...
+echo Launching Maya %DCCSI_MAYA_VERSION% for O3DE: %O3DE_PROJECT%...
 
 :::: Set Maya native project acess to this project
 ::set MAYA_PROJECT=%LY_PROJECT%
