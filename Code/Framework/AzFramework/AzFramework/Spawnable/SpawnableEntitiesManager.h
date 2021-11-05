@@ -96,9 +96,9 @@ namespace AzFramework
             AZ_CLASS_ALLOCATOR(Ticket, AZ::ThreadPoolAllocator, 0);
             static constexpr uint32_t Processing = AZStd::numeric_limits<uint32_t>::max();
 
-            //! Map of template entity ids to their associated instance ids.
-            //! Tickets can be used to spawn the same template entities multiple times, in any order, across multiple calls.
-            //! Since template entities can reference other entities, this map is used to fix up those references across calls
+            //! Map of prototype entity ids to their associated instance ids.
+            //! Tickets can be used to spawn the same prototype entities multiple times, in any order, across multiple calls.
+            //! Since prototype entities can reference other entities, this map is used to fix up those references across calls
             //! using the following policy:
             //! - Entities referencing an entity that hasn't been spawned yet will get a reference to the id that *will* be used
             //!   the first time that entity will be spawned.  The reference will be invalid until that entity is spawned, but
@@ -243,17 +243,17 @@ namespace AzFramework
         CommandQueueStatus ProcessQueue(Queue& queue);
 
         AZ::Entity* CloneSingleEntity(
-            const AZ::Entity& entityTemplate, EntityIdMap& templateToCloneMap, AZ::SerializeContext& serializeContext);
+            const AZ::Entity& entityPrototype, EntityIdMap& prototypeToCloneMap, AZ::SerializeContext& serializeContext);
         AZ::Entity* CloneSingleAliasedEntity(
-            const AZ::Entity& entityTemplate,
+            const AZ::Entity& entityPrototype,
             const Spawnable::EntityAlias& alias,
-            EntityIdMap& templateToCloneMap,
+            EntityIdMap& prototypeToCloneMap,
             AZ::Entity* previouslySpawnedEntity,
             AZ::SerializeContext& serializeContext);
         void AppendComponents(
             AZ::Entity& target,
-            const AZ::Entity::ComponentArrayType& componentTemplates,
-            EntityIdMap& templateToCloneMap,
+            const AZ::Entity::ComponentArrayType& componentPrototypes,
+            EntityIdMap& prototypeToCloneMap,
             AZ::SerializeContext& serializeContext);
         
         CommandResult ProcessRequest(SpawnAllEntitiesCommand& request);

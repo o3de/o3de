@@ -32,38 +32,38 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
             return result;
         }
 
-        AZ::Entity* FindEntity(AZ::EntityId entity, AzToolsFramework::Prefab::Instance& source)
+        AZ::Entity* FindEntity(AZ::EntityId entityId, AzToolsFramework::Prefab::Instance& source)
         {
             AZ::Entity* result = nullptr;
             source.GetEntities(
-                [&result, entity](AZStd::unique_ptr<AZ::Entity>& instance)
+                [&result, entityId](AZStd::unique_ptr<AZ::Entity>& entity)
                 {
-                    if (instance->GetId() != entity)
+                    if (entity->GetId() != entityId)
                     {
                         return true;
                     }
                     else
                     {
-                        result = instance.get();
+                        result = entity.get();
                         return false;
                     }
                 });
             return result;
         }
 
-        AZ::Entity* FindEntity(AZ::EntityId entity, AzFramework::Spawnable& source)
+        AZ::Entity* FindEntity(AZ::EntityId entityId, AzFramework::Spawnable& source)
         {
-            uint32_t index = AzToolsFramework::Prefab::SpawnableUtils::FindEntityIndex(entity, source);
+            uint32_t index = AzToolsFramework::Prefab::SpawnableUtils::FindEntityIndex(entityId, source);
             return index != InvalidEntityIndex ? source.GetEntities()[index].get() : nullptr;
         }
 
         template<typename T>
-        AZStd::unique_ptr<AZ::Entity> CloneEntity(AZ::EntityId entity, T& source)
+        AZStd::unique_ptr<AZ::Entity> CloneEntity(AZ::EntityId entityId, T& source)
         {
-            AZ::Entity* target = Internal::FindEntity(entity, source);
+            AZ::Entity* target = Internal::FindEntity(entityId, source);
             AZ_Assert(
                 target, "SpawnbleUtils were unable to locate entity with id %zu in Instance or Spawnable for cloning.",
-                aznumeric_cast<AZ::u64>(entity));
+                aznumeric_cast<AZ::u64>(entityId));
             auto clone = AZStd::make_unique<AZ::Entity>();
 
             static AZ::SerializeContext* sc = GetSerializeContext();
@@ -73,12 +73,12 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
             return clone;        
         }
 
-        AZStd::unique_ptr<AZ::Entity> ReplaceEntityWithPlaceholder(AZ::EntityId entity, AzToolsFramework::Prefab::Instance& source)
+        AZStd::unique_ptr<AZ::Entity> ReplaceEntityWithPlaceholder(AZ::EntityId entityId, AzToolsFramework::Prefab::Instance& source)
         {
-            auto&& [instance, alias] = source.FindInstanceAndAlias(entity);
+            auto&& [instance, alias] = source.FindInstanceAndAlias(entityId);
             AZ_Assert(
                 instance, "SpawnbleUtils were unable to locate entity alias with id %zu in Instance '%s' for replacing.",
-                aznumeric_cast<AZ::u64>(entity), source.GetTemplateSourcePath().c_str());
+                aznumeric_cast<AZ::u64>(entityId), source.GetTemplateSourcePath().c_str());
 
             EntityOptionalReference entityData = instance->GetEntity(alias);
             AZ_Assert(
@@ -88,17 +88,17 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
             return instance->ReplaceEntity(AZStd::move(placeholder), alias);
         }
 
-        AZStd::unique_ptr<AZ::Entity> ReplaceEntityWithPlaceholder(AZ::EntityId entity, AzFramework::Spawnable& source)
+        AZStd::unique_ptr<AZ::Entity> ReplaceEntityWithPlaceholder(AZ::EntityId entityId, AzFramework::Spawnable& source)
         {
-            uint32_t index = AzToolsFramework::Prefab::SpawnableUtils::FindEntityIndex(entity, source);
+            uint32_t index = AzToolsFramework::Prefab::SpawnableUtils::FindEntityIndex(entityId, source);
             AZ_Assert(
                 index != InvalidEntityIndex, "SpawnbleUtils were unable to locate entity alias with id %zu in Spawnable for replacing.",
-                aznumeric_cast<AZ::u64>(entity));
+                aznumeric_cast<AZ::u64>(entityId));
 
             AZStd::unique_ptr<AZ::Entity> original = AZStd::move(source.GetEntities()[index]);
             AZ_Assert(
                 original, "SpawnbleUtils were unable to locate entity with id %zu in Spawnable for replacing.",
-                aznumeric_cast<AZ::u64>(entity));
+                aznumeric_cast<AZ::u64>(entityId));
 
             source.GetEntities()[index] = AZStd::make_unique<AZ::Entity>(original->GetId(), original->GetName());
             
@@ -107,7 +107,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
 
         template<typename Source>
         AZStd::pair<AZStd::unique_ptr<AZ::Entity>, AzFramework::Spawnable::EntityAliasType> ApplyAlias(
-            Source& source, AZ::EntityId entity, AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType)
+            Source& source, AZ::EntityId entityId, AzToolsFramework::Prefab::PrefabConversionUtils::EntityAliasType aliasType)
         {
             namespace PCU = AzToolsFramework::Prefab::PrefabConversionUtils;
             using ResultPair = AZStd::pair<AZStd::unique_ptr<AZ::Entity>, AzFramework::Spawnable::EntityAliasType>;
@@ -118,14 +118,14 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
                 // No need to do anything as the alias is disabled.
                 return ResultPair(nullptr, AzFramework::Spawnable::EntityAliasType::Disable);
             case PCU::EntityAliasType::OptionalReplace:
-                return ResultPair(CloneEntity(entity, source), AzFramework::Spawnable::EntityAliasType::Replace);
+                return ResultPair(CloneEntity(entityId, source), AzFramework::Spawnable::EntityAliasType::Replace);
             case PCU::EntityAliasType::Replace:
-                return ResultPair(ReplaceEntityWithPlaceholder(entity, source), AzFramework::Spawnable::EntityAliasType::Replace);
+                return ResultPair(ReplaceEntityWithPlaceholder(entityId, source), AzFramework::Spawnable::EntityAliasType::Replace);
             case PCU::EntityAliasType::Additional:
                 ResultPair(AZStd::make_unique<AZ::Entity>(AZ::Entity::MakeId()), AzFramework::Spawnable::EntityAliasType::Additional);
             case PCU::EntityAliasType::Merge:
                 // Use the same entity id as the original entity so at runtime the entity ids can be verified to match.
-                ResultPair(AZStd::make_unique<AZ::Entity>(entity), AzFramework::Spawnable::EntityAliasType::Merge);
+                ResultPair(AZStd::make_unique<AZ::Entity>(entityId), AzFramework::Spawnable::EntityAliasType::Merge);
             default:
                 AZ_Assert(
                     false, "Invalid PrefabProcessorContext::EntityAliasType type (%i) provided.", aznumeric_cast<uint64_t>(aliasType));
@@ -236,7 +236,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
         }
         else
         {
-            AZ_Assert(false, "Entity with id %zu was not found in the source prefab.", static_cast<AZ::u64>(entity));
+            AZ_Assert(false, "Entity with id %llu was not found in the source prefab.", static_cast<AZ::u64>(entity));
             return nullptr;
         }
     }

@@ -71,7 +71,7 @@ namespace AzFramework
         class EntityAliasVisitorBase
         {
         protected:
-            bool IsSet(const EntityAliasList* aliases) const;
+            bool IsValid(const EntityAliasList* aliases) const;
 
             bool HasAliases(const EntityAliasList* aliases) const;
             bool AreAllSpawnablesReady(const EntityAliasList* aliases) const;
@@ -100,7 +100,7 @@ namespace AzFramework
             EntityAliasVisitor& operator=(const EntityAliasVisitor& rhs) = delete;
 
             //! Checks if the visitor was able to retrieve data. This needs to be checked before calling any other functions.
-            bool IsSet() const;
+            bool IsValid() const;
 
             bool HasAliases() const;
             bool AreAllSpawnablesReady() const;
@@ -153,7 +153,7 @@ namespace AzFramework
             ~EntityAliasConstVisitor();
 
             //! Checks if the visitor was able to retrieve data. This needs to be checked before calling any other functions.
-            bool IsSet() const;
+            bool IsValid() const;
 
             bool HasAliases() const;
             bool AreAllSpawnablesReady() const;
@@ -179,7 +179,7 @@ namespace AzFramework
         Spawnable(const Spawnable& rhs) = delete;
         Spawnable(Spawnable&& other) = delete;
         ~Spawnable() override = default;
-        
+
         Spawnable& operator=(const Spawnable& rhs) = delete;
         Spawnable& operator=(Spawnable&& other) = delete;
 

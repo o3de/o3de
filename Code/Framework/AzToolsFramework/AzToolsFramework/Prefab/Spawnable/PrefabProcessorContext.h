@@ -30,7 +30,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         Disable,         //!< No alias is added.
         OptionalReplace, //!< At runtime the entity might be replaced. If the alias is disabled the original entity will be spawned.
                          //!<   The original entity will be left in the spawnable and a copy is returned.
-        Replace,         //!< At runtime the entity will be replaced. If the alias is disabled nothing will be spawned not. The original
+        Replace,         //!< At runtime the entity will be replaced. If the alias is disabled nothing will be spawned. The original
                          //!<   entity is returned and a blank entity is left.
         Additional,      //!< At runtime the alias entity will be added as an additional but unrelated entity with a new entity id.
                          //!<   An empty entity will be returned.

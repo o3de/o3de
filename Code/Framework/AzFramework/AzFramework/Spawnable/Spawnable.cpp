@@ -32,7 +32,7 @@ namespace AzFramework
     // EntityAliasVisitorBase
     //
 
-    bool Spawnable::EntityAliasVisitorBase::IsSet(const EntityAliasList* aliases) const
+    bool Spawnable::EntityAliasVisitorBase::IsValid(const EntityAliasList* aliases) const
     {
         return aliases != nullptr;
     }
@@ -139,7 +139,7 @@ namespace AzFramework
 
     Spawnable::EntityAliasVisitor::~EntityAliasVisitor()
     {
-        if (IsSet())
+        if (IsValid())
         {
             Optimize();
 
@@ -170,9 +170,9 @@ namespace AzFramework
         return *this;
     }
 
-    bool Spawnable::EntityAliasVisitor::IsSet() const
+    bool Spawnable::EntityAliasVisitor::IsValid() const
     {
-        return EntityAliasVisitorBase::IsSet(m_entityAliasList);
+        return EntityAliasVisitorBase::IsValid(m_entityAliasList);
     }
 
     bool Spawnable::EntityAliasVisitor::HasAliases() const
@@ -413,7 +413,7 @@ namespace AzFramework
 
     Spawnable::EntityAliasConstVisitor::~EntityAliasConstVisitor()
     {
-        if (IsSet())
+        if (IsValid())
         {
             AZ_Assert(
                 m_owner.m_shareState <= ShareState::Read, "Attempting to unlock a read shared spawnable that was not in a read shared mode (%i).",
@@ -422,9 +422,9 @@ namespace AzFramework
         }
     }
 
-    bool Spawnable::EntityAliasConstVisitor::IsSet() const
+    bool Spawnable::EntityAliasConstVisitor::IsValid() const
     {
-        return EntityAliasVisitorBase::IsSet(m_entityAliasList);
+        return EntityAliasVisitorBase::IsValid(m_entityAliasList);
     }
 
     bool Spawnable::EntityAliasConstVisitor::HasAliases() const

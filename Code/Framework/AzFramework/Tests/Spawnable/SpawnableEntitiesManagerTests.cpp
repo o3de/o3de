@@ -192,6 +192,79 @@ namespace UnitTest
             }
         }
 
+        static bool AreAllEntitiesReplaced(AzFramework::SpawnableConstEntityContainerView entities)
+        {
+            for (const AZ::Entity* entity : entities)
+            {
+                if (entity)
+                {
+                    if (entity->FindComponent<SourceSpawnableComponent>() != nullptr ||
+                        entity->FindComponent<TargetSpawnableComponent>() == nullptr)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        static bool IsEveryOtherEntityAReplacement(AzFramework::SpawnableConstEntityContainerView entities)
+        {
+            bool onAlternative = true;
+            for (const AZ::Entity* entity : entities)
+            {
+                if (entity)
+                {
+                    if (onAlternative)
+                    {
+                        if (entity->FindComponent<SourceSpawnableComponent>() == nullptr ||
+                            entity->FindComponent<TargetSpawnableComponent>() != nullptr)
+                        {
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        if (entity->FindComponent<SourceSpawnableComponent>() != nullptr ||
+                            entity->FindComponent<TargetSpawnableComponent>() == nullptr)
+                        {
+                            return false;
+                        }
+                    }
+                    onAlternative = !onAlternative;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        static bool AreAllMerged(AzFramework::SpawnableConstEntityContainerView entities)
+        {
+            for (const AZ::Entity* entity : entities)
+            {
+                if (entity)
+                {
+                    if (entity->FindComponent<SourceSpawnableComponent>() == nullptr ||
+                        entity->FindComponent<TargetSpawnableComponent>() == nullptr)
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
         void CreateRecursiveHierarchy()
         {
             AzFramework::Spawnable::EntityList& entities = m_spawnable->GetEntities();
@@ -539,18 +612,7 @@ namespace UnitTest
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
-            for (const AZ::Entity* entity : entities)
-            {
-                if (entity)
-                {
-                    allReplaced = allReplaced && entity->FindComponent<SourceSpawnableComponent>() == nullptr;
-                    allReplaced = allReplaced && entity->FindComponent<TargetSpawnableComponent>() != nullptr;
-                }
-                else
-                {
-                    allReplaced = false;
-                }
-            }
+            allReplaced = AreAllEntitiesReplaced(entities);
         };
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
@@ -574,33 +636,12 @@ namespace UnitTest
             &target);
 
         size_t spawnedEntitiesCount = 0;
-        bool allReplaced = true;
-        auto callback = [&spawnedEntitiesCount, &allReplaced](
+        bool allAdded = true;
+        auto callback = [&spawnedEntitiesCount, &allAdded](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
-            bool onSource = true;
-            for (const AZ::Entity* entity : entities)
-            {
-                if (entity)
-                {
-                    if (onSource)
-                    {
-                        allReplaced = allReplaced && entity->FindComponent<SourceSpawnableComponent>() != nullptr;
-                        allReplaced = allReplaced && entity->FindComponent<TargetSpawnableComponent>() == nullptr;
-                    }
-                    else
-                    {
-                        allReplaced = allReplaced && entity->FindComponent<SourceSpawnableComponent>() == nullptr;
-                        allReplaced = allReplaced && entity->FindComponent<TargetSpawnableComponent>() != nullptr;
-                    }
-                    onSource = !onSource;
-                }
-                else
-                {
-                    allReplaced = false;
-                }
-            }
+            allAdded = IsEveryOtherEntityAReplacement(entities);
         };
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
@@ -608,7 +649,7 @@ namespace UnitTest
         m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
 
         EXPECT_EQ(8, spawnedEntitiesCount);
-        EXPECT_TRUE(allReplaced);
+        EXPECT_TRUE(allAdded);
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnAllEntities_AllAliasesWithMerge_SourceAndTargetComponentsMerged)
@@ -624,23 +665,12 @@ namespace UnitTest
             &target);
 
         size_t spawnedEntitiesCount = 0;
-        bool allReplaced = true;
-        auto callback = [&spawnedEntitiesCount, &allReplaced](
+        bool allMerged = true;
+        auto callback = [&spawnedEntitiesCount, &allMerged](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
-            for (const AZ::Entity* entity : entities)
-            {
-                if (entity)
-                {
-                    allReplaced = allReplaced && entity->FindComponent<SourceSpawnableComponent>() != nullptr;
-                    allReplaced = allReplaced && entity->FindComponent<TargetSpawnableComponent>() != nullptr;
-                }
-                else
-                {
-                    allReplaced = false;
-                }
-            }
+            allMerged = AreAllMerged(entities);
         };
         AzFramework::SpawnAllEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
@@ -648,7 +678,7 @@ namespace UnitTest
         m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
 
         EXPECT_EQ(4, spawnedEntitiesCount);
-        EXPECT_TRUE(allReplaced);
+        EXPECT_TRUE(allMerged);
     }
 
     //
@@ -1080,18 +1110,7 @@ namespace UnitTest
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
-            for (const AZ::Entity* entity : entities)
-            {
-                if (entity)
-                {
-                    allReplaced = allReplaced && entity->FindComponent<SourceSpawnableComponent>() == nullptr;
-                    allReplaced = allReplaced && entity->FindComponent<TargetSpawnableComponent>() != nullptr;
-                }
-                else
-                {
-                    allReplaced = false;
-                }
-            }
+            allReplaced = AreAllEntitiesReplaced(entities);
         };
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
@@ -1117,33 +1136,13 @@ namespace UnitTest
         AZStd::vector<uint32_t> indices = { 0, 2, 3, 1 };
 
         size_t spawnedEntitiesCount = 0;
-        bool allReplaced = true;
-        auto callback = [&spawnedEntitiesCount, &allReplaced](
+        bool allAdded = true;
+        auto callback =
+            [&spawnedEntitiesCount, &allAdded](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
-            bool onSource = true;
-            for (const AZ::Entity* entity : entities)
-            {
-                if (entity)
-                {
-                    if (onSource)
-                    {
-                        allReplaced = allReplaced && entity->FindComponent<SourceSpawnableComponent>() != nullptr;
-                        allReplaced = allReplaced && entity->FindComponent<TargetSpawnableComponent>() == nullptr;
-                    }
-                    else
-                    {
-                        allReplaced = allReplaced && entity->FindComponent<SourceSpawnableComponent>() == nullptr;
-                        allReplaced = allReplaced && entity->FindComponent<TargetSpawnableComponent>() != nullptr;
-                    }
-                    onSource = !onSource;
-                }
-                else
-                {
-                    allReplaced = false;
-                }
-            }
+            allAdded = IsEveryOtherEntityAReplacement(entities);
         };
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
@@ -1151,7 +1150,7 @@ namespace UnitTest
         m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
 
         EXPECT_EQ(8, spawnedEntitiesCount);
-        EXPECT_TRUE(allReplaced);
+        EXPECT_TRUE(allAdded);
     }
 
     TEST_F(SpawnableEntitiesManagerTest, SpawnEntities_AllAliasesWithMerge_SourceAndTargetComponentsMerged)
@@ -1169,23 +1168,12 @@ namespace UnitTest
         AZStd::vector<uint32_t> indices = { 0, 2, 3, 1 };
 
         size_t spawnedEntitiesCount = 0;
-        bool allReplaced = true;
-        auto callback = [&spawnedEntitiesCount, &allReplaced](
+        bool allMerged = true;
+        auto callback = [&spawnedEntitiesCount, &allMerged](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             spawnedEntitiesCount += entities.size();
-            for (const AZ::Entity* entity : entities)
-            {
-                if (entity)
-                {
-                    allReplaced = allReplaced && entity->FindComponent<SourceSpawnableComponent>() != nullptr;
-                    allReplaced = allReplaced && entity->FindComponent<TargetSpawnableComponent>() != nullptr;
-                }
-                else
-                {
-                    allReplaced = false;
-                }
-            }
+            allMerged = AreAllMerged(entities);
         };
         AzFramework::SpawnEntitiesOptionalArgs optionalArgs;
         optionalArgs.m_completionCallback = AZStd::move(callback);
@@ -1193,7 +1181,7 @@ namespace UnitTest
         m_manager->ProcessQueue(AzFramework::SpawnableEntitiesManager::CommandQueuePriority::Regular);
 
         EXPECT_EQ(4, spawnedEntitiesCount);
-        EXPECT_TRUE(allReplaced);
+        EXPECT_TRUE(allMerged);
     }
 
     //

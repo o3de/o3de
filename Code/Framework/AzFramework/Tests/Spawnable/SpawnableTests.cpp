@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzTest/AzTest.h>
@@ -15,6 +16,8 @@ namespace UnitTest
     class SpawnableTest : public AllocatorsFixture
     {
     public:
+        static constexpr size_t DefaultEntityAliasTestCount = 8;
+
         void SetUp() override
         {
             AllocatorsFixture::SetUp();
@@ -30,25 +33,26 @@ namespace UnitTest
             AllocatorsFixture::TearDown();
         }
 
-        void InsertEightEntities()
+        void InsertEntities(size_t count)
         {
             AzFramework::Spawnable::EntityList& entities = m_spawnable->GetEntities();
-            entities.reserve(entities.size() + 8);
-            for (size_t i = 0; i < 8; ++i)
+            entities.reserve(entities.size() + count);
+            for (size_t i = 0; i < count; ++i)
             {
                 entities.emplace_back(AZStd::make_unique<AZ::Entity>());
             }
         }
 
-        void InsertEightEntityAliases(
-            const AZStd::array<uint32_t, 8>& sourceIds,
-            const AZStd::array<uint32_t, 8>& targetIds,
-            const AZStd::array<AzFramework::Spawnable::EntityAliasType, 8>& aliasTypes,
+        template<size_t Count>
+        void InsertEntityAliases(
+            const AZStd::array<uint32_t, Count>& sourceIds,
+            const AZStd::array<uint32_t, Count>& targetIds,
+            const AZStd::array<AzFramework::Spawnable::EntityAliasType, Count>& aliasTypes,
             bool queueLoad = false)
         {
             AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
 
-            for (uint32_t i = 0; i < 8; ++i)
+            for (uint32_t i = 0; i < Count; ++i)
             {
                 AZ::Data::Asset<AzFramework::Spawnable> spawnable(
                     AZ::Data::AssetId(AZ::Uuid("{4CBEC17A-52D6-42D5-9037-F4C05B9CE1D9}"), i), azrtti_typeid<AzFramework::Spawnable>());
@@ -56,20 +60,30 @@ namespace UnitTest
             }
         }
 
-        void InsertEightEntityAliases(bool queueLoad)
+        template<size_t Count>
+        void InsertEntityAliases(bool queueLoad)
         {
             using namespace AzFramework;
-            InsertEightEntityAliases(
-                { 0, 1, 2, 3, 4, 5, 6, 7 }, { 0, 1, 2, 3, 4, 5, 6, 7 },
-                { Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace,
-                  Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace,
-                  Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace },
-                queueLoad);
+
+            AZStd::array<uint32_t, Count> ids;
+            for (uint32_t i=0; i<aznumeric_cast<uint32_t>(Count); ++i)
+            {
+                ids[i] = i;
+            }
+
+            AZStd::array<AzFramework::Spawnable::EntityAliasType, Count> aliasTypes;
+            for (uint32_t i = 0; i < aznumeric_cast<uint32_t>(Count); ++i)
+            {
+                aliasTypes[i] = Spawnable::EntityAliasType::Replace;
+            }
+
+            InsertEntityAliases<Count>(ids, ids, aliasTypes, queueLoad);
         }
 
-        void InsertEightEntityAliases()
+        template<size_t Count>
+        void InsertEntityAliases()
         {
-            InsertEightEntityAliases(false);
+            InsertEntityAliases<Count>(false);
         }
 
     protected:
@@ -84,25 +98,25 @@ namespace UnitTest
     TEST_F(SpawnableTest, TryGetAliasesConst_GetVisitor_VisitorDataIsAvailable)
     {
         AzFramework::Spawnable::EntityAliasConstVisitor visitor = m_spawnable->TryGetAliasesConst();
-        EXPECT_TRUE(visitor.IsSet());
+        EXPECT_TRUE(visitor.IsValid());
     }
 
     TEST_F(SpawnableTest, TryGetAliasesConst_VisitorThatIsNotReadShared_VisitorDataIsNotAvailable)
     {
         AzFramework::Spawnable::EntityAliasVisitor readWriteVisitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(readWriteVisitor.IsSet());
+        ASSERT_TRUE(readWriteVisitor.IsValid());
 
         AzFramework::Spawnable::EntityAliasConstVisitor visitor = m_spawnable->TryGetAliasesConst();
-        EXPECT_FALSE(visitor.IsSet());
+        EXPECT_FALSE(visitor.IsValid());
     }
 
     TEST_F(SpawnableTest, TryGetAliasesConst_VisitorThatIsAlreadyReadShared_VisitorDataIsAvailable)
     {
         AzFramework::Spawnable::EntityAliasConstVisitor readVisitor = m_spawnable->TryGetAliasesConst();
-        ASSERT_TRUE(readVisitor.IsSet());
+        ASSERT_TRUE(readVisitor.IsValid());
 
         AzFramework::Spawnable::EntityAliasConstVisitor visitor = m_spawnable->TryGetAliasesConst();
-        EXPECT_TRUE(visitor.IsSet());
+        EXPECT_TRUE(visitor.IsValid());
     }
 
 
@@ -113,16 +127,16 @@ namespace UnitTest
     TEST_F(SpawnableTest, TryGetAliases_GetVisitor_VisitorDataIsAvailable)
     {
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        EXPECT_TRUE(visitor.IsSet());
+        EXPECT_TRUE(visitor.IsValid());
     }
 
     TEST_F(SpawnableTest, TryGetAliasesConst_VisitorThatIsAlreadyShared_VisitorDataNotIsAvailable)
     {
         AzFramework::Spawnable::EntityAliasConstVisitor readVisitor = m_spawnable->TryGetAliasesConst();
-        ASSERT_TRUE(readVisitor.IsSet());
+        ASSERT_TRUE(readVisitor.IsValid());
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        EXPECT_FALSE(visitor.IsSet());
+        EXPECT_FALSE(visitor.IsValid());
     }
 
 
@@ -138,17 +152,17 @@ namespace UnitTest
     TEST_F(SpawnableTest, EntityAliasVisitor_HasAliases_EmptyAliasList_ReturnsFalse)
     {
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         EXPECT_FALSE(visitor.HasAliases());
     }
 
-    TEST_F(SpawnableTest, EntityAliasVisitor_HasAliases_FilledInAliasList_ReturnsTue)
+    TEST_F(SpawnableTest, EntityAliasVisitor_HasAliases_FilledInAliasList_ReturnsTrue)
     {
-        InsertEightEntities();
-        InsertEightEntityAliases();
+        InsertEntities(8);
+        InsertEntityAliases<8>();
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         EXPECT_TRUE(visitor.HasAliases());
     }
@@ -160,10 +174,10 @@ namespace UnitTest
 
     TEST_F(SpawnableTest, EntityAliasVisitor_Optimize_SortEntityAliases_AliasesAreSortedBySourceAndTargetId)
     {
-        InsertEightEntities();
-        InsertEightEntityAliases();
+        InsertEntities(DefaultEntityAliasTestCount);
+        InsertEntityAliases<DefaultEntityAliasTestCount>();
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         // Optimize doesn't need to be explicitly called because the setup of the aliases will cause the alias list to be sorted and optimized.
 
@@ -188,15 +202,15 @@ namespace UnitTest
         SpawnableTest, EntityAliasVisitor_Optimize_RemoveUnused_OnlySecondToLastAliasRemains)
     {
         using namespace AzFramework;
-        InsertEightEntities();
-        InsertEightEntityAliases(
+        InsertEntities(8);
+        InsertEntityAliases<8>(
             { 0, 0, 0, 0, 0, 0, 0, 0 }, { 0, 1, 2, 3, 4, 5, 6, 7 },
             { Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Disable,
               Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Disable,
               Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Original });
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         EXPECT_EQ(1, AZStd::distance(visitor.begin(), visitor.end()));
         EXPECT_EQ(Spawnable::EntityAliasType::Replace, visitor.begin()->m_aliasType);
@@ -206,15 +220,15 @@ namespace UnitTest
     TEST_F(SpawnableTest, EntityAliasVisitor_Optimize_AddAdditional_ThreeAdditionalAliasesAreAdded)
     {
         using namespace AzFramework;
-        InsertEightEntities();
-        InsertEightEntityAliases(
+        InsertEntities(8);
+        InsertEntityAliases<8>(
             { 0, 0, 0, 0, 1, 2, 2, 2 }, { 0, 1, 2, 3, 4, 5, 6, 7 },
             { Spawnable::EntityAliasType::Additional, Spawnable::EntityAliasType::Additional, Spawnable::EntityAliasType::Additional,
               Spawnable::EntityAliasType::Additional, Spawnable::EntityAliasType::Additional, Spawnable::EntityAliasType::Additional,
               Spawnable::EntityAliasType::Additional, Spawnable::EntityAliasType::Additional });
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         EXPECT_EQ(11, AZStd::distance(visitor.begin(), visitor.end()));
         EXPECT_EQ(Spawnable::EntityAliasType::Original, visitor.begin()->m_aliasType);
@@ -225,15 +239,15 @@ namespace UnitTest
     TEST_F(SpawnableTest, EntityAliasVisitor_Optimize_OriginalsOnly_AliasListIsEmpty)
     {
         using namespace AzFramework;
-        InsertEightEntities();
-        InsertEightEntityAliases(
+        InsertEntities(8);
+        InsertEntityAliases<8>(
             { 0, 0, 0, 0, 0, 0, 0, 0 }, { 0, 1, 2, 3, 4, 5, 6, 7 },
             { Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Original,
               Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Original,
               Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Original });
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         EXPECT_EQ(0, AZStd::distance(visitor.begin(), visitor.end()));
     }
@@ -241,15 +255,15 @@ namespace UnitTest
     TEST_F(SpawnableTest, EntityAliasVisitor_Optimize_MixedOriginals_AllOriginalsRemoved)
     {
         using namespace AzFramework;
-        InsertEightEntities();
-        InsertEightEntityAliases(
+        InsertEntities(8);
+        InsertEntityAliases<8>(
             { 0, 0, 0, 1, 1, 2, 2, 2 }, { 0, 1, 2, 3, 4, 5, 6, 7 },
             { Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Original,
               Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Disable, Spawnable::EntityAliasType::Original,
               Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Original });
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         EXPECT_EQ(2, AZStd::distance(visitor.begin(), visitor.end()));
         EXPECT_EQ(Spawnable::EntityAliasType::Disable, visitor.begin()->m_aliasType);
@@ -259,15 +273,15 @@ namespace UnitTest
     TEST_F(SpawnableTest, EntityAliasVisitor_Optimize_MergeAfterOriginal_NoAdditionalOriginalIsInserted)
     {
         using namespace AzFramework;
-        InsertEightEntities();
-        InsertEightEntityAliases(
+        InsertEntities(8);
+        InsertEntityAliases<8>(
             { 0, 0, 1, 1, 2, 2, 2, 2 }, { 0, 1, 2, 3, 4, 5, 6, 7 },
             { Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Merge, Spawnable::EntityAliasType::Replace,
               Spawnable::EntityAliasType::Merge, Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Original,
               Spawnable::EntityAliasType::Original, Spawnable::EntityAliasType::Original });
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         EXPECT_EQ(4, AZStd::distance(visitor.begin(), visitor.end()));
         EXPECT_EQ(Spawnable::EntityAliasType::Original, visitor.begin()->m_aliasType);
@@ -284,15 +298,15 @@ namespace UnitTest
     TEST_F(SpawnableTest, EntityAliasVisitor_UpdateAliasType_AllToOriginal_NoAliasesAfterOptimization)
     {
         using namespace AzFramework;
-        InsertEightEntities();
-        InsertEightEntityAliases(
+        InsertEntities(8);
+        InsertEntityAliases<8>(
             { 0, 1, 2, 3, 4, 5, 6, 7 }, { 0, 1, 2, 3, 4, 5, 6, 7 },
             { Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace,
               Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace,
               Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace });
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         for (uint32_t i = 0; i < 8; ++i)
         {
@@ -317,15 +331,15 @@ namespace UnitTest
     TEST_F(SpawnableTest, EntityAliasVisitor_UpdateAliases_AllToOriginal_NoAliasesAfterOptimization)
     {
         using namespace AzFramework;
-        InsertEightEntities();
-        InsertEightEntityAliases(
+        InsertEntities(8);
+        InsertEntityAliases<8>(
             { 0, 1, 2, 3, 4, 5, 6, 7 }, { 0, 1, 2, 3, 4, 5, 6, 7 },
             { Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace,
               Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace,
               Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace });
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         auto callback =
             [](Spawnable::EntityAliasType& aliasType, bool& /*queueLoad*/, const AZ::Data::Asset<Spawnable>& /*aliasedSpawnable*/,
@@ -348,15 +362,15 @@ namespace UnitTest
     TEST_F(SpawnableTest, EntityAliasVisitor_UpdateAliases_FilterByTag_OnlyOneAliasUpdated)
     {
         using namespace AzFramework;
-        InsertEightEntities();
-        InsertEightEntityAliases(
+        InsertEntities(8);
+        InsertEntityAliases<8>(
             { 0, 1, 2, 3, 4, 5, 6, 7 }, { 0, 1, 2, 3, 4, 5, 6, 7 },
             { Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace,
               Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace,
               Spawnable::EntityAliasType::Replace, Spawnable::EntityAliasType::Replace });
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         bool correctTag = false;
         size_t numberOfUpdates = 0;
@@ -381,11 +395,11 @@ namespace UnitTest
     TEST_F(SpawnableTest, EntityAliasVisitor_AreAllSpawnablesReady_CheckFakeLoadedAssets_ReturnsTrue)
     {
         using namespace AzFramework;
-        InsertEightEntities();
-        InsertEightEntityAliases();
+        InsertEntities(DefaultEntityAliasTestCount);
+        InsertEntityAliases<DefaultEntityAliasTestCount>();
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         EXPECT_TRUE(visitor.AreAllSpawnablesReady());
     }
@@ -393,11 +407,11 @@ namespace UnitTest
     TEST_F(SpawnableTest, EntityAliasVisitor_AreAllSpawnablesReady_CheckFakeNotLoadedAssets_ReturnsFalse)
     {
         using namespace AzFramework;
-        InsertEightEntities();
-        InsertEightEntityAliases(true);
+        InsertEntities(8);
+        InsertEntityAliases<8>(true);
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         EXPECT_FALSE(visitor.AreAllSpawnablesReady());
     }
@@ -410,11 +424,11 @@ namespace UnitTest
     TEST_F(SpawnableTest, EntityAliasVisitor_ListTargetSpawnables_ListAllTargetAssets_AllTargetsListed)
     {
         using namespace AzFramework;
-        InsertEightEntities();
-        InsertEightEntityAliases();
+        InsertEntities(DefaultEntityAliasTestCount);
+        InsertEntityAliases<DefaultEntityAliasTestCount>();
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         size_t count = 0;
         bool correctAssets = true;
@@ -432,11 +446,11 @@ namespace UnitTest
     TEST_F(SpawnableTest, EntityAliasVisitor_ListTargetSpawnables_ListTaggedTargetAssets_OneAssetListed)
     {
         using namespace AzFramework;
-        InsertEightEntities();
-        InsertEightEntityAliases();
+        InsertEntities(DefaultEntityAliasTestCount);
+        InsertEntityAliases<DefaultEntityAliasTestCount>();
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         size_t count = 0;
         bool correctAsset = false;
@@ -459,11 +473,11 @@ namespace UnitTest
     TEST_F(SpawnableTest, EntityAliasVisitor_ListSpawnablesRequiringLoad_AllSetToLoaded_AllTargetsListed)
     {
         using namespace AzFramework;
-        InsertEightEntities();
-        InsertEightEntityAliases(true);
+        InsertEntities(DefaultEntityAliasTestCount);
+        InsertEntityAliases<DefaultEntityAliasTestCount>(true);
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         size_t count = 0;
         bool correctAssets = true;
@@ -481,11 +495,11 @@ namespace UnitTest
     TEST_F(SpawnableTest, EntityAliasVisitor_ListSpawnablesRequiringLoad_AllSetToNotLoaded_NoTargetsListed)
     {
         using namespace AzFramework;
-        InsertEightEntities();
-        InsertEightEntityAliases(false);
+        InsertEntities(DefaultEntityAliasTestCount);
+        InsertEntityAliases<DefaultEntityAliasTestCount>(false);
 
         AzFramework::Spawnable::EntityAliasVisitor visitor = m_spawnable->TryGetAliases();
-        ASSERT_TRUE(visitor.IsSet());
+        ASSERT_TRUE(visitor.IsValid());
 
         size_t count = 0;
         auto callback = [&count](const AZ::Data::Asset<Spawnable>& /*targetSpawnable*/)

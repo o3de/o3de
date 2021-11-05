@@ -300,20 +300,20 @@ namespace AzFramework
         }
     }
 
-    AZ::Entity* SpawnableEntitiesManager::CloneSingleEntity(const AZ::Entity& entityTemplate,
-        EntityIdMap& templateToCloneMap, AZ::SerializeContext& serializeContext)
+    AZ::Entity* SpawnableEntitiesManager::CloneSingleEntity(const AZ::Entity& entityPrototype,
+        EntityIdMap& prototypeToCloneMap, AZ::SerializeContext& serializeContext)
     {
         // If the same ID gets remapped more than once, preserve the original remapping instead of overwriting it.
         constexpr bool allowDuplicateIds = false;
 
         return AZ::IdUtils::Remapper<AZ::EntityId, allowDuplicateIds>::CloneObjectAndGenerateNewIdsAndFixRefs(
-            &entityTemplate, templateToCloneMap, &serializeContext);
+            &entityPrototype, prototypeToCloneMap, &serializeContext);
     }
 
     AZ::Entity* SpawnableEntitiesManager::CloneSingleAliasedEntity(
-        const AZ::Entity& entityTemplate,
+        const AZ::Entity& entityPrototype,
         const Spawnable::EntityAlias& alias,
-        EntityIdMap& templateToCloneMap,
+        EntityIdMap& prototypeToCloneMap,
         AZ::Entity* previouslySpawnedEntity,
         AZ::SerializeContext& serializeContext)
     {
@@ -324,26 +324,27 @@ namespace AzFramework
         {
         case Spawnable::EntityAliasType::Original:
             // Behave as the original version.
-            clone = CloneSingleEntity(entityTemplate, templateToCloneMap, serializeContext);
+            clone = CloneSingleEntity(entityPrototype, prototypeToCloneMap, serializeContext);
             AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
             return clone;
         case Spawnable::EntityAliasType::Disable:
             // Do nothing.
             return nullptr;
         case Spawnable::EntityAliasType::Replace:
-            clone = CloneSingleEntity(*(alias.m_spawnable->GetEntities()[alias.m_targetIndex]), templateToCloneMap, serializeContext);
+            clone = CloneSingleEntity(*(alias.m_spawnable->GetEntities()[alias.m_targetIndex]), prototypeToCloneMap, serializeContext);
             AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
             return clone;
         case Spawnable::EntityAliasType::Additional:
             // The asset handler will have sorted and inserted a Spawnable::EntityAliasType::Original, so the just
             // spawn the additional entity.
-            clone = CloneSingleEntity(*(alias.m_spawnable->GetEntities()[alias.m_targetIndex]), templateToCloneMap, serializeContext);
+            clone = CloneSingleEntity(*(alias.m_spawnable->GetEntities()[alias.m_targetIndex]), prototypeToCloneMap, serializeContext);
             AZ_Assert(clone != nullptr, "Failed to clone spawnable entity.");
             return clone;
         case Spawnable::EntityAliasType::Merge:
             AZ_Assert(previouslySpawnedEntity != nullptr, "Merging components but there's no entity to add to yet.");
             AppendComponents(
-                *previouslySpawnedEntity, alias.m_spawnable->GetEntities()[alias.m_targetIndex]->GetComponents(), templateToCloneMap, serializeContext);
+                *previouslySpawnedEntity, alias.m_spawnable->GetEntities()[alias.m_targetIndex]->GetComponents(), prototypeToCloneMap,
+                serializeContext);
             return nullptr;
         default:
             AZ_Assert(false, "Unsupported spawnable entity alias type: %i", alias.m_aliasType);
@@ -353,17 +354,17 @@ namespace AzFramework
 
     void SpawnableEntitiesManager::AppendComponents(
         AZ::Entity& target,
-        const AZ::Entity::ComponentArrayType& componentTemplates,
-        EntityIdMap& templateToCloneMap,
+        const AZ::Entity::ComponentArrayType& componentPrototypes,
+        EntityIdMap& prototypeToCloneMap,
         AZ::SerializeContext& serializeContext)
     {
         // Only components are added and entities are looked up so no duplicate entity ids should be encountered.
         constexpr bool allowDuplicateIds = false;
 
-        for (const AZ::Component* component : componentTemplates)
+        for (const AZ::Component* component : componentPrototypes)
         {
             AZ::Component* clone = AZ::IdUtils::Remapper<AZ::EntityId, allowDuplicateIds>::CloneObjectAndGenerateNewIdsAndFixRefs(
-                component, templateToCloneMap, &serializeContext);
+                component, prototypeToCloneMap, &serializeContext);
             AZ_Assert(clone, "Unable to clone component for entity '%s' (%zu).", target.GetName().c_str(), target.GetId());
             [[maybe_unused]] bool result = target.AddComponent(clone);
             AZ_Assert(result, "Unable to add cloned component to entity '%s' (%zu).", target.GetName().c_str(), target.GetId());
@@ -409,7 +410,7 @@ namespace AzFramework
         if (ticket.m_spawnable.IsReady() && request.m_requestId == ticket.m_currentRequestId)
         {
             if (Spawnable::EntityAliasConstVisitor aliases = ticket.m_spawnable->TryGetAliasesConst();
-                aliases.IsSet() && aliases.AreAllSpawnablesReady())
+                aliases.IsValid() && aliases.AreAllSpawnablesReady())
             {
                 AZStd::vector<AZ::Entity*>& spawnedEntities = ticket.m_spawnedEntities;
                 AZStd::vector<uint32_t>& spawnedEntityIndices = ticket.m_spawnedEntityIndices;
@@ -417,7 +418,7 @@ namespace AzFramework
                 // Keep track how many entities there were in the array initially
                 size_t spawnedEntitiesInitialCount = spawnedEntities.size();
 
-                // These are 'template' entities we'll be cloning from
+                // These are 'prototype' entities we'll be cloning from
                 const Spawnable::EntityList& entitiesToSpawn = ticket.m_spawnable->GetEntities();
                 uint32_t entitiesToSpawnSize = aznumeric_caster(entitiesToSpawn.size());
 
@@ -527,7 +528,7 @@ namespace AzFramework
         if (ticket.m_spawnable.IsReady() && request.m_requestId == ticket.m_currentRequestId)
         {
             if (Spawnable::EntityAliasConstVisitor aliases = ticket.m_spawnable->TryGetAliasesConst();
-                aliases.IsSet() && aliases.AreAllSpawnablesReady())
+                aliases.IsValid() && aliases.AreAllSpawnablesReady())
             {
                 AZStd::vector<AZ::Entity*>& spawnedEntities = ticket.m_spawnedEntities;
                 AZStd::vector<uint32_t>& spawnedEntityIndices = ticket.m_spawnedEntityIndices;
@@ -538,13 +539,13 @@ namespace AzFramework
                 // Keep track of how many entities there were in the array initially
                 size_t spawnedEntitiesInitialCount = spawnedEntities.size();
 
-                // These are 'template' entities we'll be cloning from
+                // These are 'prototype' entities we'll be cloning from
                 const Spawnable::EntityList& entitiesToSpawn = ticket.m_spawnable->GetEntities();
                 size_t entitiesToSpawnSize = request.m_entityIndices.size();
 
                 if (ticket.m_entityIdReferenceMap.empty() || !request.m_referencePreviouslySpawnedEntities)
                 {
-                    // This map keeps track of ids from template (spawnable) to clone (instance) allowing patch ups of fields referring
+                    // This map keeps track of ids from prototype (spawnable) to clone (instance) allowing patch ups of fields referring
                     // to entityIds outside of a given entity.
                     // We pre-generate the full set of entity id to new entity id mappings, so that during the clone operation below,
                     // any entity references that point to a not-yet-cloned entity will still get their ids remapped correctly.
@@ -754,7 +755,7 @@ namespace AzFramework
             // Pre-generate the full set of entity id to new entity id mappings, so that during the clone operation below,
             // any entity references that point to a not-yet-cloned entity will still get their ids remapped correctly.
             // This map is intentionally cleared out and regenerated here to ensure that we're starting fresh with mappings that
-            // match the new set of template entities getting spawned.
+            // match the new set of prototype entities getting spawned.
             InitializeEntityIdMappings(entities, ticket.m_entityIdReferenceMap, ticket.m_previouslySpawned);
 
             if (ticket.m_loadAll)
@@ -819,7 +820,7 @@ namespace AzFramework
         Ticket& ticket = *request.m_ticket;
         if (ticket.m_spawnable.IsReady() && request.m_requestId == ticket.m_currentRequestId)
         {
-            if (Spawnable::EntityAliasVisitor aliases = ticket.m_spawnable->TryGetAliases(); aliases.IsSet())
+            if (Spawnable::EntityAliasVisitor aliases = ticket.m_spawnable->TryGetAliases(); aliases.IsValid())
             {
                 for (EntityAliasTypeChange& replacement : request.m_entityAliases)
                 {
@@ -921,7 +922,7 @@ namespace AzFramework
             if (request.m_checkAliasSpawnables)
             {
                 if (Spawnable::EntityAliasConstVisitor visitor = ticket.m_spawnable->TryGetAliasesConst();
-                    !visitor.IsSet() || !visitor.AreAllSpawnablesReady())
+                    !visitor.IsValid() || !visitor.AreAllSpawnablesReady())
                 {
                     return CommandResult::Requeue;
                 }

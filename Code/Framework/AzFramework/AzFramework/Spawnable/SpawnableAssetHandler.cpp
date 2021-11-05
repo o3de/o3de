@@ -103,7 +103,7 @@ namespace AzFramework
         const AZ::Data::AssetFilterCB& assetLoadFilterCB)
     {
         Spawnable::EntityAliasVisitor aliases = spawnable->TryGetAliases();
-        AZ_Assert(aliases.IsSet(), "Newly created Spawnable '%s' was already locked.", asset.GetHint().c_str());
+        AZ_Assert(aliases.IsValid(), "Newly created Spawnable '%s' was already locked.", asset.GetHint().c_str());
         if (aliases.HasAliases())
         {
             AZ_Assert(
