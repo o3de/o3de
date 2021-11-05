@@ -314,12 +314,21 @@ namespace AZ
 
                             AtomToolsFramework::ConvertToPropertyConfig(propertyConfig, propertyDefinition);
 
+                            const auto& propertyIndex =
+                                m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
+
                             propertyConfig.m_groupName = groupDisplayName;
-                            const auto& propertyIndex = m_editData.m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
                             propertyConfig.m_showThumbnail = true;
-                            propertyConfig.m_defaultValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
-                            propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
-                            propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
+
+                            propertyConfig.m_defaultValue = AtomToolsFramework::ConvertToEditableType(
+                                m_editData.m_materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()]);
+
+                            // There is no explicit parent material here. Material instance property overrides replace the values from the
+                            // assigned material asset. Its values should be treated as parent, for comparison, in this case.
+                            propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(
+                                m_editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
+                            propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(
+                                m_editData.m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
                             group.m_properties.emplace_back(propertyConfig);
                         }
                     }
@@ -351,6 +360,25 @@ namespace AZ
                 MaterialComponentRequestBus::EventResult(
                     m_editData.m_materialPropertyOverrideMap, m_entityId, &MaterialComponentRequestBus::Events::GetPropertyOverrides,
                     m_materialAssignmentId);
+
+                // Apply any automatic property renames so that the material inspector will be properly initialized with the right values
+                // for properties that have new names.
+                {
+                    AZStd::vector<AZStd::pair<Name, Name>> renamedProperties;
+                    for (auto& propertyOverridePair : m_editData.m_materialPropertyOverrideMap)
+                    {
+                        Name name = propertyOverridePair.first;
+                        if (m_materialInstance->GetAsset()->GetMaterialTypeAsset()->ApplyPropertyRenames(name))
+                        {
+                            renamedProperties.emplace_back(propertyOverridePair.first, name);
+                        }
+                    }
+                    for (const auto& [oldName, newName] : renamedProperties)
+                    {
+                        m_editData.m_materialPropertyOverrideMap[newName] = m_editData.m_materialPropertyOverrideMap[oldName];
+                        m_editData.m_materialPropertyOverrideMap.erase(oldName);
+                    }
+                }
 
                 for (auto& group : m_groups)
                 {

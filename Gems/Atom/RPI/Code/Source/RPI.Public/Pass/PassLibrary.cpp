@@ -85,47 +85,80 @@ namespace AZ
             return (GetPassesForTemplate(templateName).size() > 0);
         }
 
-        AZStd::vector<Pass*> PassLibrary::FindPasses(const PassFilter& passFilter) const
+        void PassLibrary::ForEachPass(const PassFilter& passFilter, AZStd::function<PassFilterExecutionFlow(Pass*)> passFunction)
         {
-            const Name* passName = passFilter.GetPassName();
+            uint32_t filterOptions = passFilter.GetEnabledFilterOptions();
 
-            AZStd::vector<Pass*> result;
-
-            if (passName)
+            // A lambda function which visits each pass in a pass list, if the pass matches the pass filter, then call the pass function
+            auto visitList = [passFilter, passFunction](const AZStd::vector<Pass*>& passList, uint32_t options) -> PassFilterExecutionFlow
             {
-                // If the pass' name is known, find passes with matching names first
-                const auto constItr = m_passNameMapping.find(*passName);
-                if (constItr == m_passNameMapping.end())
+                if (passList.size() == 0)
                 {
-                    return result;
+                    return PassFilterExecutionFlow::ContinueVisitingPasses;
                 }
-
-                const AZStd::vector<Pass*>& passes = constItr->second;
-
-                for (Pass* pass : passes)
+                // if there is not other filter options enabled, skip the filter and call pass functions directly
+                if (options == PassFilter::FilterOptions::Empty)
                 {
-                    if (passFilter.Matches(pass))
+                    for (Pass* pass : passList)
                     {
-                        result.push_back(pass);
-                    }
-                }
-            }
-            else
-            {
-                // If the filter doesn't know matching pass' name, need to go through all registered passes
-                for (auto& namePasses : m_passNameMapping)
-                {
-                    for (Pass* pass : namePasses.second)
-                    {
-                        if (passFilter.Matches(pass))
+                        // If user want to skip processing, return directly.
+                        if (passFunction(pass) == PassFilterExecutionFlow::StopVisitingPasses)
                         {
-                            result.push_back(pass);
+                            return PassFilterExecutionFlow::StopVisitingPasses;
+                        }
+                    }
+                    return PassFilterExecutionFlow::ContinueVisitingPasses;
+                }
+
+                // Check with the pass filter and call pass functions
+                for (Pass* pass : passList)
+                {
+                    if (passFilter.Matches(pass, options))
+                    {
+                        if (passFunction(pass) == PassFilterExecutionFlow::StopVisitingPasses)
+                        {
+                            return PassFilterExecutionFlow::StopVisitingPasses;
                         }
                     }
                 }
+                 return PassFilterExecutionFlow::ContinueVisitingPasses;
+            };
+
+            // Check pass template name first
+            if (filterOptions & PassFilter::FilterOptions::PassTemplateName)
+            {
+                auto entry = GetEntry(passFilter.GetPassTemplateName());
+                if (!entry)
+                {
+                    return;
+                }
+
+                filterOptions &= ~(PassFilter::FilterOptions::PassTemplateName);
+                visitList(entry->m_passes, filterOptions);
+                return;
+            }
+            else if (filterOptions & PassFilter::FilterOptions::PassName)
+            {
+                const auto constItr = m_passNameMapping.find(passFilter.GetPassName());
+                if (constItr == m_passNameMapping.end())
+                {
+                    return;
+                }
+
+                filterOptions &= ~(PassFilter::FilterOptions::PassName);
+                visitList(constItr->second, filterOptions);
+                return;
             }
 
-            return result;
+            // check againest every passes. This might be slow 
+            AZ_PROFILE_SCOPE(RPI, "PassLibrary::ForEachPass");
+            for (auto& namePasses : m_passNameMapping)
+            {
+                if (visitList(namePasses.second, filterOptions) == PassFilterExecutionFlow::StopVisitingPasses)
+                {
+                    return;
+                }
+            }
         }
 
         // Add Functions...
@@ -201,6 +234,19 @@ namespace AZ
 
             m_templateEntries[name].m_template = std::move(passTemplate);
             return true;
+        }
+
+        void PassLibrary::RemovePassTemplate(const Name& name)
+        {
+            auto itr = m_templateEntries.find(name);
+            if (itr != m_templateEntries.end())
+            {
+                AZ_Assert(itr->second.m_passes.empty(), "Can not delete PassTemplate '%s' because there are %zu Passes referencing it",
+                    name.GetCStr(), itr->second.m_passes.size());
+                AZ_Assert(!itr->second.m_mappingAssetId.IsValid(), "Can not delete PassTemplate '%s' because it was created from an asset",
+                    name.GetCStr());
+                m_templateEntries.erase(itr);
+            }
         }
 
         void PassLibrary::RemovePassFromLibrary(Pass* pass)
@@ -419,3 +465,4 @@ namespace AZ
 
     }   // namespace RPI
 }   // namespace AZ
+

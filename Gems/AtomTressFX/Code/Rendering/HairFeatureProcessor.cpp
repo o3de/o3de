@@ -19,6 +19,7 @@
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -142,12 +143,13 @@ namespace AZ
                 EnablePasses(true);
             }
 
-            void HairFeatureProcessor::EnablePasses([[maybe_unused]] bool enable)
+            void HairFeatureProcessor::EnablePasses(bool enable)
             {
-                RPI::Ptr<RPI::Pass> desiredPass = m_renderPipeline->GetRootPass()->FindPassByNameRecursive(HairParentPassName);
-                if (desiredPass)
+                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(HairParentPassName, GetParentScene());
+                RPI::Pass* pass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
+                if (pass)
                 {
-                    desiredPass->SetEnabled(enable);
+                    pass->SetEnabled(enable);
                 }
             }
 
@@ -309,10 +311,17 @@ namespace AZ
                 m_forceClearRenderData = true;
             }
 
+            bool HairFeatureProcessor::HasHairParentPass(RPI::RenderPipeline* renderPipeline)
+            {
+                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(HairParentPassName, renderPipeline);
+                RPI::Pass* pass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
+                return pass ? true : false;
+            }
+
             void HairFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr renderPipeline)
             {
                 // Proceed only if this is the main pipeline that contains the parent pass
-                if (!renderPipeline.get()->GetRootPass()->FindPassByNameRecursive(HairParentPassName))
+                if (!HasHairParentPass(renderPipeline.get()))
                 {
                     return;
                 }
@@ -323,10 +332,10 @@ namespace AZ
                 m_forceRebuildRenderData = true;
             }
 
-            void HairFeatureProcessor::OnRenderPipelineRemoved(RPI::RenderPipeline* renderPipeline)
+            void HairFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* renderPipeline)
             {
                 // Proceed only if this is the main pipeline that contains the parent pass
-                if (!renderPipeline->GetRootPass()->FindPassByNameRecursive(HairParentPassName))
+                if (!HasHairParentPass(renderPipeline))
                 {
                     return;
                 }
@@ -338,7 +347,7 @@ namespace AZ
             void HairFeatureProcessor::OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline)
             {
                 // Proceed only if this is the main pipeline that contains the parent pass
-                if (!renderPipeline->GetRootPass()->FindPassByNameRecursive(HairParentPassName))
+                if (!HasHairParentPass(renderPipeline))
                 {
                     return;
                 }
@@ -457,7 +466,8 @@ namespace AZ
             {
                 m_computePasses[passName] = nullptr;
 
-                RPI::Ptr<RPI::Pass> desiredPass = m_renderPipeline->GetRootPass()->FindPassByNameRecursive(passName);
+                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(passName, m_renderPipeline);
+                RPI::Ptr<RPI::Pass> desiredPass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
                 if (desiredPass)
                 {
                     m_computePasses[passName] = static_cast<HairSkinningComputePass*>(desiredPass.get());
@@ -478,8 +488,9 @@ namespace AZ
             bool HairFeatureProcessor::InitPPLLFillPass()
             {
                 m_hairPPLLRasterPass = nullptr;   // reset it to null, just in case it fails to load the assets properly
-
-                RPI::Ptr<RPI::Pass> desiredPass = m_renderPipeline->GetRootPass()->FindPassByNameRecursive(HairPPLLRasterPassName);
+                
+                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(HairPPLLRasterPassName, m_renderPipeline);
+                RPI::Ptr<RPI::Pass> desiredPass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
                 if (desiredPass)
                 {
                     m_hairPPLLRasterPass = static_cast<HairPPLLRasterPass*>(desiredPass.get());
@@ -497,7 +508,8 @@ namespace AZ
             {
                 m_hairPPLLResolvePass = nullptr;   // reset it to null, just in case it fails to load the assets properly
 
-                RPI::Ptr<RPI::Pass> desiredPass = m_renderPipeline->GetRootPass()->FindPassByNameRecursive(HairPPLLResolvePassName);
+                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(HairPPLLResolvePassName, m_renderPipeline);
+                RPI::Ptr<RPI::Pass> desiredPass = RPI::PassSystemInterface::Get()->FindFirstPass(passFilter);
                 if (desiredPass)
                 {
                     m_hairPPLLResolvePass = static_cast<HairPPLLResolvePass*>(desiredPass.get());
@@ -518,8 +530,8 @@ namespace AZ
                 m_hairShortCutGeometryDepthAlphaPass = nullptr;
                 m_hairShortCutGeometryShadingPass = nullptr;
 
-                m_hairShortCutGeometryDepthAlphaPass = static_cast<HairShortCutGeometryDepthAlphaPass*>(
-                    m_renderPipeline->GetRootPass()->FindPassByNameRecursive(HairShortCutGeometryDepthAlphaPassName).get());
+                RPI::PassFilter depthAlphaPassFilter = RPI::PassFilter::CreateWithPassName(HairShortCutGeometryDepthAlphaPassName, m_renderPipeline);
+                m_hairShortCutGeometryDepthAlphaPass = static_cast<HairShortCutGeometryDepthAlphaPass*>(RPI::PassSystemInterface::Get()->FindFirstPass(depthAlphaPassFilter));
                 if (m_hairShortCutGeometryDepthAlphaPass)
                 {
                     m_hairShortCutGeometryDepthAlphaPass->SetFeatureProcessor(this);
@@ -530,8 +542,8 @@ namespace AZ
                     return false;
                 }
 
-                m_hairShortCutGeometryShadingPass = static_cast<HairShortCutGeometryShadingPass*>(
-                    m_renderPipeline->GetRootPass()->FindPassByNameRecursive(HairShortCutGeometryShadingPassName).get());
+                RPI::PassFilter shaderingPassFilter = RPI::PassFilter::CreateWithPassName(HairShortCutGeometryShadingPassName, m_renderPipeline);
+                m_hairShortCutGeometryShadingPass = static_cast<HairShortCutGeometryShadingPass*>(RPI::PassSystemInterface::Get()->FindFirstPass(shaderingPassFilter));
                 if (m_hairShortCutGeometryShadingPass)
                 {
                     m_hairShortCutGeometryShadingPass->SetFeatureProcessor(this);
@@ -611,3 +623,4 @@ namespace AZ
         } // namespace Hair
     } // namespace Render
 } // namespace AZ
+

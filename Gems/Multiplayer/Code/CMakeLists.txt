@@ -149,6 +149,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzFramework
                 AZ::AzNetworking
                 AZ::AzToolsFramework
+                Gem::Atom_RPI.Public
+                Gem::Atom_RHI.Reflect
                 Gem::Multiplayer.Static
                 Gem::Multiplayer.Builders
     )

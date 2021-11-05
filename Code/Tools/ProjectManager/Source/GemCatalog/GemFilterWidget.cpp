@@ -225,20 +225,21 @@ namespace O3DE::ProjectManager
         QVector<QString> elementNames;
         QVector<int> elementCounts;
         const int totalGems = m_gemModel->rowCount();
-        const int selectedGemTotal = m_gemModel->TotalAddedGems();
+        const int selectedGemTotal = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true).size();
+        const int unselectedGemTotal = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true).size();
         const int enabledGemTotal = m_gemModel->TotalAddedGems(/*includeDependencies=*/true);
-
-        elementNames.push_back(GemSortFilterProxyModel::GetGemSelectedString(GemSortFilterProxyModel::GemSelected::Unselected));
-        elementCounts.push_back(totalGems - selectedGemTotal);
 
         elementNames.push_back(GemSortFilterProxyModel::GetGemSelectedString(GemSortFilterProxyModel::GemSelected::Selected));
         elementCounts.push_back(selectedGemTotal);
 
-        elementNames.push_back(GemSortFilterProxyModel::GetGemActiveString(GemSortFilterProxyModel::GemActive::Inactive));
-        elementCounts.push_back(totalGems - enabledGemTotal);
+        elementNames.push_back(GemSortFilterProxyModel::GetGemSelectedString(GemSortFilterProxyModel::GemSelected::Unselected));
+        elementCounts.push_back(unselectedGemTotal);
 
         elementNames.push_back(GemSortFilterProxyModel::GetGemActiveString(GemSortFilterProxyModel::GemActive::Active));
         elementCounts.push_back(enabledGemTotal);
+
+        elementNames.push_back(GemSortFilterProxyModel::GetGemActiveString(GemSortFilterProxyModel::GemActive::Inactive));
+        elementCounts.push_back(totalGems - enabledGemTotal);
 
         bool wasCollapsed = false;
         if (m_statusFilter)
@@ -262,43 +263,50 @@ namespace O3DE::ProjectManager
 
         const QList<QAbstractButton*> buttons = m_statusFilter->GetButtonGroup()->buttons();
 
-        QAbstractButton* unselectedButton = buttons[0];
-        QAbstractButton* selectedButton = buttons[1];
-        unselectedButton->setChecked(m_filterProxyModel->GetGemSelected() == GemSortFilterProxyModel::GemSelected::Unselected); 
-        selectedButton->setChecked(m_filterProxyModel->GetGemSelected() == GemSortFilterProxyModel::GemSelected::Selected); 
+        QAbstractButton* selectedButton = buttons[0];
+        QAbstractButton* unselectedButton = buttons[1];
+        selectedButton->setChecked(m_filterProxyModel->GetGemSelected() == GemSortFilterProxyModel::GemSelected::Selected);
+        unselectedButton->setChecked(m_filterProxyModel->GetGemSelected() == GemSortFilterProxyModel::GemSelected::Unselected);
 
         auto updateGemSelection = [=]([[maybe_unused]] bool checked)
         {
-            if (unselectedButton->isChecked() && !selectedButton->isChecked())
-            {
-                m_filterProxyModel->SetGemSelected(GemSortFilterProxyModel::GemSelected::Unselected);
-            }
-            else if (!unselectedButton->isChecked() && selectedButton->isChecked())
+            if (!unselectedButton->isChecked() && selectedButton->isChecked())
             {
                 m_filterProxyModel->SetGemSelected(GemSortFilterProxyModel::GemSelected::Selected);
             }
+            else if (unselectedButton->isChecked() && !selectedButton->isChecked())
+            {
+                m_filterProxyModel->SetGemSelected(GemSortFilterProxyModel::GemSelected::Unselected);
+            }
             else
             {
-                m_filterProxyModel->SetGemSelected(GemSortFilterProxyModel::GemSelected::NoFilter);
+                if (unselectedButton->isChecked() && selectedButton->isChecked())
+                {
+                    m_filterProxyModel->SetGemSelected(GemSortFilterProxyModel::GemSelected::Both);
+                }
+                else
+                {
+                    m_filterProxyModel->SetGemSelected(GemSortFilterProxyModel::GemSelected::NoFilter);
+                }
             }
         };
         connect(unselectedButton, &QAbstractButton::toggled, this, updateGemSelection);
         connect(selectedButton, &QAbstractButton::toggled, this, updateGemSelection);
 
-        QAbstractButton* inactiveButton = buttons[2];
-        QAbstractButton* activeButton = buttons[3];
-        inactiveButton->setChecked(m_filterProxyModel->GetGemActive() == GemSortFilterProxyModel::GemActive::Inactive); 
-        activeButton->setChecked(m_filterProxyModel->GetGemActive() == GemSortFilterProxyModel::GemActive::Active); 
+        QAbstractButton* activeButton = buttons[2];
+        QAbstractButton* inactiveButton = buttons[3];
+        activeButton->setChecked(m_filterProxyModel->GetGemActive() == GemSortFilterProxyModel::GemActive::Active);
+        inactiveButton->setChecked(m_filterProxyModel->GetGemActive() == GemSortFilterProxyModel::GemActive::Inactive);
 
         auto updateGemActive = [=]([[maybe_unused]] bool checked)
         {
-            if (inactiveButton->isChecked() && !activeButton->isChecked())
-            {
-                m_filterProxyModel->SetGemActive(GemSortFilterProxyModel::GemActive::Inactive);
-            }
-            else if (!inactiveButton->isChecked() && activeButton->isChecked())
+            if (!inactiveButton->isChecked() && activeButton->isChecked())
             {
                 m_filterProxyModel->SetGemActive(GemSortFilterProxyModel::GemActive::Active);
+            }
+            else if (inactiveButton->isChecked() && !activeButton->isChecked())
+            {
+                m_filterProxyModel->SetGemActive(GemSortFilterProxyModel::GemActive::Inactive);
             }
             else
             {

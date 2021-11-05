@@ -106,6 +106,13 @@ namespace UnitTest
                                 ]
                             },
                             {
+                                "toVersion": 6,
+                                "actions": [
+                                    {"op": "rename", "from": "oldGroup.MyFloat", "to": "general.MyFloat"},
+                                    {"op": "rename", "from": "oldGroup.MyIntOldName", "to": "general.MyInt"}
+                                ]
+                            },
+                            {
                                 "toVersion": 10,
                                 "actions": [
                                     {"op": "rename", "from": "general.testColorNameC", "to": "general.MyColor"}
@@ -743,6 +750,72 @@ namespace UnitTest
 
         testColor = material.m_properties["general"]["MyColor"].m_value.GetValue<AZ::Color>();
         EXPECT_TRUE(AZ::Color(0.1f, 0.2f, 0.3f, 1.0f).IsClose(testColor, 0.01));
+
+        EXPECT_EQ(10, material.m_materialTypeVersion);
+
+        // Calling ApplyVersionUpdates() again should not report the warning again, since the material has already been updated.
+        warningFinder.Reset();
+        material.ApplyVersionUpdates();
+    }
+    
+    TEST_F(MaterialSourceDataTests, Load_MaterialTypeVersionUpdate_MovePropertiesToAnotherGroup)
+    {
+        const AZStd::string inputJson = R"(
+        {
+            "materialType": "@exefolder@/Temp/test.materialtype",
+            "materialTypeVersion": 3,
+            "properties": {
+                "oldGroup": {
+                    "MyFloat": 1.2,
+                    "MyIntOldName": 5
+                }
+            }
+        }
+        )";
+
+        MaterialSourceData material;
+        JsonTestResult loadResult = LoadTestDataFromJson(material, inputJson);
+
+        EXPECT_EQ(AZ::JsonSerializationResult::Tasks::ReadField, loadResult.m_jsonResultCode.GetTask());
+        EXPECT_EQ(AZ::JsonSerializationResult::Processing::Completed, loadResult.m_jsonResultCode.GetProcessing());
+
+        // Initially, the loaded material data will match the .material file exactly. This gives us the accurate representation of
+        // what's actually saved on disk.
+        
+        EXPECT_NE(material.m_properties["oldGroup"].find("MyFloat"), material.m_properties["oldGroup"].end());
+        EXPECT_NE(material.m_properties["oldGroup"].find("MyIntOldName"), material.m_properties["oldGroup"].end());
+        EXPECT_EQ(material.m_properties["general"].find("MyFloat"), material.m_properties["general"].end());
+        EXPECT_EQ(material.m_properties["general"].find("MyInt"), material.m_properties["general"].end());
+
+        float myFloat = material.m_properties["oldGroup"]["MyFloat"].m_value.GetValue<float>();
+        EXPECT_EQ(myFloat, 1.2f);
+        
+        int32_t myInt = material.m_properties["oldGroup"]["MyIntOldName"].m_value.GetValue<int32_t>();
+        EXPECT_EQ(myInt, 5);
+
+        EXPECT_EQ(3, material.m_materialTypeVersion);
+
+        // Then we force the material data to update to the latest material type version specification
+        ErrorMessageFinder warningFinder; // Note this finds errors and warnings, and we're looking for a warning.
+        warningFinder.AddExpectedErrorMessage("Automatic updates are available. Consider updating the .material source file");
+        warningFinder.AddExpectedErrorMessage("This material is based on version '3'");
+        warningFinder.AddExpectedErrorMessage("material type is now at version '10'");
+        material.ApplyVersionUpdates();
+        warningFinder.CheckExpectedErrorsFound();
+
+        // Now the material data should match the latest material type.
+        // Look for the property under the latest name in the material type, not the name used in the .material file.
+        
+        EXPECT_EQ(material.m_properties["oldGroup"].find("MyFloat"), material.m_properties["oldGroup"].end());
+        EXPECT_EQ(material.m_properties["oldGroup"].find("MyIntOldName"), material.m_properties["oldGroup"].end());
+        EXPECT_NE(material.m_properties["general"].find("MyFloat"), material.m_properties["general"].end());
+        EXPECT_NE(material.m_properties["general"].find("MyInt"), material.m_properties["general"].end());
+        
+        myFloat = material.m_properties["general"]["MyFloat"].m_value.GetValue<float>();
+        EXPECT_EQ(myFloat, 1.2f);
+        
+        myInt = material.m_properties["general"]["MyInt"].m_value.GetValue<int32_t>();
+        EXPECT_EQ(myInt, 5);
 
         EXPECT_EQ(10, material.m_materialTypeVersion);
 

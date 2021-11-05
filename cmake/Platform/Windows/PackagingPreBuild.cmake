@@ -6,20 +6,40 @@
 #
 #
 
+if(NOT CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
+    return()
+endif()
+
 file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
 set(_cpack_wix_out_dir ${CPACK_TOPLEVEL_DIRECTORY})
 file(TO_NATIVE_PATH "${_root_path}/scripts/signer/Platform/Windows/signer.ps1" _sign_script)
 
-set(_signing_command
-    psexec.exe
-    -accepteula 
-    -nobanner 
-    -s
-    powershell.exe
+unset(_signing_command)
+find_program(_psiexec_path psexec.exe)
+if(_psiexec_path)
+    list(APPEND _signing_command
+        ${_psiexec_path}
+        -accepteula
+        -nobanner
+        -s
+    )
+endif()
+
+find_program(_powershell_path powershell.exe REQUIRED)
+list(APPEND _signing_command
+    ${_powershell_path}
     -NoLogo
-    -ExecutionPolicy Bypass 
+    -ExecutionPolicy Bypass
     -File ${_sign_script}
 )
+
+# This requires to have a valid local certificate. In continuous integration, these certificates are stored
+# in the machine directly. 
+# You can generate a test certificate to be able to run this in a PowerShell elevated promp with:
+# New-SelfSignedCertificate -DnsName foo.o3de.com -Type CodeSigning -CertStoreLocation Cert:\CurrentUser\My
+# Export-Certificate -Cert (Get-ChildItem Cert:\CurrentUser\My\<cert thumbprint>) -Filepath "c:\selfsigned.crt"
+# Import-Certificate -FilePath "c:\selfsigned.crt" -Cert Cert:\CurrentUser\TrustedPublisher
+# Import-Certificate -FilePath "c:\selfsigned.crt" -Cert Cert:\CurrentUser\Root
 
 message(STATUS "Signing executable files in ${_cpack_wix_out_dir}")
 execute_process(
@@ -32,6 +52,6 @@ execute_process(
 
 if(NOT ${_signing_result} EQUAL 0)
     message(FATAL_ERROR "An error occurred during signing executable files.  ${_signing_errors}")
+else()
+    message(STATUS "Signing exes complete!")
 endif()
-
-message(STATUS "Signing exes complete!")

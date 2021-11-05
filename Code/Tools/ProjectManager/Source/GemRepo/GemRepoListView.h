@@ -28,5 +28,6 @@ namespace O3DE::ProjectManager
 
     signals:
         void RemoveRepo(const QModelIndex& modelIndex);
+        void RefreshRepo(const QModelIndex& modelIndex);
     };
 } // namespace O3DE::ProjectManager

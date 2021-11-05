@@ -97,8 +97,8 @@ namespace AZ::Render
             
         // Functions for caching the ProjectedShadowmapsPass and EsmShadowmapsPass.
         void CachePasses();
-        AZStd::vector<RPI::RenderPipelineId> CacheProjectedShadowmapsPass();
-        void CacheEsmShadowmapsPass(const AZStd::vector<RPI::RenderPipelineId>& validPipelineIds);
+        void CacheProjectedShadowmapsPass();
+        void CacheEsmShadowmapsPass();
             
         //! Functions to update the parameter of Gaussian filter used in ESM.
         void UpdateFilterParameters();

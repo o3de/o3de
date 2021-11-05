@@ -10,8 +10,6 @@
 
 #include <Source/AutoGen/MultiplayerEditor.AutoPacketDispatcher.h>
 
-#include <AzCore/Component/Component.h>
-#include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/IO/ByteContainerStream.h>
@@ -33,7 +31,8 @@ namespace Multiplayer
         MultiplayerEditorConnection();
         ~MultiplayerEditorConnection() = default;
 
-        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerInit& packet);
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerReadyForLevelData& packet);
+        bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerLevelData& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerReady& packet);
         
         //! IConnectionListener interface
@@ -41,14 +40,16 @@ namespace Multiplayer
         AzNetworking::ConnectResult ValidateConnect(const AzNetworking::IpAddress& remoteAddress, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer) override;
         void OnConnect(AzNetworking::IConnection* connection) override;
         AzNetworking::PacketDispatchResult OnPacketReceived(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer) override;
-        void OnPacketLost(AzNetworking::IConnection* connection, AzNetworking::PacketId packetId) override;
-        void OnDisconnect(AzNetworking::IConnection* connection, AzNetworking::DisconnectReason reason, AzNetworking::TerminationEndpoint endpoint) override;
+        void OnPacketLost([[maybe_unused]]AzNetworking::IConnection* connection, [[maybe_unused]]AzNetworking::PacketId packetId) override {}
+        void OnDisconnect([[maybe_unused]]AzNetworking::IConnection* connection, [[maybe_unused]]AzNetworking::DisconnectReason reason, [[maybe_unused]]AzNetworking::TerminationEndpoint endpoint) override {}
         //! @}
 
     private:
+        void ActivateDedicatedEditorServer() const;
 
         AzNetworking::INetworkInterface* m_networkEditorInterface = nullptr;
         AZStd::vector<uint8_t> m_buffer;
         AZ::IO::ByteContainerStream<AZStd::vector<uint8_t>> m_byteStream;
+        mutable bool m_isActivated = false;
     };
 }

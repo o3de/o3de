@@ -44,6 +44,10 @@ namespace AZ
 
             uint32_t GetVersion() const;
             void SetVersion(uint32_t toVersion);
+            
+            //! Possibly renames @propertyId based on the material version update steps.
+            //! @return true if the property was renamed
+            bool ApplyPropertyRenames(AZ::Name& propertyId) const;
 
             //! Apply version updates to the given material asset.
             //! @return true if any changes were made
