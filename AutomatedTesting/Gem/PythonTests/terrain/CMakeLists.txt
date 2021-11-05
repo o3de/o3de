@@ -10,16 +10,15 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
 
     ly_add_pytest(
         NAME AutomatedTesting::TerrainTests_Main
-        TEST_SERIAL
         TEST_SUITE main
+        TEST_SERIAL
         PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main.py
         RUNTIME_DEPENDENCIES
-            AZ::AssetProcessor
             Legacy::Editor
-            AutomatedTesting.GameLauncher
+            AZ::AssetProcessor
             AutomatedTesting.Assets
         COMPONENT
-            Terrain
+            terrain
     )
 
 endif()

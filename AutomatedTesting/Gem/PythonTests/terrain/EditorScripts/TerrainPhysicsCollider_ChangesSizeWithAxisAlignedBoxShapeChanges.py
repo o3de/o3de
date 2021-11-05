@@ -53,12 +53,11 @@ def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
     SET_BOX_Y_SIZE = 6.0
     EXPECTED_COLUMN_SIZE = SET_BOX_X_SIZE + 1
     EXPECTED_ROW_SIZE = SET_BOX_Y_SIZE + 1
-    '''
     helper.init_idle()
     
     # 1) Load the level
     helper.open_level("", "Base")
-    
+
     # 2) Create test entity
     test_entity = EditorEntity.create_editor_entity("TestEntity")
     Report.result(Tests.create_test_entity, test_entity.id.IsValid())
@@ -80,8 +79,8 @@ def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
         rows = physics.HeightfieldProviderRequestsBus(bus.Broadcast, "GetHeightfieldGridRows")
 
         Report.result(Tests.configuration_changed, math.isclose(columns, EXPECTED_COLUMN_SIZE) and math.isclose(rows, EXPECTED_ROW_SIZE))
-        '''
+
 if __name__ == "__main__":
 
     from editor_python_test_tools.utils import Report
-    Report.start_test(AxisAlignedBoxShape_ConfigurationWorks)
+    Report.start_test(TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges)

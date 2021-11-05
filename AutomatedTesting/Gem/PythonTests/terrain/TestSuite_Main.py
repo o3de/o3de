@@ -12,7 +12,7 @@ import pytest
 import os
 import sys
 
-from utils.FileManagement import FileManagement as fm
+from .utils.FileManagement import FileManagement as fm
 from ly_test_tools import LAUNCHERS
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
@@ -25,5 +25,5 @@ from base import TestAutomationBase
 class TestAutomation(TestAutomationBase):
 
     def test_AxisAlignedBoxShape_ConfigurationWorks(self, request, workspace, editor, launcher_platform):
-        from EditorScripts import TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges as test_module
+        from .EditorScripts import TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges as test_module
         self._run_test(request, workspace, editor, test_module)
