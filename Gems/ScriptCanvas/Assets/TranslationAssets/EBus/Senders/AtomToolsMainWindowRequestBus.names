@@ -1,0 +1,178 @@
+{
+    "entries": [
+        {
+            "key": "AtomToolsMainWindowRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "AtomToolsMainWindowRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "UnlockViewportRenderTargetSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke UnlockViewportRenderTargetSize"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after UnlockViewportRenderTargetSize is invoked"
+                    },
+                    "details": {
+                        "name": "UnlockViewportRenderTargetSize"
+                    }
+                },
+                {
+                    "key": "GetDockWidgetNames",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetDockWidgetNames"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetDockWidgetNames is invoked"
+                    },
+                    "details": {
+                        "name": "GetDockWidgetNames"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ResizeViewportRenderTarget",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ResizeViewportRenderTarget"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ResizeViewportRenderTarget is invoked"
+                    },
+                    "details": {
+                        "name": "ResizeViewportRenderTarget"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetDockWidgetVisible",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetDockWidgetVisible"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetDockWidgetVisible is invoked"
+                    },
+                    "details": {
+                        "name": "SetDockWidgetVisible"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsDockWidgetVisible",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsDockWidgetVisible"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsDockWidgetVisible is invoked"
+                    },
+                    "details": {
+                        "name": "IsDockWidgetVisible"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "LockViewportRenderTargetSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke LockViewportRenderTargetSize"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after LockViewportRenderTargetSize is invoked"
+                    },
+                    "details": {
+                        "name": "LockViewportRenderTargetSize"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ActivateWindow",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ActivateWindow"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ActivateWindow is invoked"
+                    },
+                    "details": {
+                        "name": "ActivateWindow"
+                    }
+                }
+            ]
+        }
+    ]
+}

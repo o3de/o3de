@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "unhide_all_objects",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "unhide_all_objects",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke unhide_all_objects"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after unhide_all_objects is invoked"
+                    },
+                    "details": {
+                        "name": "unhide_all_objects",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

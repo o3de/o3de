@@ -1,0 +1,53 @@
+{
+    "entries": [
+        {
+            "key": "{2677AF1E-FAC3-5360-96E4-CC3054372340}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "GetElement",
+                "category": "Math/Matrix4x4",
+                "tooltip": "returns scalar from matrix corresponding to the (Row,Column) pair",
+                "subtitle": "Matrix4x4"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Matrix4x4: Source",
+                    "details": {
+                        "name": "Matrix4x4: Source"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Row",
+                    "details": {
+                        "name": "Number: Row"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Column",
+                    "details": {
+                        "name": "Number: Column"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Number",
+                    "details": {
+                        "name": "Result: Number"
+                    }
+                }
+            ]
+        }
+    ]
+}

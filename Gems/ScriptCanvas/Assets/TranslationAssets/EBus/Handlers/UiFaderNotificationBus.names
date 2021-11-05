@@ -1,0 +1,36 @@
+{
+    "entries": [
+        {
+            "key": "UiFaderNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Fader",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "OnFadeComplete",
+                    "details": {
+                        "name": "On Fade Complete",
+                        "tooltip": "Executes when the fade is done"
+                    }
+                },
+                {
+                    "key": "OnFadeInterrupted",
+                    "details": {
+                        "name": "On Fade Interrupted",
+                        "tooltip": "Executes when the fade has been interrupted"
+                    }
+                },
+                {
+                    "key": "OnFaderDestroyed",
+                    "details": {
+                        "name": "On Fader Destroyed",
+                        "tooltip": "Executes when the fader component has been destroyed"
+                    }
+                }
+            ]
+        }
+    ]
+}

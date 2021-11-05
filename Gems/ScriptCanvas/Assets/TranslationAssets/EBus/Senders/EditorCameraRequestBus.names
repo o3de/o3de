@@ -1,0 +1,119 @@
+{
+    "entries": [
+        {
+            "key": "EditorCameraRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "EditorCameraRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "SetViewFromEntityPerspective",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetViewFromEntityPerspective"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetViewFromEntityPerspective is invoked"
+                    },
+                    "details": {
+                        "name": "SetViewFromEntityPerspective"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetViewAndMovementLockFromEntityPerspective",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetViewAndMovementLockFromEntityPerspective"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetViewAndMovementLockFromEntityPerspective is invoked"
+                    },
+                    "details": {
+                        "name": "SetViewAndMovementLockFromEntityPerspective"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCurrentViewEntityId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCurrentViewEntityId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCurrentViewEntityId is invoked"
+                    },
+                    "details": {
+                        "name": "GetCurrentViewEntityId"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetActiveCameraPosition",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetActiveCameraPosition"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetActiveCameraPosition is invoked"
+                    },
+                    "details": {
+                        "name": "GetActiveCameraPosition"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

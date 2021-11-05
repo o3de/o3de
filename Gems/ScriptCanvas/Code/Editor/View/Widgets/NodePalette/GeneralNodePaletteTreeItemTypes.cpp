@@ -224,9 +224,10 @@ namespace ScriptCanvasEditor
     // CustomNodePaletteTreeItem
     //////////////////////////////
 
-    CustomNodePaletteTreeItem::CustomNodePaletteTreeItem(const AZ::Uuid& typeId, AZStd::string_view nodeName)
-        : DraggableNodePaletteTreeItem(nodeName, ScriptCanvasEditor::AssetEditorId)
-        , m_typeId(typeId)
+    CustomNodePaletteTreeItem::CustomNodePaletteTreeItem(const ScriptCanvasEditor::CustomNodeModelInformation& info)
+        : DraggableNodePaletteTreeItem(info.m_displayName, ScriptCanvasEditor::AssetEditorId)
+        , m_info(info)
+        , m_typeId(info.m_typeId)
     {
     }
 

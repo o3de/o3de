@@ -1,0 +1,35 @@
+{
+    "entries": [
+        {
+            "key": "{66D46B8E-5722-57DB-8760-61AE1D69E6A3}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Zero",
+                "category": "Math/Matrix3x3",
+                "tooltip": "returns the zero matrix",
+                "subtitle": "Matrix3x3"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Matrix3x3",
+                    "details": {
+                        "name": "Result: Matrix3x3"
+                    }
+                }
+            ]
+        }
+    ]
+}

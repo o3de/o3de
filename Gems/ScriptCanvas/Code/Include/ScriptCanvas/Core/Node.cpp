@@ -1160,8 +1160,8 @@ namespace ScriptCanvas
                 if (!slot->IsDynamicSlot() || slot->HasDisplayType())
                 {
                     InitializeVariableReference((*slot), {});
-        }
-    }
+                }
+            }
             else
             {
                 ModifiableDatumView datumView;
@@ -2391,7 +2391,22 @@ namespace ScriptCanvas
 
             if (variableIds.count(variableId) > 0)
             {
-                InitializeVariableReference(slot, variableIds);
+                //InitializeVariableReference(slot, variableIds);
+                slot.ClearVariableReference();
+                NodeNotificationsBus::Event(GetEntityId(), &NodeNotifications::OnSlotInputChanged, slot.GetId());
+
+                //ConvertSlotToValue(slot.GetId());
+                //ResetSlotToDefaultValue(slot.GetId());
+
+                //NodeNotificationsBus::Event(GetEntityId(), &NodeNotifications::OnSlotInputChanged, slot.GetId());
+
+
+                //SetDisplayType(slot.GetId(), slot.GetDataType());
+                //slot.OnVariableValueChanged();
+
+                ////UpdateNode();
+
+                //ResetSlotToDefaultValue(slot.GetId());
             }
         }
 

@@ -16,6 +16,8 @@
 #include <ScriptCanvas/Core/Slot.h>
 #include <GraphCanvas/Types/TranslationTypes.h>
 #include "Source/Translation/TranslationBus.h"
+#include <AzFramework/Gem/GemInfo.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 namespace Translation
 {
@@ -566,5 +568,10 @@ namespace ScriptCanvasEditor
 
             return path;
         }
+
+        
+
     };
+
+
 }

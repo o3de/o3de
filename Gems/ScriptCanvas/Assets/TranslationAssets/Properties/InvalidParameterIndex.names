@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "InvalidParameterIndex",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "InvalidParameterIndex::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

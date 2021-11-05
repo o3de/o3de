@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "run_console",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "run_console",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke run_console"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after run_console is invoked"
+                    },
+                    "details": {
+                        "name": "run_console",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

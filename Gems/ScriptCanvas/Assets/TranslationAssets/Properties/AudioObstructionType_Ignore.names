@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "AudioObstructionType_Ignore",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "AudioObstructionType_Ignore::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

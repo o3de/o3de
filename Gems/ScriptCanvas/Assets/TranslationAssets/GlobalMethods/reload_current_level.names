@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "reload_current_level",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "reload_current_level",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke reload_current_level"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after reload_current_level is invoked"
+                    },
+                    "details": {
+                        "name": "reload_current_level",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

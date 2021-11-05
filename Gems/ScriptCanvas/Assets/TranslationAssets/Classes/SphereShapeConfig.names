@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "SphereShapeConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "SphereShapeConfig"
+            }
+        }
+    ]
+}

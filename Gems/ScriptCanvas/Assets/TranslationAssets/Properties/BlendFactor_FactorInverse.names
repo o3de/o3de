@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "BlendFactor_FactorInverse",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "BlendFactor_FactorInverse::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorBloomComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorBloomComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

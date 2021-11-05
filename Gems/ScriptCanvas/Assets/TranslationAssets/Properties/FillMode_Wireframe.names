@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "FillMode_Wireframe",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "FillMode_Wireframe::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

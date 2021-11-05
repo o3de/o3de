@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DefaultMaterialAssignment",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DefaultMaterialAssignment::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

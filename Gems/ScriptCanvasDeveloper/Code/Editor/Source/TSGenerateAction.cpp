@@ -450,7 +450,7 @@ namespace ScriptCanvasDeveloperEditor
                             AZStd::string argumentDescription = "";
 
                             // Generate the OLD style translation key
-                            AZStd::string oldKey = AZStd::string::format("HANDLER_%s_%s_OUTPUT%zu_NAME", tempEbusName.c_str(), oldEventName.c_str(), argIndex - AZ::eBehaviorBusForwarderEventIndices::ParameterFirst);
+                            AZStd::string oldKey = AZStd::string::format("HANDLER_%s_%s_OUTPUTzu_NAME", tempEbusName.c_str(), oldEventName.c_str(), argIndex - AZ::eBehaviorBusForwarderEventIndices::ParameterFirst);
                             AZStd::string oldTooltipKey = AZStd::string::format("HANDLER_%s_%s_OUTPUT%zu_TOOLTIP", tempEbusName.c_str(), oldEventName.c_str(), argIndex - AZ::eBehaviorBusForwarderEventIndices::ParameterFirst);
 
                             if (!event.m_metadataParameters.empty() && event.m_metadataParameters.size() > argIndex)

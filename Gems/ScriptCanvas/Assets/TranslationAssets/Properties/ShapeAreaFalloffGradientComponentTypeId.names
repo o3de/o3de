@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ShapeAreaFalloffGradientComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ShapeAreaFalloffGradientComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

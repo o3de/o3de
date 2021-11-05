@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "PosterizeGradientComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "PosterizeGradientComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiTextOverflowMode_ClipText",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiTextOverflowMode_ClipText::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

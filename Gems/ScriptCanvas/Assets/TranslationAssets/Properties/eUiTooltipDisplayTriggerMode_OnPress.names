@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiTooltipDisplayTriggerMode_OnPress",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiTooltipDisplayTriggerMode_OnPress::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiTooltipDisplayAutoPositionMode_OffsetFromElement",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiTooltipDisplayAutoPositionMode_OffsetFromElement::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

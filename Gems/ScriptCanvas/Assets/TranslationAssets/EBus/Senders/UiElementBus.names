@@ -1,0 +1,390 @@
+{
+    "entries": [
+        {
+            "key": "UiElementBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiElementBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "FindChildByName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Find Child By Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Find Child By Name is invoked"
+                    },
+                    "details": {
+                        "name": "Find Child By Name",
+                        "tooltip": "Returns the first immediate child with the specified name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name",
+                                "tooltip": "The name of the child"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "The name of the child"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetChild",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Child"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Child is invoked"
+                    },
+                    "details": {
+                        "name": "Get Child",
+                        "tooltip": "Gets a child by index"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Child Index",
+                                "tooltip": "The index of the child"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "The index of the child"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNumChildElements",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Number Of Child Elements"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Number Of Child Elements is invoked"
+                    },
+                    "details": {
+                        "name": "Get Number Of Child Elements",
+                        "tooltip": "Gets the number of children of the element"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetChildren",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Children"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Children is invoked"
+                    },
+                    "details": {
+                        "name": "Get Children",
+                        "tooltip": "Gets the children of the element"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DestroyElement",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Destroy Element"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Destroy Element is invoked"
+                    },
+                    "details": {
+                        "name": "Destroy Element",
+                        "tooltip": "Destroys the element"
+                    }
+                },
+                {
+                    "key": "IsAncestor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Ancestor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Ancestor is invoked"
+                    },
+                    "details": {
+                        "name": "Is Ancestor",
+                        "tooltip": "Return whether a given element is an ancestor of the element"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Ancestor EntityID",
+                                "tooltip": "The element to check whether it's an ancestor of the element"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool",
+                                "tooltip": "The element to check whether it's an ancestor of the element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Parent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Parent is invoked"
+                    },
+                    "details": {
+                        "name": "Get Parent",
+                        "tooltip": "Gets the parent of the element"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "FindDescendantByName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Find Descendant By Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Find Descendant By Name is invoked"
+                    },
+                    "details": {
+                        "name": "Find Descendant By Name",
+                        "tooltip": "Returns the first descendant element with the specified name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name",
+                                "tooltip": "The name of the descendant"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "The name of the descendant"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Is Enabled",
+                        "tooltip": "Returns whether the element is enabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCanvas",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Canvas"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Canvas is invoked"
+                    },
+                    "details": {
+                        "name": "Get Canvas",
+                        "tooltip": "Gets the canvas that contains the element"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Reparent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Reparent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Reparent is invoked"
+                    },
+                    "details": {
+                        "name": "Reparent",
+                        "tooltip": "Changes the element to be the child of a new parent.\n\nThe element is removed from its current parent and added as a child of the new parent. If the new parent  is invalid, the element becomes a top-level element\n\n If an \"insert before\" element is specified, then the element is inserted before that element if the \"insert before\" element is a child of the new parent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Parent EntityID",
+                                "tooltip": "The new parent"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Insert Before EntityID",
+                                "tooltip": "The element to insert before"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Name",
+                        "tooltip": "Gets the name of the element"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIndexOfChildByEntityId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Index Of Child By EntityID"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Index Of Child By EntityID is invoked"
+                    },
+                    "details": {
+                        "name": "Get Index Of Child By EntityID",
+                        "tooltip": "Gets the index of the specified child"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Child EntityID",
+                                "tooltip": "The child"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int",
+                                "tooltip": "The child"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Enabled",
+                        "tooltip": "Sets whether the element is enabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled",
+                                "tooltip": "Indicates whether the element is enabled"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

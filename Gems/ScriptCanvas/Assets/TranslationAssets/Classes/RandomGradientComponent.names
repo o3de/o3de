@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "RandomGradientComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "RandomGradientComponent"
+            }
+        }
+    ]
+}

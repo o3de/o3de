@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "get_num_sequences",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "get_num_sequences",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke get_num_sequences"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after get_num_sequences is invoked"
+                    },
+                    "details": {
+                        "name": "get_num_sequences",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

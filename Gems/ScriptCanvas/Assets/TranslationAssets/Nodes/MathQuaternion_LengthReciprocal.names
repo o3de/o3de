@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{4CDE86F1-8ABD-5F13-8BFE-622728F845DC}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "LengthReciprocal",
+                "category": "Math/Quaternion",
+                "tooltip": "returns the reciprocal length of Source",
+                "subtitle": "Quaternion"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Quaternion: Source",
+                    "details": {
+                        "name": "Quaternion: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Number",
+                    "details": {
+                        "name": "Result: Number"
+                    }
+                }
+            ]
+        }
+    ]
+}

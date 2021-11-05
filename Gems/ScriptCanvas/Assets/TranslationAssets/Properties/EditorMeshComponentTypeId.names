@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorMeshComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorMeshComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

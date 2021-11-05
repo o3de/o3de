@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "MultiPositionBehaviorType_Blended",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "MultiPositionBehaviorType_Blended::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}
