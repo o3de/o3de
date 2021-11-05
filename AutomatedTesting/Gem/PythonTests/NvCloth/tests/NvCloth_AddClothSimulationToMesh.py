@@ -50,8 +50,7 @@ def NvCloth_AddClothSimulationToMesh():
     
     # Constants
     FRAMES_IN_GAME_MODE = 200
-    
-    cloth_gem_error_warning_windows = ["Cloth", "NvCloth", "ClothComponentMesh", "ActorClothSkinning", "ActorClothSkinning", "TangentSpaceHelper", "MeshAssetHelper", "ActorAssetHelper", "ClothDebugDisplay"]
+    CLOTH_GEM_ERROR_WARNING_LIST = ["Cloth", "NvCloth", "ClothComponentMesh", "ActorClothSkinning", "ActorClothSkinning", "TangentSpaceHelper", "MeshAssetHelper", "ActorAssetHelper", "ClothDebugDisplay"]
 
     helper.init_idle()
     # 1) Load the level
@@ -68,11 +67,11 @@ def NvCloth_AddClothSimulationToMesh():
     # 5) Verify there are no errors and warnings in the logs
     has_errors_or_warnings = False
     for error_msg in section_tracer.errors:
-        if error_msg.window in cloth_gem_error_warning_windows:
+        if error_msg.window in CLOTH_GEM_ERROR_WARNING_LIST:
             has_errors_or_warnings = True
             Report.info(f"Cloth error found: {error_msg}")
     for warning_msg in section_tracer.warnings:
-        if warning_msg.window in cloth_gem_error_warning_windows:
+        if warning_msg.window in CLOTH_GEM_ERROR_WARNING_LIST:
             has_errors_or_warnings = True
             Report.info(f"Cloth warning found: {warning_msg}")
     Report.result(Tests.no_errors_and_warnings_found, not has_errors_or_warnings)
