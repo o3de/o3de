@@ -8,10 +8,10 @@
 
 #pragma once
 
-#include <CrySystemBus.h>
 #include <Source/AutoGen/MultiplayerEditor.AutoPacketDispatcher.h>
 #include <AzCore/IO/ByteContainerStream.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 namespace AzNetworking
 {
@@ -23,12 +23,10 @@ namespace Multiplayer
     //! MultiplayerEditorConnection is a connection listener to synchronize the Editor and a local server it launches
     class MultiplayerEditorConnection final
         : public AzNetworking::IConnectionListener
-        , public CrySystemEventBus::Handler
-
     {
     public:
         MultiplayerEditorConnection();
-        ~MultiplayerEditorConnection();
+        ~MultiplayerEditorConnection() = default;
 
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerReadyForLevelData& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerLevelData& packet);
@@ -42,11 +40,6 @@ namespace Multiplayer
         void OnPacketLost([[maybe_unused]]AzNetworking::IConnection* connection, [[maybe_unused]]AzNetworking::PacketId packetId) override {}
         void OnDisconnect([[maybe_unused]]AzNetworking::IConnection* connection, [[maybe_unused]]AzNetworking::DisconnectReason reason, [[maybe_unused]]AzNetworking::TerminationEndpoint endpoint) override {}
         //! @}
-        
-        //! CrySystemEvents interface
-        //! @{
-        void OnCrySystemInitialized(ISystem&, const SSystemInitParams&) override;
-        //! @}
 
     private:
         void ActivateDedicatedEditorServer() const;
@@ -55,5 +48,6 @@ namespace Multiplayer
         AZStd::vector<uint8_t> m_buffer;
         AZ::IO::ByteContainerStream<AZStd::vector<uint8_t>> m_byteStream;
         mutable bool m_isActivated = false;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_componentApplicationLifecycleHandler;
     };
 }
