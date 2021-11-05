@@ -13,8 +13,31 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Render/IntersectorInterface.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 #include <EditorViewportSettings.h>
+
+AZ_CVAR(
+    bool,
+    ed_cameraPinDefaultOrbit,
+    true,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "Sets whether the default orbit point moves with the camera or not");
+AZ_CVAR(
+    bool,
+    ed_cameraDefaultOrbitAxesOrtho,
+    true,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "Sets whether to draw the default orbit point as orthographic or not");
+AZ_CVAR(
+    float,
+    ed_cameraDefaultOrbitFadeDuration,
+    0.5f,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "Sets whether to draw the default orbit point as orthographic or not");
 
 namespace SandboxEditor
 {
@@ -190,12 +213,6 @@ namespace SandboxEditor
             return AZStd::nullopt;
         };
 
-        const auto orbitFn = [pivotFn](const AZ::Vector3& pivotFallback = AZ::Vector3::CreateZero())
-        {
-            // return the pivot otherwise use the fallback
-            return pivotFn().value_or(pivotFallback);
-        };
-
         m_firstPersonFocusCamera =
             AZStd::make_shared<AzFramework::FocusCameraInput>(SandboxEditor::CameraFocusChannelId(), AzFramework::FocusLook);
 
@@ -204,9 +221,26 @@ namespace SandboxEditor
         m_orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>(SandboxEditor::CameraOrbitChannelId());
 
         m_orbitCamera->SetPivotFn(
-            [orbitFn]([[maybe_unused]] const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& direction)
+            [this, pivotFn](const AZ::Vector3& position, const AZ::Vector3& direction)
             {
-                return orbitFn(position + direction * SandboxEditor::CameraDefaultOrbitDistance());
+                // return the pivot
+                if (auto pivot = pivotFn())
+                {
+                    return pivot.value();
+                }
+
+                // start ticking and drawing (for the default pivot)
+                AZ::TickBus::Handler::BusConnect();
+                AzFramework::ViewportDebugDisplayEventBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
+
+                m_defaultOrbiting = true;
+                // calculate the default orbit point
+                if (!ed_cameraPinDefaultOrbit || m_orbitCamera->Beginning())
+                {
+                    m_defaultOrbitPoint = position + direction * SandboxEditor::CameraDefaultOrbitDistance();
+                }
+
+                return m_defaultOrbitPoint;
             });
 
         m_orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(SandboxEditor::CameraOrbitLookChannelId());
@@ -310,5 +344,64 @@ namespace SandboxEditor
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
                 m_viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::ClearReferenceFrame);
         }
+    }
+
+    //! AZ::TickBus overrides ...
+    void EditorModularViewportCameraComposer::OnTick(const float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    {
+        const float delta = deltaTime / ed_cameraDefaultOrbitFadeDuration;
+
+        if (m_defaultOrbiting)
+        {
+            m_defaultOrbitOpacity = AZStd::min(m_defaultOrbitOpacity + delta, 1.0f);
+        }
+        else
+        {
+            m_defaultOrbitOpacity = AZStd::max(m_defaultOrbitOpacity - delta, 0.0f);
+            if (m_defaultOrbitOpacity == 0.0f)
+            {
+                AZ::TickBus::Handler::BusDisconnect();
+                AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
+            }
+        }
+
+        m_defaultOrbiting = false;
+    }
+
+    static void DrawTransformAxis(
+        AzFramework::DebugDisplayRequests& display,
+        const AzFramework::CameraState& cameraState,
+        const AZ::Vector3& pivot,
+        const float axisLength,
+        const float alpha)
+    {
+        const int prevState = display.GetState();
+
+        display.DepthWriteOff();
+        display.DepthTestOff();
+        display.CullOff();
+
+        const float orthoScale =
+            ed_cameraDefaultOrbitAxesOrtho ? AzToolsFramework::CalculateScreenToWorldMultiplier(pivot, cameraState) : 1.0f;
+
+        display.SetColor(AZ::Color::CreateFromVector3AndFloat(AZ::Colors::Red.GetAsVector3(), alpha));
+        display.DrawLine(pivot, pivot + AZ::Vector3::CreateAxisX() * axisLength * orthoScale);
+        display.SetColor(AZ::Color::CreateFromVector3AndFloat(AZ::Colors::LawnGreen.GetAsVector3(), alpha));
+        display.DrawLine(pivot, pivot + AZ::Vector3::CreateAxisY() * axisLength * orthoScale);
+        display.SetColor(AZ::Color::CreateFromVector3AndFloat(AZ::Colors::Blue.GetAsVector3(), alpha));
+        display.DrawLine(pivot, pivot + AZ::Vector3::CreateAxisZ() * axisLength * orthoScale);
+
+        display.DepthWriteOn();
+        display.DepthTestOn();
+        display.CullOn();
+
+        display.SetState(prevState);
+    }
+
+    void EditorModularViewportCameraComposer::DisplayViewport(
+        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
+    {
+        DrawTransformAxis(
+            debugDisplay, AzToolsFramework::GetCameraState(viewportInfo.m_viewportId), m_defaultOrbitPoint, 1.0f, m_defaultOrbitOpacity);
     }
 } // namespace SandboxEditor
