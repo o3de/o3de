@@ -81,7 +81,7 @@ IF "%O3DE_PROJECT_PATH%"=="" (
     )
 echo     O3DE_PROJECT_PATH = %O3DE_PROJECT_PATH%
 
-:: Change to root Lumberyard dev dir
+:: Change to root O3DE dev dir
 IF "%O3DE_DEV%"=="" echo     ~ You must set O3DE_DEV in a User_Env.bat to match your local engine repo!
 IF "%O3DE_DEV%"=="" echo     ~ Using default O3DE_DEV=C:\Depot\o3de-engine
 IF "%O3DE_DEV%"=="" (set O3DE_DEV=C:\Depot\o3de-engine)
