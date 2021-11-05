@@ -55,6 +55,7 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QScrollArea>
+#include <QTimer>
 #include <QVBoxLayout>
 #include <QWidget>
 
@@ -151,6 +152,7 @@ namespace AzToolsFramework
             PrefabInstanceContainerNotificationBus::Handler::BusConnect();
             AZ::Interface<PrefabIntegrationInterface>::Register(this);
             AssetBrowser::AssetBrowserSourceDropBus::Handler::BusConnect(s_prefabFileExtension);
+            EditorEntityContextNotificationBus::Handler::BusConnect();
 
             InitializeShortcuts();
         }
@@ -159,6 +161,7 @@ namespace AzToolsFramework
         {
             UninitializeShortcuts();
 
+            EditorEntityContextNotificationBus::Handler::BusDisconnect();
             AssetBrowser::AssetBrowserSourceDropBus::Handler::BusDisconnect();
             AZ::Interface<PrefabIntegrationInterface>::Unregister(this);
             PrefabInstanceContainerNotificationBus::Handler::BusDisconnect();
@@ -421,6 +424,24 @@ namespace AzToolsFramework
             {
                 WarnUserOfError("Prefab Instantiation Error", instantiatePrefabOutcome.GetError());
             }
+        }
+
+        void PrefabIntegrationManager::OnStartPlayInEditorBegin()
+        {
+            // Focus on the root prefab (AZ::EntityId() will default to it)
+            s_prefabFocusPublicInterface->FocusOnOwningPrefab(AZ::EntityId());
+        }
+
+        void PrefabIntegrationManager::OnStopPlayInEditor()
+        {
+            // Refresh all containers when leaving Game Mode to ensure everything is synced.
+            QTimer::singleShot(
+                0,
+                [&]()
+                {
+                    s_containerEntityInterface->RefreshAllContainerEntities(s_editorEntityContextId);
+                }
+            );
         }
 
         void PrefabIntegrationManager::ContextMenu_CreatePrefab(AzToolsFramework::EntityIdList selectedEntities)
