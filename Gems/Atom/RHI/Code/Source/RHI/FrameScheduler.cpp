@@ -152,8 +152,6 @@ namespace AZ
 
         ResultCode FrameScheduler::ImportScopeProducer(ScopeProducer& scopeProducer)
         {
-            AZ_PROFILE_SCOPE(RHI, "FrameScheduler: ImportScopeProducer");
-
             if (!ValidateIsProcessing())
             {
                 return RHI::ResultCode::InvalidOperation;
@@ -266,7 +264,6 @@ namespace AZ
 
             // Execute all queued resource invalidations, which will mark SRG's for compilation.
             {
-                AZ_PROFILE_SCOPE(RHI, "Invalidate Resources");
                 ResourceInvalidateBus::ExecuteQueuedEvents();
             }
 
