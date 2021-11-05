@@ -67,7 +67,7 @@ namespace WhiteBox
     static Api::VertexHandles VertexHandlesForEdges(const WhiteBoxMesh& whiteBox, const Api::EdgeHandles& edgeHandles)
     {
         Api::VertexHandles vertexHandles = AZStd::accumulate(
-            edgeHandles.begin(), edgeHandles.end(), Api::VertexHandles{},
+            edgeHandles.cbegin(), edgeHandles.cend(), Api::VertexHandles{},
             [&whiteBox](Api::VertexHandles vertexHandles, const Api::EdgeHandle edgeHandle) 
             {
                 const auto edgeVertexHandles = Api::EdgeVertexHandles(whiteBox, edgeHandle);
@@ -77,7 +77,6 @@ namespace WhiteBox
             
         AZStd::sort(vertexHandles.begin(), vertexHandles.end());
         vertexHandles.erase(AZStd::unique(vertexHandles.begin(), vertexHandles.end()), vertexHandles.end());
-
         return vertexHandles;
     }
 
