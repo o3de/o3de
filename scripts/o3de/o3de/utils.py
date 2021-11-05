@@ -123,10 +123,15 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite, down
     :param download_path: location path on disk to download file
     :download_progress_callback: callback called with the download progress as a percentage, returns true to request to cancel the download
     """
-    if download_path.is_file() and not force_overwrite:
-        logger.warn(f'File already downloaded to {download_path}.')
-    elif download_path.is_file():
-        shutil.rmtree(download_path)
+    if download_path.is_file():
+        if not force_overwrite:
+            logger.warn(f'File already downloaded to {download_path}.')
+        else:
+            try:
+                shutil.rmtree(download_path)
+            except OSError:
+                logger.error(f'Could not remove existing download path {download_path}.')
+                return 1
 
     if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
         with urllib.request.urlopen(parsed_uri.geturl()) as s:

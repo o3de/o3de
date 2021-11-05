@@ -124,11 +124,16 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
     if not dest_path:
         logger.error(f'Destination path cannot be empty.')
         return 1
-    if dest_path.exists() and not force_overwrite:
-        logger.error(f'Destination path {dest_path} already exists.')
-        return 1
-    elif dest_path.exists():
-        shutil.rmtree(dest_path)
+    if dest_path.exists():
+        if not force_overwrite:
+            logger.error(f'Destination path {dest_path} already exists.')
+            return 1
+        else:
+            try:
+                shutil.rmtree(dest_path)
+            except OSError:
+                logger.error(f'Could not remove existing destination path {dest_path}.')
+                return 1
 
     dest_path.mkdir(exist_ok=True)
 
@@ -188,13 +193,12 @@ def download_restricted(restricted_name: str,
                         download_progress_callback = None) -> int:
     return download_o3de_object(restricted_name, 'restricted', dest_path, 'restricted', 'restricted_name', skip_auto_register, force_overwrite, download_progress_callback)
 
-def is_o3de_object_update_available(object_name: str, downloadable_kwarg_key, current_date: datetime) -> bool:
+def is_o3de_object_update_available(object_name: str, downloadable_kwarg_key, local_last_updated: str) -> bool:
     downloadable_object_data = get_downloadable(**{downloadable_kwarg_key : object_name})
     if not downloadable_object_data:
         logger.error(f'Downloadable o3de object {object_name} not found.')
         return False
 
-    repo_copy_updated_string = 0
     try:
         repo_copy_updated_string = downloadable_object_data['last_updated']
     except KeyError:
@@ -202,57 +206,34 @@ def is_o3de_object_update_available(object_name: str, downloadable_kwarg_key, cu
         return False
 
     try:
+        local_last_updated_time = datetime.fromisoformat(local_last_updated)
+    except ValueError:
+        logger.warn(f'last_updated field has incorrect format for local copy of {downloadable_kwarg_key} {object_name}.')
+        # Possible that an earlier version did not have this field so still want to check against cached downloadable version
+        local_last_updated_time = datetime.min
+
+    try:
         repo_copy_updated_date = datetime.fromisoformat(repo_copy_updated_string)
     except ValueError:
-        logger.error(f'last_updated field in incorrect format for {object_name}.')
+        logger.error(f'last_updated field in incorrect format for repository copy of {downloadable_kwarg_key} {object_name}.')
         return False
 
-    return repo_copy_updated_date > current_date
+    return repo_copy_updated_date > local_last_updated_time
 
 def is_o3de_engine_update_available(engine_name: str, local_last_updated: str):
-    try:
-        current_updated_time = datetime.fromisoformat(local_last_updated)
-    except ValueError:
-        logger.warn(f'last_updated field has incorrect format for engine {engine_name}.')
-        # Possible that an earlier version did not have this field so still want to check against cached downloadable version
-        current_updated_time = datetime.min
-    return is_o3de_object_update_available(engine_name, 'engine_name', current_updated_time)
+    return is_o3de_object_update_available(engine_name, 'engine_name', local_last_updated)
 
 def is_o3de_project_update_available(project_name: str, local_last_updated: str):
-    try:
-        current_updated_time = datetime.fromisoformat(local_last_updated)
-    except ValueError:
-        logger.warn(f'last_updated field has incorrect format for project {project_name}.')
-        # Possible that an earlier version did not have this field so still want to check against cached downloadable version
-        current_updated_time = datetime.min
-    return is_o3de_object_update_available(project_name, 'project_name', current_updated_time)
+    return is_o3de_object_update_available(project_name, 'project_name', local_last_updated)
 
 def is_o3de_gem_update_available(gem_name: str, local_last_updated: str):
-    try:
-        current_updated_time = datetime.fromisoformat(local_last_updated)
-    except ValueError:
-        logger.warn(f'last_updated field has incorrect format for gem {gem_name}.')
-        # Possible that an earlier version did not have this field so still want to check against cached downloadable version
-        current_updated_time = datetime.min
-    return is_o3de_object_update_available(gem_name, 'gem_name', current_updated_time)
+    return is_o3de_object_update_available(gem_name, 'gem_name', local_last_updated)
 
 def is_o3de_template_update_available(template_name: str, local_last_updated: str):
-    try:
-        current_updated_time = datetime.fromisoformat(local_last_updated)
-    except ValueError:
-        logger.warn(f'last_updated field has incorrect format for template {template_name}.')
-        # Possible that an earlier version did not have this field so still want to check against cached downloadable version
-        current_updated_time = datetime.min
-    return is_o3de_object_update_available(template_name, 'template_name', current_updated_time)
+    return is_o3de_object_update_available(template_name, 'template_name', local_last_updated)
 
 def is_o3de_restricted_update_available(restricted_name: str, local_last_updated: str):
-    try:
-        current_updated_time = datetime.fromisoformat(local_last_updated)
-    except ValueError:
-        logger.warn(f'last_updated field has incorrect format for restricted {restricted_name}.')
-        # Possible that an earlier version did not have this field so still want to check against cached downloadable version
-        current_updated_time = datetime.min
-    return is_o3de_object_update_available(restricted_name, 'restricted_name', current_updated_time)
+    return is_o3de_object_update_available(restricted_name, 'restricted_name', local_last_updated)
 
 def _run_download(args: argparse) -> int:
     if args.override_home_folder:
@@ -262,22 +243,22 @@ def _run_download(args: argparse) -> int:
         return download_engine(args.engine_name,
                                args.dest_path,
                                args.skip_auto_register,
-                               args.force_overwrite)
+                               args.force)
     elif args.project_name:
         return download_project(args.project_name,
                                 args.dest_path,
                                 args.skip_auto_register,
-                                args.force_overwrite)
+                                args.force)
     elif args.gem_name:
         return download_gem(args.gem_name,
                             args.dest_path,
                             args.skip_auto_register,
-                            args.force_overwrite)
+                            args.force)
     elif args.template_name:
         return download_template(args.template_name,
                                  args.dest_path,
                                  args.skip_auto_register,
-                                 args.force_overwrite)
+                                 args.force)
 
     return 1
 
@@ -306,7 +287,7 @@ def add_parser_args(parser):
     parser.add_argument('-sar', '--skip-auto-register', action='store_true', required=False,
                             default=False,
                             help = 'Skip the automatic registration of new object download')
-    parser.add_argument('-fce', '--force-overwrite', action='store_true', required=False,
+    parser.add_argument('-f', '--force', action='store_true', required=False,
                             default=False,
                             help = 'Force overwrite the current object')
     parser.add_argument('-ohf', '--override-home-folder', type=str, required=False,
