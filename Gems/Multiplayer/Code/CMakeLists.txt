@@ -25,6 +25,7 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzNetworking
+            Legacy::CryCommon
         PRIVATE
             Gem::EMotionFXStaticLib
             Gem::PhysX.Static
@@ -143,7 +144,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                Legacy::CryCommon
                 Legacy::Editor.Headers
                 AZ::AzCore
                 AZ::AzFramework

@@ -8,12 +8,9 @@
 
 #pragma once
 
+#include <CrySystemBus.h>
 #include <Source/AutoGen/MultiplayerEditor.AutoPacketDispatcher.h>
-
-#include <AzCore/Console/IConsole.h>
-#include <AzCore/Console/ILogger.h>
 #include <AzCore/IO/ByteContainerStream.h>
-#include <AzCore/std/string/string.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
 
 namespace AzNetworking
@@ -26,10 +23,12 @@ namespace Multiplayer
     //! MultiplayerEditorConnection is a connection listener to synchronize the Editor and a local server it launches
     class MultiplayerEditorConnection final
         : public AzNetworking::IConnectionListener
+        , public CrySystemEventBus::Handler
+
     {
     public:
         MultiplayerEditorConnection();
-        ~MultiplayerEditorConnection() = default;
+        ~MultiplayerEditorConnection();
 
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerReadyForLevelData& packet);
         bool HandleRequest(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, MultiplayerEditorPackets::EditorServerLevelData& packet);
@@ -42,6 +41,11 @@ namespace Multiplayer
         AzNetworking::PacketDispatchResult OnPacketReceived(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer) override;
         void OnPacketLost([[maybe_unused]]AzNetworking::IConnection* connection, [[maybe_unused]]AzNetworking::PacketId packetId) override {}
         void OnDisconnect([[maybe_unused]]AzNetworking::IConnection* connection, [[maybe_unused]]AzNetworking::DisconnectReason reason, [[maybe_unused]]AzNetworking::TerminationEndpoint endpoint) override {}
+        //! @}
+        
+        //! CrySystemEvents interface
+        //! @{
+        void OnCrySystemInitialized(ISystem&, const SSystemInitParams&) override;
         //! @}
 
     private:

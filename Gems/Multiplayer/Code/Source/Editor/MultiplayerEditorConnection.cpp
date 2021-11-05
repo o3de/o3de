@@ -20,6 +20,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzNetworking/ConnectionLayer/IConnection.h>
 #include <AzNetworking/Framework/INetworking.h>
+#include <AzCore/Console/IConsole.h>
 
 namespace Multiplayer
 {
@@ -34,9 +35,24 @@ namespace Multiplayer
         m_networkEditorInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
             AZ::Name(MpEditorInterfaceName), ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
         m_networkEditorInterface->SetTimeoutMs(AZ::TimeMs{ 0 }); // Disable timeouts on this network interface
-        ActivateDedicatedEditorServer();
+        CrySystemEventBus::Handler::BusConnect();
     }
 
+    MultiplayerEditorConnection::~MultiplayerEditorConnection()
+    {
+        CrySystemEventBus::Handler::BusDisconnect();
+    }
+    
+    void MultiplayerEditorConnection::OnCrySystemInitialized(ISystem&, const SSystemInitParams&)
+    {
+        if (editorsv_isDedicated)
+        {
+            // Wait to activate the editor-server until CrySystemInitialized so that the logging system is ready
+            // Automated testing listens for these logs
+            ActivateDedicatedEditorServer();
+        }
+    }
+    
     void MultiplayerEditorConnection::ActivateDedicatedEditorServer() const
     {
         if (m_isActivated || !editorsv_isDedicated)
