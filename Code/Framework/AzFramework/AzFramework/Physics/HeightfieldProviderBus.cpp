@@ -35,11 +35,11 @@ namespace Physics
         }
     }
 
-    HeightMaterialPoint::HeightMaterialPoint(float height, QuadMeshType type, uint8_t index = 0, uint16_t padding = 0)
+    HeightMaterialPoint::HeightMaterialPoint(float height, QuadMeshType type, uint8_t index, uint16_t padding)
         : m_height(height)
         , m_quadMeshType(type)
         , m_materialIndex(index)
-        , m_padding(0)
+        , m_padding(padding)
     {
     }
 
