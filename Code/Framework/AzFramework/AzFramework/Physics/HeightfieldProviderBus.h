@@ -32,7 +32,14 @@ namespace Physics
         uint8_t m_materialIndex{ 0 }; //!< The surface material index for the upper left corner of this quad.
         uint16_t m_padding{ 0 }; //!< available for future use.
 
-        HeightMaterialPoint(float height, QuadMeshType type, uint8_t index = 0, uint16_t padding = 0);
+        HeightMaterialPoint(
+            float height = 0.0f, QuadMeshType type = QuadMeshType::SubdivideUpperLeftToBottomRight, uint8_t index = 0, uint16_t padding = 0)
+            : m_padding(padding)
+            , m_materialIndex(index)
+            , m_quadMeshType(type)
+            , m_height(height)
+        {
+        }
     };
 
     //! An interface to provide heightfield values.
