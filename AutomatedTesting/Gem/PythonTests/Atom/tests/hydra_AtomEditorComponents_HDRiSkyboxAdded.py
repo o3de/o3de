@@ -5,6 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+
 class Tests:
     creation_undo = (
         "UNDO Entity creation success",
@@ -16,7 +17,7 @@ class Tests:
         "HDRi Skybox successfully created",
         "HDRi Skybox failed to be created")
     hdri_skybox_entity_component_added = (
-        "Entity has a HDRi Skybox component",
+        "Entity has an HDRi Skybox component",
         "Entity failed to find HDRi Skybox component")
     enter_game_mode = (
         "Entered game mode",
@@ -55,8 +56,8 @@ def AtomEditorComponents_HDRiSkybox_AddedToEntity():
     Creation and deletion undo/redo should also work.
 
     Test Steps:
-    1) Create a HDRi Skybox with no components.
-    2) Add a HDRi Skybox component to HDRi Skybox.
+    1) Create an HDRi Skybox with no components.
+    2) Add an HDRi Skybox component to HDRi Skybox.
     3) UNDO the entity creation and component addition.
     4) REDO the entity creation and component addition.
     5) Enter/Exit game mode.
@@ -83,13 +84,13 @@ def AtomEditorComponents_HDRiSkybox_AddedToEntity():
         TestHelper.open_level("", "Base")
 
         # Test steps begin.
-        # 1. Create a HDRi Skybox with no components.
+        # 1. Create an HDRi Skybox with no components.
         hdri_skybox_entity = EditorEntity.create_editor_entity(
             AtomComponentProperties.hdri_skybox())
         Report.critical_result(Tests.hdri_skybox_entity_creation, 
                                hdri_skybox_entity.exists())
 
-        # 2. Add a HDRi Skybox component to HDRi Skybox.
+        # 2. Add an HDRi Skybox component to HDRi Skybox.
         hdri_skybox_component = hdri_skybox_entity.add_component(
             AtomComponentProperties.hdri_skybox())
         Report.critical_result(
