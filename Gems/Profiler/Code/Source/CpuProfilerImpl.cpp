@@ -381,7 +381,7 @@ namespace Profiler
             if (!m_cachedTimeRegionMap.empty())
             {
                 cachedTimeRegionMap = AZStd::move(m_cachedTimeRegionMap);
-                ResetCachedData();
+                m_cachedTimeRegionMap.clear();
                 m_hitSizeLimitMap.clear();
             }
 
