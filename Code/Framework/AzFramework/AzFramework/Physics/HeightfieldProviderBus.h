@@ -42,6 +42,8 @@ namespace Physics
             , m_padding(0)
         {
         }
+
+        virtual ~HeightMaterialPoint(){}
     };
 
     //! An interface to provide heightfield values.
