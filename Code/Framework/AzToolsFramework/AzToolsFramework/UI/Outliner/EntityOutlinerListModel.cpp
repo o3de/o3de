@@ -79,7 +79,6 @@ namespace AzToolsFramework
     EntityOutlinerListModel::EntityOutlinerListModel(QObject* parent)
         : QAbstractItemModel(parent)
         , m_entitySelectQueue()
-        , m_entityExpandQueue()
         , m_entityChangeQueue()
         , m_entityChangeQueued(false)
         , m_entityLayoutQueued(false)
@@ -1284,7 +1283,6 @@ namespace AzToolsFramework
     void EntityOutlinerListModel::QueueEntityToExpand(AZ::EntityId entityId, bool expand)
     {
         m_entityExpansionState[entityId] = expand;
-        m_entityExpandQueue.insert(entityId);
         QueueEntityUpdate(entityId);
     }
 
@@ -1309,16 +1307,7 @@ namespace AzToolsFramework
         {
             return;
         }
-
-        {
-            AZ_PROFILE_SCOPE(Editor, "EntityOutlinerListModel::ProcessEntityUpdates:ExpandQueue");
-            for (auto entityId : m_entityExpandQueue)
-            {
-                emit ExpandEntity(entityId, IsExpanded(entityId));
-            };
-            m_entityExpandQueue.clear();
-        }
-
+        
         {
             AZ_PROFILE_SCOPE(Editor, "EntityOutlinerListModel::ProcessEntityUpdates:SelectQueue");
             for (auto entityId : m_entitySelectQueue)

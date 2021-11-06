@@ -51,6 +51,8 @@ namespace AzToolsFramework
     Q_SIGNALS:
         void ItemDropped();
 
+    protected slots:
+        void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) override;
     protected:
         // Qt overrides
         void mousePressEvent(QMouseEvent* event) override;

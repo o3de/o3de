@@ -155,7 +155,6 @@ namespace AzToolsFramework
         void OnTreeItemDoubleClicked(const QModelIndex& index);
         void OnTreeItemExpanded(const QModelIndex& index);
         void OnTreeItemCollapsed(const QModelIndex& index);
-        void OnExpandEntity(const AZ::EntityId& entityId, bool expand);
         void OnSelectEntity(const AZ::EntityId& entityId, bool selected);
         void OnEnableSelectionUpdates(bool enable);
         void OnDropEvent();

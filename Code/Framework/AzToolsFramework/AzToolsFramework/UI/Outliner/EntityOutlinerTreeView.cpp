@@ -81,6 +81,22 @@ namespace AzToolsFramework
         update();
     }
 
+    void EntityOutlinerTreeView::dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int>& roles)
+    {
+        AzQtComponents::StyledTreeView::dataChanged(topLeft, bottomRight, roles);
+
+        if (topLeft.isValid() && topLeft.parent() == bottomRight.parent() && topLeft.row() <= bottomRight.row() &&
+            topLeft.column() <= bottomRight.column())
+        {
+            for (int i = topLeft.row(); i <= bottomRight.row(); i++)
+            {
+                auto modelRow = topLeft.sibling(i, EntityOutlinerListModel::ColumnName);
+                const bool currentExpand = modelRow.data(EntityOutlinerListModel::ExpandedRole).template value<bool>();
+                setExpanded(modelRow, currentExpand);
+            }
+        }
+    }
+
     void EntityOutlinerTreeView::mousePressEvent(QMouseEvent* event)
     {
         //postponing normal mouse pressed logic until mouse is released or dragged
