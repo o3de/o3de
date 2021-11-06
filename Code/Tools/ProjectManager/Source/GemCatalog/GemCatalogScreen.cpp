@@ -49,6 +49,7 @@ namespace O3DE::ProjectManager
         connect(m_gemModel, &GemModel::gemStatusChanged, this, &GemCatalogScreen::OnGemStatusChanged);
         connect(m_headerWidget, &GemCatalogHeaderWidget::OpenGemsRepo, this, &GemCatalogScreen::HandleOpenGemRepo);
         connect(m_headerWidget, &GemCatalogHeaderWidget::AddGem, this, &GemCatalogScreen::OnAddGemClicked);
+        connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setMargin(0);
@@ -58,7 +59,7 @@ namespace O3DE::ProjectManager
         m_gemInspector = new GemInspector(m_gemModel, this);
         m_gemInspector->setFixedWidth(240);
 
-        connect(m_gemInspector, &GemInspector::TagClicked, this, &GemCatalogScreen::SelectGem);
+        connect(m_gemInspector, &GemInspector::TagClicked, [=](const Tag& tag) { SelectGem(tag.id); });
 
         QWidget* filterWidget = new QWidget(this);
         filterWidget->setFixedWidth(240);
@@ -86,6 +87,7 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::ReinitForProject(const QString& projectPath)
     {
+        m_projectPath = projectPath;
         m_gemModel->Clear();
         m_gemsToRegisterWithProject.clear();
         FillModel(projectPath);
@@ -155,15 +157,15 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemCatalogScreen::Refresh(const QString& projectPath)
+    void GemCatalogScreen::Refresh()
     {
         QHash<QString, GemInfo> gemInfoHash;
 
         // create a hash with the gem name as key
-        AZ::Outcome<QVector<GemInfo>, AZStd::string> allGemInfosResult = PythonBindingsInterface::Get()->GetAllGemInfos(projectPath);
+        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allGemInfosResult = PythonBindingsInterface::Get()->GetAllGemInfos(m_projectPath);
         if (allGemInfosResult.IsSuccess())
         {
-            QVector<GemInfo> gemInfos = allGemInfosResult.GetValue();
+            const QVector<GemInfo>& gemInfos = allGemInfosResult.GetValue();
             for (const GemInfo& gemInfo : gemInfos)
             {
                 gemInfoHash.insert(gemInfo.m_name, gemInfo);
@@ -171,10 +173,10 @@ namespace O3DE::ProjectManager
         }
 
         // add all the gem repos into the hash
-        AZ::Outcome<QVector<GemInfo>, AZStd::string> allRepoGemInfosResult = PythonBindingsInterface::Get()->GetAllGemRepoGemsInfos();
+        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetAllGemRepoGemsInfos();
         if (allRepoGemInfosResult.IsSuccess())
         {
-            const QVector<GemInfo> allRepoGemInfos = allRepoGemInfosResult.GetValue();
+            const QVector<GemInfo>& allRepoGemInfos = allRepoGemInfosResult.GetValue();
             for (const GemInfo& gemInfo : allRepoGemInfos)
             {
                 if (!gemInfoHash.contains(gemInfo.m_name))
@@ -310,20 +312,22 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::FillModel(const QString& projectPath)
     {
-        AZ::Outcome<QVector<GemInfo>, AZStd::string> allGemInfosResult = PythonBindingsInterface::Get()->GetAllGemInfos(projectPath);
+        m_projectPath = projectPath;
+
+        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allGemInfosResult = PythonBindingsInterface::Get()->GetAllGemInfos(projectPath);
         if (allGemInfosResult.IsSuccess())
         {
             // Add all available gems to the model.
-            const QVector<GemInfo> allGemInfos = allGemInfosResult.GetValue();
+            const QVector<GemInfo>& allGemInfos = allGemInfosResult.GetValue();
             for (const GemInfo& gemInfo : allGemInfos)
             {
                 m_gemModel->AddGem(gemInfo);
             }
 
-            AZ::Outcome<QVector<GemInfo>, AZStd::string> allRepoGemInfosResult = PythonBindingsInterface::Get()->GetAllGemRepoGemsInfos();
+            const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetAllGemRepoGemsInfos();
             if (allRepoGemInfosResult.IsSuccess())
             {
-                const QVector<GemInfo> allRepoGemInfos = allRepoGemInfosResult.GetValue();
+                const QVector<GemInfo>& allRepoGemInfos = allRepoGemInfosResult.GetValue();
                 for (const GemInfo& gemInfo : allRepoGemInfos)
                 {
                     // do not add gems that have already been downloaded
@@ -342,10 +346,10 @@ namespace O3DE::ProjectManager
             m_notificationsEnabled = false;
 
             // Gather enabled gems for the given project.
-            auto enabledGemNamesResult = PythonBindingsInterface::Get()->GetEnabledGemNames(projectPath);
+            const auto& enabledGemNamesResult = PythonBindingsInterface::Get()->GetEnabledGemNames(projectPath);
             if (enabledGemNamesResult.IsSuccess())
             {
-                const QVector<AZStd::string> enabledGemNames = enabledGemNamesResult.GetValue();
+                const QVector<AZStd::string>& enabledGemNames = enabledGemNamesResult.GetValue();
                 for (const AZStd::string& enabledGemName : enabledGemNames)
                 {
                     const QModelIndex modelIndex = m_gemModel->FindIndexByNameString(enabledGemName.c_str());
@@ -405,12 +409,24 @@ namespace O3DE::ProjectManager
 
         for (const QModelIndex& modelIndex : toBeAdded)
         {
-            const QString gemPath = GemModel::GetPath(modelIndex);
+            const QString& gemPath = GemModel::GetPath(modelIndex);
+
+            // make sure any remote gems we added were downloaded successfully 
+            if (GemModel::GetGemOrigin(modelIndex) == GemInfo::Remote && GemModel::GetDownloadStatus(modelIndex) != GemInfo::Downloaded)
+            {
+                QMessageBox::critical(
+                    nullptr, "Cannot add gem that isn't downloaded",
+                    tr("Cannot add gem %1 to project because it isn't downloaded yet or failed to download.")
+                        .arg(GemModel::GetDisplayName(modelIndex)));
+
+                return EnableDisableGemsResult::Failed;
+            }
+
             const AZ::Outcome<void, AZStd::string> result = pythonBindings->AddGemToProject(gemPath, projectPath);
             if (!result.IsSuccess())
             {
-                QMessageBox::critical(nullptr, "Operation failed",
-                    QString("Cannot add gem %1 to project.\n\nError:\n%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
+                QMessageBox::critical(nullptr, "Failed to add gem to project",
+                    tr("Cannot add gem %1 to project.<br><br>Error:<br>%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
 
                 return EnableDisableGemsResult::Failed;
             }
@@ -428,8 +444,8 @@ namespace O3DE::ProjectManager
             const AZ::Outcome<void, AZStd::string> result = pythonBindings->RemoveGemFromProject(gemPath, projectPath);
             if (!result.IsSuccess())
             {
-                QMessageBox::critical(nullptr, "Operation failed",
-                    QString("Cannot remove gem %1 from project.\n\nError:\n%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
+                QMessageBox::critical(nullptr, "Failed to remove gem from project",
+                    tr("Cannot remove gem %1 from project.<br><br>Error:<br>%2").arg(GemModel::GetDisplayName(modelIndex), result.GetError().c_str()));
 
                 return EnableDisableGemsResult::Failed;
             }
@@ -441,6 +457,34 @@ namespace O3DE::ProjectManager
     void GemCatalogScreen::HandleOpenGemRepo()
     {
         emit ChangeScreenRequest(ProjectManagerScreen::GemRepos);
+    }
+
+    void GemCatalogScreen::OnGemDownloadResult(bool succeeded, const QString& gemName)
+    {
+        if (succeeded)
+        {
+            // refresh the information for downloaded gems
+            const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allGemInfosResult = PythonBindingsInterface::Get()->GetAllGemInfos(m_projectPath);
+            if (allGemInfosResult.IsSuccess())
+            {
+                // we should find the gem name now in all gem infos
+                for (const GemInfo& gemInfo : allGemInfosResult.GetValue())
+                {
+                    if (gemInfo.m_name == gemName)
+                    {
+                        QModelIndex index = m_gemModel->FindIndexByNameString(gemName);
+                        if (index.isValid())
+                        {
+                            m_gemModel->setData(index, GemInfo::Downloaded, GemModel::RoleDownloadStatus);
+                            m_gemModel->setData(index, gemInfo.m_path, GemModel::RolePath);
+                            m_gemModel->setData(index, gemInfo.m_path, GemModel::RoleDirectoryLink);
+                        }
+
+                        return;
+                    }
+                }
+            }
+        }
     }
 
     ProjectManagerScreen GemCatalogScreen::GetScreenEnum()

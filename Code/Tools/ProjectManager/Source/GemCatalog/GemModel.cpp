@@ -65,7 +65,6 @@ namespace O3DE::ProjectManager
         appendRow(item);
 
         const QModelIndex modelIndex = index(rowCount()-1, 0);
-        m_nameToIndexMap[gemInfo.m_displayName] = modelIndex;
         m_nameToIndexMap[gemInfo.m_name] = modelIndex;
     }
 
@@ -178,18 +177,6 @@ namespace O3DE::ProjectManager
         return {};
     }
 
-    void GemModel::FindGemDisplayNamesByNameStrings(QStringList& inOutGemNames)
-    {
-        for (QString& name : inOutGemNames)
-        {
-            QModelIndex modelIndex = FindIndexByNameString(name);
-            if (modelIndex.isValid())
-            {
-                name = GetDisplayName(modelIndex);
-            }
-        }
-    }
-
     QStringList GemModel::GetDependingGems(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleDependingGems).toStringList();
@@ -209,16 +196,23 @@ namespace O3DE::ProjectManager
         }
     }
 
-    QStringList GemModel::GetDependingGemNames(const QModelIndex& modelIndex)
+    QVector<Tag> GemModel::GetDependingGemTags(const QModelIndex& modelIndex)
     {
-        QStringList result = GetDependingGems(modelIndex);
-        if (result.isEmpty())
+        QVector<Tag> tags;
+
+        QStringList dependingGemNames = GetDependingGems(modelIndex);
+        tags.reserve(dependingGemNames.size());
+
+        for (QString& gemName : dependingGemNames)
         {
-            return {};
+            const QModelIndex& dependingIndex = FindIndexByNameString(gemName);
+            if (dependingIndex.isValid())
+            {
+                tags.push_back({ GetDisplayName(dependingIndex), GetName(dependingIndex) });
+            }
         }
 
-        FindGemDisplayNamesByNameStrings(result);
-        return result;
+        return tags;
     }
 
     QString GemModel::GetVersion(const QModelIndex& modelIndex)

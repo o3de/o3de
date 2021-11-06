@@ -26,6 +26,7 @@ namespace O3DE::ProjectManager
 
     class UpdateProjectCtrl : public ScreenWidget
     {
+        Q_OBJECT
     public:
         explicit UpdateProjectCtrl(QWidget* parent = nullptr);
         ~UpdateProjectCtrl() = default;

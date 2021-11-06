@@ -55,11 +55,7 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_stack);
 
         connect(m_gemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
-        connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, [this]()
-            {
-                const QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
-                m_gemCatalogScreen->Refresh(projectTemplatePath + "/Template");
-            });
+        connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_gemCatalogScreen, &GemCatalogScreen::Refresh);
 
         // When there are multiple project templates present, we re-gather the gems when changing the selected the project template.
         connect(m_newProjectSettingsScreen, &NewProjectSettingsScreen::OnTemplateSelectionChanged, this, [=](int oldIndex, [[maybe_unused]] int newIndex)
@@ -257,6 +253,12 @@ namespace O3DE::ProjectManager
         {
             if (m_newProjectSettingsScreen->Validate())
             {
+                if (!m_gemCatalogScreen->GetDownloadController()->IsDownloadQueueEmpty())
+                {
+                    QMessageBox::critical(this, tr("Gems downloading"), tr("You must wait for gems to finish downloading before continuing."));
+                    return;
+                }
+
                 ProjectInfo projectInfo = m_newProjectSettingsScreen->GetProjectInfo();
                 QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
 

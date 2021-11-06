@@ -82,8 +82,9 @@ namespace O3DE::ProjectManager
             succeeded = false;
         }
 
+        const QString gemName = m_gemNames[0];
         m_gemNames.erase(m_gemNames.begin());
-        emit Done(succeeded);
+        emit Done(succeeded, gemName);
 
         if (!m_gemNames.empty())
         {

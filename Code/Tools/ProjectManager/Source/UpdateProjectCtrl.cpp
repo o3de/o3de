@@ -43,7 +43,7 @@ namespace O3DE::ProjectManager
         m_gemRepoScreen = new GemRepoScreen(this);
 
         connect(m_gemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &UpdateProjectCtrl::OnChangeScreenRequest);
-        connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, [this](){ m_gemCatalogScreen->Refresh(m_projectInfo.m_path); });
+        connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_gemCatalogScreen, &GemCatalogScreen::Refresh);
 
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");
@@ -163,6 +163,7 @@ namespace O3DE::ProjectManager
                 QMessageBox::critical(this, tr("Gems downloading"), tr("You must wait for gems to finish downloading before continuing."));
                 return;
             }
+
             // Enable or disable the gems that got adjusted in the gem catalog and apply them to the given project.
             const GemCatalogScreen::EnableDisableGemsResult result = m_gemCatalogScreen->EnableDisableGemsForProject(m_projectInfo.m_path);
             if (result == GemCatalogScreen::EnableDisableGemsResult::Failed)

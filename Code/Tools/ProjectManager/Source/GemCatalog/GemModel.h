@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <GemCatalog/GemInfo.h>
+#include <TagWidget.h>
 #include <QAbstractItemModel>
 #include <QStandardItemModel>
 #include <QItemSelectionModel>
@@ -58,7 +59,7 @@ namespace O3DE::ProjectManager
         void UpdateGemDependencies();
 
         QModelIndex FindIndexByNameString(const QString& nameString) const;
-        QStringList GetDependingGemNames(const QModelIndex& modelIndex);
+        QVector<Tag> GetDependingGemTags(const QModelIndex& modelIndex);
         bool HasDependentGems(const QModelIndex& modelIndex) const;
 
         static QString GetName(const QModelIndex& modelIndex);
@@ -113,7 +114,6 @@ namespace O3DE::ProjectManager
         void OnRowsAboutToBeRemoved(const QModelIndex& parent, int first, int last);
 
     private:
-        void FindGemDisplayNamesByNameStrings(QStringList& inOutGemNames);
         void GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems);
         QStringList GetDependingGems(const QModelIndex& modelIndex);
 
