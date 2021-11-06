@@ -235,7 +235,7 @@ namespace AZ
             {
                 if (!dependencies.insert(parentSourceAbsPath).second)
                 {
-                    AZ_Error("MaterialSourceData", false, "Detected circular dependency between materials: '%s' and '%s'.", materialSourceFilePath, parentSourceAbsPath.c_str());
+                    AZ_Error("MaterialSourceData", false, "Detected circular dependency between materials: '%s' and '%s'.", materialSourceFilePath.data(), parentSourceAbsPath.c_str());
                     return Failure();
                 }
 

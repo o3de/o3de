@@ -762,8 +762,8 @@ namespace MaterialEditor
                 return false;
             }
 
-            auto parentMaterialAssetResult = m_materialSourceData.CreateMaterialAssetFromSourceData(
-                parentMaterialAssetIdResult.GetValue(), parentMaterialFilePath, true, true, &m_sourceDependencies);
+            auto parentMaterialAssetResult = parentMaterialSourceData.CreateMaterialAssetFromSourceData(
+                parentMaterialAssetIdResult.GetValue(), parentMaterialFilePath, true, true);
             if (!parentMaterialAssetResult)
             {
                 AZ_Error("MaterialDocument", false, "Material parent asset could not be created from source data: '%s'.", parentMaterialFilePath.c_str());
