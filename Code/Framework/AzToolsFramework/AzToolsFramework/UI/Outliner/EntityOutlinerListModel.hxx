@@ -156,7 +156,6 @@ namespace AzToolsFramework
         void ProcessEntityUpdates();
 
     Q_SIGNALS:
-        void ExpandEntity(const AZ::EntityId& entityId, bool expand);
         void SelectEntity(const AZ::EntityId& entityId, bool select);
         void EnableSelectionUpdates(bool enable);
         void ResetFilter();

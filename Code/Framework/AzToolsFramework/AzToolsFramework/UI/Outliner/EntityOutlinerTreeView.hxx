@@ -53,6 +53,8 @@ namespace AzToolsFramework
 
     protected slots:
         void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) override;
+        void rowsInserted(const QModelIndex &parent, int start, int end) override;
+
     protected:
         // Qt overrides
         void mousePressEvent(QMouseEvent* event) override;
@@ -77,6 +79,8 @@ namespace AzToolsFramework
         void ClearQueuedMouseEvent();
 
         void processQueuedMousePressedEvent(QMouseEvent* event);
+        void recursiveCheckExpandedStates(const QModelIndex& parent);
+        void checkExpandedState(const QModelIndex& current);
 
         void StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions) override;
 
