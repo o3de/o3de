@@ -245,7 +245,7 @@ namespace O3DE::ProjectManager
                     QSpacerItem* spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
                     nameProgressLayout->addSpacerItem(spacer);
 
-                    QLabel* cancelText = new QLabel(QString("<a href=\"\">Cancel</a>"));
+                    QLabel* cancelText = new QLabel(QString("<a href=\"%1\">Cancel</a>").arg(gemName));
                     cancelText->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
                     connect(cancelText, &QLabel::linkActivated, this, &CartOverlayWidget::OnCancelDownloadActivated);
                     nameProgressLayout->addWidget(cancelText);
