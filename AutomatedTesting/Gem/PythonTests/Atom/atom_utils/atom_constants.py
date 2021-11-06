@@ -60,6 +60,7 @@ class AtomComponentProperties:
         """
         properties = {
             'name': 'Camera',
+            'Field of view': 'Controller|Configuration|Field of view'
         }
         return properties[property]
 
@@ -203,6 +204,7 @@ class AtomComponentProperties:
         """
         properties = {
             'name': 'Grid',
+            'Secondary Grid Spacing': 'Controller|Configuration|Secondary Grid Spacing',
         }
         return properties[property]
 
@@ -230,6 +232,7 @@ class AtomComponentProperties:
         """
         properties = {
             'name': 'HDRi Skybox',
+            'Cubemap Texture': 'Controller|Configuration|Cubemap Texture',
         }
         return properties[property]
 
@@ -274,6 +277,7 @@ class AtomComponentProperties:
         properties = {
             'name': 'Material',
             'requires': [AtomComponentProperties.actor(), AtomComponentProperties.mesh()],
+            'Material Asset': 'Default Material|Material Asset',
         }
         return properties[property]
 
