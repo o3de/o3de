@@ -600,7 +600,7 @@ namespace WhiteBox
 
             VertexHandles vertexHandles;
             vertexHandles.reserve(whiteBox.mesh.n_vertices());
-            for (const auto vertexHandle : whiteBox.mesh.vertices())
+            for (const auto& vertexHandle : whiteBox.mesh.vertices())
             {
                 vertexHandles.push_back(wb_vh(vertexHandle));
             }
@@ -614,7 +614,7 @@ namespace WhiteBox
 
             FaceHandles faceHandles;
             faceHandles.reserve(whiteBox.mesh.n_faces());
-            for (const auto faceHandle : whiteBox.mesh.faces())
+            for (const auto& faceHandle : whiteBox.mesh.faces())
             {
                 faceHandles.push_back(wb_fh(faceHandle));
             }
@@ -660,7 +660,7 @@ namespace WhiteBox
                 EdgeHandles orderedEdgeHandles;
                 orderedEdgeHandles.reserve(halfedgeHandles.size());
 
-                for (const auto halfedgeHandle : halfedgeHandles)
+                for (const auto& halfedgeHandle : halfedgeHandles)
                 {
                     orderedEdgeHandles.push_back(HalfedgeEdgeHandle(whiteBox, halfedgeHandle));
                 }
@@ -712,7 +712,7 @@ namespace WhiteBox
 
             EdgeHandles edgeHandles;
             edgeHandles.reserve(whiteBox.mesh.n_edges());
-            for (const auto edgeHandle : whiteBox.mesh.edges())
+            for (const auto& edgeHandle : whiteBox.mesh.edges())
             {
                 edgeHandles.push_back(wb_eh(edgeHandle));
             }
@@ -771,7 +771,7 @@ namespace WhiteBox
             EdgeHandles edgeHandles;
             edgeHandles.reserve(3);
 
-            for (const auto halfedgeHandle : FaceHalfedgeHandles(whiteBox, faceHandle))
+            for (const auto& halfedgeHandle : FaceHalfedgeHandles(whiteBox, faceHandle))
             {
                 edgeHandles.push_back(HalfedgeEdgeHandle(whiteBox, halfedgeHandle));
             }
@@ -789,7 +789,7 @@ namespace WhiteBox
             VertexHandles vertexHandles;
             vertexHandles.reserve(3);
 
-            for (const auto halfedgeHandle : FaceHalfedgeHandles(whiteBox, faceHandle))
+            for (const auto& halfedgeHandle : FaceHalfedgeHandles(whiteBox, faceHandle))
             {
                 vertexHandles.emplace_back(HalfedgeVertexHandleAtTip(whiteBox, halfedgeHandle));
             }
@@ -809,7 +809,7 @@ namespace WhiteBox
             AZStd::vector<AZ::Vector3> triangles;
             triangles.reserve(faceHandles.size() * 3);
 
-            for (const auto faceHandle : faceHandles)
+            for (const auto& faceHandle : faceHandles)
             {
                 const auto corners = FaceVertexPositions(whiteBox, faceHandle);
                 triangles.insert(triangles.end(), corners.begin(), corners.end());
@@ -953,7 +953,7 @@ namespace WhiteBox
                 // all halfedges for a given face
                 const auto halfedges = FaceHalfedgeHandles(whiteBox, faceHandle);
 
-                for (const HalfedgeHandle halfedgeHandle : halfedges)
+                for (const HalfedgeHandle& halfedgeHandle : halfedges)
                 {
                     const FaceHandle oppositeFaceHandle = OppositeFaceHandle(whiteBox, halfedgeHandle);
 
@@ -983,15 +983,15 @@ namespace WhiteBox
 
             // build all possible halfedge handles
             HalfedgeHandles halfedgeHandles;
-            for (const auto faceHandle : faceHandles)
+            for (const auto& faceHandle : faceHandles)
             {
                 // find all vertices for a given face
                 const auto vertexHandles = FaceVertexHandles(whiteBox, faceHandle);
-                for (const auto vertexHandle : vertexHandles)
+                for (const auto& vertexHandle : vertexHandles)
                 {
                     // find all outgoing halfedges from vertex
                     const auto outgoingHalfedgeHandles = VertexOutgoingHalfedgeHandles(whiteBox, vertexHandle);
-                    for (const auto halfedgeHandle : outgoingHalfedgeHandles)
+                    for (const auto& halfedgeHandle : outgoingHalfedgeHandles)
                     {
                         // find what face corresponds to this halfedge
                         const FaceHandle halfedgeFaceHandle = HalfedgeFaceHandle(whiteBox, halfedgeHandle);
@@ -1098,7 +1098,7 @@ namespace WhiteBox
                 VertexHandles orderedVertexHandles;
                 orderedVertexHandles.reserve(halfedgeHandles.size());
 
-                for (const auto halfedgeHandle : halfedgeHandles)
+                for (const auto& halfedgeHandle : halfedgeHandles)
                 {
                     orderedVertexHandles.push_back(HalfedgeVertexHandleAtTip(whiteBox, halfedgeHandle));
                 }
@@ -1121,10 +1121,10 @@ namespace WhiteBox
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             VertexHandles vertexHandles;
-            for (const FaceHandle faceHandle : faceHandles)
+            for (const FaceHandle& faceHandle : faceHandles)
             {
                 const auto faceVertexHandles = FaceVertexHandles(whiteBox, faceHandle);
-                for (const VertexHandle faceVertexHandle : faceVertexHandles)
+                for (const VertexHandle& faceVertexHandle : faceVertexHandles)
                 {
                     const auto* const vertexIt =
                         AZStd::find(vertexHandles.cbegin(), vertexHandles.cend(), faceVertexHandle);
@@ -1318,10 +1318,10 @@ namespace WhiteBox
                 visitedVertexHandles.push_back(vertexHandle);
 
                 // for all connected vertex handles to this edge
-                for (const auto vertexEdgeHandle : VertexEdgeHandles(whiteBox, vertexHandle))
+                for (const auto& vertexEdgeHandle : VertexEdgeHandles(whiteBox, vertexHandle))
                 {
                     // check all halfedges in the edge
-                    for (const auto halfedgeHandle : EdgeHalfedgeHandles(whiteBox, vertexEdgeHandle))
+                    for (const auto& halfedgeHandle : EdgeHalfedgeHandles(whiteBox, vertexEdgeHandle))
                     {
                         // only track the edge if it's a 'user' edge (selectable - not a 'mesh' edge)
                         if (!EdgeIsUser(whiteBox, halfedgeHandle, vertexEdgeHandle))
@@ -1339,7 +1339,7 @@ namespace WhiteBox
                         // store the edge to the grouping
                         edgeGrouping.push_back(vertexEdgeHandle);
 
-                        for (const auto nextVertexHandle : Api::EdgeVertexHandles(whiteBox, vertexEdgeHandle))
+                        for (const auto& nextVertexHandle : Api::EdgeVertexHandles(whiteBox, vertexEdgeHandle))
                         {
                             // if we haven't seen this vertex yet, add it to
                             // the vertex handles to explore
@@ -1978,7 +1978,7 @@ namespace WhiteBox
 
             Faces faces;
             faces.reserve(MeshFaceCount(whiteBox));
-            for (const auto faceHandle : MeshFaceHandles(whiteBox))
+            for (const auto& faceHandle : MeshFaceHandles(whiteBox))
             {
                 const auto halfEdgeHandles = FaceHalfedgeHandles(whiteBox, faceHandle);
 
@@ -2002,7 +2002,7 @@ namespace WhiteBox
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             auto& mesh = whiteBox.mesh;
-            for (const auto faceHandle : faceHandles)
+            for (const auto& faceHandle : faceHandles)
             {
                 for (Mesh::ConstFaceHalfedgeCCWIter faceHalfedgeIt = mesh.fh_ccwiter(om_fh(faceHandle));
                      faceHalfedgeIt.is_valid(); ++faceHalfedgeIt)
