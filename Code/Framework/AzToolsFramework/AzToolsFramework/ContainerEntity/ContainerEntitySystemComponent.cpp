@@ -26,8 +26,12 @@ namespace AzToolsFramework
         AZ::Interface<ContainerEntityInterface>::Unregister(this);
     }
 
-    void ContainerEntitySystemComponent::Reflect([[maybe_unused]] AZ::ReflectContext* context)
+    void ContainerEntitySystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<ContainerEntitySystemComponent, AZ::Component>()->Version(1);
+        }
     }
 
     void ContainerEntitySystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

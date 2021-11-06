@@ -10,6 +10,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -132,7 +133,6 @@ namespace AZ
                     m_createDefaultScene = false;
                 }
 
-                AzFramework::AssetCatalogEventBus::Handler::BusConnect();
                 TickBus::Handler::BusConnect();
 
                 // Listen for window system requests (e.g. requests for default window handle)
@@ -143,6 +143,20 @@ namespace AZ
 
                 Render::Bootstrap::DefaultWindowBus::Handler::BusConnect();
                 Render::Bootstrap::RequestBus::Handler::BusConnect();
+
+                // If the settings registry isn't available, something earlier in startup will report that failure.
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    // Automatically register the event if it's not registered, because
+                    // this system is initialized before the settings registry has loaded the event list.
+                    AZ::ComponentApplicationLifecycle::RegisterHandler(
+                        *settingsRegistry, m_componentApplicationLifecycleHandler,
+                        [this](AZStd::string_view /*path*/, AZ::SettingsRegistryInterface::Type /*type*/)
+                        {
+                            Initialize();
+                        },
+                        "LegacySystemInterfaceCreated");
+                }
             }
 
             void BootstrapSystemComponent::Deactivate()
@@ -153,7 +167,6 @@ namespace AZ
                 AzFramework::WindowSystemRequestBus::Handler::BusDisconnect();
                 AzFramework::WindowSystemNotificationBus::Handler::BusDisconnect();
                 TickBus::Handler::BusDisconnect();
-                AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
 
                 m_brdfTexture = nullptr;
                 RemoveRenderPipeline();
@@ -164,14 +177,14 @@ namespace AZ
                 m_windowHandle = nullptr;
             }
 
-            void BootstrapSystemComponent::OnCatalogLoaded(const char* /*catalogFile*/)
+            void BootstrapSystemComponent::Initialize()
             {
-                if (m_isAssetCatalogLoaded)
+                if (m_isInitialized)
                 {
                     return;
                 }
 
-                m_isAssetCatalogLoaded = true;
+                m_isInitialized = true;
 
                 if (!RPI::RPISystemInterface::Get()->IsInitialized())
                 {
@@ -216,7 +229,7 @@ namespace AZ
                 {
                     m_windowHandle = windowHandle;
 
-                    if (m_isAssetCatalogLoaded)
+                    if (m_isInitialized)
                     {
                         CreateWindowContext();
                         if (m_createDefaultScene)
@@ -259,6 +272,7 @@ namespace AZ
 
                 // Create and register a scene with all available feature processors
                 RPI::SceneDescriptor sceneDesc;
+                sceneDesc.m_nameId = AZ::Name("Main");
                 AZ::RPI::ScenePtr atomScene = RPI::Scene::CreateScene(sceneDesc);
                 atomScene->EnableAllFeatureProcessors();
                 atomScene->Activate();

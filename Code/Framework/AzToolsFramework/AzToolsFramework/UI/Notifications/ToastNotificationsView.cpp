@@ -129,7 +129,7 @@ namespace AzToolsFramework
 
     ToastId ToastNotificationsView::CreateToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration)
     {
-        AzQtComponents::ToastNotification* notification = aznew AzQtComponents::ToastNotification(parentWidget(), toastConfiguration);
+        AzQtComponents::ToastNotification* notification = new AzQtComponents::ToastNotification(this, toastConfiguration);
         ToastId toastId = AZ::Entity::MakeId();
         m_notifications[toastId] = notification;
 

@@ -11,6 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include <MCore/Source/Command.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/RenderOptions.h>
 
 #include <EMStudio/AnimViewportWidget.h>
 #include <QWidget>
@@ -47,15 +48,22 @@ namespace EMStudio
         bool Init() override;
         EMStudioPlugin* Clone();
         EMStudioPlugin::EPluginType GetPluginType() const override;
+        QWidget* GetInnerWidget();
 
         void ReinitRenderer();
 
+        void LoadRenderOptions();
+        const RenderOptions* GetRenderOptions() const;
+
     private:
+
+        QWidget* m_innerWidget = nullptr;
+        AnimViewportWidget* m_animViewportWidget = nullptr;
+        RenderOptions m_renderOptions;
+
         MCORE_DEFINECOMMANDCALLBACK(ImportActorCallback);
         MCORE_DEFINECOMMANDCALLBACK(RemoveActorCallback);
         ImportActorCallback* m_importActorCallback = nullptr;
         RemoveActorCallback* m_removeActorCallback = nullptr;
-        QWidget* m_innerWidget = nullptr;
-        AnimViewportWidget* m_animViewportWidget = nullptr;
     };
 }// namespace EMStudio

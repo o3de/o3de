@@ -14,7 +14,7 @@
 namespace AZ::ComponentApplicationLifecycle
 {
     //! Root Key where lifecycle events should be registered under
-    inline constexpr AZStd::string_view ApplicationLifecycleEventRegistrationKey = "/O3DE/Runtime/Application/LifecycleEvents";
+    inline constexpr AZStd::string_view ApplicationLifecycleEventRegistrationKey = "/O3DE/Application/LifecycleEvents";
 
 
     //! Validates that the event @eventName is stored in the array at ApplicationLifecycleEventRegistrationKey
@@ -48,7 +48,9 @@ namespace AZ::ComponentApplicationLifecycle
     //!        if the specified @eventName passes validation
     //! @param callback will be moved into the handler if the specified @eventName is valid
     //! @param eventName name of key underneath the ApplicationLifecycleEventRegistrationKey to register
+    //! @param autoRegisterEvent automatically register this event if it hasn't been registered yet. This is useful
+    //!         when registering a handler before the settings registry has been loaded.
     //! @return true if the handler was registered with the SettingsRegistry NotifyEvent
     bool RegisterHandler(AZ::SettingsRegistryInterface& settingsRegistry, AZ::SettingsRegistryInterface::NotifyEventHandler& handler,
-        AZ::SettingsRegistryInterface::NotifyCallback callback, AZStd::string_view eventName);
+        AZ::SettingsRegistryInterface::NotifyCallback callback, AZStd::string_view eventName, bool autoRegisterEvent = false);
 }

@@ -12,6 +12,7 @@
 #include <Multiplayer/MultiplayerConstants.h>
 
 #include <MultiplayerSystemComponent.h>
+#include <PythonEditorEventsBus.h>
 #include <Editor/MultiplayerEditorSystemComponent.h>
 #include <Source/AutoGen/Multiplayer.AutoPackets.h>
 
@@ -23,6 +24,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
 
 namespace Multiplayer
 {
@@ -35,14 +37,65 @@ namespace Multiplayer
     AZ_CVAR(AZ::CVarFixedString, editorsv_process, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
         "The server executable that should be run. Empty to use the current project's ServerLauncher");
     AZ_CVAR(AZ::CVarFixedString, editorsv_serveraddr, AZ::CVarFixedString(LocalHost), nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The address of the server to connect to");
-    AZ_CVAR(uint16_t, editorsv_port, DefaultServerEditorPort, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "The port that the multiplayer editor gem will bind to for traffic");
+    AZ_CVAR(AZ::CVarFixedString, editorsv_rhi_override, "", nullptr, AZ::ConsoleFunctorFlags::DontReplicate,
+        "Override the default rendering hardware interface (rhi) when launching the Editor server. For example, you may be running an Editor using 'dx12', but want to launch a headless server using 'null'. If empty the server will launch using the same rhi as the Editor.");
+    AZ_CVAR_EXTERNED(uint16_t, editorsv_port);
+    
+    //////////////////////////////////////////////////////////////////////////
+    void PyEnterGameMode()
+    {
+        editorsv_enabled = true;
+        editorsv_launch = true;
+        AzToolsFramework::EditorLayerPythonRequestBus::Broadcast(&AzToolsFramework::EditorLayerPythonRequestBus::Events::EnterGameMode);
+    }
 
+    bool PyIsInGameMode()
+    {
+        // If the network entity manager is tracking at least 1 entity then the editor has connected and the autonomous player exists and is being replicated.
+        if (const INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get())
+        {
+            return networkEntityManager->GetEntityCount() > 0;
+        }
+
+        AZ_Warning("MultiplayerEditorSystemComponent", false, "PyIsInGameMode returning false; NetworkEntityManager has not been created yet.")
+        return false;
+    }
+
+    void PythonEditorFuncs::Reflect(AZ::ReflectContext* context)
+    {
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            // This will create static python methods in the 'azlmbr.multiplayer' module
+            // Note: The methods will be prefixed with the class name, PythonEditorFuncs
+            // Example Hydra Python: azlmbr.multiplayer.PythonEditorFuncs_enter_game_mode()
+            behaviorContext->Class<PythonEditorFuncs>()
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
+                ->Method("enter_game_mode", PyEnterGameMode, nullptr, "Enters the editor game mode and launches/connects to the server launcher.")
+                ->Method("is_in_game_mode", PyIsInGameMode, nullptr, "Queries if it's in the game mode and the server has finished connecting and the default network player has spawned.")
+            ;
+
+        }
+    }
+    
     void MultiplayerEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<MultiplayerEditorSystemComponent, AZ::Component>()
                 ->Version(1);
+        }
+
+        // Reflect Python Editor Functions
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            // This will add the MultiplayerPythonEditorBus into the 'azlmbr.multiplayer' module
+            behaviorContext->EBus<MultiplayerEditorLayerPythonRequestBus>("MultiplayerPythonEditorBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
+                ->Event("EnterGameMode", &MultiplayerEditorLayerPythonRequestBus::Events::EnterGameMode)
+                ->Event("IsInGameMode", &MultiplayerEditorLayerPythonRequestBus::Events::IsInGameMode)
+            ;
         }
     }
 
@@ -147,17 +200,31 @@ namespace Multiplayer
 
         // Start the configured server if it's available
         AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+
+        // Open the server launcher using the same rhi as the editor (or launch with the override rhi)
+        AZ::Name server_rhi = AZ::RPI::RPISystemInterface::Get()->GetRenderApiName();
+        if (!static_cast<AZ::CVarFixedString>(editorsv_rhi_override).empty())
+        {
+            server_rhi = static_cast<AZ::CVarFixedString>(editorsv_rhi_override);
+        }
+        
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
-            R"("%s" --project-path "%s" --editorsv_isDedicated true --sv_defaultPlayerSpawnAsset "%s")",
+            R"("%s" --project-path "%s" --editorsv_isDedicated true --sv_defaultPlayerSpawnAsset "%s" --rhi "%s")",
             serverPath.c_str(),
             AZ::Utils::GetProjectPath().c_str(),
-            static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str());
+            static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str(),
+            server_rhi.GetCStr()
+        );
         processLaunchInfo.m_showWindow = true;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
         // Launch the Server
         AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(
             processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE);
+
+        AZ_Error(
+            "MultiplayerEditor", processLaunchInfo.m_launchResult != AzFramework::ProcessLauncher::ProcessLaunchResult::PLR_MissingFile,
+            "LaunchEditorServer failed! The ServerLauncher binary is missing! (%s)  Please build server launcher.", serverPath.c_str())
 
         return outProcess;
     }
@@ -231,7 +298,7 @@ namespace Multiplayer
                         "Editor multiplayer game-mode failed! Could not connect to an editor-server. editorsv_launch is false so we're assuming you're running your own editor-server at editorsv_serveraddr(%s) on editorsv_port(%i). "
                         "Either set editorsv_launch=true so the editor launches an editor-server for you, or launch your own editor-server by hand before entering game-mode. Remember editor-servers must use editorsv_isDedicated=true.",
                         remoteAddress.c_str(),
-                        static_cast < uint16_t>(editorsv_port))
+                        static_cast<uint16_t>(editorsv_port))
                     return;
                 }
 
@@ -260,6 +327,8 @@ namespace Multiplayer
             AZ_Error("MultiplayerEditor", prefabEditorEntityOwnershipInterface != nullptr, "PrefabEditorEntityOwnershipInterface unavailable")
             return;
         }
+
+        AZ_Printf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
 
         const AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>& assetData = prefabEditorEntityOwnershipInterface->GetPlayInEditorAssetData();
 
@@ -311,4 +380,13 @@ namespace Multiplayer
         }
     }
 
+    void MultiplayerEditorSystemComponent::EnterGameMode()
+    {
+        PyEnterGameMode();
+    }
+    
+    bool MultiplayerEditorSystemComponent::IsInGameMode()
+    {
+        return PyIsInGameMode();
+    }
 }

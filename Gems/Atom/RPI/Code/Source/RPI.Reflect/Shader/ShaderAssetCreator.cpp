@@ -21,7 +21,7 @@ namespace AZ
         {
             if (ValidateIsReady())
             {
-                m_asset->m_shaderAssetBuildTimestamp = shaderAssetBuildTimestamp;
+                m_asset->m_buildTimestamp = shaderAssetBuildTimestamp;
             }
         }
 
@@ -390,7 +390,7 @@ namespace AZ
             m_asset->m_pipelineStateType = sourceShaderAsset.m_pipelineStateType;
             m_asset->m_drawListName = sourceShaderAsset.m_drawListName;
             m_asset->m_shaderOptionGroupLayout = sourceShaderAsset.m_shaderOptionGroupLayout;
-            m_asset->m_shaderAssetBuildTimestamp = sourceShaderAsset.m_shaderAssetBuildTimestamp;
+            m_asset->m_buildTimestamp = sourceShaderAsset.m_buildTimestamp;
 
             // copy root variant assets
             for (auto& perAPIShaderData : sourceShaderAsset.m_perAPIShaderData)

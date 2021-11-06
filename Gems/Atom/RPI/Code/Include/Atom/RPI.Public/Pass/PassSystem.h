@@ -94,6 +94,7 @@ namespace AZ
             bool HasPassesForTemplateName(const Name& templateName) const override;
             bool AddPassTemplate(const Name& name, const AZStd::shared_ptr<PassTemplate>& passTemplate) override;
             const AZStd::shared_ptr<PassTemplate> GetPassTemplate(const Name& name) const override;
+            void RemovePassTemplate(const Name& name) override;
             void RemovePassFromLibrary(Pass* pass) override;
             void RegisterPass(Pass* pass) override;
             void UnregisterPass(Pass* pass) override;

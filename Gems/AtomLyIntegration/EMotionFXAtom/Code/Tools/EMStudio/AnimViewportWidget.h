@@ -15,6 +15,7 @@
 
 namespace EMStudio
 {
+    class AtomRenderPlugin;
     class AnimViewportRenderer;
 
     class AnimViewportWidget
@@ -22,7 +23,7 @@ namespace EMStudio
         , private AnimViewportRequestBus::Handler
     {
     public:
-        AnimViewportWidget(QWidget* parent = nullptr);
+        AnimViewportWidget(AtomRenderPlugin* parentPlugin);
         ~AnimViewportWidget() override;
         AnimViewportRenderer* GetAnimViewportRenderer() { return m_renderer.get(); }
 
@@ -45,9 +46,8 @@ namespace EMStudio
         void ToggleRenderFlag(EMotionFX::ActorRenderFlag flag);
 
         static constexpr float CameraDistance = 2.0f;
-        static constexpr float DepthNear = 0.01f;
-        static constexpr float DepthFar = 100.0f;
 
+        AtomRenderPlugin* m_plugin;
         AZStd::unique_ptr<AnimViewportRenderer> m_renderer;
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_rotateCamera;
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_translateCamera;

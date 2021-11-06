@@ -156,7 +156,10 @@ namespace AZ
     void StreamerComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         bool isEnabled = false;
-        AZ::Debug::ProfilerRequestBus::BroadcastResult(isEnabled, &AZ::Debug::ProfilerRequests::IsActive);
+        if (auto profilerSystem = AZ::Debug::ProfilerSystemInterface::Get(); profilerSystem)
+        {
+            isEnabled = profilerSystem->IsActive();
+        }
 
         if (isEnabled)
         {
