@@ -49,7 +49,7 @@ namespace O3DE::ProjectManager
         void OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies);
         void OnAddGemClicked();
         void SelectGem(const QString& gemName);
-        void OnGemDownloadResult(bool succeeded, const QString& gemName);
+        void OnGemDownloadResult(const QString& gemName, bool succeeded = true);
         void Refresh();
 
     protected:

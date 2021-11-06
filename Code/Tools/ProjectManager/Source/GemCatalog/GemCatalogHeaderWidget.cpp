@@ -261,7 +261,7 @@ namespace O3DE::ProjectManager
             }
         };
 
-        auto downloadEnded = [=](bool /*success*/, const QString& /*gemName*/)
+        auto downloadEnded = [=](const QString& /*gemName*/, bool /*success*/)
         {
             update(0); // update the list to remove the gem that has finished
         };

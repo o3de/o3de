@@ -459,7 +459,7 @@ namespace O3DE::ProjectManager
         emit ChangeScreenRequest(ProjectManagerScreen::GemRepos);
     }
 
-    void GemCatalogScreen::OnGemDownloadResult(bool succeeded, const QString& gemName)
+    void GemCatalogScreen::OnGemDownloadResult(const QString& gemName, bool succeeded)
     {
         if (succeeded)
         {
