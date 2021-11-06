@@ -548,7 +548,6 @@ public:
             { "BatchMode", m_bConsoleMode },
             { "NullRenderer", m_bNullRenderer },
             { "devmode", m_bDeveloperMode },
-            { "VTUNE", dummy },
             { "runpython", m_bRunPythonScript },
             { "runpythontest", m_bRunPythonTestScript },
             { "version", m_bShowVersionInfo },

@@ -101,10 +101,6 @@ namespace Audio
 
 #define PHSYICS_OBJECT_ENTITY 0
 
-using VTuneFunction = void (__cdecl *)(void);
-extern VTuneFunction VTResume;
-extern VTuneFunction VTPause;
-
 struct SSystemCVars
 {
     ICVar* sys_localization_folder;
@@ -116,7 +112,6 @@ struct SSystemCVars
     int sys_WER;
     int sys_dump_type;
     int sys_trackview;
-    int sys_vtune;
     float sys_update_profile_time;
     int sys_MaxFPS;
     float sys_maxTimeStepForMovieSystem;
@@ -130,21 +125,6 @@ struct SSystemCVars
 extern SSystemCVars g_cvars;
 
 class CSystem;
-
-struct CProfilingSystem
-    : public IProfilingSystem
-{
-    //////////////////////////////////////////////////////////////////////////
-    // VTune Profiling interface.
-
-    // Summary:
-    //   Resumes vtune data collection.
-    void VTuneResume() override;
-    // Summary:
-    //   Pauses vtune data collection.
-    void VTunePause() override;
-    //////////////////////////////////////////////////////////////////////////
-};
 
 class AssetSystem;
 
@@ -224,7 +204,6 @@ public:
     IViewSystem* GetIViewSystem() override;
     ILevelSystem* GetILevelSystem() override;
     ISystemEventDispatcher* GetISystemEventDispatcher() override { return m_pSystemEventDispatcher; }
-    IProfilingSystem* GetIProfilingSystem() override { return &m_ProfilingSystem; }
     //////////////////////////////////////////////////////////////////////////
     // retrieves the perlin noise singleton instance
     CPNoise3* GetNoiseGen() override;
@@ -310,8 +289,6 @@ private:
     void CreateSystemVars();
     void CreateAudioVars();
 
-    AZStd::unique_ptr<AZ::DynamicModuleHandle> LoadDLL(const char* dllName);
-
     void QueryVersionInfo();
     void LogVersion();
     void LogBuildInfo();
@@ -324,8 +301,6 @@ private:
     void UpdateAudioSystems();
 
     void AddCVarGroupDirectory(const AZStd::string& sPath) override;
-
-    AZStd::unique_ptr<AZ::DynamicModuleHandle> LoadDynamiclibrary(const char* dllName) const;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEM_H_SECTION_3
@@ -437,8 +412,6 @@ private: // ------------------------------------------------------
 
     ESystemConfigPlatform m_ConfigPlatform;
 
-    CProfilingSystem m_ProfilingSystem;
-
     // Pause mode.
     bool m_bPaused;
     bool m_bNoUpdate;
@@ -455,8 +428,6 @@ public:
     const SFileVersion& GetFileVersion() override;
     const SFileVersion& GetProductVersion() override;
     const SFileVersion& GetBuildVersion() override;
-
-    bool InitVTuneProfiler();
 
     void OpenPlatformPaks();
     void OpenLanguagePak(const char* sLanguage);
