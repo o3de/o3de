@@ -12,6 +12,10 @@
 #include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Components/Widgets/Text.h>
+#include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailWidget.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <Window/PresetBrowserDialogs/PresetBrowserDialog.h>
 
 #include <QLabel>
@@ -41,35 +45,36 @@ namespace MaterialEditor
         m_ui->m_presetList->setGridSize(QSize(0, 0));
         m_ui->m_presetList->setWrapping(true);
 
-        QObject::connect(m_ui->m_presetList, &QListWidget::currentItemChanged, [this]() { SelectCurrentPreset(); });
+        QObject::connect(m_ui->m_presetList, &QListWidget::currentItemChanged, [this](){ SelectCurrentPreset(); });
     }
 
-    QListWidgetItem* PresetBrowserDialog::CreateListItem(const QString& title, const QImage& image)
+    QListWidgetItem* PresetBrowserDialog::CreateListItem(const QString& title, const AZ::Data::AssetId& assetId, const QSize& size)
     {
         const QSize gridSize = m_ui->m_presetList->gridSize();
         m_ui->m_presetList->setGridSize(
-            QSize(AZStd::max(gridSize.width(), image.width() + 10), AZStd::max(gridSize.height(), image.height() + 10)));
+            QSize(AZStd::max(gridSize.width(), size.width() + 10), AZStd::max(gridSize.height(), size.height() + 10)));
 
         QListWidgetItem* item = new QListWidgetItem(m_ui->m_presetList);
         item->setData(Qt::UserRole, title);
-        item->setSizeHint(image.size() + QSize(4, 4));
+        item->setSizeHint(size + QSize(4, 4));
         m_ui->m_presetList->addItem(item);
 
-        QLabel* previewImage = new QLabel(m_ui->m_presetList);
-        previewImage->setFixedSize(image.size());
-        previewImage->setMargin(0);
-        previewImage->setPixmap(QPixmap::fromImage(image));
-        previewImage->updateGeometry();
+        AzToolsFramework::Thumbnailer::ThumbnailWidget* thumbnail = new AzToolsFramework::Thumbnailer::ThumbnailWidget(m_ui->m_presetList);
+        thumbnail->setFixedSize(size);
+        thumbnail->SetThumbnailKey(
+            MAKE_TKEY(AzToolsFramework::AssetBrowser::ProductThumbnailKey, assetId),
+            AzToolsFramework::Thumbnailer::ThumbnailContext::DefaultContext);
+        thumbnail->updateGeometry();
 
-        AzQtComponents::ElidingLabel* previewLabel = new AzQtComponents::ElidingLabel(previewImage);
+        AzQtComponents::ElidingLabel* previewLabel = new AzQtComponents::ElidingLabel(thumbnail);
         previewLabel->setText(title);
-        previewLabel->setFixedSize(QSize(image.width(), 15));
+        previewLabel->setFixedSize(QSize(size.width(), 15));
         previewLabel->setMargin(0);
         previewLabel->setStyleSheet("background-color: rgb(35, 35, 35)");
         AzQtComponents::Text::addPrimaryStyle(previewLabel);
         AzQtComponents::Text::addLabelStyle(previewLabel);
 
-        m_ui->m_presetList->setItemWidget(item, previewImage);
+        m_ui->m_presetList->setItemWidget(item, thumbnail);
 
         return item;
     }
@@ -79,15 +84,15 @@ namespace MaterialEditor
         m_ui->m_searchWidget->setReadOnly(false);
         m_ui->m_searchWidget->setContextMenuPolicy(Qt::CustomContextMenu);
         AzQtComponents::LineEdit::applySearchStyle(m_ui->m_searchWidget);
-        connect(m_ui->m_searchWidget, &QLineEdit::textChanged, this, [this]() { ApplySearchFilter(); });
-        connect(m_ui->m_searchWidget, &QWidget::customContextMenuRequested, this, [this](const QPoint& pos) { ShowSearchMenu(pos); });
+        connect(m_ui->m_searchWidget, &QLineEdit::textChanged, this, [this](){ ApplySearchFilter(); });
+        connect(m_ui->m_searchWidget, &QWidget::customContextMenuRequested, this, [this](const QPoint& pos){ ShowSearchMenu(pos); });
     }
 
     void PresetBrowserDialog::SetupDialogButtons()
     {
         connect(m_ui->m_buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
         connect(m_ui->m_buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
-        connect(this, &QDialog::rejected, this, [this]() { SelectInitialPreset(); });
+        connect(this, &QDialog::rejected, this, [this](){ SelectInitialPreset(); });
     }
 
     void PresetBrowserDialog::ApplySearchFilter()

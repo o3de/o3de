@@ -162,12 +162,6 @@ namespace MaterialEditor
         m_viewportSettings =
             AZ::UserSettings::CreateFind<MaterialViewportSettings>(AZ::Crc32("MaterialViewportSettings"), AZ::UserSettings::CT_GLOBAL);
 
-        m_lightingPresetPreviewImageDefault = QImage(180, 90, QImage::Format::Format_RGBA8888);
-        m_lightingPresetPreviewImageDefault.fill(Qt::GlobalColor::black);
-
-        m_modelPresetPreviewImageDefault = QImage(90, 90, QImage::Format::Format_RGBA8888);
-        m_modelPresetPreviewImageDefault.fill(Qt::GlobalColor::black);
-
         MaterialViewportRequestBus::Handler::BusConnect();
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
     }
@@ -177,12 +171,10 @@ namespace MaterialEditor
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         MaterialViewportRequestBus::Handler::BusDisconnect();
 
-        m_lightingPresetPreviewImages.clear();
         m_lightingPresetVector.clear();
         m_lightingPresetLastSavePathMap.clear();
         m_lightingPresetSelection.reset();
 
-        m_modelPresetPreviewImages.clear();
         m_modelPresetVector.clear();
         m_modelPresetLastSavePathMap.clear();
         m_modelPresetSelection.reset();
@@ -286,14 +278,6 @@ namespace MaterialEditor
             SelectLightingPreset(presetPtr);
         }
 
-        const auto& imagePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(presetPtr->m_skyboxImageAsset.GetId());
-        LoadImageAsync(imagePath, [presetPtr](const QImage& image) {
-            QImage imageScaled = image.scaled(180, 90, Qt::AspectRatioMode::KeepAspectRatio);
-            AZ::TickBus::QueueFunction([presetPtr, imageScaled]() {
-                MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SetLightingPresetPreview, presetPtr, imageScaled);
-                });
-            });
-
         return presetPtr;
     }
 
@@ -353,17 +337,6 @@ namespace MaterialEditor
         return names;
     }
 
-    void MaterialViewportComponent::SetLightingPresetPreview(AZ::Render::LightingPresetPtr preset, const QImage& image)
-    {
-        m_lightingPresetPreviewImages[preset] = image;
-    }
-
-    QImage MaterialViewportComponent::GetLightingPresetPreview(AZ::Render::LightingPresetPtr preset) const
-    {
-        auto imageItr = m_lightingPresetPreviewImages.find(preset);
-        return imageItr != m_lightingPresetPreviewImages.end() ? imageItr->second : m_lightingPresetPreviewImageDefault;
-    }
-
     AZStd::string MaterialViewportComponent::GetLightingPresetLastSavePath(AZ::Render::LightingPresetPtr preset) const
     {
         auto pathItr = m_lightingPresetLastSavePathMap.find(preset);
@@ -381,14 +354,6 @@ namespace MaterialEditor
         {
             SelectModelPreset(presetPtr);
         }
-
-        const auto& imagePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(presetPtr->m_previewImageAsset.GetId());
-        LoadImageAsync(imagePath, [presetPtr](const QImage& image) {
-            QImage imageScaled = image.scaled(90, 90, Qt::AspectRatioMode::KeepAspectRatio);
-            AZ::TickBus::QueueFunction([presetPtr, imageScaled]() {
-                MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SetModelPresetPreview, presetPtr, imageScaled);
-                });
-            });
 
         return presetPtr;
     }
@@ -447,17 +412,6 @@ namespace MaterialEditor
             }
         }
         return names;
-    }
-
-    void MaterialViewportComponent::SetModelPresetPreview(AZ::Render::ModelPresetPtr preset, const QImage& image)
-    {
-        m_modelPresetPreviewImages[preset] = image;
-    }
-
-    QImage MaterialViewportComponent::GetModelPresetPreview(AZ::Render::ModelPresetPtr preset) const
-    {
-        auto imageItr = m_modelPresetPreviewImages.find(preset);
-        return imageItr != m_modelPresetPreviewImages.end() ? imageItr->second : m_modelPresetPreviewImageDefault;
     }
 
     AZStd::string MaterialViewportComponent::GetModelPresetLastSavePath(AZ::Render::ModelPresetPtr preset) const

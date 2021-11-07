@@ -30,10 +30,7 @@ namespace MaterialEditor
         QListWidgetItem* selectedItem = nullptr;
         for (const auto& preset : presets)
         {
-            QImage image;
-            MaterialViewportRequestBus::BroadcastResult(image, &MaterialViewportRequestBus::Events::GetModelPresetPreview, preset);
-
-            QListWidgetItem* item = CreateListItem(preset->m_displayName.c_str(), image);
+            QListWidgetItem* item = CreateListItem(preset->m_displayName.c_str(), preset->m_modelAsset.GetId(), QSize(90, 90));
 
             m_listItemToPresetMap[item] = preset;
 
