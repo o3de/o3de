@@ -137,7 +137,7 @@ namespace AZ
             }
             else if (!m_luaSourceFile.empty())
             {
-                auto loadOutcome = RPI::AssetUtils::LoadAsset<ScriptAsset>(materialTypeSourceFilePath, m_luaSourceFile);
+                auto loadOutcome = RPI::AssetUtils::LoadAsset<ScriptAsset>(materialTypeSourceFilePath, m_luaSourceFile, ScriptAsset::CompiledAssetSubId);
                 if (!loadOutcome)
                 {
                     AZ_Error("LuaMaterialFunctorSourceData", false, "Could not load script file '%s'", m_luaSourceFile.c_str());
