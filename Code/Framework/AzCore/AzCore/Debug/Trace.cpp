@@ -27,25 +27,20 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/std/chrono/chrono.h>
 
-namespace AZ 
+namespace AZ::Debug
 {
-    namespace Debug
+    struct StackFrame;
+
+    namespace Platform
     {
-        struct StackFrame;
-
-        namespace Platform
-        {
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
-            bool AttachDebugger();
-            bool IsDebuggerPresent();
-            void HandleExceptions(bool isEnabled);
-            void DebugBreak();
+        bool AttachDebugger();
+        bool IsDebuggerPresent();
+        void HandleExceptions(bool isEnabled);
+        void DebugBreak();
 #endif
-            void Terminate(int exitCode);
-        }
+        void Terminate(int exitCode);
     }
-
-    using namespace AZ::Debug;
 
     namespace DebugInternal
     {
@@ -60,7 +55,7 @@ namespace AZ
     // Globals
     const int       g_maxMessageLength = 4096;
     static const char*    g_dbgSystemWnd = "System";
-    Trace Debug::g_tracer;
+    Trace g_tracer;
     void* g_exceptionInfo = nullptr;
 
     // Environment var needed to track ignored asserts across systems and disable native UI under certain conditions
@@ -616,4 +611,4 @@ namespace AZ
             val.Set(level);
         }
     }
-} // namspace AZ
+} // namspace AZ::Debug

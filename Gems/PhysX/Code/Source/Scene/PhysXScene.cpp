@@ -1175,7 +1175,10 @@ namespace PhysX
         using physx::PxGeometryType;
 
         bool isProfilingActive = false;
-        AZ::Debug::ProfilerRequestBus::BroadcastResult(isProfilingActive, &AZ::Debug::ProfilerRequests::IsActive);
+        if (auto profilerSystem = AZ::Debug::ProfilerSystemInterface::Get(); profilerSystem)
+        {
+            isProfilingActive = profilerSystem->IsActive();
+        }
 
         if (!isProfilingActive)
         {

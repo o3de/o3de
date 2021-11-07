@@ -39,12 +39,14 @@ namespace AZ
 
 namespace EMStudio
 {
+    class RenderOptions;
+
     class AnimViewportRenderer
     {
     public:
         AZ_CLASS_ALLOCATOR(AnimViewportRenderer, AZ::SystemAllocator, 0);
 
-        AnimViewportRenderer(AZ::RPI::ViewportContextPtr viewportContext);
+        AnimViewportRenderer(AZ::RPI::ViewportContextPtr viewportContext, const RenderOptions* renderOptions);
         ~AnimViewportRenderer();
 
         void Reinit();
@@ -83,6 +85,7 @@ namespace EMStudio
         AZ::Entity* m_iblEntity = nullptr;
         AZ::Entity* m_gridEntity = nullptr;
         AZStd::vector<AZ::Entity*> m_actorEntities;
+        const RenderOptions* m_renderOptions;
 
         AZStd::vector<AZ::Render::DirectionalLightFeatureProcessorInterface::LightHandle> m_lightHandles;
     };

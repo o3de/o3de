@@ -739,24 +739,6 @@ public:
 #undef GetUserName
 #endif
 
-
-struct IProfilingSystem
-{
-    // <interfuscator:shuffle>
-    virtual ~IProfilingSystem() {}
-    //////////////////////////////////////////////////////////////////////////
-    // VTune Profiling interface.
-
-    // Summary:
-    //   Resumes vtune data collection.
-    virtual void VTuneResume() = 0;
-    // Summary:
-    //   Pauses vtune data collection.
-    virtual void VTunePause() = 0;
-    //////////////////////////////////////////////////////////////////////////
-    // </interfuscator:shuffle>
-};
-
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Description:
@@ -851,7 +833,6 @@ struct ISystem
     virtual IMovieSystem* GetIMovieSystem() = 0;
     virtual ::IConsole* GetIConsole() = 0;
     virtual IRemoteConsole* GetIRemoteConsole() = 0;
-    virtual IProfilingSystem* GetIProfilingSystem() = 0;
     virtual ISystemEventDispatcher* GetISystemEventDispatcher() = 0;
 
     virtual ITimer* GetITimer() = 0;
@@ -1121,8 +1102,8 @@ inline ISystem* GetISystem()
 
 // Description:
 //   This function must be called once by each module at the beginning, to setup global pointers.
-extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, const char* moduleName);
-extern "C" AZ_DLL_EXPORT void ModuleShutdownISystem(ISystem* pSystem);
+void ModuleInitISystem(ISystem* pSystem, const char* moduleName);
+void ModuleShutdownISystem(ISystem* pSystem);
 extern "C" AZ_DLL_EXPORT void InjectEnvironment(void* env);
 extern "C" AZ_DLL_EXPORT void DetachEnvironment();
 

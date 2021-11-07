@@ -241,8 +241,10 @@ void AssetProcessorManagerTest::SetUp()
     ASSERT_TRUE(m_mockApplicationManager->RegisterAssetRecognizerAsBuilder(rec));
     m_mockApplicationManager->BusConnect();
 
+    AZ_Printf("UnitTest", "Allocating APM\n")
     m_assetProcessorManager.reset(new AssetProcessorManager_Test(m_config.get()));
-    m_assertAbsorber.Clear();
+    AZ_Printf("UnitTest", "APM ready\n");
+    m_errorAbsorber->Clear();
 
     m_isIdling = false;
 
@@ -333,9 +335,9 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDSuccess)
     EXPECT_STRCASEEQ(relFileName.toUtf8().data(), response.m_jobList[0].m_sourceFile.c_str());
     EXPECT_STRCASEEQ(tempPath.filePath("subfolder1").toUtf8().data(), response.m_jobList[0].m_watchFolder.c_str());
 
-    ASSERT_EQ(m_assertAbsorber.m_numWarningsAbsorbed, 0);
-    ASSERT_EQ(m_assertAbsorber.m_numErrorsAbsorbed, 0);
-    ASSERT_EQ(m_assertAbsorber.m_numAssertsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numWarningsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
 }
 
 TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToDatabase)
@@ -387,9 +389,9 @@ TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToD
     ASSERT_EQ(response.m_jobList[0].m_warningCount, 11);
     ASSERT_EQ(response.m_jobList[0].m_errorCount, 22);
 
-    ASSERT_EQ(m_assertAbsorber.m_numWarningsAbsorbed, 0);
-    ASSERT_EQ(m_assertAbsorber.m_numErrorsAbsorbed, 0);
-    ASSERT_EQ(m_assertAbsorber.m_numAssertsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numWarningsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
 }
 
 
@@ -1311,8 +1313,8 @@ void PathDependencyTest::SetUp()
 
 void PathDependencyTest::TearDown()
 {
-    ASSERT_EQ(m_assertAbsorber.m_numAssertsAbsorbed, 0);
-    ASSERT_EQ(m_assertAbsorber.m_numErrorsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
 
     AssetProcessorManagerTest::TearDown();
 }
@@ -1616,7 +1618,7 @@ TEST_F(PathDependencyTest, AssetProcessed_Impl_SelfReferrentialProductDependency
     mainFile.m_products.push_back(productAssetId);
 
     // tell the APM that the asset has been processed and allow it to bubble through its event queue:
-    m_assertAbsorber.Clear();
+    m_errorAbsorber->Clear();
     m_assetProcessorManager->AssetProcessed(jobDetails.m_jobEntry, processJobResponse);
     ASSERT_TRUE(BlockUntilIdle(5000));
 
@@ -1626,8 +1628,8 @@ TEST_F(PathDependencyTest, AssetProcessed_Impl_SelfReferrentialProductDependency
     ASSERT_TRUE(dependencyContainer.empty());
 
     // We are testing 2 different dependencies, so we should get 2 warnings
-    ASSERT_EQ(m_assertAbsorber.m_numWarningsAbsorbed, 2);
-    m_assertAbsorber.Clear();
+    ASSERT_EQ(m_errorAbsorber->m_numWarningsAbsorbed, 2);
+    m_errorAbsorber->Clear();
 }
 
 // This test shows the process of deferring resolution of a path dependency works.
@@ -1944,8 +1946,8 @@ TEST_F(PathDependencyTest, WildcardDependencies_ExcludePathsExisting_ResolveCorr
     );
 
     // Test asset PrimaryFile1 has 4 conflict dependencies
-    ASSERT_EQ(m_assertAbsorber.m_numErrorsAbsorbed, 4);
-    m_assertAbsorber.Clear();
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 4);
+    m_errorAbsorber->Clear();
 }
 
 TEST_F(PathDependencyTest, WildcardDependencies_Deferred_ResolveCorrectly)
@@ -2092,8 +2094,8 @@ TEST_F(PathDependencyTest, WildcardDependencies_ExcludedPathDeferred_ResolveCorr
     // Test asset PrimaryFile1 has 4 conflict dependencies
     // After test assets dep2 and dep3 are processed,
     // another 2 errors will be raised because of the confliction
-    ASSERT_EQ(m_assertAbsorber.m_numErrorsAbsorbed, 6);
-    m_assertAbsorber.Clear();
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 6);
+    m_errorAbsorber->Clear();
 }
 
 void PathDependencyTest::RunWildcardTest(bool useCorrectDatabaseSeparator, AssetBuilderSDK::ProductPathDependencyType pathDependencyType, bool buildDependenciesFirst)
@@ -4138,11 +4140,19 @@ struct LockedFileTest
         switch (message.GetMessageType())
         {
         case SourceFileNotificationMessage::MessageType:
-            if (const auto sourceFileMessage = azrtti_cast<const SourceFileNotificationMessage*>(&message);
-                sourceFileMessage != nullptr && sourceFileMessage->m_type == SourceFileNotificationMessage::NotificationType::FileRemoved
-                && m_callback)
+            if (const auto sourceFileMessage = azrtti_cast<const SourceFileNotificationMessage*>(&message); sourceFileMessage != nullptr &&
+                sourceFileMessage->m_type == SourceFileNotificationMessage::NotificationType::FileRemoved)
             {
-                m_callback();
+                // The File Remove message will occur before an attempt to delete the file
+                // Wait for more than 1 File Remove message.
+                // This indicates the AP has attempted to delete the file once, failed to do so and is now retrying
+                ++m_deleteCounter;
+
+                if(m_deleteCounter > 1 && m_callback)
+                {
+                    m_callback();
+                    m_callback = {}; // Unset it to be safe, we only intend to run the callback once
+                }
             }
             break;
         default:
@@ -4166,6 +4176,7 @@ struct LockedFileTest
         ModtimeScanningTest::TearDown();
     }
 
+    AZStd::atomic_int m_deleteCounter{ 0 };
     AZStd::function<void()> m_callback;
 };
 
@@ -4205,6 +4216,10 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeleteFails)
 
 TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
 {
+    // This test is intended to verify the AP will successfully retry deleting a source asset
+    // when one of its product assets is locked temporarily
+    // We'll lock the file by holding it open
+
     auto theFile = m_data->m_absolutePath[1].toUtf8();
     const char* theFileString = theFile.constData();
     auto [sourcePath, productPath] = *m_data->m_productPaths.find(theFileString);
@@ -4217,19 +4232,22 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
     ASSERT_GT(m_data->m_productPaths.size(), 0);
     QFile product(productPath);
 
+    // Open the file and keep it open to lock it
+    // We'll start a thread later to unlock the file
+    // This will allow us to test how AP handles trying to delete a locked file
     ASSERT_TRUE(product.open(QIODevice::ReadOnly));
 
     // Check if we can delete the file now, if we can't, proceed with the test
     // If we can, it means the OS running this test doesn't lock open files so there's nothing to test
     if (!AZ::IO::SystemFile::Delete(productPath.toUtf8().constData()))
     {
-        AZStd::thread workerThread;
+        m_deleteCounter = 0;
 
-        m_callback = [&product, &workerThread]() {
-            workerThread = AZStd::thread([&product]() {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(60));
-                product.close();
-            });
+        // Set up a callback which will fire after at least 1 retry
+        // Unlock the file at that point so AP can successfully delete it
+        m_callback = [&product]()
+        {
+            product.close();
         };
 
         QMetaObject::invokeMethod(
@@ -4239,8 +4257,9 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
 
         EXPECT_FALSE(QFile::exists(productPath));
         EXPECT_EQ(m_data->m_deletedSources.size(), 1);
-
-        workerThread.join();
+        
+        EXPECT_GT(m_deleteCounter, 1); // Make sure the AP tried more than once to delete the file
+        m_errorAbsorber->ExpectAsserts(0);
     }
     else
     {
@@ -4447,9 +4466,9 @@ AssetBuilderSDK::AssetBuilderDesc MockBuilderInfoHandler::CreateBuilderDesc(cons
 
 void FingerprintTest::SetUp()
 {
-    AZ_Printf("FingerprintTest", "SetUp start");
+    AZ_Printf("FingerprintTest", "SetUp start\n");
     AssetProcessorManagerTest::SetUp();
-    AZ_Printf("FingerprintTest", "SetUp self");
+    AZ_Printf("FingerprintTest", "SetUp self\n");
 
     // We don't want the mock application manager to provide builder descriptors, mockBuilderInfoHandler will provide our own
     m_mockApplicationManager->BusDisconnect();
@@ -4468,23 +4487,23 @@ void FingerprintTest::SetUp()
     });
 
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_absolutePath, ""));
-    AZ_Printf("FingerprintTest", "SetUp end");
+    AZ_Printf("FingerprintTest", "SetUp end\n");
 }
 
 void FingerprintTest::TearDown()
 {
-    AZ_Printf("FingerprintTest", "TearDown start");
+    AZ_Printf("FingerprintTest", "TearDown start\n");
     m_jobResults = AZStd::vector<AssetProcessor::JobDetails>{};
     m_mockBuilderInfoHandler = {};
 
-    AZ_Printf("FingerprintTest", "TearDown parent");
+    AZ_Printf("FingerprintTest", "TearDown parent\n");
     AssetProcessorManagerTest::TearDown();
-    AZ_Printf("FingerprintTest", "TearDown end");
+    AZ_Printf("FingerprintTest", "TearDown end\n");
 }
 
 void FingerprintTest::RunFingerprintTest(QString builderFingerprint, QString jobFingerprint, bool expectedResult)
 {
-    AZ_Printf("FingerprintTest", "Fingerprint Test Start");
+    AZ_Printf("FingerprintTest", "Fingerprint Test Start\n");
     m_mockBuilderInfoHandler.m_builderDesc.m_analysisFingerprint = builderFingerprint.toUtf8().data();
     m_mockBuilderInfoHandler.m_jobFingerprint = jobFingerprint;
     QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, m_absolutePath));
@@ -4493,7 +4512,7 @@ void FingerprintTest::RunFingerprintTest(QString builderFingerprint, QString job
     ASSERT_EQ(m_mockBuilderInfoHandler.m_createJobsCount, 1);
     ASSERT_EQ(m_jobResults.size(), 1);
     ASSERT_EQ(m_jobResults[0].m_autoFail, expectedResult);
-    AZ_Printf("FingerprintTest", "Fingerprint Test End");
+    AZ_Printf("FingerprintTest", "Fingerprint Test End\n");
 }
 
 TEST_F(FingerprintTest, FingerprintChecking_JobFingerprint_NoBuilderFingerprint)
@@ -5318,6 +5337,18 @@ TEST_F(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase)
     ASSERT_EQ(jobDetails.m_jobEntry.m_pathRelativeToWatchFolder, relFileName);
 }
 
+AZStd::vector<AZStd::string> QStringListToVector(const QStringList& qstringList)
+{
+    AZStd::vector<AZStd::string> azVector;
+    // Convert to a vector of AZStd::strings because GTest handles this type better when displaying errors
+    for (const QString& resolvedPath : qstringList)
+    {
+        azVector.emplace_back(resolvedPath.toUtf8().constData());
+    }
+
+    return azVector;
+}
+
 bool WildcardSourceDependencyTest::Test(
     const AZStd::string& dependencyPath, AZStd::vector<AZStd::string>& resolvedPaths)
 {
@@ -5326,13 +5357,16 @@ bool WildcardSourceDependencyTest::Test(
     AssetBuilderSDK::SourceFileDependency dependency(dependencyPath, AZ::Uuid::CreateNull(), AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
     bool result = m_assetProcessorManager->ResolveSourceFileDependencyPath(dependency, resolvedName, stringlistPaths);
 
-    // Convert to a vector of AZStd::strings because GTest handles this type better when displaying errors
-    for (const QString& resolvedPath : stringlistPaths)
-    {
-        resolvedPaths.emplace_back(resolvedPath.toUtf8().constData());
-    }
+    resolvedPaths = QStringListToVector(stringlistPaths);
 
     return result;
+}
+
+AZStd::vector<AZStd::string> WildcardSourceDependencyTest::FileAddedTest(const QString& path)
+{
+    auto result = m_assetProcessorManager->GetSourceFilesWhichDependOnSourceFile(path);
+
+    return QStringListToVector(result);
 }
 
 void WildcardSourceDependencyTest::SetUp()
@@ -5357,6 +5391,42 @@ void WildcardSourceDependencyTest::SetUp()
 
     // Add a file in the non-recursive scanfolder.  Since its not directly in the scan folder, it should always be ignored
     UnitTestUtils::CreateDummyFile(tempPath.absoluteFilePath("no_recurse/one/two/three/f.foo"));
+
+    AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer dependencies;
+
+    // Relative path wildcard dependency
+    dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
+        AZ::Uuid::CreateRandom(), "a.foo", "%a.foo",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+
+    // Absolute path wildcard dependency
+    dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
+        AZ::Uuid::CreateRandom(), "b.foo", tempPath.absoluteFilePath("%b.foo").toUtf8().constData(),
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+
+    // Test what happens when we have 2 dependencies on the same file
+    dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
+        AZ::Uuid::CreateRandom(), "folder/one/d.foo", "%c.foo",
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+
+    dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
+        AZ::Uuid::CreateRandom(), "folder/one/d.foo", tempPath.absoluteFilePath("%c.foo").toUtf8().constData(),
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+
+#ifdef AZ_PLATFORM_WINDOWS
+    // Test to make sure a relative wildcard dependency doesn't match an absolute path
+    // For example, if the input is C:/project/subfolder1/a.foo
+    // This should not match a wildcard of c%.foo
+    // Take the first character of the tempPath and append %.foo onto it for this test, which should produce something like c%.foo
+    // This only applies to windows because on other OSes if the dependency starts with /, then its an abs path dependency
+    auto test = (tempPath.absolutePath().left(1) + "%.foo");
+    dependencies.push_back(AzToolsFramework::AssetDatabase::SourceFileDependencyEntry(
+        AZ::Uuid::CreateRandom(), "folder/one/d.foo",
+        (test).toUtf8().constData(),
+        AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::DEP_SourceLikeMatch, 0));
+#endif
+
+    ASSERT_TRUE(m_assetProcessorManager->m_stateData->SetSourceFileDependencies(dependencies));
 }
 
 TEST_F(WildcardSourceDependencyTest, Relative_Broad)
@@ -5454,4 +5524,31 @@ TEST_F(WildcardSourceDependencyTest, Absolute_NoWildcard)
 
     ASSERT_FALSE(Test(tempPath.absoluteFilePath("subfolder1/1a.foo").toUtf8().constData(), resolvedPaths));
     ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, NewFile_MatchesSavedRelativeDependency)
+{
+    QDir tempPath(m_tempDir.path());
+
+    auto matches = FileAddedTest(tempPath.absoluteFilePath("subfolder1/1a.foo"));
+
+    ASSERT_THAT(matches, ::testing::UnorderedElementsAre(tempPath.absoluteFilePath("subfolder2/redirected/a.foo").toUtf8().constData()));
+}
+
+TEST_F(WildcardSourceDependencyTest, NewFile_MatchesSavedAbsoluteDependency)
+{
+    QDir tempPath(m_tempDir.path());
+
+    auto matches = FileAddedTest(tempPath.absoluteFilePath("subfolder1/1b.foo"));
+
+    ASSERT_THAT(matches, ::testing::UnorderedElementsAre(tempPath.absoluteFilePath("subfolder2/redirected/b.foo").toUtf8().constData()));
+}
+
+TEST_F(WildcardSourceDependencyTest, NewFile_MatchesDuplicatedDependenciesOnce)
+{
+    QDir tempPath(m_tempDir.path());
+
+    auto matches = FileAddedTest(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/c.foo"));
+
+    ASSERT_THAT(matches, ::testing::UnorderedElementsAre(tempPath.absoluteFilePath("subfolder2/redirected/folder/one/d.foo").toUtf8().constData()));
 }

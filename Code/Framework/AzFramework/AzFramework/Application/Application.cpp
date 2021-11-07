@@ -204,7 +204,6 @@ namespace AzFramework
         systemEntity->Activate();
         AZ_Assert(systemEntity->GetState() == AZ::Entity::State::Active, "System Entity failed to activate.");
 
-
         if (m_isStarted = (systemEntity->GetState() == AZ::Entity::State::Active); m_isStarted)
         {
             if (m_startupParameters.m_loadAssetCatalog)

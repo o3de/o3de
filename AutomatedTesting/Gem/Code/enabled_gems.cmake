@@ -55,4 +55,5 @@ set(ENABLED_GEMS
     PrefabBuilder
     AudioSystem
     Profiler
+    Multiplayer
 )

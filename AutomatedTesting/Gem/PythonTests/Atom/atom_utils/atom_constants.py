@@ -42,12 +42,14 @@ class AtomComponentProperties:
         Bloom component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable Bloom' Toggle active state of the component True/False
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Bloom',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable Bloom': 'Controller|Configuration|Enable Bloom',
         }
         return properties[property]
 
@@ -83,12 +85,14 @@ class AtomComponentProperties:
         Deferred Fog component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable Deferred Fog' Toggle active state of the component True/False
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Deferred Fog',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable Deferred Fog': 'Controller|Configuration|Enable Deferred Fog',
         }
         return properties[property]
 
@@ -212,12 +216,14 @@ class AtomComponentProperties:
         HDR Color Grading component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable HDR color grading' Toggle active state of the component True/False
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'HDR Color Grading',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable HDR color grading': 'Controller|Configuration|Enable HDR color grading',
         }
         return properties[property]
 
