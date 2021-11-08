@@ -348,7 +348,12 @@ namespace SandboxEditor
 
     void EditorModularViewportCameraComposer::OnTick(const float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        const float delta = deltaTime / ed_cameraDefaultOrbitFadeDuration;
+        const float delta = [duration = &ed_cameraDefaultOrbitFadeDuration, deltaTime] {
+            if (*duration == 0.0f) {
+                return 1.0f;
+            }
+            return deltaTime / *duration;
+        }();
 
         if (m_defaultOrbiting)
         {
