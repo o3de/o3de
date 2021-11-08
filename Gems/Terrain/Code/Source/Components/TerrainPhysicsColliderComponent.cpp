@@ -185,7 +185,7 @@ namespace Terrain
 
     void TerrainPhysicsColliderComponent::GetHeightfieldHeightBounds(float& minHeightBounds, float& maxHeightBounds) const
     {
-        AZ::Aabb heightfieldAabb = GetHeightfieldAabb();
+        const AZ::Aabb heightfieldAabb = GetHeightfieldAabb();
 
         // Because our terrain heights are relative to the center of the bounding box, the min and max allowable heights are also
         // relative to the center.  They are also clamped to the size of the bounding box.
