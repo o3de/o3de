@@ -272,7 +272,7 @@ namespace AzToolsFramework
                         {
                             if (!s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntity))
                             {
-                                if (s_containerEntityInterface->IsContainerOpen(selectedEntity))
+                                if (!s_containerEntityInterface->IsContainerOpen(selectedEntity))
                                 {
                                     QAction* overrideAction = menu->addAction(QObject::tr("Open Prefab Instance for Overrides"));
                                     overrideAction->setToolTip(
