@@ -45,7 +45,9 @@ namespace AZ
                 auto shaderAsset = RPISystemInterface::Get()->GetCommonShaderAssetForSrgs();
                 scene->m_srg = ShaderResourceGroup::Create(shaderAsset, sceneSrgLayout->GetName());
             }
-            
+
+            scene->m_name = sceneDescriptor.m_nameId;
+
             return ScenePtr(scene);
         }
 
@@ -83,10 +85,23 @@ namespace AZ
             return nullptr;
         }
 
+        Scene* Scene::GetSceneForEntityId(AZ::EntityId entityId)
+        {
+            // Find the entity context for the entity ID.
+            AzFramework::EntityContextId entityContextId = AzFramework::EntityContextId::CreateNull();
+            AzFramework::EntityIdContextQueryBus::EventResult(entityContextId, entityId, &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
+
+            if (!entityContextId.IsNull())
+            {
+                return GetSceneForEntityContextId(entityContextId);
+            }
+            return nullptr;
+        }
+
 
         Scene::Scene()
         {
-            m_id = Uuid::CreateRandom();
+            m_id = AZ::Uuid::CreateRandom();
             m_cullingScene = aznew CullingScene();
             SceneRequestBus::Handler::BusConnect(m_id);
             m_drawFilterTagRegistry = RHI::DrawFilterTagRegistry::Create();
@@ -299,7 +314,6 @@ namespace AZ
             // Force to update the lookup table since adding render pipeline would effect any pipeline states created before pass system tick
             RebuildPipelineStatesLookup();
 
-            AZ_Assert(!m_id.IsNull(), "RPI::Scene needs to have a valid uuid.");
             SceneNotificationBus::Event(m_id, &SceneNotification::OnRenderPipelineAdded, pipeline);
         }
         
@@ -784,6 +798,11 @@ namespace AZ
         const SceneId& Scene::GetId() const
         {
             return m_id;
+        }
+
+        AZ::Name Scene::GetName() const
+        {
+            return m_name;
         }
                 
         bool Scene::SetDefaultRenderPipeline(const RenderPipelineId& pipelineId)

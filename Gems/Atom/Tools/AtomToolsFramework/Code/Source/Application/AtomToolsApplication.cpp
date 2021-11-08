@@ -175,8 +175,6 @@ namespace AtomToolsFramework
         AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
             &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
 
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@products@/assetcatalog.xml");
-
         if (!AZ::RPI::RPISystemInterface::Get()->IsInitialized())
         {
             AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();

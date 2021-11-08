@@ -988,7 +988,6 @@ namespace UnitTest
             ASSERT_TRUE(process->IsSucceed());
 
             SaveImageToFile(process->GetOutputImage(), "rgb", 10);
-            SaveImageToFile(process->GetOutputAlphaImage(), "alpha", 10);
 
             process->GetAppendOutputProducts(outProducts);
 
