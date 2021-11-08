@@ -1766,7 +1766,7 @@ namespace ScriptCanvasEditor
         AZStd::string suggestedFilename;
         AZStd::string suggestedFileFilter;
         bool isValidFileName = false;
-
+            
         if (save == Save::InPlace)
         {
             isValidFileName = true;
@@ -1775,7 +1775,17 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            GetSuggestedFullFilenameToSaveAs(inMemoryAssetId, suggestedFilename, suggestedFileFilter);
+            // replaces GetSuggestedFullFilenameToSaveAs
+            suggestedFileFilter = ScriptCanvasAssetDescription().GetExtensionImpl();
+
+            if (inMemoryAssetId.Path().empty())
+            {
+                suggestedFilename = ScriptCanvasAssetDescription().GetSuggestedSavePathImpl();
+            }
+            else
+            {
+                suggestedFilename = inMemoryAssetId.Path();
+            }
         }
         
         EnsureSaveDestinationDirectory(suggestedFilename);
@@ -1790,7 +1800,14 @@ namespace ScriptCanvasEditor
             // So we want to break out.
             if (!selectedFile.isEmpty())
             {
+                ScriptCanvasAssetDescription assetDescription;
                 AZStd::string filePath = selectedFile.toUtf8().data();
+
+                if (!AZ::StringFunc::EndsWith(filePath, assetDescription.GetExtensionImpl(), false))
+                {
+                    filePath += assetDescription.GetExtensionImpl();
+                }
+
                 AZStd::string fileName;
 
                 // Verify that the path is within the project
