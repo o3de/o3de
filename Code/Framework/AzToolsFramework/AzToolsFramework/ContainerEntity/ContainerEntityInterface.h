@@ -58,6 +58,10 @@ namespace AzToolsFramework
         //! @return The highest closed entity container id if any, or entityId otherwise.
         virtual AZ::EntityId FindHighestSelectableEntity(AZ::EntityId entityId) const = 0;
 
+        //! Triggers the OnContainerEntityStatusChanged notifications for all registered containers,
+        //! allowing listeners to update correctly.
+        virtual void RefreshAllContainerEntities(AzFramework::EntityContextId entityContextId) const = 0;
+
         //! Clears all open state information for Container Entities for the EntityContextId provided.
         //! Used when context is switched, for example in the case of a new root prefab being loaded
         //! in place of an old one.

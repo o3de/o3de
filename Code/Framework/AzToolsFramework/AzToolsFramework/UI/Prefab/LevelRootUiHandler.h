@@ -33,6 +33,7 @@ namespace AzToolsFramework
         bool CanToggleLockVisibility(AZ::EntityId entityId) const override;
         bool CanRename(AZ::EntityId entityId) const override;
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+        bool OnEntityDoubleClick(AZ::EntityId entityId) const override;
 
     private:
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
