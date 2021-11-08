@@ -15,6 +15,7 @@
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/FileSaver.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
+#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 
 namespace FileSaverCpp
 {
@@ -57,6 +58,11 @@ namespace ScriptCanvasEditor
             : m_onReadOnlyFile(onReadOnlyFile)
             , m_onComplete(onComplete)
         {}
+
+        const SourceHandle& FileSaver::GetSource() const
+        {
+            return m_source;
+        }
 
         void FileSaver::PerformMove
             ( AZStd::string tmpFileName
@@ -179,7 +185,7 @@ namespace ScriptCanvasEditor
                     else
                     {
                         FileSaveResult result;
-                        result.fileSaveError = "Source file was and remained read-only";
+                        result.fileSaveError = "Source file is read-only";
                         result.tempFileRemovalError = RemoveTempFile(tmpFileName);
                         m_onComplete(result);
                     }
@@ -188,10 +194,12 @@ namespace ScriptCanvasEditor
 
         void FileSaver::OnSourceFileReleased(const SourceHandle& source)
         {
+            AZStd::string fullPath = source.Path();
             AZStd::string tmpFileName;
             // here we are saving the graph to a temp file instead of the original file and then copying the temp file to the original file.
-            // This ensures that AP will not a get a file change notification on an incomplete graph file causing it to fail processing. Temp files are ignored by AP.
-            if (!AZ::IO::CreateTempFileName(source.Path().c_str(), tmpFileName))
+            // This ensures that AP will not a get a file change notification on an incomplete graph file causing it to fail processing.
+            // Temp files are ignored by AP.
+            if (!AZ::IO::CreateTempFileName(fullPath.c_str(), tmpFileName))
             {
                 FileSaveResult result;
                 result.fileSaveError = "Failure to create temporary file name";
@@ -199,23 +207,24 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            bool tempSavedSucceeded = false;
+            AZStd::string saveError;
+
             AZ::IO::FileIOStream fileStream(tmpFileName.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
             if (fileStream.IsOpen())
             {
-                if (asset.GetType() == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasAsset>())
+                auto saveOutcome = ScriptCanvasEditor::SaveToStream(source, fileStream);
+                if (!saveOutcome.IsSuccess())
                 {
-                    ScriptCanvasEditor::ScriptCanvasAssetHandler handler;
-                    tempSavedSucceeded = handler.SaveAssetData(asset, &fileStream);
+                    saveError = saveOutcome.TakeError();
                 }
 
                 fileStream.Close();
             }
 
-            if (!tempSavedSucceeded)
+            if (!saveError.empty())
             {
                 FileSaveResult result;
-                result.fileSaveError = "Save asset data to temporary file failed";
+                result.fileSaveError = AZStd::string::format("Save asset data to temporary file failed: %s", saveError.c_str());
                 m_onComplete(result);
                 return;
             }
@@ -265,6 +274,8 @@ namespace ScriptCanvasEditor
 
         void FileSaver::Save(const SourceHandle& source)
         {
+            m_source = source;
+
             if (source.Path().empty())
             {
                 FileSaveResult result;
@@ -285,7 +296,7 @@ namespace ScriptCanvasEditor
 
         void FileSaver::Save(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
-            // #sc_editor_asset fix this path from the version explorer
+            // #sc_editor_asset fix/remove this path that is used by the version explorer
             AZStd::string relativePath, fullPath;
             AZ::Data::AssetCatalogRequestBus::BroadcastResult(relativePath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, asset.GetId());
             bool fullPathFound = false;

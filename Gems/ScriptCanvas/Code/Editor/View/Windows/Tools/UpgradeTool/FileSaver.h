@@ -29,10 +29,12 @@ namespace ScriptCanvasEditor
                 ( AZStd::function<bool()> onReadOnlyFile
                 , AZStd::function<void(const FileSaveResult& result)> onComplete);
 
+            const SourceHandle& GetSource() const;
             void Save(AZ::Data::Asset<AZ::Data::AssetData> asset);
             void Save(const SourceHandle& source);
 
         private:
+            SourceHandle m_source;
             AZStd::function<void(const FileSaveResult& result)> m_onComplete;
             AZStd::function<bool()> m_onReadOnlyFile;
 

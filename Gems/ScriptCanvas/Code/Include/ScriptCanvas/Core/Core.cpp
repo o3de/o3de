@@ -13,7 +13,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h>
-// #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
 
 #include "Core.h"
 #include "Attributes.h"

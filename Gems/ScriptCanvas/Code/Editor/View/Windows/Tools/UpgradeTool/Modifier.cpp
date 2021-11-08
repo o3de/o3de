@@ -259,7 +259,7 @@ namespace ScriptCanvasEditor
             m_modifyState = ModifyState::Saving;
             m_fileSaver = AZStd::make_unique<FileSaver>
                     ( m_config.onReadOnlyFile
-                    , [this](const FileSaveResult& result) { OnFileSaveComplete(result); });
+                    , [this](const FileSaveResult& fileSaveResult) { OnFileSaveComplete(fileSaveResult); });
             m_fileSaver->Save(result.asset);
         }
 
