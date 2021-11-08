@@ -10,7 +10,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
-#pragma optimize("",off)
 namespace Camera
 {
     const char* GetNameFromUuid(const AZ::Uuid& uuid)
@@ -126,4 +125,3 @@ namespace Camera
         return AZ::Quaternion::CreateIdentity();
     }
 } //namespace Camera
-#pragma optimize("", on)
