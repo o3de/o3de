@@ -1362,6 +1362,26 @@ namespace {{ Component.attrib['Namespace'] }}
         return {{ ComponentName }}NetworkInput::s_netComponentId;
     }
 
+    void {{ ComponentName }}NetworkInput::LogInputDelta() const
+    {
+        bool hasDelta = false;
+        AZStd::string output = "**** {{ ComponentName }}NetworkInput changed values:";
+{% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}
+        if (m_{{ LowerFirst(Input.attrib['Name']) }} != {{ Input.attrib['Type'] }}({{ Input.attrib['Init'] }}))
+        {
+            hasDelta = true;
+            output += "\n      {{ LowerFirst(Input.attrib['Name']) }}";
+{% if Input.attrib['Init'] != '' %}
+            output += "="+AZStd::to_string(m_{{ LowerFirst(Input.attrib['Name']) }});
+{% endif %}
+        }
+{% endcall %}
+        if(hasDelta)
+        {
+            AZLOG_WARN(output.c_str());
+        }
+    }
+
     bool {{ ComponentName }}NetworkInput::Serialize(AzNetworking::ISerializer& serializer)
     {
 {% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}

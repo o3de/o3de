@@ -52,6 +52,8 @@ namespace Multiplayer
 
         bool Serialize(AzNetworking::ISerializer& serializer);
 
+        void LogComponentInputDelta() const;
+
         const IMultiplayerComponentInput* FindComponentInput(NetComponentId componentId) const;
         IMultiplayerComponentInput* FindComponentInput(NetComponentId componentId);
 

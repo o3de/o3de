@@ -239,8 +239,11 @@ namespace Multiplayer
 
                 correction.Resize(serializer.GetSize());
 
+                AZLOG_INFO("** Autonomous Desync - Corrected clientInputId=%d at hostFrame=%u hostTime=%u", aznumeric_cast<int32_t>(m_lastClientInputId),
+                    aznumeric_cast<uint32_t>(m_lastInputReceived[0].GetHostFrameId()), aznumeric_cast<uint64_t>(m_lastInputReceived[0].GetHostTimeMs()));
+
                 // Send correction
-                SendClientInputCorrection(GetLastInputId(), correction);
+                SendClientInputCorrection(m_lastClientInputId, correction);
             }
         }
     }
@@ -317,10 +320,21 @@ namespace Multiplayer
         SerializeEntityCorrection(serializer);
         GetNetBindComponent()->NotifyCorrection();
 
-#ifndef AZ_RELEASE_BUILD
+        const uint32_t inputHistorySize = static_cast<uint32_t>(m_inputHistory.Size());
+        const uint32_t historicalDelta = aznumeric_cast<uint32_t>(m_clientInputId - inputId); // Do not replay the move we just corrected, that was already processed by the server
+
+        // If this correction is for a move outside our input history window, just start replaying from the oldest move we have available
+        const uint32_t startReplayIndex = (inputHistorySize > historicalDelta) ? (inputHistorySize - historicalDelta) : 0;
+
+        const double clientInputRateSec = ConvertTimeMsToSeconds(cl_InputRateMs);
+
         if (cl_EnableDesyncDebugging)
         {
-            AZLOG_INFO("** Autonomous Desync - Corrected clientInputId=%d ", aznumeric_cast<int32_t>(inputId));
+            NetworkInput& startReplayInput = m_inputHistory[startReplayIndex];
+            AZLOG_WARN("** Autonomous Desync - Correcting clientInputId=%d from index=%d",
+                aznumeric_cast<int32_t>(inputId), startReplayIndex);
+            startReplayInput.LogComponentInputDelta();
+#ifndef AZ_RELEASE_BUILD
             auto iter = m_predictiveStateHistory.find(inputId);
             if (iter != m_predictiveStateHistory.end())
             {
@@ -333,16 +347,9 @@ namespace Multiplayer
             {
                 AZLOG_INFO("Received correction that is too old to diff, increase cl_PredictiveStateHistorySize");
             }
-        }
 #endif
+        }
 
-        const uint32_t inputHistorySize = static_cast<uint32_t>(m_inputHistory.Size());
-        const uint32_t historicalDelta = aznumeric_cast<uint32_t>(m_clientInputId - inputId); // Do not replay the move we just corrected, that was already processed by the server
-
-        // If this correction is for a move outside our input history window, just start replaying from the oldest move we have available
-        const uint32_t startReplayIndex = (inputHistorySize > historicalDelta) ? (inputHistorySize - historicalDelta) : 0;
-
-        const double clientInputRateSec = ConvertTimeMsToSeconds(cl_InputRateMs);
         for (uint32_t replayIndex = startReplayIndex; replayIndex < inputHistorySize; ++replayIndex)
         {
             // Reprocess the input for this frame
