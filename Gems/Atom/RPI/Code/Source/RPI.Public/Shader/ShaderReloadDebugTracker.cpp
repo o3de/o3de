@@ -15,8 +15,8 @@ namespace AZ
     {
         namespace ShaderReloadDebugTrackerInternal
         {
-            static const char EnabledVariableName[] = "ShaderReloadDebugTracker enabled";
-            static const char IndentVariableName[] = "ShaderReloadDebugTracker indent";
+            static constexpr char EnabledVariableName[] = "ShaderReloadDebugTracker enabled";
+            static constexpr char IndentVariableName[] = "ShaderReloadDebugTracker indent";
 
             static EnvironmentVariable<bool> s_enabled;
             static EnvironmentVariable<int> s_indent;
@@ -24,11 +24,7 @@ namespace AZ
 
         void ShaderReloadDebugTracker::Init()
         {
-            ShaderReloadDebugTrackerInternal::s_enabled = AZ::Environment::CreateVariable<bool>(ShaderReloadDebugTrackerInternal::EnabledVariableName);
-            ShaderReloadDebugTrackerInternal::s_indent = AZ::Environment::CreateVariable<int>(ShaderReloadDebugTrackerInternal::IndentVariableName);
-
-            ShaderReloadDebugTrackerInternal::s_enabled.Get() = false;
-            ShaderReloadDebugTrackerInternal::s_indent.Get() = 0;
+            MakeReady();
         }
 
         void ShaderReloadDebugTracker::Shutdown()
@@ -41,8 +37,8 @@ namespace AZ
         {
             if (!ShaderReloadDebugTrackerInternal::s_enabled.IsValid())
             {
-                ShaderReloadDebugTrackerInternal::s_enabled = AZ::Environment::FindVariable<bool>(ShaderReloadDebugTrackerInternal::EnabledVariableName);
-                ShaderReloadDebugTrackerInternal::s_indent = AZ::Environment::FindVariable<int>(ShaderReloadDebugTrackerInternal::IndentVariableName);
+                ShaderReloadDebugTrackerInternal::s_enabled = AZ::Environment::CreateVariable<bool>(AZ::Crc32(ShaderReloadDebugTrackerInternal::EnabledVariableName), false);
+                ShaderReloadDebugTrackerInternal::s_indent = AZ::Environment::CreateVariable<int>(AZ::Crc32(ShaderReloadDebugTrackerInternal::IndentVariableName), 0);
             }
         }
 

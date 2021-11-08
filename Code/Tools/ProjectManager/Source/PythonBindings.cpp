@@ -709,6 +709,8 @@ namespace O3DE::ProjectManager
                 gemInfo.m_requirement = Py_To_String_Optional(data, "requirements", "");
                 gemInfo.m_creator = Py_To_String_Optional(data, "origin", "");
                 gemInfo.m_documentationLink = Py_To_String_Optional(data, "documentation_url", "");
+                gemInfo.m_licenseText = Py_To_String_Optional(data, "license", "Unspecified License");
+                gemInfo.m_licenseLink = Py_To_String_Optional(data, "license_url", "");
 
                 if (gemInfo.m_creator.contains("Open 3D Engine"))
                 {
