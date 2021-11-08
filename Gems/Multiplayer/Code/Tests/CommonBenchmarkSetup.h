@@ -212,7 +212,7 @@ namespace Multiplayer
         }
     };
 
-    class BenchmarkNetworkEntityManager : public Multiplayer::INetworkEntityManager
+    class BenchmarkNetworkEntityManager : public MockNetworkEntityManager
     {
     public:
         BenchmarkNetworkEntityManager() : m_authorityTracker(*this) {}
@@ -221,55 +221,6 @@ namespace Multiplayer
         NetworkEntityAuthorityTracker* GetNetworkEntityAuthorityTracker() override { return &m_authorityTracker; }
         MultiplayerComponentRegistry* GetMultiplayerComponentRegistry() override { return &m_multiplayerComponentRegistry; }
         const HostId& GetHostId() const override { return m_hostId; }
-        EntityList CreateEntitiesImmediate(
-            [[maybe_unused]] const PrefabEntityId& prefabEntryId,
-            [[maybe_unused]] NetEntityRole netEntityRole,
-            [[maybe_unused]] const AZ::Transform& transform,
-            [[maybe_unused]] AutoActivate autoActivate) override {
-            return {};
-        }
-        EntityList CreateEntitiesImmediate(
-            [[maybe_unused]] const PrefabEntityId& prefabEntryId,
-            [[maybe_unused]] NetEntityId netEntityId,
-            [[maybe_unused]] NetEntityRole netEntityRole,
-            [[maybe_unused]] AutoActivate autoActivate,
-            [[maybe_unused]] const AZ::Transform& transform) override {
-            return {};
-        }
-        void SetupNetEntity(
-            [[maybe_unused]] AZ::Entity* netEntity,
-            [[maybe_unused]] PrefabEntityId prefabEntityId,
-            [[maybe_unused]] NetEntityRole netEntityRole) override {}
-        uint32_t GetEntityCount() const override { return {}; }
-        void MarkForRemoval(
-            [[maybe_unused]] const ConstNetworkEntityHandle& entityHandle) override {}
-        bool IsMarkedForRemoval(
-            [[maybe_unused]] const ConstNetworkEntityHandle& entityHandle) const override {
-            return {};
-        }
-        void ClearEntityFromRemovalList(
-            [[maybe_unused]] const ConstNetworkEntityHandle& entityHandle) override {}
-        void ClearAllEntities() override {}
-        void AddEntityMarkedDirtyHandler(
-            [[maybe_unused]] AZ::Event<>::Handler& entityMarkedDirtyHandle) override {}
-        void AddEntityNotifyChangesHandler(
-            [[maybe_unused]] AZ::Event<>::Handler& entityNotifyChangesHandle) override {}
-        void AddEntityExitDomainHandler(
-            [[maybe_unused]] EntityExitDomainEvent::Handler& entityExitDomainHandler) override {}
-        void AddControllersActivatedHandler(
-            [[maybe_unused]] ControllersActivatedEvent::Handler& controllersActivatedHandler) override {}
-        void AddControllersDeactivatedHandler(
-            [[maybe_unused]] ControllersDeactivatedEvent::Handler& controllersDeactivatedHandler) override {}
-        void NotifyEntitiesDirtied() override {}
-        void NotifyEntitiesChanged() override {}
-        void NotifyControllersActivated(
-            [[maybe_unused]] const ConstNetworkEntityHandle& entityHandle,
-            [[maybe_unused]] EntityIsMigrating entityIsMigrating) override {}
-        void NotifyControllersDeactivated(
-            [[maybe_unused]] const ConstNetworkEntityHandle& entityHandle,
-            [[maybe_unused]] EntityIsMigrating entityIsMigrating) override {}
-        void HandleLocalRpcMessage(
-            [[maybe_unused]] NetworkEntityRpcMessage& message) override {}
 
         mutable AZStd::map<NetEntityId, AZ::Entity*> m_networkEntityMap;
 
@@ -297,18 +248,6 @@ namespace Multiplayer
 
             return InvalidNetEntityId;
         }
-
-        [[nodiscard]] AZStd::unique_ptr<AzFramework::EntitySpawnTicket> RequestNetSpawnableInstantiation(
-            [[maybe_unused]] const AZ::Data::Asset<AzFramework::Spawnable>& netSpawnable,
-            [[maybe_unused]] const AZ::Transform& transform) override
-        {
-            return {};
-        }
-
-        void Initialize([[maybe_unused]] const HostId& hostId, [[maybe_unused]] AZStd::unique_ptr<IEntityDomain> entityDomain) override {}
-        bool IsInitialized() const override { return true; }
-        IEntityDomain* GetEntityDomain() const override { return nullptr; }
-        void DebugDraw() const override {}
 
         NetworkEntityTracker m_tracker;
         NetworkEntityAuthorityTracker m_authorityTracker;

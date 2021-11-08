@@ -38,14 +38,12 @@ namespace AzNetworking
         //! @param remoteAddress    IP address of the remote endpoint
         //! @param networkInterface TcpNetworkInterface that owns this connection instance
         //! @param socket           TCP socket to take ownership of and use for sending and receiving data
-        //! @param timeoutId        timeout identifier of this connection instance
         TcpConnection
         (
             ConnectionId connectionId,
             const IpAddress& remoteAddress,
             TcpNetworkInterface& networkInterface,
-            TcpSocket& socket,
-            TimeoutId timeoutId
+            TcpSocket& socket
         );
 
         //! Construct a new socket with optional encryption, used when initiating a new connection
@@ -68,14 +66,6 @@ namespace AzNetworking
         //! Returns the TcpSocket bound to this TcpConnection.
         //! @return the TcpSocket bound to this TcpConnection
         TcpSocket* GetTcpSocket() const;
-
-        //! Sets the timeout identifier for this TcpConnection.
-        //! @param timeoutId the timeout identifier to use for this TcpConnection
-        void SetTimeoutId(TimeoutId timeoutId);
-
-        //! Returns the timeout identifier for this TcpConnection.
-        //! @return the timeout identifier for this TcpConnection
-        TimeoutId GetTimeoutId() const;
 
         //! Returns true if this connection instance is in an open state, and is capable of actively sending and receiving packets.
         //! @return boolean true if this connection instance is in an open state
@@ -142,7 +132,6 @@ namespace AzNetworking
         AZStd::unique_ptr<TcpSocket> m_socket;
         AZStd::unique_ptr<ICompressor> m_compressor;
 
-        TimeoutId       m_timeoutId;
         PacketId        m_lastSentPacketId = InvalidPacketId;
         ConnectionState m_state = ConnectionState::Disconnected;
         ConnectionRole  m_connectionRole = ConnectionRole::Connector;
