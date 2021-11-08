@@ -18,6 +18,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesti
 
 from base import TestAutomationBase
 
+@pytest.mark.SUITE_sandbox
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(TestAutomationBase):
@@ -26,4 +27,9 @@ class TestAutomation(TestAutomationBase):
             extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"], 
             batch_mode=batch_mode,
             autotest_mode=autotest_mode)
+
+    ## Seems to be flaky, need to investigate
+    def test_Multiplayer_AutoComponent_NetworkInput(self, request, workspace, editor, launcher_platform):
+        from .tests import Multiplayer_AutoComponent_NetworkInput as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
 

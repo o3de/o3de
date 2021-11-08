@@ -509,8 +509,6 @@ void CSystem::ShutDown()
 
     ShutdownFileSystem();
 
-    ShutdownModuleLibraries();
-
     EBUS_EVENT(CrySystemEventBus, OnCrySystemPostShutdown);
 }
 
