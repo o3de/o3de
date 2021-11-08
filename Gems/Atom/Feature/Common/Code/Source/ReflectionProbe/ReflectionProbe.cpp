@@ -127,8 +127,8 @@ namespace AZ
                 }
                 else
                 {
-                    // set exposure to 0.0 while baking the cubemap
-                    sceneSrg->SetConstant(m_iblExposureConstantIndex, 0.0f);
+                    // set exposure to the user specified value while baking the cubemap
+                    sceneSrg->SetConstant(m_iblExposureConstantIndex, m_bakeExposure);
                 }
             }
 
@@ -162,6 +162,7 @@ namespace AZ
                 m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_outerObbHalfLengthsRenderConstantIndex, m_outerObbWs.GetHalfLengths());
                 m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_innerObbHalfLengthsRenderConstantIndex, m_innerObbWs.GetHalfLengths());
                 m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_useParallaxCorrectionRenderConstantIndex, m_useParallaxCorrection);
+                m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_exposureConstantIndex, m_renderExposure);
                 m_renderOuterSrg->SetImage(m_reflectionRenderData->m_reflectionCubeMapRenderImageIndex, m_cubeMapImage);
                 m_renderOuterSrg->Compile();
 
@@ -172,6 +173,7 @@ namespace AZ
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_outerObbHalfLengthsRenderConstantIndex, m_outerObbWs.GetHalfLengths());
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_innerObbHalfLengthsRenderConstantIndex, m_innerObbWs.GetHalfLengths());
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_useParallaxCorrectionRenderConstantIndex, m_useParallaxCorrection);
+                m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_exposureConstantIndex, m_renderExposure);
                 m_renderInnerSrg->SetImage(m_reflectionRenderData->m_reflectionCubeMapRenderImageIndex, m_cubeMapImage);
                 m_renderInnerSrg->Compile();
 
@@ -324,6 +326,17 @@ namespace AZ
         void ReflectionProbe::ShowVisualization(bool showVisualization)
         {
             m_meshFeatureProcessor->SetVisible(m_visualizationMeshHandle, showVisualization);
+        }
+
+        void ReflectionProbe::SetRenderExposure(float renderExposure)
+        {
+            m_renderExposure = renderExposure;
+            m_updateSrg = true;
+        }
+
+        void ReflectionProbe::SetBakeExposure(float bakeExposure)
+        {
+            m_bakeExposure = bakeExposure;
         }
 
         const RHI::DrawPacket* ReflectionProbe::BuildDrawPacket(
