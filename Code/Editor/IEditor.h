@@ -326,12 +326,7 @@ enum MouseCallbackFlags
 //! Types of database items
 enum EDataBaseItemType
 {
-    EDB_TYPE_MATERIAL,
-    EDB_TYPE_PARTICLE,
-    EDB_TYPE_MUSIC,
-    EDB_TYPE_EAXPRESET,
-    EDB_TYPE_SOUNDMOOD,
-    EDB_TYPE_FLARE
+    EDB_TYPE_UNUSED
 };
 
 enum EEditorPathName
