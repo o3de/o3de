@@ -150,7 +150,6 @@ namespace Multiplayer
         void ClearRemovedReplicators();
 
         class OrphanedEntityRpcs
-            : public AzNetworking::ITimeoutHandler
         {
         public:
             OrphanedEntityRpcs(EntityReplicationManager& replicationManager);
@@ -159,7 +158,6 @@ namespace Multiplayer
             void AddOrphanedRpc(NetEntityId entityId, NetworkEntityRpcMessage& entityRpcMessage);
             AZStd::size_t Size() const { return m_entityRpcMap.size(); }
         private:
-            AzNetworking::TimeoutResult HandleTimeout(AzNetworking::TimeoutQueue::TimeoutItem& item) override;
             struct OrphanedRpcs
             {
                 OrphanedRpcs() = default;
