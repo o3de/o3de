@@ -668,7 +668,7 @@ namespace AZ::SettingsRegistryMergeUtils
         // NOTE: We make the project-path in the BootstrapSettingsRootKey absolute first
 
         AZ::IO::FixedMaxPath projectPath = FindProjectRoot(registry);
-        if (constexpr auto projectPathKey = FixedValueString(BootstrapSettingsRootKey) + "/project_path";
+        if ([[maybe_unused]] constexpr auto projectPathKey = FixedValueString(BootstrapSettingsRootKey) + "/project_path";
             !projectPath.empty())
         {
             if (projectPath.IsRelative())
