@@ -364,8 +364,6 @@ namespace LmbrCentral
             assetCatalog->AddExtension("dds");
             assetCatalog->AddExtension("caf");
             assetCatalog->AddExtension("xml");
-            assetCatalog->AddExtension("mtl");
-            assetCatalog->AddExtension("dccmtl");
             assetCatalog->AddExtension("sprite");
             assetCatalog->AddExtension("cax");
         }
