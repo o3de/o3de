@@ -22,9 +22,6 @@ class Tests:
     diffuse_probe_grid_disabled = (
         "Diffuse Probe Grid component disabled",
         "Diffuse Probe Grid component was not disabled")
-    box_shape_component = (
-        "Entity has a Box Shape component",
-        "Entity did not have a Box Shape component")
     diffuse_probe_grid_enabled = (
         "Diffuse Probe Grid component enabled",
         "Diffuse Probe Grid component was not enabled")
