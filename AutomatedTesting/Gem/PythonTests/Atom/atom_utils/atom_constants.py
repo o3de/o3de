@@ -85,12 +85,14 @@ class AtomComponentProperties:
         Deferred Fog component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable Deferred Fog' Toggle active state of the component True/False
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Deferred Fog',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable Deferred Fog': 'Controller|Configuration|Enable Deferred Fog',
         }
         return properties[property]
 
