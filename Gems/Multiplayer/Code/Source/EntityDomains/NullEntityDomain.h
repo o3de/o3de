@@ -12,12 +12,12 @@
 
 namespace Multiplayer 
 {
-    class FullOwnershipEntityDomain
+    class NullEntityDomain
         : public IEntityDomain
     {
     public:
-        FullOwnershipEntityDomain() = default;
-        FullOwnershipEntityDomain(const FullOwnershipEntityDomain& rhs) = default;
+        NullEntityDomain() = default;
+        NullEntityDomain(const NullEntityDomain& rhs) = default;
 
         //! IEntityDomain overrides.
         //! @{
