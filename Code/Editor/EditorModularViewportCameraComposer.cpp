@@ -37,7 +37,7 @@ AZ_CVAR(
     0.5f,
     nullptr,
     AZ::ConsoleFunctorFlags::Null,
-    "Sets whether to draw the default orbit point as orthographic or not");
+    "Sets how long the default orbit point should take to appear and disappear");
 
 namespace SandboxEditor
 {
@@ -346,7 +346,6 @@ namespace SandboxEditor
         }
     }
 
-    //! AZ::TickBus overrides ...
     void EditorModularViewportCameraComposer::OnTick(const float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         const float delta = deltaTime / ed_cameraDefaultOrbitFadeDuration;
