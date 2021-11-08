@@ -70,7 +70,8 @@ namespace AZ
             void InitializeSystemAssets() override;
             void RegisterScene(ScenePtr scene) override;
             void UnregisterScene(ScenePtr scene) override;
-            ScenePtr GetScene(const SceneId& sceneId) const override;
+            Scene* GetScene(const SceneId& sceneId) const override;
+            Scene* GetSceneByName(const AZ::Name& name) const override;
             ScenePtr GetDefaultScene() const override;
             RenderPipelinePtr GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle) override;
             Data::Asset<ShaderAsset> GetCommonShaderAssetForSrgs() const override;
