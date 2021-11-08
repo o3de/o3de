@@ -10,6 +10,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#pragma optimize("",off)
 namespace Camera
 {
     const char* GetNameFromUuid(const AZ::Uuid& uuid)
@@ -48,8 +49,12 @@ namespace Camera
             v.SetZ(0.f);
             break;
         }
+        case None:
+        {
+            break;
+        }
         default:
-            AZ_Assert(false, "MaskComponentFromNormalizedVector: VectorComponentType - unexpected value");
+            AZ_Warning("", false, "MaskComponentFromNormalizedVector: VectorComponentType - value not supported");
             break;
         }
         v.Normalize();
@@ -121,3 +126,4 @@ namespace Camera
         return AZ::Quaternion::CreateIdentity();
     }
 } //namespace Camera
+#pragma optimize("", on)
