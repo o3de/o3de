@@ -33,8 +33,6 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 
-// NOTE: THIS VERSION SHOULD NOT PORT THE OLD SYSTEM TO THE NEW, ONLY NEW!
-
 namespace ScriptCanvasEditorTools
 {
     namespace Helpers
