@@ -21,4 +21,18 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             terrain
     )
 
+    ly_add_pytest(
+        NAME AutomatedTesting::TerrainTests_Main_Optimized
+        TEST_SUITE main
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Optimized.py
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            terrain
+    )
+
+
 endif()

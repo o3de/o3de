@@ -10,16 +10,17 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import pytest
 import os
-import sys
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
-from base import TestAutomationBase
+import ly_test_tools.environment.file_system as file_system
+from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorParallelTest, EditorTestSuite
 
+
+@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomation(TestAutomationBase):
+class TestAutomation(EditorTestSuite):
 
-    def test_AxisAlignedBoxShape_ConfigurationWorks(self, request, workspace, editor, launcher_platform):
+    def test_AxisAlignedBoxShape_ConfigurationWorks(EditorSingleTest):
         from .EditorScripts import TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges as test_module
-        self._run_test(request, workspace, editor, test_module)
+

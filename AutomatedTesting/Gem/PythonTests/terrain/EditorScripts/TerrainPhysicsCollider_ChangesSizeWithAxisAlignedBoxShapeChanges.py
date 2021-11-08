@@ -77,8 +77,13 @@ def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
         columns = physics.HeightfieldProviderRequestsBus(bus.Broadcast, "GetHeightfieldGridColumns")
         rows = physics.HeightfieldProviderRequestsBus(bus.Broadcast, "GetHeightfieldGridRows")
 
-        Report.result(Tests.configuration_changed, math.isclose(columns, EXPECTED_COLUMN_SIZE) and math.isclose(rows, EXPECTED_ROW_SIZE))
-
+    Report.result(Tests.configuration_changed, math.isclose(columns, EXPECTED_COLUMN_SIZE) and math.isclose(rows, EXPECTED_ROW_SIZE))
+    helper.wait_for_condition(lambda: section_tracer.has_errors or section_tracer.has_asserts, 1.0)
+    for error_info in section_tracer.errors:
+        Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
+    for assert_info in section_tracer.asserts:
+        Report.info(f"Assert: {assert_info.filename} {assert_info.function} | {assert_info.message}")
+        
 if __name__ == "__main__":
 
     from editor_python_test_tools.utils import Report
