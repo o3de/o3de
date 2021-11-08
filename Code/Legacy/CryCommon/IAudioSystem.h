@@ -13,6 +13,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/parallel/mutex.h>
@@ -825,6 +826,7 @@ namespace Audio
             , nCountUnusedAudioTriggers(0)
             , nCountUsedAudioEvents(0)
             , nCountUnusedAudioEvents(0)
+            , oListenerPos(AZ::Vector3::CreateZero())
         {}
 
         AZStd::size_t nCountUsedAudioTriggers;
@@ -860,6 +862,7 @@ namespace Audio
         virtual TAudioObjectID GetAudioObjectID() const = 0;
     };
 
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     class AudioPreloadNotifications
         : public AZ::EBusTraits
@@ -881,18 +884,14 @@ namespace Audio
 
     using AudioPreloadNotificationBus = AZ::EBus<AudioPreloadNotifications>;
 
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     class AudioSystemRequests
-        : public AZ::EBusTraits
     {
     public:
-        virtual ~AudioSystemRequests() = default;
+        AZ_RTTI(AudioSystemRequests, "{27F054BF-B51C-472C-9ECF-BBBB710C5AC1}");
 
-        ///////////////////////////////////////////////////////////////////////////////////////////////
-        // EBusTraits - Single Bus Address, Single Handler
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
-        ///////////////////////////////////////////////////////////////////////////////////////////////
+        virtual ~AudioSystemRequests() = default;
 
         virtual bool Initialize() = 0;
         virtual void Release() = 0;
@@ -936,16 +935,29 @@ namespace Audio
         virtual const char* GetAudioSwitchStateName(TAudioControlID switchID, TAudioSwitchStateID stateID) const = 0;
     };
 
-    using AudioSystemRequestBus = AZ::EBus<AudioSystemRequests>;
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    struct AudioTriggerNotifications
+    class AudioSystemEBusTraits
         : public AZ::EBusTraits
     {
+    public:
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+        // EBusTraits - Single Bus Address, Single Handler
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        ///////////////////////////////////////////////////////////////////////////////////////////////
+    };
+
+    using AudioSystemRequestBus = AZ::EBus<AudioSystemRequests, AudioSystemEBusTraits>;
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    class AudioTriggerNotifications
+        : public AZ::EBusTraits
+    {
+    public:
         virtual ~AudioTriggerNotifications() = default;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        // EBusTraits - Address by ID, Multiple Handler, Mutex, Queued
+        // EBusTraits - Address by ID, Multiple Handler, Recursive Mutex, Queued
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const bool EnableEventQueue = true;
@@ -953,38 +965,49 @@ namespace Audio
         using BusIdType = Audio::TAudioControlID;
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
-        virtual void ReportDurationInfo(TAudioEventID, float /*duration*/, float /*estimatedDuration*/) = 0;
+        virtual void ReportDurationInfo(TAudioEventID, float duration, float estimatedDuration) = 0;
     };
 
     using AudioTriggerNotificationBus = AZ::EBus<AudioTriggerNotifications>;
 
+
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     class AudioSystemThreadSafeRequests
+    {
+    public:
+        AZ_RTTI(AudioSystemThreadSafeRequests, "{1B83FF52-0955-4FA1-90F4-7FFF31892303}");
+
+        virtual ~AudioSystemThreadSafeRequests() = default;
+
+        virtual void PushRequestThreadSafe(const SAudioRequest& audioRequestData) = 0;
+    };
+
+    class AudioSystemThreadSafeEBusTraits
         : public AZ::EBusTraits
     {
     public:
-        virtual ~AudioSystemThreadSafeRequests() = default;
-
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        // EBusTraits - Single Bus Address, Single Handler, Mutex, Queued
+        // EBusTraits - Single Address, Single Handler, Recursive Mutex, Queued
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const bool EnableEventQueue = true;
         using MutexType = AZStd::recursive_mutex;
         ///////////////////////////////////////////////////////////////////////////////////////////////
-
-        virtual void PushRequestThreadSafe(const SAudioRequest& audioRequestData) = 0;
     };
 
-    using AudioSystemThreadSafeRequestBus = AZ::EBus<AudioSystemThreadSafeRequests>;
+    using AudioSystemThreadSafeRequestBus = AZ::EBus<AudioSystemThreadSafeRequests, AudioSystemThreadSafeEBusTraits>;
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    struct IAudioSystem
+    class IAudioSystem
         : public AudioSystemRequestBus::Handler
         , public AudioSystemThreadSafeRequestBus::Handler
     {
-        ~IAudioSystem() override = default;
+    public:
+        // This interface is registered with AZ::Interface<>
+        AZ_RTTI(IAudioSystem, "{4AF3417B-C264-4970-96C5-EBB888EA922D}", AudioSystemRequestBus::Handler, AudioSystemThreadSafeRequestBus::Handler);
     };
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     class AudioStreamingRequests

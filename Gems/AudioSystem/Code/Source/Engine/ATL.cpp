@@ -346,7 +346,7 @@ namespace Audio
         request.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
         request.pData = &requestData;
 
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, request);
+        AZ::Interface<IAudioSystem>::Get()->PushRequestBlocking(request);
         return sourceId;
     }
 
@@ -358,7 +358,7 @@ namespace Audio
         request.nFlags = (eARF_PRIORITY_NORMAL);
         request.pData = &requestData;
 
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+        AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

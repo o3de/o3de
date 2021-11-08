@@ -281,24 +281,10 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct SAudioInputConfig
     {
-        SAudioInputConfig()
-            : m_sourceId(INVALID_AUDIO_SOURCE_ID)
-            , m_sampleRate(0)
-            , m_numChannels(0)
-            , m_bitsPerSample(0)
-            , m_bufferSize(0)
-            , m_sampleType(AudioInputSampleType::Unsupported)
-            , m_autoUnloadFile(false)
-        {}
+        SAudioInputConfig() = default;
 
         SAudioInputConfig(AudioInputSourceType sourceType, const char* filename, bool autoUnloadFile = true)
-            : m_sourceId(INVALID_AUDIO_SOURCE_ID)
-            , m_sampleRate(0)
-            , m_numChannels(0)
-            , m_bitsPerSample(0)
-            , m_bufferSize(0)
-            , m_sourceType(sourceType)
-            , m_sampleType(AudioInputSampleType::Unsupported)
+            : m_sourceType(sourceType)
             , m_sourceFilename(filename)
             , m_autoUnloadFile(autoUnloadFile)
         {}
@@ -309,13 +295,11 @@ namespace Audio
             AZ::u32 numChannels,
             AZ::u32 bitsPerSample,
             AudioInputSampleType sampleType)
-            : m_sourceId(INVALID_AUDIO_SOURCE_ID)
-            , m_sampleRate(sampleRate)
+            : m_sampleRate(sampleRate)
             , m_numChannels(numChannels)
             , m_bitsPerSample(bitsPerSample)
             , m_sourceType(sourceType)
             , m_sampleType(sampleType)
-            , m_autoUnloadFile(false)
         {}
 
         void SetBufferSizeFromFrameCount(AZ::u32 frameCount)
@@ -329,15 +313,24 @@ namespace Audio
             return m_bufferSize / (m_bitsPerSample >> 3);
         }
 
-        TAudioSourceId m_sourceId;          // This is set later after the source is created
-        AZ::u32 m_sampleRate;               // 44100, 48000, ...
-        AZ::u32 m_numChannels;              // 1 = Mono, 2 = Stereo
-        AZ::u32 m_bitsPerSample;            // e.g. 16, 32
-        AZ::u32 m_bufferSize;               // Size in bytes
-        AudioInputSourceType m_sourceType;  // File, Synthesis, Microphone, ...
-        AudioInputSampleType m_sampleType;  // Int, Float
-        AZStd::string m_sourceFilename;
-        bool m_autoUnloadFile;              // For file types, specifies whether file should unload after playback finishes
+        //! Source Id, this is set after the source is created with the manager
+        TAudioSourceId m_sourceId{ INVALID_AUDIO_SOURCE_ID };
+        //! Sample rate of the source, e.g. 44100, 48000
+        AZ::u32 m_sampleRate{ 0 };
+        //! Number of channels, e.g. 1 = Mono, 2 = Stereo
+        AZ::u32 m_numChannels{ 0 };
+        //! Number of bits per sample, e.g. 16, 32
+        AZ::u32 m_bitsPerSample{ 0 };
+        //! Size of the buffer in bytes
+        AZ::u32 m_bufferSize{ 0 };
+        //! The type of the source, e.g. File, Synthesis, Microphone
+        AudioInputSourceType m_sourceType{ AudioInputSourceType::Unsupported };
+        //! The sample format, e.g. Int, Float
+        AudioInputSampleType m_sampleType{ AudioInputSampleType::Unsupported };
+        //! The filename of the source (if any)
+        AZStd::string m_sourceFilename{};
+        //! For files, whether the file should unload after playback completes
+        bool m_autoUnloadFile{ false };
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

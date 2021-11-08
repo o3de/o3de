@@ -111,8 +111,11 @@ namespace LmbrCentral
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::Activate()
     {
-        AudioSystemComponentRequestBus::Handler::BusConnect();
-        CrySystemEventBus::Handler::BusConnect();
+        if (IsAudioSystemInitialized())
+        {
+            AudioSystemComponentRequestBus::Handler::BusConnect();
+            CrySystemEventBus::Handler::BusConnect();
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -125,7 +128,7 @@ namespace LmbrCentral
     ////////////////////////////////////////////////////////////////////////
     bool AudioSystemComponent::IsAudioSystemInitialized()
     {
-        return Audio::AudioSystemRequestBus::HasHandlers();
+        return (AZ::Interface<Audio::IAudioSystem>::Get() != nullptr);
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -134,8 +137,7 @@ namespace LmbrCentral
         SAudioRequest request;
         SAudioManagerRequestData<eAMRT_STOP_ALL_SOUNDS> requestData;
         request.pData = &requestData;
-
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -144,8 +146,7 @@ namespace LmbrCentral
         SAudioRequest request;
         SAudioManagerRequestData<eAMRT_MUTE_ALL> requestData;
         request.pData = &requestData;
-
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -154,14 +155,13 @@ namespace LmbrCentral
         SAudioRequest request;
         SAudioManagerRequestData<eAMRT_UNMUTE_ALL> requestData;
         request.pData = &requestData;
-
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
     }
 
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::GlobalRefreshAudio(AZStd::string_view levelName)
     {
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::RefreshAudioSystem, levelName.data());
+        AZ::Interface<Audio::IAudioSystem>::Get()->RefreshAudioSystem(levelName.data());
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -169,8 +169,7 @@ namespace LmbrCentral
     {
         if (triggerName && triggerName[0] != '\0')
         {
-            TAudioControlID triggerId = INVALID_AUDIO_CONTROL_ID;
-            AudioSystemRequestBus::BroadcastResult(triggerId, &AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName);
+            TAudioControlID triggerId = AZ::Interface<Audio::IAudioSystem>::Get()->GetAudioTriggerID(triggerName);
             if (triggerId != INVALID_AUDIO_CONTROL_ID)
             {
                 SAudioRequest request;
@@ -186,7 +185,7 @@ namespace LmbrCentral
                     request.pUserDataOwner = nullptr;
                 }
 
-                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
             }
         }
     }
@@ -196,8 +195,7 @@ namespace LmbrCentral
     {
         if (triggerName && triggerName[0] != '\0')
         {
-            TAudioControlID triggerId = INVALID_AUDIO_CONTROL_ID;
-            AudioSystemRequestBus::BroadcastResult(triggerId, &AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName);
+            TAudioControlID triggerId = AZ::Interface<Audio::IAudioSystem>::Get()->GetAudioTriggerID(triggerName);
             if (triggerId != INVALID_AUDIO_CONTROL_ID)
             {
                 SAudioRequest request;
@@ -213,7 +211,7 @@ namespace LmbrCentral
                     request.pUserDataOwner = nullptr;
                 }
 
-                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
             }
         }
     }
@@ -223,15 +221,14 @@ namespace LmbrCentral
     {
         if (rtpcName && rtpcName[0] != '\0')
         {
-            TAudioControlID rtpcId = INVALID_AUDIO_CONTROL_ID;
-            AudioSystemRequestBus::BroadcastResult(rtpcId, &AudioSystemRequestBus::Events::GetAudioRtpcID, rtpcName);
+            TAudioControlID rtpcId = AZ::Interface<Audio::IAudioSystem>::Get()->GetAudioRtpcID(rtpcName);
             if (rtpcId != INVALID_AUDIO_CONTROL_ID)
             {
                 SAudioRequest request;
                 SAudioObjectRequestData<eAORT_SET_RTPC_VALUE> requestData(rtpcId, value);
                 request.pData = &requestData;
 
-                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
             }
         }
     }
@@ -243,7 +240,7 @@ namespace LmbrCentral
         SAudioObjectRequestData<eAORT_RESET_RTPCS> requestData;
         request.pData = &requestData;
 
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+        AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -251,12 +248,11 @@ namespace LmbrCentral
     {
         if (switchName && switchName[0] != '\0' && stateName && stateName[0] != '\0')
         {
-            TAudioControlID switchId = INVALID_AUDIO_CONTROL_ID;
+            TAudioControlID switchId = AZ::Interface<Audio::IAudioSystem>::Get()->GetAudioSwitchID(switchName);
             TAudioSwitchStateID stateId = INVALID_AUDIO_SWITCH_STATE_ID;
-            AudioSystemRequestBus::BroadcastResult(switchId, &AudioSystemRequestBus::Events::GetAudioSwitchID, switchName);
             if (switchId != INVALID_AUDIO_CONTROL_ID)
             {
-                AudioSystemRequestBus::BroadcastResult(stateId, &AudioSystemRequestBus::Events::GetAudioSwitchStateID, switchId, stateName);
+                AZ::Interface<Audio::IAudioSystem>::Get()->GetAudioSwitchStateID(switchId, stateName);
             }
 
             if (stateId != INVALID_AUDIO_SWITCH_STATE_ID)
@@ -265,7 +261,7 @@ namespace LmbrCentral
                 SAudioObjectRequestData<eAORT_SET_SWITCH_STATE> requestData(switchId, stateId);
                 request.pData = &requestData;
 
-                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+                AZ::Interface<Audio::IAudioSystem>::Get()->PushRequest(request);
             }
         }
     }
@@ -273,8 +269,8 @@ namespace LmbrCentral
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::LevelLoadAudio(AZStd::string_view levelName)
     {
-        const char* controlsPath = nullptr;
-        AudioSystemRequestBus::BroadcastResult(controlsPath, &AudioSystemRequestBus::Events::GetControlsPath);
+        auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+        const char* controlsPath = audioSystem->GetControlsPath();
         if (!controlsPath)
         {
             return;
@@ -288,48 +284,48 @@ namespace LmbrCentral
         SAudioManagerRequestData<eAMRT_PARSE_CONTROLS_DATA> requestData(levelControlsPath.Native().data(), eADS_LEVEL_SPECIFIC);
         request.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
         request.pData = &requestData;
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, request);
+        audioSystem->PushRequestBlocking(request);
 
         SAudioManagerRequestData<eAMRT_PARSE_PRELOADS_DATA> requestData2(levelControlsPath.Native().data(), eADS_LEVEL_SPECIFIC);
         request.pData = &requestData2;
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, request);
+        audioSystem->PushRequestBlocking(request);
 
         TAudioPreloadRequestID preloadRequestId = INVALID_AUDIO_PRELOAD_REQUEST_ID;
-        AudioSystemRequestBus::BroadcastResult(
-            preloadRequestId, &AudioSystemRequestBus::Events::GetAudioPreloadRequestID, levelName.data());
+        audioSystem->GetAudioPreloadRequestID(levelName.data());
         if (preloadRequestId != INVALID_AUDIO_PRELOAD_REQUEST_ID)
         {
             SAudioManagerRequestData<eAMRT_PRELOAD_SINGLE_REQUEST> requestData3(preloadRequestId);
             request.pData = &requestData3;
-            AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, request);
+            audioSystem->PushRequestBlocking(request);
         }
     }
 
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::LevelUnloadAudio()
     {
+        auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
         SAudioRequest request;
 
         // Unload level-specific banks...
         SAudioManagerRequestData<eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE> requestData(eADS_LEVEL_SPECIFIC);
         request.nFlags = (eARF_PRIORITY_HIGH | eARF_EXECUTE_BLOCKING);
         request.pData = &requestData;
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, request);
+        audioSystem->PushRequestBlocking(request);
 
         // Now unload level-specific audio config data (controls then preloads)...
         SAudioManagerRequestData<eAMRT_CLEAR_CONTROLS_DATA> requestData2(eADS_LEVEL_SPECIFIC);
         request.pData = &requestData2;
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, request);
+        audioSystem->PushRequestBlocking(request);
 
         SAudioManagerRequestData<eAMRT_CLEAR_PRELOADS_DATA> requestData3(eADS_LEVEL_SPECIFIC);
         request.pData = &requestData3;
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequestBlocking, request);
+        audioSystem->PushRequestBlocking(request);
     }
 
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::OnCrySystemInitialized(ISystem& system, const SSystemInitParams&)
     {
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::AddRequestListener,
+        AZ::Interface<Audio::IAudioSystem>::Get()->AddRequestListener(
             &AudioSystemComponent::OnAudioEvent,
             this,
             eART_AUDIO_CALLBACK_MANAGER_REQUEST,
@@ -342,7 +338,7 @@ namespace LmbrCentral
     ////////////////////////////////////////////////////////////////////////
     void AudioSystemComponent::OnCrySystemShutdown(ISystem& system)
     {
-        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::RemoveRequestListener,
+        AZ::Interface<Audio::IAudioSystem>::Get()->RemoveRequestListener(
             &AudioSystemComponent::OnAudioEvent,
             this
         );

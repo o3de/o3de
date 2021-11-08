@@ -1010,7 +1010,7 @@ namespace Audio
         for (const auto& file : foundFiles)
         {
             AZ_Assert(AZ::IO::FileIOBase::GetInstance()->Exists(file.c_str()), "FindFiles found file '%s' but FileIO says it doesn't exist!", file.c_str());
-            g_audioLogger.Log(eALT_ALWAYS, "Loading Audio Controls Library: '%s'", file.c_str());
+            g_audioLogger.Log(eALT_COMMENT, "Loading Audio Controls Library: '%s'", file.c_str());
 
             Audio::ScopedXmlLoader xmlFileLoader(file.Native());
             if (xmlFileLoader.HasError())
@@ -1058,7 +1058,7 @@ namespace Audio
         for (const auto& file : foundFiles)
         {
             AZ_Assert(AZ::IO::FileIOBase::GetInstance()->Exists(file.c_str()), "FindFiles found file '%s' but FileIO says it doesn't exist!", file.c_str());
-            g_audioLogger.Log(eALT_ALWAYS, "Loading Audio Preloads Library: '%s'", file.c_str());
+            g_audioLogger.Log(eALT_COMMENT, "Loading Audio Preloads Library: '%s'", file.c_str());
 
             Audio::ScopedXmlLoader xmlFileLoader(file.Native());
             if (xmlFileLoader.HasError())

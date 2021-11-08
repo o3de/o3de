@@ -152,12 +152,16 @@ namespace Audio::CVars
 
     auto OnChangeAudioLanguage = []([[maybe_unused]] const AZ::CVarFixedString& language) -> void
     {
-        SAudioRequest languageRequest;
-        SAudioManagerRequestData<eAMRT_CHANGE_LANGUAGE> languageRequestData;
+        if (auto audioSystem = AZ::Interface<IAudioSystem>::Get();
+            audioSystem != nullptr)
+        {
+            SAudioRequest languageRequest;
+            SAudioManagerRequestData<eAMRT_CHANGE_LANGUAGE> languageRequestData;
 
-        languageRequest.pData = &languageRequestData;
-        languageRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
-        AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, languageRequest);
+            languageRequest.pData = &languageRequestData;
+            languageRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
+            audioSystem->PushRequest(languageRequest);
+        }
     };
 
     AZ_CVAR(AZ::CVarFixedString, g_languageAudio, "", OnChangeAudioLanguage, AZ::ConsoleFunctorFlags::Null, "");
@@ -365,8 +369,7 @@ namespace Audio::CVars
         if (args.size() == 1 || args.size() == 2)
         {
             AZStd::string triggerName(args[0]);
-            TAudioControlID triggerId = INVALID_AUDIO_CONTROL_ID;
-            AudioSystemRequestBus::BroadcastResult(triggerId, &AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName.c_str());
+            TAudioControlID triggerId = AZ::Interface<IAudioSystem>::Get()->GetAudioTriggerID(triggerName.c_str());
 
             if (triggerId != INVALID_AUDIO_CONTROL_ID)
             {
@@ -386,8 +389,7 @@ namespace Audio::CVars
                 request.nAudioObjectID = objectId;
                 request.nFlags = eARF_PRIORITY_NORMAL;
                 request.pData = &requestData;
-
-                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+                AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
             }
             else
             {
@@ -406,8 +408,7 @@ namespace Audio::CVars
         if (args.size() == 1 || args.size() == 2)
         {
             AZStd::string triggerName(args[0]);
-            TAudioControlID triggerId = INVALID_AUDIO_CONTROL_ID;
-            AudioSystemRequestBus::BroadcastResult(triggerId, &AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName.c_str());
+            TAudioControlID triggerId = AZ::Interface<IAudioSystem>::Get()->GetAudioTriggerID(triggerName.c_str());
 
             if (triggerId != INVALID_AUDIO_CONTROL_ID)
             {
@@ -427,8 +428,7 @@ namespace Audio::CVars
                 request.nAudioObjectID = objectId;
                 request.nFlags = eARF_PRIORITY_NORMAL;
                 request.pData = &requestData;
-
-                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+                AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
             }
             else
             {
@@ -447,8 +447,7 @@ namespace Audio::CVars
         if (args.size() == 2 || args.size() == 3)
         {
             AZStd::string rtpcName(args[0]);
-            TAudioControlID rtpcId = INVALID_AUDIO_CONTROL_ID;
-            AudioSystemRequestBus::BroadcastResult(rtpcId, &AudioSystemRequestBus::Events::GetAudioRtpcID, rtpcName.c_str());
+            TAudioControlID rtpcId = AZ::Interface<IAudioSystem>::Get()->GetAudioRtpcID(rtpcName.c_str());
 
             if (rtpcId != INVALID_AUDIO_CONTROL_ID)
             {
@@ -475,8 +474,7 @@ namespace Audio::CVars
                 request.nAudioObjectID = objectId;
                 request.nFlags = eARF_PRIORITY_NORMAL;
                 request.pData = &requestData;
-
-                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+                AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
             }
             else
             {
@@ -495,15 +493,12 @@ namespace Audio::CVars
         if (args.size() == 2 || args.size() == 3)
         {
             AZStd::string switchName(args[0]);
-            TAudioControlID switchId = INVALID_AUDIO_CONTROL_ID;
-            AudioSystemRequestBus::BroadcastResult(switchId, &AudioSystemRequestBus::Events::GetAudioSwitchID, switchName.c_str());
+            TAudioControlID switchId = AZ::Interface<IAudioSystem>::Get()->GetAudioSwitchID(switchName.c_str());
 
             if (switchId != INVALID_AUDIO_CONTROL_ID)
             {
                 AZStd::string stateName(args[1]);
-                TAudioSwitchStateID stateId = INVALID_AUDIO_SWITCH_STATE_ID;
-                AudioSystemRequestBus::BroadcastResult(
-                    stateId, &AudioSystemRequestBus::Events::GetAudioSwitchStateID, switchId, stateName.c_str());
+                TAudioSwitchStateID stateId = AZ::Interface<IAudioSystem>::Get()->GetAudioSwitchStateID(switchId, stateName.c_str());
 
                 if (stateId != INVALID_AUDIO_SWITCH_STATE_ID)
                 {
@@ -523,8 +518,7 @@ namespace Audio::CVars
                     request.nAudioObjectID = objectId;
                     request.nFlags = eARF_PRIORITY_NORMAL;
                     request.pData = &requestData;
-
-                    AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+                    AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
                 }
                 else
                 {
@@ -548,16 +542,14 @@ namespace Audio::CVars
         if (args.size() == 1)
         {
             AZStd::string preloadName(args[0]);
-            TAudioPreloadRequestID preloadId = INVALID_AUDIO_PRELOAD_REQUEST_ID;
-            AudioSystemRequestBus::BroadcastResult(preloadId, &AudioSystemRequestBus::Events::GetAudioPreloadRequestID, preloadName.c_str());
+            TAudioPreloadRequestID preloadId = AZ::Interface<IAudioSystem>::Get()->GetAudioPreloadRequestID(preloadName.c_str());
             if (preloadId != INVALID_AUDIO_PRELOAD_REQUEST_ID)
             {
                 SAudioRequest request;
                 SAudioManagerRequestData<eAMRT_PRELOAD_SINGLE_REQUEST> requestData(preloadId);
                 request.nFlags = eARF_PRIORITY_NORMAL;
                 request.pData = &requestData;
-
-                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+                AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
             }
             else
             {
@@ -576,16 +568,14 @@ namespace Audio::CVars
         if (args.size() == 1)
         {
             AZStd::string preloadName(args[0]);
-            TAudioPreloadRequestID preloadId = INVALID_AUDIO_PRELOAD_REQUEST_ID;
-            AudioSystemRequestBus::BroadcastResult(preloadId, &AudioSystemRequestBus::Events::GetAudioPreloadRequestID, preloadName.c_str());
+            TAudioPreloadRequestID preloadId = AZ::Interface<IAudioSystem>::Get()->GetAudioPreloadRequestID(preloadName.c_str());
             if (preloadId != INVALID_AUDIO_PRELOAD_REQUEST_ID)
             {
                 SAudioRequest request;
                 SAudioManagerRequestData<eAMRT_UNLOAD_SINGLE_REQUEST> requestData(preloadId);
                 request.nFlags = eARF_PRIORITY_NORMAL;
                 request.pData = &requestData;
-
-                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+                AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
             }
             else
             {
@@ -651,14 +641,11 @@ namespace Audio::CVars
                     }
                 }
 
-                TAudioSourceId sourceId = INVALID_AUDIO_SOURCE_ID;
-                AudioSystemRequestBus::BroadcastResult(sourceId, &AudioSystemRequestBus::Events::CreateAudioSource, audioInputConfig);
+                TAudioSourceId sourceId = AZ::Interface<IAudioSystem>::Get()->CreateAudioSource(audioInputConfig);
 
                 if (sourceId != INVALID_AUDIO_SOURCE_ID)
                 {
-                    TAudioControlID triggerId = INVALID_AUDIO_CONTROL_ID;
-                    AudioSystemRequestBus::BroadcastResult(
-                        triggerId, &AudioSystemRequestBus::Events::GetAudioTriggerID, args[1].data());
+                    TAudioControlID triggerId = AZ::Interface<IAudioSystem>::Get()->GetAudioTriggerID(args[1].data());
 
                     if (triggerId != INVALID_AUDIO_CONTROL_ID)
                     {
@@ -666,12 +653,11 @@ namespace Audio::CVars
                         SAudioObjectRequestData<eAORT_EXECUTE_SOURCE_TRIGGER> requestData(triggerId, sourceId);
                         request.nFlags = eARF_PRIORITY_NORMAL;
                         request.pData = &requestData;
-
-                        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+                        AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
                     }
                     else
                     {
-                        AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::DestroyAudioSource, sourceId);
+                        AZ::Interface<IAudioSystem>::Get()->DestroyAudioSource(sourceId);
                         g_audioLogger.Log(eALT_ERROR, "Failed to find the trigger named %.*s", AZ_STRING_ARG(args[1]));
                     }
                 }
@@ -714,7 +700,7 @@ namespace Audio::CVars
                 g_audioLogger.Log(eALT_ALWAYS, "Turning on Microhpone with %s\n", triggerName.c_str());
                 bool success = true;
 
-                AudioSystemRequestBus::BroadcastResult(triggerId, &AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName.c_str());
+                triggerId = AZ::Interface<IAudioSystem>::Get()->GetAudioTriggerID(triggerName.c_str());
                 if (triggerId != INVALID_AUDIO_CONTROL_ID)
                 {
                     // Start the mic session
@@ -731,7 +717,7 @@ namespace Audio::CVars
                         // micConfig.m_bitsPerSample = 16;
                         // micConfig.m_sampleType = AudioInputSampleType::Int;
 
-                        AudioSystemRequestBus::BroadcastResult(micSourceId, &AudioSystemRequestBus::Events::CreateAudioSource, micConfig);
+                        micSourceId = AZ::Interface<IAudioSystem>::Get()->CreateAudioSource(micConfig);
 
                         if (micSourceId != INVALID_AUDIO_SOURCE_ID)
                         {
@@ -739,8 +725,7 @@ namespace Audio::CVars
                             SAudioObjectRequestData<eAORT_EXECUTE_SOURCE_TRIGGER> requestData(triggerId, micSourceId);
                             request.nFlags = eARF_PRIORITY_NORMAL;
                             request.pData = &requestData;
-
-                            AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+                            AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
                         }
                         else
                         {
@@ -766,7 +751,7 @@ namespace Audio::CVars
                 }
                 else
                 {
-                    AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::DestroyAudioSource, micSourceId);
+                    AZ::Interface<IAudioSystem>::Get()->DestroyAudioSource(micSourceId);
                     MicrophoneRequestBus::Broadcast(&MicrophoneRequestBus::Events::EndSession);
                     micSourceId = INVALID_AUDIO_SOURCE_ID;
                     triggerId = INVALID_AUDIO_CONTROL_ID;
@@ -795,10 +780,10 @@ namespace Audio::CVars
                 SAudioObjectRequestData<eAORT_STOP_TRIGGER> requestData(triggerId);
                 request.nFlags = eARF_PRIORITY_NORMAL;
                 request.pData = &requestData;
-                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+                AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
 
                 // Destroy the audio source, end the mic session, and reset state...
-                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::DestroyAudioSource, micSourceId);
+                AZ::Interface<IAudioSystem>::Get()->DestroyAudioSource(micSourceId);
                 MicrophoneRequestBus::Broadcast(&MicrophoneRequestBus::Events::EndSession);
                 micSourceId = INVALID_AUDIO_SOURCE_ID;
                 triggerId = INVALID_AUDIO_CONTROL_ID;
@@ -830,7 +815,7 @@ namespace Audio::CVars
         if (args.size() == 4)
         {
             AZStd::string triggerName(args[0]);
-            AudioSystemRequestBus::BroadcastResult(triggerId, &AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName.c_str());
+            triggerId = AZ::Interface<IAudioSystem>::Get()->GetAudioTriggerID(triggerName.c_str());
             if (triggerId == INVALID_AUDIO_CONTROL_ID)
             {
                 g_audioLogger.Log(eALT_ERROR, "Failed to find the trigger named '%s'\n", triggerName.c_str());
@@ -862,8 +847,7 @@ namespace Audio::CVars
             SAudioObjectRequestData<eAORT_EXECUTE_SOURCE_TRIGGER> requestData(triggerId, sourceInfo);
             request.nFlags = eARF_PRIORITY_NORMAL;
             request.pData = &requestData;
-
-            AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
         }
         else
         {
@@ -901,8 +885,7 @@ namespace Audio::CVars
             SAudioManagerRequestData<eAMRT_SET_AUDIO_PANNING_MODE> requestData(panningMode);
             request.nFlags = eARF_PRIORITY_NORMAL;
             request.pData = &requestData;
-
-            AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+            AZ::Interface<IAudioSystem>::Get()->PushRequest(request);
         }
         else
         {

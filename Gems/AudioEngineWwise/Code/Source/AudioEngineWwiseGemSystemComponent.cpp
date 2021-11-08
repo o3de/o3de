@@ -143,6 +143,7 @@ namespace AudioEngineWwiseGem
             AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, assetPlatform,
                 AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "assets");
         }
+
         m_engineWwise = AZStd::make_unique<Audio::CAudioSystemImpl_wwise>(assetPlatform.c_str());
         if (m_engineWwise)
         {
@@ -153,7 +154,7 @@ namespace AudioEngineWwiseGem
 
             Audio::SAudioManagerRequestData<Audio::eAMRT_INIT_AUDIO_IMPL> oAMData;
             oAudioRequestData.pData = &oAMData;
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
+            AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlocking(oAudioRequestData);
 
             success = true;
         }

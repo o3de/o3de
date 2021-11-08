@@ -40,8 +40,7 @@ CAudioControlsEditorPlugin::CAudioControlsEditorPlugin(IEditor* editor)
     options.canHaveMultipleInstances = true;
     RegisterQtViewPane<CAudioControlsEditorWindow>(editor, LyViewPane::AudioControlsEditor, LyViewPane::CategoryOther, options);
 
-    Audio::AudioSystemRequestBus::BroadcastResult(ms_pIAudioProxy, &Audio::AudioSystemRequestBus::Events::GetFreeAudioProxy);
-
+    ms_pIAudioProxy = AZ::Interface<Audio::IAudioSystem>::Get()->GetFreeAudioProxy();
     if (ms_pIAudioProxy)
     {
         ms_pIAudioProxy->Initialize("AudioControlsEditor-Preview");
@@ -142,9 +141,15 @@ void CAudioControlsEditorPlugin::ExecuteTrigger(const AZStd::string_view sTrigge
 {
     if (!sTriggerName.empty() && ms_pIAudioProxy)
     {
+        auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+        if (!audioSystem)
+        {
+            return;
+        }
+
         StopTriggerExecution();
-        Audio::AudioSystemRequestBus::BroadcastResult(ms_nAudioTriggerID, &Audio::AudioSystemRequestBus::Events::GetAudioTriggerID, sTriggerName.data());
-        if (ms_nAudioTriggerID != INVALID_AUDIO_CONTROL_ID)
+        if (ms_nAudioTriggerID = audioSystem->GetAudioTriggerID(sTriggerName.data());
+            ms_nAudioTriggerID != INVALID_AUDIO_CONTROL_ID)
         {
             AZ::Transform activeCameraTm = AZ::Transform::CreateIdentity();
             Camera::ActiveCameraRequestBus::BroadcastResult(
@@ -161,7 +166,7 @@ void CAudioControlsEditorPlugin::ExecuteTrigger(const AZStd::string_view sTrigge
             requestData.oNewPosition.NormalizeForwardVec();
             requestData.oNewPosition.NormalizeUpVec();
             request.pData = &requestData;
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, request);
+            audioSystem->PushRequest(request);
 
             ms_pIAudioProxy->SetPosition(cameraMatrix);
             ms_pIAudioProxy->ExecuteTrigger(ms_nAudioTriggerID);

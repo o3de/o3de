@@ -53,23 +53,31 @@ namespace Audio
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     class AudioSystemInternalRequests
+    {
+    public:
+        AZ_RTTI(AudioSystemInternalRequests, "{27EB3273-8DA7-4E3D-9B64-F5F4B6F95444}");
+
+        virtual ~AudioSystemInternalRequests() = default;
+
+        virtual void ProcessRequestByPriority(CAudioRequestInternal audioRequestData) = 0;
+    };
+
+    class AudioSystemInternalEBusTraits
         : public AZ::EBusTraits
     {
     public:
-        virtual ~AudioSystemInternalRequests() = default;
-
         ///////////////////////////////////////////////////////////////////////////////////////////////
-        // EBusTraits - Single Bus Address, Single Handler, Mutex, Queued
+        // EBusTraits - Single Address, Single Handler, Recursive Mutex, Queued
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const bool EnableEventQueue = true;
         using MutexType = AZStd::recursive_mutex;
         ///////////////////////////////////////////////////////////////////////////////////////////////
-
-        virtual void ProcessRequestByPriority(CAudioRequestInternal audioRequestData) = 0;
     };
 
-    using AudioSystemInternalRequestBus = AZ::EBus<AudioSystemInternalRequests>;
+    using AudioSystemInternalRequestBus = AZ::EBus<AudioSystemInternalRequests, AudioSystemInternalEBusTraits>;
+
+
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     class CAudioSystem
@@ -79,7 +87,8 @@ namespace Audio
         friend class CAudioThread;
 
     public:
-        AUDIO_SYSTEM_CLASS_ALLOCATOR(Audio::CAudioSystem)
+        AZ_RTTI(CAudioSystem, "{96254647-000D-4896-93C4-92E0F258F21D}", IAudioSystem, AudioSystemInternalRequestBus::Handler);
+        AZ_CLASS_ALLOCATOR(CAudioSystem, AZ::SystemAllocator, 0);
 
         CAudioSystem();
         ~CAudioSystem() override;

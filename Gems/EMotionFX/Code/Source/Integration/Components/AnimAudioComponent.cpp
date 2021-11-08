@@ -390,18 +390,22 @@ namespace EMotionFX
 
             ActivateJointProxies();
 
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::AddRequestListener,
-                &AnimAudioComponent::OnAudioEvent,
-                this,
-                Audio::eART_AUDIO_CALLBACK_MANAGER_REQUEST,
-                Audio::eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE);
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+                audioSystem != nullptr)
+            {
+                audioSystem->AddRequestListener(
+                    &AnimAudioComponent::OnAudioEvent,
+                    this,
+                    Audio::eART_AUDIO_CALLBACK_MANAGER_REQUEST,
+                    Audio::eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE);
 
-            m_callbackInfo.reset(new Audio::SAudioCallBackInfos(
-                this,
-                static_cast<AZ::u64>(GetEntityId()),
-                nullptr,
-                (Audio::eARF_PRIORITY_NORMAL | Audio::eARF_SYNC_FINISHED_CALLBACK)
-            ));
+                m_callbackInfo.reset(new Audio::SAudioCallBackInfos(
+                    this,
+                    static_cast<AZ::u64>(GetEntityId()),
+                    nullptr,
+                    (Audio::eARF_PRIORITY_NORMAL | Audio::eARF_SYNC_FINISHED_CALLBACK)
+                ));
+            }
 
             ActorNotificationBus::Handler::BusConnect(GetEntityId());
             AnimAudioComponentNotificationBus::Handler::BusConnect(GetEntityId());
@@ -417,8 +421,11 @@ namespace EMotionFX
 
             DeactivateJointProxies();
 
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::RemoveRequestListener,
-                &AnimAudioComponent::OnAudioEvent, this);
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+                audioSystem != nullptr)
+            {
+                audioSystem->RemoveRequestListener(&AnimAudioComponent::OnAudioEvent, this);
+            }
 
             ActorNotificationBus::Handler::BusDisconnect(GetEntityId());
             AnimAudioComponentNotificationBus::Handler::BusDisconnect(GetEntityId());
@@ -515,8 +522,11 @@ namespace EMotionFX
         void AnimAudioComponent::AddTriggerEventInternal(const AZStd::string& eventName, const AZStd::string& triggerName, const AZStd::string& jointName)
         {
             Audio::TAudioControlID triggerId = INVALID_AUDIO_CONTROL_ID;
-            Audio::AudioSystemRequestBus::BroadcastResult(triggerId,
-                &Audio::AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName.c_str());
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+                audioSystem != nullptr)
+            {
+                triggerId = audioSystem->GetAudioTriggerID(triggerName.c_str());
+            }
 
             if (triggerId == INVALID_AUDIO_CONTROL_ID)
             {
@@ -573,13 +583,17 @@ namespace EMotionFX
                     if (jointIter == m_jointProxies.end())
                     {
                         Audio::IAudioProxy* proxy = nullptr;
-                        Audio::AudioSystemRequestBus::BroadcastResult(proxy, &Audio::AudioSystemRequestBus::Events::GetFreeAudioProxy);
-                        AZ_Assert(proxy, "Failed to get free audio proxy");
+                        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get();
+                            audioSystem != nullptr)
+                        {
+                            proxy = audioSystem->GetFreeAudioProxy();
+                            AZ_Assert(proxy, "Failed to get free audio proxy");
 
-                        AZStd::string proxyName = AZStd::string::format("%s:%d", name.c_str(), jointId);
-                        proxy->Initialize(proxyName.c_str());
-                        proxy->SetObstructionCalcType(Audio::eAOOCT_IGNORE);
-                        m_jointProxies.emplace(jointId, proxy);
+                            AZStd::string proxyName = AZStd::string::format("%s:%d", name.c_str(), jointId);
+                            proxy->Initialize(proxyName.c_str());
+                            proxy->SetObstructionCalcType(Audio::eAOOCT_IGNORE);
+                            m_jointProxies.emplace(jointId, proxy);
+                        }
                     }
                 }
             }

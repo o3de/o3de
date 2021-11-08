@@ -667,13 +667,16 @@ void CAnimSceneNode::ReleaseSounds()
     // Stop all sounds on the global audio object,
     // but we want to have it filter based on the owner (this)
     // so we don't stop sounds that didn't originate with track view.
-    Audio::SAudioRequest request;
-    request.nFlags = Audio::eARF_PRIORITY_HIGH;
-    request.pOwner = this;
+    if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+    {
+        Audio::SAudioRequest request;
+        request.nFlags = Audio::eARF_PRIORITY_HIGH;
+        request.pOwner = this;
 
-    Audio::SAudioObjectRequestData<Audio::eAORT_STOP_ALL_TRIGGERS> requestData(/*filterByOwner = */ true);
-    request.pData = &requestData;
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, request);
+        Audio::SAudioObjectRequestData<Audio::eAORT_STOP_ALL_TRIGGERS> requestData(/*filterByOwner = */ true);
+        request.pData = &requestData;
+        audioSystem->PushRequest(request);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -905,24 +908,28 @@ void CAnimSceneNode::ApplyEventKey(IEventKey& key, [[maybe_unused]] SAnimContext
 void CAnimSceneNode::ApplyAudioKey(char const* const sTriggerName, bool const bPlay /* = true */)
 {
     Audio::TAudioControlID nAudioTriggerID = INVALID_AUDIO_CONTROL_ID;
-    Audio::AudioSystemRequestBus::BroadcastResult(nAudioTriggerID, &Audio::AudioSystemRequestBus::Events::GetAudioTriggerID, sTriggerName);
-    if (nAudioTriggerID != INVALID_AUDIO_CONTROL_ID)
+    if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
     {
-        Audio::SAudioRequest oRequest;
-        oRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
-        oRequest.pOwner = this;
+        nAudioTriggerID = audioSystem->GetAudioTriggerID(sTriggerName);
 
-        if (bPlay)
+        if (nAudioTriggerID != INVALID_AUDIO_CONTROL_ID)
         {
-            Audio::SAudioObjectRequestData<Audio::eAORT_EXECUTE_TRIGGER> oRequestData(nAudioTriggerID, 0.0f);
-            oRequest.pData = &oRequestData;
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oRequest);
-        }
-        else
-        {
-            Audio::SAudioObjectRequestData<Audio::eAORT_STOP_TRIGGER> oRequestData(nAudioTriggerID);
-            oRequest.pData = &oRequestData;
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oRequest);
+            Audio::SAudioRequest oRequest;
+            oRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
+            oRequest.pOwner = this;
+
+            if (bPlay)
+            {
+                Audio::SAudioObjectRequestData<Audio::eAORT_EXECUTE_TRIGGER> oRequestData(nAudioTriggerID, 0.0f);
+                oRequest.pData = &oRequestData;
+                audioSystem->PushRequest(oRequest);
+            }
+            else
+            {
+                Audio::SAudioObjectRequestData<Audio::eAORT_STOP_TRIGGER> oRequestData(nAudioTriggerID);
+                oRequest.pData = &oRequestData;
+                audioSystem->PushRequest(oRequest);
+            }
         }
     }
 }

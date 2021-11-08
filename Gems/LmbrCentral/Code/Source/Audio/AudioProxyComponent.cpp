@@ -49,7 +49,10 @@ namespace LmbrCentral
     void AudioProxyComponent::Activate()
     {
         AZ_Assert(!m_audioProxy, "AudioProxyComponent::Activate - Audio Proxy has been set already!");
-        Audio::AudioSystemRequestBus::BroadcastResult(m_audioProxy, &Audio::AudioSystemRequestBus::Events::GetFreeAudioProxy);
+        if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+        {
+            m_audioProxy = audioSystem->GetFreeAudioProxy();
+        }
 
         if (m_audioProxy)
         {

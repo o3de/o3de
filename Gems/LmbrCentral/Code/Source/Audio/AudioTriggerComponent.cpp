@@ -91,11 +91,14 @@ namespace LmbrCentral
                 (Audio::eARF_PRIORITY_NORMAL | Audio::eARF_SYNC_FINISHED_CALLBACK)
             ));
 
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::AddRequestListener,
-                &AudioTriggerComponent::OnAudioEvent,
-                this,
-                Audio::eART_AUDIO_CALLBACK_MANAGER_REQUEST,
-                Audio::eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE);
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                audioSystem->AddRequestListener(
+                    &AudioTriggerComponent::OnAudioEvent,
+                    this,
+                    Audio::eART_AUDIO_CALLBACK_MANAGER_REQUEST,
+                    Audio::eACMRT_REPORT_FINISHED_TRIGGER_INSTANCE);
+            }
         }
         else
         {
@@ -118,7 +121,10 @@ namespace LmbrCentral
 
         if (m_notifyWhenTriggerFinishes)
         {
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::RemoveRequestListener, &AudioTriggerComponent::OnAudioEvent, this);
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                audioSystem->RemoveRequestListener(&AudioTriggerComponent::OnAudioEvent, this);
+            }
         }
 
         KillAllTriggers();
@@ -164,7 +170,11 @@ namespace LmbrCentral
         if (triggerName && triggerName[0] != '\0')
         {
             Audio::TAudioControlID triggerID = INVALID_AUDIO_CONTROL_ID;
-            Audio::AudioSystemRequestBus::BroadcastResult(triggerID, &Audio::AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName);
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                triggerID = audioSystem->GetAudioTriggerID(triggerName);
+            }
+
             if (triggerID != INVALID_AUDIO_CONTROL_ID)
             {
                 AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::ExecuteTrigger, triggerID, *m_callbackInfo);
@@ -178,7 +188,11 @@ namespace LmbrCentral
         if (triggerName && triggerName[0] != '\0')
         {
             Audio::TAudioControlID triggerID = INVALID_AUDIO_CONTROL_ID;
-            Audio::AudioSystemRequestBus::BroadcastResult(triggerID, &Audio::AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName);
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                triggerID = audioSystem->GetAudioTriggerID(triggerName);
+            }
+
             if (triggerID != INVALID_AUDIO_CONTROL_ID)
             {
                 AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::KillTrigger, triggerID);
@@ -233,7 +247,10 @@ namespace LmbrCentral
         m_defaultPlayTriggerID = INVALID_AUDIO_CONTROL_ID;
         if (!m_defaultPlayTriggerName.empty())
         {
-            Audio::AudioSystemRequestBus::BroadcastResult(m_defaultPlayTriggerID, &Audio::AudioSystemRequestBus::Events::GetAudioTriggerID, m_defaultPlayTriggerName.c_str());
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                m_defaultPlayTriggerID = audioSystem->GetAudioTriggerID(m_defaultPlayTriggerName.c_str());
+            }
         }
 
         // "ChangeNotify" sends callbacks on every key press for a text field!
@@ -246,7 +263,10 @@ namespace LmbrCentral
         m_defaultStopTriggerID = INVALID_AUDIO_CONTROL_ID;
         if (!m_defaultStopTriggerName.empty())
         {
-            Audio::AudioSystemRequestBus::BroadcastResult(m_defaultStopTriggerID, &Audio::AudioSystemRequestBus::Events::GetAudioTriggerID, m_defaultStopTriggerName.c_str());
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                m_defaultStopTriggerID = audioSystem->GetAudioTriggerID(m_defaultStopTriggerName.c_str());
+            }
         }
     }
 
