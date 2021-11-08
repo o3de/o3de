@@ -214,5 +214,48 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all"
     }
+  },
+  "install_profile": {
+    "TAGS": [],
+    "COMMAND": "build_linux.sh",
+    "PARAMETERS": {
+        "CONFIGURATION": "profile",
+        "OUTPUT_DIRECTORY": "build/linux",
+        "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_PARALLEL_LINK_JOBS=4 -DLY_DISABLE_TEST_MODULES=TRUE",
+        "CMAKE_TARGET": "install"
+    }
+  },
+  "install_profile_pipe": {
+    "TAGS": [
+      "nightly-incremental",
+      "nightly-clean"
+    ],
+    "PIPELINE_ENV": {
+      "PROJECT_REPOSITORY_NAME": "TestProject"
+    },
+    "steps": [
+      "install_profile",
+      "project_generate",
+      "project_engineinstall_profile"
+    ]
+  },
+  "project_generate": {
+    "TAGS": [],
+    "COMMAND": "python_linux.sh",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "install/scripts/o3de.py",
+      "SCRIPT_PARAMETERS": "create-project -pp ${WORKSPACE}/${PROJECT_REPOSITORY_NAME} --force"
+    }
+  },
+  "project_engineinstall_profile": {
+    "TAGS": [],
+    "COMMAND": "build_linux.sh",
+    "PARAMETERS": {
+      "COMMAND_CWD": "${WORKSPACE}/${PROJECT_REPOSITORY_NAME}",
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build/linux",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_PARALLEL_LINK_JOBS=4 -DCMAKE_MODULE_PATH=${WORKSPACE}/o3de/install/cmake",
+      "CMAKE_TARGET": "all"
+    }
   }
 }

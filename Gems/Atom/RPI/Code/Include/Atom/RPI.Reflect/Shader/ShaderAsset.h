@@ -96,7 +96,7 @@ namespace AZ
 
             //! Return the timestamp when the shader asset was built.
             //! This is used to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
-            AZStd::sys_time_t GetShaderAssetBuildTimestamp() const;
+            AZStd::sys_time_t GetBuildTimestamp() const;
 
             //! Returns the shader option group layout.
             const ShaderOptionGroupLayout* GetShaderOptionGroupLayout() const;
@@ -297,7 +297,7 @@ namespace AZ
             Name m_drawListName;
 
             //! Use to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
-            AZStd::sys_time_t m_shaderAssetBuildTimestamp = 0; 
+            AZStd::sys_time_t m_buildTimestamp = 0; 
 
 
             ///////////////////////////////////////////////////////////////////

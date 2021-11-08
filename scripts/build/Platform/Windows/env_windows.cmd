@@ -13,6 +13,11 @@ IF NOT %ERRORLEVEL%==0 (
     GOTO :error
 )
 
+IF NOT "%COMMAND_CWD%"=="" (
+    ECHO [ci_build] Changing CWD to %COMMAND_CWD%
+    CD %COMMAND_CWD%
+)
+
 EXIT /b 0
 
 :error

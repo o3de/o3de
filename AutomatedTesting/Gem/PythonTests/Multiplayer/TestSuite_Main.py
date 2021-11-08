@@ -27,7 +27,3 @@ class TestAutomation(TestAutomationBase):
             batch_mode=batch_mode,
             autotest_mode=autotest_mode)
 
-    def test_Multiplayer_AutoComponent_NetworkInput(self, request, workspace, editor, launcher_platform):
-        from .tests import Multiplayer_AutoComponent_NetworkInput as test_module
-        self._run_prefab_test(request, workspace, editor, test_module)
-

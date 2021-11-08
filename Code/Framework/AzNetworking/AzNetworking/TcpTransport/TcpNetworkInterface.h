@@ -137,16 +137,6 @@ namespace AzNetworking
 
         AZ_DISABLE_COPY_MOVE(TcpNetworkInterface);
 
-        struct ConnectionTimeoutFunctor final
-            : public ITimeoutHandler
-        {
-            ConnectionTimeoutFunctor(TcpNetworkInterface& networkInterface);
-            TimeoutResult HandleTimeout(TimeoutQueue::TimeoutItem& item) override;
-        private:
-            AZ_DISABLE_COPY_MOVE(ConnectionTimeoutFunctor);
-            TcpNetworkInterface& m_networkInterface;
-        };
-
         struct PendingRemove
         {
             SocketFd m_socketFd;
@@ -162,7 +152,6 @@ namespace AzNetworking
         TcpSocketManager m_tcpSocketManager;
         AZ::ThreadSafeDeque<PendingConnection> m_pendingConnections;
         AZStd::vector<PendingRemove> m_pendingRemoves;
-        TimeoutQueue m_connectionTimeoutQueue;
         TcpListenThread& m_listenThread;
 
         friend class TcpConnection; // For access to private RequestDisconnect() method
