@@ -621,7 +621,7 @@ class AndroidProjectGenerator(object):
         gradle_wrapper_cmd.extend(['wrapper', '-p', str(self.build_dir.resolve())])
 
         proc_result = subprocess.run(gradle_wrapper_cmd,
-                                     shell=True)
+                                     shell=(platform.system() == 'Windows'))
         if proc_result.returncode != 0:
             raise common.LmbrCmdError("Gradle was unable to generate a gradle wrapper for this project (code {}): {}"
                                       .format(proc_result.returncode, proc_result.stderr or ""),
@@ -1579,9 +1579,6 @@ class AndroidSDKResolver(object):
         ext = ''
         if platform.system() == 'Windows':
             ext = '.bat'
-        else:
-            raise common.LmbrCmdError(f"This tool is not supported on the current platform {platform.system()}")
-
         self.sdk_manager_path =  tools_path / 'bin' / f'sdkmanager{ext}'
 
         if not self.sdk_manager_path.is_file():
