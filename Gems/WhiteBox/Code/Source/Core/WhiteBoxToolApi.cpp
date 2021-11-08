@@ -2063,7 +2063,7 @@ namespace WhiteBox
                 polygonHandle.m_faceHandles.push_back(faceHandleToVisit);
 
                 // for all halfedges
-                for (const auto faceHalfedgeHandle : faceHalfedges)
+                for (const auto& faceHalfedgeHandle : faceHalfedges)
                 {
                     const EdgeHandle edgeHandle = HalfedgeEdgeHandle(whiteBox, faceHalfedgeHandle);
                     // if we haven't seen this halfedge before and we want to track it,
@@ -2091,10 +2091,10 @@ namespace WhiteBox
 
         static void PopulatePolygonProps(FaceHandlePolygonMapping& polygonProps, const FaceHandles& faceHandles)
         {
-            for (const auto faceHandle : faceHandles)
+            for (const auto& faceHandle : faceHandles)
             {
                 auto polygonIt = polygonProps.find(om_fh(faceHandle));
-                for (const auto innerFaceHandle : faceHandles)
+                for (const auto& innerFaceHandle : faceHandles)
                 {
                     polygonIt->second.push_back(om_fh(innerFaceHandle));
                 }
@@ -2103,7 +2103,7 @@ namespace WhiteBox
 
         static void ClearPolygonProps(FaceHandlePolygonMapping& polygonProps, const FaceHandles& faceHandles)
         {
-            for (const auto faceHandle : faceHandles)
+            for (const auto& faceHandle : faceHandles)
             {
                 if (auto polygonIt = polygonProps.find(om_fh(faceHandle)); polygonIt != polygonProps.end())
                 {
@@ -2115,9 +2115,9 @@ namespace WhiteBox
         // restore all vertices along the restored edges (after creating a new polygon)
         static void RestoreVertexHandlesForEdges(WhiteBoxMesh& whiteBox, const EdgeHandles& restoredEdgeHandles)
         {
-            for (const auto edgeHandle : restoredEdgeHandles)
+            for (const auto& edgeHandle : restoredEdgeHandles)
             {
-                for (const auto vertexHandle : EdgeVertexHandles(whiteBox, edgeHandle))
+                for (const auto& vertexHandle : EdgeVertexHandles(whiteBox, edgeHandle))
                 {
                     RestoreVertex(whiteBox, vertexHandle);
                 }
@@ -2279,19 +2279,19 @@ namespace WhiteBox
             auto& polygonProps = whiteBox.mesh.property(polygonPropsHandle);
 
             // update all face handles to refer to the new face handles in the group
-            for (const auto faceHandle : combinedFaceHandles)
+            for (const auto& faceHandle : combinedFaceHandles)
             {
                 auto polygonIt = polygonProps.find(om_fh(faceHandle));
                 polygonIt->second.clear();
 
-                for (const auto innerFaceHandle : combinedFaceHandles)
+                for (const auto& innerFaceHandle : combinedFaceHandles)
                 {
                     polygonIt->second.push_back(om_fh(innerFaceHandle));
                 }
             }
 
             // hide any vertices that are not connected to a 'user' edge
-            for (const auto vertexHandle : firstPolygonVertexHandles)
+            for (const auto& vertexHandle : firstPolygonVertexHandles)
             {
                 if (VertexIsIsolated(whiteBox, vertexHandle))
                 {
@@ -2338,7 +2338,7 @@ namespace WhiteBox
             omFaceHandles.erase(AZStd::unique(omFaceHandles.begin(), omFaceHandles.end()), omFaceHandles.end());
 
             // update all face handles to point to the new polygon grouping
-            for (const auto omFaceHandle2 : omFaceHandles)
+            for (const auto& omFaceHandle2 : omFaceHandles)
             {
                 polygonProps[omFaceHandle2] = omFaceHandles;
             }
@@ -2412,7 +2412,7 @@ namespace WhiteBox
                         omExistingPolygonHandle.push_back(om_fh(newFaceHandle));
 
                         // update all face handles to point to the new polygon grouping
-                        for (const Mesh::FaceHandle faceHandle : omExistingPolygonHandle)
+                        for (const Mesh::FaceHandle& faceHandle : omExistingPolygonHandle)
                         {
                             polygonProps[faceHandle] = omExistingPolygonHandle;
                         }
@@ -2509,7 +2509,7 @@ namespace WhiteBox
 
             auto& polygonProps = whiteBox.mesh.property(polygonPropsHandle);
             // multiple face handles map to a polygon handle
-            for (const auto faceHandle : polygon)
+            for (const auto& faceHandle : polygon)
             {
                 polygonProps[faceHandle] = polygon;
             }
@@ -2657,7 +2657,7 @@ namespace WhiteBox
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-            for (const Mesh::FaceHandle faceHandle : whiteBox.mesh.faces())
+            for (const Mesh::FaceHandle& faceHandle : whiteBox.mesh.faces())
             {
                 for (Mesh::FaceHalfedgeCCWIter faceHalfedgeIt = whiteBox.mesh.fh_ccwiter(faceHandle);
                      faceHalfedgeIt.is_valid(); ++faceHalfedgeIt)
@@ -2704,7 +2704,7 @@ namespace WhiteBox
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             AzToolsFramework::MidpointCalculator midpointCalculator;
-            for (const auto vertexHandle : vertexHandles)
+            for (const auto& vertexHandle : vertexHandles)
             {
                 midpointCalculator.AddPosition(VertexPosition(whiteBox, vertexHandle));
             }
@@ -2722,7 +2722,7 @@ namespace WhiteBox
             const auto adjacentPolygonEdgeHandles = PolygonBorderEdgeHandlesFlattened(whiteBox, adjacentPolygonHandle);
 
             // iterate over all halfedges in the adjacent polygon
-            for (const auto edgeHandle : adjacentPolygonEdgeHandles)
+            for (const auto& edgeHandle : adjacentPolygonEdgeHandles)
             {
                 const auto* const foundEdgeHandleInSelectedPolygon =
                     AZStd::find(selectedPolygonEdgeHandles.cbegin(), selectedPolygonEdgeHandles.cend(), edgeHandle);
@@ -2731,7 +2731,7 @@ namespace WhiteBox
                 if (foundEdgeHandleInSelectedPolygon == selectedPolygonEdgeHandles.cend())
                 {
                     // find outgoing edge handles
-                    for (const auto halfedgeHandle :
+                    for (const auto& halfedgeHandle :
                          VertexOutgoingHalfedgeHandles(whiteBox, vertexHandlePair.m_existing))
                     {
                         // attempt to find one of the outgoing halfedge handles in the adjacent polygon
@@ -2792,7 +2792,7 @@ namespace WhiteBox
             FaceVertHandlesCollection& vertsForLinkingAdjacentPolygons)
         {
             // find all faces connected to this edge
-            for (const auto faceHandle : EdgeFaceHandles(whiteBox, edgeHandle))
+            for (const auto& faceHandle : EdgeFaceHandles(whiteBox, edgeHandle))
             {
                 // find a face that is _not_ part of the polygon being appended/selected
                 if (AZStd::find(
@@ -2933,7 +2933,7 @@ namespace WhiteBox
 
             // erase face handles from the polygon map and
             // delete the faces from OpenMesh
-            for (const auto faceHandle : faceHandles)
+            for (const auto& faceHandle : faceHandles)
             {
                 polygonProps.erase(om_fh(faceHandle));
                 whiteBox.mesh.delete_face(om_fh(faceHandle), false);
@@ -3035,7 +3035,7 @@ namespace WhiteBox
 
                 const auto vertexHandles = FaceVertexHandles(whiteBox, faceHandle);
                 // for each vertex handle
-                for (const VertexHandle vertexHandle : vertexHandles)
+                for (const VertexHandle& vertexHandle : vertexHandles)
                 {
                     // find vertex handle in vertices list
                     const auto* const vertexHandlePairIt = AZStd::find_if(
@@ -3094,7 +3094,7 @@ namespace WhiteBox
             {
                 bool vertexHandleAdded = false;
                 // visit all connected halfedge handles
-                for (const auto halfedgeHandle : VertexHalfedgeHandles(whiteBox, existingVertexHandle))
+                for (const auto& halfedgeHandle : VertexHalfedgeHandles(whiteBox, existingVertexHandle))
                 {
                     const auto edgeHandle = HalfedgeEdgeHandle(whiteBox, halfedgeHandle);
                     const bool boundaryEdge = EdgeIsBoundary(whiteBox, edgeHandle);

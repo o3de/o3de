@@ -25,8 +25,6 @@ namespace WhiteBox
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorWhiteBoxComponentMode, AZ::SystemAllocator, 0)
 
-    static const int DefaultWidgetBottomMargin = 5;
-
     // helper function to return what modifier keys move us to restore mode
     static bool RestoreModifier(AzToolsFramework::ViewportInteraction::KeyboardModifiers modifiers)
     {
