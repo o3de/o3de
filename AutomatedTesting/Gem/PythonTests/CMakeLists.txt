@@ -57,7 +57,7 @@ add_subdirectory(streaming)
 add_subdirectory(smoke)
 
 ## Terrain ##
-add_subdirectory(terrain)
+add_subdirectory(Terrain)
 
 ## AWS ##
 add_subdirectory(AWS)

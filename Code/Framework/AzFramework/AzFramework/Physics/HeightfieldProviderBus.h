@@ -43,7 +43,7 @@ namespace Physics
         {
         }
 
-        virtual ~HeightMaterialPoint(){}
+        virtual ~HeightMaterialPoint() = default;
     };
 
     //! An interface to provide heightfield values.

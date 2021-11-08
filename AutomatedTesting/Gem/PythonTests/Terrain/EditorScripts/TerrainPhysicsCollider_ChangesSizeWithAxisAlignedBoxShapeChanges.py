@@ -39,8 +39,7 @@ def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import TestHelper as helper
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import Tracer
+    from editor_python_test_tools.utils import Report, Tracer
     import azlmbr.legacy.general as general
     import azlmbr.physics as physics
     import azlmbr.math as azmath
@@ -66,6 +65,7 @@ def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
         # 4) Add the Axis Aligned Box Shape and Terrain Physics Heightfield Collider components
         aaBoxShape_component = test_entity.add_component("Axis Aligned Box Shape")
         Report.result(Tests.add_axis_aligned_box_shape, test_entity.has_component("Axis Aligned Box Shape"))
+        
         terrainPhysics_component = test_entity.add_component("Terrain Physics Heightfield Collider")
         Report.result(Tests.add_terrain_collider, test_entity.has_component("Terrain Physics Heightfield Collider"))
         # 5) Change the Axis Aligned Box Shape dimensions
@@ -83,7 +83,7 @@ def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
         Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
     for assert_info in section_tracer.asserts:
         Report.info(f"Assert: {assert_info.filename} {assert_info.function} | {assert_info.message}")
-        
+
 if __name__ == "__main__":
 
     from editor_python_test_tools.utils import Report

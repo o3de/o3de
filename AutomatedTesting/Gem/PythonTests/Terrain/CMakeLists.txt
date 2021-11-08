@@ -18,7 +18,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AZ::AssetProcessor
             AutomatedTesting.Assets
         COMPONENT
-            terrain
+            Terrain
     )
 
     ly_add_pytest(
@@ -31,7 +31,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AZ::AssetProcessor
             AutomatedTesting.Assets
         COMPONENT
-            terrain
+            Terrain
     )
 
 

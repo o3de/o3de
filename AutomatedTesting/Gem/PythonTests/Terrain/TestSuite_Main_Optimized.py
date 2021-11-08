@@ -15,12 +15,11 @@ import ly_test_tools.environment.file_system as file_system
 from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorParallelTest, EditorTestSuite
 
 
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
 
-    def test_AxisAlignedBoxShape_ConfigurationWorks(EditorSingleTest):
+    class test_AxisAlignedBoxShape_ConfigurationWorks(EditorSingleTest):
         from .EditorScripts import TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges as test_module
 

@@ -12,14 +12,14 @@ import pytest
 import os
 import sys
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
-from base import TestAutomationBase
+from ly_test_tools import LAUNCHERS
+from ly_test_tools.o3de.editor_test import EditorTestSuite, EditorSingleTest
 
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomation(TestAutomationBase):
+class TestAutomation(EditorTestSuite):
+    global_extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
 
-    def test_AxisAlignedBoxShape_ConfigurationWorks(self, request, workspace, editor, launcher_platform):
+    class test_AxisAlignedBoxShape_ConfigurationWorks(EditorSingleTest):
         from .EditorScripts import TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges as test_module
-        self._run_test(request, workspace, editor, test_module)
