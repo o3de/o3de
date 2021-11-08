@@ -36,7 +36,7 @@ def RigidBody_EnablingGravityWorksPoC():
     helper.enter_game_mode(Tests.enter_game_mode)
 
     # 3) Retrieve entities
-    general.idle_wait_frames(10)
+    general.idle_wait_frames(1)
     ball_id = general.find_game_entity("Ball")
     Report.critical_result(Tests.find_ball, ball_id.IsValid(), "Entity must be found")
 
