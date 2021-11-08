@@ -54,7 +54,7 @@ class EditorSingleTest_WithFileOverrides(EditorSingleTest):
             fm._restore_file(f, file_list[f])
 
 
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
+#@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -179,7 +179,6 @@ class TestAutomation(EditorTestSuite):
     class C5968760_ForceRegion_CheckNetForceChange(EditorSharedTest):
         from .tests.force_region import ForceRegion_MovingForceRegionChangesNetForce as test_module
 
-    @pytest.mark.xfail(reason="Ongoing issue in Script Canvas, AZ::Event fail to compile on Script Canvas")
     class C12712452_ScriptCanvas_CollisionEvents(EditorSharedTest):
         from .tests.script_canvas import ScriptCanvas_CollisionEvents as test_module
 
@@ -222,14 +221,12 @@ class TestAutomation(EditorTestSuite):
     class C5959808_ForceRegion_PositionOffset(EditorSharedTest):
         from .tests.force_region import ForceRegion_PositionOffset as test_module
 
-    @pytest.mark.xfail(reason="Something with the CryRenderer disabling is causing this test to fail now.")
     class C13895144_Ragdoll_ChangeLevel(EditorSharedTest):
         from .tests.ragdoll import Ragdoll_LevelSwitchDoesNotCrash as test_module
     
     class C5968759_ForceRegion_ExertsSeveralForcesOnRigidBody(EditorSharedTest):
         from .tests.force_region import ForceRegion_MultipleComponentsCombineForces as test_module
 
-    @pytest.mark.xfail(reason="This test will sometimes fail as the ball will continue to roll before the timeout is reached.")
     class C4976202_RigidBody_StopsWhenBelowKineticThreshold(EditorSharedTest):
         from .tests.rigid_body import RigidBody_SleepWhenBelowKineticThreshold as test_module
 
@@ -262,9 +259,6 @@ class TestAutomation(EditorTestSuite):
     class C5959761_ForceRegion_PhysAssetExertsPointForce(EditorSharedTest):
         from .tests.force_region import ForceRegion_PxMeshShapedForce as test_module
         
-    # Marking the Test as expected to fail using the xfail decorator due to sporadic failure on Automated Review: SPEC-3146
-    # The test still runs, but a failure of the test doesn't result in the test run failing
-    @pytest.mark.xfail(reason="Test Sporadically fails with message [ NOT FOUND ] Success: Bar1 : Expected angular velocity")
     class C13352089_RigidBodies_MaxAngularVelocity(EditorSharedTest):
         from .tests.rigid_body import RigidBody_MaxAngularVelocityWorks as test_module
 

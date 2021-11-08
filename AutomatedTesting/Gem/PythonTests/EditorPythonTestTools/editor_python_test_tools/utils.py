@@ -39,6 +39,11 @@ class TestHelper:
 
         :return: None
         """
+        # Make sure we are not in game mode
+        if general.is_in_game_mode():
+            general.exit_game_mode()
+            TestHelper.wait_for_condition(lambda : not general.is_in_game_mode(), 1.0)            
+
         Report.info("Open level {}/{}".format(directory, level))
         success = general.open_level_no_prompt(os.path.join(directory, level))
         if not success:
@@ -92,10 +97,8 @@ class TestHelper:
         raises FailFast
         :return: None
         """
-        Report.info("Failing fast. Raising an exception and shutting down the editor.")
         if message:
             Report.info("Fail fast message: {}".format(message))
-        TestHelper.close_editor()
         raise FailFast()
 
     @staticmethod
