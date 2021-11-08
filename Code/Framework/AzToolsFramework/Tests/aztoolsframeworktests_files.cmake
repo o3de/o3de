@@ -60,6 +60,9 @@ set(FILES
     Prefab/Benchmark/PrefabLoadBenchmarks.cpp
     Prefab/Benchmark/PrefabUpdateInstancesBenchmarks.cpp
     Prefab/Benchmark/SpawnableCreateBenchmarks.cpp
+    Prefab/Benchmark/Spawnable/SpawnableBenchmarkFixture.h
+    Prefab/Benchmark/Spawnable/SpawnableBenchmarkFixture.cpp
+    Prefab/Benchmark/Spawnable/SpawnAllEntitiesBenchmarks.cpp
     Prefab/PrefabFocus/PrefabFocusTests.cpp
     Prefab/MockPrefabFileIOActionValidator.cpp
     Prefab/MockPrefabFileIOActionValidator.h

@@ -47,28 +47,25 @@ namespace AtomToolsFramework
 
     void PreviewRendererSystemComponent::Activate()
     {
-        AzFramework::AssetCatalogEventBus::Handler::BusConnect();
         AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusConnect();
         PreviewRendererSystemRequestBus::Handler::BusConnect();
+
+        AZ::TickBus::QueueFunction(
+            [this]()
+            {
+                if (!m_previewRenderer)
+                {
+                    m_previewRenderer.reset(aznew AtomToolsFramework::PreviewRenderer(
+                        "PreviewRendererSystemComponent Preview Scene", "PreviewRendererSystemComponent Preview Pipeline"));
+                }
+            });
     }
 
     void PreviewRendererSystemComponent::Deactivate()
     {
         PreviewRendererSystemRequestBus::Handler::BusDisconnect();
         AzFramework::ApplicationLifecycleEvents::Bus::Handler::BusDisconnect();
-        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         m_previewRenderer.reset();
-    }
-
-    void PreviewRendererSystemComponent::OnCatalogLoaded([[maybe_unused]] const char* catalogFile)
-    {
-        AZ::TickBus::QueueFunction([this](){
-            if (!m_previewRenderer)
-            {
-                m_previewRenderer.reset(aznew AtomToolsFramework::PreviewRenderer(
-                    "PreviewRendererSystemComponent Preview Scene", "PreviewRendererSystemComponent Preview Pipeline"));
-            }
-        });
     }
 
     void PreviewRendererSystemComponent::OnApplicationAboutToStop()

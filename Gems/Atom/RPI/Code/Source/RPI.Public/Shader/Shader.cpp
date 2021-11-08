@@ -321,6 +321,30 @@ namespace AZ
 
         const ShaderVariant& Shader::GetVariant(ShaderVariantStableId shaderVariantStableId)
         {
+            const ShaderVariant& variant = GetVariantInternal(shaderVariantStableId);
+            
+            if (ShaderReloadDebugTracker::IsEnabled())
+            {
+                auto makeTimeString = [](AZStd::sys_time_t timestamp, AZStd::sys_time_t now)
+                {
+                    AZStd::sys_time_t elapsedMicroseconds = now - timestamp;
+                    double elapsedSeconds = aznumeric_cast<double>(elapsedMicroseconds / 1'000'000);
+                    AZStd::string timeString = AZStd::string::format("%lld (%f seconds ago)", timestamp, elapsedSeconds);
+                    return timeString;
+                };
+
+                AZStd::sys_time_t now = AZStd::GetTimeNowMicroSecond();
+
+                ShaderReloadDebugTracker::Printf("{%p}->Shader::GetVariant for shader '%s' [build time %s] found variant '%s' [build time %s]", this,
+                    m_asset.GetHint().c_str(), makeTimeString(m_asset->GetBuildTimestamp(), now).c_str(),
+                    variant.GetShaderVariantAsset().GetHint().c_str(), makeTimeString(variant.GetShaderVariantAsset()->GetBuildTimestamp(), now).c_str());
+            }
+
+            return variant;
+        }
+
+        const ShaderVariant& Shader::GetVariantInternal(ShaderVariantStableId shaderVariantStableId)
+        {
             if (!shaderVariantStableId.IsValid() || shaderVariantStableId == ShaderAsset::RootShaderVariantStableId)
             {
                 return m_rootVariant;
@@ -336,7 +360,7 @@ namespace AZ
                     // reloaded, but some (or all) shader variants haven't been built yet. Since we want to use the latest version of the
                     // shader code, ignore the old variants and fall back to the newer root variant instead. There's no need to report a
                     // warning here because m_asset->GetVariant below will report one.
-                    if (findIt->second.GetBuildTimestamp() >= m_asset->GetShaderAssetBuildTimestamp())
+                    if (findIt->second.GetBuildTimestamp() >= m_asset->GetBuildTimestamp())
                     {
                         return findIt->second;
                     }
@@ -359,7 +383,7 @@ namespace AZ
             auto findIt = m_shaderVariants.find(shaderVariantStableId);
             if (findIt != m_shaderVariants.end())
             {
-                if (findIt->second.GetBuildTimestamp() >= m_asset->GetShaderAssetBuildTimestamp())
+                if (findIt->second.GetBuildTimestamp() >= m_asset->GetBuildTimestamp())
                 {
                     return findIt->second;
                 }

@@ -210,8 +210,8 @@ namespace AzToolsFramework
         m_enabled = enabled;
         if (!enabled)
         {
-            // Send an internal focus change event to reset our input state to fresh if we're disabled.
-            HandleFocusChange(nullptr);
+            // Clear input channels to reset our input state if we're disabled.
+            ClearInputChannels(nullptr);
         }
     }
 
@@ -246,13 +246,20 @@ namespace AzToolsFramework
 
         if (eventType == QEvent::Type::MouseMove)
         {
-            // clear override cursor when moving outside of the viewport
+            // Clear override cursor when moving outside of the viewport
             const auto* mouseEvent = static_cast<const QMouseEvent*>(event);
             if (m_overrideCursor && !m_sourceWidget->geometry().contains(m_sourceWidget->mapFromGlobal(mouseEvent->globalPos())))
             {
                 qApp->restoreOverrideCursor();
                 m_overrideCursor = false;
             }
+        }
+
+        // If the application state changes (e.g. we have alt-tabbed or minimized the
+        // main editor window) then ensure all input channels are cleared
+        if (eventType == QEvent::ApplicationStateChange)
+        {
+            ClearInputChannels(event);
         }
 
         // Only accept mouse & key release events that originate from an object that is not our target widget,
@@ -264,9 +271,6 @@ namespace AzToolsFramework
 
         if (eventType == QEvent::FocusIn || eventType == QEvent::FocusOut)
         {
-            // If our focus changes, go ahead and reset all input devices.
-            HandleFocusChange(event);
-
             // If we focus in on the source widget and the mouse is contained in its
             // bounds, refresh the cached cursor position to ensure it is up to date (this
             // ensures cursor positions are refreshed correctly with context menu focus changes)
@@ -451,7 +455,7 @@ namespace AzToolsFramework
         NotifyUpdateChannelIfNotIdle(cursorZChannel, wheelEvent);
     }
 
-    void QtEventToAzInputMapper::HandleFocusChange(QEvent* event)
+    void QtEventToAzInputMapper::ClearInputChannels(QEvent* event)
     {
         for (auto& channelData : m_channels)
         {

@@ -105,6 +105,8 @@ namespace EMotionFX
                     *jointTypeId, parentBindRotationWorld, nodeBindRotationWorld, boneDirection, exampleRotationsLocal);
 
                 AZ_Assert(jointLimitConfig, "Could not create joint limit configuration.");
+                jointLimitConfig->SetPropertyVisibility(AzPhysics::JointConfiguration::PropertyVisibility::ParentLocalRotation, true);
+                jointLimitConfig->SetPropertyVisibility(AzPhysics::JointConfiguration::PropertyVisibility::ChildLocalRotation, true);
                 return jointLimitConfig;
             }
         }
