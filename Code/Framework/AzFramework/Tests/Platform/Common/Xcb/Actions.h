@@ -13,6 +13,13 @@
 
 ACTION_TEMPLATE(ReturnMalloc,
                 HAS_1_TEMPLATE_PARAMS(typename, T),
+                AND_0_VALUE_PARAMS()) {
+    T* value = static_cast<T*>(malloc(sizeof(T)));
+    *value = T{};
+    return value;
+}
+ACTION_TEMPLATE(ReturnMalloc,
+                HAS_1_TEMPLATE_PARAMS(typename, T),
                 AND_1_VALUE_PARAMS(p0)) {
     T* value = static_cast<T*>(malloc(sizeof(T)));
     *value = T{ p0 };
@@ -23,5 +30,40 @@ ACTION_TEMPLATE(ReturnMalloc,
                 AND_2_VALUE_PARAMS(p0, p1)) {
     T* value = static_cast<T*>(malloc(sizeof(T)));
     *value = T{ p0, p1 };
+    return value;
+}
+ACTION_TEMPLATE(ReturnMalloc,
+                HAS_1_TEMPLATE_PARAMS(typename, T),
+                AND_3_VALUE_PARAMS(p0, p1, p2)) {
+    T* value = static_cast<T*>(malloc(sizeof(T)));
+    *value = T{ p0, p1, p2 };
+    return value;
+}
+ACTION_TEMPLATE(ReturnMalloc,
+                HAS_1_TEMPLATE_PARAMS(typename, T),
+                AND_4_VALUE_PARAMS(p0, p1, p2, p3)) {
+    T* value = static_cast<T*>(malloc(sizeof(T)));
+    *value = T{ p0, p1, p2, p3 };
+    return value;
+}
+ACTION_TEMPLATE(ReturnMalloc,
+                HAS_1_TEMPLATE_PARAMS(typename, T),
+                AND_5_VALUE_PARAMS(p0, p1, p2, p3, p4)) {
+    T* value = static_cast<T*>(malloc(sizeof(T)));
+    *value = T{ p0, p1, p2, p3, p4 };
+    return value;
+}
+ACTION_TEMPLATE(ReturnMalloc,
+                HAS_1_TEMPLATE_PARAMS(typename, T),
+                AND_6_VALUE_PARAMS(p0, p1, p2, p3, p4, p5)) {
+    T* value = static_cast<T*>(malloc(sizeof(T)));
+    *value = T{ p0, p1, p2, p3, p4, p5 };
+    return value;
+}
+ACTION_TEMPLATE(ReturnMalloc,
+                HAS_1_TEMPLATE_PARAMS(typename, T),
+                AND_7_VALUE_PARAMS(p0, p1, p2, p3, p4, p5, p6)) {
+    T* value = static_cast<T*>(malloc(sizeof(T)));
+    *value = T{ p0, p1, p2, p3, p4, p5, p6 };
     return value;
 }
