@@ -317,8 +317,6 @@ namespace AzFramework
         AZ::Entity* previouslySpawnedEntity,
         AZ::SerializeContext& serializeContext)
     {
-        using ResultType = AZStd::pair<AZ::Entity*, uint32_t>;
-
         AZ::Entity* clone = nullptr;
         switch (alias.m_aliasType)
         {

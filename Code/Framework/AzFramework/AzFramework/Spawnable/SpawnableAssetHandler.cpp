@@ -97,7 +97,7 @@ namespace AzFramework
 
     void SpawnableAssetHandler::ResolveEntityAliases(
         Spawnable* spawnable,
-        const AZ::Data::Asset<AZ::Data::AssetData>& asset,
+        [[maybe_unused]] const AZ::Data::Asset<AZ::Data::AssetData>& asset,
         AZStd::chrono::milliseconds streamingDeadline,
         AZ::IO::IStreamerTypes::Priority streamingPriority,
         const AZ::Data::AssetFilterCB& assetLoadFilterCB)
