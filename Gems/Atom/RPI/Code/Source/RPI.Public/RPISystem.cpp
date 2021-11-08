@@ -286,7 +286,7 @@ namespace AZ
 
             return aznumeric_cast<float>(currentTime);
         }
-		
+
         void RPISystem::RenderTick()
         {
             if (!m_systemAssetsInitialized)

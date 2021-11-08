@@ -125,7 +125,7 @@ namespace AZ
 
             ScriptTimePoint m_startTime;
             float m_currentSimulationTime = 0.0f;
-			
+
             RPISystemDescriptor m_descriptor;
 
             // Reference to the shader asset that is used

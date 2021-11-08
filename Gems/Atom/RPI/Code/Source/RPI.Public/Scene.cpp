@@ -412,7 +412,7 @@ namespace AZ
             }
             //[GFX TODO]: the completion job should start here
         }
-		
+
         void Scene::Simulate(RHI::JobPolicy jobPolicy, float simulationTime)
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: Simulate");
