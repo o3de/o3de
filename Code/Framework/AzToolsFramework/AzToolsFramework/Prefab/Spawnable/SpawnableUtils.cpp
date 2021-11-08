@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/Prefab/Spawnable/SpawnableUtils.h>
 
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/EntityUtils.h>
@@ -297,7 +298,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
         {
             if ((*it)->GetId() == entity)
             {
-                return AZStd::distance(begin, it);
+                return aznumeric_caster(AZStd::distance(begin, it));
             }
         }
         return InvalidEntityIndex;
