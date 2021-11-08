@@ -189,8 +189,8 @@ namespace Terrain
 
         // Because our terrain heights are relative to the center of the bounding box, the min and max allowable heights are also
         // relative to the center.  They are also clamped to the size of the bounding box.
-        minHeightBounds = -(heightfieldAabb.GetZExtent() / 2.0f);
         maxHeightBounds = heightfieldAabb.GetZExtent() / 2.0f;
+        minHeightBounds = -maxHeightBounds;
     }
 
     AZ::Transform TerrainPhysicsColliderComponent::GetHeightfieldTransform() const
@@ -199,9 +199,7 @@ namespace Terrain
         AZ::Vector3 translate;
         AZ::TransformBus::EventResult(translate, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
 
-        AZ::Transform transform = AZ::Transform::CreateTranslation(translate);
-
-        return transform;
+        return AZ::Transform::CreateTranslation(translate);
     }
 
     void TerrainPhysicsColliderComponent::GenerateHeightsInBounds(AZStd::vector<float>& heights) const
