@@ -17,7 +17,7 @@
 // forward declarations.
 class CParticleItem;
 
-#include <CryCommon/IValidator.h>
+#include "BaseLibraryItem.h"
 #include <CryCommon/smartptr.h>
 
 #include "Objects/BaseObject.h"
