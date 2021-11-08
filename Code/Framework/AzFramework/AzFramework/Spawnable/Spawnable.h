@@ -62,6 +62,8 @@ namespace AzFramework
             uint32_t m_targetIndex{ 0 }; //!< The index of the entity in the target spawnable that will be used to replace the original.
             EntityAliasType m_aliasType{ EntityAliasType::Original }; //!< The kind of replacement.
             bool m_queueLoad{ false }; //!< Whether or not to automatically queue the spawnable for loading.
+
+            static void Reflect(AZ::ReflectContext* context);
         };
 
         using EntityList = AZStd::vector<AZStd::unique_ptr<AZ::Entity>>;

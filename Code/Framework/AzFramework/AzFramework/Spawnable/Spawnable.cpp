@@ -532,21 +532,29 @@ namespace AzFramework
 
     void Spawnable::Reflect(AZ::ReflectContext* context)
     {
+        EntityAlias::Reflect(context);
+
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
-            serializeContext->Class<Spawnable::EntityAlias>()
-                ->Version(1)
-                ->Field("Spawnable", &Spawnable::EntityAlias::m_spawnable)
-                ->Field("Tag", &Spawnable::EntityAlias::m_tag)
-                ->Field("Source Index", &Spawnable::EntityAlias::m_sourceIndex)
-                ->Field("Target Index", &Spawnable::EntityAlias::m_targetIndex)
-                ->Field("Alias Type", &Spawnable::EntityAlias::m_aliasType)
-                ->Field("Queue Load", &Spawnable::EntityAlias::m_queueLoad);
-
             serializeContext->Class<Spawnable, AZ::Data::AssetData>()->Version(2)
                 ->Field("Meta data", &Spawnable::m_metaData)
                 ->Field("Entity aliases", &Spawnable::m_entityAliases)
                 ->Field("Entities", &Spawnable::m_entities);
+        }
+    }
+
+    void Spawnable::EntityAlias::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
+        {
+            serializeContext->Class<Spawnable::EntityAlias>()
+                ->Version(1)
+                ->Field("Spawnable", &EntityAlias::m_spawnable)
+                ->Field("Tag", &EntityAlias::m_tag)
+                ->Field("Source Index", &EntityAlias::m_sourceIndex)
+                ->Field("Target Index", &EntityAlias::m_targetIndex)
+                ->Field("Alias Type", &EntityAlias::m_aliasType)
+                ->Field("Queue Load", &EntityAlias::m_queueLoad);
         }
     }
 } // namespace AzFramework
