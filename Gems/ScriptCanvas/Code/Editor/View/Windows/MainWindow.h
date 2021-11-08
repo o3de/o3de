@@ -53,6 +53,7 @@
 #include <Editor/View/Widgets/AssetGraphSceneDataBus.h>
 
 #include <Editor/View/Windows/Tools/UpgradeTool/Controller.h>
+#include <Editor/View/Windows/Tools/UpgradeTool/FileSaver.h>
 
 #if SCRIPTCANVAS_EDITOR
 #include <Include/EditorCoreAPI.h>
@@ -788,6 +789,8 @@ namespace ScriptCanvasEditor
         //! this object manages the Save/Restore operations
         Workspace* m_workspace;
 
-        void OnSaveCallback(bool saveSuccess, ScriptCanvasEditor::SourceHandle previousFileAssetId);
+        AZStd::unique_ptr<VersionExplorer::FileSaver> m_fileSaver;
+        VersionExplorer::FileSaveResult m_fileSaveResult;
+        void OnSaveCallBack(const VersionExplorer::FileSaveResult& result);
     };
 }

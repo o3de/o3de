@@ -1405,48 +1405,28 @@ namespace ScriptCanvasEditor
     void MainWindow::GetSuggestedFullFilenameToSaveAs(const ScriptCanvasEditor::SourceHandle& /*assetId*/, AZStd::string& /*filePath*/, AZStd::string& /*fileFilter*/)
     {
         // #sc_editor_asset
-        /*
-        ScriptCanvasMemoryAsset::pointer memoryAsset;
-        AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, assetId);
-
-        AZStd::string assetPath;
-        if (memoryAsset)
-        {
-            assetPath = memoryAsset->GetAbsolutePath();
-
-            AZ::Data::AssetType assetType = memoryAsset->GetAsset().GetType();
-
-            ScriptCanvasAssetHandler* assetHandler;
-            AssetTrackerRequestBus::BroadcastResult(assetHandler, &AssetTrackerRequests::GetAssetHandlerForType, assetType);
-            AZ_Assert(assetHandler, "Asset type must have a valid asset handler");
-
-            AZ::EBusAggregateResults<ScriptCanvas::AssetDescription*> results;
-            AssetRegistryRequestBus::BroadcastResult(results, &AssetRegistryRequests::GetAssetDescription, assetType);
-
-            ScriptCanvas::AssetDescription* description = nullptr;
-            for (auto item : results.values)
-            {
-                if (item->GetAssetType() == assetType)
-                {
-                    description = item;
-                    break;
-                }
-            }
-
-            AZ_Assert(description, "Asset type must have a valid description");
-
-            fileFilter = description->GetFileFilterImpl();
-
-            AZStd::string tabName;
-            AssetTrackerRequestBus::BroadcastResult(tabName, &AssetTrackerRequests::GetTabName, assetId);
-
-            assetPath = AZStd::string::format("%s/%s%s", description->GetSuggestedSavePathImpl(), tabName.c_str(), description->GetExtensionImpl());
-        }
-
-        AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath;
-        AZ::IO::FileIOBase::GetInstance()->ResolvePath(assetPath.data(), resolvedPath.data(), resolvedPath.size());
-        filePath = resolvedPath.data();
-        */
+//         
+//         ScriptCanvasMemoryAsset::pointer memoryAsset;
+//         AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, assetId);
+// 
+//         AZStd::string assetPath;
+//         if (memoryAsset)
+//         {
+//             assetPath = memoryAsset->GetAbsolutePath();
+//             fileFilter = ScriptCanvasAssetDescription().GetFileFilterImpl();
+// 
+//             AZStd::string tabName;
+//             AssetTrackerRequestBus::BroadcastResult(tabName, &AssetTrackerRequests::GetTabName, assetId);
+// 
+//             assetPath = AZStd::string::format("%s/%s%s"
+//                 , ScriptCanvasAssetDescription().GetSuggestedSavePathImpl()
+//                 , tabName.c_str()
+//                 , ScriptCanvasAssetDescription().GetExtensionImpl());
+//         }
+// 
+//         AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath;
+//         AZ::IO::FileIOBase::GetInstance()->ResolvePath(assetPath.data(), resolvedPath.data(), resolvedPath.size());
+//         filePath = resolvedPath.data();
     }
 
     void MainWindow::OpenFile(const char* fullPath)
@@ -1769,7 +1749,7 @@ namespace ScriptCanvasEditor
     //      SaveAsEnd
     // SaveAssetImpl end
 
-    bool MainWindow::SaveAssetImpl(const ScriptCanvasEditor::SourceHandle& inMemoryAssetId, Save /*save*/)
+    bool MainWindow::SaveAssetImpl(const ScriptCanvasEditor::SourceHandle& inMemoryAssetId, Save save)
     {
         if (!inMemoryAssetId.IsValid())
         {
@@ -1785,14 +1765,22 @@ namespace ScriptCanvasEditor
 
         AZStd::string suggestedFilename;
         AZStd::string suggestedFileFilter;
-        GetSuggestedFullFilenameToSaveAs(inMemoryAssetId, suggestedFilename, suggestedFileFilter);
-
-        EnsureSaveDestinationDirectory(suggestedFilename);
-
-        QString filter = suggestedFileFilter.c_str();
-        QString selectedFile;
-
         bool isValidFileName = false;
+
+        if (save == Save::InPlace)
+        {
+            isValidFileName = true;
+            suggestedFileFilter = ScriptCanvasAssetDescription().GetExtensionImpl();
+            suggestedFilename = inMemoryAssetId.Path();
+        }
+        else
+        {
+            GetSuggestedFullFilenameToSaveAs(inMemoryAssetId, suggestedFilename, suggestedFileFilter);
+        }
+        
+        EnsureSaveDestinationDirectory(suggestedFilename);
+        QString filter = suggestedFileFilter.c_str();
+        QString selectedFile = suggestedFilename.c_str();
 
         while (!isValidFileName)
         {
@@ -1817,7 +1805,7 @@ namespace ScriptCanvasEditor
 //                     QMessageBox::information(this, "Unable to Save", AZStd::string::format("You must select a path within the current project\n\n%s", assetRoot.c_str()).c_str());
 //                 }
 //                 else
-if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
+                if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
                 {
                     isValidFileName = !(fileName.empty());
                 }
@@ -1825,7 +1813,6 @@ if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
                 {
                     QMessageBox::information(this, "Unable to Save", "File name cannot be empty");
                 }
-
             }
             else
             {
@@ -1844,20 +1831,20 @@ if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
             }
 
             SaveAs(internalStringFile, inMemoryAssetId);
-
             m_newlySavedFile = internalStringFile;
-
             // Forcing the file add here, since we are creating a new file
             AddRecentFile(m_newlySavedFile.c_str());
-
             return true;
         }
+
         return false;
     }
     
 
-    void MainWindow::OnSaveCallback(bool saveSuccess, ScriptCanvasEditor::SourceHandle memoryAsset)
+    void MainWindow::OnSaveCallBack(const VersionExplorer::FileSaveResult& result)
     {
+        const bool saveSuccess = result.fileSaveError.empty();
+        auto memoryAsset = m_fileSaver->GetSource();
         int saveTabIndex = m_tabBar->FindTab(memoryAsset);
         AZStd::string tabName = saveTabIndex >= 0 ? m_tabBar->tabText(saveTabIndex).toUtf8().data() : "";
 
@@ -1866,8 +1853,9 @@ if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
             // #sc_editor_asset find a tab with the same path name and close non focused old ones with the same name
             // Update the editor with the new information about this asset.
             const ScriptCanvasEditor::SourceHandle& fileAssetId = memoryAsset;
+            int currentTabIndex = m_tabBar->currentIndex();
             // We've saved as over a new graph, so we need to close the old one.
-            if (saveTabIndex != m_tabBar->currentIndex())
+            if (saveTabIndex != currentTabIndex)
             {
                 // Invalidate the file asset id so we don't delete trigger the asset flow.
                 m_tabBar->setTabData(saveTabIndex, QVariant::fromValue(Widget::GraphTabMetadata()));
@@ -1928,6 +1916,14 @@ if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
 
             // Soft switch the asset id here. We'll do a double scene switch down below to actually switch the active assetid
             m_activeGraph = fileAssetId;
+
+            if (tabName.at(tabName.size() - 1) == '*')
+            {
+                tabName = tabName.substr(0, tabName.size() - 2);
+            }
+
+            m_tabBar->UpdateFileState(fileAssetId, Tracker::ScriptCanvasFileState::UNMODIFIED);
+            m_tabBar->SetTabText(saveTabIndex, tabName.c_str());
         }
         else
         {
@@ -1949,11 +1945,11 @@ if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
         }
         else
         {
-            // Something weird happens with our saving. Where we are relying on these scene changes being called.
-            ScriptCanvasEditor::SourceHandle previousAssetId = m_activeGraph;
-
-            OnChangeActiveGraphTab(ScriptCanvasEditor::SourceHandle());
-            OnChangeActiveGraphTab(previousAssetId);
+//             // Something weird happens with our saving. Where we are relying on these scene changes being called.
+//             ScriptCanvasEditor::SourceHandle previousAssetId = m_activeGraph;
+// 
+//             OnChangeActiveGraphTab(ScriptCanvasEditor::SourceHandle());
+//             OnChangeActiveGraphTab(previousAssetId);
         }
 
         UpdateAssignToSelectionState();
@@ -1966,7 +1962,7 @@ if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
         // This is called during saving, so the is saving flag is always true Need to update the state after this callback is complete. So schedule for next system tick.
         AddSystemTickAction(SystemTickActionFlag::UpdateSaveMenuState);
 
-        if (m_closeCurrentGraphAfterSave)
+        if (saveSuccess && m_closeCurrentGraphAfterSave)
         {
             AddSystemTickAction(SystemTickActionFlag::CloseCurrentGraph);
         }
@@ -1976,6 +1972,7 @@ if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
         EnableAssetView(memoryAsset);
 
         UnblockCloseRequests();
+        m_fileSaver.reset();
     }
 
     bool MainWindow::ActivateAndSaveAsset(const ScriptCanvasEditor::SourceHandle& unsavedAssetId)
@@ -1986,17 +1983,17 @@ if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
 
     void MainWindow::SaveAs(AZStd::string_view path, ScriptCanvasEditor::SourceHandle inMemoryAssetId)
     {
-        AZ_TracePrintf("ScriptCanvas", "Saving %s to %.*s", inMemoryAssetId.Path().c_str(), path.data());
-        // #sc_editor_asset maybe delete this
-        
         DisableAssetView(inMemoryAssetId);
 
-        // use the file saver, make  new  version that works on source handle and not asset
-        // then...connect the failed and succeed versions
-        // to OnSaveCallBack
+        m_fileSaver = AZStd::make_unique<VersionExplorer::FileSaver>
+                ( nullptr
+                , [this](const VersionExplorer::FileSaveResult& fileSaveResult) { OnSaveCallBack(fileSaveResult); });
 
-         UpdateSaveState();
-         BlockCloseRequests();        
+        ScriptCanvasEditor::SourceHandle newLocation(inMemoryAssetId, {}, path);
+        m_fileSaver->Save(newLocation);
+
+        UpdateSaveState();
+        BlockCloseRequests();        
     }
 
     void MainWindow::OnFileOpen()

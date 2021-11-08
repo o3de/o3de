@@ -1067,9 +1067,9 @@ namespace ScriptCanvasEditor
         m_owner = &owner;
     }
 
-    ScriptCanvas::DataPtr Graph::GetOwnership() const
+    ScriptCanvas::ScriptCanvasData* Graph::GetOwnership() const
     {
-        return ScriptCanvas::DataPtr(const_cast<Graph*>(this)->m_owner);
+        return const_cast<Graph*>(this)->m_owner;
     }
 
     bool Graph::CreateConnection(const GraphCanvas::ConnectionId& connectionId, const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint)
