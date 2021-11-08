@@ -944,7 +944,7 @@ namespace AzFramework
         {
             for (AZ::Entity* entity : request.m_ticket->m_spawnedEntities)
             {
-                if (entity != nullptr && !entity->GetComponents().empty())
+                if (entity != nullptr)
                 {
                     // Setting it to 0 is needed to avoid the infinite loop between GameEntityContext and SpawnableEntitiesManager.
                     entity->SetSpawnTicketId(0);

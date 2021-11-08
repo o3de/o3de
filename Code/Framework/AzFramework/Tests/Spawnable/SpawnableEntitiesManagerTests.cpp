@@ -607,7 +607,7 @@ namespace UnitTest
             &target);
 
         size_t spawnedEntitiesCount = 0;
-        bool allReplaced = true;
+        bool allReplaced = false;
         auto callback = [&spawnedEntitiesCount, &allReplaced](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
@@ -636,7 +636,7 @@ namespace UnitTest
             &target);
 
         size_t spawnedEntitiesCount = 0;
-        bool allAdded = true;
+        bool allAdded = false;
         auto callback = [&spawnedEntitiesCount, &allAdded](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
@@ -665,7 +665,7 @@ namespace UnitTest
             &target);
 
         size_t spawnedEntitiesCount = 0;
-        bool allMerged = true;
+        bool allMerged = false;
         auto callback = [&spawnedEntitiesCount, &allMerged](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
@@ -1105,7 +1105,7 @@ namespace UnitTest
         AZStd::vector<uint32_t> indices = { 0, 2, 3, 1 };
 
         size_t spawnedEntitiesCount = 0;
-        bool allReplaced = true;
+        bool allReplaced = false;
         auto callback = [&spawnedEntitiesCount, &allReplaced](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
@@ -1136,7 +1136,7 @@ namespace UnitTest
         AZStd::vector<uint32_t> indices = { 0, 2, 3, 1 };
 
         size_t spawnedEntitiesCount = 0;
-        bool allAdded = true;
+        bool allAdded = false;
         auto callback =
             [&spawnedEntitiesCount, &allAdded](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
@@ -1168,7 +1168,7 @@ namespace UnitTest
         AZStd::vector<uint32_t> indices = { 0, 2, 3, 1 };
 
         size_t spawnedEntitiesCount = 0;
-        bool allMerged = true;
+        bool allMerged = false;
         auto callback = [&spawnedEntitiesCount, &allMerged](
             AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
