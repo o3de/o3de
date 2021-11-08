@@ -112,7 +112,7 @@
 																</Class>
 																<Class name="AzFramework::SimpleAssetReference&lt;LmbrCentral::TextureAsset&gt;" field="Sprite" version="1" type="{68E92460-5C0C-4031-9620-6F1A08763243}">
 																	<Class name="SimpleAssetReferenceBase" field="BaseClass1" version="1" type="{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}">
-																		<Class name="AZStd::string" field="AssetPath" value="ui/textures/prefab/button_disabled.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+																		<Class name="AZStd::string" field="AssetPath" value="ui/textures/prefab/button_disabled.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 																	</Class>
 																</Class>
 																<Class name="unsigned int" field="Index" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
@@ -158,7 +158,7 @@
 										<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
 											<Class name="AddressType" field="value1" value="AZStd::vector({21786AF0-2606-5B9A-86EB-0892E2820E6C})::Entities·0/AZ::Entity({75651658-8663-478D-9090-2432DFCAFA44})#17165417810190062216·2/AZStd::vector({13D58FF9-1088-5C69-9A1F-C2A144B57B78})::Components·0/UiImageComponent({BDBEFD23-DBB4-4726-A32D-4FEAC24E51F6})#17217584308910145132·7/AzFramework::SimpleAssetReference&lt;LmbrCentral::TextureAsset&gt;({68E92460-5C0C-4031-9620-6F1A08763243})::SpritePath·1/SimpleAssetReferenceBase({E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8})::BaseClass1·1/AZStd::string({03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9})::AssetPath·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
 											<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}">
-												<Class name="AZStd::string" field="m_data" value="ui/textures/prefab/button_normal.dds" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+												<Class name="AZStd::string" field="m_data" value="ui/textures/prefab/button_normal.tif.streamingimage" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 											</Class>
 										</Class>
 										<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">

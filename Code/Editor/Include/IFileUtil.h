@@ -60,7 +60,6 @@ struct IFileUtil
         EFILE_TYPE_GEOMETRY,
         EFILE_TYPE_TEXTURE,
         EFILE_TYPE_SOUND,
-        EFILE_TYPE_GEOMCACHE,
         EFILE_TYPE_LAST,
     };
 
