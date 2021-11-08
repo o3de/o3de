@@ -50,9 +50,11 @@ namespace AzToolsFramework::Prefab
 
         // PrefabFocusPublicInterface overrides ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
+        PrefabFocusOperationResult FocusOnParentOfFocusedPrefab(AzFramework::EntityContextId entityContextId) override;
         PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) override;
         AZ::EntityId GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId entityContextId) const override;
         bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) const override;
+        bool IsOwningPrefabInFocusHierarchy(AZ::EntityId entityId) const override;
         const AZ::IO::Path& GetPrefabFocusPath(AzFramework::EntityContextId entityContextId) const override;
         const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const override;
 
@@ -63,8 +65,9 @@ namespace AzToolsFramework::Prefab
         void OnEntityInfoUpdatedName(AZ::EntityId entityId, const AZStd::string& name) override;
 
         // PrefabPublicNotifications overrides ...
-        void OnPrefabInstancePropagationEnd();
-
+        void OnPrefabInstancePropagationEnd() override;
+        void OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, bool status) override;
+        
     private:
         PrefabFocusOperationResult FocusOnPrefabInstance(InstanceOptionalReference focusedInstance);
         void RefreshInstanceFocusList();

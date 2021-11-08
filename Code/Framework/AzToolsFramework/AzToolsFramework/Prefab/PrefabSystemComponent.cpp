@@ -159,10 +159,10 @@ namespace AzToolsFramework
                 newInstance->SetTemplateId(newTemplateId);
             }
         }
-        
-        void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, bool immediate, InstanceOptionalReference instanceToExclude)
+
+        void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, InstanceOptionalReference instanceToExclude)
         {
-            UpdatePrefabInstances(templateId, immediate, instanceToExclude);
+            UpdatePrefabInstances(templateId, instanceToExclude);
 
             auto templateIdToLinkIdsIterator = m_templateToLinkIdsMap.find(templateId);
             if (templateIdToLinkIdsIterator != m_templateToLinkIdsMap.end())
@@ -185,15 +185,15 @@ namespace AzToolsFramework
                 if (AZ::JsonSerialization::Compare(templateDomToUpdate, updatedDom) != AZ::JsonSerializerCompareResult::Equal)
                 {
                     templateDomToUpdate.CopyFrom(updatedDom, templateDomToUpdate.GetAllocator());
-                    templateToUpdate->get().MarkAsDirty(true);
+                    SetTemplateDirtyFlag(templateId, true);
                     PropagateTemplateChanges(templateId);
                 }
             }
         }
 
-        void PrefabSystemComponent::UpdatePrefabInstances(TemplateId templateId, bool immediate, InstanceOptionalReference instanceToExclude)
+        void PrefabSystemComponent::UpdatePrefabInstances(TemplateId templateId, InstanceOptionalReference instanceToExclude)
         {
-            m_instanceUpdateExecutor.AddTemplateInstancesToQueue(templateId, immediate, instanceToExclude);
+            m_instanceUpdateExecutor.AddTemplateInstancesToQueue(templateId, instanceToExclude);
         }
 
         void PrefabSystemComponent::UpdateLinkedInstances(AZStd::queue<LinkIds>& linkIdsQueue)
@@ -813,11 +813,12 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::SetTemplateDirtyFlag(TemplateId templateId, bool dirty)
         {
-            auto templateRef = FindTemplate(templateId);
-
-            if (templateRef.has_value())
+            if (auto templateReference = FindTemplate(templateId); templateReference.has_value())
             {
-                templateRef->get().MarkAsDirty(dirty);
+                templateReference->get().MarkAsDirty(dirty);
+
+                PrefabPublicNotificationBus::Broadcast(
+                    &PrefabPublicNotificationBus::Events::OnPrefabTemplateDirtyFlagUpdated, templateId, dirty);
             }
         }
 

@@ -11,6 +11,8 @@
 #include <ScreenWidget.h>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QTabWidget)
+
 namespace O3DE::ProjectManager
 {
     QT_FORWARD_DECLARE_CLASS(EngineSettingsScreen)
@@ -26,7 +28,14 @@ namespace O3DE::ProjectManager
 
         QString GetTabText() override;
         bool IsTab() override;
+        bool ContainsScreen(ProjectManagerScreen screen) override;
+        void GoToScreen(ProjectManagerScreen screen) override;
+        void NotifyCurrentScreen() override;
 
+    public slots:
+        void TabChanged(int index);
+
+        QTabWidget* m_tabWidget = nullptr;
         EngineSettingsScreen* m_engineSettingsScreen = nullptr;
         GemRepoScreen* m_gemRepoScreen = nullptr;
     };

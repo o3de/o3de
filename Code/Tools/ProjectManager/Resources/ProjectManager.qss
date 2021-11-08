@@ -9,7 +9,7 @@ QMainWindow {
 
 #ScreensCtrl {
     min-width:1200px;
-    min-height:800px;
+    min-height:700px;
 }
 
 QPushButton:focus {
@@ -59,6 +59,24 @@ QTabBar::focus {
 QTabBar::tab:focus {
     background-color: #525252;
     color: #4082eb;
+}
+
+#ToastNotification {
+    background-color: black;
+    border-radius: 20px;
+    border:1px solid #dddddd;
+    qproperty-minimumSize: 100px 50px;
+}
+
+#ToastNotification #icon_frame {
+    border-radius: 4px;
+    qproperty-minimumSize: 44px 20px;
+}
+
+#ToastNotification #iconLabel {
+    qproperty-minimumSize: 30px 20px;
+    qproperty-maximumSize: 30px 20px;
+    margin-left: 6px;
 }
 
 /************** General (Forms) **************/
@@ -218,13 +236,21 @@ QTabBar::tab:focus {
     color: #666666;
 }
 
+#verticalSeparatingLine {
+    color: #888888;
+}
+
 /************** Project Settings **************/
 #projectSettings {
-    margin-top:42px;
+    margin-top:30px;
+}
+
+#projectPreviewLabel {
+    margin: 10px 0 5px 0;
 }
 
 #projectTemplate {
-    margin: 55px 0 0 50px;
+    margin: 25px 0 0 50px;
 }
 #projectTemplateLabel {
     font-size:16px;
@@ -481,6 +507,34 @@ QProgressBar::chunk {
     font-weight: 600;
 }
 
+#gemCatalogMenuButton {
+    qproperty-flat: true;
+    max-width:36px;
+    min-width:36px;
+    max-height:24px;
+    min-height:24px;
+}
+
+#GemCatalogCartOverlayGemDownloadHeader {
+    margin:0;
+    padding: 0px;
+    background-color: #333333;
+}
+
+#GemCatalogCartOverlayGemDownloadBG {
+    margin:0;
+    padding: 0px;
+    background-color: #444444;
+}
+
+#gemCatalogMenuButton {
+    qproperty-flat: true;
+    max-width:36px;
+    min-width:36px;
+    max-height:24px;
+    min-height:24px;
+}
+
 #GemCatalogHeaderLabel {
     font-size: 12px;
     color: #FFFFFF;
@@ -641,6 +695,12 @@ QProgressBar::chunk {
 
 #gemRepoAddDialogInstructionTitleLabel {
     font-size:14px;
+    font-weight:bold;
+}
+
+#gemRepoAddDialogWarningLabel {
+    font-size:12px;
+    font-style:italic;
 }
 
 #addGemRepoDialog #formFrame {

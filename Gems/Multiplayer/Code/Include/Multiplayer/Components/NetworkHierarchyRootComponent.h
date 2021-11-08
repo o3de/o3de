@@ -30,7 +30,6 @@ namespace Multiplayer
     {
         friend class NetworkHierarchyChildComponent;
         friend class NetworkHierarchyRootComponentController;
-        friend class ServerToClientReplicationWindow;
     public:
         AZ_MULTIPLAYER_COMPONENT(Multiplayer::NetworkHierarchyRootComponent, s_networkHierarchyRootComponentConcreteUuid, Multiplayer::NetworkHierarchyRootComponentBase);
 
@@ -61,10 +60,9 @@ namespace Multiplayer
 
         bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
 
-    protected:
-        void SetTopLevelHierarchyRootEntity(AZ::Entity* hierarchyRoot);
-
     private:
+        void SetTopLevelHierarchyRootEntity(AZ::Entity* previousHierarchyRoot, AZ::Entity* newHierarchyRoot);
+
         AZ::ChildChangedEvent::Handler m_childChangedHandler;
         AZ::ParentChangedEvent::Handler m_parentChangedHandler;
 
@@ -81,15 +79,18 @@ namespace Multiplayer
 
         //! Rebuilds hierarchy starting from this root component's entity.
         void RebuildHierarchy();
-        
+
         //! @param underEntity Walk the child entities that belong to @underEntity and consider adding them to the hierarchy.
         //! Builds the hierarchy using breadth-first iterative method.
         void InternalBuildHierarchyList(AZ::Entity* underEntity);
 
-        void SetRootForEntity(AZ::Entity* root, const AZ::Entity* childEntity);
+        void SetRootForEntity(AZ::Entity* previousKnownRoot, AZ::Entity* newRoot, const AZ::Entity* childEntity);
 
         //! Set to false when deactivating or otherwise not to be included in hierarchy considerations.
         bool m_isHierarchyEnabled = true;
+
+        AzNetworking::ConnectionId m_previousOwningConnectionId = AzNetworking::InvalidConnectionId;
+        void SetOwningConnectionId(AzNetworking::ConnectionId connectionId) override;
 
         friend class HierarchyBenchmarkBase;
     };

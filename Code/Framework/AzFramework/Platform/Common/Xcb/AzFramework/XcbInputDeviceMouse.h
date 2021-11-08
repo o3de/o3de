@@ -65,9 +65,6 @@ namespace AzFramework
         //! \ref AzFramework::InputDeviceMouse::Implementation::TickInputDevice
         void TickInputDevice() override;
 
-        //! This method is called by the Editor to accommodate some events with the Editor. Never called in Game mode.
-        void PollSpecialEvents() override;
-
         //! Handle X11 events.
         void HandleXcbEvent(xcb_generic_event_t* event) override;
 
@@ -76,9 +73,6 @@ namespace AzFramework
 
         //! Initialize XInput extension. Used for raw input during confinement and showing/hiding the cursor.
         static bool InitializeXInput();
-
-        //! Enables/Disables XInput Raw Input events.
-        void SetEnableXInput(bool enable);
 
         //! Create barriers.
         void CreateBarriers(xcb_window_t window, bool create);
@@ -97,9 +91,6 @@ namespace AzFramework
 
         //! Handle button press/release events.
         void HandleButtonPressEvents(uint32_t detail, bool pressed);
-
-        //! Handle motion notify events.
-        void HandlePointerMotionEvents(const xcb_generic_event_t* event);
 
         //! Will set cursor states and confinement modes.
         void HandleCursorState(xcb_window_t window, SystemCursorState systemCursorState);
@@ -160,7 +151,6 @@ namespace AzFramework
         AZ::Vector2 m_cursorHiddenPosition;
 
         AZ::Vector2 m_systemCursorPositionNormalized;
-        uint32_t m_systemCursorPosition[MAX_XI_RAW_AXIS];
 
         static xcb_connection_t* s_xcbConnection;
         static xcb_screen_t* s_xcbScreen;
@@ -170,9 +160,6 @@ namespace AzFramework
 
         //! Will be true if the xinput2 extension could be initialized.
         static bool m_xInputInitialized;
-
-        //! The window that had focus
-        xcb_window_t m_prevConstraintWindow;
 
         //! The current window that has focus
         xcb_window_t m_focusWindow;
