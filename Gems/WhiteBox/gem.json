@@ -2,6 +2,7 @@
     "gem_name": "WhiteBox",
     "display_name": "White Box",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Tool",
     "summary": "The White Box Gem provides White Box rapid design components for Open 3D Engine.",
