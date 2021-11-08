@@ -65,9 +65,9 @@ def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
         # 4) Add the Axis Aligned Box Shape and Terrain Physics Heightfield Collider components
         aaBoxShape_component = test_entity.add_component("Axis Aligned Box Shape")
         Report.result(Tests.add_axis_aligned_box_shape, test_entity.has_component("Axis Aligned Box Shape"))
-        
         terrainPhysics_component = test_entity.add_component("Terrain Physics Heightfield Collider")
         Report.result(Tests.add_terrain_collider, test_entity.has_component("Terrain Physics Heightfield Collider"))
+
         # 5) Change the Axis Aligned Box Shape dimensions
         aaBoxShape_component.set_component_property_value("Axis Aligned Box Shape|Box Configuration|Dimensions", azmath.Vector3(SET_BOX_X_SIZE, SET_BOX_Y_SIZE, 1.0))
         add_check = aaBoxShape_component.get_component_property_value("Axis Aligned Box Shape|Box Configuration|Dimensions") == azmath.Vector3(SET_BOX_X_SIZE, SET_BOX_Y_SIZE, 1.0)
@@ -76,8 +76,8 @@ def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
         # 6) Check the Heightfield provider is returning the correct size
         columns = physics.HeightfieldProviderRequestsBus(bus.Broadcast, "GetHeightfieldGridColumns")
         rows = physics.HeightfieldProviderRequestsBus(bus.Broadcast, "GetHeightfieldGridRows")
+        Report.result(Tests.configuration_changed, math.isclose(columns, EXPECTED_COLUMN_SIZE) and math.isclose(rows, EXPECTED_ROW_SIZE))
 
-    Report.result(Tests.configuration_changed, math.isclose(columns, EXPECTED_COLUMN_SIZE) and math.isclose(rows, EXPECTED_ROW_SIZE))
     helper.wait_for_condition(lambda: section_tracer.has_errors or section_tracer.has_asserts, 1.0)
     for error_info in section_tracer.errors:
         Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
