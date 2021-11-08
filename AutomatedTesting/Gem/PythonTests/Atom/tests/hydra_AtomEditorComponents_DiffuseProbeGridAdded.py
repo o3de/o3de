@@ -81,7 +81,6 @@ def AtomEditorComponents_DiffuseProbeGrid_AddedToEntity():
     """
 
     import azlmbr.legacy.general as general
-    import azlmbr.render as render
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
@@ -99,7 +98,8 @@ def AtomEditorComponents_DiffuseProbeGrid_AddedToEntity():
         Report.critical_result(Tests.diffuse_probe_grid_creation, diffuse_probe_grid_entity.exists())
 
         # 2. Add a Diffuse Probe Grid component to Diffuse Probe Grid entity.
-        diffuse_probe_grid_component = diffuse_probe_grid_entity.add_component(AtomComponentProperties.diffuse_probe_grid())
+        diffuse_probe_grid_component = diffuse_probe_grid_entity.add_component(
+            AtomComponentProperties.diffuse_probe_grid())
         Report.critical_result(
             Tests.diffuse_probe_grid_component,
             diffuse_probe_grid_entity.has_component(AtomComponentProperties.diffuse_probe_grid()))
