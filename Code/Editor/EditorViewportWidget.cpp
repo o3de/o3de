@@ -620,9 +620,9 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         break;
 
     case eNotify_OnEndNewScene:
-        PopDisableRendering();
-
         {
+            PopDisableRendering();
+
             Matrix34 viewTM;
             viewTM.SetIdentity();
 
@@ -638,9 +638,9 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         break;
 
     case eNotify_OnEndTerrainCreate:
-        PopDisableRendering();
-
         {
+            PopDisableRendering();
+
             Matrix34 viewTM;
             viewTM.SetIdentity();
 
@@ -2527,7 +2527,7 @@ bool EditorViewportSettings::StickySelectEnabled() const
 
 AZ::Vector3 EditorViewportSettings::DefaultEditorCameraPosition() const
 {
-    return SandboxEditor::DefaultEditorCameraPosition();
+    return SandboxEditor::CameraDefaultEditorPosition();
 }
 
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
