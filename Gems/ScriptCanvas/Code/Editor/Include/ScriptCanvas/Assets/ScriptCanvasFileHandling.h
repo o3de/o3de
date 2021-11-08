@@ -26,10 +26,12 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
-    AZ::Outcome<ScriptCanvasEditor::SourceHandle, AZStd::string> LoadFromFile(AZStd::string_view path);
+    AZ::Outcome<SourceHandle, AZStd::string> LoadFromFile(AZStd::string_view path);
 
     AZ::Outcome<void, AZStd::string> LoadDataFromJson
         ( ScriptCanvas::ScriptCanvasData& dataTarget
         , AZStd::string_view source
         , AZ::SerializeContext& serializeContext);
- }
+
+    AZ::Outcome<void, AZStd::string> SaveToStream(const SourceHandle& source, AZ::IO::GenericStream& stream);
+}

@@ -186,6 +186,7 @@ namespace ScriptCanvasEditor
         , AZ::IO::GenericStream* stream
         , [[maybe_unused]] AZ::DataStream::StreamType streamType)
     {
+        // #sc_editor_asset delete usage of this, and route to ScriptCanvasEditor::SaveToStream
         namespace JSRU = AZ::JsonSerializationUtils;
         using namespace ScriptCanvas;
 

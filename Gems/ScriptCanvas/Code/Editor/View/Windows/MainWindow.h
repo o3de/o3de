@@ -325,12 +325,17 @@ namespace ScriptCanvasEditor
         // File menu
         void OnFileNew();
 
-        bool OnFileSave(const Callbacks::OnSave& saveCB);
-        bool OnFileSaveAs(const Callbacks::OnSave& saveCB);
-        bool OnFileSaveCaller(){return OnFileSave(nullptr);};
-        bool OnFileSaveAsCaller(){return OnFileSaveAs(nullptr);};        
-        bool SaveAssetImpl(const ScriptCanvasEditor::SourceHandle& assetId, const Callbacks::OnSave& saveCB);
-        bool SaveAssetAsImpl(const ScriptCanvasEditor::SourceHandle& assetId, const Callbacks::OnSave& saveCB);
+        bool OnFileSave();
+        bool OnFileSaveAs();
+        bool OnFileSaveCaller(){return OnFileSave();};
+        bool OnFileSaveAsCaller(){return OnFileSaveAs();};        
+        bool SaveAssetImpl_OLD(const ScriptCanvasEditor::SourceHandle& assetId, const Callbacks::OnSave& saveCB);
+        enum class Save
+        {
+            InPlace,
+            As
+        };
+        bool SaveAssetImpl(const ScriptCanvasEditor::SourceHandle& assetId, Save save);
         void OnFileOpen();        
 
         // Edit menu
@@ -554,9 +559,9 @@ namespace ScriptCanvasEditor
         void closeEvent(QCloseEvent *event) override;
         UnsavedChangesOptions ShowSaveDialog(const QString& filename);
         
-        bool ActivateAndSaveAsset(const ScriptCanvasEditor::SourceHandle& unsavedAssetId, const Callbacks::OnSave& onSave);
+        bool ActivateAndSaveAsset(const ScriptCanvasEditor::SourceHandle& unsavedAssetId);
 
-        void SaveAs(AZStd::string_view path, ScriptCanvasEditor::SourceHandle assetId, const Callbacks::OnSave& onSave);
+        void SaveAs(AZStd::string_view path, ScriptCanvasEditor::SourceHandle assetId);
 
         void OpenFile(const char* fullPath);
         void CreateMenus();
@@ -667,8 +672,8 @@ namespace ScriptCanvasEditor
             }
         }
 
-        void DisableAssetView(ScriptCanvasMemoryAsset::pointer memoryAsset);
-        void EnableAssetView(ScriptCanvasMemoryAsset::pointer memoryAsset);
+        void DisableAssetView(const ScriptCanvasEditor::SourceHandle& memoryAssetId);
+        void EnableAssetView(const ScriptCanvasEditor::SourceHandle& memoryAssetId);
 
 
         QWidget* m_host = nullptr;
@@ -783,6 +788,6 @@ namespace ScriptCanvasEditor
         //! this object manages the Save/Restore operations
         Workspace* m_workspace;
 
-        void OnSaveCallback(bool saveSuccess, AZ::Data::AssetPtr, ScriptCanvasEditor::SourceHandle previousFileAssetId);
+        void OnSaveCallback(bool saveSuccess, ScriptCanvasEditor::SourceHandle previousFileAssetId);
     };
 }

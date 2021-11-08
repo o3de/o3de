@@ -1723,17 +1723,18 @@ namespace ScriptCanvasEditor
         // return AZ::Success(outTabIndex);
     }
 
-    bool MainWindow::OnFileSave(const Callbacks::OnSave& saveCB)
+    bool MainWindow::OnFileSave()
     {
-        return SaveAssetAsImpl(m_activeGraph, saveCB);
+        return SaveAssetImpl(m_activeGraph, Save::InPlace);
     }
 
-    bool MainWindow::OnFileSaveAs(const Callbacks::OnSave& saveCB)
+    bool MainWindow::OnFileSaveAs()
     {
-        return SaveAssetAsImpl(m_activeGraph, saveCB);
+        return SaveAssetImpl(m_activeGraph, Save::As);
     }
 
-    bool MainWindow::SaveAssetImpl(const ScriptCanvasEditor::SourceHandle& assetId, const Callbacks::OnSave& saveCB)
+    /*
+    bool MainWindow::SaveAssetImpl_OLD(const ScriptCanvasEditor::SourceHandle& assetId, const Callbacks::OnSave& saveCB)
     {
         if (!assetId.IsValid())
         {
@@ -1748,7 +1749,7 @@ namespace ScriptCanvasEditor
 
         if (fileState == Tracker::ScriptCanvasFileState::NEW)
         {
-            saveSuccessful = SaveAssetAsImpl(assetId, saveCB);
+            saveSuccessful = SaveAssetImpl(assetId, saveCB);
         }
         else if (fileState == Tracker::ScriptCanvasFileState::MODIFIED
             || fileState == Tracker::ScriptCanvasFileState::SOURCE_REMOVED)
@@ -1759,8 +1760,16 @@ namespace ScriptCanvasEditor
 
         return saveSuccessful;
     }
+    */
 
-    bool MainWindow::SaveAssetAsImpl(const ScriptCanvasEditor::SourceHandle& inMemoryAssetId, const Callbacks::OnSave& saveCB)
+
+    // 1. SaveAssetImpl
+    //      2. SaveAs
+    //          // 3. OnSaveCallback
+    //      SaveAsEnd
+    // SaveAssetImpl end
+
+    bool MainWindow::SaveAssetImpl(const ScriptCanvasEditor::SourceHandle& inMemoryAssetId, Save /*save*/)
     {
         if (!inMemoryAssetId.IsValid())
         {
@@ -1803,11 +1812,12 @@ namespace ScriptCanvasEditor
                 AZ::IO::FileIOBase::GetInstance()->ResolvePath("@engroot@", assetRootChar.data(), assetRootChar.size());
                 assetRoot = assetRootChar.data();
 
-                /* if (!AZ::StringFunc::StartsWith(filePath, assetRoot))
-                {
-                    QMessageBox::information(this, "Unable to Save", AZStd::string::format("You must select a path within the current project\n\n%s", assetRoot.c_str()).c_str());
-                }
-                else*/ if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
+//                 if (!AZ::StringFunc::StartsWith(filePath, assetRoot))
+//                 {
+//                     QMessageBox::information(this, "Unable to Save", AZStd::string::format("You must select a path within the current project\n\n%s", assetRoot.c_str()).c_str());
+//                 }
+//                 else
+if (AzFramework::StringFunc::Path::GetFileName(filePath.c_str(), fileName))
                 {
                     isValidFileName = !(fileName.empty());
                 }
@@ -1833,7 +1843,7 @@ namespace ScriptCanvasEditor
                 return false;
             }
 
-            SaveAs(internalStringFile, inMemoryAssetId, saveCB);
+            SaveAs(internalStringFile, inMemoryAssetId);
 
             m_newlySavedFile = internalStringFile;
 
@@ -1842,103 +1852,95 @@ namespace ScriptCanvasEditor
 
             return true;
         }
-
         return false;
     }
+    
 
-    void MainWindow::OnSaveCallback(bool /*saveSuccess*/, AZ::Data::AssetPtr /*fileAsset*/, ScriptCanvasEditor::SourceHandle /*previousFileAssetId*/)
+    void MainWindow::OnSaveCallback(bool saveSuccess, ScriptCanvasEditor::SourceHandle memoryAsset)
     {
-        // #sc_editor_asset  yikes...just save the thing...move to ::SaveAsset maybe
-        
-        /*
-        ScriptCanvasMemoryAsset::pointer memoryAsset;
-        AZStd::string tabName = m_tabBar->tabText(m_tabBar->currentIndex()).toUtf8().data();
-
-        int saveTabIndex = m_tabBar->currentIndex();
+        int saveTabIndex = m_tabBar->FindTab(memoryAsset);
+        AZStd::string tabName = saveTabIndex >= 0 ? m_tabBar->tabText(saveTabIndex).toUtf8().data() : "";
 
         if (saveSuccess)
         {
-            AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, fileAsset->GetId());
-            AZ_Assert(memoryAsset, "At this point we must have a MemoryAsset");
-
+            // #sc_editor_asset find a tab with the same path name and close non focused old ones with the same name
             // Update the editor with the new information about this asset.
-            const ScriptCanvasEditor::SourceHandle& fileAssetId = memoryAsset->GetFileAssetId();
-
-            saveTabIndex = m_tabBar->FindTab(fileAssetId);
-
+            const ScriptCanvasEditor::SourceHandle& fileAssetId = memoryAsset;
             // We've saved as over a new graph, so we need to close the old one.
             if (saveTabIndex != m_tabBar->currentIndex())
             {
                 // Invalidate the file asset id so we don't delete trigger the asset flow.
-                m_tabBar->setTabData(saveTabIndex, QVariant::fromValue(GraphTabMetaData));
-
+                m_tabBar->setTabData(saveTabIndex, QVariant::fromValue(Widget::GraphTabMetadata()));
                 m_tabBar->CloseTab(saveTabIndex);
                 saveTabIndex = -1;
             }
 
+            // #sc_editor_asset clean up these actions as well, save and close, save as and close, just save, etc
             if (saveTabIndex < 0)
             {
                 // This asset had not been saved yet, we will need to use the in memory asset Id to get the index.
-                saveTabIndex = m_tabBar->FindTab(memoryAsset->GetId());
+                // saveTabIndex = m_tabBar->FindTab(memoryAsset->GetId());
 
                 if (saveTabIndex < 0)
                 {
                     // Finally, we may have Saved-As and we need the previous file asset Id to find the tab
-                    saveTabIndex = m_tabBar->FindTab(previousFileAssetId);
+                    //saveTabIndex = m_tabBar->FindTab(previousFileAssetId);
                 }
             }
 
-            AzFramework::StringFunc::Path::GetFileName(memoryAsset->GetAbsolutePath().c_str(), tabName);
+            AzFramework::StringFunc::Path::GetFileName(memoryAsset.Path().c_str(), tabName);
 
             // Update the tab's assetId to the file asset Id (necessary when saving a new asset)
-            // used to be configure tab...sets the name and file state
-            m_tabBar->ConfigureTab(saveTabIndex, fileAssetId, tabName);
+            // #sc_editor_asset used to be configure tab...sets the name and file state
+            // m_tabBar->ConfigureTab(saveTabIndex, fileAssetId, tabName);
 
-            GeneralAssetNotificationBus::Event(memoryAsset->GetId(), &GeneralAssetNotifications::OnAssetVisualized);
-
-            auto requestorIter = m_assetCreationRequests.find(fileAsset->GetId());
-
-            if (requestorIter != m_assetCreationRequests.end())
-            {
-                auto editorComponents = AZ::EntityUtils::FindDerivedComponents<EditorScriptCanvasComponent>(requestorIter->second.first);
-
-                if (editorComponents.empty())
-                {
-                    auto firstRequestBus = EditorScriptCanvasComponentRequestBus::FindFirstHandler(requestorIter->second.first);
-
-                    if (firstRequestBus)
-                    {
-                        firstRequestBus->SetAssetId(fileAsset->GetId());
-                    }
-                }
-                else
-                {
-                    for (auto editorComponent : editorComponents)
-                    {
-                        if (editorComponent->GetId() == requestorIter->second.second)
-                        {
-                            editorComponent->SetAssetId(fileAsset->GetId());
-                            break;
-                        }
-                    }
-                }
-
-                m_assetCreationRequests.erase(requestorIter);
-            }
+//             GeneralAssetNotificationBus::Event(memoryAsset, &GeneralAssetNotifications::OnAssetVisualized);
+// 
+//             auto requestorIter = m_assetCreationRequests.find(fileAsset->GetId());
+// 
+//             if (requestorIter != m_assetCreationRequests.end())
+//             {
+//                 auto editorComponents = AZ::EntityUtils::FindDerivedComponents<EditorScriptCanvasComponent>(requestorIter->second.first);
+// 
+//                 if (editorComponents.empty())
+//                 {
+//                     auto firstRequestBus = EditorScriptCanvasComponentRequestBus::FindFirstHandler(requestorIter->second.first);
+// 
+//                     if (firstRequestBus)
+//                     {
+//                         firstRequestBus->SetAssetId(fileAsset->GetId());
+//                     }
+//                 }
+//                 else
+//                 {
+//                     for (auto editorComponent : editorComponents)
+//                     {
+//                         if (editorComponent->GetId() == requestorIter->second.second)
+//                         {
+//                             editorComponent->SetAssetId(fileAsset->GetId());
+//                             break;
+//                         }
+//                     }
+//                 }
+// 
+//                 m_assetCreationRequests.erase(requestorIter);
+//             }
 
             // Soft switch the asset id here. We'll do a double scene switch down below to actually switch the active assetid
             m_activeGraph = fileAssetId;
         }
         else
         {
+            // #sc_editor_asset this seems to remove the unsaved indicator even on failure
+            
             // Use the previous memory asset to find what we had setup as our display
-            AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, m_activeGraph);
+            // AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, m_activeGraph);
 
             // Drop off our file modifier status for our display name when we fail to save.
-            if (tabName.at(tabName.size() -1) == '*')
-            {
-                tabName = tabName.substr(0, tabName.size() - 2);
-            }
+//             if (tabName.at(tabName.size() -1) == '*')
+//             {
+//                 tabName = tabName.substr(0, tabName.size() - 2);
+//             }
         }
 
         if (m_tabBar->currentIndex() != saveTabIndex)
@@ -1961,7 +1963,7 @@ namespace ScriptCanvasEditor
         const bool displayAsNotification = true;
         RunGraphValidation(displayAsNotification);
 
-        // This is called during saving, so the is scaving flag is always true Need to update the state after this callback is complete. So schedule for next system tick.
+        // This is called during saving, so the is saving flag is always true Need to update the state after this callback is complete. So schedule for next system tick.
         AddSystemTickAction(SystemTickActionFlag::UpdateSaveMenuState);
 
         if (m_closeCurrentGraphAfterSave)
@@ -1974,69 +1976,27 @@ namespace ScriptCanvasEditor
         EnableAssetView(memoryAsset);
 
         UnblockCloseRequests();
-        */
     }
 
-    bool MainWindow::ActivateAndSaveAsset(const ScriptCanvasEditor::SourceHandle& unsavedAssetId, const Callbacks::OnSave& saveCB)
+    bool MainWindow::ActivateAndSaveAsset(const ScriptCanvasEditor::SourceHandle& unsavedAssetId)
     {
         SetActiveAsset(unsavedAssetId);
-        return OnFileSave(saveCB);
+        return OnFileSave();
     }
 
-    void MainWindow::SaveAs(AZStd::string_view /*path*/, ScriptCanvasEditor::SourceHandle /*inMemoryAssetId*/, const Callbacks::OnSave& /*onSave*/)
+    void MainWindow::SaveAs(AZStd::string_view path, ScriptCanvasEditor::SourceHandle inMemoryAssetId)
     {
-        /*
-        PrepareAssetForSave(inMemoryAssetId);
+        AZ_TracePrintf("ScriptCanvas", "Saving %s to %.*s", inMemoryAssetId.Path().c_str(), path.data());
+        // #sc_editor_asset maybe delete this
+        
+        DisableAssetView(inMemoryAssetId);
 
-        ScriptCanvasMemoryAsset::pointer memoryAsset;
-        AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, inMemoryAssetId);
+        // use the file saver, make  new  version that works on source handle and not asset
+        // then...connect the failed and succeed versions
+        // to OnSaveCallBack
 
-        // Disable the current view if we are saving.
-        if (memoryAsset)
-        {
-            DisableAssetView(memoryAsset);
-        }
-
-        auto onSaveCallback = [this, onSave](bool saveSuccess, AZ::Data::AssetPtr asset, ScriptCanvasEditor::SourceHandle previousAssetId)
-        {
-            OnSaveCallback(saveSuccess, asset, previousAssetId);
-            if (onSave)
-            {
-                AZStd::invoke(onSave, saveSuccess, asset, previousAssetId);
-            }
-        };
-
-        AZ::Data::AssetStreamInfo streamInfo;
-        streamInfo.m_streamFlags = AZ::IO::OpenMode::ModeWrite;
-        streamInfo.m_streamName = m_saveAsPath;
-
-        if (!streamInfo.IsValid())
-        {
-            return;
-        }
-
-        bool sourceControlActive = false;
-        AzToolsFramework::SourceControlConnectionRequestBus::BroadcastResult(sourceControlActive, &AzToolsFramework::SourceControlConnectionRequests::IsActive);
-        // If Source Control is active then use it to check out the file before saving otherwise query the file info and save only if the file is not read-only
-        if (sourceControlActive)
-        {
-            AzToolsFramework::SourceControlCommandBus::Broadcast(&AzToolsFramework::SourceControlCommandBus::Events::RequestEdit,
-                streamInfo.m_streamName.c_str(),
-                true,
-                [this, streamInfo, onSaveCallback](bool success, AzToolsFramework::SourceControlFileInfo info) { FinalizeAssetSave(success, info, streamInfo, onSaveCallback); }
-            );
-        }
-        else
-        {
-            AzToolsFramework::SourceControlCommandBus::Broadcast(&AzToolsFramework::SourceControlCommandBus::Events::GetFileInfo,
-                streamInfo.m_streamName.c_str(),
-                [this, streamInfo, onSaveCallback](bool success, AzToolsFramework::SourceControlFileInfo info) { FinalizeAssetSave(success, info, streamInfo, onSaveCallback); }
-            );
-        }
-
-        UpdateSaveState();
-        BlockCloseRequests();
-        */
+         UpdateSaveState();
+         BlockCloseRequests();        
     }
 
     void MainWindow::OnFileOpen()
@@ -2802,7 +2762,7 @@ namespace ScriptCanvasEditor
 // 
 //                 if (fileState == Tracker::ScriptCanvasFileState::NEW)
 //                 {
-//                     SaveAssetAsImpl(fileAssetId, saveCB);
+//                     SaveAssetImpl(fileAssetId, saveCB);
 //                 }
 //                 else
 //                 {
@@ -2822,7 +2782,7 @@ namespace ScriptCanvasEditor
         if (tabdata.isValid())
         {
             auto assetId = tabdata.value<Widget::GraphTabMetadata>();
-            SaveAssetAsImpl(assetId.m_assetId, nullptr);
+            SaveAssetImpl(assetId.m_assetId, Save::InPlace);
         }
     }
 
@@ -4761,11 +4721,11 @@ namespace ScriptCanvasEditor
         //connect(m_unitTestDockWidget, &QDockWidget::visibilityChanged, this, &MainWindow::OnViewVisibilityChanged);
     }
 
-    void MainWindow::DisableAssetView(ScriptCanvasMemoryAsset::pointer memoryAsset)
+    void MainWindow::DisableAssetView(const ScriptCanvasEditor::SourceHandle& memoryAssetId)
     {
-        if (memoryAsset->GetView())
+        if (auto view = m_tabBar->ModTabView(m_tabBar->FindTab(memoryAssetId)))
         {
-            memoryAsset->GetView()->DisableView();
+            view->DisableView();
         }
 
         m_tabBar->setEnabled(false);
@@ -4785,11 +4745,11 @@ namespace ScriptCanvasEditor
         m_autoSaveTimer.stop();
     }
 
-    void MainWindow::EnableAssetView(ScriptCanvasMemoryAsset::pointer memoryAsset)
+    void MainWindow::EnableAssetView(const ScriptCanvasEditor::SourceHandle& memoryAssetId)
     {
-        if (memoryAsset->GetView())
+        if (auto view = m_tabBar->ModTabView(m_tabBar->FindTab(memoryAssetId)))
         {
-            memoryAsset->GetView()->EnableView();
+            view->EnableView();
         }
 
         m_tabBar->setEnabled(true);
