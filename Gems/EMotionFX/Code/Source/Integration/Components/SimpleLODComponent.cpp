@@ -85,10 +85,13 @@ namespace EMotionFX
 
             if (numLODs != m_lodSampleRates.size())
             {
-                // Generate the default LOD Sample Rate to 140, 60, 45, 25, 15, 10
+                // Generate the default LOD Sample Rate to 140, 60, 45, 25, 15, 10, 10, 10, ...
                 constexpr AZStd::array defaultSampleRate {140.0f, 60.0f, 45.0f, 25.0f, 15.0f, 10.0f};
-                m_lodSampleRates.resize(numLODs);
-                AZStd::copy(begin(defaultSampleRate), end(defaultSampleRate), begin(m_lodSampleRates));
+                m_lodSampleRates.resize(numLODs, 10.0f);
+
+                // Do not copy more than what fits in defaultSampleRates or numLODs. 
+                size_t copyCount = std::min(defaultSampleRate.size(), numLODs);
+                AZStd::copy(begin(defaultSampleRate), begin(defaultSampleRate) + copyCount, begin(m_lodSampleRates));
             }
         }
 
