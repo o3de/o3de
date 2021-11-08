@@ -30,11 +30,13 @@ namespace ScriptCanvasEditor
                 , AZStd::function<void(const FileSaveResult& result)> onComplete);
 
             void Save(AZ::Data::Asset<AZ::Data::AssetData> asset);
+            void Save(const SourceHandle& source);
 
         private:
             AZStd::function<void(const FileSaveResult& result)> m_onComplete;
             AZStd::function<bool()> m_onReadOnlyFile;
 
+            void OnSourceFileReleased(const SourceHandle& source);
             void OnSourceFileReleased(AZ::Data::Asset<AZ::Data::AssetData> asset);
 
             void PerformMove

@@ -309,6 +309,7 @@ namespace ScriptCanvasEditor
         const GraphStatisticsHelper& GetNodeUsageStatistics() const;
 
         void MarkOwnership(ScriptCanvas::ScriptCanvasData& owner);
+        ScriptCanvas::DataPtr GetOwnership() const;
 
         // Finds and returns all nodes within the graph that are of the specified type
         template <typename NodeType>
@@ -393,6 +394,7 @@ namespace ScriptCanvasEditor
         bool m_saveFormatConverted = true;
 
         ScriptCanvasEditor::SourceHandle m_assetId;
+        // #sc_editor_asset temporary step in cleaning up the graph / asset class structure. This reference is deliberately weak.
         ScriptCanvas::ScriptCanvasData* m_owner;
     };
 }

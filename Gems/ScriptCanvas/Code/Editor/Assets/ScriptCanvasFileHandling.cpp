@@ -139,4 +139,64 @@ namespace ScriptCanvasEditor
 
         return AZ::Success(ScriptCanvasEditor::SourceHandle(scriptCanvasData, {}, path));
     }
+
+    AZ::Outcome<void, AZStd::string> SaveToStream(const SourceHandle& source, AZ::IO::GenericStream& stream)
+    {
+        namespace JSRU = AZ::JsonSerializationUtils;
+        
+        if (!source)
+        {
+            return AZ::Failure(AZStd::string("no source graph to save"));
+        }
+
+        if (source.Path().empty())
+        {
+            return AZ::Failure(AZStd::string("no destination path specified"));
+        }
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
+        if (!serializeContext)
+        {
+            return AZ::Failure(AZStd::string("no serialize context available to properly save source file"));
+        }
+
+        auto graphData = source.Get()->GetOwnership();
+        if (!graphData)
+        {
+            return AZ::Failure(AZStd::string("source is missing save container"));
+        }
+        
+        if (graphData->GetEditorGraph() != source.Get())
+        {
+            return AZ::Failure(AZStd::string("source save container refers to incorrect graph"));
+        }
+
+        auto saveTarget = graphData->ModGraph();
+        if (saveTarget || !saveTarget->GetGraphData())
+        {
+            return AZ::Failure(AZStd::string("source save container failed to return graph data"));
+        }
+
+        AZ::JsonSerializerSettings settings;
+        settings.m_metadata.Create<ScriptCanvas::SerializationListeners>();
+        auto listeners = settings.m_metadata.Find<ScriptCanvas::SerializationListeners>();
+        AZ_Assert(listeners, "Failed to create SerializationListeners");
+        ScriptCanvasFileHandlingCpp::CollectNodes(saveTarget->GetGraphData()->m_nodes, *listeners);
+        settings.m_keepDefaults = false;
+        settings.m_serializeContext = serializeContext;
+
+        for (auto listener : *listeners)
+        {   
+            listener->OnSerialize();
+        }
+
+        auto saveOutcome = JSRU::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(graphData.get(), stream, nullptr, &settings);
+        if (!saveOutcome.IsSuccess())
+        {
+            return AZ::Failure(AZStd::string("JSON serialization failed to save source: %s", saveOutcome.GetError().c_str()));
+        }
+
+        return AZ::Success();
+    }
 }
