@@ -471,7 +471,7 @@ class AndroidProjectGenerator(object):
 
     def __init__(self, engine_root, build_dir, android_sdk_path, build_tool, android_sdk_platform, android_native_api_level, android_ndk,
                  project_path, third_party_path, cmake_version, override_cmake_path, override_gradle_path, gradle_version, gradle_plugin_version,
-                 override_ninja_path, include_assets_in_apk, asset_mode, asset_type, signing_config, native_build_path, is_test_project=False,
+                 override_ninja_path, include_assets_in_apk, asset_mode, asset_type, signing_config, native_build_path, vulkan_validation_path, is_test_project=False,
                  overwrite_existing=True, unity_build_enabled=False):
         """
         Initialize the object with all the required parameters needed to create an Android Project. The parameters should be verified before initializing this object
@@ -495,6 +495,8 @@ class AndroidProjectGenerator(object):
         :param asset_mode:
         :param asset_type:
         :param signing_config:          Optional signing configuration arguments
+        :param native_build_path:       Override the native build staging path in gradle
+        :param vulkan_validation_path:  Override the path to where the Vulkan Validation Layers libraries are (required when using NDK r23+)
         :param is_test_project:         Flag to indicate if this is a unit test runner project. (If true, project_path, asset_mode, asset_type, and include_assets_in_apk are ignored)
         :param overwrite_existing:      Flag to overwrite existing project files when being generated, or skip if they already exist.
         """
@@ -534,6 +536,8 @@ class AndroidProjectGenerator(object):
         self.include_assets_in_apk = include_assets_in_apk
 
         self.native_build_path = native_build_path
+
+        self.vulkan_validation_path = vulkan_validation_path
 
         self.asset_mode = asset_mode
 
@@ -819,6 +823,9 @@ class AndroidProjectGenerator(object):
                 f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_Android.cmake"',
                 f'"-DLY_3RDPARTY_PATH={template_third_party_path}"',
                 f'"-DLY_UNITY_BUILD={template_unity_build}"']
+
+            if self.vulkan_validation_path:
+                cmake_argument_list.append(f'"-DLY_ANDROID_VULKAN_VALIDATION_PATH={pathlib.PurePath(self.vulkan_validation_path).as_posix()}"')
 
             if not self.is_test_project:
                 cmake_argument_list.append(f'"-DLY_PROJECTS={pathlib.PurePath(self.project_path).as_posix()}"')

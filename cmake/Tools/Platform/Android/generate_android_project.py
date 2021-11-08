@@ -223,6 +223,11 @@ def main(args):
                         default=None,
                         required=False)
 
+    parser.add_argument('--vulkan-validation-path',
+                        help='Override path to where the Vulkan Validation Layers libraries are.  Required for use with NDK r23+',
+                        default=None,
+                        required=False)
+
     # Asset Options
     parser.add_argument(INCLUDE_APK_ASSETS_ARGUMENT_NAME,
                         action='store_true',
@@ -409,7 +414,8 @@ def main(args):
                                                         is_test_project=is_test_project,
                                                         overwrite_existing=parsed_args.overwrite_existing,
                                                         unity_build_enabled=parsed_args.enable_unity_build,
-                                                        native_build_path=parsed_args.native_build_path)
+                                                        native_build_path=parsed_args.native_build_path,
+                                                        vulkan_validation_path=parsed_args.vulkan_validation_path)
     generator.execute()
 
 
