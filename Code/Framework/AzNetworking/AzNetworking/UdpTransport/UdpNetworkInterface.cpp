@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzNetworking/AutoGen/CorePackets.AutoPackets.h>
 #include <AzNetworking/Framework/INetworking.h>
 #include <AzNetworking/UdpTransport/UdpNetworkInterface.h>
 #include <AzNetworking/UdpTransport/UdpConnection.h>
