@@ -30,7 +30,7 @@ def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
      3) Start the Tracer to catch any errors and warnings
      4) Add the Axis Aligned Box Shape and Terrain Physics Heightfield Collider components
      5) Change the Axis Aligned Box Shape dimensions
-     6) Chaeck the Heightfield provider is returning the correct size
+     6) Check the Heightfield provider is returning the correct size
      7) Verify there are no errors and warnings in the logs
 
 
