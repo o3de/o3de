@@ -31,36 +31,9 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceId::InputDeviceId(const char* name, AZ::u32 index)
-        : m_crc32(name)
-        , m_index(index)
-    {
-        memset(m_name, 0, AZ_ARRAY_SIZE(m_name));
-        azstrncpy(m_name, NAME_BUFFER_SIZE, name, MAX_NAME_LENGTH);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceId::InputDeviceId(const InputDeviceId& other)
-        : m_crc32(other.m_crc32)
-        , m_index(other.m_index)
-    {
-        memset(m_name, 0, AZ_ARRAY_SIZE(m_name));
-        azstrcpy(m_name, NAME_BUFFER_SIZE, other.m_name);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    InputDeviceId& InputDeviceId::operator=(const InputDeviceId& other)
-    {
-        azstrcpy(m_name, NAME_BUFFER_SIZE, other.m_name);
-        m_crc32 = other.m_crc32;
-        m_index = other.m_index;
-        return *this;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     const char* InputDeviceId::GetName() const
     {
-        return m_name;
+        return m_name.c_str();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
