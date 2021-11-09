@@ -95,6 +95,8 @@ set(FILES
     Source/Editor/MultiplayerEditorConnection.h
     Source/EntityDomains/FullOwnershipEntityDomain.cpp
     Source/EntityDomains/FullOwnershipEntityDomain.h
+    Source/EntityDomains/NullEntityDomain.cpp
+    Source/EntityDomains/NullEntityDomain.h
     Source/MultiplayerStats.cpp
     Source/MultiplayerSystemComponent.cpp
     Source/MultiplayerSystemComponent.h

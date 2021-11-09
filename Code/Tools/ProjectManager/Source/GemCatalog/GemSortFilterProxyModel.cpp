@@ -207,6 +207,8 @@ namespace O3DE::ProjectManager
     void GemSortFilterProxyModel::ResetFilters()
     {
         m_searchString.clear();
+        m_gemSelectedFilter = GemSelected::NoFilter;
+        m_gemActiveFilter = GemActive::NoFilter;
         m_gemOriginFilter = {};
         m_platformFilter = {};
         m_typeFilter = {};

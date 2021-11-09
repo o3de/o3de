@@ -10,6 +10,7 @@
 #include <IMultiplayerConnectionMock.h>
 #include <MockInterfaces.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/EBus/EventSchedulerSystemComponent.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Name/Name.h>
@@ -119,6 +120,8 @@ namespace Multiplayer
             m_mockTime = AZStd::make_unique<NiceMock<MockTime>>();
             AZ::Interface<AZ::ITime>::Register(m_mockTime.get());
 
+            m_eventScheduler = AZStd::make_unique<AZ::EventSchedulerSystemComponent>();
+
             m_mockNetworkTime = AZStd::make_unique<NiceMock<MockNetworkTime>>();
             AZ::Interface<INetworkTime>::Register(m_mockNetworkTime.get());
 
@@ -170,6 +173,7 @@ namespace Multiplayer
             AZ::Interface<IMultiplayer>::Unregister(m_mockMultiplayer.get());
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_mockComponentApplicationRequests.get());
 
+            m_eventScheduler.reset();
             m_mockTime.reset();
 
             m_mockNetworkEntityManager.reset();
@@ -204,6 +208,7 @@ namespace Multiplayer
         AZStd::unique_ptr<NiceMock<MockMultiplayer>> m_mockMultiplayer;
         AZStd::unique_ptr<MockNetworkEntityManager> m_mockNetworkEntityManager;
         AZStd::unique_ptr<NiceMock<MockTime>> m_mockTime;
+        AZStd::unique_ptr<AZ::EventSchedulerSystemComponent> m_eventScheduler;
         AZStd::unique_ptr<NiceMock<MockNetworkTime>> m_mockNetworkTime;
 
         AZStd::unique_ptr<NiceMock<IMultiplayerConnectionMock>> m_mockConnection;

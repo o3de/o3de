@@ -18,6 +18,11 @@ namespace O3DE::ProjectManager
         setObjectName("TagWidget");
     }
 
+    void TagWidget::mousePressEvent([[maybe_unused]] QMouseEvent* event)
+    {
+        emit(TagClicked(text()));
+    }
+
     TagContainerWidget::TagContainerWidget(QWidget* parent)
         : QWidget(parent)
     {
@@ -45,7 +50,9 @@ namespace O3DE::ProjectManager
 
         foreach (const QString& tag, tags)
         {
-            flowLayout->addWidget(new TagWidget(tag));
+            TagWidget* tagWidget = new TagWidget(tag);
+            connect(tagWidget, &TagWidget::TagClicked, this, [=](const QString& tag){ emit TagClicked(tag); });
+            flowLayout->addWidget(tagWidget);
         }
     }
 } // namespace O3DE::ProjectManager

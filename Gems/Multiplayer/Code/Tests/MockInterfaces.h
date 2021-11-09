@@ -87,6 +87,9 @@ namespace UnitTest
         MOCK_METHOD2(NotifyControllersActivated, void(const Multiplayer::ConstNetworkEntityHandle&, Multiplayer::EntityIsMigrating));
         MOCK_METHOD2(NotifyControllersDeactivated, void(const Multiplayer::ConstNetworkEntityHandle&, Multiplayer::EntityIsMigrating));
         MOCK_METHOD1(HandleLocalRpcMessage, void(Multiplayer::NetworkEntityRpcMessage&));
+        MOCK_METHOD1(HandleEntitiesExitDomain, void(const Multiplayer::NetEntityIdSet&));
+        MOCK_METHOD1(ForceAssumeAuthority, void(const Multiplayer::ConstNetworkEntityHandle&));
+        MOCK_METHOD1(SetMigrateTimeoutTimeMs, void(AZ::TimeMs));
         MOCK_CONST_METHOD0(DebugDraw, void());
     };
 
