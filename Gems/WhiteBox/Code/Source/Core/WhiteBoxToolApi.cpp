@@ -426,10 +426,6 @@ namespace WhiteBox
         Mesh::TexCoord2D(0.0f, 0.0f),
     };
 
-    // indices related to halfedges - start iterating on first halfedge, pointing to
-    // vertex 0, then follow next to get vertex 2 and then 3 (anti-clockwise winding)
-    const int g_indices[] = {0, 1, 2, 0, 2, 3};
-
     // conversion functions between OpenMesh and AZ types
 
     // convert WhiteBox face handle to OpenMesh face handle
@@ -3028,7 +3024,7 @@ namespace WhiteBox
             faces.reserve(existingFaces.size());
 
             // for each face
-            for (const FaceHandle faceHandle : existingFaces)
+            for (const FaceHandle& faceHandle : existingFaces)
             {
                 VertexHandles vertexHandlesForFace;
                 vertexHandlesForFace.reserve(3);
@@ -3090,7 +3086,7 @@ namespace WhiteBox
             Internal::AppendedVerts appendedVerts;
             appendedVerts.m_vertexHandlePairs.reserve(existingVertexHandles.size());
 
-            for (const VertexHandle existingVertexHandle : existingVertexHandles)
+            for (const VertexHandle& existingVertexHandle : existingVertexHandles)
             {
                 bool vertexHandleAdded = false;
                 // visit all connected halfedge handles
@@ -3370,7 +3366,7 @@ namespace WhiteBox
             AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const AZ::Transform polygonSpace = PolygonSpace(whiteBox, polygonHandle, pivot);
-            for (const auto vertexHandle : PolygonVertexHandles(whiteBox, polygonHandle))
+            for (const auto& vertexHandle : PolygonVertexHandles(whiteBox, polygonHandle))
             {
                 SetVertexPosition(
                     whiteBox, vertexHandle,

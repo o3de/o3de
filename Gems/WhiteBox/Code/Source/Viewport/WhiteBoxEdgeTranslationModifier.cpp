@@ -207,7 +207,7 @@ namespace WhiteBox
                     const AZ::Vector3 displacement = position - sharedState->m_prevPosition;
 
                     // have to make sure we don't move verts more than once
-                    for (const auto vertexHandle : VertexHandlesForEdges(*whiteBox, m_edgeHandles))
+                    for (const auto& vertexHandle : VertexHandlesForEdges(*whiteBox, m_edgeHandles))
                     {
                         SetVertexPosition(
                             *whiteBox, vertexHandle, VertexPosition(*whiteBox, vertexHandle) + displacement);
