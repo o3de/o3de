@@ -102,7 +102,9 @@ namespace UnitTest
         prefabBuilderComponent.Activate();
         
         AZStd::vector<AssetBuilderSDK::JobProduct> jobProducts;
-        auto&& prefabDom = prefabSystemComponentInterface->FindTemplateDom(parentInstance->GetTemplateId());
+        // Make a copy of the template DOM, as the prefab system still owns the existing template
+        AzToolsFramework::Prefab::PrefabDom prefabDom;
+        prefabDom.CopyFrom(prefabSystemComponentInterface->FindTemplateDom(parentInstance->GetTemplateId()), prefabDom.GetAllocator(), false);
 
         ASSERT_TRUE(prefabBuilderComponent.ProcessPrefab({AZ::Crc32("pc")}, "parent.prefab", "unused", AZ::Uuid(), prefabDom, jobProducts));
 

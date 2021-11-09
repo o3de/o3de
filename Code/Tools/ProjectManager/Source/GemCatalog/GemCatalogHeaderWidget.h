@@ -36,7 +36,7 @@ namespace O3DE::ProjectManager
         CartOverlayWidget(GemModel* gemModel, DownloadController* downloadController, QWidget* parent = nullptr);
 
     private:
-        QStringList ConvertFromModelIndices(const QVector<QModelIndex>& gems) const;
+        QVector<Tag> GetTagsFromModelIndices(const QVector<QModelIndex>& gems) const;
 
         using GetTagIndicesCallback = AZStd::function<QVector<QModelIndex>()>;
         void CreateGemSection(const QString& singularTitle, const QString& pluralTitle, GetTagIndicesCallback getTagIndices);

@@ -222,20 +222,31 @@ float TerrainSystem::GetHeightSynchronous(float x, float y, Sampler sampler, boo
 
 float TerrainSystem::GetTerrainAreaHeight(float x, float y, bool& terrainExists) const
 {
-    AZ::Vector3 inPosition((float)x, (float)y, m_currentSettings.m_worldBounds.GetMin().GetZ());
-    float height = m_currentSettings.m_worldBounds.GetMin().GetZ();
+    const float worldMin = m_currentSettings.m_worldBounds.GetMin().GetZ();
+    AZ::Vector3 inPosition(x, y, worldMin);
+    float height = worldMin;
+    terrainExists = false;
 
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
-    for (auto& [areaId, areaBounds] : m_registeredAreas)
+    for (auto& [areaId, areaData] : m_registeredAreas)
     {
-        inPosition.SetZ(areaBounds.GetMin().GetZ());
-        if (areaBounds.Contains(inPosition))
+        const float areaMin = areaData.m_areaBounds.GetMin().GetZ();
+        inPosition.SetZ(areaMin);
+        if (areaData.m_areaBounds.Contains(inPosition))
         {
             AZ::Vector3 outPosition;
             Terrain::TerrainAreaHeightRequestBus::Event(
                 areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition, terrainExists);
             height = outPosition.GetZ();
+            if (!terrainExists)
+            {
+                // If the terrain height provider doesn't have any data, then check the area's "use ground plane" setting.
+                // If it's set, then create a default ground plane by saying terrain exists at the minimum height for the area.
+                // Otherwise, we'll set the height at the terrain world minimum and say it doesn't exist.
+                terrainExists = areaData.m_useGroundPlane;
+                height = areaData.m_useGroundPlane ? areaMin : worldMin;
+            }
             break;
         }
     }
@@ -395,12 +406,12 @@ AZ::EntityId TerrainSystem::FindBestAreaEntityAtPosition(float x, float y, AZ::A
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
     // The areas are sorted into priority order: the first area that contains inPosition is the most suitable.
-    for (const auto& [areaId, areaBounds] : m_registeredAreas)
+    for (const auto& [areaId, areaData] : m_registeredAreas)
     {
-        inPosition.SetZ(areaBounds.GetMin().GetZ());
-        if (areaBounds.Contains(inPosition))
+        inPosition.SetZ(areaData.m_areaBounds.GetMin().GetZ());
+        if (areaData.m_areaBounds.Contains(inPosition))
         {
-            bounds = areaBounds;
+            bounds = areaData.m_areaBounds;
             return areaId;
         }
     }
@@ -548,7 +559,12 @@ void TerrainSystem::RegisterArea(AZ::EntityId areaId)
     AZStd::unique_lock<AZStd::shared_mutex> lock(m_areaMutex);
     AZ::Aabb aabb = AZ::Aabb::CreateNull();
     LmbrCentral::ShapeComponentRequestsBus::EventResult(aabb, areaId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-    m_registeredAreas[areaId] = aabb;
+
+    // Cache off whether or not this layer spawner should have a default ground plane when no other terrain height data exists.
+    bool useGroundPlane = false;
+    Terrain::TerrainSpawnerRequestBus::EventResult(useGroundPlane, areaId, &Terrain::TerrainSpawnerRequestBus::Events::GetUseGroundPlane);
+
+    m_registeredAreas[areaId] = { aabb, useGroundPlane };
     m_dirtyRegion.AddAabb(aabb);
     m_terrainHeightDirty = true;
     m_terrainSurfacesDirty = true;
@@ -565,10 +581,10 @@ void TerrainSystem::UnregisterArea(AZ::EntityId areaId)
         m_registeredAreas,
         [areaId, this](const auto& item)
         {
-            auto const& [entityId, aabb] = item;
+            auto const& [entityId, areaData] = item;
             if (areaId == entityId)
             {
-                m_dirtyRegion.AddAabb(aabb);
+                m_dirtyRegion.AddAabb(areaData.m_areaBounds);
                 m_terrainHeightDirty = true;
                 m_terrainSurfacesDirty = true;
                 return true;
@@ -585,10 +601,10 @@ void TerrainSystem::RefreshArea(AZ::EntityId areaId, AzFramework::Terrain::Terra
 
     auto areaAabb = m_registeredAreas.find(areaId);
 
-    AZ::Aabb oldAabb = (areaAabb != m_registeredAreas.end()) ? areaAabb->second : AZ::Aabb::CreateNull();
+    AZ::Aabb oldAabb = (areaAabb != m_registeredAreas.end()) ? areaAabb->second.m_areaBounds : AZ::Aabb::CreateNull();
     AZ::Aabb newAabb = AZ::Aabb::CreateNull();
     LmbrCentral::ShapeComponentRequestsBus::EventResult(newAabb, areaId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-    m_registeredAreas[areaId] = newAabb;
+    m_registeredAreas[areaId].m_areaBounds = newAabb;
 
     AZ::Aabb expandedAabb = oldAabb;
     expandedAabb.AddAabb(newAabb);
