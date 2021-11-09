@@ -240,6 +240,12 @@ namespace Terrain
             Aabb2i GetClamped(Aabb2i rhs) const;
             bool IsValid() const;
         };
+        
+        struct DetailTextureLocation
+        {
+            uint16_t m_index;
+            AZ::Data::Instance<AZ::RPI::Image> m_image;
+        };
 
         // AZ::RPI::MaterialReloadNotificationBus::Handler overrides...
         void OnMaterialReinitialized(const MaterialInstance& material) override;
@@ -318,6 +324,7 @@ namespace Terrain
         AZ::RHI::ShaderInputConstantIndex m_detailCenterPropertyIndex;
         AZ::RHI::ShaderInputConstantIndex m_detailAabbPropertyIndex;
         AZ::RHI::ShaderInputConstantIndex m_detailHalfPixelUvPropertyIndex;
+        AZ::RHI::ShaderInputImageUnboundedArrayIndex m_detailTexturesIndex;
 
         AZ::Data::Instance<AZ::RPI::Model> m_patchModel;
         AZ::Vector3 m_previousCameraPosition = AZ::Vector3(AZStd::numeric_limits<float>::max(), 0.0, 0.0);
@@ -352,7 +359,10 @@ namespace Terrain
         AZ::Render::IndexedDataVector<DetailMaterialData> m_detailMaterials;
         AZ::Render::IndexedDataVector<DetailMaterialListRegion> m_detailMaterialRegions;
         AZ::Render::SparseVector<DetailMaterialShaderData> m_detailMaterialShaderData;
-        AZ::Render::SparseVector<AZ::Data::Instance<AZ::RPI::Image>> m_detailMaterialTextures;
         AZ::Render::GpuBufferHandler m_detailMaterialDataBuffer;
+
+        AZStd::vector<const AZ::RHI::ImageView*> m_detailImageViews;
+        AZStd::vector<uint16_t> m_detailImageViewFreeList;
+        bool m_detailImagesUpdated{ false };
     };
 }

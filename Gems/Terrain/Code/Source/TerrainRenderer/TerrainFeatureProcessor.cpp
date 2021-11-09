@@ -58,6 +58,8 @@ namespace Terrain
         static const char* const DetailMaterialIdImageCenter("m_detailMaterialIdImageCenter");
         static const char* const DetailHalfPixelUv("m_detailHalfPixelUv");
         static const char* const DetailAabb("m_detailAabb");
+        static const char* const DetailTextures("m_detailTextures");
+
     }
 
     namespace DetailMaterialInputs
@@ -157,6 +159,9 @@ namespace Terrain
         
         m_detailAabbPropertyIndex = viewSrgLayout->FindShaderInputConstantIndex(AZ::Name(ViewSrgInputs::DetailAabb));
         AZ_Error(TerrainFPName, m_detailAabbPropertyIndex.IsValid(), "Failed to find view srg input constant %s.", ViewSrgInputs::DetailAabb);
+
+        m_detailTexturesIndex = viewSrgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name(ViewSrgInputs::DetailTextures));
+        AZ_Error(TerrainFPName, m_detailTexturesIndex.IsValid(), "Failed to find view srg input constant %s.", ViewSrgInputs::DetailTextures);
 
         // Load the terrain material asynchronously
         const AZStd::string materialFilePath = "Materials/Terrain/DefaultPbrTerrain.azmaterial";
@@ -360,6 +365,7 @@ namespace Terrain
 
         uint16_t detailMaterialId = CreateOrUpdateDetailMaterial(material);
         materialRegion.m_materialsForSurfaces.push_back({ surfaceTag, detailMaterialId });
+        ++m_detailMaterials.GetData(detailMaterialId).refCount;
         m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
     }
 
@@ -369,8 +375,29 @@ namespace Terrain
         if (--detailMaterialData.refCount == 0)
         {
             uint16_t bufferIndex = detailMaterialData.m_detailMaterialBufferIndex;
-            // Todo: Release Image Ids
+            DetailMaterialShaderData& shaderData = m_detailMaterialShaderData.GetElement(bufferIndex);
+
+            for (uint16_t imageIndex :
+                {
+                    shaderData.m_colorImageIndex,
+                    shaderData.m_normalImageIndex,
+                    shaderData.m_roughnessImageIndex,
+                    shaderData.m_metalnessImageIndex,
+                    shaderData.m_specularF0ImageIndex,
+                    shaderData.m_occlusionImageIndex,
+                    shaderData.m_heightImageIndex
+                })
+            {
+                if (imageIndex != InvalidDetailImageIndex)
+                {
+                    m_detailImageViews.at(imageIndex) = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Magenta)->GetImageView();
+                    m_detailImageViewFreeList.push_back(imageIndex);
+                    m_detailImagesUpdated = true;
+                }
+            }
+
             m_detailMaterialShaderData.Release(bufferIndex);
+            m_detailMaterials.RemoveIndex(detailMaterialId);
         }
     }
 
@@ -500,7 +527,7 @@ namespace Terrain
             bool useTextureValue = true;
             if (useTextureIndex.IsValid())
             {
-                useTextureValue = material->GetPropertyValue(index).GetValue<bool>();
+                useTextureValue = material->GetPropertyValue(useTextureIndex).GetValue<bool>();
             }
             if (index.IsValid() && useTextureValue)
             {
@@ -509,18 +536,30 @@ namespace Terrain
             useTextureValue = useTextureValue && ref;
             flags = DetailTextureFlags(useTextureValue ? (flags | flagToSet) : (flags & ~flagToSet));
 
-            // Update m_detailMaterialTextures depending on if the image is used
+            // Update queues to add/remove textures depending on if the image is used
             if (ref)
             {
                 if (imageIndex == InvalidDetailImageIndex)
                 {
-                    imageIndex = aznumeric_cast<uint16_t>(m_detailMaterialTextures.Reserve());
+                    if (m_detailImageViewFreeList.size() > 0)
+                    {
+                        imageIndex = m_detailImageViewFreeList.back();
+                        m_detailImageViewFreeList.pop_back();
+                    }
+                    else
+                    {
+                        imageIndex = aznumeric_cast<uint16_t>(m_detailImageViews.size());
+                        m_detailImageViews.push_back();
+                    }
                 }
-                m_detailMaterialTextures.GetElement(imageIndex) = ref;
+                m_detailImageViews.at(imageIndex) = ref->GetImageView();
+                m_detailImagesUpdated = true;
             }
             else if (imageIndex != InvalidDetailImageIndex)
             {
-                m_detailMaterialTextures.Release(imageIndex);
+                m_detailImageViews.at(imageIndex) = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Magenta)->GetImageView();
+                m_detailImageViewFreeList.push_back(imageIndex);
+                m_detailImagesUpdated = true;
                 imageIndex = InvalidDetailImageIndex;
             }
         };
@@ -1281,6 +1320,18 @@ namespace Terrain
 
                     sectorData.m_srg->Compile();
                 }
+            }
+
+            if (m_detailImagesUpdated)
+            {
+                for (auto& view : process.m_views)
+                {
+                    auto viewSrg = view->GetShaderResourceGroup();
+                    AZStd::array_view<const AZ::RHI::ImageView*> imageViews(m_detailImageViews.data(), m_detailImageViews.size());
+                    [[maybe_unused]] bool result = viewSrg->SetImageViewUnboundedArray(m_detailTexturesIndex, imageViews);
+                    AZ_Assert(result, "Failed to set image view unbounded array into shader resource group.");
+                }
+                m_detailImagesUpdated = false;
             }
         }
 

@@ -69,9 +69,10 @@ partial ShaderResourceGroup ViewSrg
 
     Texture2D m_heightmapImage;
     Texture2D<uint4> m_detailMaterialIdImage;
-
     StructuredBuffer<DetailMaterialData> m_detailMaterialData;
     
+    Texture2D m_detailTextures[]; // bindless array of all textures for detail materials
+
     float2 m_detailMaterialIdImageCenter;
     float m_detailHalfPixelUv;
     

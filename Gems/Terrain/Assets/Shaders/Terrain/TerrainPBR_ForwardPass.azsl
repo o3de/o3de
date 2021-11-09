@@ -9,6 +9,7 @@
 #include <Atom/Features/SrgSemantics.azsli>
 #include <viewsrg.srgi>
 #include <TerrainCommon.azsli>
+#include <TerrainDetailHelpers.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassOutput.azsli>
@@ -17,7 +18,6 @@
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
-#include <Atom/Features/ColorManagement/TransformColor.azsli>
 
 struct VSOutput
 {
@@ -27,8 +27,6 @@ struct VSOutput
     float2 m_uv : UV1;
     float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV2;
 };
-
-option bool o_debugDetailMaterialIds = false;
 
 VSOutput TerrainPBR_MainPassVS(VertexInput IN)
 {
@@ -71,9 +69,9 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
 {
     // ------- Surface -------
     Surface surface;
-    
-    // Position
     surface.position = IN.m_worldPosition.xyz;
+    surface.vertexNormal = normalize(IN.m_normal);
+
     float viewDistance = length(ViewSrg::m_worldPosition - surface.position);
     float detailFactor = saturate((viewDistance - TerrainMaterialSrg::m_detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
     float2 detailUv = IN.m_uv * TerrainMaterialSrg::m_detailTextureMultiplier;
@@ -106,17 +104,9 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
         }
     }
 
-    float3 detailNormal = GetNormalInputTS(TerrainMaterialSrg::m_normalMap, TerrainMaterialSrg::m_sampler, 
-        detailUv, TerrainMaterialSrg::m_flipNormalX, TerrainMaterialSrg::m_flipNormalY, CreateIdentity3x3(), o_normal_useTexture, TerrainMaterialSrg::m_normalFactor);
-
-    detailNormal = ReorientTangentSpaceNormal(macroNormal, detailNormal);
-    surface.normal = lerp(detailNormal, macroNormal, detailFactor);
-    surface.normal = normalize(surface.normal);
-    surface.vertexNormal = normalize(IN.m_normal);
-
     // ------- Base Color -------
-    float3 blendedColor = macroColor;
 
+    DetailSurface detailSurface = GetDefaultDetailSurface();
     float2 detailRegionMin = ViewSrg::m_detailAabb.xy;
     float2 detailRegionMax = ViewSrg::m_detailAabb.zw;
     float2 detailRegionUv = (surface.position.xy - detailRegionMin) / (detailRegionMax - detailRegionMin);
@@ -124,60 +114,26 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     {
         detailRegionUv += ViewSrg::m_detailMaterialIdImageCenter - (0.5);
 
-        uint material1 = ViewSrg::m_detailMaterialIdImage.GatherRed(ViewSrg::DetailSampler, detailRegionUv, 0).r;
-        uint material2 = ViewSrg::m_detailMaterialIdImage.GatherGreen(ViewSrg::DetailSampler, detailRegionUv, 0).r;
-        float blend = float(ViewSrg::m_detailMaterialIdImage.GatherBlue(ViewSrg::DetailSampler, detailRegionUv, 0).r) / 0xFF;
-        
-        // ------- Debug detail materials using random colors -------
-        // This assigns a random color to each material, turns off any kind of distance fading, and draws a black line at the texture edges.
-        if (!o_debugDetailMaterialIds)
-        {
-            float3 detailColor = ViewSrg::m_detailMaterialData[material1].m_baseColor;
-            if (material2 != 255)
-            {
-                // blend with material 2
-            }
+        GetDetailSurface(detailSurface, detailRegionUv, detailUv);
 
-            blendedColor = BlendBaseColor(lerp(detailColor, TerrainMaterialSrg::m_baseColor.rgb, detailFactor), macroColor, TerrainMaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, true);
-        }
-        else
-        {
-            float3 material1Color = float3(0.1, 0.1, 0.1);
-            float3 material2Color = float3(0.1, 0.1, 0.1);
+        float3 blendedColor = lerp(detailSurface.m_color, macroColor, detailFactor);
+        float blendedSpecularF0 = lerp(detailSurface.m_specularF0, 0.5, detailFactor);
+        surface.SetAlbedoAndSpecularF0(blendedColor, blendedSpecularF0, detailSurface.m_metalness * (1.0 - detailFactor));
 
-            // Get a reasonably random hue for the material id
-            if (material1 != 255)
-            {
-                float hue1 = (material1 * 25043 % 256) / 256.0;
-                material1Color = HsvToRgb(float3(hue1, 1.0, 1.0));
-            }
-            if (material2 != 255)
-            {
-                float hue2 = (material2 * 25043 % 256) / 256.0;
-                material2Color = HsvToRgb(float3(hue2, 1.0, 1.0));
-            }
+        surface.roughnessLinear = detailSurface.m_roughness;
+        surface.CalculateRoughnessA();
 
-            blendedColor = lerp(material1Color, material2Color, blend);
-            float seamBlend = 0.0;
-            const float halfLineWidth = 1.0 / 2048.0;
-            if (any(abs(detailRegionUv) % 1.0 < halfLineWidth) || any(abs(detailRegionUv) % 1.0 > 1.0 - halfLineWidth))
-            {
-                seamBlend = 1.0;
-            }
-            blendedColor = lerp(blendedColor, float3(0.0, 0.0, 0.0), seamBlend); // draw texture seams
-            blendedColor = pow(blendedColor , 2.2);
-        }
+        detailSurface.m_normal = ReorientTangentSpaceNormal(macroNormal, detailSurface.m_normal);
+        surface.normal = lerp(detailSurface.m_normal, macroNormal, detailFactor);
+        surface.normal = normalize(surface.normal);
     }
-
-    // ------- Specular -------
-    float specularF0Factor = GetSpecularInput(TerrainMaterialSrg::m_specularF0Map, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_specularF0Factor, o_specularF0_useTexture);
-    specularF0Factor = lerp(specularF0Factor, 0.5, detailFactor);
-    surface.SetAlbedoAndSpecularF0(blendedColor, specularF0Factor, 0.0);
-
-    // ------- Roughness -------
-    surface.roughnessLinear = GetRoughnessInput(TerrainMaterialSrg::m_roughnessMap, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_roughnessFactor, 0.0, 1.0, o_roughness_useTexture);
-    surface.roughnessLinear = lerp(surface.roughnessLinear, 1.0, detailFactor);
-    surface.CalculateRoughnessA();
+    else
+    {
+        surface.normal = macroNormal;
+        surface.SetAlbedoAndSpecularF0(macroColor, 0.5, 0.0);
+        surface.roughnessLinear = 1.0;
+        surface.CalculateRoughnessA();
+    }
 
     // Clear Coat, Transmission (Not used for terrain)
     surface.clearCoat.InitializeToZero();
@@ -193,6 +149,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
 
     // Shadow, Occlusion
     lightingData.shadowCoords = IN.m_shadowCoords;
+    lightingData.diffuseAmbientOcclusion = detailSurface.m_occlusion;
 
     // Diffuse and Specular response
     lightingData.specularResponse = FresnelSchlickWithRoughness(lightingData.NdotV, surface.specularF0, surface.roughnessLinear);
