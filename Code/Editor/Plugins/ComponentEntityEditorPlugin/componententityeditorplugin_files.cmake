@@ -31,8 +31,6 @@ set(FILES
     UI/ComponentPalette/FavoriteComponentList.cpp
     UI/ComponentPalette/FilteredComponentList.h
     UI/ComponentPalette/FilteredComponentList.cpp
-    UI/ComponentPalette/InformationPanel.h
-    UI/ComponentPalette/InformationPanel.cpp
     UI/Outliner/OutlinerDisplayOptionsMenu.h
     UI/Outliner/OutlinerDisplayOptionsMenu.cpp
     UI/Outliner/OutlinerTreeView.hxx
