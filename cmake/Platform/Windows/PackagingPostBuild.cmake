@@ -111,7 +111,7 @@ if(NOT ${_light_result} EQUAL 0)
     message(FATAL_ERROR "An error occurred invoking light.exe.  ${_light_errors}")
 endif()
 
-file(COPY ${_bootstrap_output_file}
+file(INSTALL FILES ${_bootstrap_output_file}
     DESTINATION ${CPACK_PACKAGE_DIRECTORY}
 )
 
@@ -143,7 +143,7 @@ endif()
 message(STATUS "Copying installer artifacts to upload directory...")
 file(REMOVE_RECURSE ${CPACK_UPLOAD_DIRECTORY})
 file(GLOB _artifacts "${_cpack_wix_out_dir}/*.msi" "${_cpack_wix_out_dir}/*.cab")
-file(COPY ${_artifacts}
+file(INSTALL FILES ${_artifacts}
     DESTINATION ${CPACK_UPLOAD_DIRECTORY}
 )
 message(STATUS "Artifacts copied to ${CPACK_UPLOAD_DIRECTORY}")
@@ -223,7 +223,7 @@ if(CPACK_AUTO_GEN_TAG)
     string(TOLOWER "${CPACK_PACKAGE_NAME}_installer.exe" _non_versioned_exe)
     set(_temp_exe_copy ${_temp_dir}/${_non_versioned_exe})
 
-    file(COPY ${_bootstrap_output_file} DESTINATION ${_temp_dir})
+    file(INSTALL FILES ${_bootstrap_output_file} DESTINATION ${_temp_dir})
     file(RENAME "${_temp_dir}/${_bootstrap_filename}" ${_temp_exe_copy})
 
     # include the commit info in a text file that will live next to the exe

@@ -35,6 +35,7 @@ set(LY_INSTALLER_AWS_PROFILE "" CACHE STRING
 "AWS CLI profile for uploading artifacts.  Can also be set via LY_INSTALLER_AWS_PROFILE environment variable."
 )
 
+set(CPACK_THREADS 0)
 set(CPACK_DESIRED_CMAKE_VERSION 3.20.2)
 
 # set all common cpack variable overrides first so they can be accessible via configure_file
@@ -44,6 +45,7 @@ set(CPACK_DESIRED_CMAKE_VERSION 3.20.2)
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_FULL_NAME "Open3D Engine")
 set(CPACK_PACKAGE_VENDOR "O3DE Binary Project a Series of LF Projects, LLC")
+set(CPACK_PACKAGE_CONTACT "o3de.org")
 set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
 

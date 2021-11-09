@@ -137,20 +137,20 @@ function(ly_copy source_file target_directory)
 
     endif()
     get_filename_component(target_filename "${source_file}" NAME)
-    file(COPY "${source_file}" DESTINATION "${target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
+    file(INSTALL FILES "${source_file}" DESTINATION "${target_directory}" FOLLOW_SYMLINK_CHAIN)
 
     # Our Qt and Python frameworks aren't in the correct bundle format to be codesigned.
     if("${target_filename}" MATCHES "(Qt[^.]+)\\.[Ff]ramework")
-        fixup_qt_framework(${CMAKE_MATCH_1} "${target_directory}/${target_filename}")
+        fixup_qt_framework(${CMAKE_MATCH_1} "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${target_directory}/${target_filename}")
         # For some Qt frameworks(QtCore), signing the bundle doesn't work because of bundle
         # format issues(despite the fixes above). But once we've patched the framework above, there's
         # only one executable that we need to sign so we can do it directly.
         set(target_filename "${target_filename}/Versions/5/${CMAKE_MATCH_1}")
     elseif("${target_filename}" MATCHES "Python.framework")
-        fixup_python_framework("${target_directory}/${target_filename}")
-        codesign_python_framework_binaries("${target_directory}/${target_filename}")
+        fixup_python_framework("$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${target_directory}/${target_filename}")
+        codesign_python_framework_binaries("$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${target_directory}/${target_filename}")
     endif()
-    codesign_file("${target_directory}/${target_filename}" "none")
+    codesign_file("$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${target_directory}/${target_filename}" "none")
 
 endfunction()
 

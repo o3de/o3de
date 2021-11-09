@@ -558,9 +558,7 @@ function(ly_setup_runtime_dependencies)
             ly_install(CODE
 "function(ly_copy source_file target_directory)
     cmake_path(GET source_file FILENAME file_name)
-    if(NOT EXISTS \${target_directory}/\${file_name})
-        file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
-    endif()
+    file(INSTALL FILES \"\${source_file}\" DESTINATION \"\${target_directory}\" MESSAGE_NEVER)
 endfunction()"
                 COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
             )
@@ -584,12 +582,7 @@ endfunction()"
         endif()
 
         # runtime dependencies that need to be copied to the output
-        # Anywhere CMAKE_INSTALL_PREFIX is used, it has to be escaped so it is baked into the cmake_install.cmake script instead
-        # of baking the path. This is needed so `cmake --install --prefix <someprefix>` works regardless of the CMAKE_INSTALL_PREFIX
-        # used to generate the solution.
-        # CMAKE_INSTALL_PREFIX is still used when building the INSTALL target
-        set(install_output_folder "\${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}")
-        set(target_file_dir "${install_output_folder}/${target_runtime_output_subdirectory}")
+        set(target_file_dir "${runtime_output_directory}/${target_runtime_output_subdirectory}")
         ly_get_runtime_dependencies(runtime_dependencies ${target})
         foreach(runtime_dependency ${runtime_dependencies})
             unset(runtime_command)
