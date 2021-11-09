@@ -53,7 +53,7 @@ namespace AzToolsFramework
 
         void PrefabUndoInstance::Redo(InstanceOptionalConstReference instance)
         {
-            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, m_useImmediatePropagation, instance);
+            m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instance);
         }
 
         //PrefabEntityUpdateUndo
