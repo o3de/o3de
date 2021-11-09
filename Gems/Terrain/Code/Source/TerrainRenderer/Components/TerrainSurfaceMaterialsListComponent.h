@@ -53,7 +53,7 @@ namespace Terrain
     class TerrainSurfaceMaterialsListComponent
         : public AZ::Component
         , private TerrainAreaMaterialRequestBus::Handler
-        , private AZ::Data::AssetBus::Handler
+        , private AZ::Data::AssetBus::MultiHandler
         , private LmbrCentral::ShapeComponentNotificationsBus::Handler
     {
     public:
@@ -67,7 +67,7 @@ namespace Terrain
 
         TerrainSurfaceMaterialsListComponent(const TerrainSurfaceMaterialsListConfig& configuration);
         TerrainSurfaceMaterialsListComponent() = default;
-        ~TerrainSurfaceMaterialsListComponent() = default;
+        ~TerrainSurfaceMaterialsListComponent();
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation

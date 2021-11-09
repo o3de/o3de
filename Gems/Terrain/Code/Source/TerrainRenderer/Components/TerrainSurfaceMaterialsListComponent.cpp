@@ -74,7 +74,7 @@ namespace Terrain
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &TerrainSurfaceMaterialsListConfig::m_surfaceMaterials,
-                        "Gradient to Material Mappings", "Maps surfaces to materials.");
+                        "Material Mappings", "Maps surfaces to materials.");
             }
         }
     }
@@ -112,6 +112,11 @@ namespace Terrain
     {
     }
 
+    TerrainSurfaceMaterialsListComponent ::~TerrainSurfaceMaterialsListComponent()
+    {
+        Deactivate();
+    }
+
     void TerrainSurfaceMaterialsListComponent::Activate()
     {
         m_cachedAabb = AZ::Aabb::CreateNull();
@@ -123,7 +128,7 @@ namespace Terrain
             {
                 surfaceMaterialMapping.m_active = false;
                 surfaceMaterialMapping.m_materialAsset.QueueLoad();
-                AZ::Data::AssetBus::Handler::BusConnect(surfaceMaterialMapping.m_materialAsset.GetId());
+                AZ::Data::AssetBus::MultiHandler::BusConnect(surfaceMaterialMapping.m_materialAsset.GetId());
             }
         }
     }
@@ -136,7 +141,7 @@ namespace Terrain
         {
             if (surfaceMaterialMapping.m_materialAsset.GetId().IsValid())
             {
-                AZ::Data::AssetBus::Handler::BusDisconnect(surfaceMaterialMapping.m_materialAsset.GetId());
+                AZ::Data::AssetBus::MultiHandler::BusDisconnect(surfaceMaterialMapping.m_materialAsset.GetId());
                 surfaceMaterialMapping.m_materialAsset.Release();
                 surfaceMaterialMapping.m_materialInstance.reset();
                 surfaceMaterialMapping.m_activeMaterialAssetId = AZ::Data::AssetId();
@@ -202,7 +207,7 @@ namespace Terrain
                 // Don't disconnect from the AssetBus if this material is mapped more than once.
                 if (CountMaterialIDInstances(surfaceMaterialMapping.m_activeMaterialAssetId) == 1)
                 {
-                    AZ::Data::AssetBus::Handler::BusDisconnect(surfaceMaterialMapping.m_activeMaterialAssetId);
+                    AZ::Data::AssetBus::MultiHandler::BusDisconnect(surfaceMaterialMapping.m_activeMaterialAssetId);
                 }
 
                 surfaceMaterialMapping.m_activeMaterialAssetId = AZ::Data::AssetId();
