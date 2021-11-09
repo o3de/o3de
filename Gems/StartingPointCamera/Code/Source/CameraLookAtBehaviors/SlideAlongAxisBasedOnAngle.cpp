@@ -20,7 +20,7 @@ namespace Camera
         if (serializeContext)
         {
             serializeContext->Class<SlideAlongAxisBasedOnAngle>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("Axis to slide along", &SlideAlongAxisBasedOnAngle::m_axisToSlideAlong)
                 ->Field("Angle Type", &SlideAlongAxisBasedOnAngle::m_angleTypeToChangeFor)
                 ->Field("Ignore X Component", &SlideAlongAxisBasedOnAngle::m_ignoreX)

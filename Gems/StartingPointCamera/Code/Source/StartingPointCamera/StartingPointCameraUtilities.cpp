@@ -25,7 +25,7 @@ namespace Camera
         }
         return "";
     }
-
+#pragma optimize("", off)
     void MaskComponentFromNormalizedVector(AZ::Vector3& v, bool ignoreX, bool ignoreY, bool ignoreZ)
     {
 
@@ -44,8 +44,15 @@ namespace Camera
             v.SetZ(0.f);
         }
 
+        if (v.IsZero())
+        {
+            AZ_Warning("", false, "MaskComponentFromNormalizedVector: trying to normalize zero vector.")
+            return;
+        }
         v.Normalize();
+
     }
+#pragma optimize("", on)
 
     float GetEulerAngleFromTransform(const AZ::Transform& rotation, EulerAngleType eulerAngleType)
     {
