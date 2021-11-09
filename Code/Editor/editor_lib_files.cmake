@@ -708,8 +708,6 @@ set(FILES
     Util/ImageTIF.cpp
     Util/ImageTIF.h
     Util/Math.h
-    Util/UIEnumerations.cpp
-    Util/UIEnumerations.h
     WelcomeScreen/WelcomeScreenDialog.h
     WelcomeScreen/WelcomeScreenDialog.cpp
     WelcomeScreen/WelcomeScreenDialog.ui
