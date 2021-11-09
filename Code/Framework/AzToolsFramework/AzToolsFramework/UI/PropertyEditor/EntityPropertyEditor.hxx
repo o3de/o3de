@@ -581,9 +581,9 @@ namespace AzToolsFramework
 
         enum class InspectorLayout
         {
-            ENTITY = 0,                 // All selected entities are regular entities.
-            OPENPREFABCONTAINERENTITY,  // The selected entity is the prefab container entity for the focused prefab.
-            INVALID                     // Other entities are selected alongside the level prefab container entity.
+            Entity = 0,                 // All selected entities are regular entities.
+            OpenPrefabContainerEntity,  // The selected entity is the prefab container entity for the focused prefab.
+            Invalid                     // Other entities are selected alongside the level prefab container entity.
         };
 
         InspectorLayout GetCurrentInspectorLayout() const;

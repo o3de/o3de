@@ -3606,6 +3606,7 @@ namespace AzToolsFramework
         m_selectedEntityIds.reserve(selectedEntityIds.size());
         AZStd::copy(selectedEntityIds.begin(), selectedEntityIds.end(), AZStd::inserter(m_selectedEntityIds, m_selectedEntityIds.end()));
 
+        // Do not create manipulators for the container entity of the focused prefab.
         if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
         {
             AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
