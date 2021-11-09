@@ -152,10 +152,10 @@ namespace ScriptCanvasEditor::Nodes
                     slotDetails.Tooltip = slot.GetToolTip();
                 }
 
-                /*AZ::EntityId graphCanvasSlotId = */DisplayScriptCanvasSlot(graphCanvasEntity->GetId(), slot);
+                AZ::EntityId graphCanvasSlotId = DisplayScriptCanvasSlot(graphCanvasEntity->GetId(), slot);
 
-                //GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetName, slotDetails.Name);
-                //GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetTooltip, slotDetails.Tooltip);
+                GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetName, slotDetails.Name);
+                GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetTooltip, slotDetails.Tooltip);
             }
         }
 
@@ -478,7 +478,7 @@ namespace ScriptCanvasEditor::Nodes
         AZStd::string decoratedName = AZStd::string::format("%s::%s", busName.c_str(), eventName.c_str());
 
         GraphCanvas::TranslationKey key;
-        key << "EBusHandler" << busName.c_str() << "methods" << eventName << "details";
+        key << "EBusHandler" << busName << "methods" << eventName << "details";
 
         GraphCanvas::TranslationRequests::Details details;
         details.Name = eventName.c_str();
@@ -716,8 +716,8 @@ namespace ScriptCanvasEditor::Nodes
             {
                 AZ::EntityId graphCanvasSlotId = DisplayScriptCanvasSlot(graphCanvasNodeId, slot);
 
-                //GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetName, slot.GetName());
-                //GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetTooltip, slot.GetToolTip());
+                GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetName, slot.GetName());
+                GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetTooltip, slot.GetToolTip());
 
                 UpdateSlotDatumLabel(graphCanvasNodeId, slot.GetId(), slot.GetName());
             }
@@ -802,8 +802,8 @@ namespace ScriptCanvasEditor::Nodes
         {
             AZ::EntityId graphCanvasSlotId = DisplayScriptCanvasSlot(graphCanvasNodeId, slot);
 
-            //GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetName, slot.GetName());
-            //GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetTooltip, slot.GetToolTip());
+            GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetName, slot.GetName());
+            GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetTooltip, slot.GetToolTip());
 
             UpdateSlotDatumLabel(graphCanvasNodeId, slot.GetId(), slot.GetName());
         }
