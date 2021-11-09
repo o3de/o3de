@@ -90,6 +90,26 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     }
 }
 
+enum DetailTextureFlags
+{
+    UseTextureBaseColor =  0x00000001, //0b0000'0000'0000'0000'0000'0000'0000'0001
+    UseTextureNormal =     0x00000002, //0b0000'0000'0000'0000'0000'0000'0000'0010
+    UseTextureMetallic =   0x00000004, //0b0000'0000'0000'0000'0000'0000'0000'0100
+    UseTextureRoughness =  0x00000008, //0b0000'0000'0000'0000'0000'0000'0000'1000
+    UseTextureOcclusion =  0x00000010, //0b0000'0000'0000'0000'0000'0000'0001'0000
+    UseTextureHeight =     0x00000020, //0b0000'0000'0000'0000'0000'0000'0010'0000
+    UseTextureSpecularF0 = 0x00000040, //0b0000'0000'0000'0000'0000'0000'0100'0000
+
+    FlipNormalX =          0x00010000, //0b0000'0000'0000'0001'0000'0000'0000'0000
+    FlipNormalY =          0x00020000, //0b0000'0000'0000'0010'0000'0000'0000'0000
+
+    BlendModeMask =        0x000C0000, //0b0000'0000'0000'1100'0000'0000'0000'0000
+    BlendModeLerp =        0x00000000, //0b0000'0000'0000'0000'0000'0000'0000'0000
+    BlendModeLinearLight = 0x00040000, //0b0000'0000'0000'0100'0000'0000'0000'0000
+    BlendModeMultiply =    0x00080000, //0b0000'0000'0000'1000'0000'0000'0000'0000
+    BlendModeOverlay =     0x000C0000, //0b0000'0000'0000'1100'0000'0000'0000'0000
+};
+
 ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 {
     float m_detailTextureMultiplier;
