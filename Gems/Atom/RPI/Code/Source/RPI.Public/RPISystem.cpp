@@ -268,21 +268,23 @@ namespace AZ
 
             AssetInitBus::Broadcast(&AssetInitBus::Events::PostLoadInit);
 
-            // Update tick time info
-            FillTickTimeInfo();
+            m_currentSimulationTime = GetCurrentTime();
 
             for (auto& scene : m_scenes)
             {
-                scene->Simulate(m_tickTime, m_simulationJobPolicy);
+                scene->Simulate(m_simulationJobPolicy, m_currentSimulationTime);
             }
         }
 
-        void RPISystem::FillTickTimeInfo()
+        float RPISystem::GetCurrentTime()
         {
-            AZ::TickRequestBus::BroadcastResult(m_tickTime.m_gameDeltaTime, &AZ::TickRequestBus::Events::GetTickDeltaTime);
-            ScriptTimePoint currentTime;
-            AZ::TickRequestBus::BroadcastResult(currentTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
-            m_tickTime.m_currentGameTime = static_cast<float>(currentTime.GetSeconds());
+            ScriptTimePoint timeAtCurrentTick;
+            AZ::TickRequestBus::BroadcastResult(timeAtCurrentTick, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
+
+            // We subtract the start time to maximize precision of the time value, since we will be converting it to a float.
+            double currentTime = timeAtCurrentTick.GetSeconds() - m_startTime.GetSeconds();
+
+            return aznumeric_cast<float>(currentTime);
         }
 
         void RPISystem::RenderTick()
@@ -301,7 +303,7 @@ namespace AZ
             // [GFX TODO] We may parallel scenes' prepare render.
             for (auto& scenePtr : m_scenes)
             {
-                scenePtr->PrepareRender(m_tickTime, m_prepareRenderJobPolicy);
+                scenePtr->PrepareRender(m_prepareRenderJobPolicy, m_currentSimulationTime);
             }
 
             m_rhiSystem.FrameUpdate(
