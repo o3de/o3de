@@ -1060,26 +1060,21 @@ namespace UnitTest
     /**
      * UserSettingsComponent test
      */
-     class UserSettingsTestApp
-         : public ComponentApplication
-         , public UserSettingsFileLocatorBus::Handler
-     {
-     public:
-         void SetExecutableFolder(const char* path)
-         {
-             m_exeDirectory = path;
-         }
-
+    class UserSettingsTestApp
+        : public ComponentApplication
+        , public UserSettingsFileLocatorBus::Handler
+    {
+    public:
         AZStd::string ResolveFilePath(u32 providerId) override
         {
             AZStd::string filePath;
             if (providerId == UserSettings::CT_GLOBAL)
             {
-                filePath = (m_exeDirectory / "GlobalUserSettings.xml").String();
+                filePath = (AZ::IO::Path(GetTestFolderPath()) / "GlobalUserSettings.xml").Native();
             }
             else if (providerId == UserSettings::CT_LOCAL)
             {
-                filePath = (m_exeDirectory / "LocalUserSettings.xml").String();
+                filePath = (AZ::IO::Path(GetTestFolderPath()) / "LocalUserSettings.xml").Native();
             }
             return filePath;
         }
@@ -1117,7 +1112,6 @@ namespace UnitTest
         ComponentApplication::Descriptor appDesc;
         appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
         Entity* systemEntity = app.Create(appDesc);
-        app.SetExecutableFolder(GetTestFolderPath().c_str());
         app.UserSettingsFileLocatorBus::Handler::BusConnect();
 
         // Make sure user settings file does not exist at this point

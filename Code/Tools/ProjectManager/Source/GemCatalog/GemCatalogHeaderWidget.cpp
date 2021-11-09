@@ -152,7 +152,7 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                tagContainer->Update(ConvertFromModelIndices(tagIndices));
+                tagContainer->Update(GetTagsFromModelIndices(tagIndices));
                 label->setText(QString("%1 %2").arg(tagIndices.size()).arg(tagIndices.size() == 1 ? singularTitle : pluralTitle));
                 widget->show();
             }
@@ -237,7 +237,7 @@ namespace O3DE::ProjectManager
 
         // Gem name, progress string, cancel
         QHBoxLayout* nameProgressLayout = new QHBoxLayout(newGemDownloadWidget);
-        TagWidget* newTag = new TagWidget(gemName, newGemDownloadWidget);
+        TagWidget* newTag = new TagWidget({gemName, gemName}, newGemDownloadWidget);
         nameProgressLayout->addWidget(newTag);
         QLabel* progress = new QLabel(tr("Queued"), newGemDownloadWidget);
         progress->setObjectName("DownloadProgressLabel");
@@ -311,15 +311,15 @@ namespace O3DE::ProjectManager
         GemDownloadRemoved(gemName); // update the list to remove the gem that has finished
     }
 
-    QStringList CartOverlayWidget::ConvertFromModelIndices(const QVector<QModelIndex>& gems) const
+    QVector<Tag> CartOverlayWidget::GetTagsFromModelIndices(const QVector<QModelIndex>& gems) const
     {
-        QStringList gemNames;
-        gemNames.reserve(gems.size());
+        QVector<Tag> tags;
+        tags.reserve(gems.size());
         for (const QModelIndex& modelIndex : gems)
         {
-            gemNames.push_back(GemModel::GetDisplayName(modelIndex));
+            tags.push_back({ GemModel::GetDisplayName(modelIndex), GemModel::GetName(modelIndex) });
         }
-        return gemNames;
+        return tags;
     }
 
     CartButton::CartButton(GemModel* gemModel, DownloadController* downloadController, QWidget* parent)

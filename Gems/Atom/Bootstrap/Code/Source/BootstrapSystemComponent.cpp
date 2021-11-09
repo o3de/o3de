@@ -272,6 +272,7 @@ namespace AZ
 
                 // Create and register a scene with all available feature processors
                 RPI::SceneDescriptor sceneDesc;
+                sceneDesc.m_nameId = AZ::Name("Main");
                 AZ::RPI::ScenePtr atomScene = RPI::Scene::CreateScene(sceneDesc);
                 atomScene->EnableAllFeatureProcessors();
                 atomScene->Activate();

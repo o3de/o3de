@@ -108,7 +108,7 @@ namespace AZ
         { 
             m_dynamicDrawManager.reset();
             AZ::RPI::ViewportContextManagerNotificationsBus::Handler::BusDisconnect();
-            RPI::Scene* scene = RPI::RPISystemInterface::Get()->GetDefaultScene().get();
+            RPI::Scene* scene = AZ::RPI::Scene::GetSceneForEntityContextId(m_entityContextId);
             // Check if scene is emptry since scene might be released already when running AtomSampleViewer 
             if (scene)
             {
@@ -157,9 +157,9 @@ namespace AZ
 
         void AtomBridgeSystemComponent::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
         {
-            AZ_UNUSED(bootstrapScene);
             // Make default AtomDebugDisplayViewportInterface
-            AZStd::shared_ptr<AtomDebugDisplayViewportInterface> mainEntityDebugDisplay = AZStd::make_shared<AtomDebugDisplayViewportInterface>(AzFramework::g_defaultSceneEntityDebugDisplayId);
+            AZStd::shared_ptr<AtomDebugDisplayViewportInterface> mainEntityDebugDisplay =
+                AZStd::make_shared<AtomDebugDisplayViewportInterface>(AzFramework::g_defaultSceneEntityDebugDisplayId, bootstrapScene);
             m_activeViewportsList[AzFramework::g_defaultSceneEntityDebugDisplayId] = mainEntityDebugDisplay;
         }
 

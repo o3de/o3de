@@ -25,14 +25,9 @@ public:
 
     static void ShowInExplorer(const QString& path);
 
-    // Try to compile the given lua file: returns true if compilation succeeded, false on failure.
-    static bool CompileLuaFile(const char* luaFilename);
-
     static bool ExtractFile(QString& file, bool bMsgBoxAskForExtraction = true, const char* pDestinationFilename = nullptr);
     static void EditTextFile(const char* txtFile, int line = 0, IFileUtil::ETextFileType fileType = IFileUtil::FILE_TYPE_SCRIPT);
     static void EditTextureFile(const char* txtureFile, bool bUseGameFolder);
-    static bool EditMayaFile(const char* mayaFile, const bool bExtractFromPak, const bool bUseGameFolder);
-    static bool EditFile(const char* filePath, const bool bExtrackFromPak, const bool bUseGameFolder);
 
     //! dcc filename calculation and extraction sub-routines
     static bool CalculateDccFilename(const QString& assetFilename, QString& dccFilename);

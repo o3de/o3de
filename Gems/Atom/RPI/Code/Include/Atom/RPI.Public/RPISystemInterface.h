@@ -13,6 +13,7 @@
 
 #include <Atom/RPI.Public/Base.h>
 
+#include <AzCore/Name/Name.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
 namespace AZ
@@ -46,11 +47,14 @@ namespace AZ
             //! Unregister a scene from RPISystem. The scene won't be simulated or rendered.
             virtual void UnregisterScene(ScenePtr scene) = 0;
 
-            // [GFX TODO] to be removed when we have scene setup in AZ Core
-            virtual ScenePtr GetDefaultScene() const = 0;
-
+            //! Deprecated. Use GetSceneByName(name), GetSceneForEntityContextId(entityContextId) or Scene::GetSceneForEntityId(AZ::EntityId entityId) instead
+            AZ_DEPRECATED(virtual ScenePtr GetDefaultScene() const = 0;, "This method has been deprecated. Please use GetSceneByName(name), GetSceneForEntityContextId(entityContextId) or Scene::GetSceneForEntityId(AZ::EntityId entityId) instead.");
+            
             //! Get scene by using scene id.
-            virtual ScenePtr GetScene(const SceneId& sceneId) const = 0;
+            virtual Scene* GetScene(const SceneId& sceneId) const = 0;
+
+            //! Get scene by using scene name.
+            virtual Scene* GetSceneByName(const AZ::Name& name) const = 0;
 
             //! Get the render pipeline created for a window
             virtual RenderPipelinePtr GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle) = 0;

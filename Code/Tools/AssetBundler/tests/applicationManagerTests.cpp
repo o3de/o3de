@@ -16,6 +16,7 @@
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <source/utils/utils.h>
 #include <source/utils/applicationManager.h>
@@ -84,10 +85,9 @@ namespace AssetBundler
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-            const char* engineRoot = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-            ASSERT_TRUE(engineRoot) << "Unable to locate engine root.\n";
-            AzFramework::StringFunc::Path::Join(engineRoot, RelativeTestFolder, m_data->m_testEngineRoot);
+            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
+            ASSERT_TRUE(!engineRoot.empty()) << "Unable to locate engine root.\n";
+            m_data->m_testEngineRoot = (engineRoot / RelativeTestFolder).String();
 
             m_data->m_localFileIO = aznew AZ::IO::LocalFileIO();
             m_data->m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
@@ -150,7 +150,8 @@ namespace AssetBundler
 
         EXPECT_EQ(0, gemsNameMap.size());
 
-        AzFramework::PlatformFlags platformFlags = GetEnabledPlatformFlags(m_data->m_testEngineRoot.c_str(), m_data->m_testEngineRoot.c_str(), DummyProjectName);
+        const auto testProjectPath = AZ::IO::Path(m_data->m_testEngineRoot) / DummyProjectName;
+        AzFramework::PlatformFlags platformFlags = GetEnabledPlatformFlags(m_data->m_testEngineRoot, testProjectPath.Native());
         AzFramework::PlatformFlags hostPlatformFlag = AzFramework::PlatformHelper::GetPlatformFlag(AzToolsFramework::AssetSystem::GetHostAssetPlatform());
         AzFramework::PlatformFlags expectedFlags = AzFramework::PlatformFlags::Platform_ANDROID | AzFramework::PlatformFlags::Platform_IOS | AzFramework::PlatformFlags::Platform_PROVO | hostPlatformFlag;
         ASSERT_EQ(platformFlags, expectedFlags);

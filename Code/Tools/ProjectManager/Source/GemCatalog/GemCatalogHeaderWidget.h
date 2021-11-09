@@ -43,7 +43,7 @@ namespace O3DE::ProjectManager
         void GemDownloadComplete(const QString& gemName, bool success);
 
     private:
-        QStringList ConvertFromModelIndices(const QVector<QModelIndex>& gems) const;
+        QVector<Tag> GetTagsFromModelIndices(const QVector<QModelIndex>& gems) const;
 
         using GetTagIndicesCallback = AZStd::function<QVector<QModelIndex>()>;
         void CreateGemSection(const QString& singularTitle, const QString& pluralTitle, GetTagIndicesCallback getTagIndices);
