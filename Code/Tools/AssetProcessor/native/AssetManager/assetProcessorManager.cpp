@@ -18,12 +18,8 @@
 
 #include <AzToolsFramework/Debug/TraceContext.h>
 
-
 #include "native/AssetManager/assetProcessorManager.h"
 
-#include <QDirIterator>
-#include <QRegularExpression>
-#include <regex>
 #include <AzCore/std/sort.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 
