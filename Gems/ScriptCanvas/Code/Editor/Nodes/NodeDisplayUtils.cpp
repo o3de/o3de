@@ -45,7 +45,10 @@
 #include <ScriptCanvas/Libraries/Core/Method.h>
 #include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/SetVariable.h>
-#include "Source/Translation/TranslationBus.h"
+
+#include <Source/Translation/TranslationBus.h>
+
+#pragma optimize("", off)
 
 namespace ScriptCanvasEditor::Nodes::SlotDisplayHelper
 {
@@ -319,19 +322,18 @@ namespace ScriptCanvasEditor::Nodes
 
                 if (methodNode->HasBusID() && busId == slot.GetId() && slot.GetDescriptor() == ScriptCanvas::SlotDescriptors::DataIn())
                 {
-                    key = "Global.EBusSender.BusId.details";
-                    GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+                    key = Translation::GlobalKeys::EBusSenderIDKey;
+                    GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", details);
                 }
                 else
                 {
-                    TranslationItemType itemType = TranslationHelper::GetItemType(slot.GetDescriptor());
-                    int& index = (itemType == TranslationItemType::ParamDataSlot) ? paramIndex : outputIndex;
+                    int& index = (slot.IsData() && slot.IsInput()) ? paramIndex : outputIndex;
 
                     if (slot.IsData())
                     {
                         key = isEBusSender ? "EBusSender" : "BehaviorClass";
                         key << className << "methods" << methodName;
-                        if (itemType == TranslationItemType::ParamDataSlot)
+                        if (slot.IsData() && slot.IsInput())
                         {
                             key << "params";
                         }
@@ -344,7 +346,7 @@ namespace ScriptCanvasEditor::Nodes
                         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", details);
                     }
 
-                    if ((itemType == TranslationItemType::ParamDataSlot) || (itemType == TranslationItemType::ReturnDataSlot))
+                    if (slot.IsData())
                     {
                         index++;
                     }
@@ -1273,3 +1275,6 @@ namespace ScriptCanvasEditor::Nodes::SlotDisplayHelper
         return slotId;
     }
 }
+
+
+#pragma optimize("", on)

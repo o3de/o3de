@@ -38,7 +38,7 @@
 #include <rapidjson/prettywriter.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
-#include "../Translation/TranslationHelper.h"
+#include <Editor/Translation/TranslationHelper.h>
 
 #include <Tools/TranslationBrowser/TranslationBrowser.h>
 
@@ -103,33 +103,12 @@ namespace ScriptCanvasDeveloperEditor
                                 categoryPath = categoryAttributeData->Get(nullptr);
                             }
                         }
-
-                        /*if (auto categoryStyleAttribute = editorElementData->FindAttribute(AZ::Edit::Attributes::CategoryStyle))
-                        {
-                            if (auto categoryAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(categoryStyleAttribute))
-                            {
-                                categoryInfo.m_styleOverride = categoryAttributeData->Get(nullptr);
-                            }
-                        }
-
-                        if (auto titlePaletteAttribute = editorElementData->FindAttribute(ScriptCanvas::Attributes::Node::TitlePaletteOverride))
-                        {
-                            if (auto categoryAttributeData = azdynamic_cast<const AZ::Edit::AttributeData<const char*>*>(titlePaletteAttribute))
-                            {
-                                categoryInfo.m_paletteOverride = categoryAttributeData->Get(nullptr);
-                            }
-                        }*/
                     }
                 }
 
                 // Children
                 for (auto& node : ScriptCanvas::Library::LibraryDefinition::GetNodes(classData->m_typeId))
                 {
-                    //if (HasExcludeFromNodeListAttribute(&serializeContext, node.first))
-                    //{
-                    //    continue;
-                    //}
-
                     // Pass in the associated class data so we can do more intensive lookups?
                     const AZ::SerializeContext::ClassData* nodeClassData = serializeContext.FindClassData(node.first);
 
@@ -154,7 +133,6 @@ namespace ScriptCanvasDeveloperEditor
                             category = categoryPath;
                             return false;
                         }
-                        //nodePaletteModel.RegisterCustomNode(categoryPath, node.first, node.second, nodeClassData);
                     }
                 }
 
@@ -200,9 +178,6 @@ namespace ScriptCanvasDeveloperEditor
         {
             GraphCanvas::TranslationRequestBus::Broadcast(&GraphCanvas::TranslationRequests::Restore);
             ScriptCanvasEditor::AssetTrackerRequestBus::Broadcast(&ScriptCanvasEditor::AssetTrackerRequests::RefreshAll);
-
-            
-
         }
 
         QAction* TranslationDatabaseFileAction(QMenu* mainMenu, QWidget* mainWindow)
@@ -836,7 +811,7 @@ namespace ScriptCanvasDeveloperEditor
                         if (slot.GetId() == azEventEntry.m_azEventInputSlotId)
                         {
                             GraphCanvas::TranslationKeyedString slotTranslationEntry(azEventEntry.m_eventName);
-                            slotTranslationEntry.m_context = ScriptCanvasEditor::TranslationHelper::GetAzEventHandlerContextKey();
+                            slotTranslationEntry.m_context = "AzEventHandler";
                             // The translation key in this case acts like a json pointer referencing a particular
                             // json string within a hypothetical json document
                             AZ::StackedString azEventHandlerNodeKey = ScriptCanvasEditor::TranslationHelper::GetAzEventHandlerRootPointer(azEventEntry.m_eventName);
@@ -853,7 +828,7 @@ namespace ScriptCanvasDeveloperEditor
                         else
                         {
                             GraphCanvas::TranslationKeyedString slotTranslationEntry(slot.GetName());
-                            slotTranslationEntry.m_context = ScriptCanvasEditor::TranslationHelper::GetAzEventHandlerContextKey();
+                            slotTranslationEntry.m_context = "AzEventHandler";
                             // The translation key in this case acts like a json pointer referencing a particular
                             // json string within a hypothetical json document
                             // translation key is rooted at /AzEventHandler/${EventName}/Slots/${SlotName}/{In,Out,Param,Return}

@@ -312,25 +312,10 @@ namespace ScriptCanvasDeveloper
         {
             if (const AZ::SerializeContext::ClassData* classData = serializeContext->FindClassData(node))
             {
-                //Entry entry;
-                //entry.m_key = classData->m_typeId.ToString<AZStd::string>();
-                //entry.m_context = "ScriptCanvas::Node";
-
-                //EntryDetails& details = entry.m_details;
-
                 AZStd::string cleanName = GraphCanvas::TranslationKey::Sanitize(classData->m_name);
-                //details.m_name = cleanName;
 
                 // Tooltip attribute takes priority over the edit data description
                 AZStd::string tooltip = GraphCanvasAttributeHelper::GetStringAttribute(classData, AZ::Script::Attributes::ToolTip);
-                if (!tooltip.empty())
-                {
-                    //details.m_tooltip = tooltip;
-                }
-                else
-                {
-                    //details.m_tooltip = classData->m_editData ? classData->m_editData->m_description : "";
-                }
 
                 // Find the category
                 //details.m_category = GraphCanvasAttributeHelper::GetStringAttribute(classData, AZ::Script::Attributes::Category);
@@ -354,94 +339,11 @@ namespace ScriptCanvasDeveloper
                     const auto& allSlots = nodeComponent->GetAllSlots();
                     for ([[maybe_unused]] const auto& slot : allSlots)
                     {
-                        /*Slot slotEntry;
-
-                        if (slot->GetDescriptor().IsExecution())
-                        {
-                            if (slot->GetDescriptor().IsInput())
-                            {
-                                slotEntry.m_key = AZStd::string::format("Input_%d", inputIndex);
-                                inputIndex++;
-
-                                slotEntry.m_details.m_name = slot->GetName();
-                                slotEntry.m_details.m_tooltip = slot->GetToolTip();
-                            }
-                            else if (slot->GetDescriptor().IsOutput())
-                            {
-                                slotEntry.m_key = AZStd::string::format("Output_%d", outputIndex);
-                                outputIndex++;
-
-                                slotEntry.m_details.m_name = slot->GetName();
-                                slotEntry.m_details.m_tooltip = slot->GetToolTip();
-                            }
-
-                            entry.m_slots.push_back(slotEntry);
-                        }
-                        else
-                        {
-                            AZStd::string slotTypeKey = slot->GetDataType().IsValid() ? ScriptCanvas::Data::GetName(slot->GetDataType()) : "";
-                            if (slotTypeKey.empty())
-                            {
-                                if (!slot->GetDataType().GetAZType().IsNull())
-                                {
-                                    slotTypeKey = slot->GetDataType().GetAZType().ToString<AZStd::string>();
-                                }
-                            }
-
-                            if (slotTypeKey.empty())
-                            {
-                                if (slot->GetDynamicDataType() == ScriptCanvas::DynamicDataType::Container)
-                                {
-                                    slotTypeKey = "Container";
-                                }
-                                else if (slot->GetDynamicDataType() == ScriptCanvas::DynamicDataType::Value)
-                                {
-                                    slotTypeKey = "Value";
-                                }
-                                else if (slot->GetDynamicDataType() == ScriptCanvas::DynamicDataType::Any)
-                                {
-                                    slotTypeKey = "Any";
-                                }
-                            }
-
-                            Argument& argument = slotEntry.m_data;
-
-                            if (slot->GetDescriptor().IsInput())
-                            {
-                                slotEntry.m_key = AZStd::string::format("DataInput_%d", inputIndex);
-                                inputIndex++;
-
-                                AZStd::string argumentKey = slotTypeKey;
-                                AZStd::string argumentName = slot->GetName();
-                                AZStd::string argumentDescription = slot->GetToolTip();
-
-                                argument.m_typeId = argumentKey;
-                                argument.m_details.m_name = argumentName;
-                                argument.m_details.m_tooltip = argumentDescription;
-
-                            }
-                            else if (slot->GetDescriptor().IsOutput())
-                            {
-                                slotEntry.m_key = AZStd::string::format("DataOutput_%d", outputIndex);
-                                outputIndex++;
-
-                                AZStd::string resultKey = slotTypeKey;
-                                AZStd::string resultName = slot->GetName();
-                                AZStd::string resultDescription = slot->GetToolTip();
-
-                                argument.m_typeId = resultKey;
-                                argument.m_details.m_name = resultName;
-                                argument.m_details.m_tooltip = resultDescription;
-                            }
-
-                            entry.m_slots.push_back(slotEntry);
-                        }*/
+                       
                     }
 
                     delete nodeComponent;
                 }
-
-                //translationRoot.m_entries.push_back(entry);
             }
         }
     }
@@ -469,99 +371,7 @@ namespace ScriptCanvasDeveloper
 
         }
 
-        //m_behaviorContextClassesModel->setStringList(classesStringList);
         m_behaviorContextClassesModel->sort(0);
-
-            //m_ui->localizationDataListView->
-
-        //    {
-        //        TranslationFormat translationRoot;
-
-        //        Entry entry;
-
-        //        EntryDetails& details = entry.m_details;
-        //        details.m_name = className;
-        //        details.m_category = GraphCanvasAttributeHelper::GetStringAttribute(behaviorClass, AZ::Script::Attributes::Category);
-        //        details.m_tooltip = GraphCanvasAttributeHelper::GetStringAttribute(behaviorClass, AZ::Script::Attributes::ToolTip);
-        //        entry.m_context = "";
-        //        entry.m_key = behaviorClass->m_name;
-
-        //        if (!behaviorClass->m_methods.empty())
-        //        {
-        //            for (const auto& methodPair : behaviorClass->m_methods)
-        //            {
-        //                const AZ::BehaviorMethod* behaviorMethod = methodPair.second;
-
-        //                Method methodEntry;
-
-        //                AZStd::string cleanName = GraphCanvas::TranslationKey::Sanitize(methodPair.first);
-
-        //                methodEntry.m_key = cleanName;
-        //                methodEntry.m_context = className;
-
-        //                methodEntry.m_details.m_category = "";
-        //                methodEntry.m_details.m_tooltip = "";
-        //                methodEntry.m_details.m_name = methodPair.second->m_name;
-
-        //                methodEntry.m_entry.m_name = "In";
-        //                methodEntry.m_entry.m_tooltip = AZStd::string::format("When signaled, this will invoke %s", methodEntry.m_details.m_name.c_str());
-        //                methodEntry.m_exit.m_name = "Out";
-        //                methodEntry.m_exit.m_tooltip = AZStd::string::format("Signaled after %s is invoked", methodEntry.m_details.m_name.c_str());
-
-        //                // Arguments (Input Slots)
-        //                if (behaviorMethod->GetNumArguments() > 0)
-        //                {
-        //                    for (size_t argIndex = 0; argIndex < behaviorMethod->GetNumArguments(); ++argIndex)
-        //                    {
-        //                        const AZ::BehaviorParameter* parameter = behaviorMethod->GetArgument(argIndex);
-
-        //                        Argument argument;
-
-        //                        AZStd::string argumentKey = parameter->m_typeId.ToString<AZStd::string>();
-        //                        AZStd::string argumentName = parameter->m_name;
-        //                        AZStd::string argumentDescription = "";
-
-        //                        GetTypeNameAndDescription(parameter->m_typeId, argumentName, argumentDescription);
-
-        //                        argument.m_typeId = argumentKey;
-        //                        argument.m_details.m_name = argumentName;
-        //                        argument.m_details.m_category = "";
-        //                        argument.m_details.m_tooltip = argumentDescription;
-
-        //                        methodEntry.m_arguments.push_back(argument);
-        //                    }
-        //                }
-
-        //                const AZ::BehaviorParameter* resultParameter = behaviorMethod->HasResult() ? behaviorMethod->GetResult() : nullptr;
-        //                if (resultParameter)
-        //                {
-        //                    Argument result;
-
-        //                    AZStd::string resultKey = resultParameter->m_typeId.ToString<AZStd::string>();
-
-        //                    AZStd::string resultName = resultParameter->m_name;
-        //                    AZStd::string resultDescription = "";
-
-        //                    GetTypeNameAndDescription(resultParameter->m_typeId, resultName, resultDescription);
-
-        //                    result.m_typeId = resultKey;
-        //                    result.m_details.m_name = resultName;
-        //                    result.m_details.m_tooltip = resultDescription;
-
-        //                    methodEntry.m_results.push_back(result);
-        //                }
-
-        //                entry.m_methods.push_back(methodEntry);
-        //            }
-        //        }
-
-        //        translationRoot.m_entries.push_back(entry);
-
-        //        AZStd::string fileName = AZStd::string::format("Classes/%s", className.c_str());
-
-        //        SaveJSONData(fileName, translationRoot);
-        //    }
-        //}
     }
 
 

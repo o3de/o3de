@@ -113,16 +113,6 @@ namespace GraphCanvas
         }
     }
 
-    void GeneralNodeTitleComponent::SetTranslationKeyedTitle(const TranslationKeyedString& title)
-    {
-        m_title = title.GetDisplayString();
-
-        if (m_generalNodeTitleWidget)
-        {
-            m_generalNodeTitleWidget->SetTitle(title.GetDisplayString());
-        }
-    }
-
     AZStd::string GeneralNodeTitleComponent::GetTitle() const
     {
         return m_title;
@@ -135,16 +125,6 @@ namespace GraphCanvas
         if (m_generalNodeTitleWidget)
         {
             m_generalNodeTitleWidget->SetSubTitle(subtitle);
-        }
-    }
-
-    void GeneralNodeTitleComponent::SetTranslationKeyedSubTitle(const TranslationKeyedString& subtitle)
-    {
-        m_subTitle = subtitle.GetDisplayString();
-
-        if (m_generalNodeTitleWidget)
-        {
-            m_generalNodeTitleWidget->SetSubTitle(subtitle.GetDisplayString());
         }
     }
 

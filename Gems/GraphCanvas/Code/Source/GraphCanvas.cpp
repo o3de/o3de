@@ -140,7 +140,6 @@ namespace GraphCanvas
             Styling::DefaultSelector::Reflect(serializeContext);
             Styling::CompoundSelector::Reflect(serializeContext);
             Styling::NestedSelector::Reflect(serializeContext);
-            TranslationKeyedString::Reflect(serializeContext);
             Styling::Style::Reflect(serializeContext);
             AssetEditorUserSettings::Reflect(serializeContext);
         }
