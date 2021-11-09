@@ -46,7 +46,7 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::Suffix, "m")
                     ->DataElement(0, &SlideAlongAxisBasedOnAngle::m_maximumNegativeSlideDistance, "Max Negative Slide Distance", "The maximum distance to slide in the negative")
                         ->Attribute(AZ::Edit::Attributes::Suffix, "m")
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Vector Component To Ignore")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Vector Components To Ignore")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(0, &SlideAlongAxisBasedOnAngle::m_ignoreX, "X", "When active, the X Component will be ignored.")
                         ->DataElement(0, &SlideAlongAxisBasedOnAngle::m_ignoreY, "Y", "When active, the Y Component will be ignored.")
