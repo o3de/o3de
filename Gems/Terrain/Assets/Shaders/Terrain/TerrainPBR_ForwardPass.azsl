@@ -120,7 +120,7 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
         float blendedSpecularF0 = lerp(detailSurface.m_specularF0, 0.5, detailFactor);
         surface.SetAlbedoAndSpecularF0(blendedColor, blendedSpecularF0, detailSurface.m_metalness * (1.0 - detailFactor));
 
-        surface.roughnessLinear = detailSurface.m_roughness;
+        surface.roughnessLinear = lerp(detailSurface.m_roughness, 1.0, detailFactor);
         surface.CalculateRoughnessA();
 
         detailSurface.m_normal = ReorientTangentSpaceNormal(macroNormal, detailSurface.m_normal);
