@@ -53,6 +53,8 @@ namespace Platform
 
 #define Py_To_String(obj) pybind11::str(obj).cast<std::string>().c_str()
 #define Py_To_String_Optional(dict, key, default_string) dict.contains(key) ? Py_To_String(dict[key]) : default_string
+#define Py_To_Int(obj) obj.cast<int>()
+#define Py_To_Int_Optional(dict, key, default_int) dict.contains(key) ? Py_To_Int(dict[key]) : default_int
 #define QString_To_Py_String(value) pybind11::str(value.toStdString())
 #define QString_To_Py_Path(value) m_pathlib.attr("Path")(value.toStdString())
 
@@ -705,7 +707,9 @@ namespace O3DE::ProjectManager
                 // optional
                 gemInfo.m_displayName = Py_To_String_Optional(data, "display_name", gemInfo.m_name);
                 gemInfo.m_summary = Py_To_String_Optional(data, "summary", "");
-                gemInfo.m_version = "";
+                gemInfo.m_version = Py_To_String_Optional(data, "version", gemInfo.m_version);
+                gemInfo.m_lastUpdatedDate = Py_To_String_Optional(data, "last_updated", gemInfo.m_lastUpdatedDate);
+                gemInfo.m_binarySizeInKB = Py_To_Int_Optional(data, "binary_size", gemInfo.m_binarySizeInKB);
                 gemInfo.m_requirement = Py_To_String_Optional(data, "requirements", "");
                 gemInfo.m_creator = Py_To_String_Optional(data, "origin", "");
                 gemInfo.m_documentationLink = Py_To_String_Optional(data, "documentation_url", "");

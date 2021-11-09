@@ -26,10 +26,10 @@ namespace O3DE::ProjectManager
 
     public:
         GemsSubWidget(QWidget* parent = nullptr);
-        void Update(const QString& title, const QString& text, const QStringList& gemNames);
+        void Update(const QString& title, const QString& text, const QVector<Tag>& tags);
 
     signals:
-        void TagClicked(const QString& tag);
+        void TagClicked(const Tag& tag);
 
     private:
         QLabel* m_titleLabel = nullptr;
