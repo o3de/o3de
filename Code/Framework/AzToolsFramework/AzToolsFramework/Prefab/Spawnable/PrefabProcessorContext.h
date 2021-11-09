@@ -50,7 +50,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     struct EntityAliasSpawnableLink
     {
-        EntityAliasSpawnableLink() = default;
         EntityAliasSpawnableLink(AzFramework::Spawnable& spawnable, AZ::EntityId index);
 
         AzFramework::Spawnable& m_spawnable;
@@ -59,7 +58,6 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     struct EntityAliasPrefabLink
     {
-        EntityAliasPrefabLink() = default;
         EntityAliasPrefabLink(AZStd::string prefabName, AzToolsFramework::Prefab::AliasPath alias);
 
         AZStd::string m_prefabName;
