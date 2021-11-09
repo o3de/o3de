@@ -10,9 +10,21 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <native/AssetManager/ExcludedFolderCache.h>
 #include <utilities/assetUtils.h>
+#include <utilities/PlatformConfiguration.h>
+#include <AzCore/IO/Path/Path.h>
 
 namespace AssetProcessor
 {
+    ExcludedFolderCache::ExcludedFolderCache(const PlatformConfiguration* platformConfig) : m_platformConfig(platformConfig)
+    {
+        AZ::Interface<ExcludedFolderCacheInterface>::Register(this);
+    }
+
+    ExcludedFolderCache::~ExcludedFolderCache()
+    {
+        AZ::Interface<ExcludedFolderCacheInterface>::Unregister(this);
+    }
+
     const AZStd::unordered_set<AZStd::string>& ExcludedFolderCache::GetExcludedFolders()
     {
         if (!m_builtCache)
@@ -59,9 +71,79 @@ namespace AssetProcessor
             projectCacheRootValue = AssetUtilities::NormalizeFilePath(projectCacheRootValue.c_str()).toUtf8().constData();
             m_excludedFolders.emplace(projectCacheRootValue);
 
+            auto fileStateCache = AZ::Interface<IFileStateRequests>::Get();
+
+            if (fileStateCache)
+            {
+                m_handler = AZ::Event<FileStateInfo>::Handler([this](FileStateInfo fileInfo)
+                {
+                    if (fileInfo.m_isDirectory)
+                    {
+                        AZStd::scoped_lock lock(m_pendingNewFolderMutex);
+
+                        m_pendingDeletes.emplace(fileInfo.m_absolutePath.toUtf8().constData());
+                    }
+                });
+
+                fileStateCache->RegisterForDeleteEvent(m_handler);
+            }
+
             m_builtCache = true;
         }
 
+        // Incorporate any pending folders
+        AZStd::unordered_set<AZStd::string> pendingAdds;
+        AZStd::unordered_set<AZStd::string> pendingDeletes;
+        
+        {
+            AZStd::scoped_lock lock(m_pendingNewFolderMutex);
+            pendingAdds.swap(m_pendingNewFolders);
+            pendingDeletes.swap(m_pendingDeletes);
+        }
+
+        if (!pendingAdds.empty())
+        {
+            m_excludedFolders.insert(pendingAdds.begin(), pendingAdds.end());
+        }
+
+        if (!pendingDeletes.empty())
+        {
+            for (const auto& pendingDelete : pendingDeletes)
+            {
+                m_excludedFolders.erase(pendingDelete);
+            }
+        }
+
         return m_excludedFolders;
+    }
+
+    void ExcludedFolderCache::FileAdded(QString path)
+    {
+        QString relativePath, scanFolderPath;
+        
+        if (!m_platformConfig->ConvertToRelativePath(path, relativePath, scanFolderPath))
+        {
+            AZ_Error("ExcludeFolderCache", false, "Failed to get relative path for newly added file %s", path.toUtf8().constData());
+            return;
+        }
+
+        AZ::IO::Path azPath(relativePath.toUtf8().constData());
+        AZ::IO::Path absolutePath(scanFolderPath.toUtf8().constData());
+        
+        for (const auto& pathPart : azPath)
+        {
+            absolutePath /= pathPart;
+
+            QString normalized = AssetUtilities::NormalizeFilePath(absolutePath.c_str());
+
+            if (m_platformConfig->IsFileExcluded(normalized))
+            {
+                // Add the folder to a pending list, since this callback runs on another thread
+                AZStd::scoped_lock lock(m_pendingNewFolderMutex);
+
+                m_pendingNewFolders.emplace(normalized.toUtf8().constData());
+                break;
+            }
+        }
     }
 }

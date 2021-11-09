@@ -5364,7 +5364,7 @@ AZStd::vector<AZStd::string> WildcardSourceDependencyTest::FileAddedTest(const Q
 void WildcardSourceDependencyTest::SetUp()
 {
     AssetProcessorManagerTest::SetUp();
-
+    
     QDir tempPath(m_tempDir.path());
 
     // Add a non-recursive scan folder.  Only files directly inside of this folder should be picked up, subfolders are ignored
@@ -5588,6 +5588,59 @@ TEST_F(WildcardSourceDependencyTest, Relative_CacheFolder)
     
     ASSERT_TRUE(Test("*cache.foo", resolvedPaths));
     ASSERT_THAT(resolvedPaths, ::testing::UnorderedElementsAre());
+}
+
+TEST_F(WildcardSourceDependencyTest, FilesAddedAfterInitialCache)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    auto excludedFolderCacheInterface = AZ::Interface<ExcludedFolderCacheInterface>::Get();
+
+    ASSERT_TRUE(excludedFolderCacheInterface);
+
+    {
+        const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+
+        ASSERT_EQ(excludedFolders.size(), 2);
+    }
+
+    // Add a file to a new ignored folder
+    QString newFilePath = tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored/three/new.foo");
+    UnitTestUtils::CreateDummyFile(newFilePath);
+
+    excludedFolderCacheInterface->FileAdded(newFilePath);
+
+    const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+
+    ASSERT_EQ(excludedFolders.size(), 3);
+    ASSERT_THAT(excludedFolders, ::testing::Contains(AZStd::string(tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored").toUtf8().constData())));
+}
+
+TEST_F(WildcardSourceDependencyTest, FilesRemovedAfterInitialCache)
+{
+    AZStd::vector<AZStd::string> resolvedPaths;
+    QDir tempPath(m_tempDir.path());
+
+    // Add a file to a new ignored folder
+    QString newFilePath = tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored/three/new.foo");
+    UnitTestUtils::CreateDummyFile(newFilePath);
+
+    auto excludedFolderCacheInterface = AZ::Interface<ExcludedFolderCacheInterface>::Get();
+
+    ASSERT_TRUE(excludedFolderCacheInterface);
+
+    {
+        const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+
+        ASSERT_EQ(excludedFolders.size(), 3);
+    }
+    
+    m_fileStateCache->SignalDeleteEvent(tempPath.absoluteFilePath("subfolder2/redirected/folder/two/ignored"));
+
+    const auto& excludedFolders = excludedFolderCacheInterface->GetExcludedFolders();
+
+    ASSERT_EQ(excludedFolders.size(), 2);
 }
 
 TEST_F(WildcardSourceDependencyTest, NewFile_MatchesSavedRelativeDependency)

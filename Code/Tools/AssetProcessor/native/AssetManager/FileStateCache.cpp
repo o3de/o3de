@@ -7,9 +7,10 @@
  */
 
 #include "FileStateCache.h"
-#include "native/utilities/assetUtils.h"
-#include <AssetProcessor_Traits_Platform.h>
 
+#include <AssetProcessor_Traits_Windows.h>
+
+#include "native/utilities/assetUtils.h"
 #include <QDir>
 
 namespace AssetProcessor
@@ -63,6 +64,11 @@ namespace AssetProcessor
         return true;
     }
 
+    void FileStateCache::RegisterForDeleteEvent(AZ::Event<FileStateInfo>::Handler& handler)
+    {
+        handler.Connect(m_deleteEvent);
+    }
+
     void FileStateCache::AddInfoSet(QSet<AssetFileInfo> infoSet)
     {
         LockGuardType scopeLock(m_mapMutex);
@@ -103,6 +109,8 @@ namespace AssetProcessor
 
         if (itr != m_fileInfoMap.end())
         {
+            m_deleteEvent.Signal(itr.value());
+
             bool isDirectory = itr.value().m_isDirectory;
             QString parentPath = itr.value().m_absolutePath;
             m_fileInfoMap.erase(itr);
@@ -203,6 +211,21 @@ namespace AssetProcessor
         *foundHash = AssetUtilities::GetFileHash(absolutePath.toUtf8().constData(), true);
 
         return true;
+    }
+
+    void FileStatePassthrough::RegisterForDeleteEvent(AZ::Event<FileStateInfo>::Handler& handler)
+    {
+        handler.Connect(m_deleteEvent);
+    }
+
+    void FileStatePassthrough::SignalDeleteEvent(const QString& absolutePath) const
+    {
+        FileStateInfo info;
+
+        if (GetFileInfo(absolutePath, &info))
+        {
+            m_deleteEvent.Signal(info);
+        }
     }
 
     bool FileStateInfo::operator==(const FileStateInfo& rhs) const

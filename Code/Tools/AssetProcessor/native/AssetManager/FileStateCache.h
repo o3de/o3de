@@ -51,6 +51,7 @@ namespace AssetProcessor
         /// Convenience function to check if a file or directory exists.
         virtual bool Exists(const QString& absolutePath) const = 0;
         virtual bool GetHash(const QString& absolutePath, FileHash* foundHash) = 0;
+        virtual void RegisterForDeleteEvent(AZ::Event<FileStateInfo>::Handler& handler) = 0;
 
         AZ_DISABLE_COPY_MOVE(IFileStateRequests);
     };
@@ -94,6 +95,7 @@ namespace AssetProcessor
         bool GetFileInfo(const QString& absolutePath, FileStateInfo* foundFileInfo) const override;
         bool Exists(const QString& absolutePath) const override;
         bool GetHash(const QString& absolutePath, FileHash* foundHash) override;
+        void RegisterForDeleteEvent(AZ::Event<FileStateInfo>::Handler& handler) override;
 
         void AddInfoSet(QSet<AssetFileInfo> infoSet) override;
         void AddFile(const QString& absolutePath) override;
@@ -119,6 +121,8 @@ namespace AssetProcessor
         
         QHash<QString, FileHash> m_fileHashMap;
 
+        AZ::Event<FileStateInfo> m_deleteEvent;
+
         using LockGuardType = AZStd::lock_guard<decltype(m_mapMutex)>;
     };
 
@@ -131,5 +135,10 @@ namespace AssetProcessor
         bool GetFileInfo(const QString& absolutePath, FileStateInfo* foundFileInfo) const override;
         bool Exists(const QString& absolutePath) const override;
         bool GetHash(const QString& absolutePath, FileHash* foundHash) override;
+        void RegisterForDeleteEvent(AZ::Event<FileStateInfo>::Handler& handler) override;
+
+        void SignalDeleteEvent(const QString& absolutePath) const;
+    protected:
+        AZ::Event<FileStateInfo> m_deleteEvent;
     };
 } // namespace AssetProcessor

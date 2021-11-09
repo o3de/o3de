@@ -8,19 +8,32 @@
 
 #pragma once
 
+#include <AssetManager/ExcludedFolderCacheInterface.h>
+#include <AssetManager/FileStateCache.h>
+
 namespace AssetProcessor
 {
-    struct ExcludedFolderCache
+    class PlatformConfiguration;
+    
+    struct ExcludedFolderCache : ExcludedFolderCacheInterface
     {
-        ExcludedFolderCache(const PlatformConfiguration* platformConfig) : m_platformConfig(platformConfig) {}
+        ExcludedFolderCache(const PlatformConfiguration* platformConfig);
+        ~ExcludedFolderCache() override;
 
         // Gets a set of absolute paths to folder which have been excluded according to the platform configuration rules
         // Note - not thread safe
-        const AZStd::unordered_set<AZStd::string>& GetExcludedFolders();
+        const AZStd::unordered_set<AZStd::string>& GetExcludedFolders() override;
+
+        void FileAdded(QString path) override;
 
     private:
         bool m_builtCache = false;
         const PlatformConfiguration* m_platformConfig{};
         AZStd::unordered_set<AZStd::string> m_excludedFolders;
+
+        AZStd::recursive_mutex m_pendingNewFolderMutex;
+        AZStd::unordered_set<AZStd::string> m_pendingNewFolders; // Newly ignored folders waiting to be added to m_excludedFolders
+        AZStd::unordered_set<AZStd::string> m_pendingDeletes;
+        AZ::Event<FileStateInfo>::Handler m_handler;
     };
 }
