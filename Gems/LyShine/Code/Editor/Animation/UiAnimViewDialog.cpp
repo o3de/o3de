@@ -284,9 +284,9 @@ BOOL CUiAnimViewDialog::OnInitDialog()
     m_wndCurveEditorDock->setVisible(false);
     m_wndCurveEditorDock->setEnabled(false);
 
-    // In order to prevent the track editor view is collapsed and invisible, and track & curve editors
-    // are using the same view widget in UI animation editor while not in "Both" mode, we make the
-    // minimum size of track editor and curve editor the same.
+    // In order to prevent the track editor view from collapsing and becoming invisible, we use the
+    // minimum size of the curve editor for the track editor as well. Since both editors use the same
+    // view widget in the UI animation editor when not in 'Both' mode, the sizes can be identical.
     m_wndDopeSheet->setMinimumSize(m_wndCurveEditor->minimumSizeHint());
 
     InitSequences();
