@@ -16,7 +16,7 @@ from .atom_utils.atom_component_helper import create_screenshots_archive, golden
 DEFAULT_SUBFOLDER_PATH = 'user/PythonTests/Automated/Screenshots'
 
 
-# @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
+@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(EditorTestSuite):
