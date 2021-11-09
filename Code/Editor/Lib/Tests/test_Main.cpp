@@ -14,7 +14,7 @@
 #include <QApplication>
 
 class EditorLibTestEnvironment
-    : public AZ::Test::ITestEnvironment
+    : public ::UnitTest::TraceBusHook
 {
 public:
     ~EditorLibTestEnvironment() override = default;
@@ -22,6 +22,8 @@ public:
 protected:
     void SetupEnvironment() override
     {
+        ::UnitTest::TraceBusHook::SetupEnvironment();
+
         AZ::Environment::Create(nullptr);
         AttachEditorAZEnvironment(AZ::Environment::GetInstance());
         AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
@@ -29,9 +31,11 @@ protected:
 
     void TeardownEnvironment() override
     {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         DetachEditorAZEnvironment();
+        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         AZ::Environment::Destroy();
+
+        ::UnitTest::TraceBusHook::TeardownEnvironment();
     }
 };
 
@@ -43,7 +47,7 @@ AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)
     // end
     AZ::Test::ApplyGlobalParameters(&argc, argv);
     AZ::Test::printUnusedParametersWarning(argc, argv);
-    AZ::Test::addTestEnvironments({DEFAULT_UNIT_TEST_ENV, new EditorLibTestEnvironment });
+    AZ::Test::addTestEnvironments({new EditorLibTestEnvironment});
     int result = RUN_ALL_TESTS();
     return result;
 }
