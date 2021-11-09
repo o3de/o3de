@@ -193,6 +193,22 @@ namespace Terrain
         minHeightBounds = -maxHeightBounds;
     }
 
+    float TerrainPhysicsColliderComponent::GetHeightfieldMinHeight() const
+    {
+        float minHeightBounds{ 0.0f };
+        float maxHeightBounds{ 0.0f };
+        GetHeightfieldHeightBounds(minHeightBounds, maxHeightBounds);
+        return minHeightBounds;
+    }
+
+    float TerrainPhysicsColliderComponent::GetHeightfieldMaxHeight() const
+    {
+        float minHeightBounds{ 0.0f };
+        float maxHeightBounds{ 0.0f };
+        GetHeightfieldHeightBounds(minHeightBounds, maxHeightBounds);
+        return maxHeightBounds;
+    }
+
     AZ::Transform TerrainPhysicsColliderComponent::GetHeightfieldTransform() const
     {
         // We currently don't support rotation of terrain heightfields.
@@ -294,6 +310,24 @@ namespace Terrain
 
         numColumns = aznumeric_cast<int32_t>((bounds.GetMax().GetX() - bounds.GetMin().GetX()) / gridResolution.GetX());
         numRows = aznumeric_cast<int32_t>((bounds.GetMax().GetY() - bounds.GetMin().GetY()) / gridResolution.GetY());
+    }
+
+    int32_t TerrainPhysicsColliderComponent::GetHeightfieldGridColumns() const
+    {
+        int32_t numColumns{ 0 };
+        int32_t numRows{ 0 };
+
+        GetHeightfieldGridSize(numColumns, numRows);
+        return numColumns;
+    }
+
+    int32_t TerrainPhysicsColliderComponent::GetHeightfieldGridRows() const
+    {
+        int32_t numColumns{ 0 };
+        int32_t numRows{ 0 };
+
+        GetHeightfieldGridSize(numColumns, numRows);
+        return numRows;
     }
 
     AZStd::vector<Physics::MaterialId> TerrainPhysicsColliderComponent::GetMaterialList() const
