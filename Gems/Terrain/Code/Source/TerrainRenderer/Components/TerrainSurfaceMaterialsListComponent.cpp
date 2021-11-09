@@ -112,11 +112,6 @@ namespace Terrain
     {
     }
 
-    TerrainSurfaceMaterialsListComponent ::~TerrainSurfaceMaterialsListComponent()
-    {
-        Deactivate();
-    }
-
     void TerrainSurfaceMaterialsListComponent::Activate()
     {
         m_cachedAabb = AZ::Aabb::CreateNull();
@@ -243,7 +238,7 @@ namespace Terrain
             // All materials have been deactivated, stop listening for requests and notifications.
             m_cachedAabb = AZ::Aabb::CreateNull();
             LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
-            TerrainAreaMaterialRequestBus::Handler::BusConnect(GetEntityId());
+            TerrainAreaMaterialRequestBus::Handler::BusDisconnect();
         }
     }
 

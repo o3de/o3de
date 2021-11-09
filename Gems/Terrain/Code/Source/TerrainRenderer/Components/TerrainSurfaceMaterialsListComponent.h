@@ -67,7 +67,7 @@ namespace Terrain
 
         TerrainSurfaceMaterialsListComponent(const TerrainSurfaceMaterialsListConfig& configuration);
         TerrainSurfaceMaterialsListComponent() = default;
-        ~TerrainSurfaceMaterialsListComponent();
+        ~TerrainSurfaceMaterialsListComponent() = default;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
