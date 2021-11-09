@@ -20,10 +20,6 @@ set(FILES
     AxisHelper.cpp
     DisplayContext.cpp
     Resource.h
-    DrawingPrimitives/Ruler.cpp
-    DrawingPrimitives/Ruler.h
-    DrawingPrimitives/TimeSlider.cpp
-    DrawingPrimitives/TimeSlider.h
     WinWidget/WinWidget.h
     WinWidget/WinWidgetManager.h
     WinWidget/WinWidgetManager.cpp
