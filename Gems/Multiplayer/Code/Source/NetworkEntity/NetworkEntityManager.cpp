@@ -231,35 +231,9 @@ namespace Multiplayer
     {
         for (NetEntityId exitingId : entitiesNotInDomain)
         {
-            bool safeToExit = true;
             NetworkEntityHandle entityHandle = m_networkEntityTracker.Get(exitingId);
 
-            // We need special handling for the NetworkHierarchy as well, since related entities need to be migrated together
-            NetworkHierarchyRootComponentController* hierarchyRootController = entityHandle.FindController<NetworkHierarchyRootComponentController>();
-            NetworkHierarchyChildComponentController* hierarchyChildController = entityHandle.FindController<NetworkHierarchyChildComponentController>();
-
-            // Find the root entity
-            AZ::Entity* hierarchyRootEntity = nullptr;
-            if (hierarchyRootController)
-            {
-                hierarchyRootEntity = hierarchyRootController->GetParent().GetHierarchicalRoot();
-            }
-            else if (hierarchyChildController)
-            {
-                hierarchyRootEntity = hierarchyChildController->GetParent().GetHierarchicalRoot();
-            }
-
-            if (hierarchyRootEntity)
-            {
-                NetEntityId rootNetId = GetNetEntityIdById(hierarchyRootEntity->GetId());
-                ConstNetworkEntityHandle rootEntityHandle = GetEntity(rootNetId);
-
-                // Check if the root entity is still tracked by this authority
-                if (rootEntityHandle.Exists() && rootEntityHandle.GetNetBindComponent()->HasController())
-                {
-                    safeToExit = false;
-                }
-            }
+            bool safeToExit = IsHierarchySafeToExit(entityHandle, entitiesNotInDomain);;
 
             // Validate that we aren't already planning to remove this entity
             if (safeToExit)
@@ -637,7 +611,7 @@ namespace Multiplayer
         }
     }
 
-    bool NetworkEntityManager::IsHierarchySafeToExit(NetworkEntityHandle& entityHandle, const IEntityDomain::EntitiesNotInDomain& entitiesNotInDomain)
+    bool NetworkEntityManager::IsHierarchySafeToExit(NetworkEntityHandle& entityHandle, const NetEntityIdSet& entitiesNotInDomain)
     {
         bool safeToExit = true;
 
