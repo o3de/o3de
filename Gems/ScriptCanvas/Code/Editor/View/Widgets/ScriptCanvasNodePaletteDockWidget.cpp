@@ -885,10 +885,8 @@ namespace ScriptCanvasEditor
                 {
                     QModelIndex sourceIndex = filterModel->mapToSource(index);
 
-                    [[maybe_unused]] GraphCanvas::NodePaletteTreeItem* nodePaletteItem = static_cast<GraphCanvas::NodePaletteTreeItem*>(sourceIndex.internalPointer());
+                    GraphCanvas::NodePaletteTreeItem* nodePaletteItem = static_cast<GraphCanvas::NodePaletteTreeItem*>(sourceIndex.internalPointer());
                     nodePaletteItem->GenerateTranslationData();
-
-                    // TODO: give NodePaletteTreeItem the ability to generate its own translation data
                 }
             }
         }
@@ -918,16 +916,9 @@ namespace ScriptCanvasEditor
                         {
                             AzQtComponents::ShowFileOnDesktop(gemPath.c_str());
                         }
-                        else
-                        {
-                            // File doesn't exist, offer to generate and then do what TSGenerateAction does to generate the right kind .
-                            // For now I might just generate it.. maybe...
-
-                        }
                     }
                 }
             }
-
         }
 
         void NodePaletteDockWidget::ConfigureHelper()
