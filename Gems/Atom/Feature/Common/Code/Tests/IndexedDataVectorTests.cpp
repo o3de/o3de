@@ -160,4 +160,115 @@ namespace UnitTest
         EXPECT_EQ(TestFloatVal, static_cast<float>(myVec.GetData<3>(index)));
         EXPECT_STREQ(TestConstPointerVal, static_cast<const char*>(myVec.GetData<4>(index)));
     }
+
+    TEST_F(IndexedDataVectorTests, GetIndexForData)
+    {
+        MultiIndexedDataVector<int32_t, float> myVec;
+        constexpr int32_t Count = 10;
+        int32_t startInt = 10;
+        float startFloat = 2.0f;
+
+        AZStd::vector<uint16_t> indices;
+
+        // Create some initial values
+        for (uint32_t i = 0; i < Count; ++i)
+        {
+            uint16_t index = myVec.GetFreeSlotIndex();
+            indices.push_back(index);
+            myVec.GetData<0>(index) = startInt;
+            myVec.GetData<1>(index) = startFloat;
+            startInt += 1;
+            startFloat += 1.0f;
+        }
+
+        // remove every other value to shuffle the data around
+        for (uint32_t i = 0; i < Count; i += 2)
+        {
+            myVec.RemoveIndex(indices.at(i));
+        }
+
+        // Add some data back in
+        for (uint32_t i = 0; i < Count; i += 2)
+        {
+            uint16_t index = myVec.GetFreeSlotIndex();
+            indices.at(i) = index;
+            myVec.GetData<0>(index) = startInt;
+            myVec.GetData<1>(index) = startFloat;
+            startInt += 1;
+            startFloat += 1.0f;
+        }
+
+        // For each index, get its data and make sure GetIndexForData returns the same
+        // index used to retrieve the data
+        for (uint32_t i = 0; i < Count; ++i)
+        {
+            int32_t& intData = myVec.GetData<0>(indices.at(i));
+            uint16_t indexForData = myVec.GetIndexForData<0>(&intData);
+            EXPECT_EQ(indices.at(i), indexForData);
+                
+            float& floatData = myVec.GetData<1>(indices.at(i));
+            indexForData = myVec.GetIndexForData<1>(&floatData);
+            EXPECT_EQ(indices.at(i), indexForData);
+        }
+    }
+
+    TEST_F(IndexedDataVectorTests, ForEach)
+    {
+        MultiIndexedDataVector<int32_t, float> myVec;
+        constexpr int32_t Count = 10;
+        int32_t startInt = 10;
+        float startFloat = 2.0f;
+
+        AZStd::vector<uint16_t> indices;
+        AZStd::set<int32_t> IntValues;
+        AZStd::set<float> FloatValues;
+
+        // Create some initial values
+        for (uint32_t i = 0; i < Count; ++i)
+        {
+            uint16_t index = myVec.GetFreeSlotIndex();
+            indices.push_back(index);
+            myVec.GetData<0>(index) = startInt;
+            myVec.GetData<1>(index) = startFloat;
+            IntValues.insert(startInt);
+            FloatValues.insert(startFloat);
+            startInt += 1;
+            startFloat += 1.0f;
+        }
+
+        uint32_t visitCount = 0;
+        myVec.ForEach<0>([&](int32_t value) -> bool
+        {
+            IntValues.erase(value);
+            ++visitCount;
+            return true; // keep iterrating
+        });
+
+        // All ints should have been visited and found in the set
+        EXPECT_EQ(visitCount, Count);
+        EXPECT_EQ(IntValues.size(), 0);
+
+        visitCount = 0;
+        myVec.ForEach<1>([&](float value) -> bool
+        {
+            FloatValues.erase(value);
+            ++visitCount;
+            return true; // keep iterrating
+        });
+        
+        // All floats should have been visited and found in the set
+        EXPECT_EQ(visitCount, Count);
+        EXPECT_EQ(IntValues.size(), 0);
+        
+        visitCount = 0;
+        myVec.ForEach<0>([&]([[maybe_unused]] int32_t value) -> bool
+        {
+            ++visitCount;
+            return false; // stop iterrating
+        });
+
+        // Since false is immediately returned, only one element should have been visited.
+        EXPECT_EQ(visitCount, 1);
+
+    }
 }
