@@ -505,19 +505,16 @@ namespace Audio
         SAudioObjectRequestData()
             : SAudioObjectRequestDataBase(eAORT_EXECUTE_TRIGGER)
             , nTriggerID(INVALID_AUDIO_CONTROL_ID)
-            , fTimeUntilRemovalInMS(0.0f)
         {}
 
-        SAudioObjectRequestData(const TAudioControlID nPassedTriggerID, const float fPassedTimeUntilRemovalInMS)
+        SAudioObjectRequestData(const TAudioControlID nPassedTriggerID)
             : SAudioObjectRequestDataBase(eAORT_EXECUTE_TRIGGER)
             , nTriggerID(nPassedTriggerID)
-            , fTimeUntilRemovalInMS(fPassedTimeUntilRemovalInMS)
         {}
 
         ~SAudioObjectRequestData<eAORT_EXECUTE_TRIGGER>()override {}
 
         TAudioControlID nTriggerID;
-        float fTimeUntilRemovalInMS;
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

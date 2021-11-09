@@ -513,7 +513,7 @@ namespace Audio
                         auto it = m_cTriggers.find(ATLInternalControlIDs::LoseFocusTriggerID);
                         if (it != m_cTriggers.end())
                         {
-                            eResult = ActivateTrigger(m_pGlobalAudioObject, it->second, 0.0f);
+                            eResult = ActivateTrigger(m_pGlobalAudioObject, it->second);
                         }
                         else
                         {
@@ -535,7 +535,7 @@ namespace Audio
                         auto it = m_cTriggers.find(ATLInternalControlIDs::GetFocusTriggerID);
                         if (it != m_cTriggers.end())
                         {
-                            eResult = ActivateTrigger(m_pGlobalAudioObject, it->second, 0.0f);
+                            eResult = ActivateTrigger(m_pGlobalAudioObject, it->second);
                         }
                         else
                         {
@@ -775,7 +775,6 @@ namespace Audio
                             eResult = ActivateTrigger(
                                 pObject,
                                 it->second,
-                                pRequestData->fTimeUntilRemovalInMS,
                                 rRequest.pOwner,
                                 rRequest.pUserData,
                                 rRequest.pUserDataOwner,
@@ -931,7 +930,6 @@ namespace Audio
                             eResult = ActivateTrigger(
                                 pObject,
                                 it->second,
-                                0.f,
                                 rRequest.pOwner,
                                 rRequest.pUserData,
                                 rRequest.pUserDataOwner,
@@ -1248,7 +1246,6 @@ namespace Audio
     EAudioRequestStatus CAudioTranslationLayer::ActivateTrigger(
         CATLAudioObjectBase* const pAudioObject,
         const CATLTrigger* const pTrigger,
-        [[maybe_unused]] const float fTimeUntilRemovalMS,
         void* const pOwner /* = nullptr */,
         void* const pUserData /* = nullptr */,
         void* const pUserDataOwner /* = nullptr */,
@@ -1847,7 +1844,7 @@ namespace Audio
 
         if (trigger)
         {
-            result = ActivateTrigger(m_pGlobalAudioObject, trigger, 0.0f);
+            result = ActivateTrigger(m_pGlobalAudioObject, trigger);
         }
         else
         {
@@ -1871,7 +1868,7 @@ namespace Audio
 
         if (trigger)
         {
-            result = ActivateTrigger(m_pGlobalAudioObject, trigger, 0.0f);
+            result = ActivateTrigger(m_pGlobalAudioObject, trigger);
         }
         else
         {

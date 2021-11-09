@@ -483,13 +483,11 @@ namespace Audio
         explicit SAudioObjectRequestDataInternal(const SAudioObjectRequestData<eAORT_EXECUTE_TRIGGER>* const pAORData)
             : SAudioObjectRequestDataInternalBase(pAORData->eType)
             , nTriggerID(pAORData->nTriggerID)
-            , fTimeUntilRemovalInMS(pAORData->fTimeUntilRemovalInMS)
         {}
 
         ~SAudioObjectRequestDataInternal<eAORT_EXECUTE_TRIGGER>()override {}
 
         const TAudioControlID nTriggerID;
-        const float fTimeUntilRemovalInMS;
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////

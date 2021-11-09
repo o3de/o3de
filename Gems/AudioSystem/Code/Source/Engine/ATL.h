@@ -86,7 +86,6 @@ namespace Audio
         EAudioRequestStatus ActivateTrigger(
             CATLAudioObjectBase* const pAudioObject,
             const CATLTrigger* const pTrigger,
-            const float fTimeUntilRemovalMS,
             void* const pOwner = nullptr,
             void* const pUserData = nullptr,
             void* const pUserDataOwner = nullptr,

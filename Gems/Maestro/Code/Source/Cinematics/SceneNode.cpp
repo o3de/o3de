@@ -920,7 +920,7 @@ void CAnimSceneNode::ApplyAudioKey(char const* const sTriggerName, bool const bP
 
             if (bPlay)
             {
-                Audio::SAudioObjectRequestData<Audio::eAORT_EXECUTE_TRIGGER> oRequestData(nAudioTriggerID, 0.0f);
+                Audio::SAudioObjectRequestData<Audio::eAORT_EXECUTE_TRIGGER> oRequestData(nAudioTriggerID);
                 oRequest.pData = &oRequestData;
                 audioSystem->PushRequest(oRequest);
             }

@@ -384,7 +384,7 @@ namespace Audio::CVars
                 }
 
                 SAudioRequest request;
-                SAudioObjectRequestData<eAORT_EXECUTE_TRIGGER> requestData(triggerId, 0.0f);
+                SAudioObjectRequestData<eAORT_EXECUTE_TRIGGER> requestData(triggerId);
 
                 request.nAudioObjectID = objectId;
                 request.nFlags = eARF_PRIORITY_NORMAL;

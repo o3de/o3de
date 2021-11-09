@@ -130,7 +130,7 @@ namespace Audio
             oRequest.nAudioObjectID = m_nAudioObjectID;
             oRequest.nFlags = rCallbackInfos.nRequestFlags;
 
-            SAudioObjectRequestData<eAORT_EXECUTE_TRIGGER> oRequestData(nTriggerID, 0.0f);
+            SAudioObjectRequestData<eAORT_EXECUTE_TRIGGER> oRequestData(nTriggerID);
             oRequest.pOwner = (rCallbackInfos.pObjectToNotify != nullptr) ? rCallbackInfos.pObjectToNotify : this;
             oRequest.pUserData = rCallbackInfos.pUserData;
             oRequest.pUserDataOwner = rCallbackInfos.pUserDataOwner;
