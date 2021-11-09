@@ -26,42 +26,27 @@ namespace Camera
         return "";
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    /// This methods will 0 out a vector component and re-normalize it
-    //////////////////////////////////////////////////////////////////////////
-    void MaskComponentFromNormalizedVector(AZ::Vector3& v, VectorComponentType vectorComponentType)
+    void MaskComponentFromNormalizedVector(AZ::Vector3& v, bool ignoreX, bool ignoreY, bool ignoreZ)
     {
-        switch (vectorComponentType)
-        {
-        case X_Component:
+
+        if (ignoreX)
         {
             v.SetX(0.f);
-            break;
         }
-        case Y_Component:
+
+        if (ignoreY)
         {
             v.SetY(0.f);
-            break;
         }
-        case Z_Component:
+
+        if (ignoreZ)
         {
             v.SetZ(0.f);
-            break;
         }
-        case None:
-        {
-            break;
-        }
-        default:
-            AZ_Warning("", false, "MaskComponentFromNormalizedVector: VectorComponentType - value not supported");
-            break;
-        }
+
         v.Normalize();
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    /// This will calculate the requested Euler angle from a given AZ::Quaternion
-    //////////////////////////////////////////////////////////////////////////
     float GetEulerAngleFromTransform(const AZ::Transform& rotation, EulerAngleType eulerAngleType)
     {
         AZ::Vector3 angles = rotation.GetEulerDegrees();
@@ -79,9 +64,6 @@ namespace Camera
         }
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    /// This will calculate an AZ::Transform based on an Euler angle
-    //////////////////////////////////////////////////////////////////////////
     AZ::Transform CreateRotationFromEulerAngle(EulerAngleType rotationType, float radians)
     {
         switch (rotationType)
@@ -98,9 +80,6 @@ namespace Camera
         }
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    /// Creates the Quaternion representing the rotation looking down the vector
-    //////////////////////////////////////////////////////////////////////////
     AZ::Quaternion CreateQuaternionFromViewVector(const AZ::Vector3 lookVector)
     {
         float twoDimensionLength = AZ::Vector2(lookVector.GetX(), lookVector.GetY()).GetLength();
