@@ -31,6 +31,7 @@ set(FILES
     native/AssetManager/ControlRequestHandler.h
     native/AssetManager/ExcludedFolderCache.cpp
     native/AssetManager/ExcludedFolderCache.h
+    native/AssetManager/ExcludedFolderCacheInterface.h
     native/assetprocessor.h
     native/connection/connection.cpp
     native/connection/connection.h
