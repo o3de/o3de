@@ -35,6 +35,7 @@ namespace EMStudio
         setStyleSheet(QString::fromUtf8(""));
 
         m_renderer = AZStd::make_unique<AnimViewportRenderer>(GetViewportContext(), m_plugin->GetRenderOptions());
+        SetScene(m_renderer->GetFrameworkScene(), false);
 
         LoadRenderFlags();
         SetupCameras();
@@ -42,11 +43,13 @@ namespace EMStudio
         Reinit();
 
         AnimViewportRequestBus::Handler::BusConnect();
+        ViewportPluginRequestBus::Handler::BusConnect();
     }
 
     AnimViewportWidget::~AnimViewportWidget()
     {
         SaveRenderFlags();
+        ViewportPluginRequestBus::Handler::BusDisconnect();
         AnimViewportRequestBus::Handler::BusDisconnect();
     }
 
@@ -173,6 +176,7 @@ namespace EMStudio
     {
         RenderViewportWidget::OnTick(deltaTime, time);
         CalculateCameraProjection();
+        RenderCustomPluginData();
     }
 
     void AnimViewportWidget::CalculateCameraProjection()
@@ -189,6 +193,16 @@ namespace EMStudio
             renderOptions->GetNearClipPlaneDistance(), renderOptions->GetFarClipPlaneDistance(), true);
 
         viewportContext->GetDefaultView()->SetViewToClipMatrix(viewToClipMatrix);
+    }
+
+    void AnimViewportWidget::RenderCustomPluginData()
+    {
+        const size_t numPlugins = GetPluginManager()->GetNumActivePlugins();
+        for (size_t i = 0; i < numPlugins; ++i)
+        {
+            EMStudioPlugin* plugin = GetPluginManager()->GetActivePlugin(i);
+            plugin->Render(m_renderFlags);
+        }
     }
 
     void AnimViewportWidget::ToggleRenderFlag(EMotionFX::ActorRenderFlag flag)
@@ -223,5 +237,10 @@ namespace EMStudio
             QString name = QString(i);
             settings.setValue(name, (bool)m_renderFlags[i]);
         }
+    }
+
+    AZ::s32 AnimViewportWidget::GetViewportId() const
+    {
+        return GetViewportContext()->GetId();
     }
 } // namespace EMStudio

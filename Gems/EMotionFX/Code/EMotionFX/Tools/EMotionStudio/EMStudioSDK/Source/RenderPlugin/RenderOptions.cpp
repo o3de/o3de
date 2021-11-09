@@ -1072,6 +1072,16 @@ namespace EMStudio
         settings.m_staticAABBColor = m_staticAABBColor;
         settings.m_skeletonColor = m_skeletonColor;
         settings.m_lineSkeletonColor = m_lineSkeletonColor;
+
+        settings.m_hitDetectionColliderColor = m_hitDetectionColliderColor;
+        settings.m_selectedHitDetectionColliderColor = m_selectedHitDetectionColliderColor;
+        settings.m_ragdollColliderColor = m_ragdollColliderColor;
+        settings.m_selectedRagdollColliderColor = m_selectedRagdollColliderColor;
+        settings.m_violatedJointLimitColor = m_violatedJointLimitColor;
+        settings.m_clothColliderColor = m_clothColliderColor;
+        settings.m_selectedClothColliderColor = m_selectedClothColliderColor;
+        settings.m_simulatedObjectColliderColor = m_simulatedObjectColliderColor;
+        settings.m_selectedSimulatedObjectColliderColor = m_selectedSimulatedObjectColliderColor;
     }
 
     void RenderOptions::OnGridUnitSizeChangedCallback() const

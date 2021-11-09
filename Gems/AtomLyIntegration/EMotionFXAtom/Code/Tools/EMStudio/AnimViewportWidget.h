@@ -10,6 +10,8 @@
 #include <QSettings>
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <AzFramework/Viewport/CameraInput.h>
+
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
 #include <EMStudio/AnimViewportRequestBus.h>
 #include <Integration/Rendering/RenderFlag.h>
 
@@ -21,6 +23,7 @@ namespace EMStudio
     class AnimViewportWidget
         : public AtomToolsFramework::RenderViewportWidget
         , private AnimViewportRequestBus::Handler
+        , private ViewportPluginRequestBus::Handler
     {
     public:
         AnimViewportWidget(AtomRenderPlugin* parentPlugin);
@@ -34,6 +37,8 @@ namespace EMStudio
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
         void CalculateCameraProjection();
+        void RenderCustomPluginData();
+
         void SetupCameras();
         void SetupCameraController();
 
@@ -44,6 +49,9 @@ namespace EMStudio
         void ResetCamera();
         void SetCameraViewMode(CameraViewMode mode);
         void ToggleRenderFlag(EMotionFX::ActorRenderFlag flag);
+
+        // ViewportPluginRequestBus::Handler overrides
+        AZ::s32 GetViewportId() const;
 
         static constexpr float CameraDistance = 2.0f;
 
