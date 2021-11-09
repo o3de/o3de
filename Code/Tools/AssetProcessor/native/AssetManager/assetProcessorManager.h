@@ -40,8 +40,9 @@
 #include "AssetRequestHandler.h"
 #include "native/utilities/JobDiagnosticTracker.h"
 #include "SourceFileRelocator.h"
-#endif
+
 #include <AssetManager/ExcludedFolderCache.h>
+#endif
 
 class FileWatcher;
 
