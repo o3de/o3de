@@ -59,12 +59,18 @@ namespace AzFramework
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Access to the input device's name
         //! \return Name of the input device
-        const char* GetName() const;
+        constexpr const char* GetName() const
+        {
+            return m_name.c_str();
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Access to the crc32 of the input device's name
         //! \return crc32 of the input device name
-        const AZ::Crc32& GetNameCrc32() const;
+        constexpr const AZ::Crc32& GetNameCrc32() const
+        {
+            return m_crc32;
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Access to the input device's index. Used for differentiating between multiple instances
@@ -74,20 +80,38 @@ namespace AzFramework
         //! at startup using indicies 0->3. As gamepads connect/disconnect at runtime we assign the
         //! appropriate (system dependent) local user id (see InputDevice::GetAssignedLocalUserId).
         //! \return Index of the input device
-        AZ::u32 GetIndex() const;
+        constexpr AZ::u32 GetIndex() const
+        {
+            return m_index;
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        ///@{
         //! Equality comparison operator
         //! \param[in] other Another instance of the class to compare for equality
-        bool operator==(const InputDeviceId& other) const;
-        bool operator!=(const InputDeviceId& other) const;
-        ///@}
+        constexpr bool operator==(const InputDeviceId& other) const
+        {
+            return (m_crc32 == other.m_crc32) && (m_index == other.m_index);
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Inequality comparison operator
+        //! \param[in] other Another instance of the class to compare for inequality
+        constexpr bool operator!=(const InputDeviceId& other) const
+        {
+            return !(*this == other);
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Less than comparison operator
         //! \param[in] other Another instance of the class to compare
-        bool operator<(const InputDeviceId& other) const;
+        constexpr bool operator<(const InputDeviceId& other) const
+        {
+            if (m_index == other.m_index)
+            {
+                return m_crc32 < other.m_crc32;
+            }
+            return m_index < other.m_index;
+        }
 
     private:
         ////////////////////////////////////////////////////////////////////////////////////////////

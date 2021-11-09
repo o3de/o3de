@@ -57,20 +57,34 @@ namespace AzFramework
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Access to the input channel's name
         //! \return Name of the input channel
-        const char* GetName() const;
+        constexpr const char* GetName() const
+        {
+            return m_name.c_str();
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Access to the crc32 of the input channel's name
         //! \return crc32 of the input channel name
-        const AZ::Crc32& GetNameCrc32() const;
+        constexpr const AZ::Crc32& GetNameCrc32() const
+        {
+            return m_crc32;
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        ///@{
         //! Equality comparison operator
         //! \param[in] other Another instance of the class to compare for equality
-        bool operator==(const InputChannelId& other) const;
-        bool operator!=(const InputChannelId& other) const;
-        ///@}
+        constexpr bool operator==(const InputChannelId& other) const
+        {
+            return m_crc32 == other.m_crc32;
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Inequality comparison operator
+        //! \param[in] other Another instance of the class to compare for inequality
+        constexpr bool operator!=(const InputChannelId& other) const
+        {
+            return !(*this == other);
+        }
 
     private:
         ////////////////////////////////////////////////////////////////////////////////////////////

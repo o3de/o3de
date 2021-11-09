@@ -53,6 +53,7 @@ namespace InputUnitTests
     {
         constexpr InputChannelId testInputChannelId1("TestInputChannelId");
         constexpr InputChannelId testInputChannelId2(testInputChannelId1);
+        static_assert(testInputChannelId1 == testInputChannelId2);
         EXPECT_EQ(testInputChannelId1, testInputChannelId2);
     }
 
@@ -61,6 +62,7 @@ namespace InputUnitTests
     {
         constexpr InputDeviceId testInputDeviceId1("TestInputDeviceId");
         constexpr InputDeviceId testInputDeviceId2(testInputDeviceId1);
+        static_assert(testInputDeviceId1 == testInputDeviceId2);
         EXPECT_EQ(testInputDeviceId1, testInputDeviceId2);
     }
 

@@ -29,44 +29,4 @@ namespace AzFramework
             ;
         }
     }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const char* InputDeviceId::GetName() const
-    {
-        return m_name.c_str();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    const AZ::Crc32& InputDeviceId::GetNameCrc32() const
-    {
-        return m_crc32;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    AZ::u32 InputDeviceId::GetIndex() const
-    {
-        return m_index;
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool InputDeviceId::operator==(const InputDeviceId& other) const
-    {
-        return (m_crc32 == other.m_crc32) && (m_index == other.m_index);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool InputDeviceId::operator!=(const InputDeviceId& other) const
-    {
-        return !(*this == other);
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    bool InputDeviceId::operator<(const InputDeviceId& other) const
-    {
-        if (m_index == other.m_index)
-        {
-            return m_crc32 < other.m_crc32;
-        }
-        return m_index < other.m_index;
-    }
 } // namespace AzFramework
