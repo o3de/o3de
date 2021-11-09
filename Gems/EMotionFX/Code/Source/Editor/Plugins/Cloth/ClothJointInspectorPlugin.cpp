@@ -205,7 +205,6 @@ namespace EMotionFX
         }
 
         const AZ::Render::RenderActorSettings& settings = EMotionFX::GetRenderActorSettings();
-
         ColliderContainerWidget::RenderColliders(PhysicsSetup::Cloth, settings.m_clothColliderColor, settings.m_selectedClothColliderColor);
     }
 } // namespace EMotionFX

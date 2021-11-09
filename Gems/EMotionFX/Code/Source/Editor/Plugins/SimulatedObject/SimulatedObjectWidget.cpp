@@ -333,6 +333,11 @@ namespace EMotionFX
 
         const Actor* actor = selectedRowIndices[0].data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
         const SimulatedObjectSetup* simulatedObjectSetup = actor->GetSimulatedObjectSetup().get();
+        if (!simulatedObjectSetup)
+        {
+            AZ_Assert(false, "Expected a simulated object setup on the actor.");
+            return;
+        }
 
         AZStd::unordered_set<const SimulatedObject*> addToCandidates;
         for (const QModelIndex& index : selectedRowIndices)
@@ -504,7 +509,12 @@ namespace EMotionFX
                 ActorInstance* actorInstance = GetActorManager().GetActorInstance(actorInstanceIndex);
                 const Actor* actor = actorInstance->GetActor();
                 const SimulatedObjectSetup* setup = actor->GetSimulatedObjectSetup().get();
-                AZ_Assert(setup, "Expected a simulated object setup on the actor instance.");
+                if (!setup)
+                {
+                    AZ_Assert(false, "Expected a simulated object setup on the actor instance.");
+                    return;
+                }
+
                 const size_t objectCount = setup->GetNumSimulatedObjects();
                 for (size_t objectIndex = 0; objectIndex < objectCount; ++objectIndex)
                 {
@@ -579,7 +589,12 @@ namespace EMotionFX
                 ActorInstance* actorInstance = GetActorManager().GetActorInstance(actorInstanceIndex);
                 const Actor* actor = actorInstance->GetActor();
                 const SimulatedObjectSetup* setup = actor->GetSimulatedObjectSetup().get();
-                AZ_Assert(setup, "Expected a simulated object setup on the actor instance.");
+                if (!setup)
+                {
+                    AZ_Assert(false, "Expected a simulated object setup on the actor instance.");
+                    return;
+                }
+
                 const size_t objectCount = setup->GetNumSimulatedObjects();
                 for (size_t objectIndex = 0; objectIndex < objectCount; ++objectIndex)
                 {

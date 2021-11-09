@@ -639,7 +639,7 @@ namespace EMotionFX
             {
                 Physics::SphereShapeConfiguration* sphere = static_cast<Physics::SphereShapeConfiguration*>(collider.second.get());
 
-                // LY Physics scaling rules: The maximum component from the node scale will be multiplied by the radius of the sphere.
+                // O3DE Physics scaling rules: The maximum component from the node scale will be multiplied by the radius of the sphere.
                 const float radius = sphere->m_radius * MCore::Max3<float>(static_cast<float>(worldScale.GetX()), static_cast<float>(worldScale.GetY()), static_cast<float>(worldScale.GetZ()));
 
                 renderUtil->RenderWireframeSphere(radius, emfxColliderGlobalTransformNoScale.ToAZTransform(), colliderColor);
@@ -648,7 +648,7 @@ namespace EMotionFX
             {
                 Physics::CapsuleShapeConfiguration* capsule = static_cast<Physics::CapsuleShapeConfiguration*>(collider.second.get());
 
-                // LY Physics scaling rules: The maximum of the X/Y scale components of the node scale will be multiplied by the radius of the capsule. The Z component of the entity scale will be multiplied by the height of the capsule.
+                // O3DE Physics scaling rules: The maximum of the X/Y scale components of the node scale will be multiplied by the radius of the capsule. The Z component of the entity scale will be multiplied by the height of the capsule.
                 const float radius = capsule->m_radius * MCore::Max<float>(static_cast<float>(worldScale.GetX()), static_cast<float>(worldScale.GetY()));
                 const float height = capsule->m_height * static_cast<float>(worldScale.GetZ());
 
@@ -658,7 +658,7 @@ namespace EMotionFX
             {
                 Physics::BoxShapeConfiguration* box = static_cast<Physics::BoxShapeConfiguration*>(collider.second.get());
 
-                // LY Physics scaling rules: Each component of the box dimensions will be scaled by the node's world scale.
+                // O3DE Physics scaling rules: Each component of the box dimensions will be scaled by the node's world scale.
                 AZ::Vector3 dimensions = box->m_dimensions;
                 dimensions *= worldScale;
 
@@ -752,7 +752,7 @@ namespace EMotionFX
             {
                 Physics::SphereShapeConfiguration* sphere = static_cast<Physics::SphereShapeConfiguration*>(collider.second.get());
 
-                // LY Physics scaling rules: The maximum component from the node scale will be multiplied by the radius of the sphere.
+                // O3DE Physics scaling rules: The maximum component from the node scale will be multiplied by the radius of the sphere.
                 const float radius = sphere->m_radius *
                     MCore::Max3<float>(static_cast<float>(worldScale.GetX()), static_cast<float>(worldScale.GetY()),
                                        static_cast<float>(worldScale.GetZ()));
@@ -765,7 +765,7 @@ namespace EMotionFX
             {
                 Physics::CapsuleShapeConfiguration* capsule = static_cast<Physics::CapsuleShapeConfiguration*>(collider.second.get());
 
-                // LY Physics scaling rules: The maximum of the X/Y scale components of the node scale will be multiplied by the radius of
+                // O3DE Physics scaling rules: The maximum of the X/Y scale components of the node scale will be multiplied by the radius of
                 // the capsule. The Z component of the entity scale will be multiplied by the height of the capsule.
                 const float radius =
                     capsule->m_radius * MCore::Max<float>(static_cast<float>(worldScale.GetX()), static_cast<float>(worldScale.GetY()));
@@ -780,7 +780,7 @@ namespace EMotionFX
             {
                 Physics::BoxShapeConfiguration* box = static_cast<Physics::BoxShapeConfiguration*>(collider.second.get());
 
-                // LY Physics scaling rules: Each component of the box dimensions will be scaled by the node's world scale.
+                // O3DE Physics scaling rules: Each component of the box dimensions will be scaled by the node's world scale.
                 AZ::Vector3 dimensions = box->m_dimensions;
                 dimensions *= worldScale;
 
