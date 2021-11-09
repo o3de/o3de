@@ -27,6 +27,16 @@ namespace AZ::Render
         float m_tangentsScale = 1.0f;
         float m_wireframeScale = 1.0f;
 
+        AZ::Color m_hitDetectionColliderColor{0.44f, 0.44f, 0.44f, 1.0f};
+        AZ::Color m_selectedHitDetectionColliderColor{ 0.3f, 0.56f, 0.88f, 1.0f };
+        AZ::Color m_ragdollColliderColor{ 0.44f, 0.44f, 0.44f, 1.0f };
+        AZ::Color m_selectedRagdollColliderColor{ 0.96f, 0.65f, 0.14f, 1.0f };
+        AZ::Color m_violatedJointLimitColor{ 1.0f, 0.0f, 0.0f, 1.0f };
+        AZ::Color m_clothColliderColor{ 0.44f, 0.44f, 0.44f, 1.0f };
+        AZ::Color m_selectedClothColliderColor{ 0.6f, 0.46f, 1.0f, 1.0f };
+        AZ::Color m_simulatedObjectColliderColor{ 0.44f, 0.44f, 0.44f, 1.0f };
+        AZ::Color m_selectedSimulatedObjectColliderColor{ 1.0, 0.34f, 0.87f, 1.0f };
+
         AZ::Color m_vertexNormalsColor{ 0.0f, 1.0f, 0.0f, 1.0f };
         AZ::Color m_faceNormalsColor{ 0.5f, 0.5f, 1.0f, 1.0f };
         AZ::Color m_tangentsColor{ 1.0f, 0.0f, 0.0f, 1.0f };
