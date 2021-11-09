@@ -25,8 +25,8 @@ protected:
         ::UnitTest::TraceBusHook::SetupEnvironment();
 
         AZ::Environment::Create(nullptr);
-        AttachEditorAZEnvironment(AZ::Environment::GetInstance());
         AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+        AttachEditorAZEnvironment(AZ::Environment::GetInstance());
     }
 
     void TeardownEnvironment() override
