@@ -225,7 +225,7 @@ namespace AZ
                     return false;
                 }
 
-                RHI::BufferViewDescriptor positionBufferViewDesc = bufferAssetViewPtr->GetBufferViewDescriptor();
+                RHI::BufferViewDescriptor positionBufferViewDesc = positionBuffer->m_bufferAssetView.GetBufferViewDescriptor();
                 AZStd::array_view<uint8_t> positionRawBuffer = bufferAssetViewPtr->GetBuffer();
 
                 const uint32_t positionElementSize = positionBufferViewDesc.m_elementSize;
@@ -238,8 +238,8 @@ namespace AZ
                     return false;
                 }
 
+                RHI::BufferViewDescriptor indexBufferViewDesc = indexBufferView.GetBufferViewDescriptor();
                 AZStd::array_view<uint8_t> indexRawBuffer = indexAssetViewPtr->GetBuffer();
-                RHI::BufferViewDescriptor indexRawDesc = indexAssetViewPtr->GetBufferViewDescriptor();
 
                 bool anyHit = false;
 
@@ -248,8 +248,15 @@ namespace AZ
                 AZ::Vector3 intersectionNormal;
 
                 float shortestDistanceNormalized = AZStd::numeric_limits<float>::max();
-                const AZ::u32* indexPtr = reinterpret_cast<const AZ::u32*>(indexRawBuffer.data());
-                for (uint32_t indexIter = 0; indexIter <= indexRawDesc.m_elementCount - 3; indexIter += 3, indexPtr += 3)
+
+                const AZ::u32* indexPtr = reinterpret_cast<const AZ::u32*>(
+                    indexRawBuffer.data() + (indexBufferViewDesc.m_elementOffset * indexBufferViewDesc.m_elementSize));
+                const float* positionPtr = reinterpret_cast<const float*>(
+                    positionRawBuffer.data() + (positionBufferViewDesc.m_elementOffset * positionBufferViewDesc.m_elementSize));
+
+                constexpr int StepSize = 3; // number of values per vertex (x, y, z)
+                for (uint32_t indexIter = 0; indexIter <= indexBufferViewDesc.m_elementCount - StepSize;
+                     indexIter += StepSize, indexPtr += StepSize)
                 {
                     AZ::u32 index0 = indexPtr[0];
                     AZ::u32 index1 = indexPtr[1];
@@ -261,13 +268,13 @@ namespace AZ
                         return false;
                     }
 
-                    const float* p = reinterpret_cast<const float*>(&positionRawBuffer[index0 * positionElementSize]);
+                    const float* p = &positionPtr[index0 * StepSize];
                     a.Set(const_cast<float*>(p)); // faster than AZ::Vector3 c-tor
 
-                    p = reinterpret_cast<const float*>(&positionRawBuffer[index1 * positionElementSize]);
+                    p = &positionPtr[index1 * StepSize];
                     b.Set(const_cast<float*>(p));
 
-                    p = reinterpret_cast<const float*>(&positionRawBuffer[index2 * positionElementSize]);
+                    p = &positionPtr[index2 * StepSize];
                     c.Set(const_cast<float*>(p));
 
                     float currentDistanceNormalized;
