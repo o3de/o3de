@@ -392,9 +392,6 @@ set(FILES
     QuickAccessBar.cpp
     QuickAccessBar.h
     QuickAccessBar.ui
-    ResizeResolutionDialog.cpp
-    ResizeResolutionDialog.h
-    ResizeResolutionDialog.ui
     SelectLightAnimationDialog.cpp
     SelectLightAnimationDialog.h
     SelectSequenceDialog.cpp
