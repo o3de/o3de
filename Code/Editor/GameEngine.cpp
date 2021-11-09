@@ -49,9 +49,6 @@
 #include "Include/IObjectManager.h"
 #include "ActionManager.h"
 
-// Including this too early will result in a linker error
-#include <CryCommon/CryLibrary.h>
-
 // Implementation of System Callback structure.
 struct SSystemUserCallback
     : public ISystemUserCallback
@@ -242,8 +239,7 @@ private:
 
 AZ_PUSH_DISABLE_WARNING(4273, "-Wunknown-warning-option")
 CGameEngine::CGameEngine()
-    : m_gameDll(nullptr)
-    , m_bIgnoreUpdates(false)
+    : m_bIgnoreUpdates(false)
     , m_ePendingGameMode(ePGM_NotPending)
     , m_modalWindowDismisser(nullptr)
 AZ_POP_DISABLE_WARNING
@@ -253,7 +249,7 @@ AZ_POP_DISABLE_WARNING
     m_bInGameMode = false;
     m_bSimulationMode = false;
     m_bSyncPlayerPosition = true;
-    m_hSystemHandle = nullptr;
+    m_hSystemHandle.reset(nullptr);
     m_bJustCreated = false;
     m_levelName = "Untitled";
     m_levelExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
@@ -268,18 +264,10 @@ AZ_POP_DISABLE_WARNING
     GetIEditor()->UnregisterNotifyListener(this);
     m_pISystem->GetIMovieSystem()->SetCallback(nullptr);
 
-    if (m_gameDll)
-    {
-        CryFreeLibrary(m_gameDll);
-    }
-
     delete m_pISystem;
     m_pISystem = nullptr;
 
-    if (m_hSystemHandle)
-    {
-        CryFreeLibrary(m_hSystemHandle);
-    }
+    m_hSystemHandle.reset(nullptr);
 
     delete m_pSystemUserCallback;
 }
@@ -347,18 +335,14 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
     HWND hwndForInputSystem)
 {
     m_pSystemUserCallback = new SSystemUserCallback(logo);
-    m_hSystemHandle = CryLoadLibraryDefName("CrySystem");
 
-    if (!m_hSystemHandle)
+    m_hSystemHandle = CrySystemModuleHandle::Create();
+    if (!m_hSystemHandle->Load())
     {
-        auto errorMessage = AZStd::string::format("%s Loading Failed", CryLibraryDefName("CrySystem"));
+        auto errorMessage = AZStd::string::format("%s Loading Failed", CrySystemModuleHandle::ModuleName());
         Error(errorMessage.c_str());
         return AZ::Failure(errorMessage);
     }
-
-    PFNCREATESYSTEMINTERFACE pfnCreateSystemInterface =
-        (PFNCREATESYSTEMINTERFACE)CryGetProcAddress(m_hSystemHandle, "CreateSystemInterface");
-
 
     SSystemInitParams sip;
 
@@ -400,7 +384,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
     AssetProcessConnectionStatus apConnectionStatus;
 
-    m_pISystem = pfnCreateSystemInterface(sip);
+    m_pISystem = m_hSystemHandle->CreateSystemInterface(sip);
 
     if (!gEnv)
     {

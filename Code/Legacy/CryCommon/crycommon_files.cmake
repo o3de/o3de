@@ -102,6 +102,8 @@ set(FILES
     CryAssert_Mac.h
     CryLibrary.cpp
     CryLibrary.h
+    CrySystemLoader.cpp
+    CrySystemLoader.h
     Linux32Specific.h
     Linux64Specific.h
     Linux_Win32Wrapper.h
