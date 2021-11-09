@@ -71,6 +71,7 @@ namespace AssetProcessor
             projectCacheRootValue = AssetUtilities::NormalizeFilePath(projectCacheRootValue.c_str()).toUtf8().constData();
             m_excludedFolders.emplace(projectCacheRootValue);
 
+            // Register to be notified about deletes so we can remove old ignored folders
             auto fileStateCache = AZ::Interface<IFileStateRequests>::Get();
 
             if (fileStateCache)
@@ -86,6 +87,10 @@ namespace AssetProcessor
                 });
 
                 fileStateCache->RegisterForDeleteEvent(m_handler);
+            }
+            else
+            {
+                AZ_Error("ExcludedFolderCache", false, "Failed to find IFileStateRequests interface");
             }
 
             m_builtCache = true;
@@ -123,7 +128,7 @@ namespace AssetProcessor
         
         if (!m_platformConfig->ConvertToRelativePath(path, relativePath, scanFolderPath))
         {
-            AZ_Error("ExcludeFolderCache", false, "Failed to get relative path for newly added file %s", path.toUtf8().constData());
+            AZ_Error("ExcludedFolderCache", false, "Failed to get relative path for newly added file %s", path.toUtf8().constData());
             return;
         }
 
