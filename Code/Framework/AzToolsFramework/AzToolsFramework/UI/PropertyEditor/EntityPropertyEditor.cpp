@@ -896,8 +896,7 @@ namespace AzToolsFramework
             return m_isLevelEntityEditor ? InspectorLayout::OPENPREFABCONTAINERENTITY : InspectorLayout::ENTITY;
         }
 
-        auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get();
-        if (prefabFocusPublicInterface)
+        if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
         {
             AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
             EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
