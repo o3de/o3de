@@ -46,11 +46,10 @@ namespace Camera
 
         if (v.IsZero())
         {
-            AZ_Warning("", false, "MaskComponentFromNormalizedVector: trying to normalize zero vector.")
+            AZ_Warning("StartingPointCameraUtilities", false, "MaskComponentFromNormalizedVector: trying to normalize zero vector.")
             return;
         }
         v.Normalize();
-
     }
 
     float GetEulerAngleFromTransform(const AZ::Transform& rotation, EulerAngleType eulerAngleType)
@@ -65,7 +64,7 @@ namespace Camera
         case Yaw:
             return angles.GetZ();
         default:
-            AZ_Warning("", false, "GetEulerAngleFromRotation: eulerAngleType - value not supported");
+            AZ_Warning("StartingPointCameraUtilities", false, "GetEulerAngleFromRotation: eulerAngleType - value not supported");
             return 0.f;
         }
     }
@@ -81,7 +80,7 @@ namespace Camera
         case Yaw:
             return AZ::Transform::CreateRotationZ(radians);
         default:
-            AZ_Warning("", false, "CreateRotationFromEulerAngle: rotationType - value not supported");
+            AZ_Warning("StartingPointCameraUtilities", false, "CreateRotationFromEulerAngle: rotationType - value not supported");
             return AZ::Transform::Identity();
         }
     }
