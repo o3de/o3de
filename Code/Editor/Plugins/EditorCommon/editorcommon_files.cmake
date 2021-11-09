@@ -19,8 +19,6 @@ set(FILES
     SaveUtilities/AsyncSaveRunner.cpp
     AxisHelper.cpp
     DisplayContext.cpp
-    DeepFilterProxyModel.cpp
-    DeepFilterProxyModel.h
     Resource.h
     DrawingPrimitives/Ruler.cpp
     DrawingPrimitives/Ruler.h
