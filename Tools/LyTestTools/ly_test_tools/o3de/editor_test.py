@@ -634,6 +634,7 @@ class EditorTestSuite():
                 else:
                     test_result = Result.Fail.create(test_spec, output, editor_log_content)
         except WaitTimeoutError:
+            output = editor.get_output()
             editor.kill()            
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             test_result = Result.Timeout.create(test_spec, output, test_spec.timeout, editor_log_content)
