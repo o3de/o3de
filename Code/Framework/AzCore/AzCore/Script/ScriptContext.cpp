@@ -3410,7 +3410,7 @@ LUA_API const Node* lua_getDummyNode()
                     LuaLoadFromStack fromStack = FromLuaStack(context, arg, argClass);
                     AZ_Assert(fromStack,
                         "The argument type: %s for method: %s is not serialized and/or reflected for scripting.\n"
-                        "Make sure %s is added to the serialization context and reflected to the Behavior Context\n"
+                        "Make sure %s is added to the SerializeContext and reflected to the BehaviorContext\n"
                         "For example, verify these two exist and are being called in a Reflect function:\n"
                         "serializeContext->Class<%s>();\n"
                         "behaviorContext->Class<%s>();\n"
