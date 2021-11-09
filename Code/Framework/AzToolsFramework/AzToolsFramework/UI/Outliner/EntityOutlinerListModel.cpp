@@ -1425,7 +1425,7 @@ namespace AzToolsFramework
         }
 
         // Always expand containers
-        OnEntityExpanded(entityId);
+        QueueEntityToExpand(entityId, true);
     }
 
     void EntityOutlinerListModel::OnEntityInfoUpdatedRemoveChildBegin([[maybe_unused]] AZ::EntityId parentId, [[maybe_unused]] AZ::EntityId childId)
@@ -1680,11 +1680,7 @@ namespace AzToolsFramework
     void EntityOutlinerListModel::OnEditorEntityDuplicated(const AZ::EntityId& oldEntity, const AZ::EntityId& newEntity)
     {
         AZStd::list_iterator<AZStd::pair<AZ::EntityId, bool>> expansionIter = m_entityExpansionState.find(oldEntity);
-        if(expansionIter != m_entityExpansionState.end() && expansionIter->second) {
-            OnEntityExpanded(newEntity);
-        } else {
-            OnEntityCollapsed(newEntity);
-        }
+        QueueEntityToExpand(newEntity, expansionIter != m_entityExpansionState.end() && expansionIter->second);
     }
 
     void EntityOutlinerListModel::ExpandAncestors(const AZ::EntityId& entityId)
@@ -1695,7 +1691,7 @@ namespace AzToolsFramework
         {
             AZ::EntityId parentId;
             EditorEntityInfoRequestBus::EventResult(parentId, entityId, &EditorEntityInfoRequestBus::Events::GetParent);
-            OnEntityExpanded(parentId);
+            QueueEntityToExpand(parentId, true);
             ExpandAncestors(parentId);
         }
     }
@@ -1711,14 +1707,7 @@ namespace AzToolsFramework
         //re-expand/collapse entities in the model that may have been previously removed or rearranged, resulting in new model indices
         if (entityId.IsValid())
         {
-            if(IsExpanded(entityId)) 
-            {
-                OnEntityExpanded(entityId);
-            } 
-            else 
-            {
-                OnEntityCollapsed(entityId);
-            }
+            QueueEntityToExpand(entityId, IsExpanded(entityId));
 
             EntityIdList children;
             EditorEntityInfoRequestBus::EventResult(children, entityId, &EditorEntityInfoRequestBus::Events::GetChildren);
@@ -1858,7 +1847,7 @@ namespace AzToolsFramework
         // we need to queue an expand again so that the treeview state matches our internal saved state
         if (isFilterMatch && m_entityFilteredState[entityId] && IsExpanded(entityId))
         {
-            OnEntityExpanded(entityId);
+            QueueEntityToExpand(entityId, true);
         }
 
         m_entityFilteredState[entityId] = !isFilterMatch;

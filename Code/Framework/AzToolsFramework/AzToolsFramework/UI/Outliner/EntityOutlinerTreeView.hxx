@@ -51,7 +51,7 @@ namespace AzToolsFramework
     Q_SIGNALS:
         void ItemDropped();
 
-    protected slots:
+    protected Q_SLOTS:
         void dataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles = QVector<int>()) override;
         void rowsInserted(const QModelIndex &parent, int start, int end) override;
 
