@@ -234,7 +234,7 @@ namespace AZ
         {
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnAssetReloaded %s", this, asset.GetHint().c_str());
 
-            Data::Asset<MaterialAsset> newMaterialAsset = { asset.GetAs<MaterialAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+            Data::Asset<MaterialAsset> newMaterialAsset = Data::static_pointer_cast<MaterialAsset>(asset);
 
             if (newMaterialAsset)
             {
@@ -610,7 +610,7 @@ namespace AZ
                     }
                 }
 
-                if (Data::Asset<StreamingImageAsset> streamingImageAsset = { imageAsset.GetAs<StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::PreLoad })
+                if (Data::Asset<StreamingImageAsset> streamingImageAsset = Data::static_pointer_cast<StreamingImageAsset>(imageAsset))
                 {
                     Data::Instance<Image> image = StreamingImage::FindOrCreate(streamingImageAsset);
                     if (!image)
