@@ -2,6 +2,7 @@
     "gem_name": "AWSClientAuth",
     "display_name": "AWS Client Authorization",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Amazon Web Services, Inc.",
     "type": "Code",
     "summary": "AWS Client Auth provides client authentication and AWS authorization solution.",

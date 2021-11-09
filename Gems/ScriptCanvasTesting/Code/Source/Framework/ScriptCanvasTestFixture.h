@@ -91,14 +91,6 @@ namespace ScriptCanvasTests
             AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
             AZ_Assert(fileIO, "SC unit tests require filehandling");
 
-            if (!fileIO->GetAlias("@engroot@"))
-            {
-                const char* engineRoot = nullptr;
-                AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-                AZ_Assert(engineRoot, "null engine root");
-                fileIO->SetAlias("@engroot@", engineRoot);
-            }
-
             s_setupSucceeded = fileIO->GetAlias("@engroot@") != nullptr;
             
             AZ::TickBus::AllowFunctionQueuing(true);

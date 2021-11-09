@@ -102,7 +102,9 @@ namespace UnitTest
         prefabBuilderComponent.Activate();
         
         AZStd::vector<AssetBuilderSDK::JobProduct> jobProducts;
-        auto&& prefabDom = prefabSystemComponentInterface->FindTemplateDom(parentInstance->GetTemplateId());
+        // Make a copy of the template DOM, as the prefab system still owns the existing template
+        AzToolsFramework::Prefab::PrefabDom prefabDom;
+        prefabDom.CopyFrom(prefabSystemComponentInterface->FindTemplateDom(parentInstance->GetTemplateId()), prefabDom.GetAllocator(), false);
 
         ASSERT_TRUE(prefabBuilderComponent.ProcessPrefab({AZ::Crc32("pc")}, "parent.prefab", "unused", AZ::Uuid(), prefabDom, jobProducts));
 
@@ -174,7 +176,9 @@ namespace UnitTest
         AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
         auto projectPathKey =
             AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::IO::FixedMaxPath enginePath;
+        registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
         AZ::ComponentApplication::Descriptor desc;

@@ -74,7 +74,7 @@ void InitCRTHandlers() {}
 //////////////////////////////////////////////////////////////////////////
 // This is an entry to DLL initialization function that must be called for each loaded module
 //////////////////////////////////////////////////////////////////////////
-extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused]] const char* moduleName)
+void ModuleInitISystem(ISystem* pSystem, [[maybe_unused]] const char* moduleName)
 {
     if (gEnv) // Already registered.
     {
@@ -96,7 +96,7 @@ extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused
     } // if pSystem
 }
 
-extern "C" AZ_DLL_EXPORT void ModuleShutdownISystem([[maybe_unused]] ISystem* pSystem)
+void ModuleShutdownISystem([[maybe_unused]] ISystem* pSystem)
 {
     // Unregister with AZ environment.
     AZ::Environment::Detach();

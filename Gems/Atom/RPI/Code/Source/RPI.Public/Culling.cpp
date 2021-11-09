@@ -699,9 +699,7 @@ namespace AZ
             m_parentScene = parentScene;
 
             AZ_Assert(m_visScene == nullptr, "IVisibilityScene already created for this RPI::Scene");
-            char sceneIdBuf[40] = "";
-            m_parentScene->GetId().ToString(sceneIdBuf);
-            AZ::Name visSceneName(AZStd::string::format("RenderCullScene[%s]", sceneIdBuf));
+            AZ::Name visSceneName(AZStd::string::format("RenderCullScene[%s]", m_parentScene->GetName().GetCStr()));
             m_visScene = AZ::Interface<AzFramework::IVisibilitySystem>::Get()->CreateVisibilityScene(visSceneName);
 
 #ifdef AZ_CULL_DEBUG_ENABLED
