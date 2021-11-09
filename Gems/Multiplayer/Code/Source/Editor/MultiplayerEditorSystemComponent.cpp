@@ -6,6 +6,8 @@
  *
  */
 
+#include "AzFramework/Process/ProcessCommunicator.h"
+
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/IMultiplayerTools.h>
 #include <Multiplayer/INetworkSpawnableLibrary.h>
@@ -133,6 +135,7 @@ namespace Multiplayer
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         AzFramework::GameEntityContextEventBus::Handler::BusDisconnect();
         MultiplayerEditorServerRequestBus::Handler::BusDisconnect();
+        AZ::TickBus::Handler::BusDisconnect();
     }
 
     void MultiplayerEditorSystemComponent::NotifyRegisterViews()
@@ -157,11 +160,20 @@ namespace Multiplayer
             [[fallthrough]];
         case eNotify_OnEndGameMode:
             // Kill the configured server if it's active
-            if (m_serverProcess)
+            if (m_serverProcessWatcher)
             {
-                m_serverProcess->TerminateProcess(0);
-                m_serverProcess = nullptr;
+                m_serverProcessWatcher->TerminateProcess(0);
+                if (m_serverProcessTracePrinter)
+                {
+                    m_serverProcessTracePrinter->Pump();
+                    m_serverProcessTracePrinter->WriteCurrentString(true);
+                    m_serverProcessTracePrinter->WriteCurrentString(false);
+                }
+                m_serverProcessWatcher = nullptr;
+                m_serverProcessTracePrinter = nullptr;
             }
+
+            AZ::TickBus::Handler::BusDisconnect();
 
             if (INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MpEditorInterfaceName)))
             {
@@ -220,7 +232,7 @@ namespace Multiplayer
 
         // Launch the Server
         AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(
-            processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE);
+            processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_STDINOUT);
 
         AZ_Error(
             "MultiplayerEditor", processLaunchInfo.m_launchResult != AzFramework::ProcessLauncher::ProcessLaunchResult::PLR_MissingFile,
@@ -389,4 +401,10 @@ namespace Multiplayer
     {
         return PyIsInGameMode();
     }
+
+    void MultiplayerEditorSystemComponent::OnTick(float, AZ::ScriptTimePoint)
+    {
+        m_serverProcessTracePrinter->Pump();
+    }
+
 }

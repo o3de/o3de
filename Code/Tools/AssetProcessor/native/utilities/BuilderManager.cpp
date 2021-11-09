@@ -164,7 +164,7 @@ namespace AssetProcessor
             return false;
         }
 
-        m_tracePrinter = AZStd::make_unique<CommunicatorTracePrinter>(m_processWatcher->GetCommunicator(), "AssetBuilder");
+        m_tracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_processWatcher->GetCommunicator(), "AssetBuilder");
 
         return WaitForConnection();
     }

@@ -13,14 +13,12 @@
 #include <Multiplayer/Editor/MultiplayerPythonEditorEventsBus.h>
 #include <IEditor.h>
 
-#include <Editor/MultiplayerEditorConnection.h>
-
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/IConsole.h>
-#include <AzCore/Console/ILogger.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Process/ProcessWatcher.h>
+#include <AzFramework/Process/ProcessCommunicatorTracePrinter.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 
 namespace AzNetworking
@@ -52,6 +50,7 @@ namespace Multiplayer
         , private AzToolsFramework::EditorEvents::Bus::Handler
         , private IEditorNotifyListener
         , private MultiplayerEditorServerRequestBus::Handler
+        , private AZ::TickBus::Handler
     {
     public:
         AZ_COMPONENT(MultiplayerEditorSystemComponent, "{9F335CC0-5574-4AD3-A2D8-2FAEF356946C}");
@@ -101,8 +100,14 @@ namespace Multiplayer
         void SendEditorServerLevelDataPacket(AzNetworking::IConnection* connection) override;
         //! @}
 
+        //! AZ::TickBus::Handler
+        //! @{
+        void OnTick(float, AZ::ScriptTimePoint) override;
+        //! @}
+
         IEditor* m_editor = nullptr;
-        AzFramework::ProcessWatcher* m_serverProcess = nullptr;
+        AzFramework::ProcessWatcher* m_serverProcessWatcher = nullptr;
+        AZStd::unique_ptr<ProcessCommunicatorTracePrinter> m_serverProcessTracePrinter = nullptr;
         AzNetworking::ConnectionId m_editorConnId;
 
         ServerAcceptanceReceivedEvent::Handler m_serverAcceptanceReceivedHandler;
