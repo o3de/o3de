@@ -14,7 +14,6 @@
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
-#include <AzCore/std/algorithm.h>
 
 namespace EMotionFX::MotionMatching
 {

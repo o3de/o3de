@@ -14,6 +14,7 @@
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -48,6 +49,9 @@ namespace EMotionFX::MotionMatching
         void SaveAsCsv(const AZStd::string& filename, const AZStd::vector<AZStd::string>& columnNames = {});
 
         size_t CalcMemoryUsageInBytes() const;
+
+        AZ::Vector2 GetVector2(Index row, Index startColumn) const;
+        void SetVector2(Index row, Index startColumn, const AZ::Vector2& value);
 
         AZ::Vector3 GetVector3(Index row, Index startColumn) const;
         void SetVector3(Index row, Index startColumn, const AZ::Vector3& value);

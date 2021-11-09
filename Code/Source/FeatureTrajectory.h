@@ -21,6 +21,7 @@
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/Transform.h>
 #include <BehaviorInstance.h>
+#include <FeatureTrajectory.h>
 #include <Feature.h>
 
 namespace AZ
@@ -54,12 +55,10 @@ namespace EMotionFX
 
             struct EMFX_API Sample
             {
-                AZ::Vector3 m_position;
-                AZ::Vector3 m_velocity;
-                AZ::Vector3 m_facingDirection;
-                float m_speed;
+                AZ::Vector2 m_position;
+                AZ::Vector2 m_facingDirection;
 
-                static constexpr size_t s_componentsPerSample = 10;
+                static constexpr size_t s_componentsPerSample = 4;
             };
 
             FeatureTrajectory();
@@ -122,6 +121,8 @@ namespace EMotionFX
                 const Transform& invRootTransform,
                 const AZStd::vector<BehaviorInstance::SplinePoint>& controlSplinePoints,
                 const SplineToFeatureMatrixIndex& splineToFeatureMatrixIndex) const;
+
+            Sample GetSampleFromPose(const Pose& pose, const Transform& invRootTransform) const;
 
             Sample GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex) const;
             void SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex, const Sample& sample);

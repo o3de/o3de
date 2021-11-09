@@ -81,9 +81,21 @@ namespace EMotionFX
             return velocityDirection.Dot(relativeFacingDirection);
         }
 */
+
+        FeatureTrajectory::Sample FeatureTrajectory::GetSampleFromPose(const Pose& pose, const Transform& invRootTransform) const
+        {
+            // Extract the position.
+            const AZ::Vector2 position = AZ::Vector2(invRootTransform.TransformPoint(pose.GetWorldSpaceTransform(m_nodeIndex).m_position));
+
+            // Calculate the facing direction.
+            //facingDirectionWorldSpace = CalculateFacingDirectionWorldSpace(samplePose->GetPose(), m_facingAxis, m_nodeIndex);
+            const AZ::Vector2 facingDirection = AZ::Vector2::CreateZero();
+
+            return { position, facingDirection };
+        }
+
         void FeatureTrajectory::ExtractFeatureValues(const ExtractFrameContext& context)
         {
-            // Get a temp sample pose.
             ActorInstance* actorInstance = context.m_motionInstance->GetActorInstance();
             Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
             AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(actorInstance->GetThreadIndex())->GetPosePool();
@@ -92,21 +104,11 @@ namespace EMotionFX
 
             const size_t frameIndex = context.m_frameIndex;
             const Frame& currentFrame = context.m_data->GetFrame(context.m_frameIndex);
+            const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
+
             const size_t midSampleIndex = CalcMidFrameDataIndex();
-            Sample midSample;
-
-            // Get the current frame values.
-            const AZ::Vector3& currentPosition = context.m_pose->GetWorldSpaceTransform(m_nodeIndex).m_position;
-            Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-            midSample.m_position = invRootTransform.TransformPoint(currentPosition);
-
-            // Calculate the linear velocity of the sample point in the middle.
-            CalculateVelocity(m_nodeIndex, context.m_pose, context.m_nextPose, context.m_timeDelta, midSample.m_velocity, midSample.m_speed);
-            midSample.m_velocity = invRootTransform.TransformVector(midSample.m_velocity);
-
-            // Calculate the facing direction.
-            AZ::Vector3 facingDirectionWorldSpace = CalculateFacingDirectionWorldSpace(*context.m_pose, m_facingAxis, m_nodeIndex);
-            midSample.m_facingDirection = AZ::Vector3::CreateZero();
+            const Sample midSample = GetSampleFromPose(*context.m_pose, invRootTransform);
+            SetFeatureData(context.m_featureMatrix, frameIndex, midSampleIndex, midSample);
 
             // Sample the past.
             Motion* sourceMotion = currentFrame.GetSourceMotion();
@@ -115,27 +117,15 @@ namespace EMotionFX
             for (size_t i = 0; i < m_numPastSamples; ++i)
             {
                 const size_t sampleIndex = CalcPastFrameDataIndex(i);
-                Sample sample;
 
                 // Increase the sample index by one as the zeroth past/future sample actually needs one time delta time difference to the current frame.
-                const float sampleTime = AZ::GetMax(0.0f, currentFrame.GetSampleTime() - (i+1)  * pastFrameTimeDelta);
+                const float sampleTime = AZ::GetMax(0.0f, currentFrame.GetSampleTime() - (i+1) * pastFrameTimeDelta);
                 SamplePose(sampleTime, bindPose, sourceMotion, context.m_motionInstance, &nextSamplePose->GetPose());
 
-                // Extract the position.
-                sample.m_position = invRootTransform.TransformPoint(samplePose->GetPose().GetWorldSpaceTransform(m_nodeIndex).m_position);
-
-                // Calculate the velocity
-                CalculateVelocity(m_nodeIndex, &samplePose->GetPose(), &nextSamplePose->GetPose(), pastFrameTimeDelta, sample.m_velocity, sample.m_speed);
-                const Transform invSampleTransform = samplePose->GetPose().GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-                sample.m_velocity = invSampleTransform.TransformVector(sample.m_velocity);
-
-                // Calculate the facing direction.
-                facingDirectionWorldSpace = CalculateFacingDirectionWorldSpace(samplePose->GetPose(), m_facingAxis, m_nodeIndex);
-                sample.m_facingDirection = AZ::Vector3::CreateZero();
+                const Sample sample = GetSampleFromPose(samplePose->GetPose(), invRootTransform);
+                SetFeatureData(context.m_featureMatrix, frameIndex, sampleIndex, sample);
 
                 *samplePose = *nextSamplePose;
-
-                SetFeatureData(context.m_featureMatrix, frameIndex, sampleIndex, sample);
             }
 
             // Sample into the future.
@@ -144,33 +134,19 @@ namespace EMotionFX
             for (size_t i = 0; i < m_numFutureSamples; ++i)
             {
                 const size_t sampleIndex = CalcFutureFrameDataIndex(i);
-                Sample sample;
 
                 // Sample the value at the future sample point.
                 const float sampleTime = AZ::GetMin(currentFrame.GetSampleTime() + (i+1) * futureFrameTimeDelta, sourceMotion->GetDuration());
                 SamplePose(sampleTime, bindPose, sourceMotion, context.m_motionInstance, &nextSamplePose->GetPose());
 
-                // Extract the position.
-                sample.m_position = invRootTransform.TransformPoint(samplePose->GetPose().GetWorldSpaceTransform(m_nodeIndex).m_position);
-
-                // Calculate the velocity
-                CalculateVelocity(m_nodeIndex, &samplePose->GetPose(), &nextSamplePose->GetPose(), futureFrameTimeDelta, sample.m_velocity, sample.m_speed);
-                const Transform invSampleTransform = samplePose->GetPose().GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-                sample.m_velocity = invSampleTransform.TransformVector(sample.m_velocity);
-
-                // Calculate the facing direction.
-                facingDirectionWorldSpace = CalculateFacingDirectionWorldSpace(samplePose->GetPose(), m_facingAxis, m_nodeIndex);
-                sample.m_facingDirection = AZ::Vector3::CreateZero();
+                const Sample sample = GetSampleFromPose(samplePose->GetPose(), invRootTransform);
+                SetFeatureData(context.m_featureMatrix, frameIndex, sampleIndex, sample);
 
                 *samplePose = *nextSamplePose;
-
-                SetFeatureData(context.m_featureMatrix, frameIndex, sampleIndex, sample);
             }
 
             posePool.FreePose(samplePose);
             posePool.FreePose(nextSamplePose);
-
-            SetFeatureData(context.m_featureMatrix, frameIndex, midSampleIndex, midSample);
         }
 
         void FeatureTrajectory::SetPastTimeRange(float timeInSeconds)
@@ -210,32 +186,31 @@ namespace EMotionFX
             constexpr float markerSize = 0.02f;
             const FeatureMatrix& featureMatrix = behaviorInstance->GetBehavior()->GetFeatures().GetFeatureMatrix();
 
-            Sample currentSample;
-            Sample nextSample;
+            AZ::Vector3 nextSamplePos;
             for (size_t i = 0; i < numSamples - 1; ++i)
             {
-                currentSample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i));
-                nextSample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i + 1));
+                const Sample currentSample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i));
+                const Sample nextSample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i + 1));
 
-                currentSample.m_position = transform.TransformPoint(currentSample.m_position);
-                nextSample.m_position = transform.TransformPoint(nextSample.m_position);
+                const AZ::Vector3 currentSamplePos = transform.TransformPoint(AZ::Vector3(currentSample.m_position));
+                nextSamplePos = transform.TransformPoint(AZ::Vector3(nextSample.m_position));
 
-                drawQueue->DrawCylinder(/*center=*/(nextSample.m_position + currentSample.m_position) * 0.5f,
-                    /*direction=*/(nextSample.m_position - currentSample.m_position).GetNormalizedSafe(),
+                drawQueue->DrawCylinder(/*center=*/(nextSamplePos + currentSamplePos) * 0.5f,
+                    /*direction=*/(nextSamplePos - currentSamplePos).GetNormalizedSafe(),
                     /*radius=*/0.0025f,
-                    /*height=*/(nextSample.m_position - currentSample.m_position).GetLength(),
+                    /*height=*/(nextSamplePos - currentSamplePos).GetLength(),
                     color,
                     AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                     AZ::RPI::AuxGeomDraw::DepthTest::Off);
 
-                drawQueue->DrawSphere(currentSample.m_position,
+                drawQueue->DrawSphere(currentSamplePos,
                     markerSize,
                     color,
                     AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                     AZ::RPI::AuxGeomDraw::DepthTest::Off);
             }
 
-            drawQueue->DrawSphere(nextSample.m_position,
+            drawQueue->DrawSphere(nextSamplePos,
                 markerSize, color,
                 AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                 AZ::RPI::AuxGeomDraw::DepthTest::Off);
@@ -287,36 +262,32 @@ namespace EMotionFX
             const AZStd::vector<BehaviorInstance::SplinePoint>& controlPoints,
             const SplineToFeatureMatrixIndex& splineToFeatureMatrixIndex) const
         {
-            float result = 0.0f;
-            AZ::Vector3 lastSplinePoint, lastSamplePos;
+            float cost = 0.0f;
+            AZ::Vector2 lastControlPoint, lastSamplePos;
+
             for (size_t i = 0; i < controlPoints.size(); ++i)
             {
                 const BehaviorInstance::SplinePoint& controlPoint = controlPoints[i];
                 const Sample sample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i));
-                const AZ::Vector3 splinePointPos = invRootTransform.TransformPoint(controlPoint.m_position); // Convert so it is relative to where we are and pointing to.
+                const AZ::Vector2& samplePos = sample.m_position;
+                const AZ::Vector2 controlPointPos = AZ::Vector2(invRootTransform.TransformPoint(controlPoint.m_position)); // Convert so it is relative to where we are and pointing to.
 
                 if (i != 0)
                 {
-                    const AZ::Vector3 splinePointDelta = splinePointPos - lastSplinePoint;
-                    const AZ::Vector3 sampleDelta = sample.m_position - lastSamplePos;
+                    const AZ::Vector2 controlPointDelta = controlPointPos - lastControlPoint;
+                    const AZ::Vector2 sampleDelta = samplePos - lastSamplePos;
 
-                    const float posDistance = (sample.m_position - splinePointPos).GetLength();
-                    const float posDeltaDistance = (splinePointDelta - sampleDelta).GetLength();
+                    const float posDistance = (samplePos - controlPointPos).GetLength();
+                    const float posDeltaDistance = (controlPointDelta - sampleDelta).GetLength();
 
-                    float rotDistance = 0.0f;
-                    if (posDeltaDistance < AZ::Constants::FloatEpsilon)
-                    {
-                        rotDistance = GetNormalizedDirectionDifference(splinePointDelta, sampleDelta);
-                    }
-
-                    result += posDistance + rotDistance + posDeltaDistance;
+                    cost += posDistance + posDeltaDistance;
                 }
 
-                lastSplinePoint = splinePointPos;
-                lastSamplePos = sample.m_position;
+                lastControlPoint = controlPointPos;
+                lastSamplePos = samplePos;
             }
 
-            return result;
+            return cost;
         }
 
         float FeatureTrajectory::CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const
@@ -386,14 +357,8 @@ namespace EMotionFX
             {
                 case 0: { result += "PosX"; break; }
                 case 1: { result += "PosY"; break; }
-                case 2: { result += "PosZ"; break; }
-                case 3: { result += "DirX"; break; }
-                case 4: { result += "DirY"; break; }
-                case 5: { result += "DirZ"; break; }
-                case 6: { result += "FacingDirX"; break; }
-                case 7: { result += "FacingDirY"; break; }
-                case 8: { result += "FacingDirZ"; break; }
-                case 9: { result += "Speed"; break; }
+                case 2: { result += "FacingDirX"; break; }
+                case 3: { result += "FacingDirY"; break; }
                 default: { result += Feature::GetDimensionName(index, skeleton); }
             }
 
@@ -404,20 +369,16 @@ namespace EMotionFX
         {
             const size_t columnOffset = m_featureColumnOffset + sampleIndex * Sample::s_componentsPerSample;
             return {
-                /*.m_position           =*/ featureMatrix.GetVector3(frameIndex, columnOffset + 0),
-                /*.m_velocity           =*/ featureMatrix.GetVector3(frameIndex, columnOffset + 3),
-                /*.m_facingDirection    =*/ featureMatrix.GetVector3(frameIndex, columnOffset + 6),
-                /*.m_speed              =*/ featureMatrix(frameIndex,            columnOffset + 9),
+                /*.m_position           =*/ featureMatrix.GetVector2(frameIndex, columnOffset + 0),
+                /*.m_facingDirection    =*/ featureMatrix.GetVector2(frameIndex, columnOffset + 2),
             };
         }
 
         void FeatureTrajectory::SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex, const Sample& sample)
         {
             const size_t columnOffset = m_featureColumnOffset + sampleIndex * Sample::s_componentsPerSample;
-            featureMatrix.SetVector3(frameIndex, columnOffset + 0, sample.m_position);
-            featureMatrix.SetVector3(frameIndex, columnOffset + 3 , sample.m_velocity);
-            featureMatrix.SetVector3(frameIndex, columnOffset + 6, sample.m_facingDirection);
-            featureMatrix(frameIndex,            columnOffset + 9) = sample.m_speed;
+            featureMatrix.SetVector2(frameIndex, columnOffset + 0, sample.m_position);
+            featureMatrix.SetVector2(frameIndex, columnOffset + 2, sample.m_facingDirection);
         }
     } // namespace MotionMatching
 } // namespace EMotionFX
