@@ -49,6 +49,8 @@ namespace O3DE::ProjectManager
         void OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies);
         void OnAddGemClicked();
         void SelectGem(const QString& gemName);
+        void OnGemDownloadResult(const QString& gemName, bool succeeded = true);
+        void Refresh();
         void UpdateGem(const QModelIndex& modelIndex);
         void UninstallGem(const QModelIndex& modelIndex);
 
@@ -64,7 +66,6 @@ namespace O3DE::ProjectManager
 
     private:
         void FillModel(const QString& projectPath);
-        QModelIndex GetCurrentlySelectedGem();
 
         AZStd::unique_ptr<AzToolsFramework::ToastNotificationsView> m_notificationsView;
 
@@ -78,5 +79,6 @@ namespace O3DE::ProjectManager
         DownloadController* m_downloadController = nullptr;
         bool m_notificationsEnabled = true;
         QSet<QString> m_gemsToRegisterWithProject;
+        QString m_projectPath;
     };
 } // namespace O3DE::ProjectManager

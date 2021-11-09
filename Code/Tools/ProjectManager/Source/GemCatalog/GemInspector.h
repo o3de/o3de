@@ -45,7 +45,7 @@ namespace O3DE::ProjectManager
         inline constexpr static const char* s_textColor = "#DDDDDD";
 
     signals:
-        void TagClicked(const QString& tag);
+        void TagClicked(const Tag& tag);
         void UpdateGem(const QModelIndex& modelIndex);
         void UninstallGem(const QModelIndex& modelIndex);
 

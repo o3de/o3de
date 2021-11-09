@@ -109,10 +109,10 @@ namespace O3DE::ProjectManager
         }
 
         // Depending gems
-        QStringList dependingGems = m_model->GetDependingGemNames(modelIndex);
-        if (!dependingGems.isEmpty())
+        const QVector<Tag>& dependingGemTags = m_model->GetDependingGemTags(modelIndex);
+        if (!dependingGemTags.isEmpty())
         {
-            m_dependingGems->Update(tr("Depending Gems"), tr("The following Gems will be automatically enabled with this Gem."), dependingGems);
+            m_dependingGems->Update(tr("Depending Gems"), tr("The following Gems will be automatically enabled with this Gem."), dependingGemTags);
             m_dependingGems->show();
         }
         else
@@ -123,7 +123,8 @@ namespace O3DE::ProjectManager
         // Additional information
         m_versionLabel->setText(tr("Gem Version: %1").arg(m_model->GetVersion(modelIndex)));
         m_lastUpdatedLabel->setText(tr("Last Updated: %1").arg(m_model->GetLastUpdated(modelIndex)));
-        m_binarySizeLabel->setText(tr("Binary Size:  %1 KB").arg(m_model->GetBinarySizeInKB(modelIndex)));
+        const int binarySize = m_model->GetBinarySizeInKB(modelIndex);
+        m_binarySizeLabel->setText(tr("Binary Size:  %1").arg(binarySize ? tr("%1 KB").arg(binarySize) : tr("Unknown")));
 
         // Update and Uninstall buttons
         if (m_model->GetGemOrigin(modelIndex) == GemInfo::Remote && m_model->GetDownloadStatus(modelIndex) == GemInfo::Downloaded)
