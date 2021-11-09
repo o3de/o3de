@@ -323,12 +323,6 @@ enum MouseCallbackFlags
     MK_CALLBACK_FLAGS = 0x100
 };
 
-//! Types of database items
-enum EDataBaseItemType
-{
-    EDB_TYPE_UNUSED
-};
-
 enum EEditorPathName
 {
     EDITOR_PATH_OBJECTS,
