@@ -354,7 +354,7 @@ namespace AzToolsFramework
             OnlyLayerEntities,
             OnlyPrefabEntities,
             Mixed,
-            LevelEntity
+            OpenPrefabContainerEntity
         };
         /**
          * Returns what kinds of entities are in the current selection. This is used because mixed selection
@@ -364,7 +364,7 @@ namespace AzToolsFramework
         SelectionEntityTypeInfo GetSelectionEntityTypeInfo(const EntityIdList& selection) const;
 
         /**
-         * Returns true if a selection matching the passed in selection informatation allows components to be added.
+         * Returns true if a selection matching the passed in selection information allows components to be added.
          */
         bool CanAddComponentsToSelection(const SelectionEntityTypeInfo& selectionEntityTypeInfo) const;
 
@@ -581,9 +581,9 @@ namespace AzToolsFramework
 
         enum class InspectorLayout
         {
-            ENTITY = 0,     // All selected entities are regular entities
-            LEVEL,          // The selected entity is the level prefab container entity
-            INVALID         // Other entities are selected alongside the level prefab container entity
+            ENTITY = 0,                 // All selected entities are regular entities.
+            OPENPREFABCONTAINERENTITY,  // The selected entity is the prefab container entity for the focused prefab.
+            INVALID                     // Other entities are selected alongside the level prefab container entity.
         };
 
         InspectorLayout GetCurrentInspectorLayout() const;
