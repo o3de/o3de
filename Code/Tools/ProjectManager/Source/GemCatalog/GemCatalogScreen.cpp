@@ -12,7 +12,10 @@
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <GemCatalog/GemRequirementDialog.h>
 #include <GemCatalog/GemDependenciesDialog.h>
+#include <GemCatalog/GemUpdateDialog.h>
+#include <GemCatalog/GemUninstallDialog.h>
 #include <DownloadController.h>
+
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPushButton>
@@ -55,6 +58,8 @@ namespace O3DE::ProjectManager
         m_gemInspector->setFixedWidth(240);
 
         connect(m_gemInspector, &GemInspector::TagClicked, this, &GemCatalogScreen::SelectGem);
+        connect(m_gemInspector, &GemInspector::UpdateGem, this, &GemCatalogScreen::UpdateGem);
+        connect(m_gemInspector, &GemInspector::UninstallGem, this, &GemCatalogScreen::UninstallGem);
 
         QWidget* filterWidget = new QWidget(this);
         filterWidget->setFixedWidth(240);
@@ -104,9 +109,10 @@ namespace O3DE::ProjectManager
 
         // Select the first entry after everything got correctly sized
         QTimer::singleShot(200, [=]{
-            QModelIndex firstModelIndex = m_gemListView->model()->index(0,0);
-            m_gemListView->selectionModel()->select(firstModelIndex, QItemSelectionModel::ClearAndSelect);
-            });
+            QModelIndex firstModelIndex = m_gemModel->index(0, 0); // m_gemListView->model()->index(0,0);
+            //m_gemListView->selectionModel()->select(firstModelIndex, QItemSelectionModel::ClearAndSelect);
+            m_gemModel->GetSelectionModel()->select(firstModelIndex, QItemSelectionModel::ClearAndSelect);
+        });
     }
 
     void GemCatalogScreen::OnAddGemClicked()
@@ -170,7 +176,7 @@ namespace O3DE::ProjectManager
                 notification = GemModel::GetDisplayName(modelIndex);
                 if (numChangedDependencies > 0)
                 {
-                    notification += " " + tr("and") + " ";
+                    notification += tr(" and ");
                 }
                 if (added && GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded)
                 {
@@ -178,15 +184,15 @@ namespace O3DE::ProjectManager
                 }
             }
 
-            if (numChangedDependencies == 1 )
+            if (numChangedDependencies == 1)
             {
-                notification += "1 Gem " + tr("dependency");
+                notification += tr("1 Gem dependency");
             }
             else if (numChangedDependencies > 1)
             {
-                notification += QString("%1 Gem ").arg(numChangedDependencies) + tr("dependencies");
+                notification += tr("%1 Gem %2").arg(QString(numChangedDependencies), tr("dependencies"));
             }
-            notification += " " + (added ? tr("activated") : tr("deactivated"));
+            notification += (added ? tr(" activated") : tr(" deactivated"));
 
             AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Custom, notification, "");
             toastConfiguration.m_customIconImage = ":/gem.svg";
@@ -208,6 +214,26 @@ namespace O3DE::ProjectManager
         QModelIndex proxyIndex = m_proxyModel->mapFromSource(modelIndex);
         m_proxyModel->GetSelectionModel()->select(proxyIndex, QItemSelectionModel::ClearAndSelect);
         m_gemListView->scrollTo(proxyIndex);
+    }
+
+    void GemCatalogScreen::UpdateGem(const QModelIndex& modelIndex)
+    {
+        const QString selectedGemName = m_gemModel->GetDisplayName(modelIndex);
+        GemUpdateDialog* confirmUpdateDialog = new GemUpdateDialog(selectedGemName, this);
+        if (confirmUpdateDialog->exec() == QDialog::Accepted)
+        {
+            // Update Gem
+        }
+    }
+
+    void GemCatalogScreen::UninstallGem(const QModelIndex& modelIndex)
+    {
+        const QString selectedGemName = m_gemModel->GetDisplayName(modelIndex);
+        GemUninstallDialog* confirmUninstallDialog = new GemUninstallDialog(selectedGemName, this);
+        if (confirmUninstallDialog->exec() == QDialog::Accepted)
+        {
+            // Uninstall Gem
+        }
     }
 
     void GemCatalogScreen::hideEvent(QHideEvent* event)

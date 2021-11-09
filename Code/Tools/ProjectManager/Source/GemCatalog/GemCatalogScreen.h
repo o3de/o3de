@@ -49,6 +49,8 @@ namespace O3DE::ProjectManager
         void OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies);
         void OnAddGemClicked();
         void SelectGem(const QString& gemName);
+        void UpdateGem(const QModelIndex& modelIndex);
+        void UninstallGem(const QModelIndex& modelIndex);
 
     protected:
         void hideEvent(QHideEvent* event) override;
@@ -62,6 +64,7 @@ namespace O3DE::ProjectManager
 
     private:
         void FillModel(const QString& projectPath);
+        QModelIndex GetCurrentlySelectedGem();
 
         AZStd::unique_ptr<AzToolsFramework::ToastNotificationsView> m_notificationsView;
 
