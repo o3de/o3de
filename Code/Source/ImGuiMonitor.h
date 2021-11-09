@@ -69,7 +69,7 @@ namespace EMotionFX::MotionMatching
             AZStd::vector<ImGui::LYImGuiUtils::HistogramContainer> m_histograms;
             int m_histogramContainerCount = 500;
 
-            static constexpr float s_histogramHeight = 100.0f;
+            static constexpr float s_histogramHeight = 95.0f;
         };
 
         HistogramGroup m_performanceStats;

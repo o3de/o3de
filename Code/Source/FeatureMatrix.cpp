@@ -48,6 +48,19 @@ namespace EMotionFX::MotionMatching
         file << format(g_eigenCsvFormat);
     }
 
+    AZ::Vector2 FeatureMatrix::GetVector2(Index row, Index startColumn) const
+    {
+        return AZ::Vector2(
+            coeff(row, startColumn + 0),
+            coeff(row, startColumn + 1));
+    }
+
+    void FeatureMatrix::SetVector2(Index row, Index startColumn, const AZ::Vector2& value)
+    {
+        operator()(row, startColumn + 0) = value.GetX();
+        operator()(row, startColumn + 1) = value.GetY();
+    }
+
     AZ::Vector3 FeatureMatrix::GetVector3(Index row, Index startColumn) const
     {
         return AZ::Vector3(

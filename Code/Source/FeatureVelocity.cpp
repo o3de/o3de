@@ -97,7 +97,12 @@ namespace EMotionFX
                 AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                 AZ::RPI::AuxGeomDraw::DepthTest::Off);
 
-            drawQueue->DrawCone(jointPosition + directionWorldSpace, directionWorldSpace, 0.1f * scale, scale * 0.5f, m_debugColor, AZ::RPI::AuxGeomDraw::DrawStyle::Solid);
+            drawQueue->DrawCone(jointPosition + directionWorldSpace,
+                directionWorldSpace,
+                0.1f * scale,
+                scale * 0.5f, m_debugColor,
+                AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
+                AZ::RPI::AuxGeomDraw::DepthTest::Off);
         }
 
         float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
