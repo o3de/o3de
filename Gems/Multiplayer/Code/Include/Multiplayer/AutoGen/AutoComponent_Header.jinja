@@ -450,7 +450,7 @@ namespace {{ Component.attrib['Namespace'] }}
         {{ DeclareRpcInvocations(Component, 'Authority', 'Client', false)|indent(8) -}}
         {{ DeclareRpcInvocations(Component, 'Authority', 'Client', true)|indent(8) -}}
 
-        //! RPC Handlers: Override handlers in order ti implement what happens after receiving an RPC
+        //! RPC Handlers: Override handlers in order to implement what happens after receiving an RPC
         {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Server', 'Authority', false)|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Autonomous', 'Authority', false)|indent(8) -}}
         {{ AutoComponentMacros.DeclareRpcHandlers(Component, 'Authority', 'Autonomous', false)|indent(8) -}}
