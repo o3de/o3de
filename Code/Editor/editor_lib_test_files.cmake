@@ -22,6 +22,7 @@ set(FILES
     Lib/Tests/test_DisplaySettingsPythonBindings.cpp
     Lib/Tests/test_ViewportManipulatorController.cpp
     Lib/Tests/test_ModularViewportCameraController.cpp
+    Lib/Tests/Camera/test_EditorCamera.cpp
     DisplaySettingsPythonFuncs.cpp
     DisplaySettingsPythonFuncs.h
 )

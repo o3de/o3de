@@ -43,7 +43,7 @@ AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)
     // end
     AZ::Test::ApplyGlobalParameters(&argc, argv);
     AZ::Test::printUnusedParametersWarning(argc, argv);
-    AZ::Test::addTestEnvironments({new EditorLibTestEnvironment});
+    AZ::Test::addTestEnvironments({DEFAULT_UNIT_TEST_ENV, new EditorLibTestEnvironment });
     int result = RUN_ALL_TESTS();
     return result;
 }
