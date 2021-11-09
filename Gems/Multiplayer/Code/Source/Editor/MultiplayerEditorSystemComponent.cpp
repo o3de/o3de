@@ -234,6 +234,8 @@ namespace Multiplayer
         IMultiplayerTools* mpTools = AZ::Interface<IMultiplayerTools>::Get();
         if (!editorsv_enabled || !mpTools)
         {
+            // Early out if Editor server is not enabled.
+            // This allows to avoid printing an error about missing PrefabEditorEntityOwnershipInterface for non-prefab levels.
             return;
         }
 
@@ -270,12 +272,12 @@ namespace Multiplayer
             {
                 AZ_Warning(
                     "MultiplayerEditor", false,
-                    "Launching EditorServer skipped because incompatible cvars. editorsv_launch=true, meaning you want to launch an editor-server on this machine, but the editorsv_serveraddr is %s instead of the local address (127.0.0.1). "
-                    "Please either set editorsv_launch=false and keep the remote editor-server, or set editorsv_launch=true and editorsv_serveraddr=127.0.0.1.",
+                    "Launching editor server skipped because of incompatible settings. "
+                    "When using editorsv_launch=true editorsv_serveraddr must be set to local address (127.0.0.1) instead %s",
                     remoteAddress.c_str())
                 return;
             }
-                
+
             // Begin listening for MPEditor packets before we launch the editor-server.
             // The editor-server will send us (the editor) an "EditorServerReadyForLevelData" packet to let us know it's ready to receive data.
             INetworkInterface* editorNetworkInterface =
@@ -299,8 +301,7 @@ namespace Multiplayer
             {
                 AZ_Warning(
                     "MultiplayerEditor", false,
-                    "Editor multiplayer game-mode failed! Could not connect to an editor-server. editorsv_launch is false so we're assuming you're running your own editor-server at editorsv_serveraddr(%s) on editorsv_port(%i). "
-                    "Either set editorsv_launch=true so the editor launches an editor-server for you, or launch your own editor-server by hand before entering game-mode. Remember editor-servers must use editorsv_isDedicated=true.",
+                    "Could not connect to a server at editorsv_serveraddr(%s) on editorsv_port(%i). Check server is active or use editorsv_launch to auto-launch a server.",
                     remoteAddress.c_str(),
                     static_cast<uint16_t>(editorsv_port))
                 return;
