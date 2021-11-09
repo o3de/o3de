@@ -1179,6 +1179,7 @@ namespace O3DE::ProjectManager
                     QString_To_Py_String(gemName), // gem name
                     pybind11::none(), // destination path
                     false, // skip auto register
+                    false, // force
                     pybind11::cpp_function(
                         [this, gemProgressCallback](int progress)
                         {
