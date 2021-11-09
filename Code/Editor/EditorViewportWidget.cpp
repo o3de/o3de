@@ -43,10 +43,11 @@
 
 // AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
+#include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
-#include <AzToolsFramework/API/EditorCameraBus.h>
 
 // AtomToolsFramework
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
@@ -1032,6 +1033,7 @@ void EditorViewportWidget::ConnectViewportInteractionRequestBus()
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     m_viewportUi.ConnectViewportUiBus(GetViewportId());
+    AzFramework::ViewportBorderRequestBus::Handler::BusConnect(GetViewportId());
 
     AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
 }
@@ -1040,6 +1042,7 @@ void EditorViewportWidget::DisconnectViewportInteractionRequestBus()
 {
     AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusDisconnect();
 
+    AzFramework::ViewportBorderRequestBus::Handler::BusDisconnect();
     m_viewportUi.DisconnectViewportUiBus();
     AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusDisconnect();
@@ -1124,7 +1127,9 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
         action = menu->addAction(tr("Create camera entity from current view"));
         connect(action, &QAction::triggered, this, &EditorViewportWidget::OnMenuCreateCameraEntityFromCurrentView);
 
-        if (!gameEngine || !gameEngine->IsLevelLoaded())
+        const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        if (!gameEngine || !gameEngine->IsLevelLoaded() ||
+            (prefabEditorEntityOwnershipInterface && !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned()))
         {
             action->setEnabled(false);
             action->setToolTip(tr(AZ::ViewportHelpers::TextCantCreateCameraNoLevel));
@@ -2636,4 +2641,25 @@ void EditorViewportWidget::StopFullscreenPreview()
     // Show the main window
     MainWindow::instance()->show();
 }
+
+AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetViewportBorderPadding() const
+{
+    if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
+    {
+        auto viewportEditorModes = viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() });
+        if (viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Focus) ||
+            viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Component))
+        {
+            AzFramework::ViewportBorderPadding viewportBorderPadding = {};
+            viewportBorderPadding.m_top = AzToolsFramework::ViewportUi::ViewportUiTopBorderSize;
+            viewportBorderPadding.m_left = AzToolsFramework::ViewportUi::ViewportUiLeftRightBottomBorderSize;
+            viewportBorderPadding.m_right = AzToolsFramework::ViewportUi::ViewportUiLeftRightBottomBorderSize;
+            viewportBorderPadding.m_bottom = AzToolsFramework::ViewportUi::ViewportUiLeftRightBottomBorderSize;
+            return viewportBorderPadding;
+        }
+    }
+
+    return AZStd::nullopt;
+}
+
 #include <moc_EditorViewportWidget.cpp>
