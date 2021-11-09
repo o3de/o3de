@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    BuildInfo.h
     EBus.h
     Docs.h
     GridMate.cpp
@@ -17,7 +16,6 @@ set(FILES
     MathUtils.h
     Memory.h
     Types.h
-    Version.h
     Carrier/Carrier.cpp
     Carrier/Carrier.h
     Carrier/Compressor.h
