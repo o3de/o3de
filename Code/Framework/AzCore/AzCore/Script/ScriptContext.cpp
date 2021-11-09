@@ -3408,7 +3408,14 @@ LUA_API const Node* lua_getDummyNode()
                     const BehaviorParameter* arg = method->GetArgument(iArg);
                     BehaviorClass* argClass = nullptr;
                     LuaLoadFromStack fromStack = FromLuaStack(context, arg, argClass);
-                    AZ_Assert(fromStack, "Argument %s for Method %s doesn't have support to be converted to Lua!", arg->m_name, method->m_name.c_str());
+                    AZ_Assert(fromStack,
+                        "The argument type: %s for method: %s is not serialized and/or reflected for scripting.\n"
+                        "Make sure %s is added to the serialization context and reflected to the Behavior Context\n"
+                        "For example, verify these two exist and are being called in a Reflect function:\n"
+                        "serializeContext->Class<%s>();\n"
+                        "behaviorContext->Class<%s>();\n"
+                        "%s will not be available for scripting unless these requirements are met."
+                        , arg->m_name, method->m_name.c_str(), arg->m_name, arg->m_name, arg->m_name, method->m_name.c_str());
 
                     m_fromLua.push_back(AZStd::make_pair(fromStack, argClass));
                 }
