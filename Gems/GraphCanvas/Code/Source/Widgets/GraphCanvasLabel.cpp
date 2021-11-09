@@ -20,7 +20,7 @@
 #include <GraphCanvas/Editor/GraphCanvasProfiler.h>
 #include <GraphCanvas/tools.h>
 #include <GraphCanvas/Styling/StyleHelper.h>
-#include "Translation/TranslationBus.h"
+#include <Translation/TranslationBus.h>
 
 namespace GraphCanvas
 {
