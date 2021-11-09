@@ -232,9 +232,10 @@ float4x4 GetObject_WorldMatrix()
 
 float GetHeight(float2 origUv)
 {
-    float2 uv = clamp(origUv + (ObjectSrg::m_terrainData.m_uvStep * 0.5f), 0.0f, 1.0f);
-    float height = 0.0f;
+    float2 halfStep = ObjectSrg::m_terrainData.m_uvStep * 0.5;
+    float2 uv = origUv * (1.0 - ObjectSrg::m_terrainData.m_uvStep) + halfStep;
 
+    float height = 0.0f;
     if (o_useTerrainSmoothing)
     {
         float2 textureSize;
