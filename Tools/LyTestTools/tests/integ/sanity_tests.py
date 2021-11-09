@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 # for both test functions. Notice that the Pytest mark is defined at the class level to affect both test functions.
 class TestAutomatedTestingProject(object):
 
-    def DISABLED_StartGameLauncher_Sanity(self, project):
+    def test_StartGameLauncher_Sanity(self, project):
         """
         The `test_StartGameLauncher_Sanity` test function verifies that the O3DE game client launches successfully.
         Start the test by utilizing the `kill_processes_named` function to close any open O3DE processes that may
@@ -47,6 +47,8 @@ class TestAutomatedTestingProject(object):
         test to run on instances without a GPU. We launch the game client executable and wait for the process to exist.
         A try/finally block ensures proper test cleanup if issues occur during the test.
         """
+        ap_pre_exists = process_utils.process_exists("AssetProcessor", ignore_extensions=True)
+
         # Kill processes that may interfere with the test
         process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
@@ -66,7 +68,9 @@ class TestAutomatedTestingProject(object):
             # Clean up processes after the test is finished
             process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
-    def DISABLED_StartEditor_Sanity(self, project):
+        assert not ap_pre_exists
+
+    def test_StartEditor_Sanity(self, project):
         """
         The `test_StartEditor_Sanity` test function is similar to the previous example with minor adjustments. A
         PyTest mark skips the test if the operating system is not Windows. We use the `create_editor` function instead
@@ -74,6 +78,8 @@ class TestAutomatedTestingProject(object):
         `-autotest_mode` arg supresses modal dialogs from interfering with our test. We launch the Editor executable and
         wait for the process to exist.
         """
+        ap_pre_exists = process_utils.process_exists("AssetProcessor", ignore_extensions=True)
+
         # Kill processes that may interfere with the test
         process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
@@ -93,7 +99,12 @@ class TestAutomatedTestingProject(object):
             # Clean up processes after the test is finished
             process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
+        assert not ap_pre_exists
+
     def test_StartAP_Sanity(self, project):
+
+        ap_pre_exists = process_utils.process_exists("AssetProcessor", ignore_extensions=True)
+
         # Kill processes that may interfere with the test
         process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
@@ -211,3 +222,5 @@ class TestAutomatedTestingProject(object):
         finally:
             # Clean up processes after the test is finished
             process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
+
+        assert not ap_pre_exists
