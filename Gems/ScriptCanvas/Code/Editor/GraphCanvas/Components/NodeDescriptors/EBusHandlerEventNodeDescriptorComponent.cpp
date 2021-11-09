@@ -188,7 +188,23 @@ namespace ScriptCanvasEditor
 
                         if (scriptCanvasSlot && scriptCanvasSlot->IsVisible())
                         {
-                            Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot));
+                            auto graphCanvasSlotId = Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot));
+
+                            GraphCanvas::TranslationKey key;
+                            key << "EBusHandler" << eventHandler->GetEBusName() << "methods" << m_eventName;
+                            if (scriptCanvasSlot->IsExecution() && scriptCanvasSlot->IsOutput())
+                            {
+                                key << "exit";
+                            }
+                            else
+                            {
+                                key << "details";
+                            }
+
+                            GraphCanvas::TranslationRequests::Details details;
+                            GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+                            GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetName, details.Name);
+                            GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetTooltip, details.Tooltip);
                         }
 
                         //
@@ -206,16 +222,17 @@ namespace ScriptCanvasEditor
                                 auto graphCanvasSlotId = Nodes::DisplayScriptCanvasSlot(GetEntityId(), (*scriptCanvasSlot));
                                 int& index = (scriptCanvasSlot->IsData() && scriptCanvasSlot->IsOutput()) ? paramIndex : outputIndex;
 
+                                GraphCanvas::TranslationRequests::Details details;
+
                                 if (scriptCanvasSlot->IsData())
                                 {
                                     GraphCanvas::TranslationKey key;
                                     key = "EBusHandler";
-                                    key << eventHandler->GetEBusName() << "methods" << m_eventName << "params" << index;
+                                    key << eventHandler->GetEBusName() << "methods" << m_eventName << "params" << index << "details";
 
-                                    GraphCanvas::TranslationRequests::Details details;
                                     details.Name = scriptCanvasSlot->GetName();
 
-                                    GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", details);
+                                    GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
                                     GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetName, details.Name);
                                     GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetTooltip, details.Tooltip);
                                 }
