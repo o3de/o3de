@@ -85,12 +85,12 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
 
     if(useIbl)
     {
-        float exposure = pow(2.0, ObjectSrg::m_reflectionProbeData.m_exposure);
+        float globalIblExposure = pow(2.0, SceneSrg::m_iblExposure);
         
         if(useDiffuseIbl)
         {
             float3 iblDiffuse = GetIblDiffuse(surface.normal, surface.albedo, lightingData.diffuseResponse);
-            lightingData.diffuseLighting += (iblDiffuse * exposure * lightingData.diffuseAmbientOcclusion);
+            lightingData.diffuseLighting += (iblDiffuse * globalIblExposure * lightingData.diffuseAmbientOcclusion);
         }
 
         if(useSpecularIbl)
@@ -116,6 +116,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
                 iblSpecular = iblSpecular * (1.0 - clearCoatResponse) * (1.0 - clearCoatResponse) + clearCoatIblSpecular;
             }
 
+            float exposure = ObjectSrg::m_reflectionProbeData.m_useReflectionProbe ? pow(2.0, ObjectSrg::m_reflectionProbeData.m_exposure) : globalIblExposure;
             lightingData.specularLighting += (iblSpecular * exposure);
         }
     }
