@@ -842,7 +842,6 @@ namespace ScriptCanvasEditor
             ParseCycleTargets(treeItem);
             CycleToNextNode();
         }
-#pragma optimize("", off)
 
         static AZStd::string GetGemPath(const AZStd::string& gemName)
         {
@@ -930,7 +929,7 @@ namespace ScriptCanvasEditor
             }
 
         }
-#pragma optimize("", on)
+
         void NodePaletteDockWidget::ConfigureHelper()
         {
             if (!m_cyclingHelper.IsConfigured() && !m_cyclingIdentifiers.empty())

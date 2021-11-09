@@ -48,8 +48,6 @@
 
 #include <Source/Translation/TranslationBus.h>
 
-#pragma optimize("", off)
-
 namespace ScriptCanvasEditor::Nodes::SlotDisplayHelper
 {
     AZ::EntityId DisplayPropertySlot(AZ::EntityId graphCanvasNodeId, const ScriptCanvas::VisualExtensionSlotConfiguration& propertyConfiguration);
@@ -1275,6 +1273,3 @@ namespace ScriptCanvasEditor::Nodes::SlotDisplayHelper
         return slotId;
     }
 }
-
-
-#pragma optimize("", on)
