@@ -248,6 +248,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Gem::AtomToolsFramework.Static
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral
+            Gem::Camera.Editor
     )
     ly_add_source_properties(
         SOURCES Lib/Tests/Camera/test_EditorCamera.cpp
