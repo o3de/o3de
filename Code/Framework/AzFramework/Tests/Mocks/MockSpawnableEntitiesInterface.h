@@ -36,7 +36,7 @@ namespace AzFramework
 
         MOCK_METHOD3(
             SpawnEntities,
-            void(EntitySpawnTicket& ticket, AZStd::vector<size_t> entityIndices, SpawnEntitiesOptionalArgs optionalArgs));
+            void(EntitySpawnTicket& ticket, AZStd::vector<uint32_t> entityIndices, SpawnEntitiesOptionalArgs optionalArgs));
 
         MOCK_METHOD2(DespawnAllEntities, void(EntitySpawnTicket& ticket, DespawnAllEntitiesOptionalArgs optionalArgs));
 
@@ -50,6 +50,13 @@ namespace AzFramework
             void(EntitySpawnTicket& ticket, AZ::Data::Asset<Spawnable> spawnable, ReloadSpawnableOptionalArgs optionalArgs));
 
         MOCK_METHOD3(
+            UpdateEntityAliasTypes,
+            void(
+                EntitySpawnTicket& ticket,
+                AZStd::vector<EntityAliasTypeChange> updatedAliases,
+                UpdateEntityAliasTypesOptionalArgs optionalArgs));
+
+        MOCK_METHOD3(
             ListEntities, void(EntitySpawnTicket& ticket, ListEntitiesCallback listCallback, ListEntitiesOptionalArgs optionalArgs));
 
         MOCK_METHOD3(
@@ -61,6 +68,7 @@ namespace AzFramework
             void(EntitySpawnTicket& ticket, ClaimEntitiesCallback listCallback, ClaimEntitiesOptionalArgs optionalArgs));
 
         MOCK_METHOD3(Barrier, void(EntitySpawnTicket& ticket, BarrierCallback completionCallback, BarrierOptionalArgs optionalArgs));
+        MOCK_METHOD3(LoadBarrier, void(EntitySpawnTicket& ticket, BarrierCallback completionCallback, LoadBarrierOptionalArgs optionalArgs));
 
         MOCK_METHOD1(CreateTicket, AZStd::pair<EntitySpawnTicket::Id, void*>(AZ::Data::Asset<Spawnable>&& spawnable));
         MOCK_METHOD1(DestroyTicket, void(void* ticket));
