@@ -181,7 +181,7 @@ namespace LmbrCentral
                 {
                     request.nFlags = (eARF_PRIORITY_NORMAL | eARF_SYNC_FINISHED_CALLBACK);
                     request.pOwner = this;
-                    request.pUserData = SAudioCallBackInfos::UserData(AZ::u64(callbackOwnerEntityId));
+                    request.pUserData = reinterpret_cast<void*>(static_cast<uintptr_t>(callbackOwnerEntityId));
                     request.pUserDataOwner = nullptr;
                 }
 
@@ -207,7 +207,7 @@ namespace LmbrCentral
                 {
                     request.nFlags = (eARF_PRIORITY_NORMAL | eARF_SYNC_FINISHED_CALLBACK);
                     request.pOwner = this;
-                    request.pUserData = SAudioCallBackInfos::UserData(AZ::u64(callbackOwnerEntityId));
+                    request.pUserData = reinterpret_cast<void*>(static_cast<uintptr_t>(callbackOwnerEntityId));
                     request.pUserDataOwner = nullptr;
                 }
 

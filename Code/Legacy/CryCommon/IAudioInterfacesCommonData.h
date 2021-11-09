@@ -420,72 +420,23 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct SAudioCallBackInfos
     {
-        struct UserData
-        {
-            UserData(void* userData)
-                : m_pUserData(userData)
-            {}
-
-            UserData(uint64_t userData)
-                : m_userData(userData)
-            {}
-
-            UserData& operator=(void* userData)
-            {
-                m_pUserData = userData;
-                return *this;
-            }
-
-            UserData& operator=(uint64_t userData)
-            {
-                m_userData = userData;
-                return *this;
-            }
-
-            operator void*() const
-            {
-                return m_pUserData;
-            }
-
-            operator uint64_t() const
-            {
-                return m_userData;
-            }
-
-            bool operator==(void* const userData)
-            {
-                return this->m_pUserData == userData;
-            }
-
-            bool operator==(uint64_t userData)
-            {
-                return this->m_userData == userData;
-            }
-
-            union
-            {
-                void* m_pUserData;
-                uint64_t m_userData;
-            };
-        };
-
-        SAudioCallBackInfos(const SAudioCallBackInfos& rOther)
-            : pObjectToNotify(rOther.pObjectToNotify)
-            , pUserData(rOther.pUserData)
-            , pUserDataOwner(rOther.pUserDataOwner)
-            , nRequestFlags(rOther.nRequestFlags)
-        {
-        }
-
         explicit SAudioCallBackInfos(
             void* const pPassedObjectToNotify = nullptr,
-            UserData pPassedUserData = nullptr,
+            void* const pPassedUserData = nullptr,
             void* const pPassedUserDataOwner = nullptr,
             const TATLEnumFlagsType nPassedRequestFlags = eARF_PRIORITY_NORMAL)
             : pObjectToNotify(pPassedObjectToNotify)
             , pUserData(pPassedUserData)
             , pUserDataOwner(pPassedUserDataOwner)
             , nRequestFlags(nPassedRequestFlags)
+        {
+        }
+
+        SAudioCallBackInfos(const SAudioCallBackInfos& other)
+            : pObjectToNotify(other.pObjectToNotify)
+            , pUserData(other.pUserData)
+            , pUserDataOwner(other.pUserDataOwner)
+            , nRequestFlags(other.nRequestFlags)
         {
         }
 
@@ -496,7 +447,7 @@ namespace Audio
         }
 
         void* const pObjectToNotify;
-        UserData pUserData;
+        void* const pUserData;
         void* const pUserDataOwner;
         const TATLEnumFlagsType nRequestFlags;
     };
@@ -504,26 +455,18 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     struct SAudioRequest
     {
-        SAudioRequest()
-            : nFlags(eARF_NONE)
-            , nAudioObjectID(INVALID_AUDIO_OBJECT_ID)
-            , pOwner(nullptr)
-            , pUserData(nullptr)
-            , pUserDataOwner(nullptr)
-            , pData(nullptr)
-        {}
-
-        ~SAudioRequest() {}
+        SAudioRequest() = default;
+        ~SAudioRequest() = default;
 
         SAudioRequest(const SAudioRequest& other) = delete;
         SAudioRequest& operator=(const SAudioRequest& other) = delete;
 
-        TATLEnumFlagsType nFlags;
-        TAudioObjectID nAudioObjectID;
-        void* pOwner;
-        void* pUserData;
-        void* pUserDataOwner;
-        SAudioRequestDataBase* pData;
+        TATLEnumFlagsType nFlags{ eARF_NONE };
+        TAudioObjectID nAudioObjectID{ INVALID_AUDIO_OBJECT_ID };
+        void* pOwner{ nullptr };
+        void* pUserData{ nullptr };
+        void* pUserDataOwner{ nullptr };
+        SAudioRequestDataBase* pData{ nullptr };
     };
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
