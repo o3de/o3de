@@ -37,6 +37,8 @@ namespace O3DE::ProjectManager
 
         SetStatusIcon(m_notDownloadedPixmap, ":/Download.svg");
         SetStatusIcon(m_unknownStatusPixmap, ":/X.svg");
+        SetStatusIcon(m_downloadSuccessfulPixmap, ":/checkmark.svg");
+        SetStatusIcon(m_downloadFailedPixmap, ":/Warning.svg");
 
         m_downloadingMovie = new QMovie(":/in_progress.gif");
     }
@@ -479,6 +481,14 @@ namespace O3DE::ProjectManager
             currentFrame = m_downloadingMovie->currentPixmap();
             currentFrame = currentFrame.scaled(s_statusIconSize, s_statusIconSize);
             statusPixmap = &currentFrame;
+        }
+        else if (downloadStatus == GemInfo::DownloadStatus::DownloadSuccessful)
+        {
+            statusPixmap = &m_downloadSuccessfulPixmap;
+        }
+        else if (downloadStatus == GemInfo::DownloadStatus::DownloadFailed)
+        {
+            statusPixmap = &m_downloadFailedPixmap;
         }
         else if (downloadStatus == GemInfo::DownloadStatus::NotDownloaded)
         {

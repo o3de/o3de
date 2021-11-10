@@ -15,6 +15,8 @@
 #include <QProgressBar>
 #include <TagWidget.h>
 #include <QMenu>
+#include <QLocale>
+#include <QMovie>
 
 namespace O3DE::ProjectManager
 {
@@ -224,7 +226,6 @@ namespace O3DE::ProjectManager
         connect(m_downloadController, &DownloadController::GemDownloadAdded, this, &CartOverlayWidget::GemDownloadAdded);
         connect(m_downloadController, &DownloadController::GemDownloadRemoved, this, &CartOverlayWidget::GemDownloadRemoved);
         connect(m_downloadController, &DownloadController::GemDownloadProgress, this, &CartOverlayWidget::GemDownloadProgress);
-        connect(m_downloadController, &DownloadController::Done, this, &CartOverlayWidget::GemDownloadComplete);
     }
 
     void CartOverlayWidget::GemDownloadAdded(const QString& gemName)
@@ -288,27 +289,38 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void CartOverlayWidget::GemDownloadProgress(const QString& gemName, int percentage)
+    void CartOverlayWidget::GemDownloadProgress(const QString& gemName, int bytesDownloaded, int totalBytes)
     {
         QWidget* gemToUpdate = m_downloadingListWidget->findChild<QWidget*>(gemName);
         if (gemToUpdate)
         {
             QLabel* progressLabel = gemToUpdate->findChild<QLabel*>("DownloadProgressLabel");
-            if (progressLabel)
-            {
-                progressLabel->setText(QString("%1%").arg(percentage));
-            }
             QProgressBar* progressBar = gemToUpdate->findChild<QProgressBar*>("DownloadProgressBar");
-            if (progressBar)
+
+            if (totalBytes != 0)
             {
-                progressBar->setValue(percentage);
+                int downloadPercentage = static_cast<int>((bytesDownloaded / static_cast<float>(totalBytes)) * 100);
+                if (progressLabel)
+                {
+                    progressLabel->setText(QString("%1%").arg(downloadPercentage));
+                }
+                if (progressBar)
+                {
+                    progressBar->setValue(downloadPercentage);
+                }
+            }
+            else
+            {
+                if (progressLabel)
+                {
+                    progressLabel->setText(QLocale::system().formattedDataSize(bytesDownloaded));
+                }
+                if (progressBar)
+                {
+                    progressBar->setRange(0, 0);
+                }
             }
         }
-    }
-
-    void CartOverlayWidget::GemDownloadComplete(const QString& gemName, bool /*success*/)
-    {
-        GemDownloadRemoved(gemName); // update the list to remove the gem that has finished
     }
 
     QVector<Tag> CartOverlayWidget::GetTagsFromModelIndices(const QVector<QModelIndex>& gems) const
@@ -430,6 +442,7 @@ namespace O3DE::ProjectManager
 
     GemCatalogHeaderWidget::GemCatalogHeaderWidget(GemModel* gemModel, GemSortFilterProxyModel* filterProxyModel, DownloadController* downloadController, QWidget* parent)
         : QFrame(parent)
+        , m_downloadController(downloadController)
     {
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setAlignment(Qt::AlignLeft);
@@ -456,8 +469,25 @@ namespace O3DE::ProjectManager
         hLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Expanding));
         hLayout->addSpacerItem(new QSpacerItem(75, 0, QSizePolicy::Fixed));
 
-        CartButton* cartButton = new CartButton(gemModel, downloadController);
-        hLayout->addWidget(cartButton);
+        // spinner
+        m_downloadSpinnerMovie = new QMovie(":/in_progress.gif");
+        m_downloadSpinner = new QLabel(this);
+        m_downloadSpinner->setScaledContents(true);
+        m_downloadSpinner->setMaximumSize(16, 16);
+        m_downloadSpinner->setMovie(m_downloadSpinnerMovie);
+        hLayout->addWidget(m_downloadSpinner);
+        hLayout->addSpacing(8);
+
+        // downloading label
+        m_downloadLabel = new QLabel(tr("Downloading"));
+        hLayout->addWidget(m_downloadLabel);
+        m_downloadSpinner->hide();
+        m_downloadLabel->hide();
+
+        hLayout->addSpacing(16);
+
+        m_cartButton = new CartButton(gemModel, downloadController);
+        hLayout->addWidget(m_cartButton);
         hLayout->addSpacing(16);
 
         // Separating line
@@ -479,6 +509,26 @@ namespace O3DE::ProjectManager
         gemMenuButton->setIcon(QIcon(":/menu.svg"));
         gemMenuButton->setIconSize(QSize(36, 24));
         hLayout->addWidget(gemMenuButton);
+
+        connect(m_downloadController, &DownloadController::GemDownloadAdded, this, &GemCatalogHeaderWidget::GemDownloadAdded);
+        connect(m_downloadController, &DownloadController::GemDownloadRemoved, this, &GemCatalogHeaderWidget::GemDownloadRemoved);
+    }
+
+    void GemCatalogHeaderWidget::GemDownloadAdded(const QString& /*gemName*/)
+    {
+        m_downloadSpinner->show();
+        m_downloadLabel->show();
+        m_downloadSpinnerMovie->start();
+    }
+
+    void GemCatalogHeaderWidget::GemDownloadRemoved(const QString& /*gemName*/)
+    {
+        if (m_downloadController->IsDownloadQueueEmpty())
+        {
+            m_downloadSpinner->hide();
+            m_downloadLabel->hide();
+            m_downloadSpinnerMovie->stop();
+        }
     }
 
     void GemCatalogHeaderWidget::ReinitForProject()
