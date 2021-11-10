@@ -324,4 +324,4 @@ namespace ScriptCanvasDeveloper
     }
 }
 
-Q_DECLARE_METATYPE(BehaviorClassModel::TreeNode);
+Q_DECLARE_METATYPE(ScriptCanvasDeveloper::BehaviorClassModel::TreeNode);
