@@ -208,8 +208,6 @@ namespace ScriptCanvasDeveloper
 
     };
 
-    Q_DECLARE_METATYPE(BehaviorClassModel::TreeNode);
-
     class BehaviorClassModelSortFilterProxyModel
         : public QSortFilterProxyModel
     {
@@ -324,6 +322,6 @@ namespace ScriptCanvasDeveloper
 
         return false;
     }
-
-
 }
+
+Q_DECLARE_METATYPE(BehaviorClassModel::TreeNode);

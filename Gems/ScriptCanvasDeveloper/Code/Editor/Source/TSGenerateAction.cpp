@@ -802,8 +802,6 @@ namespace ScriptCanvasDeveloperEditor
                 {
                     Slot slotEntry;
 
-                    GraphCanvas::SlotGroup group = GraphCanvas::SlotGroups::Invalid;
-
                     if (slot.IsVisible())
                     {
                         slotEntry.m_key = slot.GetName();
@@ -1620,7 +1618,7 @@ namespace ScriptCanvasDeveloperEditor
 
         void TranslateGlobalMethods(AZ::BehaviorContext* behaviorContext)
         {
-            for (const auto behaviorMethod : behaviorContext->m_methods)
+            for (const auto& behaviorMethod : behaviorContext->m_methods)
             {
                 TranslationFormat translationRoot;
 
