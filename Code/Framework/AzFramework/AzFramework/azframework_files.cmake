@@ -77,8 +77,6 @@ set(FILES
     Asset/Benchmark/BenchmarkSettingsAsset.h
     CommandLine/CommandLine.h
     CommandLine/CommandRegistrationBus.h
-    Debug/DebugCameraBus.h
-    feature_options.cmake
     Viewport/ViewportBus.h
     Viewport/ViewportBus.cpp
     Viewport/ViewportColors.h
