@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-def PrefabBasicWorkflow_CreatePrefab():
+def CreatePrefab_WithSingleEntity():
 
     CAR_PREFAB_FILE_NAME = 'car_prefab'
 
@@ -13,7 +13,7 @@ def PrefabBasicWorkflow_CreatePrefab():
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.prefab_utils import Prefab
 
-    import PrefabTestUtils as prefab_test_utils
+    import prefab.tests.PrefabTestUtils as prefab_test_utils
 
     prefab_test_utils.open_base_tests_level()
 
@@ -26,4 +26,4 @@ def PrefabBasicWorkflow_CreatePrefab():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(PrefabBasicWorkflow_CreatePrefab)
+    Report.start_test(CreatePrefab_WithSingleEntity)

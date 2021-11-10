@@ -14,7 +14,7 @@ class Tests():
 
 # fmt:on
 
-def PrefabLevel_OpensLevelWithEntities():
+def OpenLevel_ContainingTwoEntities():
     """
     Opens the level that contains 2 entities, "EmptyEntity" and "EntityWithPxCollider".
     This test makes sure that both entities exist after opening the level and that:
@@ -70,4 +70,4 @@ def PrefabLevel_OpensLevelWithEntities():
 if __name__ == "__main__":
 
     from editor_python_test_tools.utils import Report
-    Report.start_test(PrefabLevel_OpensLevelWithEntities)
+    Report.start_test(OpenLevel_ContainingTwoEntities)
