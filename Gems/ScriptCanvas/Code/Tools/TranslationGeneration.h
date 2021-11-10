@@ -175,7 +175,7 @@ namespace ScriptCanvasEditorTools
         void GetTypeNameAndDescription(AZ::TypeId typeId, AZStd::string& outName, AZStd::string& outDescription);
 
         //! Utility function to get the path to the specified gem
-        static AZStd::string GetGemPath(const AZStd::string& gemName);
+        AZStd::string GetGemPath(const AZStd::string& gemName);
 
         //! Get the category attribute for a given ClassData
         AZStd::string GetCategory(const AZ::SerializeContext::ClassData* classData);
