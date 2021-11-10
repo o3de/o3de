@@ -125,7 +125,6 @@ set(FILES
     Debug/TraceMessagesDrillerBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
-    DOM/DomAdapter.h
     DOM/DomBackend.cpp
     DOM/DomBackend.h
     DOM/DomBackendRegistry.cpp

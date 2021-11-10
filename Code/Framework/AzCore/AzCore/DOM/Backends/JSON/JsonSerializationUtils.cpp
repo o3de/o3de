@@ -219,7 +219,6 @@ namespace AZ::DOM::Json
 
         rapidjson::Document m_result;
         AZStd::deque<ValueInfo> m_entryStack;
-        AZ::u64 m_entryCount = 0;
     };
 
     //
@@ -490,6 +489,7 @@ namespace AZ::DOM::Json
         const char* Peek4() const
         {
             AZ_Assert(false, "Not implemented, encoding is hard-coded to UTF-8");
+            return m_cursor;
         }
 
         char* m_cursor; //!< Current read position.
