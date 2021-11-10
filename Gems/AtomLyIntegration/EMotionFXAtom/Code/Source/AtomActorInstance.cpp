@@ -880,7 +880,7 @@ namespace AZ
         {
             if (m_meshHandle)
             {
-                AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& wrinkleMaskObjectSrgs = m_meshFeatureProcessor->GetObjectSrgs(*m_meshHandle);
+                const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& wrinkleMaskObjectSrgs = m_meshFeatureProcessor->GetObjectSrgs(*m_meshHandle);
 
                 for (auto& wrinkleMaskObjectSrg : wrinkleMaskObjectSrgs)
                 {

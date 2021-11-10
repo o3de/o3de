@@ -215,7 +215,7 @@ namespace AZ
             return {};
         }
 
-        AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& MeshFeatureProcessor::GetObjectSrgs(const MeshHandle& meshHandle) const
+        const AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& MeshFeatureProcessor::GetObjectSrgs(const MeshHandle& meshHandle) const
         {
             static AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>> staticEmptyList;
             return meshHandle.IsValid() ? meshHandle->m_objectSrgList : staticEmptyList;
