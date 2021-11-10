@@ -159,7 +159,7 @@ namespace AtomToolsFramework
 
     void AtomToolsDocumentSystemComponent::OnDocumentExternallyModified(const AZ::Uuid& documentId)
     {
-        m_documentIdsToReopen.insert(documentId);
+        m_documentIdsWithExternalChanges.insert(documentId);
         if (!AZ::TickBus::Handler::BusIsConnected())
         {
             AZ::TickBus::Handler::BusConnect();
@@ -168,7 +168,7 @@ namespace AtomToolsFramework
 
     void AtomToolsDocumentSystemComponent::OnDocumentDependencyModified(const AZ::Uuid& documentId)
     {
-        m_documentIdsToReopen.insert(documentId);
+        m_documentIdsWithDependencyChanges.insert(documentId);
         if (!AZ::TickBus::Handler::BusIsConnected())
         {
             AZ::TickBus::Handler::BusConnect();
@@ -177,7 +177,7 @@ namespace AtomToolsFramework
 
     void AtomToolsDocumentSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        for (const AZ::Uuid& documentId : m_documentIdsToReopen)
+        for (const AZ::Uuid& documentId : m_documentIdsWithExternalChanges)
         {
             AZStd::string documentPath;
             AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
@@ -190,6 +190,8 @@ namespace AtomToolsFramework
             {
                 continue;
             }
+
+            m_documentIdsWithDependencyChanges.erase(documentId);
 
             AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
 
@@ -204,7 +206,7 @@ namespace AtomToolsFramework
             }
         }
 
-        for (const AZ::Uuid& documentId : m_documentIdsToReopen)
+        for (const AZ::Uuid& documentId : m_documentIdsWithDependencyChanges)
         {
             AZStd::string documentPath;
             AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
@@ -231,8 +233,8 @@ namespace AtomToolsFramework
             }
         }
 
-        m_documentIdsToReopen.clear();
-        m_documentIdsToReopen.clear();
+        m_documentIdsWithDependencyChanges.clear();
+        m_documentIdsWithExternalChanges.clear();
         AZ::TickBus::Handler::BusDisconnect();
     }
 
