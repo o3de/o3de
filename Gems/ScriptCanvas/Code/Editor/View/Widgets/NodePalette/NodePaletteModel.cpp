@@ -477,7 +477,7 @@ namespace
                 GraphCanvas::TranslationRequests::Details details;
                 GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-                categoryPath = details.Category;
+                categoryPath = details.m_category;
 
                 if (categoryPath.empty())
                 {
@@ -518,13 +518,13 @@ namespace
 
                 categoryPath.append("/");
 
-                if (details.Name.empty())
+                if (details.m_name.empty())
                 {
                     categoryPath.append(classNamePretty.c_str());
                 }
                 else
                 {
-                    categoryPath.append(details.Name.c_str());
+                    categoryPath.append(details.m_name.c_str());
                 }
 
                 for (auto property : behaviorClass->m_properties)
@@ -594,7 +594,7 @@ namespace
                 GraphCanvas::TranslationRequests::Details details;
                 GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-                AZStd::string categoryPath = details.Category.empty() ? GetCategoryPath(behaviorEbus.m_attributes, behaviorContext) : details.Category;
+                AZStd::string categoryPath = details.m_category.empty() ? GetCategoryPath(behaviorEbus.m_attributes, behaviorContext) : details.m_category;
 
                 // Treat the EBusHandler name as a Category key in order to allow multiple buses to be merged into a single Category.
                 {
@@ -607,9 +607,9 @@ namespace
                         categoryPath = "Other/";
                     }
 
-                    if (!details.Name.empty())
+                    if (!details.m_name.empty())
                     {
-                        categoryPath.append(details.Name.c_str());
+                        categoryPath.append(details.m_name.c_str());
                     }
                     else
                     {
@@ -638,10 +638,10 @@ namespace
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-            AZStd::string categoryPath = details.Category.empty() ? GetCategoryPath(behaviorEbus.m_attributes, behaviorContext) : details.Category;
+            AZStd::string categoryPath = details.m_category.empty() ? GetCategoryPath(behaviorEbus.m_attributes, behaviorContext) : details.m_category;
 
             // Parent
-            AZStd::string displayName = details.Name;
+            AZStd::string displayName = details.m_name;
 
             // Treat the EBus name as a Category key in order to allow multiple buses to be merged into a single Category.
             if (!categoryPath.empty())
@@ -653,9 +653,9 @@ namespace
                 categoryPath = "Other/";
             }
 
-            if (!details.Name.empty())
+            if (!details.m_name.empty())
             {
-                categoryPath.append(details.Name.c_str());
+                categoryPath.append(details.m_name.c_str());
             }
             else
             {
@@ -664,7 +664,7 @@ namespace
 
             ScriptCanvasEditor::CategoryInformation ebusCategoryInformation;
 
-            ebusCategoryInformation.m_tooltip = details.Tooltip;
+            ebusCategoryInformation.m_tooltip = details.m_tooltip;
 
             nodePaletteModel.RegisterCategoryInformation(categoryPath, ebusCategoryInformation);
 
@@ -916,18 +916,18 @@ namespace ScriptCanvasEditor
                 GraphCanvas::TranslationRequests::Details details;
                 GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-                if (details.Name.empty())
+                if (details.m_name.empty())
                 {
-                    details.Name = classData->m_editData->m_name;
-                    details.Tooltip = classData->m_editData->m_description;
+                    details.m_name = classData->m_editData->m_name;
+                    details.m_tooltip = classData->m_editData->m_description;
                 }
 
-                customNodeInformation->m_displayName = details.Name;
-                customNodeInformation->m_toolTip = details.Tooltip;
+                customNodeInformation->m_displayName = details.m_name;
+                customNodeInformation->m_toolTip = details.m_tooltip;
 
-                if (!details.Category.empty())
+                if (!details.m_category.empty())
                 {
-                    customNodeInformation->m_categoryPath = details.Category;
+                    customNodeInformation->m_categoryPath = details.m_category;
                 }
 
                 if (customNodeInformation->m_displayName.empty())
@@ -1024,8 +1024,8 @@ namespace ScriptCanvasEditor
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-            methodModelInformation->m_displayName = details.Name.empty() ? methodName : details.Name;
-            methodModelInformation->m_toolTip = details.Tooltip;
+            methodModelInformation->m_displayName = details.m_name.empty() ? methodName : details.m_name;
+            methodModelInformation->m_toolTip = details.m_tooltip;
             methodModelInformation->m_categoryPath = categoryPath;
 
             if (methodModelInformation->m_categoryPath.empty())
@@ -1060,9 +1060,9 @@ namespace ScriptCanvasEditor
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-            methodModelInformation->m_displayName = details.Name;
-            methodModelInformation->m_toolTip = details.Tooltip;
-            methodModelInformation->m_categoryPath = details.Category;
+            methodModelInformation->m_displayName = details.m_name;
+            methodModelInformation->m_toolTip = details.m_tooltip;
+            methodModelInformation->m_categoryPath = details.m_category;
 
             if (methodModelInformation->m_categoryPath.empty())
             {
@@ -1095,9 +1095,9 @@ namespace ScriptCanvasEditor
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-            methodModelInformation->m_displayName = details.Name.empty() ? behaviorMethod.m_name : details.Name;
-            methodModelInformation->m_toolTip = details.Tooltip.empty() ? "" : details.Tooltip;
-            methodModelInformation->m_categoryPath = details.Category.empty() ? "Behavior Context: Global Methods" : details.Category;
+            methodModelInformation->m_displayName = details.m_name.empty() ? behaviorMethod.m_name : details.m_name;
+            methodModelInformation->m_toolTip = details.m_tooltip.empty() ? "" : details.m_tooltip;
+            methodModelInformation->m_categoryPath = details.m_category.empty() ? "Behavior Context: Global Methods" : details.m_category;
 
             m_registeredNodes.emplace(nodeIdentifier, methodModelInformation.release());
         }
@@ -1130,8 +1130,8 @@ namespace ScriptCanvasEditor
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-            handlerInformation->m_displayName = details.Name.empty() ? eventName : details.Name.c_str();
-            handlerInformation->m_toolTip = details.Tooltip.empty() ? "" : details.Tooltip;
+            handlerInformation->m_displayName = details.m_name.empty() ? eventName : details.m_name.c_str();
+            handlerInformation->m_toolTip = details.m_tooltip.empty() ? "" : details.m_tooltip;
 
             m_registeredNodes.emplace(AZStd::make_pair(nodeIdentifier, handlerInformation));
         }
@@ -1174,8 +1174,8 @@ namespace ScriptCanvasEditor
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-            senderInformation->m_displayName = details.Name.empty() ? eventName : details.Name.c_str();
-            senderInformation->m_toolTip = details.Tooltip.empty() ? "" : details.Tooltip;
+            senderInformation->m_displayName = details.m_name.empty() ? eventName : details.m_name.c_str();
+            senderInformation->m_toolTip = details.m_tooltip.empty() ? "" : details.m_tooltip;
 
             m_registeredNodes.emplace(AZStd::make_pair(nodeIdentifier, senderInformation));
         }

@@ -203,8 +203,8 @@ namespace ScriptCanvasEditor
 
                             GraphCanvas::TranslationRequests::Details details;
                             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
-                            GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetName, details.Name);
-                            GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetTooltip, details.Tooltip);
+                            GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetName, details.m_name);
+                            GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetTooltip, details.m_tooltip);
                         }
 
                         //
@@ -230,11 +230,11 @@ namespace ScriptCanvasEditor
                                     key = "EBusHandler";
                                     key << eventHandler->GetEBusName() << "methods" << m_eventName << "params" << index << "details";
 
-                                    details.Name = scriptCanvasSlot->GetName();
+                                    details.m_name = scriptCanvasSlot->GetName();
 
                                     GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
-                                    GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetName, details.Name);
-                                    GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetTooltip, details.Tooltip);
+                                    GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetName, details.m_name);
+                                    GraphCanvas::SlotRequestBus::Event(graphCanvasSlotId, &GraphCanvas::SlotRequests::SetTooltip, details.m_tooltip);
                                 }
 
                                 if (scriptCanvasSlot->GetDescriptor() == ScriptCanvas::SlotDescriptors::DataOut())

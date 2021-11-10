@@ -101,13 +101,13 @@ namespace ScriptCanvasEditor
         key << "EBusSender" << busName << "methods" << eventName << "details";
 
         GraphCanvas::TranslationRequests::Details details;
-        details.Name = eventName;
-        details.Subtitle = busName;
+        details.m_name = eventName;
+        details.m_subtitle = busName;
 
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-        SetName(details.Name.c_str());
-        SetToolTip(details.Tooltip.c_str());
+        SetName(details.m_name.c_str());
+        SetToolTip(details.m_tooltip.c_str());
 
         SetTitlePalette("MethodNodeTitlePalette");
     }
@@ -300,15 +300,15 @@ namespace ScriptCanvasEditor
         key << "EBusHandler" << busName << "methods" << eventName << "details";
 
         GraphCanvas::TranslationRequests::Details details;
-        details.Name = m_eventName;
+        details.m_name = m_eventName;
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
-        if (details.Name.empty())
+        if (details.m_name.empty())
         {
-            details.Name = m_eventName;
+            details.m_name = m_eventName;
         }
 
-        SetName(details.Name.c_str());
-        SetToolTip(details.Tooltip.c_str());
+        SetName(details.m_name.c_str());
+        SetToolTip(details.m_tooltip.c_str());
 
         SetTitlePalette("HandlerNodeTitlePalette");
     }

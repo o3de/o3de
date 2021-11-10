@@ -86,13 +86,13 @@ namespace ScriptCanvasEditor
         key << "BehaviorClass" << className << "methods" << methodName << "details";
 
         GraphCanvas::TranslationRequests::Details details;
-        details.Name = methodName;
-        details.Subtitle = className;
+        details.m_name = methodName;
+        details.m_subtitle = className;
 
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-        SetName(details.Name.c_str());
-        SetToolTip(details.Tooltip.c_str());
+        SetName(details.m_name.c_str());
+        SetToolTip(details.m_tooltip.c_str());
 
         if (propertyStatus == ScriptCanvas::PropertyStatus::Getter)
         {

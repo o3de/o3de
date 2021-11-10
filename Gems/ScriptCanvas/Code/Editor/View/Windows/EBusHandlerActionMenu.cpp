@@ -117,10 +117,10 @@ namespace ScriptCanvasEditor
             key << "EBusHandler" << m_busName.c_str() << "methods" << eventConfigurations[i].m_eventName << "details";
 
             GraphCanvas::TranslationRequests::Details details;
-            details.Name = actionItem.m_name.toUtf8().data();
+            details.m_name = actionItem.m_name.toUtf8().data();
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-            actionItem.m_displayName = QString(details.Name.c_str());
+            actionItem.m_displayName = QString(details.m_name.c_str());
             
             actionItem.m_index = i;
             
