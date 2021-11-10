@@ -519,6 +519,7 @@ namespace O3DE::ProjectManager
         m_downloadSpinner->show();
         m_downloadLabel->show();
         m_downloadSpinnerMovie->start();
+        m_cartButton->ShowOverlay();
     }
 
     void GemCatalogHeaderWidget::GemDownloadRemoved(const QString& /*gemName*/)
