@@ -208,7 +208,6 @@ private:
     void* GetSystemCursorConstraintWindow() const override;
 
     // AzToolsFramework::MainEditorViewportInteractionRequestBus overrides ...
-    AZ::EntityId PickEntity(const AzFramework::ScreenPoint& point) override;
     AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) override;
     float TerrainHeight(const AZ::Vector2& position) override;
     bool ShowingWorldSpace() override;

@@ -229,9 +229,6 @@ namespace AzToolsFramework
         class MainEditorViewportInteractionRequests
         {
         public:
-            //! Given a point in screen space, return the picked entity (if any).
-            //! Picked EntityId will be returned, InvalidEntityId will be returned on failure.
-            virtual AZ::EntityId PickEntity(const AzFramework::ScreenPoint& point) = 0;
             //! Given a point in screen space, return the terrain position in world space.
             virtual AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) = 0;
             //! Return the terrain height given a world position in 2d (xy plane).

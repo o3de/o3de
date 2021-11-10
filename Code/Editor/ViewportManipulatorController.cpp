@@ -10,10 +10,12 @@
 
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzCore/Script/ScriptTimePoint.h>
 
 #include <QApplication>
@@ -117,16 +119,12 @@ namespace SandboxEditor
                     aznumeric_cast<int>(position->m_normalizedPosition.GetX() * windowSize.m_width),
                     aznumeric_cast<int>(position->m_normalizedPosition.GetY() * windowSize.m_height));
 
-                m_mouseInteraction.m_mousePick.m_screenCoordinates = screenPoint;
-                AZStd::optional<ProjectedViewportRay> ray;
-                ViewportInteractionRequestBus::EventResult(
-                    ray, GetViewportId(), &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPoint);
+                const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(event.m_viewportId);
+                const AZ::Vector3 rayOrigin = AzFramework::ScreenToWorld(screenPoint, cameraState);
 
-                if (ray.has_value())
-                {
-                    m_mouseInteraction.m_mousePick.m_rayOrigin = ray.value().origin;
-                    m_mouseInteraction.m_mousePick.m_rayDirection = ray.value().direction;
-                }
+                m_mouseInteraction.m_mousePick.m_rayOrigin = rayOrigin;
+                m_mouseInteraction.m_mousePick.m_rayDirection = (rayOrigin - cameraState.m_position).GetNormalized();
+                m_mouseInteraction.m_mousePick.m_screenCoordinates = screenPoint;
             }
 
             eventType = MouseEvent::Move;

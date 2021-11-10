@@ -912,23 +912,6 @@ AZ::Vector3 EditorViewportWidget::PickTerrain(const AzFramework::ScreenPoint& po
     return LYVec3ToAZVec3(ViewToWorld(AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(point), nullptr, true));
 }
 
-AZ::EntityId EditorViewportWidget::PickEntity(const AzFramework::ScreenPoint& point)
-{
-    AZ::EntityId entityId;
-    HitContext hitInfo;
-    hitInfo.view = this;
-    if (HitTest(AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(point), hitInfo))
-    {
-        if (hitInfo.object && (hitInfo.object->GetType() == OBJTYPE_AZENTITY))
-        {
-            auto entityObject = static_cast<CComponentEntityObject*>(hitInfo.object);
-            entityId = entityObject->GetAssociatedEntityId();
-        }
-    }
-
-    return entityId;
-}
-
 float EditorViewportWidget::TerrainHeight(const AZ::Vector2& position)
 {
     return GetIEditor()->GetTerrainElevation(position.GetX(), position.GetY());
