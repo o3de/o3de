@@ -165,18 +165,6 @@ namespace ScriptCanvasEditorTools
             return attributeValue;
         }
 
-        //! Generic function that evaluates whether the specified type has the specified attribute
-        template <typename T>
-        AZStd::string HasAttribute(const T* source, const AZ::Crc32& attribute)
-        {
-            AZStd::string attributeValue = "";
-            if (auto attributeItem = azrtti_cast<AZ::AttributeData<const char*>*>(AZ::FindAttribute(attribute, source->m_attributes)))
-            {
-                attributeValue = attributeItem->Get(nullptr);
-            }
-            return attributeValue ? true : false;
-        }
-
         //! Utility function that fetches from an AttributeArray a string attribute whether it's an AZStd::string or a const char*
         AZStd::string ReadStringAttribute(const AZ::AttributeArray& attributes, const AZ::Crc32& attribute);
 
