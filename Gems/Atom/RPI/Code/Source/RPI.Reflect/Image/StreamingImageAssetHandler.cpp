@@ -7,6 +7,8 @@
  */
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
 
 namespace AZ
 {
@@ -39,6 +41,63 @@ namespace AZ
             }
 
             return loadResult;
+        }
+
+        Data::AssetId StreamingImageAssetHandler::AssetMissingInCatalog(const Data::Asset<Data::AssetData>& asset)
+        {
+            // Find out if the asset is missing completely, or just still processing
+            // and escalate the asset to the top of the list
+            AzFramework::AssetSystem::AssetStatus missingAssetStatus;
+            AzFramework::AssetSystemRequestBus::BroadcastResult(
+                missingAssetStatus, &AzFramework::AssetSystem::AssetSystemRequests::GetAssetStatusById, asset.GetId().m_guid);
+
+            // Generate asset info to use to register the fallback asset with the asset catalog
+            Data::AssetInfo assetInfo;
+            assetInfo.m_relativePath = "textures/defaults/defaultfallback.png.streamingimage";
+            assetInfo.m_assetType = azrtti_typeid<StreamingImageAsset>();
+
+            bool useDebugFallbackImages = true;
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                settingsRegistry->GetObject(useDebugFallbackImages, "/O3DE/Atom/RPI/UseDebugFallbackImages");
+            }
+
+            if (useDebugFallbackImages)
+            {
+                switch (missingAssetStatus)
+                {
+                case AzFramework::AssetSystem::AssetStatus::AssetStatus_Queued:
+                case AzFramework::AssetSystem::AssetStatus::AssetStatus_Compiling:
+                    assetInfo.m_relativePath = "textures/defaults/processing.png.streamingimage";
+                    break;
+                case AzFramework::AssetSystem::AssetStatus::AssetStatus_Failed:
+                    assetInfo.m_relativePath = "textures/defaults/processingfailed.png.streamingimage";
+                    break;
+                case AzFramework::AssetSystem::AssetStatus::AssetStatus_Missing:
+                case AzFramework::AssetSystem::AssetStatus::AssetStatus_Unknown:
+                case AzFramework::AssetSystem::AssetStatus::AssetStatus_Compiled:
+                    assetInfo.m_relativePath = "textures/defaults/missing.png.streamingimage";
+                    break;
+                }
+            }
+
+            // Make sure the fallback image has been processed
+            AzFramework::AssetSystem::AssetStatus status = AzFramework::AssetSystem::AssetStatus_Unknown;
+            AzFramework::AssetSystemRequestBus::BroadcastResult(
+                status, &AzFramework::AssetSystemRequestBus::Events::CompileAssetSync, assetInfo.m_relativePath);
+            
+            // Generate the id of the fallback image
+            Data::AssetCatalogRequestBus::BroadcastResult(
+                assetInfo.m_assetId, &Data::AssetCatalogRequestBus::Events::GenerateAssetIdTEMP,
+                assetInfo.m_relativePath.c_str());
+
+            assetInfo.m_assetId.m_subId = StreamingImageAsset::GetImageAssetSubId();
+
+            // Register the fallback image with the asset catalog
+            Data::AssetCatalogRequestBus::Broadcast(&Data::AssetCatalogRequestBus::Events::RegisterAsset, assetInfo.m_assetId, assetInfo);
+
+            // Return the asset id of the fallback image
+            return assetInfo.m_assetId;
         }
     }
 }
