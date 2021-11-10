@@ -61,7 +61,7 @@ namespace AZ
             imageStats->m_bindFlags = descriptor.m_bindFlags;
 
             ImageSubresourceRange subresourceRange;
-            subresourceRange.m_mipSliceMin = GetResidentMipLevel();
+            subresourceRange.m_mipSliceMin = static_cast<uint16_t>(GetResidentMipLevel());
             GetSubresourceLayouts(subresourceRange, nullptr, &imageStats->m_sizeInBytes);
         }
     

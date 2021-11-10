@@ -40,12 +40,11 @@ namespace O3DE::ProjectManager
         m_verticalLayout->setAlignment(Qt::AlignTop);
 
         m_projectName = new FormLineEditWidget(tr("Project name"), "", this);
-        connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::ValidateProjectName);
+        connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectNameUpdated);
         m_verticalLayout->addWidget(m_projectName);
 
         m_projectPath = new FormFolderBrowseEditWidget(tr("Project Location"), "", this);
-        m_projectPath->lineEdit()->setReadOnly(true);
-        connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::Validate);
+        connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectPathUpdated);
         m_verticalLayout->addWidget(m_projectPath);
 
         projectSettingsFrame->setLayout(m_verticalLayout);
@@ -110,26 +109,34 @@ namespace O3DE::ProjectManager
         m_projectName->setErrorLabelVisible(!projectNameIsValid);
         return projectNameIsValid;
     }
+
     bool ProjectSettingsScreen::ValidateProjectPath()
     {
         bool projectPathIsValid = true;
-        if (m_projectPath->lineEdit()->text().isEmpty())
+        QDir path(m_projectPath->lineEdit()->text());
+        if (!path.isAbsolute())
         {
             projectPathIsValid = false;
-            m_projectPath->setErrorLabelText(tr("Please provide a valid location."));
+            m_projectPath->setErrorLabelText(tr("Please provide an absolute path for the project location."));
         }
-        else
+        else if (path.exists() && !path.isEmpty())
         {
-            QDir path(m_projectPath->lineEdit()->text());
-            if (path.exists() && !path.isEmpty())
-            {
-                projectPathIsValid = false;
-                m_projectPath->setErrorLabelText(tr("This folder exists and isn't empty.  Please choose a different location."));
-            }
+            projectPathIsValid = false;
+            m_projectPath->setErrorLabelText(tr("This folder exists and isn't empty.  Please choose a different location."));
         }
 
         m_projectPath->setErrorLabelVisible(!projectPathIsValid);
         return projectPathIsValid;
+    }
+
+    void ProjectSettingsScreen::OnProjectNameUpdated()
+    {
+        ValidateProjectName();
+    }
+
+    void ProjectSettingsScreen::OnProjectPathUpdated()
+    {
+        Validate();
     }
 
     bool ProjectSettingsScreen::Validate()

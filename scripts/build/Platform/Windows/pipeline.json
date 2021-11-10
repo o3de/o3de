@@ -16,5 +16,67 @@
         "nightly-clean": {
             "CLEAN_WORKSPACE": true
         }
+    },
+    "PIPELINE_JENKINS_PARAMETERS": {
+        "nightly-incremental": [
+            {
+                "parameter_name": "O3DE_AWS_PROJECT_NAME",
+                "parameter_type": "string",
+                "default_value": "",
+                "use_last_run_value": true,
+                "description": "The name of the O3DE project that stacks should be deployed for."
+            },
+            {
+                "parameter_name": "O3DE_AWS_DEPLOY_REGION",
+                "parameter_type": "string",
+                "default_value": "",
+                "use_last_run_value": true,
+                "description": "The region to deploy the stacks into."
+            },
+            {
+                "parameter_name": "ASSUME_ROLE_ARN",
+                "parameter_type": "string",
+                "default_value": "",
+                "use_last_run_value": true,
+                "description": "The ARN of the IAM role to assume to retrieve temporary AWS credentials."
+            },
+            {
+                "parameter_name": "COMMIT_ID",
+                "parameter_type": "string",
+                "default_value": "",
+                "use_last_run_value": true,
+                "description": "The commit ID for locking the version of CDK applications to deploy."
+            }
+        ],
+        "nightly-clean": [
+            {
+                "parameter_name": "O3DE_AWS_PROJECT_NAME",
+                "parameter_type": "string",
+                "default_value": "",
+                "use_last_run_value": true,
+                "description": "The name of the O3DE project that stacks should be deployed for."
+            },
+            {
+                "parameter_name": "O3DE_AWS_DEPLOY_REGION",
+                "parameter_type": "string",
+                "default_value": "",
+                "use_last_run_value": true,
+                "description": "The region to deploy the stacks into."
+            },
+            {
+                "parameter_name": "ASSUME_ROLE_ARN",
+                "parameter_type": "string",
+                "default_value": "",
+                "use_last_run_value": true,
+                "description": "The ARN of the IAM role to assume to retrieve temporary AWS credentials."
+            },
+            {
+                "parameter_name": "COMMIT_ID",
+                "parameter_type": "string",
+                "default_value": "",
+                "use_last_run_value": true,
+                "description": "The commit ID for locking the version of CDK applications to deploy."
+            }
+        ]
     }
 }

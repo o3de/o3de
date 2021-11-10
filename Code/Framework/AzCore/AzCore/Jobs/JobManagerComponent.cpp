@@ -18,6 +18,14 @@
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/Math/MathUtils.h>
 
+#include <AzCore/Console/IConsole.h>
+
+#include <AzCore/Threading/ThreadUtils.h>
+
+AZ_CVAR(float, cl_jobThreadsConcurrencyRatio, 0.6f, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system multiplier on the number of hw threads the machine creates at initialization");
+AZ_CVAR(uint32_t, cl_jobThreadsNumReserved, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system number of hardware threads that are reserved for O3DE system threads");
+AZ_CVAR(uint32_t, cl_jobThreadsMinNumber, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system minimum number of worker threads to create after scaling the number of hw threads");
+
 namespace AZ
 {
     //=========================================================================
@@ -46,9 +54,10 @@ namespace AZ
         JobManagerThreadDesc threadDesc;
 
         int numberOfWorkerThreads = m_numberOfWorkerThreads;
-        if (numberOfWorkerThreads <= 0)
+        if (numberOfWorkerThreads <= 0) // spawn default number of threads
         {
-            numberOfWorkerThreads = AZ::GetMin(static_cast<unsigned int>(desc.m_workerThreads.capacity()), AZStd::thread::hardware_concurrency());
+            uint32_t scaledHardwareThreads = Threading::CalcNumWorkerThreads(cl_jobThreadsConcurrencyRatio, cl_jobThreadsMinNumber, cl_jobThreadsNumReserved);
+            numberOfWorkerThreads = AZ::GetMin(static_cast<unsigned int>(desc.m_workerThreads.capacity()), scaledHardwareThreads);
         #if (AZ_TRAIT_MAX_JOB_MANAGER_WORKER_THREADS)
             numberOfWorkerThreads = AZ::GetMin(numberOfWorkerThreads, AZ_TRAIT_MAX_JOB_MANAGER_WORKER_THREADS);
         #endif // (AZ_TRAIT_MAX_JOB_MANAGER_WORKER_THREADS)

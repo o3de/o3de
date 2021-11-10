@@ -105,7 +105,7 @@ namespace AZ
                         nodesWithNoMesh.emplace(currentNode->mName.C_Str());
                     }
 
-                    for (int childIndex = 0; childIndex < currentNode->mNumChildren; ++childIndex)
+                    for (unsigned int childIndex = 0; childIndex < currentNode->mNumChildren; ++childIndex)
                     {
                         queue.push(currentNode->mChildren[childIndex]);
                     }
@@ -135,17 +135,12 @@ namespace AZ
                 const aiBone* bone = FindFirstBoneByNodeName(node, boneByNameMap);
                 if (bone)
                 {
-                    const DataTypes::MatrixType inverseOffsetMatrix = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(bone->mOffsetMatrix).GetInverseFull();
-
                     const aiBone* parentBone = FindFirstBoneByNodeName(node->mParent, boneByNameMap);
                     if (parentBone)
                     {
+                        DataTypes::MatrixType inverseOffsetMatrix = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(bone->mOffsetMatrix).GetInverseFull();
                         const DataTypes::MatrixType parentBoneOffsetMatrix = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(parentBone->mOffsetMatrix);
                         return parentBoneOffsetMatrix * inverseOffsetMatrix;
-                    }
-                    else
-                    {
-                        return inverseOffsetMatrix;
                     }
                 }
 
@@ -176,7 +171,7 @@ namespace AZ
                     return true;
                 }
 
-                for (int childIndex = 0; childIndex < node->mNumChildren; ++childIndex)
+                for (unsigned int childIndex = 0; childIndex < node->mNumChildren; ++childIndex)
                 {
                     const aiNode* childNode = node->mChildren[childIndex];
                     if (RecursiveHasChildBone(childNode, boneByNameMap))

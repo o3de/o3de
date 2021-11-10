@@ -153,6 +153,7 @@ namespace AZ
                 // behavior, we would need to rework the way filters work as well as the code in AssetSerializer.cpp to pass down
                 // the loadParams.m_assetLoadFilterCB that was passed into the AddDependentAssets() methods to use as the dependent
                 // asset filter instead of this lambda function.
+                AZ_UNUSED(handledAssetDependencyList); // Prevent unused warning in release builds
                 AZ_Assert(AZStd::find(handledAssetDependencyList.begin(), handledAssetDependencyList.end(), filterInfo.m_assetId) !=
                     handledAssetDependencyList.end(),
                     "Dependent Asset ID (%s) is expected to load, but the Asset Catalog has no dependency recorded. "

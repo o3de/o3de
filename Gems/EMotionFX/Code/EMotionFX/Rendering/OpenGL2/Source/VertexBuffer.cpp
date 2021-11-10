@@ -17,15 +17,15 @@ namespace RenderGL
     // constructor
     VertexBuffer::VertexBuffer()
     {
-        mBufferID       = MCORE_INVALIDINDEX32;
-        mNumVertices    = 0;
+        m_bufferId       = MCORE_INVALIDINDEX32;
+        m_numVertices    = 0;
     }
 
 
     // destructor
     VertexBuffer::~VertexBuffer()
     {
-        glDeleteBuffers(1, &mBufferID);
+        glDeleteBuffers(1, &m_bufferId);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
@@ -33,8 +33,8 @@ namespace RenderGL
     // activate
     void VertexBuffer::Activate()
     {
-        MCORE_ASSERT(mBufferID != MCORE_INVALIDINDEX32);
-        glBindBuffer(GL_ARRAY_BUFFER, mBufferID);
+        MCORE_ASSERT(m_bufferId != MCORE_INVALIDINDEX32);
+        glBindBuffer(GL_ARRAY_BUFFER, m_bufferId);
     }
 
 
@@ -71,13 +71,13 @@ namespace RenderGL
         }
 
         // generate the buffer and bind it
-        glGenBuffers(1, &mBufferID);
-        glBindBuffer(GL_ARRAY_BUFFER, mBufferID);
+        glGenBuffers(1, &m_bufferId);
+        glBindBuffer(GL_ARRAY_BUFFER, m_bufferId);
         glBufferData(GL_ARRAY_BUFFER, numBytesPerVertex * numVertices, vertexData, usageGL);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
 
         // adjust the number of vertices
-        mNumVertices = numVertices;
+        m_numVertices = numVertices;
         return true;
     }
 
@@ -85,7 +85,7 @@ namespace RenderGL
     // lock the buffer
     void* VertexBuffer::Lock(ELockMode lockMode)
     {
-        if (mNumVertices == 0)
+        if (m_numVertices == 0)
         {
             return nullptr;
         }
@@ -107,8 +107,8 @@ namespace RenderGL
             lockModeGL = GL_WRITE_ONLY;
         }
 
-        glBindBuffer(GL_ARRAY_BUFFER, mBufferID);
-        void* data = glMapBuffer(GL_ARRAY_BUFFER, lockModeGL);
+        glBindBuffer(GL_ARRAY_BUFFER, m_bufferId);
+        void* data = m_glMapBuffer(GL_ARRAY_BUFFER, lockModeGL);
 
         // is the data valid?
         if (data == nullptr)
@@ -138,12 +138,12 @@ namespace RenderGL
     // unlock the buffer
     void VertexBuffer::Unlock()
     {
-        if (mNumVertices == 0)
+        if (m_numVertices == 0)
         {
             return;
         }
 
-        glBindBuffer(GL_ARRAY_BUFFER, mBufferID);
+        glBindBuffer(GL_ARRAY_BUFFER, m_bufferId);
         glUnmapBuffer(GL_ARRAY_BUFFER);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }

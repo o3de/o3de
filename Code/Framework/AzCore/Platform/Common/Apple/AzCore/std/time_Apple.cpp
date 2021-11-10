@@ -25,29 +25,7 @@ namespace AZStd
     AZStd::sys_time_t GetTimeNowTicks()
     {
         AZStd::sys_time_t timeNow;
-        struct timespec ts;
-        clock_serv_t cclock;
-        mach_timespec_t mts;
-        kern_return_t ret = host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
-        if (ret == KERN_SUCCESS)
-        {
-            ret = clock_get_time(cclock, &mts);
-            if (ret == KERN_SUCCESS)
-            {
-                ts.tv_sec = mts.tv_sec;
-                ts.tv_nsec = mts.tv_nsec;
-            }
-            else
-            {
-                AZ_Assert(false, "clock_get_time error: %d\n", ret);
-            }
-            mach_port_deallocate(mach_task_self(), cclock);
-        }
-        else
-        {
-            AZ_Assert(false, "clock_get_time error: %d\n", ret);
-        }
-        timeNow =  ts.tv_sec * GetTimeTicksPerSecond() + ts.tv_nsec;
+        timeNow =  clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
         return timeNow;
     }
 
@@ -62,29 +40,7 @@ namespace AZStd
     AZStd::sys_time_t GetTimeNowSecond()
     {
         AZStd::sys_time_t timeNowSecond;
-        struct timespec ts;
-        clock_serv_t cclock;
-        mach_timespec_t mts;
-        kern_return_t ret = host_get_clock_service(mach_host_self(), CALENDAR_CLOCK, &cclock);
-        if (ret == KERN_SUCCESS)
-        {
-            ret = clock_get_time(cclock, &mts);
-            if (ret == KERN_SUCCESS)
-            {
-                ts.tv_sec = mts.tv_sec;
-                ts.tv_nsec = mts.tv_nsec;
-            }
-            else
-            {
-                AZ_Assert(false, "clock_get_time error: %d\n", ret);
-            }
-            mach_port_deallocate(mach_task_self(), cclock);
-        }
-        else
-        {
-            AZ_Assert(false, "clock_get_time error: %d\n", ret);
-        }
-        timeNowSecond =  ts.tv_sec;
+        timeNowSecond =  GetTimeNowTicks()/GetTimeTicksPerSecond();
         return timeNowSecond;
     }
 

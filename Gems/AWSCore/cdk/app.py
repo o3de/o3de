@@ -25,7 +25,7 @@ ACCOUNT = os.environ.get('O3DE_AWS_DEPLOY_ACCOUNT', os.environ.get('CDK_DEFAULT_
 PROJECT_NAME = os.environ.get('O3DE_AWS_PROJECT_NAME', f'O3DE-AWS-PROJECT').upper()
 
 # The name of this feature
-FEATURE_NAME = 'Core'
+FEATURE_NAME = 'AWSCore'
 
 # The name of this CDK application
 PROJECT_FEATURE_NAME = f'{PROJECT_NAME}-{FEATURE_NAME}'
@@ -57,8 +57,9 @@ example_stack = ExampleResources(
     tags={Constants.O3DE_PROJECT_TAG_NAME: PROJECT_NAME, Constants.O3DE_FEATURE_TAG_NAME: FEATURE_NAME},
     env=env
 )
-#
-# Add the common stack as a dependency of the feature stack
+
+# Add the core stack as a dependency of the feature stack since the feature stack
+# requires the core stack outputs for deployment.
 example_stack.add_dependency(core_construct.common_stack)
 
 app.synth()

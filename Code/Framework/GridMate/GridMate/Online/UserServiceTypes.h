@@ -9,7 +9,6 @@
 #define GM_USER_SERVICE_TYPES_H
 
 #include <GridMate/Types.h>
-#include <GridMate/String/string.h>
 
 namespace GridMate
 {

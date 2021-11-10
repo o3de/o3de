@@ -37,14 +37,14 @@ namespace EMotionFX
     void BlendTreeParameterNode::Reinit()
     {
         // Sort the parameter name mask in the way the parameters are stored in the anim graph.
-        SortParameterNames(mAnimGraph, m_parameterNames);
+        SortParameterNames(m_animGraph, m_parameterNames);
 
         // Iterate through the parameter name mask and find the corresponding cached value parameter indices.
         // This expects the parameter names to be sorted in the way the parameters are stored in the anim graph.
         m_parameterIndices.clear();
         for (const AZStd::string& parameterName : m_parameterNames)
         {
-            const AZ::Outcome<size_t> parameterIndex = mAnimGraph->FindValueParameterIndexByName(parameterName);
+            const AZ::Outcome<size_t> parameterIndex = m_animGraph->FindValueParameterIndexByName(parameterName);
             // during removal of parameters, we could end up with a parameter that was removed until the node gets the mask updated
             if (parameterIndex.IsSuccess())
             {
@@ -57,7 +57,7 @@ namespace EMotionFX
         if (m_parameterIndices.empty())
         {
             // Parameter mask is empty, add ports for all parameters.
-            const ValueParameterVector& valueParameters = mAnimGraph->RecursivelyGetValueParameters();
+            const ValueParameterVector& valueParameters = m_animGraph->RecursivelyGetValueParameters();
             const uint32 valueParameterCount = static_cast<uint32>(valueParameters.size());
             InitOutputPorts(valueParameterCount);
 
@@ -66,12 +66,12 @@ namespace EMotionFX
                 const ValueParameter* parameter = valueParameters[i];
                 SetOutputPortName(static_cast<uint32>(i), parameter->GetName().c_str());
 
-                mOutputPorts[i].mPortID = i;
-                mOutputPorts[i].ClearCompatibleTypes();
-                mOutputPorts[i].mCompatibleTypes[0] = parameter->GetType();
+                m_outputPorts[i].m_portId = i;
+                m_outputPorts[i].ClearCompatibleTypes();
+                m_outputPorts[i].m_compatibleTypes[0] = parameter->GetType();
                 if (GetTypeSupportsFloat(parameter->GetType()))
                 {
-                    mOutputPorts[i].mCompatibleTypes[1] = MCore::AttributeFloat::TYPE_ID;
+                    m_outputPorts[i].m_compatibleTypes[1] = MCore::AttributeFloat::TYPE_ID;
                 }
             }
         }
@@ -83,15 +83,15 @@ namespace EMotionFX
 
             for (size_t i = 0; i < parameterCount; ++i)
             {
-                const ValueParameter* parameter = mAnimGraph->FindValueParameter(m_parameterIndices[i]);
+                const ValueParameter* parameter = m_animGraph->FindValueParameter(m_parameterIndices[i]);
                 SetOutputPortName(static_cast<uint32>(i), parameter->GetName().c_str());
 
-                mOutputPorts[i].mPortID = static_cast<uint32>(i);
-                mOutputPorts[i].ClearCompatibleTypes();
-                mOutputPorts[i].mCompatibleTypes[0] = parameter->GetType();
+                m_outputPorts[i].m_portId = static_cast<uint32>(i);
+                m_outputPorts[i].ClearCompatibleTypes();
+                m_outputPorts[i].m_compatibleTypes[0] = parameter->GetType();
                 if (GetTypeSupportsFloat(parameter->GetType()))
                 {
-                    mOutputPorts[i].mCompatibleTypes[1] = MCore::AttributeFloat::TYPE_ID;
+                    m_outputPorts[i].m_compatibleTypes[1] = MCore::AttributeFloat::TYPE_ID;
                 }
             }
         }
@@ -139,7 +139,7 @@ namespace EMotionFX
         if (m_parameterIndices.empty())
         {
             // output all anim graph instance parameter values into the output ports
-            const uint32 numParameters = static_cast<uint32>(mOutputPorts.size());
+            const uint32 numParameters = static_cast<uint32>(m_outputPorts.size());
             for (uint32 i = 0; i < numParameters; ++i)
             {
                 GetOutputValue(animGraphInstance, i)->InitFrom(animGraphInstance->GetParameterValue(i));
@@ -235,7 +235,7 @@ namespace EMotionFX
     void BlendTreeParameterNode::SetParameters(const AZStd::vector<AZStd::string>& parameterNames)
     {
         m_parameterNames = parameterNames;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -299,7 +299,7 @@ namespace EMotionFX
     void BlendTreeParameterNode::RemoveParameterByName(const AZStd::string& parameterName)
     {
         m_parameterNames.erase(AZStd::remove(m_parameterNames.begin(), m_parameterNames.end(), parameterName), m_parameterNames.end());
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -376,7 +376,7 @@ namespace EMotionFX
         // Add all connected parameters
         for (const AnimGraphNode::Port& port : GetOutputPorts())
         {
-            if (port.mConnection)
+            if (port.m_connection)
             {
                 parameterNames.emplace_back(port.GetNameString());
             }
@@ -435,10 +435,10 @@ namespace EMotionFX
 
         // Rename the actual output ports in all cases
         // (also when the parameter mask is empty and showing all parameters).
-        const size_t numOutputPorts = mOutputPorts.size();
+        const size_t numOutputPorts = m_outputPorts.size();
         for (size_t i = 0; i < numOutputPorts; ++i)
         {
-            AnimGraphNode::Port& outputPort = mOutputPorts[i];
+            AnimGraphNode::Port& outputPort = m_outputPorts[i];
             if (outputPort.GetNameString() == oldParameterName)
             {
                 SetOutputPortName(static_cast<AZ::u32>(i), newParameterName.c_str());

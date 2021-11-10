@@ -82,7 +82,7 @@ namespace EMotionFX
         AnimGraphPose* outputPose;
 
         // get the motion instance object
-        BlendTreeConnection* motionConnection = mInputPorts[INPUTPORT_MOTION].mConnection;
+        BlendTreeConnection* motionConnection = m_inputPorts[INPUTPORT_MOTION].m_connection;
         if (motionConnection == nullptr)
         {
             RequestPoses(animGraphInstance);
@@ -92,7 +92,7 @@ namespace EMotionFX
             // visualize it
             if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
             {
-                actorInstance->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+                actorInstance->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
             }
             return;
         }
@@ -109,14 +109,14 @@ namespace EMotionFX
             // visualize it
             if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
             {
-                actorInstance->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+                actorInstance->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
             }
             return;
         }
 
         // get the time value
         float timeValue = 0.0f;
-        BlendTreeConnection* timeConnection = mInputPorts[INPUTPORT_TIME].mConnection;
+        BlendTreeConnection* timeConnection = m_inputPorts[INPUTPORT_TIME].m_connection;
         if (!timeConnection) // get it from the parameter value if there is no connection
         {
             timeValue = m_normalizedTimeValue;
@@ -149,7 +149,7 @@ namespace EMotionFX
         // visualize it
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            actorInstance->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+            actorInstance->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
         }
     }
 
@@ -158,7 +158,7 @@ namespace EMotionFX
     void BlendTreeMotionFrameNode::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // clear the event buffer
-        if (mDisabled)
+        if (m_disabled)
         {
             RequestRefDatas(animGraphInstance);
             AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
@@ -169,14 +169,14 @@ namespace EMotionFX
         }
 
         // update the time input
-        BlendTreeConnection* timeConnection = mInputPorts[INPUTPORT_TIME].mConnection;
+        BlendTreeConnection* timeConnection = m_inputPorts[INPUTPORT_TIME].m_connection;
         if (timeConnection)
         {
             timeConnection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
         }
 
         // update the input motion
-        BlendTreeConnection* motionConnection = mInputPorts[INPUTPORT_MOTION].mConnection;
+        BlendTreeConnection* motionConnection = m_inputPorts[INPUTPORT_MOTION].m_connection;
         if (motionConnection)
         {
             motionConnection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
@@ -195,7 +195,7 @@ namespace EMotionFX
             MotionInstance* motionInstance = motionNode->FindMotionInstance(animGraphInstance);
             if (triggerEvents && motionInstance)
             {
-                motionInstance->ExtractEventsNonLoop(uniqueData->mOldTime, uniqueData->mNewTime, &uniqueData->GetRefCountedData()->GetEventBuffer());
+                motionInstance->ExtractEventsNonLoop(uniqueData->m_oldTime, uniqueData->m_newTime, &uniqueData->GetRefCountedData()->GetEventBuffer());
                 data->GetEventBuffer().UpdateEmitters(this);
             }
         }
@@ -214,14 +214,14 @@ namespace EMotionFX
     void BlendTreeMotionFrameNode::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // update the time input
-        BlendTreeConnection* timeConnection = mInputPorts[INPUTPORT_TIME].mConnection;
+        BlendTreeConnection* timeConnection = m_inputPorts[INPUTPORT_TIME].m_connection;
         if (timeConnection)
         {
             UpdateIncomingNode(animGraphInstance, timeConnection->GetSourceNode(), timePassedInSeconds);
         }
 
         // update the input motion
-        BlendTreeConnection* motionConnection = mInputPorts[INPUTPORT_MOTION].mConnection;
+        BlendTreeConnection* motionConnection = m_inputPorts[INPUTPORT_MOTION].m_connection;
         if (motionConnection)
         {
             UpdateIncomingNode(animGraphInstance, motionConnection->GetSourceNode(), timePassedInSeconds);
@@ -246,14 +246,14 @@ namespace EMotionFX
         {
             if (m_emitEventsFromStart)
             {
-                uniqueData->mNewTime = 0.0f;
-                uniqueData->mOldTime = 0.0f;
+                uniqueData->m_newTime = 0.0f;
+                uniqueData->m_oldTime = 0.0f;
             }
             else
             {
                 const float newTimeValue = uniqueData->GetDuration() * timeValue;
-                uniqueData->mNewTime = newTimeValue;
-                uniqueData->mOldTime = newTimeValue;
+                uniqueData->m_newTime = newTimeValue;
+                uniqueData->m_oldTime = newTimeValue;
             }
             uniqueData->m_rewindRequested = false;
         }
@@ -264,8 +264,8 @@ namespace EMotionFX
             uniqueData->Init(animGraphInstance, motionNode);
             uniqueData->SetCurrentPlayTime(uniqueData->GetDuration() * timeValue);
 
-            uniqueData->mOldTime = uniqueData->mNewTime;
-            uniqueData->mNewTime = uniqueData->GetDuration() * timeValue;
+            uniqueData->m_oldTime = uniqueData->m_newTime;
+            uniqueData->m_newTime = uniqueData->GetDuration() * timeValue;
         }
         else
         {

@@ -106,7 +106,7 @@ namespace AWSMetrics
         AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
         m_metricsQueue.AddMetrics(metricsEvent);
 
-        if (m_metricsQueue.GetSizeInBytes() >= m_clientConfiguration->GetMaxQueueSizeInBytes())
+        if (m_metricsQueue.GetSizeInBytes() >= static_cast<size_t>(m_clientConfiguration->GetMaxQueueSizeInBytes()))
         {
             // Flush the metrics queue when the accumulated metrics size hits the limit
             m_waitEvent.release();
@@ -431,7 +431,7 @@ namespace AWSMetrics
                 AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
                 m_metricsQueue.AddMetrics(offlineRecords[index]);
 
-                if (m_metricsQueue.GetSizeInBytes() >= m_clientConfiguration->GetMaxQueueSizeInBytes())
+                if (m_metricsQueue.GetSizeInBytes() >= static_cast<size_t>(m_clientConfiguration->GetMaxQueueSizeInBytes()))
                 {
                     // Flush the metrics queue when the accumulated metrics size hits the limit
                     m_waitEvent.release();

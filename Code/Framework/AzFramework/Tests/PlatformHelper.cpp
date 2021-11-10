@@ -38,7 +38,7 @@ TEST_F(PlatformHelperTest, SpecialAllFlag_PlatformId_Valid)
     AzFramework::PlatformFlags platformFlags = AzFramework::PlatformFlags::Platform_ALL;
     auto platforms = AzFramework::PlatformHelper::GetPlatformsInterpreted(platformFlags);
     EXPECT_EQ(platforms.size(), AzFramework::NumPlatforms);
-    EXPECT_THAT(platforms, testing::UnorderedElementsAre("pc", "android", "ios", "mac", "provo", "salem", "jasper", "server"));
+    EXPECT_THAT(platforms, testing::UnorderedElementsAre("pc", "linux", "android", "ios", "mac", "provo", "salem", "jasper", "server"));
 }
 
 TEST_F(PlatformHelperTest, SpecialAllClientFlag_PlatformId_Valid)
@@ -46,7 +46,7 @@ TEST_F(PlatformHelperTest, SpecialAllClientFlag_PlatformId_Valid)
     AzFramework::PlatformFlags platformFlags = AzFramework::PlatformFlags::Platform_ALL_CLIENT;
     auto platforms = AzFramework::PlatformHelper::GetPlatformsInterpreted(platformFlags);
     EXPECT_EQ(platforms.size(), AzFramework::NumClientPlatforms);
-    EXPECT_THAT(platforms, testing::UnorderedElementsAre("pc", "android", "ios", "mac", "provo", "salem", "jasper"));
+    EXPECT_THAT(platforms, testing::UnorderedElementsAre("pc", "linux", "android", "ios", "mac", "provo", "salem", "jasper"));
 }
 
 TEST_F(PlatformHelperTest, InvalidPlatformFlags_PlatformId_Empty)
@@ -102,11 +102,7 @@ TEST_F(PlatformHelperTest, AppendPlatformCodeNames_ByValidName_OK)
 {
     AZStd::fixed_vector<AZStd::string_view, AzFramework::MaxPlatformCodeNames> platformCodes;
     AzFramework::PlatformHelper::AppendPlatformCodeNames(platformCodes, AzFramework::PlatformPC);
-    ASSERT_EQ(2, platformCodes.size());
-    AZStd::string windows = platformCodes[0];
-    AZStd::string linux = platformCodes[1];
-    EXPECT_STRCASEEQ(AzFramework::PlatformCodeNameWindows, windows.c_str());
-    EXPECT_STRCASEEQ(AzFramework::PlatformCodeNameLinux, linux.c_str());
+    EXPECT_THAT(platformCodes, testing::Pointwise(testing::Eq(), {AzFramework::PlatformCodeNameWindows}));
 }
 
 TEST_F(PlatformHelperTest, AppendPlatformCodeNames_ByInvalidName_OK)
@@ -122,11 +118,7 @@ TEST_F(PlatformHelperTest, AppendPlatformCodeNames_ByValidId_OK)
 {
     AZStd::fixed_vector<AZStd::string_view, AzFramework::MaxPlatformCodeNames> platformCodes;
     AzFramework::PlatformHelper::AppendPlatformCodeNames(platformCodes, AzFramework::PlatformId::PC);
-    ASSERT_EQ(2, platformCodes.size());
-    AZStd::string windows = platformCodes[0];
-    AZStd::string linux = platformCodes[1];
-    EXPECT_STRCASEEQ(AzFramework::PlatformCodeNameWindows, windows.c_str());
-    EXPECT_STRCASEEQ(AzFramework::PlatformCodeNameLinux, linux.c_str());
+    EXPECT_THAT(platformCodes, testing::Pointwise(testing::Eq(), {AzFramework::PlatformCodeNameWindows}));
 }
 
 TEST_F(PlatformHelperTest, AppendPlatformCodeNames_ByInvalidId_OK)

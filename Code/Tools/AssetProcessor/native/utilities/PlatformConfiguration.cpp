@@ -84,6 +84,8 @@ namespace AssetProcessor
             return !m_platformIdentifierStack.empty() ? AZ::SettingsRegistryInterface::VisitResponse::Continue
                 : AZ::SettingsRegistryInterface::VisitResponse::Skip;
         }
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
         {
             if (m_platformIdentifierStack.empty())
@@ -114,6 +116,7 @@ namespace AssetProcessor
     struct MetaDataTypesVisitor
         : AZ::SettingsRegistryInterface::Visitor
     {
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
         {
             m_metaDataTypes.push_back({ AZ::IO::PathView(valueName, AZ::IO::PosixPathSeparator).LexicallyNormal().String(), value });
@@ -197,7 +200,7 @@ namespace AssetProcessor
         }
         else if (valueName == "order")
         {
-            scanFolderEntry.m_scanOrder = value;
+            scanFolderEntry.m_scanOrder = static_cast<int>(value);
         }
     }
 
@@ -475,7 +478,7 @@ namespace AssetProcessor
         RCAssetRecognizer& assetRecognizer = *assetRecognizerEntryIt;
         if (valueName == "priority")
         {
-            assetRecognizer.m_recognizer.m_priority = value;
+            assetRecognizer.m_recognizer.m_priority = static_cast<int>(value);
         }
     }
 
@@ -681,7 +684,6 @@ namespace AssetProcessor
 
     const char AssetConfigPlatformDir[] = "AssetProcessorConfig/";
     const char AssetProcessorPlatformConfigFileName[] = "AssetProcessorPlatformConfig.ini";
-    const char RestrictedPlatformDir[] = "restricted";
 
     PlatformConfiguration::PlatformConfiguration(QObject* pParent)
         : QObject(pParent)
@@ -747,7 +749,7 @@ namespace AssetProcessor
         }
 
         AZStd::vector<AZ::IO::Path> configFiles = AzToolsFramework::AssetUtils::GetConfigFiles(absoluteSystemRoot.toUtf8().constData(),
-            absoluteAssetRoot.toUtf8().constData(), projectPath.toUtf8().constData(),
+            projectPath.toUtf8().constData(),
             addPlatformConfigs, addGemsConfigs && !noGemScanFolders, settingsRegistry);
 
         // First Merge all Engine, Gem and Project specific AssetProcessor*Config.setreg/.inifiles
@@ -1433,32 +1435,35 @@ namespace AssetProcessor
         return QString();
     }
 
-    QStringList PlatformConfiguration::FindWildcardMatches(const QString& sourceFolder, QString relativeName, bool includeFolders, bool recursiveSearch) const
+    QStringList PlatformConfiguration::FindWildcardMatches(
+        const QString& sourceFolder, QString relativeName, bool includeFolders, bool recursiveSearch) const
     {
         if (relativeName.isEmpty())
         {
             return QStringList();
         }
 
-        const int pathLen = sourceFolder.length() + 1;
+        QDir sourceFolderDir(sourceFolder);
 
-        relativeName.replace('\\', '/');
+        QString posixRelativeName = QDir::fromNativeSeparators(relativeName);
 
         QStringList returnList;
-        QRegExp nameMatch{ relativeName, Qt::CaseInsensitive, QRegExp::Wildcard };
-        QDirIterator diretoryIterator(sourceFolder, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot, recursiveSearch ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
+        QRegExp nameMatch{ posixRelativeName, Qt::CaseInsensitive, QRegExp::Wildcard };
+        QDirIterator dirIterator(
+            sourceFolderDir.path(), QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot,
+            recursiveSearch ? QDirIterator::Subdirectories : QDirIterator::NoIteratorFlags);
         QStringList files;
-        while (diretoryIterator.hasNext())
+        while (dirIterator.hasNext())
         {
-            diretoryIterator.next();
-            if (!includeFolders && !diretoryIterator.fileInfo().isFile())
+            dirIterator.next();
+            if (!includeFolders && !dirIterator.fileInfo().isFile())
             {
                 continue;
             }
-            QString pathMatch{ diretoryIterator.filePath().mid(pathLen) };
+            QString pathMatch{ sourceFolderDir.relativeFilePath(dirIterator.filePath()) };
             if (nameMatch.exactMatch(pathMatch))
             {
-                returnList.append(AssetUtilities::NormalizeFilePath(diretoryIterator.filePath()));
+                returnList.append(QDir::fromNativeSeparators(dirIterator.filePath()));
             }
         }
         return returnList;
@@ -1580,6 +1585,24 @@ namespace AssetProcessor
                     gemOrder,
                     /*scanFolderId*/ 0,
                     /*canSaveNewAssets*/ true)); // Users can create assets like slices in Gem asset folders.
+
+                // Now add another scan folder on Gem/GemName/Registry...
+                gemFolder = gemDir.absoluteFilePath(AzFramework::GemInfo::GetGemRegistryFolder());
+                gemFolder = AssetUtilities::NormalizeDirectoryPath(gemFolder);
+
+                assetBrowserDisplayName = AzFramework::GemInfo::GetGemRegistryFolder();
+                portableKey = QString("gemregistry-%1").arg(gemNameAsUuid);
+                gemOrder++;
+
+                AZ_TracePrintf(AssetProcessor::DebugChannel, "Adding GEM registry folder for monitoring / scanning: %s.\n", gemFolder.toUtf8().data());
+                AddScanFolder(ScanFolderInfo(
+                    gemFolder,
+                    assetBrowserDisplayName,
+                    portableKey,
+                    isRoot,
+                    isRecursive,
+                    platforms,
+                    gemOrder));
             }
         }
     }

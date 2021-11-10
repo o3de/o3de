@@ -31,7 +31,6 @@
     ],
     "steps": [
       "profile_vs2019",
-      "test_impact_analysis_profile_vs2019",
       "asset_profile_vs2019",
       "test_cpu_profile_vs2019"
     ]
@@ -89,7 +88,7 @@
       "CONFIGURATION": "profile",
       "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
       "SCRIPT_PARAMETERS": 
-      "--config=\"!OUTPUT_DIRECTORY!/bin/TestImpactFramework/persistent/tiaf.profile.json\" --suite=main --test-failure-policy=continue --src-branch=!BRANCH_NAME! --dst-branch=!CHANGE_TARGET! --pipeline=!PIPELINE_NAME! --dest-commit=!CHANGE_ID! --seeding-branches=!BUILD_SNAPSHOTS! --seeding-pipelines=default"
+      "--config=\"!OUTPUT_DIRECTORY!/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=!BRANCH_NAME! --dst-branch=!CHANGE_TARGET! --commit=!CHANGE_ID! --s3-bucket=!TEST_IMPACT_S3_BUCKET! --mars-index-prefix=jonawals --s3-top-level-dir=!REPOSITORY_NAME! --build-number=!BUILD_NUMBER! --suite=main --test-failure-policy=continue"
     }
   },
   "debug_vs2019": {
@@ -118,7 +117,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test",
+      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test --no-tests=error",
       "TEST_METRICS": "True",
       "TEST_RESULTS": "True"
     }
@@ -167,7 +166,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test",
+      "CTEST_OPTIONS": "-L \"(SUITE_smoke|SUITE_main)\" -LE \"(REQUIRES_gpu)\" -T Test --no-tests=error",
       "TEST_METRICS": "True",
       "TEST_RESULTS": "True"
     }
@@ -188,7 +187,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_smoke TEST_SUITE_main",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_smoke_REQUIRES_gpu|SUITE_main_REQUIRES_gpu)\" -T Test",
+      "CTEST_OPTIONS": "-L \"(SUITE_smoke_REQUIRES_gpu|SUITE_main_REQUIRES_gpu)\" -T Test --no-tests=error",
       "TEST_METRICS": "True",
       "TEST_RESULTS": "True",
       "TEST_SCREENSHOTS": "True"
@@ -213,11 +212,42 @@
       "ASSET_PROCESSOR_PLATFORMS": "pc,server"
     }
   },
-  "periodic_test_profile_vs2019": {
+  "awsi_test_profile_vs2019_pipe": {
     "TAGS": [
       "nightly-incremental",
-      "nightly-clean",
-      "weekly-build-metrics"
+      "nightly-clean"
+    ],
+    "steps": [
+      "awsi_deployment",
+      "awsi_test_profile_vs2019",
+      "awsi_destruction"
+    ]
+  },
+  "awsi_test_profile_vs2019": {
+    "TAGS": [
+        "weekly-build-metrics"
+    ],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "COMMAND": "build_test_windows.cmd",
+    "PARAMETERS": {
+      "CONFIGURATION": "profile",
+      "OUTPUT_DIRECTORY": "build\\windows_vs2019",
+      "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_LY_PROJECTS": "AutomatedTesting",
+      "CMAKE_TARGET": "TEST_SUITE_awsi",
+      "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
+      "CTEST_OPTIONS": "-L \"(SUITE_awsi)\" -T Test --no-tests=error",
+      "TEST_METRICS": "True",
+      "TEST_RESULTS": "True"
+    }
+  },
+  "periodic_test_profile_vs2019": {
+    "TAGS": [
+        "nightly-incremental",
+        "nightly-clean",
+        "weekly-build-metrics"
     ],
     "COMMAND": "build_test_windows.cmd",
     "PARAMETERS": {
@@ -227,7 +257,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_periodic",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\" -T Test",
+      "CTEST_OPTIONS": "-L \"(SUITE_periodic)\" -T Test --no-tests=error",
       "TEST_METRICS": "True",
       "TEST_RESULTS": "True"
     }
@@ -249,7 +279,7 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_sandbox",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_sandbox)\" -T Test",
+      "CTEST_OPTIONS": "-L \"(SUITE_sandbox)\" -T Test --no-tests=error",
       "TEST_METRICS": "True",
       "TEST_RESULTS": "True"
     }
@@ -268,13 +298,14 @@
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "TEST_SUITE_benchmark",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo",
-      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\" -T Test",
+      "CTEST_OPTIONS": "-L \"(SUITE_benchmark)\" -T Test --no-tests=error",
       "TEST_METRICS": "True",
       "TEST_RESULTS": "True"
     }
   },
   "release_vs2019": {
     "TAGS": [
+      "default",
       "nightly-incremental",
       "nightly-clean",
       "weekly-build-metrics"
@@ -320,17 +351,21 @@
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
     }
   },
-  "windows_installer": {
+  "installer_vs2019": {
     "TAGS": [
-      "nightly-clean"
+      "nightly-clean",
+      "nightly-installer"
     ],
+    "PIPELINE_ENV":{
+      "NODE_LABEL":"windows-packaging"
+    },
     "COMMAND": "build_installer_windows.cmd",
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build\\windows_vs2019",
         "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DLY_VERSION_ENGINE_NAME=o3de-sdk -DLY_INSTALLER_WIX_ROOT=\"!WIX! \"",
-        "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=ON -DLY_INSTALLER_DOWNLOAD_URL=https://dkb1uj4hs9ikv.cloudfront.net -DLY_INSTALLER_LICENSE_URL=https://www.o3debinaries.org/license -DLY_INSTALLER_3RD_PARTY_LICENSE_URL=https://dkb1uj4hs9ikv.cloudfront.net/SPDX-Licenses.txt",
-        "CPACK_BUCKET": "spectra-prism-staging-us-west-2",
+        "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=ON -DLY_INSTALLER_DOWNLOAD_URL=!INSTALLER_DOWNLOAD_URL! -DLY_INSTALLER_LICENSE_URL=!INSTALLER_DOWNLOAD_URL!/license",
+        "CPACK_BUCKET": "!INSTALLER_BUCKET!",
         "CMAKE_LY_PROJECTS": "",
         "CMAKE_TARGET": "ALL_BUILD",
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
@@ -376,5 +411,21 @@
       "install_profile_vs2019",
       "project_engineinstall_profile_vs2019"
     ]
+  },
+  "awsi_deployment": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "COMMAND": "deploy_cdk_applications.cmd",
+    "PARAMETERS": {}
+  },
+  "awsi_destruction": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "COMMAND": "destroy_cdk_applications.cmd",
+    "PARAMETERS": {}
   }
 }

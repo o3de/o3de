@@ -9,12 +9,18 @@
 
 #include <AtomToolsFramework/Communication/LocalServer.h>
 #include <AtomToolsFramework/Communication/LocalSocket.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
+
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/UserSettings/UserSettingsProvider.h>
+
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
+
 #include <AzQtComponents/Application/AzQtApplication.h>
+#include <AzQtComponents/Components/StyleManager.h>
+
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/Logger/TraceLogger.h>
@@ -31,6 +37,7 @@ namespace AtomToolsFramework
         , protected AzFramework::AssetSystemStatusBus::Handler
         , protected AzToolsFramework::EditorPythonConsoleNotificationBus::Handler
         , protected AZ::UserSettingsOwnerRequestBus::Handler
+        , protected AtomToolsMainWindowNotificationBus::Handler
     {
     public:
         AZ_TYPE_INFO(AtomTools::AtomToolsApplication, "{A0DF25BA-6F74-4F11-9F85-0F99278D5986}");
@@ -38,6 +45,9 @@ namespace AtomToolsFramework
         using Base = AzFramework::Application;
 
         AtomToolsApplication(int* argc, char*** argv);
+        ~AtomToolsApplication();
+
+        virtual bool LaunchLocalServer();
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Application
@@ -52,6 +62,11 @@ namespace AtomToolsFramework
         void Stop() override;
 
     protected:
+        //////////////////////////////////////////////////////////////////////////
+        // AtomsToolMainWindowNotificationBus::Handler overrides...
+        void OnMainWindowClosing() override;
+        //////////////////////////////////////////////////////////////////////////
+
         //////////////////////////////////////////////////////////////////////////
         // AssetDatabaseRequestsBus::Handler overrides...
         bool GetAssetDatabaseLocation(AZStd::string& result) override;
@@ -94,12 +109,12 @@ namespace AtomToolsFramework
         virtual void UnloadSettings();
         virtual void CompileCriticalAssets();
         virtual void ProcessCommandLine(const AZ::CommandLine& commandLine);
-        virtual bool LaunchDiscoveryService();
-        virtual void StartInternal();
 
         static void PyIdleWaitFrames(uint32_t frames);
 
         AzToolsFramework::TraceLogger m_traceLogger;
+
+        AZStd::unique_ptr<AzQtComponents::StyleManager> m_styleManager;
 
         //! Local user settings are used to store material browser tree expansion state
         AZ::UserSettingsProvider m_localUserSettings;

@@ -61,7 +61,7 @@ namespace MCore
         virtual void Delete();
 
     private:
-        AtomicUInt32    mReferenceCount;
+        AtomicUInt32    m_referenceCount;
     };
 
 

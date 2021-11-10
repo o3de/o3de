@@ -39,7 +39,7 @@ namespace O3DE::ProjectManager
     NewProjectSettingsScreen::NewProjectSettingsScreen(QWidget* parent)
         : ProjectSettingsScreen(parent)
     {
-        const QString defaultName{ "NewProject" };
+        const QString defaultName = GetDefaultProjectName();
         const QString defaultPath = QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + defaultName);
 
         m_projectName->lineEdit()->setText(defaultName);
@@ -162,6 +162,17 @@ namespace O3DE::ProjectManager
         return defaultPath;
     }
 
+    QString NewProjectSettingsScreen::GetDefaultProjectName()
+    {
+        return "NewProject";
+    }
+
+    QString NewProjectSettingsScreen::GetProjectAutoPath()
+    {
+        const QString projectName = m_projectName->lineEdit()->text();
+        return QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + projectName);
+    }
+
     ProjectManagerScreen NewProjectSettingsScreen::GetScreenEnum()
     {
         return ProjectManagerScreen::NewProjectSettings;
@@ -260,4 +271,22 @@ namespace O3DE::ProjectManager
             m_projectTemplateButtonGroup->blockSignals(false);
         }
     }
+    void NewProjectSettingsScreen::OnProjectNameUpdated()
+    {
+        if (ValidateProjectName() && !m_userChangedProjectPath)
+        {
+            m_projectPath->setText(GetProjectAutoPath());
+        }
+    }
+
+    void NewProjectSettingsScreen::OnProjectPathUpdated()
+    {
+        const QString defaultPath = QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + GetDefaultProjectName());
+        const QString autoPath = GetProjectAutoPath();
+        const QString path = m_projectPath->lineEdit()->text();
+        m_userChangedProjectPath = path != defaultPath && path != autoPath;
+
+        ValidateProjectPath();
+    }
+
 } // namespace O3DE::ProjectManager

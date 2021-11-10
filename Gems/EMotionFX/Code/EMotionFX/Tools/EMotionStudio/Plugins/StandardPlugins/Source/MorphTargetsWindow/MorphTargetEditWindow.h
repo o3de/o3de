@@ -31,7 +31,7 @@ namespace EMStudio
         ~MorphTargetEditWindow();
 
         void UpdateInterface();
-        EMotionFX::MorphTarget* GetMorphTarget()            { return mMorphTarget; }
+        EMotionFX::MorphTarget* GetMorphTarget()            { return m_morphTarget; }
 
     public slots:
         void Accepted();
@@ -40,10 +40,10 @@ namespace EMStudio
         void EditPhonemeButtonClicked();
 
     private:
-        EMotionFX::ActorInstance*       mActorInstance;
-        EMotionFX::MorphTarget*         mMorphTarget;
-        AzQtComponents::DoubleSpinBox*  mRangeMin;
-        AzQtComponents::DoubleSpinBox*  mRangeMax;
-        PhonemeSelectionWindow*         mPhonemeSelectionWindow;
+        EMotionFX::ActorInstance*       m_actorInstance;
+        EMotionFX::MorphTarget*         m_morphTarget;
+        AzQtComponents::DoubleSpinBox*  m_rangeMin;
+        AzQtComponents::DoubleSpinBox*  m_rangeMax;
+        PhonemeSelectionWindow*         m_phonemeSelectionWindow;
     };
 } // namespace EMStudio

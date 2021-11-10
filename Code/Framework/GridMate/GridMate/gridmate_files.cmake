@@ -120,6 +120,5 @@ set(FILES
     Session/Session.cpp
     Session/Session.h
     Session/SessionServiceBus.h
-    String/string.h
     VoiceChat/VoiceChatServiceBus.h
 )

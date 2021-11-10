@@ -144,9 +144,9 @@ namespace AzToolsFramework
             qInstallMessageHandler(myMessageOutput);
         }
 
-        virtual ~AZQtApplication()
+        ~AZQtApplication() override
         {
-            qInstallMessageHandler(NULL);
+            qInstallMessageHandler(nullptr);
         }
     };
 
@@ -201,9 +201,9 @@ namespace AzToolsFramework
             // enable the built-in stylesheet by default:
             bool enableStyleSheet = true;
 
-            const AzFramework::CommandLine* comp = NULL;
+            const AzFramework::CommandLine* comp = nullptr;
             EBUS_EVENT_RESULT(comp, LegacyFramework::FrameworkApplicationMessages::Bus, GetCommandLineParser);
-            if (comp != NULL)
+            if (comp != nullptr)
             {
                 if (comp->HasSwitch("nostyle"))
                 {
@@ -275,18 +275,18 @@ namespace AzToolsFramework
             // see still need to clean up:
             m_ptrTicker->cancel();
             QApplication::processEvents();
-            AZ::ComponentApplication* pApp = NULL;
+            AZ::ComponentApplication* pApp = nullptr;
             EBUS_EVENT_RESULT(pApp, AZ::ComponentApplicationBus, GetApplication);
             if (pApp)
             {
                 pApp->Tick();
             }
             azdestroy(m_ptrTicker);
-            m_ptrTicker = NULL;
+            m_ptrTicker = nullptr;
         }
     }
 
-    Framework::~Framework(void)
+    Framework::~Framework()
     {
         AZ::SystemTickBus::Handler::BusDisconnect();
 
@@ -299,7 +299,7 @@ namespace AzToolsFramework
         delete m_ActionChangeProject;
         m_ActionChangeProject = nullptr;
 
-        pApplication = NULL;
+        pApplication = nullptr;
     }
 
     // once we set the project, we can then tell all our other windows to restore our state.
@@ -360,7 +360,7 @@ namespace AzToolsFramework
         }
         m_bTicking = true;
         // Tick the component app.
-        AZ::ComponentApplication* pApp = NULL;
+        AZ::ComponentApplication* pApp = nullptr;
         EBUS_EVENT_RESULT(pApp, AZ::ComponentApplicationBus, GetApplication);
         if (pApp)
         {
@@ -491,7 +491,7 @@ namespace AzToolsFramework
         // we successfully got permission to quit!
         // pump the tickbus one last time!
        // QApplication::processEvents();
-        AZ::ComponentApplication* pApp = NULL;
+        AZ::ComponentApplication* pApp = nullptr;
         EBUS_EVENT_RESULT(pApp, AZ::ComponentApplicationBus, GetApplication);
         if (pApp)
         {
@@ -501,7 +501,7 @@ namespace AzToolsFramework
         m_ptrTicker->cancel();
 
         azdestroy(m_ptrTicker);
-        m_ptrTicker = NULL;
+        m_ptrTicker = nullptr;
 
         QApplication::quit();
     }

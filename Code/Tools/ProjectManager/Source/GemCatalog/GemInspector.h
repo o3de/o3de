@@ -9,13 +9,14 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <LinkWidget.h>
-#include <TagWidget.h>
 #include <GemCatalog/GemInfo.h>
 #include <GemCatalog/GemModel.h>
+#include <GemsSubWidget.h>
+#include <LinkWidget.h>
+
 #include <QItemSelection>
 #include <QScrollArea>
-#include <QWidget>
+#include <QSpacerItem>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
@@ -35,29 +36,20 @@ namespace O3DE::ProjectManager
         void Update(const QModelIndex& modelIndex);
         static QLabel* CreateStyledLabel(QLayout* layout, int fontSize, const QString& colorCodeString);
 
+        // Fonts
+        inline constexpr static int s_baseFontSize = 12;
+
         // Colors
         inline constexpr static const char* s_headerColor = "#FFFFFF";
         inline constexpr static const char* s_textColor = "#DDDDDD";
+
+    signals:
+        void TagClicked(const Tag& tag);
 
     private slots:
         void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
     private:
-        // Title, description and tag widget container used for the depending and conflicting gems
-        class GemsSubWidget
-            : public QWidget
-        {
-        public:
-            GemsSubWidget(QWidget* parent = nullptr);
-            void Update(const QString& title, const QString& text, const QStringList& gemNames);
-
-        private:
-            QLabel* m_titleLabel = nullptr;
-            QLabel* m_textLabel = nullptr;
-            QVBoxLayout* m_layout = nullptr;
-            TagContainerWidget* m_tagWidget = nullptr;
-        };
-
         void InitMainWidget();
 
         GemModel* m_model = nullptr;
@@ -68,17 +60,18 @@ namespace O3DE::ProjectManager
         QLabel* m_nameLabel = nullptr;
         QLabel* m_creatorLabel = nullptr;
         QLabel* m_summaryLabel = nullptr;
+        LinkLabel* m_licenseLinkLabel = nullptr;
         LinkLabel* m_directoryLinkLabel = nullptr;
         LinkLabel* m_documentationLinkLabel = nullptr;
 
         // Requirements
-        QLabel* m_reqirementsTitleLabel = nullptr;
-        QLabel* m_reqirementsIconLabel = nullptr;
-        QLabel* m_reqirementsTextLabel = nullptr;
+        QLabel* m_requirementsTitleLabel = nullptr;
+        QLabel* m_requirementsIconLabel = nullptr;
+        QLabel* m_requirementsTextLabel = nullptr;
+        QSpacerItem* m_requirementsMainSpacer = nullptr;
 
         // Depending and conflicting gems
         GemsSubWidget* m_dependingGems = nullptr;
-        GemsSubWidget* m_conflictingGems = nullptr;
 
         // Additional information
         QLabel* m_versionLabel = nullptr;

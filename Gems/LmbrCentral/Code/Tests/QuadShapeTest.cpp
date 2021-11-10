@@ -41,10 +41,10 @@ namespace
         LmbrCentral::QuadShapeConfig(1.0f, 0.5f),
     };
 
-    const uint32_t RayCount = 5;
+    const uint32_t RayCountQuad = 5;
 
     // Various normalized offset directions from center of quad along quad's surface.
-    const AZStd::array<AZ::Vector3, RayCount> OffsetsFromCenter =
+    const AZStd::array<AZ::Vector3, RayCountQuad> OffsetsFromCenterQuad =
     {
         AZ::Vector3( 0.18f, -0.50f, 0.0f).GetNormalized(),
         AZ::Vector3(-0.08f,  0.59f, 0.0f).GetNormalized(),
@@ -54,7 +54,7 @@ namespace
     };
 
     // Various directions away from a point on the quad's surface
-    const AZStd::array<AZ::Vector3, RayCount> OffsetsFromSurface =
+    const AZStd::array<AZ::Vector3, RayCountQuad> OffsetsFromSurfaceQuad =
     {
         AZ::Vector3( 0.69f,  0.38f,  0.09f).GetNormalized(),
         AZ::Vector3(-0.98f, -0.68f, -0.28f).GetNormalized(),
@@ -64,7 +64,7 @@ namespace
     };
 
     // Various distance away from the surface for the rays
-    const AZStd::array<float, RayCount> RayDistances =
+    const AZStd::array<float, RayCountQuad> RayDistancesQuad =
     {
         0.5f, 1.0f, 2.0f, 4.0f, 8.0f
     };
@@ -248,23 +248,23 @@ namespace UnitTest
         // Construct rays and test against the different quads
         for (uint32_t quadIndex = 0; quadIndex < QuadCount; ++quadIndex)
         {
-            for (uint32_t rayIndex = 0; rayIndex < RayCount; ++rayIndex)
+            for (uint32_t rayIndex = 0; rayIndex < RayCountQuad; ++rayIndex)
             {
-                // OffsetsFromCenter are all less than 1, so scale by the dimensions of the quad.
+                // OffsetsFromCenterQuad are all less than 1, so scale by the dimensions of the quad.
                 AZ::Vector3 scaledWidthHeight = AZ::Vector3(QuadDims[quadIndex].m_width, QuadDims[quadIndex].m_height, 0.0f);
                 // Scale the offset and multiply by 0.5 because distance from center is half the width/height
-                AZ::Vector3 scaledOffsetFromCenter = OffsetsFromCenter[rayIndex] * scaledWidthHeight * 0.5f;
+                AZ::Vector3 scaledOffsetFromCenter = OffsetsFromCenterQuad[rayIndex] * scaledWidthHeight * 0.5f;
                 AZ::Vector3 positionOnQuadSurface = QuadTransforms[quadIndex].TransformPoint(scaledOffsetFromCenter);
-                AZ::Vector3 rayOrigin = positionOnQuadSurface + OffsetsFromSurface[rayIndex] * RayDistances[rayIndex];
+                AZ::Vector3 rayOrigin = positionOnQuadSurface + OffsetsFromSurfaceQuad[rayIndex] * RayDistancesQuad[rayIndex];
 
                 bool rayHit2 = false;
                 float distance2;
                 LmbrCentral::ShapeComponentRequestsBus::EventResult(
                     rayHit2, quadEntities[quadIndex].GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay,
-                    rayOrigin, -OffsetsFromSurface[rayIndex], distance2);
+                    rayOrigin, -OffsetsFromSurfaceQuad[rayIndex], distance2);
 
                 EXPECT_TRUE(rayHit2);
-                EXPECT_NEAR(distance2, RayDistances[rayIndex], 1e-4f);
+                EXPECT_NEAR(distance2, RayDistancesQuad[rayIndex], 1e-4f);
             }
         }
 
@@ -297,20 +297,20 @@ namespace UnitTest
         // Construct rays and test against the different quads
         for (uint32_t quadIndex = 0; quadIndex < QuadCount; ++quadIndex)
         {
-            for (uint32_t rayIndex = 0; rayIndex < RayCount; ++rayIndex)
+            for (uint32_t rayIndex = 0; rayIndex < RayCountQuad; ++rayIndex)
             {
-                // OffsetsFromCenter are all less than 1, so scale by the dimensions of the quad.
+                // OffsetsFromCenterQuad are all less than 1, so scale by the dimensions of the quad.
                 AZ::Vector3 scaledWidthHeight = AZ::Vector3(QuadDims[quadIndex].m_width, QuadDims[quadIndex].m_height, 0.0f);
-                // Scale the offset and add 1.0 to OffsetsFromCenter to ensure the point is outside the quad.
-                AZ::Vector3 scaledOffsetFromCenter = (AZ::Vector3::CreateOne() + OffsetsFromCenter[rayIndex]) * scaledWidthHeight;
+                // Scale the offset and add 1.0 to OffsetsFromCenterQuad to ensure the point is outside the quad.
+                AZ::Vector3 scaledOffsetFromCenter = (AZ::Vector3::CreateOne() + OffsetsFromCenterQuad[rayIndex]) * scaledWidthHeight;
                 AZ::Vector3 positionOnQuadSurface = QuadTransforms[quadIndex].TransformPoint(scaledOffsetFromCenter);
-                AZ::Vector3 rayOrigin = positionOnQuadSurface + OffsetsFromSurface[rayIndex] * RayDistances[rayIndex];
+                AZ::Vector3 rayOrigin = positionOnQuadSurface + OffsetsFromSurfaceQuad[rayIndex] * RayDistancesQuad[rayIndex];
 
                 bool rayHit2 = false;
                 float distance2;
                 LmbrCentral::ShapeComponentRequestsBus::EventResult(
                     rayHit2, quadEntities[quadIndex].GetId(), &LmbrCentral::ShapeComponentRequests::IntersectRay,
-                    rayOrigin, -OffsetsFromSurface[rayIndex], distance2);
+                    rayOrigin, -OffsetsFromSurfaceQuad[rayIndex], distance2);
 
                 EXPECT_FALSE(rayHit2);
             }

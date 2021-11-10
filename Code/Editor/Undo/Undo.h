@@ -12,9 +12,9 @@
 #pragma once
 
 #include "IUndoManagerListener.h"
-#include "CrySizer.h"                           // ICrySizer
 #include "IUndoObject.h"
 #include <AzCore/Asset/AssetManager.h>
+#include <CryCommon/StlUtils.h>
 
 struct IUndoObject;
 class CSuperUndoStep;
@@ -77,20 +77,6 @@ public:
         {
             m_undoObjects[i]->Redo();
         }
-    }
-
-    // to get memory statistics
-    void GetMemoryUsage(ICrySizer* pSizer)
-    {
-        size_t nThisSize = sizeof(*this);
-
-        for (int i = 0; i < m_undoObjects.size(); i++)
-        {
-            nThisSize += m_undoObjects[i]->GetSize();
-        }
-
-        pSizer->Add(m_name);
-        pSizer->Add(this, nThisSize);
     }
 
     // get undo object at index i
@@ -240,9 +226,6 @@ public:
 
     void ClearUndoStack(int num);
     void ClearRedoStack(int num);
-
-    // to get memory statistics
-    void GetMemoryUsage(ICrySizer* pSizer);
 
     void AddListener(IUndoManagerListener* pListener);
     void RemoveListener(IUndoManagerListener* pListener);

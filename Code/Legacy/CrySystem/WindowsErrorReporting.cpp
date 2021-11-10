@@ -66,7 +66,9 @@ LONG WINAPI CryEngineExceptionFilterMiniDump(struct _EXCEPTION_POINTERS* pExcept
         return EXCEPTION_CONTINUE_SEARCH;
     }
 
-    HANDLE hFile = ::CreateFile(szDumpPath, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    AZStd::wstring szDumpPathW;
+    AZStd::to_wstring(szDumpPathW, szDumpPath);
+    HANDLE hFile = ::CreateFileW(szDumpPathW.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
     {
         CryLogAlways("Failed to record DMP file: could not open file '%s' for writing - error code: %d", szDumpPath, GetLastError());
@@ -99,8 +101,11 @@ LONG WINAPI CryEngineExceptionFilterWER(struct _EXCEPTION_POINTERS* pExceptionPo
 {
     if (g_cvars.sys_WER > 1)
     {
-        char szScratch [_MAX_PATH];
-        const char* szDumpPath = gEnv->pCryPak->AdjustFileName("@log@/CE2Dump.dmp", szScratch, AZ_ARRAY_SIZE(szScratch), 0);
+        AZ::IO::FixedMaxPath dumpPath{ "@log@/CE2Dump.dmp" };
+        if (auto fileIoBase = AZ::IO::FileIOBase::GetInstance(); fileIoBase != nullptr)
+        {
+            dumpPath = fileIoBase->ResolvePath(dumpPath, "@log@/CE2Dump.dmp");
+        }
 
         MINIDUMP_TYPE mdumpValue = (MINIDUMP_TYPE)(MiniDumpNormal);
         if (g_cvars.sys_WER > 1)
@@ -108,7 +113,7 @@ LONG WINAPI CryEngineExceptionFilterWER(struct _EXCEPTION_POINTERS* pExceptionPo
             mdumpValue = (MINIDUMP_TYPE)(g_cvars.sys_WER - 2);
         }
 
-        return CryEngineExceptionFilterMiniDump(pExceptionPointers, szDumpPath, mdumpValue);
+        return CryEngineExceptionFilterMiniDump(pExceptionPointers, dumpPath.c_str(), mdumpValue);
     }
 
     LONG lRet = EXCEPTION_CONTINUE_SEARCH;

@@ -77,6 +77,7 @@ ly_add_target(
 
 # By default, the above module is used only in tools:
 ly_create_alias(NAME ScriptCanvasTesting.Tools  NAMESPACE Gem TARGETS Gem::ScriptCanvasTesting.Editor)
+ly_create_alias(NAME ScriptCanvasTesting.Builders  NAMESPACE Gem TARGETS Gem::ScriptCanvasTesting.Editor)
 
 ################################################################################
 # Tests
@@ -87,8 +88,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAMESPACE Gem
         FILES_CMAKE
             scriptcanvastestingeditor_tests_files.cmake
-        PLATFORM_INCLUDE_FILES
-            Platform/Common/${PAL_TRAIT_COMPILER_ID}/scriptcanvastesting_editor_tests_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 .

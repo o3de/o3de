@@ -18,6 +18,7 @@
 
 #include <Cry_Camera.h>
 #include <IRenderAuxGeom.h>
+#include <CryCommon/CrySystemBus.h>
 
 #include <AzFramework/Physics/SystemBus.h>
 

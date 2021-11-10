@@ -24,6 +24,9 @@
                 "Platform pc": {
                     "tags": "tools,renderer,dx12,vulkan,null"
                 },
+                "Platform linux": {
+                    "tags": "tools,renderer,vulkan,null"
+                },
                 "Platform android": {
                     "tags": "android,mobile,renderer,vulkan"
                 },
@@ -103,7 +106,7 @@
                 // "exclude": "mac"
                 // }
 
-                "ScanFolder Game": {
+                "ScanFolder Project/Assets": {
                     "watch": "@PROJECTROOT@",
                     "display": "@PROJECTNAME@",
                     "recursive": 1,
@@ -125,6 +128,11 @@
                     "recursive": 1,
                     "order": 30000,
                     "include": "tools,renderer"
+                },
+                "ScanFolder Engine/Registry": {
+                    "watch": "@ENGINEROOT@/Registry",
+                    "recursive": 1,
+                    "order": 40000
                 },
 
                 // Excludes files that match the pattern or glob 
@@ -168,6 +176,9 @@
                 },
                 "Exclude Build": {
                     "pattern": ".*/[Bb]uild/.*"
+                },
+                "Exclude Install": {
+                    "pattern": ".*/[Ii]nstall/.*"
                 },
                 "Exclude UserSettings": {
                     "pattern": ".*/UserSettings.xml"

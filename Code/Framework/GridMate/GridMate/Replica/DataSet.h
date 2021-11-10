@@ -525,12 +525,12 @@ namespace GridMate
             void Set(const DataType& val) { m_value = val; }
             const DataType& Get() const { return m_value; }
 
-            virtual void Marshal(WriteBuffer& wb)
+            void Marshal(WriteBuffer& wb) override
             {
                 wb.Write(m_value, m_marshaler);
             }
 
-            virtual void Unmarshal(ReadBuffer& rb)
+            void Unmarshal(ReadBuffer& rb) override
             {
                 rb.Read(m_value, m_marshaler);
             }

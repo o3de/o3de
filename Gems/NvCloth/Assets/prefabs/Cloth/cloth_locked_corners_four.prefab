@@ -22,8 +22,7 @@
             "Component_[4272963378099646759]": {
                 "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                 "Id": 4272963378099646759,
-                "Parent Entity": "",
-                "Cached World Transform Parent": ""
+                "Parent Entity": ""
             },
             "Component_[4848458548047175816]": {
                 "$type": "EditorVisibilityComponent",
@@ -74,63 +73,7 @@
                 "Component_[12766570162661899127]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 12766570162661899127,
-                    "Parent Entity": "ContainerEntity",
-                    "Cached World Transform Parent": "ContainerEntity"
-                },
-                "Component_[12950486357466178058]": {
-                    "$type": "EditorMaterialComponent",
-                    "Id": 12950486357466178058,
-                    "Controller": {
-                        "Configuration": {
-                            "materials": [
-                                {
-                                    "Key": {
-                                        "materialAssetId": {
-                                            "guid": "{89C91D92-7B4E-5EB5-945D-0053111859EE}",
-                                            "subId": 902256226
-                                        }
-                                    },
-                                    "Value": {
-                                        "MaterialAsset": {
-                                            "assetId": {
-                                                "guid": "{838EA487-0F74-5448-AABE-947B138CD6C2}"
-                                            },
-                                            "assetHint": "objects/cloth/environment/cloth_locked_corners_four.azmaterial"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "materialSlots": [
-                        {
-                            "id": {
-                                "materialAssetId": {
-                                    "guid": "{89C91D92-7B4E-5EB5-945D-0053111859EE}",
-                                    "subId": 902256226
-                                }
-                            },
-                            "materialAsset": {
-                                "assetId": {
-                                    "guid": "{838EA487-0F74-5448-AABE-947B138CD6C2}"
-                                },
-                                "assetHint": "objects/cloth/environment/cloth_locked_corners_four.azmaterial"
-                            }
-                        }
-                    ],
-                    "materialSlotsByLod": [
-                        [
-                            {
-                                "id": {
-                                    "lodIndex": 0,
-                                    "materialAssetId": {
-                                        "guid": "{89C91D92-7B4E-5EB5-945D-0053111859EE}",
-                                        "subId": 902256226
-                                    }
-                                }
-                            }
-                        ]
-                    ]
+                    "Parent Entity": "ContainerEntity"
                 },
                 "Component_[13484816898680823471]": {
                     "$type": "EditorEntitySortComponent",
@@ -165,7 +108,7 @@
                     "$type": "EditorClothComponent",
                     "Id": 15114198178471353754,
                     "Configuration": {
-                        "Mesh Node": "pPlane1",
+                        "Mesh Node": "pPlane1_1",
                         "Stiffness Frequency": 1.0,
                         "Damping": [
                             0.0,
@@ -210,6 +153,68 @@
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 7652255413353256955
                 },
+                "Component_[8261070538889619357]": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 8261070538889619357,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": [
+                                {
+                                    "Key": {
+                                        "materialSlotStableId": 902256226
+                                    },
+                                    "Value": {
+                                        "MaterialAsset": {
+                                            "assetId": {
+                                                "guid": "{838EA487-0F74-5448-AABE-947B138CD6C2}"
+                                            },
+                                            "assetHint": "objects/cloth/environment/cloth_locked_corners_four.azmaterial"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "materialSlots": [
+                        {
+                            "id": {
+                                "materialSlotStableId": 902256226
+                            },
+                            "materialAsset": {
+                                "assetId": {
+                                    "guid": "{838EA487-0F74-5448-AABE-947B138CD6C2}"
+                                },
+                                "assetHint": "objects/cloth/environment/cloth_locked_corners_four.azmaterial"
+                            },
+                            "defaultMaterialAsset": {
+                                "assetId": {
+                                    "guid": "{89C91D92-7B4E-5EB5-945D-0053111859EE}",
+                                    "subId": 902256226
+                                },
+                                "loadBehavior": "PreLoad",
+                                "assetHint": "objects/cloth/environment/cloth_locked_corners_four_lambert1_3614897150141879906.azmaterial"
+                            }
+                        }
+                    ],
+                    "materialSlotsByLod": [
+                        [
+                            {
+                                "id": {
+                                    "lodIndex": 0,
+                                    "materialSlotStableId": 902256226
+                                },
+                                "defaultMaterialAsset": {
+                                    "assetId": {
+                                        "guid": "{89C91D92-7B4E-5EB5-945D-0053111859EE}",
+                                        "subId": 902256226
+                                    },
+                                    "loadBehavior": "PreLoad",
+                                    "assetHint": "objects/cloth/environment/cloth_locked_corners_four_lambert1_3614897150141879906.azmaterial"
+                                }
+                            }
+                        ]
+                    ]
+                },
                 "Component_[8417657922837077982]": {
                     "$type": "EditorVisibilityComponent",
                     "Id": 8417657922837077982
@@ -218,8 +223,7 @@
                     "$type": "SelectionComponent",
                     "Id": 944311658362107535
                 }
-            },
-            "IsDependencyReady": true
+            }
         }
     }
 }

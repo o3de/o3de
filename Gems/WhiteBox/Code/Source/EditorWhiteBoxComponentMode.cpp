@@ -52,8 +52,7 @@ namespace WhiteBox
         // default behavior for querying modifier keys (ask the QApplication)
         m_keyboardMofifierQueryFn = []()
         {
-            namespace vi = AzToolsFramework::ViewportInteraction;
-            return vi::KeyboardModifiers(vi::TranslateKeyboardModifiers(QApplication::queryKeyboardModifiers()));
+            return AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
         };
 
         m_worldFromLocal = AzToolsFramework::WorldFromLocalWithUniformScale(entityComponentIdPair.GetEntityId());
@@ -209,7 +208,7 @@ namespace WhiteBox
     bool EditorWhiteBoxComponentMode::HandleMouseInteraction(
         const AzToolsFramework::ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         WhiteBoxMesh* whiteBox = nullptr;
         EditorWhiteBoxComponentRequestBus::EventResult(
@@ -301,7 +300,7 @@ namespace WhiteBox
     void EditorWhiteBoxComponentMode::DisplayEntityViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const auto modifiers = m_keyboardMofifierQueryFn();
 
@@ -374,7 +373,7 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponentMode::RecalculateWhiteBoxIntersectionData(const EdgeSelectionType edgeSelectionMode)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         WhiteBoxMesh* whiteBox = nullptr;
         EditorWhiteBoxComponentRequestBus::EventResult(
@@ -397,7 +396,7 @@ namespace WhiteBox
 
         const auto edgeHandlesPair = Api::MeshUserEdgeHandles(*whiteBox);
 
-        const auto edgeHandles = [whiteBox, edgeSelectionMode, &edgeHandlesPair]()
+        const auto edgeHandles = [edgeSelectionMode, &edgeHandlesPair]()
         {
             switch (edgeSelectionMode)
             {

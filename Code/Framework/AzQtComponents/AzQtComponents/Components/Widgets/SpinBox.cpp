@@ -366,7 +366,7 @@ bool SpinBoxWatcher::filterSpinBoxEvents(QAbstractSpinBox* spinBox, QEvent* even
             {
                 // To prevent the event being turned into a focus event, be sure to install an
                 // AzQtComponents::GlobalEventFilter on your QApplication instance.
-                event->ignore();
+                event->accept();
                 return true;
             }
 

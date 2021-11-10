@@ -19,7 +19,8 @@ SUITES_AND_DESCRIPTIONS = {
     "main": "The default set of tests, covers most of all testing.",
     "periodic": "Tests which can take a long time and should be done periodially instead of every commit - these should not block code submission",
     "benchmark": "Benchmarks - instead of pass/fail, these collect data for comparison against historic data",
-    "sandbox": "Flaky/Intermittent failing tests, this is used as a temporary spot to hold flaky tests, this will not block code submission. Ideally, this suite should always be empty"
+    "sandbox": "Flaky/Intermittent failing tests, this is used as a temporary spot to hold flaky tests, this will not block code submission. Ideally, this suite should always be empty",
+    "awsi": "Time consuming AWS integration end-to-end tests"
 }
 
 BUILD_CONFIGURATIONS = [

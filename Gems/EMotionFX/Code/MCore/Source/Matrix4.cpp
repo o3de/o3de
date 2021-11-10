@@ -86,9 +86,9 @@ namespace MCore
         Matrix r;
 
     #if (AZ_TRAIT_USE_PLATFORM_SIMD_SSE && defined(MCORE_MATRIX_ROWMAJOR))
-        const float* m = right.m16;
-        const float* n = m16;
-        float* t = r.m16;
+        const float* m = right.m_m16;
+        const float* n = m_m16;
+        float* t = r.m_m16;
 
         __m128 x0;
         __m128 x1;
@@ -211,9 +211,9 @@ namespace MCore
     Matrix& Matrix::operator *= (const Matrix& right)
     {
     #if (AZ_TRAIT_USE_PLATFORM_SIMD_SSE && defined(MCORE_MATRIX_ROWMAJOR))
-        const float* m = right.m16;
-        const float* n = m16;
-        float* t = this->m16;
+        const float* m = right.m_m16;
+        const float* n = m_m16;
+        float* t = this->m_m16;
 
         __m128 x0;
         __m128 x1;
@@ -687,9 +687,9 @@ namespace MCore
     void Matrix::MultMatrix(const Matrix& right)
     {
     #if (AZ_TRAIT_USE_PLATFORM_SIMD_SSE && defined(MCORE_MATRIX_ROWMAJOR))
-        const float* m = right.m16;
-        const float* n = m16;
-        float* t = this->m16;
+        const float* m = right.m_m16;
+        const float* n = m_m16;
+        float* t = this->m_m16;
 
         __m128 x0;
         __m128 x1;
@@ -1246,9 +1246,9 @@ namespace MCore
     void Matrix::MultMatrix4x3(const Matrix& right)
     {
     #if (AZ_TRAIT_USE_PLATFORM_SIMD_SSE && defined(MCORE_MATRIX_ROWMAJOR))
-        const float* m = right.m16;
-        const float* n = m16;
-        float* t = this->m16;
+        const float* m = right.m_m16;
+        const float* n = m_m16;
+        float* t = this->m_m16;
 
         __m128 x0;
         __m128 x1;
@@ -1336,9 +1336,9 @@ namespace MCore
     void Matrix::MultMatrix(const Matrix& left, const Matrix& right)
     {
     #if (AZ_TRAIT_USE_PLATFORM_SIMD_SSE && defined(MCORE_MATRIX_ROWMAJOR))
-        const float* m = right.m16;
-        const float* n = left.m16;
-        float* t = this->m16;
+        const float* m = right.m_m16;
+        const float* n = left.m_m16;
+        float* t = this->m_m16;
 
         __m128 x0;
         __m128 x1;
@@ -1423,9 +1423,9 @@ namespace MCore
     void Matrix::MultMatrix4x3(const Matrix& left, const Matrix& right)
     {
     #if (AZ_TRAIT_USE_PLATFORM_SIMD_SSE && defined(MCORE_MATRIX_ROWMAJOR))
-        const float* m = right.m16;
-        const float* n = left.m16;
-        float* t = this->m16;
+        const float* m = right.m_m16;
+        const float* n = left.m_m16;
+        float* t = this->m_m16;
 
         __m128 x0;
         __m128 x1;
@@ -2052,10 +2052,10 @@ namespace MCore
     void Matrix::Log() const
     {
         MCore::LogDetailedInfo("");
-        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m16[0], m16[1], m16[2], m16[3]);
-        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m16[4], m16[5], m16[6], m16[7]);
-        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m16[8], m16[9], m16[10], m16[11]);
-        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m16[12], m16[13], m16[14], m16[15]);
+        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m_m16[0], m_m16[1], m_m16[2], m_m16[3]);
+        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m_m16[4], m_m16[5], m_m16[6], m_m16[7]);
+        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m_m16[8], m_m16[9], m_m16[10], m_m16[11]);
+        MCore::LogDetailedInfo("(%.8f, %.8f, %.8f, %.8f)", m_m16[12], m_m16[13], m_m16[14], m_m16[15]);
         MCore::LogDetailedInfo("");
     }
 

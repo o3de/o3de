@@ -59,17 +59,17 @@ namespace ScriptCanvas
                 , targetNode.GetNodeName().data()));
         }
 
-        bool CanAutoFix() const
+        bool CanAutoFix() const override
         {
             return false;
         }
         
-        AZStd::string GetIdentifier() const
+        AZStd::string GetIdentifier() const override
         {
             return DataValidationIds::ScopedDataConnectionId;
         }
         
-        AZ::Crc32 GetIdCrc() const
+        AZ::Crc32 GetIdCrc() const override
         {
             return DataValidationIds::ScopedDataConnectionCrc;
         }
@@ -79,7 +79,7 @@ namespace ScriptCanvas
             return m_connectionId;
         }
 
-        AZStd::string_view GetTooltip() const
+        AZStd::string_view GetTooltip() const override
         {
             return "Out of Scope Data Connection";
         }

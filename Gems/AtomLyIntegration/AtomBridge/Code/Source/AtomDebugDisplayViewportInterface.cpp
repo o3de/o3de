@@ -256,12 +256,11 @@ namespace AZ::AtomBridge
         viewportContextPtr->ConnectSceneChangedHandler(m_sceneChangeHandler);
     }
 
-    AtomDebugDisplayViewportInterface::AtomDebugDisplayViewportInterface(uint32_t defaultInstanceAddress)
+    AtomDebugDisplayViewportInterface::AtomDebugDisplayViewportInterface(uint32_t defaultInstanceAddress, RPI::Scene* scene)
     {
         ResetRenderState();
         m_viewportId = defaultInstanceAddress;
         m_defaultInstance = true;
-        RPI::Scene* scene = RPI::RPISystemInterface::Get()->GetDefaultScene().get();
         InitInternal(scene, nullptr);
     }
 
@@ -800,7 +799,8 @@ namespace AZ::AtomBridge
             const float startAngle = DegToRad(startAngleDegrees);
             const float stopAngle = DegToRad(sweepAngleDegrees) + startAngle;
             SingleColorDynamicSizeLineHelper lines(1+static_cast<int>(sweepAngleDegrees/angularStepDegrees));
-            AZ::Vector3 radiusV3 = AZ::Vector3(radius);
+            float aspectRadius = radius / GetAspectRatio();
+            AZ::Vector3 radiusV3 = AZ::Vector3(aspectRadius, radius, radius);
             AZ::Vector3 pos = AZ::Vector3(center.GetX(), center.GetY(), z);
             CreateAxisAlignedArc(
                 lines, 
@@ -1353,8 +1353,9 @@ namespace AZ::AtomBridge
         // if 2d draw need to project pos to screen first
         AzFramework::TextDrawParameters params;
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
+        const auto dpiScaleFactor = viewportContext->GetDpiScalingFactor();
         params.m_drawViewportId = viewportContext->GetId(); // get the viewport ID so default viewport works
-        params.m_position = AZ::Vector3(x, y, 1.0f);
+        params.m_position = AZ::Vector3(x * dpiScaleFactor, y * dpiScaleFactor, 1.0f);
         params.m_color = m_rendState.m_color;
         params.m_scale = AZ::Vector2(size);
         params.m_hAlign = center ? AzFramework::TextHorizontalAlignment::Center : AzFramework::TextHorizontalAlignment::Left; //! Horizontal text alignment
@@ -1550,6 +1551,26 @@ namespace AZ::AtomBridge
         {
             m_rendState.m_currentTransform--;
         }
+    }
+
+    void AtomDebugDisplayViewportInterface::PushPremultipliedMatrix(const AZ::Matrix3x4& matrix)
+    {
+        AZ_Assert(m_rendState.m_currentTransform < RenderState::TransformStackSize, "Exceeded AtomDebugDisplayViewportInterface matrix stack size");
+        if (m_rendState.m_currentTransform < RenderState::TransformStackSize)
+        {
+            m_rendState.m_currentTransform++;
+            m_rendState.m_transformStack[m_rendState.m_currentTransform] = matrix;
+        }
+    }
+
+    AZ::Matrix3x4 AtomDebugDisplayViewportInterface::PopPremultipliedMatrix()
+    {
+        AZ_Assert(m_rendState.m_currentTransform > 0, "Underflowed AtomDebugDisplayViewportInterface matrix stack");
+        if (m_rendState.m_currentTransform > 0)
+        {
+            m_rendState.m_currentTransform--;
+        }
+        return m_rendState.m_transformStack[m_rendState.m_currentTransform + 1];
     }
 
     const AZ::Matrix3x4& AtomDebugDisplayViewportInterface::GetCurrentTransform() const

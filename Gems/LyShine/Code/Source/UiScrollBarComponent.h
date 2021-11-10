@@ -53,7 +53,7 @@ public: // member functions
 
     // UiScrollerInterface
     Orientation GetOrientation() override;
-    void SetOrientation(Orientation orientation);
+    void SetOrientation(Orientation orientation) override;
     AZ::EntityId GetScrollableEntity() override;
     void SetScrollableEntity(AZ::EntityId entityId) override;
     float GetValue() override;

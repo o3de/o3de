@@ -45,7 +45,7 @@ CUiAVSequenceProps::~CUiAVSequenceProps()
 // CUiAVSequenceProps message handlers
 bool CUiAVSequenceProps::OnInitDialog()
 {
-    QString name = m_pSequence->GetName();
+    QString name = QString::fromUtf8(m_pSequence->GetName().c_str());
     ui->NAME->setText(name);
 
     ui->MOVE_SCALE_KEYS->setChecked(false);
@@ -135,7 +135,7 @@ void CUiAVSequenceProps::OnOK()
         ac->UpdateTimeRange();
     }
 
-    QString seqName = m_pSequence->GetName();
+    QString seqName = QString::fromUtf8(m_pSequence->GetName().c_str());
     if (name != seqName)
     {
         // Rename sequence.

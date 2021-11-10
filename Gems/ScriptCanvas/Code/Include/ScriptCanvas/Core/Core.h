@@ -24,6 +24,8 @@
 #include <Core/NamedId.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 
+#define OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED
+
 namespace AZ
 {
     class Entity;
@@ -55,6 +57,8 @@ namespace ScriptCanvas
     constexpr const char* k_OnVariableWriteEventName = "OnVariableValueChanged";
     constexpr const char* k_OnVariableWriteEbusName = "VariableNotification";
 
+    constexpr const AZStd::string_view k_VersionExplorerWindow = "VersionExplorerWindow";
+
     class Node;
     class Edge;
 
@@ -66,6 +70,13 @@ namespace ScriptCanvas
     using NodeIdList = AZStd::vector<ID>;
     using NodePtrList = AZStd::vector<Node*>;
     using NodePtrConstList = AZStd::vector<const Node*>;
+
+    enum class PropertyStatus : AZ::u8
+    {
+        Getter,
+        None,
+        Setter,
+    };
 
     enum class GrammarVersion : int
     {
@@ -85,16 +96,18 @@ namespace ScriptCanvas
         Current,
     };
 
-    enum class PropertyStatus : AZ::u8
+    enum class FileVersion : int
     {
-        Getter,
-        None,
-        Setter,
+        Initial = -1,
+        JSON = 0,
+
+        // add new entries above
+        Current,
     };
 
     struct VersionData
     {
-        AZ_TYPE_INFO(VersionData, "{14C629F6-467B-46FE-8B63-48FDFCA42175}");
+        AZ_TYPE_INFO(VersionData, "{52036892-DA63-4199-AC6A-9BAFE6B74EFC}");
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -102,10 +115,13 @@ namespace ScriptCanvas
 
         GrammarVersion grammarVersion = GrammarVersion::Initial;
         RuntimeVersion runtimeVersion = RuntimeVersion::Initial;
+        FileVersion fileVersion = FileVersion::Initial;
 
         bool operator == (const VersionData& rhs) const
         {
-            return grammarVersion == rhs.grammarVersion && runtimeVersion == rhs.runtimeVersion;
+            return grammarVersion == rhs.grammarVersion
+                && runtimeVersion == rhs.runtimeVersion
+                && fileVersion == rhs.fileVersion;
         }
 
         bool IsLatest() const
@@ -277,6 +293,8 @@ namespace ScriptCanvas
         bool m_wasAdded = false;
         AZ::Entity* m_buildEntity = nullptr;
     };
+
+    void ReflectEventTypeOnDemand(const AZ::TypeId& typeId, AZStd::string_view name, AZ::IRttiHelper* rttiHelper = nullptr);
 }
 
 namespace AZStd

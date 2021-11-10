@@ -28,11 +28,15 @@ AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option")
 #include <QTableView>
 #include <QHeaderView>
 #include <QPainter>
+#include <QPixmap>
+#include <QByteArray>
+#include <QDataStream>
 AZ_POP_DISABLE_WARNING
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Asset/SimpleAsset.h>
@@ -349,7 +353,7 @@ namespace AzToolsFramework
 
         if (pAssetType)
         {
-            (*pAssetType) = 0;
+            (*pAssetType) = nullptr;
         }
 
         if (!pData)
@@ -529,7 +533,7 @@ namespace AzToolsFramework
         if (m_errorButton)
         {
             // If the button is already active, disconnect its pressed handler so we don't get multiple popups
-            disconnect(m_errorButton, &QPushButton::pressed, this, 0);
+            disconnect(m_errorButton, &QPushButton::pressed, this, nullptr);
         }
         else
         {
@@ -548,7 +552,7 @@ namespace AzToolsFramework
 
         // Connect pressed to opening the error dialog
         // Must capture this for call to QObject::connect
-        connect(m_errorButton, &QPushButton::pressed, this, [this, errorLog]() {
+        connect(m_errorButton, &QPushButton::pressed, this, [errorLog]() {
             // Create the dialog for the log panel, and set the layout
             QDialog* logDialog = new QDialog();
             logDialog->setMinimumSize(1024, 400);
@@ -1229,6 +1233,16 @@ namespace AzToolsFramework
         return m_showThumbnailDropDownButton;
     }
 
+    void PropertyAssetCtrl::SetCustomThumbnailEnabled(bool enabled)
+    {
+        m_thumbnail->SetCustomThumbnailEnabled(enabled);
+    }
+
+    void PropertyAssetCtrl::SetCustomThumbnailPixmap(const QPixmap& pixmap)
+    {
+        m_thumbnail->SetCustomThumbnailPixmap(pixmap);
+    }
+
     void PropertyAssetCtrl::SetThumbnailCallback(EditCallbackType* editNotifyCallback)
     {
         m_thumbnailCallback = editNotifyCallback;
@@ -1355,14 +1369,29 @@ namespace AzToolsFramework
                 GUI->SetClearNotifyCallback(nullptr);
             }
         }
-        else if (attrib == AZ_CRC("BrowseIcon", 0x507d7a4f))
+        else if (attrib == AZ_CRC_CE("BrowseIcon"))
         {
             AZStd::string iconPath;
-            attrValue->Read<AZStd::string>(iconPath);
-
-            if (!iconPath.empty())
+            if (attrValue->Read<AZStd::string>(iconPath) && !iconPath.empty())
             {
                 GUI->SetBrowseButtonIcon(QIcon(iconPath.c_str()));
+            }
+            else
+            {
+                // A QPixmap object can't be assigned directly via an attribute.
+                // This allows dynamic icon data to be supplied as a buffer containing a serialized QPixmap.
+                AZStd::vector<char> pixmapBuffer;
+                if (attrValue->Read<AZStd::vector<char>>(pixmapBuffer) && !pixmapBuffer.empty())
+                {
+                    QByteArray pixmapBytes(pixmapBuffer.data(), aznumeric_cast<int>(pixmapBuffer.size()));
+                    QDataStream stream(&pixmapBytes, QIODevice::ReadOnly);
+                    QPixmap pixmap;
+                    stream >> pixmap;
+                    if (!pixmap.isNull())
+                    {
+                        GUI->SetBrowseButtonIcon(pixmap);
+                    }
+                }
             }
         }
         else if (attrib == AZ_CRC_CE("BrowseButtonEnabled"))
@@ -1387,6 +1416,35 @@ namespace AzToolsFramework
             if (attrValue->Read<bool>(showThumbnail))
             {
                 GUI->SetShowThumbnail(showThumbnail);
+            }
+        }
+        else if (attrib == AZ_CRC_CE("ThumbnailIcon"))
+        {
+            GUI->SetCustomThumbnailEnabled(false);
+
+            AZStd::string iconPath;
+            if (attrValue->Read<AZStd::string>(iconPath) && !iconPath.empty())
+            {
+                GUI->SetCustomThumbnailEnabled(true);
+                GUI->SetCustomThumbnailPixmap(QPixmap::fromImage(QImage(iconPath.c_str())));
+            }
+            else
+            {
+                // A QPixmap object can't be assigned directly via an attribute.
+                // This allows dynamic icon data to be supplied as a buffer containing a serialized QPixmap.
+                AZStd::vector<char> pixmapBuffer;
+                if (attrValue->Read<AZStd::vector<char>>(pixmapBuffer) && !pixmapBuffer.empty())
+                {
+                    QByteArray pixmapBytes(pixmapBuffer.data(), aznumeric_cast<int>(pixmapBuffer.size()));
+                    QDataStream stream(&pixmapBytes, QIODevice::ReadOnly);
+                    QPixmap pixmap;
+                    stream >> pixmap;
+                    if (!pixmap.isNull())
+                    {
+                        GUI->SetCustomThumbnailEnabled(true);
+                        GUI->SetCustomThumbnailPixmap(pixmap);
+                    }
+                }
             }
         }
         else if (attrib == AZ_CRC_CE("ThumbnailCallback"))

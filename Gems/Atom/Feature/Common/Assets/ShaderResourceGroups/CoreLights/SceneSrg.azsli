@@ -30,6 +30,9 @@ partial ShaderResourceGroup SceneSrg
     // Hardware PCF comparison sampler that is used when sampling the shadow maps
     SamplerComparisonState m_hwPcfSampler
     {
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
         MagFilter = Linear;
         MinFilter = Linear;
         MipFilter = Point;

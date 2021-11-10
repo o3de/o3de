@@ -12,21 +12,6 @@ namespace AZ
 {
     namespace SDKNode
     {
-        NodeWrapper::NodeWrapper(aiNode* aiNode)
-            : m_assImpNode(aiNode)
-        {
-        }
-
-        NodeWrapper::~NodeWrapper()
-        {
-            m_assImpNode = nullptr;
-        }
-
-        aiNode* NodeWrapper::GetAssImpNode()
-        {
-            return m_assImpNode;
-        }
-
         const char* NodeWrapper::GetName() const
         {
             return "";

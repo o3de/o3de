@@ -68,7 +68,7 @@ QVariant LayoutConfigModel::data(const QModelIndex& index, int role) const
 
 // CLayoutConfigDialog dialog
 
-CLayoutConfigDialog::CLayoutConfigDialog(QWidget* pParent /*=NULL*/)
+CLayoutConfigDialog::CLayoutConfigDialog(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , m_model(new LayoutConfigModel(this))
     , ui(new Ui::CLayoutConfigDialog)

@@ -87,7 +87,7 @@ public:
         : QAbstractListModel(parent)
     {
     }
-    virtual ~MenuActionsModel() {}
+    ~MenuActionsModel() override {}
 
     int rowCount([[maybe_unused]] const QModelIndex& parent = QModelIndex()) const override
     {
@@ -134,7 +134,7 @@ public:
         , m_action(nullptr)
     {
     }
-    virtual ~ActionShortcutsModel() {}
+    ~ActionShortcutsModel() override {}
 
     int rowCount([[maybe_unused]] const QModelIndex& parent = QModelIndex()) const override
     {

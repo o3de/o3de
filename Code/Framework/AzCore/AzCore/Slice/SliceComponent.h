@@ -13,7 +13,6 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Slice/SliceAsset.h>
 #include <AzCore/Serialization/DataPatch.h>
-#include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/IdUtils.h>
 
 namespace AZ

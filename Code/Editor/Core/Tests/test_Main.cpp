@@ -33,6 +33,7 @@ public:
 protected:
     void SetupEnvironment() override
     {
+        AttachEditorCoreAZEnvironment(AZ::Environment::GetInstance());
         m_allocatorScope.ActivateAllocators();
         m_cryPak = new NiceMock<CryPakMock>();
 
@@ -49,10 +50,11 @@ protected:
     {
         delete m_cryPak;
         m_allocatorScope.DeactivateAllocators();
+        DetachEditorCoreAZEnvironment();
     }
 
 private:
-    AZ::AllocatorScope<AZ::OSAllocator, AZ::SystemAllocator, AZ::LegacyAllocator, CryStringAllocator> m_allocatorScope;
+    AZ::AllocatorScope<AZ::OSAllocator, AZ::SystemAllocator, AZ::LegacyAllocator> m_allocatorScope;
     SSystemGlobalEnvironment m_stubEnv;
     AZ::IO::LocalFileIO m_fileIO;
     NiceMock<CryPakMock>* m_cryPak;

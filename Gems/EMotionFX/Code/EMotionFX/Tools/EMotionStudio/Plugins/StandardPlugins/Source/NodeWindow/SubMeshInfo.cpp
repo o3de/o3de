@@ -19,7 +19,7 @@ namespace EMStudio
 {
     AZ_CLASS_ALLOCATOR_IMPL(SubMeshInfo, EMStudio::UIAllocator, 0)
 
-    SubMeshInfo::SubMeshInfo(EMotionFX::Actor* actor, unsigned int lodLevel, EMotionFX::SubMesh* subMesh)
+    SubMeshInfo::SubMeshInfo(EMotionFX::Actor* actor, size_t lodLevel, EMotionFX::SubMesh* subMesh)
     {
         // In EMFX studio, we are not using the subMesh index - they all uses the default material.
         m_materialName = actor->GetMaterial(lodLevel, 0)->GetNameString();

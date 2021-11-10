@@ -7,55 +7,34 @@
  */
 
 #include "TerrainDataRequestBus.h"
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
-namespace AzFramework
+namespace AzFramework::Terrain
 {
-    namespace SurfaceData
+    void TerrainDataRequests::Reflect(AZ::ReflectContext* context)
     {
-        void SurfaceTagWeight::Reflect(AZ::ReflectContext* context)
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<SurfaceTagWeight>()
-                    ->Field("m_surfaceType", &SurfaceTagWeight::m_surfaceType)
-                    ->Field("m_weight", &SurfaceTagWeight::m_weight)
-                    ;
-            }
-
-            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-            {
-                behaviorContext->Class<SurfaceTagWeight>("SurfaceTagWeight")
-                    ->Property("m_surfaceType", BehaviorValueProperty(&SurfaceTagWeight::m_surfaceType))
-                    ->Property("m_weight", BehaviorValueProperty(&SurfaceTagWeight::m_weight))
-                    ;
-            }
-        }
-    } //namespace SurfaceData
-
-    namespace Terrain
-    {
-        void TerrainDataRequests::Reflect(AZ::ReflectContext* context)
-        {
-            AzFramework::SurfaceData::SurfaceTagWeight::Reflect(context);
-
-            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-            {
-                behaviorContext->EBus<AzFramework::Terrain::TerrainDataRequestBus>("TerrainDataRequestBus")
-                    ->Attribute(AZ::Script::Attributes::Category, "Terrain")
-                    ->Event("GetHeight", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetHeight)
-                    ->Event("GetHeightFromFloats", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetHeightFromFloats)
-                    ->Event("GetMaxSurfaceWeight", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetMaxSurfaceWeight)
-                    ->Event("GetMaxSurfaceWeightFromFloats", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetMaxSurfaceWeightFromFloats)
-                    ->Event("GetIsHoleFromFloats", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetIsHoleFromFloats)
-                    ->Event("GetNormal", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetNormal)
-                    ->Event("GetNormalFromFloats", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetNormalFromFloats)
-                    ->Event("GetTerrainAabb", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainAabb)
-                    ->Event("GetTerrainGridResolution", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainGridResolution)
-                    ;
-
-            }
-
+            behaviorContext->EBus<AzFramework::Terrain::TerrainDataRequestBus>("TerrainDataRequestBus")
+                ->Attribute(AZ::Script::Attributes::Category, "Terrain")
+                ->Event("GetHeight", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetHeight)
+                ->Event("GetNormal", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetNormal)
+                ->Event("GetMaxSurfaceWeight", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetMaxSurfaceWeight)
+                ->Event("GetMaxSurfaceWeightFromVector2",
+                    &AzFramework::Terrain::TerrainDataRequestBus::Events::GetMaxSurfaceWeightFromVector2)
+                ->Event("GetSurfaceWeights", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfaceWeights)
+                ->Event("GetSurfaceWeightsFromVector2",
+                    &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfaceWeightsFromVector2)
+                ->Event("GetIsHoleFromFloats", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetIsHoleFromFloats)
+                ->Event("GetSurfacePoint", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfacePoint)
+                ->Event("GetSurfacePointFromVector2",
+                    &AzFramework::Terrain::TerrainDataRequestBus::Events::GetSurfacePointFromVector2)
+                ->Event("GetTerrainAabb", &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainAabb)
+                ->Event("GetTerrainHeightQueryResolution",
+                    &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainHeightQueryResolution)
+                ;
         }
 
-    } //namespace Terrain
-} // namespace AzFramework
+    }
+} // namespace AzFramework::Terrain

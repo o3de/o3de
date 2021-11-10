@@ -17,7 +17,7 @@ namespace RenderGL
     // constructor
     Material::Material(GLActor* actor)
     {
-        mActor = actor;
+        m_actor = actor;
     }
 
 
@@ -52,7 +52,7 @@ namespace RenderGL
     Texture* Material::LoadTexture(const char* fileName, bool genMipMaps)
     {
         Texture*        result      = nullptr;
-        AZStd::string   filename    = mActor->GetTexturePath() + fileName;
+        AZStd::string   filename    = m_actor->GetTexturePath() + fileName;
         AZStd::string   extension;
         AzFramework::StringFunc::Path::GetExtension(fileName, extension, false /* include dot */);
 

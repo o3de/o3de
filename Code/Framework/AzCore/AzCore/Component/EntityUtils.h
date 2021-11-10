@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_ENTITY_UTILS_H
-#define AZCORE_ENTITY_UTILS_H
+#pragma once
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Debug/Profiler.h>
@@ -54,7 +53,7 @@ namespace AZ
         template<class T>
         unsigned int ReplaceEntityRefs(T* classPtr, const EntityIdMapper& mapper, SerializeContext* context = nullptr)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
             auto idMapper = [&mapper](const EntityId& originalId, bool isEntityId, const IdUtils::Remapper<EntityId>::IdGenerator&) -> EntityId
             {
                 return mapper(originalId, isEntityId);
@@ -83,7 +82,7 @@ namespace AZ
         template<class T>
         unsigned int ReplaceEntityIds(T* classPtr, const EntityIdMapper& mapper, SerializeContext* context = nullptr)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
             auto idMapper = [&mapper](const EntityId& originalId, bool isEntityId, const IdUtils::Remapper<EntityId>::IdGenerator&) -> EntityId
             {
                 return mapper(originalId, isEntityId);
@@ -97,7 +96,7 @@ namespace AZ
         template<class T>
         unsigned int ReplaceEntityIdsAndEntityRefs(T* classPtr, const EntityIdMapper& mapper, SerializeContext* context = nullptr)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
             auto idMapper = [&mapper](const EntityId& originalId, bool isEntityId, const IdUtils::Remapper<EntityId>::IdGenerator&) -> EntityId
             {
                 return mapper(originalId, isEntityId);
@@ -217,6 +216,3 @@ namespace AZ
 
     } // namespace EntityUtils
 }   // namespace AZ
-
-#endif  // AZCORE_ENTITY_UTILS_H
-#pragma once

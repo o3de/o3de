@@ -33,7 +33,7 @@ namespace AzToolsFramework
         void PrefabUndoInstance::Capture(
             const PrefabDom& initialState,
             const PrefabDom& endState,
-            const TemplateId& templateId)
+            TemplateId templateId)
         {
             m_templateId = templateId;
 
@@ -136,8 +136,8 @@ namespace AzToolsFramework
         }
 
         void PrefabUndoInstanceLink::Capture(
-            const TemplateId& targetId,
-            const TemplateId& sourceId,
+            TemplateId targetId,
+            TemplateId sourceId,
             const InstanceAlias& instanceAlias,
             PrefabDom linkPatches,
             const LinkId linkId)
@@ -262,12 +262,12 @@ namespace AzToolsFramework
             instanceDom.CopyFrom(instanceDomRef->get(), instanceDom.GetAllocator());
 
             //apply the patch to the template within the target
-            AZ::JsonSerializationResult::ResultCode result = PrefabDomUtils::ApplyPatches(instanceDom, instanceDom.GetAllocator(), patch);
+            [[maybe_unused]] AZ::JsonSerializationResult::ResultCode result = PrefabDomUtils::ApplyPatches(instanceDom, instanceDom.GetAllocator(), patch);
 
             AZ_Error(
                 "Prefab",
-                result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::PartialSkip ||
-                    result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success,
+                (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
+                (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),
                 "Some of the patches are not successfully applied.");
 
             //remove the link id placed into the instance

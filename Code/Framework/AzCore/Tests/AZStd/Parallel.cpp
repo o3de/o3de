@@ -195,18 +195,18 @@ namespace UnitTest
 
         void test_thread_id_for_running_thread_is_not_default_constructed_id()
         {
-            const thread_desc* desc = m_numThreadDesc ? &m_desc[0] : 0;
-            AZStd::thread t(AZStd::bind(&Parallel_Thread::do_nothing, this), desc);
+            const thread_desc desc = m_numThreadDesc ? m_desc[0] : thread_desc{};
+            AZStd::thread t(desc, AZStd::bind(&Parallel_Thread::do_nothing, this));
             AZ_TEST_ASSERT(t.get_id() != AZStd::thread::id());
             t.join();
         }
 
         void test_different_threads_have_different_ids()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
-            const thread_desc* desc2 = m_numThreadDesc ? &m_desc[1] : 0;
-            AZStd::thread t(AZStd::bind(&Parallel_Thread::do_nothing, this), desc1);
-            AZStd::thread t2(AZStd::bind(&Parallel_Thread::do_nothing, this), desc2);
+            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
+            const thread_desc desc2 = m_numThreadDesc ? m_desc[1] : thread_desc{};
+            AZStd::thread t(desc1, AZStd::bind(&Parallel_Thread::do_nothing, this));
+            AZStd::thread t2(desc2, AZStd::bind(&Parallel_Thread::do_nothing, this));
             AZ_TEST_ASSERT(t.get_id() != t2.get_id());
             t.join();
             t2.join();
@@ -214,13 +214,13 @@ namespace UnitTest
 
         void test_thread_ids_have_a_total_order()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
-            const thread_desc* desc2 = m_numThreadDesc ? &m_desc[1] : 0;
-            const thread_desc* desc3 = m_numThreadDesc ? &m_desc[2] : 0;
+            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
+            const thread_desc desc2 = m_numThreadDesc ? m_desc[1] : thread_desc{};
+            const thread_desc desc3 = m_numThreadDesc ? m_desc[2] : thread_desc{};
 
-            AZStd::thread t(AZStd::bind(&Parallel_Thread::do_nothing, this), desc1);
-            AZStd::thread t2(AZStd::bind(&Parallel_Thread::do_nothing, this), desc2);
-            AZStd::thread t3(AZStd::bind(&Parallel_Thread::do_nothing, this), desc3);
+            AZStd::thread t(desc1, AZStd::bind(&Parallel_Thread::do_nothing, this));
+            AZStd::thread t2(desc2, AZStd::bind(&Parallel_Thread::do_nothing, this));
+            AZStd::thread t3(desc3, AZStd::bind(&Parallel_Thread::do_nothing, this));
             AZ_TEST_ASSERT(t.get_id() != t2.get_id());
             AZ_TEST_ASSERT(t.get_id() != t3.get_id());
             AZ_TEST_ASSERT(t2.get_id() != t3.get_id());
@@ -313,10 +313,10 @@ namespace UnitTest
 
         void test_thread_id_of_running_thread_returned_by_this_thread_get_id()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
+            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
 
             AZStd::thread::id id;
-            AZStd::thread t(AZStd::bind(&Parallel_Thread::get_thread_id, this, &id), desc1);
+            AZStd::thread t(desc1, AZStd::bind(&Parallel_Thread::get_thread_id, this, &id));
             AZStd::thread::id t_id = t.get_id();
             t.join();
             AZ_TEST_ASSERT(id == t_id);
@@ -366,10 +366,10 @@ namespace UnitTest
 
         void test_move_on_construction()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
+            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
             AZStd::thread::id the_id;
             AZStd::thread x;
-            x = AZStd::thread(AZStd::bind(&Parallel_Thread::do_nothing_id, this, &the_id), desc1);
+            x = AZStd::thread(desc1, AZStd::bind(&Parallel_Thread::do_nothing_id, this, &the_id));
             AZStd::thread::id x_id = x.get_id();
             x.join();
             AZ_TEST_ASSERT(the_id == x_id);
@@ -377,8 +377,8 @@ namespace UnitTest
 
         AZStd::thread make_thread(AZStd::thread::id* the_id)
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
-            return AZStd::thread(AZStd::bind(&Parallel_Thread::do_nothing_id, this, the_id), desc1);
+            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
+            return AZStd::thread(desc1, AZStd::bind(&Parallel_Thread::do_nothing_id, this, the_id));
         }
 
         void test_move_from_function_return()
@@ -430,9 +430,9 @@ namespace UnitTest
 
         void do_test_creation()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
+            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
             m_data = 0;
-            AZStd::thread t(AZStd::bind(&Parallel_Thread::simple_thread, this), desc1);
+            AZStd::thread t(desc1, AZStd::bind(&Parallel_Thread::simple_thread, this));
             t.join();
             AZ_TEST_ASSERT(m_data == 999);
         }
@@ -445,9 +445,9 @@ namespace UnitTest
 
         void do_test_id_comparison()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
+            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
             AZStd::thread::id self = this_thread::get_id();
-            AZStd::thread thrd(AZStd::bind(&Parallel_Thread::comparison_thread, this, self), desc1);
+            AZStd::thread thrd(desc1, AZStd::bind(&Parallel_Thread::comparison_thread, this, self));
             thrd.join();
         }
 
@@ -476,10 +476,10 @@ namespace UnitTest
 
         void do_test_creation_through_reference_wrapper()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
+            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
             non_copyable_functor f;
 
-            AZStd::thread thrd(AZStd::ref(f), desc1);
+            AZStd::thread thrd(desc1, AZStd::ref(f));
             thrd.join();
             AZ_TEST_ASSERT(f.value == 999);
         }
@@ -491,10 +491,10 @@ namespace UnitTest
 
         void test_swap()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
-            const thread_desc* desc2 = m_numThreadDesc ? &m_desc[1] : 0;
-            AZStd::thread t(AZStd::bind(&Parallel_Thread::simple_thread, this), desc1);
-            AZStd::thread t2(AZStd::bind(&Parallel_Thread::simple_thread, this), desc2);
+            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
+            const thread_desc desc2 = m_numThreadDesc ? m_desc[1] : thread_desc{};
+            AZStd::thread t(desc1, AZStd::bind(&Parallel_Thread::simple_thread, this));
+            AZStd::thread t2(desc2, AZStd::bind(&Parallel_Thread::simple_thread, this));
             AZStd::thread::id id1 = t.get_id();
             AZStd::thread::id id2 = t2.get_id();
 
@@ -512,7 +512,7 @@ namespace UnitTest
 
         void run()
         {
-            const thread_desc* desc1 = m_numThreadDesc ? &m_desc[0] : 0;
+            const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
 
             // We need to have at least one processor
             AZ_TEST_ASSERT(AZStd::thread::hardware_concurrency() >= 1);
@@ -520,18 +520,18 @@ namespace UnitTest
             // Create thread to increment data till we need to
             m_data = 0;
             m_dataMax = 10;
-            AZStd::thread tr(AZStd::bind(&Parallel_Thread::increment_data, this), desc1);
+            AZStd::thread tr(desc1, AZStd::bind(&Parallel_Thread::increment_data, this));
             tr.join();
             AZ_TEST_ASSERT(m_data == m_dataMax);
 
             m_data = 0;
-            AZStd::thread trDel(make_delegate(this, &Parallel_Thread::increment_data), desc1);
+            AZStd::thread trDel(desc1, make_delegate(this, &Parallel_Thread::increment_data));
             trDel.join();
             AZ_TEST_ASSERT(m_data == m_dataMax);
 
             chrono::system_clock::time_point startTime = chrono::system_clock::now();
             {
-                AZStd::thread tr1(AZStd::bind(&Parallel_Thread::sleep_thread, this, chrono::milliseconds(100)), desc1);
+                AZStd::thread tr1(desc1, AZStd::bind(&Parallel_Thread::sleep_thread, this, chrono::milliseconds(100)));
                 tr1.join();
             }
             auto sleepTime = chrono::system_clock::now() - startTime;
@@ -563,71 +563,71 @@ namespace UnitTest
             {
                 MfTest x;
                 AZStd::function<void ()> func = AZStd::bind(&MfTest::f0, &x);
-                AZStd::thread(func, desc1).join();
+                AZStd::thread(desc1, func).join();
                 func = AZStd::bind(&MfTest::f0, AZStd::ref(x));
-                AZStd::thread(func, desc1).join();
+                AZStd::thread(desc1, func).join();
                 func = AZStd::bind(&MfTest::g0, &x);
-                AZStd::thread(func, desc1).join();
+                AZStd::thread(desc1, func).join();
                 func = AZStd::bind(&MfTest::g0, x);
-                AZStd::thread(func, desc1).join();
+                AZStd::thread(desc1, func).join();
                 func = AZStd::bind(&MfTest::g0, AZStd::ref(x));
-                AZStd::thread(func, desc1).join();
+                AZStd::thread(desc1, func).join();
 
                 //// 1
-                //thread( AZStd::bind(&MfTest::f1, &x, 1) , desc1).join();
-                //thread( AZStd::bind(&MfTest::f1, AZStd::ref(x), 1) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g1, &x, 1) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g1, x, 1) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g1, AZStd::ref(x), 1) , desc1).join();
+                //thread( AZStd::bind(desc1, &MfTest::f1, &x, 1)).join();
+                //thread( AZStd::bind(desc1, &MfTest::f1, AZStd::ref(x), 1)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g1, &x, 1)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g1, x, 1)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g1, AZStd::ref(x), 1)).join();
 
                 //// 2
-                //thread( AZStd::bind(&MfTest::f2, &x, 1, 2) , desc1).join();
-                //thread( AZStd::bind(&MfTest::f2, AZStd::ref(x), 1, 2) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g2, &x, 1, 2) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g2, x, 1, 2) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g2, AZStd::ref(x), 1, 2) , desc1).join();
+                //thread( AZStd::bind(desc1, &MfTest::f2, &x, 1, 2)).join();
+                //thread( AZStd::bind(desc1, &MfTest::f2, AZStd::ref(x), 1, 2)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g2, &x, 1, 2)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g2, x, 1, 2)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g2, AZStd::ref(x), 1, 2)).join();
 
                 //// 3
-                //thread( AZStd::bind(&MfTest::f3, &x, 1, 2, 3) , desc1).join();
-                //thread( AZStd::bind(&MfTest::f3, AZStd::ref(x), 1, 2, 3) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g3, &x, 1, 2, 3) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g3, x, 1, 2, 3) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g3, AZStd::ref(x), 1, 2, 3) , desc1).join();
+                //thread( AZStd::bind(desc1, &MfTest::f3, &x, 1, 2, 3)).join();
+                //thread( AZStd::bind(desc1, &MfTest::f3, AZStd::ref(x), 1, 2, 3)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g3, &x, 1, 2, 3)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g3, x, 1, 2, 3)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g3, AZStd::ref(x), 1, 2, 3)).join();
 
                 //// 4
-                //thread( AZStd::bind(&MfTest::f4, &x, 1, 2, 3, 4) , desc1).join();
-                //thread( AZStd::bind(&MfTest::f4, AZStd::ref(x), 1, 2, 3, 4) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g4, &x, 1, 2, 3, 4) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g4, x, 1, 2, 3, 4) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g4, AZStd::ref(x), 1, 2, 3, 4) , desc1).join();
+                //thread( AZStd::bind(desc1, &MfTest::f4, &x, 1, 2, 3, 4)).join();
+                //thread( AZStd::bind(desc1, &MfTest::f4, AZStd::ref(x), 1, 2, 3, 4)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g4, &x, 1, 2, 3, 4)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g4, x, 1, 2, 3, 4)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g4, AZStd::ref(x), 1, 2, 3, 4)).join();
 
                 //// 5
-                //thread( AZStd::bind(&MfTest::f5, &x, 1, 2, 3, 4, 5) , desc1).join();
-                //thread( AZStd::bind(&MfTest::f5, AZStd::ref(x), 1, 2, 3, 4, 5) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g5, &x, 1, 2, 3, 4, 5) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g5, x, 1, 2, 3, 4, 5) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g5, AZStd::ref(x), 1, 2, 3, 4, 5) , desc1).join();
+                //thread( AZStd::bind(desc1, &MfTest::f5, &x, 1, 2, 3, 4, 5)).join();
+                //thread( AZStd::bind(desc1, &MfTest::f5, AZStd::ref(x), 1, 2, 3, 4, 5)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g5, &x, 1, 2, 3, 4, 5)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g5, x, 1, 2, 3, 4, 5)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g5, AZStd::ref(x), 1, 2, 3, 4, 5)).join();
 
                 //// 6
-                //thread( AZStd::bind(&MfTest::f6, &x, 1, 2, 3, 4, 5, 6) , desc1).join();
-                //thread( AZStd::bind(&MfTest::f6, AZStd::ref(x), 1, 2, 3, 4, 5, 6) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g6, &x, 1, 2, 3, 4, 5, 6) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g6, x, 1, 2, 3, 4, 5, 6) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g6, AZStd::ref(x), 1, 2, 3, 4, 5, 6) , desc1).join();
+                //thread( AZStd::bind(desc1, &MfTest::f6, &x, 1, 2, 3, 4, 5, 6)).join();
+                //thread( AZStd::bind(desc1, &MfTest::f6, AZStd::ref(x), 1, 2, 3, 4, 5, 6)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g6, &x, 1, 2, 3, 4, 5, 6)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g6, x, 1, 2, 3, 4, 5, 6)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g6, AZStd::ref(x), 1, 2, 3, 4, 5, 6)).join();
 
                 //// 7
-                //thread( AZStd::bind(&MfTest::f7, &x, 1, 2, 3, 4, 5, 6, 7), desc1).join();
-                //thread( AZStd::bind(&MfTest::f7, AZStd::ref(x), 1, 2, 3, 4, 5, 6, 7), desc1).join();
-                //thread( AZStd::bind(&MfTest::g7, &x, 1, 2, 3, 4, 5, 6, 7), desc1).join();
-                //thread( AZStd::bind(&MfTest::g7, x, 1, 2, 3, 4, 5, 6, 7), desc1).join();
-                //thread( AZStd::bind(&MfTest::g7, AZStd::ref(x), 1, 2, 3, 4, 5, 6, 7), desc1).join();
+                //thread( AZStd::bind(desc1, &MfTest::f7, &x, 1, 2, 3, 4, 5, 6, 7)).join();
+                //thread( AZStd::bind(desc1, &MfTest::f7, AZStd::ref(x), 1, 2, 3, 4, 5, 6, 7)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g7, &x, 1, 2, 3, 4, 5, 6, 7)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g7, x, 1, 2, 3, 4, 5, 6, 7)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g7, AZStd::ref(x), 1, 2, 3, 4, 5, 6, 7)).join();
 
                 //// 8
-                //thread( AZStd::bind(&MfTest::f8, &x, 1, 2, 3, 4, 5, 6, 7, 8) , desc1).join();
-                //thread( AZStd::bind(&MfTest::f8, AZStd::ref(x), 1, 2, 3, 4, 5, 6, 7, 8) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g8, &x, 1, 2, 3, 4, 5, 6, 7, 8) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g8, x, 1, 2, 3, 4, 5, 6, 7, 8) , desc1).join();
-                //thread( AZStd::bind(&MfTest::g8, AZStd::ref(x), 1, 2, 3, 4, 5, 6, 7, 8) , desc1).join();
+                //thread( AZStd::bind(desc1, &MfTest::f8, &x, 1, 2, 3, 4, 5, 6, 7, 8)).join();
+                //thread( AZStd::bind(desc1, &MfTest::f8, AZStd::ref(x), 1, 2, 3, 4, 5, 6, 7, 8)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g8, &x, 1, 2, 3, 4, 5, 6, 7, 8)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g8, x, 1, 2, 3, 4, 5, 6, 7, 8)).join();
+                //thread( AZStd::bind(desc1, &MfTest::g8, AZStd::ref(x), 1, 2, 3, 4, 5, 6, 7, 8)).join();
 
                 AZ_TEST_ASSERT(x.m_hash == 1366);
             }
@@ -1595,7 +1595,7 @@ namespace UnitTest
         }
     };
 
-#if GTEST_OS_SUPPORTS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
     TEST_F(ThreadEventsDeathTest, UsingClientBus_AvoidsDeadlock)
     {
         EXPECT_EXIT(
@@ -1608,5 +1608,5 @@ namespace UnitTest
         , ::testing::ExitedWithCode(0),".*");
         
     }
-#endif // GTEST_OS_SUPPORTS_DEATH_TEST
+#endif // GTEST_HAS_DEATH_TEST
 }

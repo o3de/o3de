@@ -57,4 +57,9 @@ namespace Multiplayer
         }
         return nullComponentData;
     }
+
+    void MultiplayerComponentRegistry::Reset()
+    {
+        m_componentData.clear();
+    }
 }

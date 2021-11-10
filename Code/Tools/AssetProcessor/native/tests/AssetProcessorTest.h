@@ -25,7 +25,7 @@ namespace AssetProcessor
         : public ::testing::Test
     {
     protected:
-        UnitTestUtils::AssertAbsorber* m_errorAbsorber;
+        AZStd::unique_ptr<UnitTestUtils::AssertAbsorber> m_errorAbsorber{};
         FileStatePassthrough m_fileStateCache;
 
         void SetUp() override
@@ -40,7 +40,7 @@ namespace AssetProcessor
                 m_ownsSysAllocator = true;
                 AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
             }
-            m_errorAbsorber = new UnitTestUtils::AssertAbsorber();
+            m_errorAbsorber = AZStd::make_unique<UnitTestUtils::AssertAbsorber>();
 
             m_application = AZStd::make_unique<AzFramework::Application>();
 
@@ -50,7 +50,9 @@ namespace AssetProcessor
                 + "/project_path";
             if(auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
-                settingsRegistry->Set(projectPathKey, "AutomatedTesting");
+                AZ::IO::FixedMaxPath enginePath;
+                settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+                settingsRegistry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
             }
         }
@@ -60,8 +62,8 @@ namespace AssetProcessor
             AssetUtilities::ResetAssetRoot();
             
             m_application.reset();
-            delete m_errorAbsorber;
-            m_errorAbsorber = nullptr;
+            m_errorAbsorber.reset();
+
             if (m_ownsSysAllocator)
             {
                 AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();

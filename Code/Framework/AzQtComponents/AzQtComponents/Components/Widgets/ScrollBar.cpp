@@ -191,7 +191,7 @@ namespace AzQtComponents
         };
         QMap<QObject*, ScrollAreaData> m_widgets;
 
-        void perScrollBar(QObject* scrollArea, void (QScrollBar::*callback)(void))
+        void perScrollBar(QObject* scrollArea, void (QScrollBar::*callback)())
         {
             auto iterator = m_widgets.find(scrollArea);
             if (iterator != m_widgets.end())

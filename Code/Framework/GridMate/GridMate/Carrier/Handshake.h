@@ -10,7 +10,7 @@
 
 #include <GridMate/Types.h>
 #include <GridMate/Serialize/Buffer.h>
-#include <GridMate/String/string.h>
+#include <AzCore/std/string/string.h>
 
 namespace GridMate
 {
@@ -53,7 +53,7 @@ namespace GridMate
          */
         virtual bool                OnConfirmAck(ConnectionID id, ReadBuffer& rb) = 0;
         /// Return true if you want to reject early reject a connection.
-        virtual bool                OnNewConnection(const string& address) = 0;
+        virtual bool                OnNewConnection(const AZStd::string& address) = 0;
         /// Called when we close a connection.
         virtual void                OnDisconnect(ConnectionID id) = 0;
         /// Return timeout in milliseconds of the handshake procedure.

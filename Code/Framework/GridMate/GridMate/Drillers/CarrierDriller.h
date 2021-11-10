@@ -42,7 +42,7 @@ namespace GridMate
 
             //////////////////////////////////////////////////////////////////////////
             // Carrier Driller Bus
-            void OnUpdateStatistics(const GridMate::string& address, const TrafficControl::Statistics& lastSecond, const TrafficControl::Statistics& lifeTime, const TrafficControl::Statistics& effectiveLastSecond, const TrafficControl::Statistics& effectiveLifeTime) override;
+            void OnUpdateStatistics(const AZStd::string& address, const TrafficControl::Statistics& lastSecond, const TrafficControl::Statistics& lifeTime, const TrafficControl::Statistics& effectiveLastSecond, const TrafficControl::Statistics& effectiveLifeTime) override;
             void OnConnectionStateChanged(Carrier* carrier, ConnectionID id, Carrier::ConnectionStates newState) override;
             //////////////////////////////////////////////////////////////////////////
 

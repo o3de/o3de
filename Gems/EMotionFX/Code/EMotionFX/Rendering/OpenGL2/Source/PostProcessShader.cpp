@@ -17,7 +17,7 @@ namespace RenderGL
     // default constructor
     PostProcessShader::PostProcessShader()
     {
-        mRT = nullptr;
+        m_rt = nullptr;
     }
 
 
@@ -30,8 +30,8 @@ namespace RenderGL
     void PostProcessShader::ActivateRT(RenderTexture* target)
     {
         // Activate rt
-        mRT = target;
-        mRT->Activate();
+        m_rt = target;
+        m_rt->Activate();
 
         GLSLShader::Activate();
     }
@@ -73,15 +73,15 @@ namespace RenderGL
     {
         GLSLShader::Deactivate();
 
-        mRT->Deactivate();
-        mRT = nullptr;
+        m_rt->Deactivate();
+        m_rt = nullptr;
     }
 
 
     // Init
     bool PostProcessShader::Init(AZ::IO::PathView filename)
     {
-        MCore::Array<AZStd::string> defines;
+        AZStd::vector<AZStd::string> defines;
         return GLSLShader::Init(nullptr, filename, defines);
     }
 
@@ -89,8 +89,8 @@ namespace RenderGL
     // Render
     void PostProcessShader::Render()
     {
-        const float w = static_cast<float>(mRT->GetWidth());
-        const float h = static_cast<float>(mRT->GetHeight());
+        const float w = static_cast<float>(m_rt->GetWidth());
+        const float h = static_cast<float>(m_rt->GetHeight());
 
         // Setup ortho projection
         glMatrixMode(GL_PROJECTION);

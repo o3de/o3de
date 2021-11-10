@@ -31,6 +31,7 @@ namespace O3DE::ProjectManager
 
         // PythonBindings overrides
         bool PythonStarted() override;
+        bool StartPython() override;
 
         // Engine
         AZ::Outcome<EngineInfo> GetEngineInfo() override;
@@ -41,6 +42,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) override;
         AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) override;
+        AZ::Outcome<void, AZStd::string> RegisterGem(const QString& gemPath, const QString& projectPath = {}) override;
 
         // Project
         AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo) override;
@@ -56,16 +58,26 @@ namespace O3DE::ProjectManager
         // ProjectTemplate
         AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) override;
 
+        // Gem Repos
+        AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri) override;
+        bool RefreshAllGemRepos() override;
+        bool AddGemRepo(const QString& repoUri) override;
+        bool RemoveGemRepo(const QString& repoUri) override;
+        AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
+        AZ::Outcome<void, AZStd::string> DownloadGem(const QString& gemName, std::function<void(int)> gemProgressCallback) override;
+        void CancelDownload() override;
+        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemRepoGemsInfos() override;
+
     private:
         AZ_DISABLE_COPY_MOVE(PythonBindings);
 
         AZ::Outcome<void, AZStd::string> ExecuteWithLockErrorHandling(AZStd::function<void()> executionCallback);
         bool ExecuteWithLock(AZStd::function<void()> executionCallback);
         GemInfo GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
+        GemRepoInfo GetGemRepoInfo(pybind11::handle repoUri);
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
         ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         bool RegisterThisEngine();
-        bool StartPython();
         bool StopPython();
 
 
@@ -81,6 +93,10 @@ namespace O3DE::ProjectManager
         pybind11::handle m_enableGemProject;
         pybind11::handle m_disableGemProject;
         pybind11::handle m_editProjectProperties;
+        pybind11::handle m_download;
+        pybind11::handle m_repo;
         pybind11::handle m_pathlib;
+
+        bool m_requestCancelDownload = false;
     };
 }

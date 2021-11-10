@@ -21,7 +21,7 @@ namespace AZ
     namespace Render
     {
         static const char* const NumSourceLutsShaderVariantOptionName{ "o_numSourceLuts" };
-
+        
         RPI::Ptr<BlendColorGradingLutsPass> BlendColorGradingLutsPass::Create(const RPI::PassDescriptor& descriptor)
         {
             RPI::Ptr<BlendColorGradingLutsPass> pass = aznew BlendColorGradingLutsPass(descriptor);
@@ -46,7 +46,11 @@ namespace AZ
 
         void BlendColorGradingLutsPass::InitializeShaderVariant()
         {
-            AZ_Assert(m_shader != nullptr, "BlendColorGradingLutsPass %s has a null shader when calling InitializeShaderVariant.", GetPathName().GetCStr());
+            if (m_shader == nullptr)
+            {
+                AZ_Assert(false, "BlendColorGradingLutsPass %s has a null shader when calling InitializeShaderVariant.", GetPathName().GetCStr());
+                return;
+            }
 
             // Total variations is MaxBlendLuts plus one for the fallback case that none of the LUTs are found,
             // and hence zero LUTs are blended resulting in an identity LUT.
@@ -151,9 +155,9 @@ namespace AZ
             {
                 m_shaderResourceGroup->SetImageView(m_shaderInputBlendedLutImageIndex, m_blendedLut.m_lutImageView.get());
                 m_shaderResourceGroup->SetConstant(m_shaderInputBlendedLutDimensionsIndex, m_blendedLutDimensions);
-                m_shaderResourceGroup->SetConstant(m_shaderInputBlendedLutShaperTypeIndex, m_blendedLutShaperParams.type);
-                m_shaderResourceGroup->SetConstant(m_shaderInputBlendededLutShaperBiasIndex, m_blendedLutShaperParams.bias);
-                m_shaderResourceGroup->SetConstant(m_shaderInputBlendededLutShaperScaleIndex, m_blendedLutShaperParams.scale);
+                m_shaderResourceGroup->SetConstant(m_shaderInputBlendedLutShaperTypeIndex, m_blendedLutShaperParams.m_type);
+                m_shaderResourceGroup->SetConstant(m_shaderInputBlendededLutShaperBiasIndex, m_blendedLutShaperParams.m_bias);
+                m_shaderResourceGroup->SetConstant(m_shaderInputBlendededLutShaperScaleIndex, m_blendedLutShaperParams.m_scale);
                 m_shaderResourceGroup->SetConstant(m_shaderInputWeight0Index, m_weights[0]);
                 m_shaderResourceGroup->SetConstant(m_shaderInputWeight1Index, m_weights[1]);
                 m_shaderResourceGroup->SetConstant(m_shaderInputWeight2Index, m_weights[2]);
@@ -163,33 +167,33 @@ namespace AZ
                 if (m_colorGradingLuts[0].m_lutStreamingImage)
                 {
                     m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut1ImageIndex, m_colorGradingLuts[0].m_lutStreamingImage->GetImageView());
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut1ShaperTypeIndex, m_colorGradingShaperParams[0].type);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut1ShaperBiasIndex, m_colorGradingShaperParams[0].bias);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut1ShaperScaleIndex, m_colorGradingShaperParams[0].scale);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut1ShaperTypeIndex, m_colorGradingShaperParams[0].m_type);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut1ShaperBiasIndex, m_colorGradingShaperParams[0].m_bias);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut1ShaperScaleIndex, m_colorGradingShaperParams[0].m_scale);
                 }
 
                 if (m_colorGradingLuts[1].m_lutStreamingImage)
                 {
                     m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut2ImageIndex, m_colorGradingLuts[1].m_lutStreamingImage->GetImageView());
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperTypeIndex, m_colorGradingShaperParams[1].type);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperBiasIndex, m_colorGradingShaperParams[1].bias);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperScaleIndex, m_colorGradingShaperParams[1].scale);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperTypeIndex, m_colorGradingShaperParams[1].m_type);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperBiasIndex, m_colorGradingShaperParams[1].m_bias);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperScaleIndex, m_colorGradingShaperParams[1].m_scale);
                 }
 
                 if (m_colorGradingLuts[2].m_lutStreamingImage)
                 {
                     m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut3ImageIndex, m_colorGradingLuts[2].m_lutStreamingImage->GetImageView());
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperTypeIndex, m_colorGradingShaperParams[2].type);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperBiasIndex, m_colorGradingShaperParams[2].bias);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperScaleIndex, m_colorGradingShaperParams[2].scale);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperTypeIndex, m_colorGradingShaperParams[2].m_type);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperBiasIndex, m_colorGradingShaperParams[2].m_bias);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperScaleIndex, m_colorGradingShaperParams[2].m_scale);
                 }
 
                 if (m_colorGradingLuts[3].m_lutStreamingImage)
                 {
                     m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut4ImageIndex, m_colorGradingLuts[3].m_lutStreamingImage->GetImageView());
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperTypeIndex, m_colorGradingShaperParams[3].type);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperBiasIndex, m_colorGradingShaperParams[3].bias);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperScaleIndex, m_colorGradingShaperParams[3].scale);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperTypeIndex, m_colorGradingShaperParams[3].m_type);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperBiasIndex, m_colorGradingShaperParams[3].m_bias);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperScaleIndex, m_colorGradingShaperParams[3].m_scale);
                 }
 
                 if (m_shaderResourceGroup->HasShaderVariantKeyFallbackEntry())
@@ -244,7 +248,170 @@ namespace AZ
             m_blendedLutShaperParams = shaperParams;
         }
 
+        
+        AZStd::optional<ShaperParams> BlendColorGradingLutsPass::GetCommonShaperParams() const
+        {
+            LookModificationSettings* settings = GetLookModificationSettings();
+            if (settings)
+            {
+                settings->PrepareLutBlending();
+
+                ShaperPresetType type = ShaperPresetType::NumShaperTypes;
+                float customMinExposure = 0.0;
+                float customMaxExposure = 0.0;
+
+                for (size_t lutIndex = 0; lutIndex < settings->GetLutBlendStackSize(); lutIndex++)
+                {
+                    LutBlendItem& lutBlendItem = settings->GetLutBlendItem(lutIndex);
+
+                    if (lutIndex == 0)
+                    {
+                        type = lutBlendItem.m_shaperPreset;
+                        customMinExposure = lutBlendItem.m_customMinExposure;
+                        customMaxExposure = lutBlendItem.m_customMaxExposure;
+                    }
+                    else if (type != lutBlendItem.m_shaperPreset)
+                    {
+                        // Shapers are different
+                        return AZStd::nullopt;
+                    }
+                    else if (type == ShaperPresetType::LinearCustomRange || type == ShaperPresetType::Log2CustomRange)
+                    {
+                        if (lutBlendItem.m_customMinExposure != customMinExposure ||
+                            lutBlendItem.m_customMaxExposure != customMaxExposure)
+                        {
+                            // Shapers are same, but custom exposure for custom type is different.
+                            return AZStd::nullopt;
+                        }
+                    }
+                }
+
+                // Only calculate shaper params when there's at least one lut blend.
+                if (settings->GetLutBlendStackSize() > 0)
+                {
+                    return AcesDisplayMapperFeatureProcessor::GetShaperParameters(type, customMinExposure, customMaxExposure);
+                }
+            }
+            return AZStd::nullopt;
+        }
+
         void BlendColorGradingLutsPass::CheckLutBlendSettings()
+        {
+            LookModificationSettings* settings = GetLookModificationSettings();
+            if (settings)
+            {
+                settings->PrepareLutBlending();
+
+                // Early out if the settings have not chanced
+                HashValue64 hash = settings->GetHash();
+                if (hash == m_lutBlendHash)
+                {
+                    return;
+                }
+                m_lutBlendHash = hash;
+
+                m_needToUpdateLut = true;
+
+                // Calculate all the weights and LUT assets and check if there has been a change
+                // Only the top N LUTs will be blended where N = LookModificationSettings::MaxBlendLuts
+                // Weight 0 is used for the base color, and the other weights are for the LUTs in increasing priority
+                size_t numLuts = settings->GetLutBlendStackSize();
+
+                float intensity[LookModificationSettings::MaxBlendLuts];
+                float one_intensity[LookModificationSettings::MaxBlendLuts];
+                float over[LookModificationSettings::MaxBlendLuts];
+                float one_over[LookModificationSettings::MaxBlendLuts];
+
+                for (int curLutIndex = 0; curLutIndex < LookModificationSettings::MaxBlendLuts; curLutIndex++)
+                {
+                    intensity[curLutIndex] = 0.f;
+                    one_intensity[curLutIndex] = 1.f;
+                    over[curLutIndex] = 0.f;
+                    one_over[curLutIndex] = 1.f;
+                }
+
+                uint32_t current = 0;
+                for (size_t lutIndex = 0; lutIndex < numLuts; lutIndex++)
+                {
+                    LutBlendItem& lutBlendItem = settings->GetLutBlendItem(lutIndex);
+                    const auto assetId = lutBlendItem.m_assetId.GetId();
+
+                    if (assetId.IsValid())
+                    {
+                        AcesDisplayMapperFeatureProcessor* dmfp = GetScene()->GetFeatureProcessor<AcesDisplayMapperFeatureProcessor>();
+                        dmfp->GetLutFromAssetId(m_colorGradingLuts[current], assetId);
+                        if (!m_colorGradingLuts[current].m_lutStreamingImage)
+                        {
+                            AZ_Warning("BlendColorGradingLutsPass", false, "Unable to load grading LUT from asset %s",
+                                lutBlendItem.m_assetId.ToString<AZStd::string>().c_str());
+                            // Skip this LUT
+                            continue;
+                        }
+                    }
+
+                    intensity[current] = lutBlendItem.m_intensity;
+                    one_intensity[current] = 1.0f - lutBlendItem.m_intensity;
+                    over[current] = lutBlendItem.m_overrideStrength;
+                    one_over[current] = 1.0f - lutBlendItem.m_overrideStrength;
+
+                    m_colorGradingShaperParams[current] = AcesDisplayMapperFeatureProcessor::GetShaperParameters(
+                        lutBlendItem.m_shaperPreset,
+                        lutBlendItem.m_customMinExposure,
+                        lutBlendItem.m_customMaxExposure
+                    );
+
+                    ++current;
+                    if (current == LookModificationSettings::MaxBlendLuts)
+                    {
+                        break;
+                    }
+                }
+
+                m_weights[0] = 0.f;
+                // Handle the case where there are no LUTs to be blended, and hence an identity LUT will be generated
+                if (current == 0)
+                {
+                    m_weights[0] = 1.f;
+                    // These weights would not be used in the shader in this case, but setting to zero anyways.
+                    for (int lutIndex = 1; lutIndex < LookModificationSettings::MaxBlendLuts + 1; lutIndex++)
+                    {
+                        m_weights[lutIndex] = 0.f;
+                    }
+                }
+                else
+                {
+                    // Compute all the weights
+                    // First compute the weight of the ungraded color value
+                    for (uint32_t lutIndex = 0; lutIndex < current; lutIndex++)
+                    {
+                        float weight = one_intensity[lutIndex] * over[lutIndex];
+                        for (int overrideLutIndex = lutIndex + 1; overrideLutIndex < LookModificationSettings::MaxBlendLuts; overrideLutIndex++)
+                        {
+                            weight *= one_over[overrideLutIndex];
+                        }
+                        m_weights[0] += weight;
+                    }
+                    // Then compute the weights for the LUTs
+                    for (uint32_t weightIndex = 0; weightIndex < current; weightIndex++)
+                    {
+                        m_weights[weightIndex + 1] = intensity[weightIndex] * over[weightIndex];
+                        for (int lutIndex = weightIndex + 1; lutIndex < LookModificationSettings::MaxBlendLuts; lutIndex++)
+                        {
+                            m_weights[weightIndex + 1] *= one_over[lutIndex];
+                        }
+                    }
+                }
+
+                // If the number of source LUTs have changed, the shader variant will need to be updated
+                if (m_numSourceLuts != current)
+                {
+                    m_numSourceLuts = current;
+                    m_needToUpdateShaderVariant = true;
+                }
+            }
+        }
+
+        LookModificationSettings* BlendColorGradingLutsPass::GetLookModificationSettings() const
         {
             AZ::RPI::Scene* scene = GetScene();
             if (scene)
@@ -259,109 +426,12 @@ namespace AZ
                         LookModificationSettings* settings = postProcessSettings->GetLookModificationSettings();
                         if (settings)
                         {
-                            settings->PrepareLutBlending();
-
-                            // Early out if the settings have not chanced
-                            HashValue64 hash = settings->GetHash();
-                            if (hash == m_lutBlendHash)
-                            {
-                                return;
-                            }
-                            m_lutBlendHash = hash;
-
-                            m_needToUpdateLut = true;
-
-                            // Calculate all the weights and LUT assets and check if there has been a change
-                            // Only the top N LUTs will be blended where N = LookModificationSettings::MaxBlendLuts
-                            // Weight 0 is used for the base color, and the other weights are for the LUTs in increasing priority
-                            size_t numLuts = settings->GetLutBlendStackSize();
-                            float intensity[LookModificationSettings::MaxBlendLuts];
-                            float one_intensity[LookModificationSettings::MaxBlendLuts];
-                            float over[LookModificationSettings::MaxBlendLuts];
-                            float one_over[LookModificationSettings::MaxBlendLuts];
-                            for (int curLutIndex = 0; curLutIndex < LookModificationSettings::MaxBlendLuts; curLutIndex++)
-                            {
-                                intensity[curLutIndex] = 0.f;
-                                one_intensity[curLutIndex] = 1.f;
-                                over[curLutIndex] = 0.f;
-                                one_over[curLutIndex] = 1.f;
-                            }
-
-                            int current = 0;
-                            for (size_t lutIndex = 0; lutIndex < numLuts; lutIndex++)
-                            {
-                                LutBlendItem& lutBlendItem = settings->GetLutBlendItem(lutIndex);
-                                auto assetId = lutBlendItem.m_assetId.GetId();
-                                if (assetId.IsValid())
-                                {
-                                    AcesDisplayMapperFeatureProcessor* dmfp = scene->GetFeatureProcessor<AcesDisplayMapperFeatureProcessor>();
-                                    dmfp->GetLutFromAssetId(m_colorGradingLuts[lutIndex], assetId);
-                                    if (!m_colorGradingLuts[lutIndex].m_lutStreamingImage)
-                                    {
-                                        AZ_Warning("BlendColorGradingLutsPass", false, "Unable to load grading LUT from asset %s", lutBlendItem.m_assetId.ToString<AZStd::string>().c_str());
-                                        // Skip this LUT
-                                        continue;
-                                    }
-                                }
-                                intensity[current] = lutBlendItem.m_intensity;
-                                one_intensity[current] = 1.f - intensity[lutIndex];
-                                over[current] = lutBlendItem.m_overrideStrength;
-                                one_over[current] = 1.f - over[lutIndex];
-                                m_colorGradingLutAssets[current] = lutBlendItem.m_assetId;
-                                m_colorGradingShaperPresets[current] = lutBlendItem.m_shaperPreset;
-                                m_colorGradingShaperParams[current] = AcesDisplayMapperFeatureProcessor::GetShaperParameters(m_colorGradingShaperPresets[lutIndex]);
-                                current++;
-                                if (current == LookModificationSettings::MaxBlendLuts)
-                                {
-                                    break;
-                                }
-                            }
-
-                            m_weights[0] = 0.f;
-                            // Handle the case where there are no LUTs to be blended, and hence an identity LUT will be generated
-                            if (current == 0)
-                            {
-                                m_weights[0] = 1.f;
-                                // These weights would not be used in the shader in this case, but setting to zero anyways.
-                                for (int lutIndex = 1; lutIndex < LookModificationSettings::MaxBlendLuts + 1; lutIndex++)
-                                {
-                                    m_weights[lutIndex] = 0.f;
-                                }
-                            }
-                            else
-                            {
-                                // Compute all the weights
-                                // First compute the weight of the ungraded color value
-                                for (int lutIndex = 0; lutIndex < LookModificationSettings::MaxBlendLuts; lutIndex++)
-                                {
-                                    float weight = one_intensity[lutIndex] * over[lutIndex];
-                                    for (int overrideLutIndex = lutIndex + 1; overrideLutIndex < LookModificationSettings::MaxBlendLuts; overrideLutIndex++)
-                                    {
-                                        weight *= one_over[overrideLutIndex];
-                                    }
-                                    m_weights[0] += weight;
-                                }
-                                // Then compute the weights for the LUTs
-                                for (int weightIndex = 0; weightIndex < LookModificationSettings::MaxBlendLuts; weightIndex++)
-                                {
-                                    m_weights[weightIndex + 1] = intensity[weightIndex] * over[weightIndex];
-                                    for (int lutIndex = weightIndex + 1; lutIndex < LookModificationSettings::MaxBlendLuts; lutIndex++)
-                                    {
-                                        m_weights[weightIndex + 1] *= one_over[lutIndex];
-                                    }
-                                }
-                            }
-
-                            // If the number of source LUTs have changed, the shader variant will need to be updated
-                            if (m_numSourceLuts != current)
-                            {
-                                m_numSourceLuts = current;
-                                m_needToUpdateShaderVariant = true;
-                            }
+                            return settings;
                         }
                     }
                 }
             }
+            return nullptr;
         }
     }   // namespace Render
 }   // namespace AZ

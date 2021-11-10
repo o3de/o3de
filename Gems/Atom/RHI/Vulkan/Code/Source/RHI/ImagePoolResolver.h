@@ -58,7 +58,6 @@ namespace AZ
                 RHI::Origin m_offset;
             };
 
-            AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
             struct BarrierInfo
             {
                 VkPipelineStageFlags m_srcStageMask = {};
@@ -67,7 +66,6 @@ namespace AZ
 
                 bool operator==(const BarrierInfo& other) { return ::memcmp(this, &other, sizeof(BarrierInfo)) == 0; }
             };
-            AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
             void EmmitBarriers(CommandList& commandList, const AZStd::vector<BarrierInfo>& barriers) const;
 

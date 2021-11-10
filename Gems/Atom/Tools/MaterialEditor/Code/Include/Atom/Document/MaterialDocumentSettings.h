@@ -20,12 +20,11 @@ namespace MaterialEditor
     struct MaterialDocumentSettings
         : public AZ::UserSettings
     {
-        AZ_RTTI(MaterialDocumentSettings, "{FA4F4BF3-BF39-4753-AAF7-AF383B868881}", AZ::UserSettings);
+        AZ_RTTI(MaterialDocumentSettings, "{12E8461F-65AD-4AD2-8A1D-82C3B1183522}", AZ::UserSettings);
         AZ_CLASS_ALLOCATOR(MaterialDocumentSettings, AZ::SystemAllocator, 0);
 
         static void Reflect(AZ::ReflectContext* context);
 
-        bool m_showReloadDocumentPrompt = true;
         AZStd::string m_defaultMaterialTypeName = "StandardPBR";
     };
 } // namespace MaterialEditor

@@ -9,8 +9,12 @@
 #pragma once
 
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Quaternion.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Serialization/SerializeContext.h>
+
+#include <AzFramework/Physics/HeightfieldProviderBus.h>
 
 namespace Physics
 {
@@ -26,6 +30,7 @@ namespace Physics
         Native, ///< Native shape configuration if user wishes to bypass generic shape configurations.
         PhysicsAsset, ///< Shapes configured in the asset.
         CookedMesh, ///< Stores a blob of mesh data cooked for the specific engine.
+        Heightfield ///< Interacts with the physics system heightfield
     };
 
     class ShapeConfiguration
@@ -182,8 +187,9 @@ namespace Physics
         
         MeshType GetMeshType() const;
 
-        void* GetCachedNativeMesh() const;
-        void SetCachedNativeMesh(void* cachedNativeMesh) const;
+        void* GetCachedNativeMesh();
+        const void* GetCachedNativeMesh() const;
+        void SetCachedNativeMesh(void* cachedNativeMesh);
 
     private:
         void ReleaseCachedNativeMesh();
@@ -192,7 +198,56 @@ namespace Physics
         MeshType m_type = MeshType::TriangleMesh;
         
         //! Cached native mesh object (e.g. PxConvexMesh or PxTriangleMesh). This data is not serialized.
-        mutable void* m_cachedNativeMesh = nullptr;
+        void* m_cachedNativeMesh = nullptr;
     };
 
+    class HeightfieldShapeConfiguration
+        : public ShapeConfiguration
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(HeightfieldShapeConfiguration, AZ::SystemAllocator, 0);
+        AZ_RTTI(HeightfieldShapeConfiguration, "{8DF47C83-D2A9-4E7C-8620-5E173E43C0B3}", ShapeConfiguration);
+        static void Reflect(AZ::ReflectContext* context);
+        HeightfieldShapeConfiguration() = default;
+        HeightfieldShapeConfiguration(const HeightfieldShapeConfiguration&);
+        HeightfieldShapeConfiguration& operator=(const HeightfieldShapeConfiguration&);
+        ~HeightfieldShapeConfiguration();
+
+        ShapeType GetShapeType() const override
+        {
+            return ShapeType::Heightfield;
+        }
+
+        const void* GetCachedNativeHeightfield() const;
+        void* GetCachedNativeHeightfield();
+        void SetCachedNativeHeightfield(void* cachedNativeHeightfield);
+        AZ::Vector2 GetGridResolution() const;
+        void SetGridResolution(const AZ::Vector2& gridSpacing);
+        int32_t GetNumColumns() const;
+        void SetNumColumns(int32_t numColumns);
+        int32_t GetNumRows() const;
+        void SetNumRows(int32_t numRows);
+        const AZStd::vector<Physics::HeightMaterialPoint>& GetSamples() const;
+        void SetSamples(const AZStd::vector<Physics::HeightMaterialPoint>& samples);
+        float GetMinHeightBounds() const;
+        void SetMinHeightBounds(float minBounds);
+        float GetMaxHeightBounds() const;
+        void SetMaxHeightBounds(float maxBounds);
+
+    private:
+        //! The number of meters between each heightfield sample.
+        AZ::Vector2 m_gridResolution{ 1.0f };
+        //! The number of columns in the heightfield sample grid.
+        int32_t m_numColumns{ 0 };
+        //! The number of rows in the heightfield sample grid.
+        int32_t m_numRows{ 0 };
+        //! The minimum and maximum heights that can be used by this heightfield.
+        //! This can be used by the physics system to choose a more optimal heightfield data type internally (ex: int16, uint8)
+        float m_minHeightBounds{AZStd::numeric_limits<float>::lowest()};
+        float m_maxHeightBounds{AZStd::numeric_limits<float>::max()};
+        //! The grid of sample points for the heightfield.
+        AZStd::vector<Physics::HeightMaterialPoint> m_samples;
+        //! An optional storage pointer for the physics system to cache its native heightfield representation.
+        void* m_cachedNativeHeightfield{ nullptr };
+    };
 } // namespace Physics

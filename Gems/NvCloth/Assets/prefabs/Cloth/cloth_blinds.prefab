@@ -22,8 +22,7 @@
             "Component_[4272963378099646759]": {
                 "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                 "Id": 4272963378099646759,
-                "Parent Entity": "",
-                "Cached World Transform Parent": ""
+                "Parent Entity": ""
             },
             "Component_[4848458548047175816]": {
                 "$type": "EditorVisibilityComponent",
@@ -64,7 +63,7 @@
                     "$type": "EditorClothComponent",
                     "Id": 11309989511197311871,
                     "Configuration": {
-                        "Mesh Node": "pPlane1",
+                        "Mesh Node": "pPlane1_1",
                         "Damping": [
                             0.0,
                             0.0,
@@ -93,6 +92,68 @@
                 "Component_[12850019035302463297]": {
                     "$type": "EditorLockComponent",
                     "Id": 12850019035302463297
+                },
+                "Component_[15070431754554069043]": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 15070431754554069043,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": [
+                                {
+                                    "Key": {
+                                        "materialSlotStableId": 902256226
+                                    },
+                                    "Value": {
+                                        "MaterialAsset": {
+                                            "assetId": {
+                                                "guid": "{6BFA7C7C-AF9F-5B12-8B30-6B6ECE9BAB9E}"
+                                            },
+                                            "assetHint": "objects/cloth/environment/cloth_blinds.azmaterial"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "materialSlots": [
+                        {
+                            "id": {
+                                "materialSlotStableId": 902256226
+                            },
+                            "materialAsset": {
+                                "assetId": {
+                                    "guid": "{6BFA7C7C-AF9F-5B12-8B30-6B6ECE9BAB9E}"
+                                },
+                                "assetHint": "objects/cloth/environment/cloth_blinds.azmaterial"
+                            },
+                            "defaultMaterialAsset": {
+                                "assetId": {
+                                    "guid": "{C3078003-51DA-5D8E-B311-38C426480DD2}",
+                                    "subId": 902256226
+                                },
+                                "loadBehavior": "PreLoad",
+                                "assetHint": "objects/cloth/environment/cloth_blinds_lambert1_3614897150141879906.azmaterial"
+                            }
+                        }
+                    ],
+                    "materialSlotsByLod": [
+                        [
+                            {
+                                "id": {
+                                    "lodIndex": 0,
+                                    "materialSlotStableId": 902256226
+                                },
+                                "defaultMaterialAsset": {
+                                    "assetId": {
+                                        "guid": "{C3078003-51DA-5D8E-B311-38C426480DD2}",
+                                        "subId": 902256226
+                                    },
+                                    "loadBehavior": "PreLoad",
+                                    "assetHint": "objects/cloth/environment/cloth_blinds_lambert1_3614897150141879906.azmaterial"
+                                }
+                            }
+                        ]
+                    ]
                 },
                 "Component_[15214644042360665965]": {
                     "$type": "AZ::Render::EditorMeshComponent",
@@ -145,8 +206,7 @@
                 "Component_[4795695323030511838]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                     "Id": 4795695323030511838,
-                    "Parent Entity": "ContainerEntity",
-                    "Cached World Transform Parent": "ContainerEntity"
+                    "Parent Entity": "ContainerEntity"
                 },
                 "Component_[5800800590637221800]": {
                     "$type": "EditorDisabledCompositionComponent",
@@ -159,64 +219,8 @@
                 "Component_[7074022732104182988]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 7074022732104182988
-                },
-                "Component_[9206497685981025331]": {
-                    "$type": "EditorMaterialComponent",
-                    "Id": 9206497685981025331,
-                    "Controller": {
-                        "Configuration": {
-                            "materials": [
-                                {
-                                    "Key": {
-                                        "materialAssetId": {
-                                            "guid": "{C3078003-51DA-5D8E-B311-38C426480DD2}",
-                                            "subId": 902256226
-                                        }
-                                    },
-                                    "Value": {
-                                        "MaterialAsset": {
-                                            "assetId": {
-                                                "guid": "{6BFA7C7C-AF9F-5B12-8B30-6B6ECE9BAB9E}"
-                                            },
-                                            "assetHint": "objects/cloth/environment/cloth_blinds.azmaterial"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "materialSlots": [
-                        {
-                            "id": {
-                                "materialAssetId": {
-                                    "guid": "{C3078003-51DA-5D8E-B311-38C426480DD2}",
-                                    "subId": 902256226
-                                }
-                            },
-                            "materialAsset": {
-                                "assetId": {
-                                    "guid": "{6BFA7C7C-AF9F-5B12-8B30-6B6ECE9BAB9E}"
-                                },
-                                "assetHint": "objects/cloth/environment/cloth_blinds.azmaterial"
-                            }
-                        }
-                    ],
-                    "materialSlotsByLod": [
-                        [
-                            {
-                                "id": {
-                                    "lodIndex": 0,
-                                    "materialAssetId": {
-                                        "guid": "{C3078003-51DA-5D8E-B311-38C426480DD2}",
-                                        "subId": 902256226
-                                    }
-                                }
-                            }
-                        ]
-                    ]
                 }
-            },
-            "IsDependencyReady": true
+            }
         }
     }
 }

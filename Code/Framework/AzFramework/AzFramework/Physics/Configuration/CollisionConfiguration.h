@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>

@@ -17,8 +17,6 @@ namespace AZ
 {
     namespace Metal
     {
-        static const int INVALID_OFFSET = 0xFFFFFFFF;
-        
         namespace Platform
         {
             MTLPixelFormat ConvertPixelFormat(RHI::Format format);

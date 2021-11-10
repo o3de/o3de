@@ -100,7 +100,11 @@ namespace AZ
             RHI::Ptr<CommandList> AcquireCommandList(uint32_t familyQueueIndex, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
             RHI::Ptr<CommandList> AcquireCommandList(RHI::HardwareQueueClass queueClass, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
-            RHI::Ptr<Memory> AllocateMemory(uint64_t sizeInBytes, const uint32_t memoryTypeMask, const VkMemoryPropertyFlags flags);
+            RHI::Ptr<Memory> AllocateMemory(
+                uint64_t sizeInBytes,
+                const uint32_t memoryTypeMask,
+                const VkMemoryPropertyFlags flags,
+                const RHI::BufferBindFlags bufferBindFlags = RHI::BufferBindFlags::None);
             
             uint32_t GetCurrentFrameIndex() const;
 
@@ -110,7 +114,7 @@ namespace AZ
             void DestroyBufferResource(VkBuffer vkBuffer) const;
 
         private:
-            Device() = default;
+            Device();
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Object
@@ -120,20 +124,21 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::Device
             RHI::ResultCode InitInternal(RHI::PhysicalDevice& physicalDevice) override;
-            RHI::ResultCode PostInitInternal(const RHI::DeviceDescriptor& params) override;
 
             void ShutdownInternal() override;
             void BeginFrameInternal() override;
             void EndFrameInternal() override;
             void WaitForIdleInternal() override;
             void CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) override;
-            void UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const override;
+            void UpdateCpuTimingStatisticsInternal() const override;
             AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const override;
             AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const override;
             void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) override;
+            RHI::ResultCode InitializeLimits() override;
             void PreShutdown() override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor& descriptor) override;
+            void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeaturesAndLimits(const PhysicalDevice& physicalDevice);
@@ -151,7 +156,7 @@ namespace AZ
 
             VkDevice m_nativeDevice = VK_NULL_HANDLE;
             VkPhysicalDeviceFeatures m_enabledDeviceFeatures{};
-            VkPipelineStageFlags m_supportedPipelineStageFlagsMask = ~0;
+            VkPipelineStageFlags m_supportedPipelineStageFlagsMask = std::numeric_limits<VkPipelineStageFlags>::max();
 
             AZStd::vector<VkQueueFamilyProperties> m_queueFamilyProperties;
             RHI::Ptr<AsyncUploadQueue> m_asyncUploadQueue;

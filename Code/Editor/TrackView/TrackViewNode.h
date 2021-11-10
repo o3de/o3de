@@ -22,13 +22,11 @@ class CTrackViewKeyConstHandle
 {
 public:
     CTrackViewKeyConstHandle()
-        : m_bIsValid(false)
-        , m_keyIndex(0)
+        : m_keyIndex(0)
         , m_pTrack(nullptr) {}
 
     CTrackViewKeyConstHandle(const CTrackViewTrack* pTrack, unsigned int keyIndex)
-        : m_bIsValid(true)
-        , m_keyIndex(keyIndex)
+        : m_keyIndex(keyIndex)
         , m_pTrack(pTrack) {}
 
     void GetKey(IKey* pKey) const;
@@ -36,7 +34,6 @@ public:
     const CTrackViewTrack* GetTrack() const { return m_pTrack; }
 
 private:
-    bool m_bIsValid;
     unsigned int m_keyIndex;
     const CTrackViewTrack* m_pTrack;
 };
@@ -120,13 +117,14 @@ class CTrackViewKeyBundle
 public:
     CTrackViewKeyBundle()
         : m_bAllOfSameType(true) {}
+    virtual ~CTrackViewKeyBundle() = default;
 
-    virtual bool AreAllKeysOfSameType() const override { return m_bAllOfSameType; }
+    bool AreAllKeysOfSameType() const override { return m_bAllOfSameType; }
 
-    virtual unsigned int GetKeyCount() const override { return static_cast<unsigned int>(m_keys.size()); }
-    virtual CTrackViewKeyHandle GetKey(unsigned int index) override { return m_keys[index]; }
+    unsigned int GetKeyCount() const override { return static_cast<unsigned int>(m_keys.size()); }
+    CTrackViewKeyHandle GetKey(unsigned int index) override { return m_keys[index]; }
 
-    virtual void SelectKeys(const bool bSelected) override;
+    void SelectKeys(const bool bSelected) override;
 
     CTrackViewKeyHandle GetSingleSelectedKey();
 
@@ -159,7 +157,7 @@ public:
     virtual ~CTrackViewNode() {}
 
     // Name
-    virtual const char* GetName() const = 0;
+    virtual AZStd::string GetName() const = 0;
     virtual bool SetName([[maybe_unused]] const char* pName) { return false; };
     virtual bool CanBeRenamed() const { return false; }
 

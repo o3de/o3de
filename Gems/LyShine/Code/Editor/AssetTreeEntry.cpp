@@ -75,7 +75,7 @@ void AssetTreeEntry::Insert(const AZStd::string& path, const AZStd::string& menu
         AZStd::string folderName;
         AZStd::string remainderPath;
         size_t separator = path.find('/');
-        if (separator == string::npos)
+        if (separator == AZStd::string::npos)
         {
             folderName = path;
         }

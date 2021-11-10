@@ -7,6 +7,7 @@
  */
 #include <RHI/Device.h>
 #include <RHI/PipelineLibrary.h>
+#include <Atom/RHI/Factory.h>
 
 namespace AZ
 {
@@ -46,7 +47,18 @@ namespace AZ
 
 #if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
             AZStd::array_view<uint8_t> bytes;
-            if (serializedData)
+
+            bool shouldCreateLibFromSerializedData = true;
+            if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
+                RHI::Factory::Get().IsPixModuleLoaded() ||
+                RHI::Factory::Get().UsingWarpDevice())
+            {
+                // CreatePipelineLibrary api does not function properly if Renderdoc, Pix or Warp is enabled
+                shouldCreateLibFromSerializedData = false;
+            }
+
+
+            if (serializedData && shouldCreateLibFromSerializedData)
             {
                 bytes = serializedData->GetData();
             }
@@ -66,14 +78,19 @@ namespace AZ
                     switch (hr)
                     {
                     case D3D12_ERROR_DRIVER_VERSION_MISMATCH:
-                    case DXGI_ERROR_UNSUPPORTED:
                         AZ_Warning("PipelineLibrary", false, "Failed to use pipeline library blob due to driver version mismatch. Contents will be rebuilt.");
+                        break;
+                    case DXGI_ERROR_UNSUPPORTED:
+                        AZ_Warning("PipelineLibrary", false, "Failed to use pipeline library blob due to the specified device interface or feature level not supported on this system. Contents will be rebuilt.");
                         break;
                     case D3D12_ERROR_ADAPTER_NOT_FOUND:
                         AZ_Warning("PipelineLibrary", false, "Failed to use pipeline library blob due to mismatched hardware. Contents will be rebuilt.");
                         break;
                     case E_INVALIDARG:
                         AZ_Assert(false, "Failed to use pipeline library blob due to invalid arguments. Contents will be rebuilt.");
+                        break;
+                    case DXGI_ERROR_DEVICE_REMOVED:
+                        AZ_Assert(false, "Failed to use pipeline library blob due to DXGI_ERROR_DEVICE_REMOVED.");
                         break;
                     default:
                         AZ_Warning("PipelineLibrary", false, "Failed to use pipeline library blob for unknown reason. Contents will be rebuilt.");
@@ -200,23 +217,31 @@ namespace AZ
 
         RHI::ResultCode PipelineLibrary::MergeIntoInternal([[maybe_unused]] AZStd::array_view<const RHI::PipelineLibrary*> pipelineLibraries)
         {
+            if (RHI::Factory::Get().IsRenderDocModuleLoaded() ||
+                RHI::Factory::Get().IsPixModuleLoaded() ||
+                RHI::Factory::Get().UsingWarpDevice())
+            {
+                // StorePipeline api does not function properly if RenderDoc, Pix or Warp is enabled
+                return RHI::ResultCode::Fail;
+            }
+
 #if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
             AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-
             for (const RHI::PipelineLibrary* libraryBase : pipelineLibraries)
             {
                 const PipelineLibrary* library = static_cast<const PipelineLibrary*>(libraryBase);
-
                 for (const auto& pipelineStateEntry : library->m_pipelineStates)
                 {
-                    m_library->StorePipeline(pipelineStateEntry.first.c_str(), pipelineStateEntry.second.get());
+                    if (m_pipelineStates.find(pipelineStateEntry.first) == m_pipelineStates.end())
+                    {
+                        m_library->StorePipeline(pipelineStateEntry.first.c_str(), pipelineStateEntry.second.get());
 
-                    m_pipelineStates.emplace(pipelineStateEntry.first, pipelineStateEntry.second);
+                        m_pipelineStates.emplace(pipelineStateEntry.first, pipelineStateEntry.second);
+                    }
                 }
             }
 #endif
-
-            return RHI::ResultCode::Success;
+            return RHI::ResultCode::Success;           
         }
 
         RHI::ConstPtr<RHI::PipelineLibraryData> PipelineLibrary::GetSerializedDataInternal() const
@@ -236,6 +261,15 @@ namespace AZ
             return RHI::PipelineLibraryData::Create(AZStd::move(serializedData));
 #else
             return nullptr;
+#endif
+        }
+
+        bool PipelineLibrary::IsMergeRequired() const
+        {
+#if defined (AZ_DX12_USE_PIPELINE_LIBRARY)
+            return !m_pipelineStates.empty();
+#else
+            return false;
 #endif
         }
     }

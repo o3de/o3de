@@ -13,13 +13,14 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Components/CameraBus.h>
 #include <AzCore/std/containers/compressed_pair.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
 #include <luxcore/luxcore.h>
 
 namespace LuxCoreUI
 {
-    void LaunchLuxCoreUI(const AZStd::string& luxCoreExeFullPath, AZStd::string& commandLine);
+    void LaunchLuxCoreUI(const AZStd::string& luxCoreExeFullPath, const AZStd::string& commandLine);
 }
 
 namespace AZ
@@ -295,14 +296,12 @@ namespace AZ
             }
 
             // Run luxcoreui.exe
-            AZStd::string luxCoreExeFullPath;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(luxCoreExeFullPath, &AzFramework::ApplicationRequests::GetAppRoot);
-            luxCoreExeFullPath = luxCoreExeFullPath + AZ_TRAIT_LUXCORE_EXEPATH;
-            AzFramework::StringFunc::Path::Normalize(luxCoreExeFullPath);
+            AZ::IO::FixedMaxPath luxCoreExeFullPath = AZ::Utils::GetEnginePath();
+            luxCoreExeFullPath /= AZ_TRAIT_LUXCORE_EXEPATH;
 
             AZStd::string commandLine = "-o " + AZStd::string(resolvedPath) + "/render.cfg";
 
-            LuxCoreUI::LaunchLuxCoreUI(luxCoreExeFullPath, commandLine);
+            LuxCoreUI::LaunchLuxCoreUI(luxCoreExeFullPath.String(), commandLine);
         }
     }
 }

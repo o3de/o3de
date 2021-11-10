@@ -263,7 +263,7 @@ namespace GradientSignal
 
     void GradientSurfaceDataComponent::OnCompositionChanged()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
         UpdateRegistryAndCache(m_modifierHandle);
     }
 

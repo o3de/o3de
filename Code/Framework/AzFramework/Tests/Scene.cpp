@@ -230,7 +230,7 @@ namespace SceneUnitTest
 
         // Check to make sure there are no more active scenes.
         size_t index = 0;
-        m_sceneSystem->IterateActiveScenes([&index, &scenes](const AZStd::shared_ptr<Scene>&)
+        m_sceneSystem->IterateActiveScenes([&index](const AZStd::shared_ptr<Scene>&)
             {
                 index++;
                 return true;
@@ -251,7 +251,7 @@ namespace SceneUnitTest
             scenes[i].reset();
         }
         index = 0;
-        m_sceneSystem->IterateZombieScenes([&index, &scenes](Scene&) {
+        m_sceneSystem->IterateZombieScenes([&index](Scene&) {
             index++;
             return true;
         });

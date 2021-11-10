@@ -26,6 +26,65 @@ class CDraw2d
     : public IDraw2d // LYSHINE_ATOM_TODO - keep around until gEnv->pLyShine is replaced by bus interface
     , public AZ::Render::Bootstrap::NotificationBus::Handler
 {
+public: // types
+
+    struct RenderState
+    {
+        RenderState()
+        {
+            m_blendState.m_enable = true;
+            m_blendState.m_blendSource = AZ::RHI::BlendFactor::AlphaSource;
+            m_blendState.m_blendDest = AZ::RHI::BlendFactor::AlphaSourceInverse;
+
+            m_depthState.m_enable = false;
+        }
+
+        AZ::RHI::TargetBlendState m_blendState;
+        AZ::RHI::DepthState m_depthState;
+    };
+
+    //! Struct used to pass additional image options.
+    //
+    //! If this is not passed then the defaults are used
+    struct ImageOptions
+    {
+        AZ::Vector3 color = AZ::Vector3(1.0f, 1.0f, 1.0f);
+        Rounding pixelRounding = Rounding::Nearest;
+        RenderState m_renderState;
+    };
+
+    //! Struct used to pass additional text options - mostly ones that do not change from call to call.
+    //
+    //! If this is not passed then the defaults below are used
+    struct TextOptions
+    {
+        AZStd::string   fontName;               //!< default is "default"
+        unsigned int    effectIndex;            //!< default is 0
+        AZ::Vector3     color;                  //!< default is (1,1,1)
+        HAlign          horizontalAlignment;    //!< default is HAlign::Left
+        VAlign          verticalAlignment;      //!< default is VAlign::Top
+        AZ::Vector2     dropShadowOffset;       //!< default is (0,0), zero offset means no drop shadow is drawn
+        AZ::Color       dropShadowColor;        //!< default is (0,0,0,0), zero alpha means no drop shadow is drawn
+        float           rotation;               //!< default is 0
+        bool            depthTestEnabled;       //!< default is false
+    };
+
+    //! Used to pass in arrays of vertices (e.g. to DrawQuad)
+    struct VertexPosColUV
+    {
+        VertexPosColUV() {}
+        VertexPosColUV(const AZ::Vector2& inPos, const AZ::Color& inColor, const AZ::Vector2& inUV)
+        {
+            position = inPos;
+            color = inColor;
+            uv = inUV;
+        }
+
+        AZ::Vector2         position;   //!< 2D position of vertex
+        AZ::Color           color;      //!< Float color
+        AZ::Vector2         uv;         //!< Texture coordinate
+    };
+
 public: // member functions
 
     //! Constructor, constructed by the LyShine class
@@ -81,40 +140,34 @@ public: // member functions
     //
     //! \param texId        The texture ID returned by ITexture::GetTextureID()
     //! \param verts        An array of 4 vertices, in clockwise order (e.g. top left, top right, bottom right, bottom left)
-    //! \param blendMode    UseDefault means default blend mode (currently GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA)
     //! \param pixelRounding Whether and how to round pixel coordinates
-    //! \param baseState     Additional render state to pass to or into value passed to renderer SetState
+    //! \param renderState  Blend mode and depth state
     virtual void DrawQuad(AZ::Data::Instance<AZ::RPI::Image> image,
         VertexPosColUV* verts,
-        int blendMode = UseDefault,
         Rounding pixelRounding = Rounding::Nearest,
-        int baseState = UseDefault);
+        const RenderState& renderState = RenderState{});
 
     //! Draw a line
     //
     //! \param start        The start position
     //! \param end          The end position
     //! \param color        The color of the line
-    //! \param blendMode    UseDefault means default blend mode (currently GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA)
     //! \param pixelRounding Whether and how to round pixel coordinates
-    //! \param baseState     Additional render state to pass to or into value passed to renderer SetState
+    //! \param renderState  Blend mode and depth state
     virtual void DrawLine(AZ::Vector2 start, AZ::Vector2 end, AZ::Color color,
-        int blendMode = UseDefault,
         IDraw2d::Rounding pixelRounding = IDraw2d::Rounding::Nearest,
-        int baseState = UseDefault);
+        const RenderState& renderState = RenderState{});
 
     //! Draw a line with a texture so it can be dotted or dashed
     //
     //! \param texId        The texture ID returned by ITexture::GetTextureID()
     //! \param verts        An array of 2 vertices for the start and end points of the line
-    //! \param blendMode    UseDefault means default blend mode (currently GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA)
     //! \param pixelRounding Whether and how to round pixel coordinates
-    //! \param baseState     Additional render state to pass to or into value passed to renderer SetState
+    //! \param renderState  Blend mode and depth state
     virtual void DrawLineTextured(AZ::Data::Instance<AZ::RPI::Image> image,
         VertexPosColUV* verts,
-        int blendMode = UseDefault,
         IDraw2d::Rounding pixelRounding = IDraw2d::Rounding::Nearest,
-        int baseState = UseDefault);
+        const RenderState& renderState = RenderState{});
     //! Draw a text string. Only supports ASCII text.
     //
     //! The font and effect used to render the text are specified in the textOptions structure
@@ -225,7 +278,7 @@ protected: // types and constants
         AZ::Vector2 m_texCoords[4];
         uint32      m_packedColors[4];
         AZ::Data::Instance<AZ::RPI::Image> m_image;
-        int         m_state;
+        RenderState m_renderState;
     };
 
     class DeferredLine
@@ -241,7 +294,7 @@ protected: // types and constants
         AZ::Vector2 m_points[2];
         AZ::Vector2 m_texCoords[2];
         uint32      m_packedColors[2];
-        int         m_state;
+        RenderState m_renderState;
     };
 
     class DeferredText
@@ -286,7 +339,7 @@ protected: // member functions
     //! Helper function to render a text string
     void DrawTextInternal(const char* textString, AzFramework::FontId fontId, unsigned int effectIndex,
         AZ::Vector2 position, float pointSize, AZ::Color color, float rotation,
-        HAlign horizontalAlignment, VAlign verticalAlignment, int baseState);
+        HAlign horizontalAlignment, VAlign verticalAlignment, bool depthTestEnabled);
 
     //! Draw or defer a quad
     void DrawOrDeferQuad(const DeferredQuad* quad);
@@ -397,39 +450,39 @@ public: // member functions
     //! Draw a textured quad where the position, color and uv of each point is specified explicitly
     //
     //! See IDraw2d:DrawQuad for parameter descriptions
-    void DrawQuad(AZ::Data::Instance<AZ::RPI::Image> image, IDraw2d::VertexPosColUV* verts, int blendMode = IDraw2d::UseDefault,
+    void DrawQuad(AZ::Data::Instance<AZ::RPI::Image> image, CDraw2d::VertexPosColUV* verts,
         IDraw2d::Rounding pixelRounding = IDraw2d::Rounding::Nearest,
-        int baseState = IDraw2d::UseDefault)
+        const CDraw2d::RenderState& renderState = CDraw2d::RenderState{})
     {
         if (m_draw2d)
         {
-            m_draw2d->DrawQuad(image, verts, blendMode, pixelRounding, baseState);
+            m_draw2d->DrawQuad(image, verts, pixelRounding, renderState);
         }
     }
 
     //! Draw a line
     //
     //! See IDraw2d:DrawLine for parameter descriptions
-    void DrawLine(AZ::Vector2 start, AZ::Vector2 end, AZ::Color color, int blendMode = IDraw2d::UseDefault,
+    void DrawLine(AZ::Vector2 start, AZ::Vector2 end, AZ::Color color,
         IDraw2d::Rounding pixelRounding = IDraw2d::Rounding::Nearest,
-        int baseState = IDraw2d::UseDefault)
+        const CDraw2d::RenderState& renderState = CDraw2d::RenderState{})
     {
         if (m_draw2d)
         {
-            m_draw2d->DrawLine(start, end, color, blendMode, pixelRounding, baseState);
+            m_draw2d->DrawLine(start, end, color, pixelRounding, renderState);
         }
     }
 
     //! Draw a line with a texture so it can be dotted or dashed
     //
     //! See IDraw2d:DrawLineTextured for parameter descriptions
-    void DrawLineTextured(AZ::Data::Instance<AZ::RPI::Image> image, IDraw2d::VertexPosColUV* verts, int blendMode = IDraw2d::UseDefault,
+    void DrawLineTextured(AZ::Data::Instance<AZ::RPI::Image> image, CDraw2d::VertexPosColUV* verts,
         IDraw2d::Rounding pixelRounding = IDraw2d::Rounding::Nearest,
-        int baseState = IDraw2d::UseDefault)
+        const CDraw2d::RenderState& renderState = CDraw2d::RenderState{})
     {
         if (m_draw2d)
         {
-            m_draw2d->DrawLineTextured(image, verts, blendMode, pixelRounding, baseState);
+            m_draw2d->DrawLineTextured(image, verts, pixelRounding, renderState);
         }
     }
 
@@ -478,7 +531,7 @@ public: // member functions
     // State management
 
     //! Set the blend mode used for images, default is GS_BLSRC_SRCALPHA|GS_BLDST_ONEMINUSSRCALPHA.
-    void SetImageBlendMode(int mode) { m_imageOptions.blendMode = mode; }
+    void SetImageBlendMode(const AZ::RHI::TargetBlendState& blendState) { m_imageOptions.m_renderState.m_blendState = blendState; }
 
     //! Set the color used for DrawImage and other image drawing.
     void SetImageColor(AZ::Vector3 color) { m_imageOptions.color = color; }
@@ -487,7 +540,7 @@ public: // member functions
     void SetImagePixelRounding(IDraw2d::Rounding round) { m_imageOptions.pixelRounding = round; }
 
     //! Set the base state (that blend mode etc is combined with) used for images, default is GS_NODEPTHTEST.
-    void SetImageBaseState(int state) { m_imageOptions.baseState = state; }
+    void SetImageDepthState(const AZ::RHI::DepthState& depthState) { m_imageOptions.m_renderState.m_depthState = depthState; }
 
     //! Set the text font.
     void SetTextFont(AZStd::string_view fontName) { m_textOptions.fontName = fontName; }
@@ -518,8 +571,11 @@ public: // member functions
         m_textOptions.rotation = rotation;
     }
 
-    //! Set the base state (that blend mode etc is combined with) used for text, default is GS_NODEPTHTEST.
-    void SetTextBaseState(int state) { m_textOptions.baseState = state; }
+    //! Set wheter to enable depth test for the text
+    void SetTextDepthTestEnabled(bool enabled)
+    {
+        m_textOptions.depthTestEnabled = enabled;
+    }
 
 public: // static member functions
 
@@ -565,8 +621,8 @@ public: // static member functions
 
 protected: // attributes
 
-    IDraw2d::ImageOptions   m_imageOptions; //!< image options are stored locally and updated by member functions
-    IDraw2d::TextOptions    m_textOptions;  //!< text options are stored locally and updated by member functions
+    CDraw2d::ImageOptions   m_imageOptions; //!< image options are stored locally and updated by member functions
+    CDraw2d::TextOptions    m_textOptions;  //!< text options are stored locally and updated by member functions
     CDraw2d* m_draw2d;
     bool m_previousDeferCalls;
 };

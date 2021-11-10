@@ -46,7 +46,7 @@ namespace EMStudio
         void Init();
         void UpdateInterface();
 
-        QTableWidget* GetMotionEventPresetsTable()                                                          { return mTableWidget; }
+        QTableWidget* GetMotionEventPresetsTable()                                                          { return m_tableWidget; }
 
     public slots:
         void ReInit();
@@ -93,12 +93,12 @@ namespace EMStudio
             }
         };
 
-        DragTableWidget* mTableWidget = nullptr;
+        DragTableWidget* m_tableWidget = nullptr;
         QAction* m_addAction = nullptr;
         QAction* m_saveMenuAction = nullptr;
         QAction* m_saveAction = nullptr;
         QAction* m_saveAsAction = nullptr;
         QAction* m_loadAction = nullptr;
-        MotionEventsPlugin* mPlugin = nullptr;
+        MotionEventsPlugin* m_plugin = nullptr;
     };
 } // namespace EMStudio

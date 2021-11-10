@@ -152,6 +152,7 @@ namespace EMStudio
             , m_manipulatorCallback(manipulatorCallback)
         {}
 
+        using MCommon::ManipulatorCallback::Update;
         void Update(const AZ::Vector3& value) override
         {
             // call the base class update function

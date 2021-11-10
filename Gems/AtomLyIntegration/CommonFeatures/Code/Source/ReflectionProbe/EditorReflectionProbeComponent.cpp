@@ -13,7 +13,9 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzCore/IO/SystemFile.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/Utils/DdsFile.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Entity.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
@@ -38,6 +40,7 @@ namespace AZ
                     ->Field("bakedCubeMapQualityLevel", &EditorReflectionProbeComponent::m_bakedCubeMapQualityLevel)
                     ->Field("bakedCubeMapRelativePath", &EditorReflectionProbeComponent::m_bakedCubeMapRelativePath)
                     ->Field("authoredCubeMapAsset", &EditorReflectionProbeComponent::m_authoredCubeMapAsset)
+                    ->Field("bakeExposure", &EditorReflectionProbeComponent::m_bakeExposure)
                 ;
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
@@ -51,6 +54,7 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                            ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/reflection-probe/")
                             ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<RPI::ModelAsset>::Uuid())
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Cubemap Bake")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -58,6 +62,13 @@ namespace AZ
                                 ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                                 ->Attribute(AZ::Edit::Attributes::ButtonText, "Bake Reflection Probe")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorReflectionProbeComponent::BakeReflectionProbe)
+                                ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorReflectionProbeComponent::m_bakeExposure, "Bake Exposure", "Exposure to use when baking the cubemap")
+                                ->Attribute(AZ::Edit::Attributes::SoftMin, -16.0f)
+                                ->Attribute(AZ::Edit::Attributes::SoftMax, 16.0f)
+                                ->Attribute(AZ::Edit::Attributes::Min, -20.0f)
+                                ->Attribute(AZ::Edit::Attributes::Max, 20.0f)
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorReflectionProbeComponent::OnBakeExposureChanged)
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Cubemap")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -108,6 +119,11 @@ namespace AZ
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &ReflectionProbeComponentConfig::m_showVisualization, "Show Visualization", "Show the reflection probe visualization sphere")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &ReflectionProbeComponentConfig::m_renderExposure, "Exposure", "Exposure to use when rendering meshes with the cubemap")
+                                ->Attribute(AZ::Edit::Attributes::SoftMin, -5.0f)
+                                ->Attribute(AZ::Edit::Attributes::SoftMax, 5.0f)
+                                ->Attribute(AZ::Edit::Attributes::Min, -20.0f)
+                                ->Attribute(AZ::Edit::Attributes::Max, 20.0f)
                         ;
                 }
             }
@@ -175,7 +191,7 @@ namespace AZ
                     if (notificationType == CubeMapAssetNotificationType::Ready)
                     {
                         // bake is complete, update configuration with the new baked cubemap asset
-                        m_controller.m_configuration.m_bakedCubeMapAsset = { cubeMapAsset.GetAs<RPI::StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+                        m_controller.m_configuration.m_bakedCubeMapAsset = cubeMapAsset;
 
                         // refresh the currently rendered cubemap
                         m_controller.UpdateCubeMap();
@@ -212,6 +228,9 @@ namespace AZ
 
             AZ::Vector3 position = AZ::Vector3::CreateZero();
             AZ::TransformBus::EventResult(position, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
+            AZ::Quaternion rotationQuaternion = AZ::Quaternion::CreateIdentity();
+            AZ::TransformBus::EventResult(rotationQuaternion, GetEntityId(), &AZ::TransformBus::Events::GetWorldRotationQuaternion);
+            AZ::Matrix3x3 rotationMatrix = AZ::Matrix3x3::CreateFromQuaternion(rotationQuaternion);
 
             float scale = 1.0f;
             AZ::TransformBus::EventResult(scale, GetEntityId(), &AZ::TransformBus::Events::GetLocalUniformScale);
@@ -224,9 +243,7 @@ namespace AZ
             AZ::Vector3 innerExtents(configuration.m_innerWidth, configuration.m_innerLength, configuration.m_innerHeight);
             innerExtents *= scale;
 
-            AZ::Vector3 innerMin(position.GetX() - innerExtents.GetX() / 2, position.GetY() - innerExtents.GetY() / 2, position.GetZ() - innerExtents.GetZ() / 2);
-            AZ::Vector3 innerMax(position.GetX() + innerExtents.GetX() / 2, position.GetY() + innerExtents.GetY() / 2, position.GetZ() + innerExtents.GetZ() / 2);
-            debugDisplay.DrawWireBox(innerMin, innerMax);
+            debugDisplay.DrawWireOBB(position, rotationMatrix.GetBasisX(), rotationMatrix.GetBasisY(), rotationMatrix.GetBasisZ(), innerExtents / 2.0f);
         }
 
         AZ::Aabb EditorReflectionProbeComponent::GetEditorSelectionBoundsViewport([[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo)
@@ -267,6 +284,13 @@ namespace AZ
 
             // refresh currently displayed cubemap
             m_controller.UpdateCubeMap();
+
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
+        AZ::u32 EditorReflectionProbeComponent::OnBakeExposureChanged()
+        {
+            m_controller.SetBakeExposure(m_bakeExposure);
 
             return AZ::Edit::PropertyRefreshLevels::None;
         }
@@ -318,7 +342,7 @@ namespace AZ
             }
 
             char projectPath[AZ_MAX_PATH_LEN];
-            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@devassets@", projectPath, AZ_MAX_PATH_LEN);
+            AZ::IO::FileIOBase::GetInstance()->ResolvePath("@projectroot@", projectPath, AZ_MAX_PATH_LEN);
 
             // retrieve the source cubemap path from the configuration
             // we need to make sure to use the same source cubemap for each bake

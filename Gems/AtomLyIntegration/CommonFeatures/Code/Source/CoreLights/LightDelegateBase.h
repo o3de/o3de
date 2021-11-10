@@ -56,10 +56,7 @@ namespace AZ
             void SetShadowBias([[maybe_unused]] float bias) override {};
             void SetShadowmapMaxSize([[maybe_unused]] ShadowmapSize size) override {};
             void SetShadowFilterMethod([[maybe_unused]] ShadowFilterMethod method) override {};
-            void SetSofteningBoundaryWidthAngle([[maybe_unused]] float widthInDegrees) override {};
-            void SetPredictionSampleCount([[maybe_unused]] uint32_t count) override {};
             void SetFilteringSampleCount([[maybe_unused]] uint32_t count) override {};
-            void SetPcfMethod([[maybe_unused]] PcfMethod method) override {};
             void SetEsmExponent([[maybe_unused]] float esmExponent) override{};
 
         protected:

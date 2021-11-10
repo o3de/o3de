@@ -8,6 +8,7 @@
 
 set(FILES
     Mocks/MockSpawnableEntitiesInterface.h
+    Mocks/MockWindowRequests.h
     Utils/Utils.h
     Utils/Utils.cpp
     FrameworkApplicationFixture.h

@@ -29,6 +29,8 @@ protected:
     void Redo();
 
 private:
+    static Ang3 GetActiveCameraRotation();
+
     Ang3 m_undo;
     Ang3 m_redo;
     QString m_undoDescription;

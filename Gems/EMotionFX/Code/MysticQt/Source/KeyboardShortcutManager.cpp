@@ -10,6 +10,7 @@
 #include "KeyboardShortcutManager.h"
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 #include <MCore/Source/LogManager.h>
 #include <MCore/Source/IDGenerator.h>
@@ -163,7 +164,7 @@ namespace MysticQt
         // iterate through the groups and save all actions for them
         for (const AZStd::unique_ptr<Group>& group : m_groups)
         {
-            settings->beginGroup(QString::fromUtf8(group->GetName().data(), static_cast<int>(group->GetName().size())));
+            settings->beginGroup(QString::fromUtf8(group->GetName().data(), aznumeric_caster(group->GetName().size())));
 
             // iterate through the actions and save them
             for (const AZStd::unique_ptr<Action>& action : group->GetActions())

@@ -22,6 +22,7 @@ local FindMaterialAssignmentTest =
             "materials/presets/macbeth/12_orange_yellow_srgb.tif.streamingimage",
             "materials/presets/macbeth/17_magenta_srgb.tif.streamingimage"
         }, 
+        MaterialSlotFilter = ""
     }, 
 }
 
@@ -50,36 +51,24 @@ function FindMaterialAssignmentTest:OnActivate()
     self.colors = {}
     self.lerpDirs = {}
 
-    self.assignmentIds =
-    {
-        MaterialComponentRequestBus.Event.FindMaterialAssignmentId(self.entityId, -1, "lambert"),
-    }
-
-    for index = 1, #self.assignmentIds do
-        local id = self.assignmentIds[index]
-        if (id ~= nil) then
-            self.colors[index] = randomColor()
-            self.lerpDirs[index] = randomDir()
-        end
-    end
     self.tickBusHandler = TickBus.Connect(self);
 end
 
 function FindMaterialAssignmentTest:UpdateFactor(assignmentId)
-    local propertyName = Name("baseColor.factor")
+    local propertyName = "baseColor.factor"
     local propertyValue = math.random()
     MaterialComponentRequestBus.Event.SetPropertyOverride(self.entityId, assignmentId, propertyName, propertyValue);
 end
 
 function FindMaterialAssignmentTest:UpdateColor(assignmentId, color)
-    local propertyName = Name("baseColor.color")
+    local propertyName = "baseColor.color"
     local propertyValue = color
     MaterialComponentRequestBus.Event.SetPropertyOverride(self.entityId, assignmentId, propertyName, propertyValue);
 end
 
 function FindMaterialAssignmentTest:UpdateTexture(assignmentId)
     if (#self.Properties.Textures > 0) then
-        local propertyName = Name("baseColor.textureMap")
+        local propertyName = "baseColor.textureMap"
         local textureName = self.Properties.Textures[ math.random( #self.Properties.Textures ) ]
         Debug.Log(textureName)
         local textureAssetId = AssetCatalogRequestBus.Broadcast.GetAssetIdByPath(textureName, Uuid(), false)
@@ -144,10 +133,33 @@ function FindMaterialAssignmentTest:lerpColors(deltaTime)
 end
 
 function FindMaterialAssignmentTest:OnTick(deltaTime, timePoint)
+
+
+    if(nil == self.assignmentIds) then
+    
+        local originalAssignments = MaterialComponentRequestBus.Event.GetOriginalMaterialAssignments(self.entityId)
+        if(nil == originalAssignments or #originalAssignments <= 1) then -- There is always 1 entry for the default assignment; a loaded model will have at least 2 assignments
+            return
+        end
+        
+        self.assignmentIds =
+        {
+            MaterialComponentRequestBus.Event.FindMaterialAssignmentId(self.entityId, -1, self.Properties.MaterialSlotFilter),
+        }
+    
+        for index = 1, #self.assignmentIds do
+            local id = self.assignmentIds[index]
+            if (id ~= nil) then
+                self.colors[index] = randomColor()
+                self.lerpDirs[index] = randomDir()
+            end
+        end
+    end
+    
     self.timer = self.timer + deltaTime
     self.totalTime = self.totalTime + deltaTime
     self:lerpColors(deltaTime)
-
+    
     if (self.timer > self.timeUpdate and self.totalTime < self.totalTimeMax) then
         self.timer = self.timer - self.timeUpdate
         self:UpdateProperties()
@@ -155,6 +167,7 @@ function FindMaterialAssignmentTest:OnTick(deltaTime, timePoint)
         self:ClearProperties()
         self.tickBusHandler:Disconnect(self);
     end
+
 end
 
 return FindMaterialAssignmentTest

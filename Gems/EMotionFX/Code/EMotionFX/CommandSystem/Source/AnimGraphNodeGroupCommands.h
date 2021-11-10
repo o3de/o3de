@@ -83,18 +83,18 @@ namespace CommandSystem
 
     // add node group
     MCORE_DEFINECOMMAND_START(CommandAnimGraphAddNodeGroup, "Add anim graph node group", true)
-    bool                    mOldDirtyFlag;
-    AZStd::string           mOldName;
+    bool                    m_oldDirtyFlag;
+    AZStd::string           m_oldName;
     MCORE_DEFINECOMMAND_END
 
 
     // remove a node group
     MCORE_DEFINECOMMAND_START(CommandAnimGraphRemoveNodeGroup, "Remove anim graph node group", true)
-    AZStd::string                               mOldName;
-    bool                                        mOldIsVisible;
-    AZ::u32                                     mOldColor;
-    AZStd::vector<EMotionFX::AnimGraphNodeId>   mOldNodeIds;
-    bool                                        mOldDirtyFlag;
+    AZStd::string                               m_oldName;
+    bool                                        m_oldIsVisible;
+    AZ::u32                                     m_oldColor;
+    AZStd::vector<EMotionFX::AnimGraphNodeId>   m_oldNodeIds;
+    bool                                        m_oldDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
     // helper function

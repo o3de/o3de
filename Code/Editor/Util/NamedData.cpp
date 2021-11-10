@@ -158,7 +158,7 @@ bool CNamedData::Serialize(CArchive& ar)
 {
     if (ar.IsStoring())
     {
-        int iSize = m_blocks.size();
+        int iSize = static_cast<int>(m_blocks.size());
         ar << iSize;
 
         for (TBlocks::iterator it = m_blocks.begin(); it != m_blocks.end(); it++)
@@ -286,7 +286,7 @@ bool CNamedData::Load(const QString& levelPath, [[maybe_unused]] CPakFile& pakFi
         CCryFile cfile;
         if (cfile.Open(Path::Make(levelPath, filename).toUtf8().data(), "rb"))
         {
-            int fileSize = cfile.GetLength();
+            int fileSize = static_cast<int>(cfile.GetLength());
             if (fileSize > 0)
             {
                 QString key = Path::GetFileName(filename);
@@ -307,7 +307,7 @@ bool CNamedData::Load(const QString& levelPath, [[maybe_unused]] CPakFile& pakFi
         CCryFile cfile;
         if (cfile.Open(Path::Make(levelPath, filename).toUtf8().data(), "rb"))
         {
-            int fileSize = cfile.GetLength();
+            int fileSize = static_cast<uint32>(cfile.GetLength());
             if (fileSize > 0)
             {
                 // Read uncompressed data size.

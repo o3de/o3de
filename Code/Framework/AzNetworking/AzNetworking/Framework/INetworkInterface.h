@@ -103,13 +103,13 @@ namespace AzNetworking
         //! @return boolean true on success
         virtual bool Disconnect(ConnectionId connectionId, DisconnectReason reason) = 0;
 
-        //! Sets whether this connection interface can disconnect by virtue of a timeout
-        //! @param timeoutEnabled If this connection interface will automatically disconnect due to a timeout
-        virtual void SetTimeoutEnabled(bool timeoutEnabled) = 0;
+        //! Sets the timeout time in milliseconds, 0 ms means timeouts are disabled.
+        //! @param timeoutMs the number of milliseconds with no traffic before we timeout and close a connection
+        virtual void SetTimeoutMs(AZ::TimeMs timeoutMs) = 0;
 
-        //! Whether this connection interface will disconnect by virtue of a time out (does not account for cvars affecting all connections)
-        //! @return boolean true if this connection will not disconnect on timeout (does not account for cvars affecting all connections)
-        virtual bool IsTimeoutEnabled() const = 0;
+        //! Retrieves the timeout time in milliseconds for this network interface, 0 ms means timeouts are disabled.
+        //! @return the timeout time in milliseconds for this network interface, 0 ms means timeouts are disabled
+        virtual AZ::TimeMs GetTimeoutMs() const = 0;
 
         //! Const access to the metrics tracked by this network interface.
         //! @return const reference to the metrics tracked by this network interface

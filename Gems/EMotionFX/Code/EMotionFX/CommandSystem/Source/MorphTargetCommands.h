@@ -20,12 +20,12 @@ namespace CommandSystem
 {
     // adjust a given morph target of an actor
     MCORE_DEFINECOMMAND_START(CommandAdjustMorphTarget, "Adjust morph target", true)
-    float                               mOldWeight;
-    float                               mOldRangeMin;
-    float                               mOldRangeMax;
-    bool                                mOldManualModeEnabled;
-    EMotionFX::MorphTarget::EPhonemeSet mOldPhonemeSets;
-    bool                                mOldDirtyFlag;
+    float                               m_oldWeight;
+    float                               m_oldRangeMin;
+    float                               m_oldRangeMax;
+    bool                                m_oldManualModeEnabled;
+    EMotionFX::MorphTarget::EPhonemeSet m_oldPhonemeSets;
+    bool                                m_oldDirtyFlag;
 
     bool GetMorphTarget(EMotionFX::Actor* actor, EMotionFX::ActorInstance* actorInstance, uint32 lodLevel, const char* morphTargetName, EMotionFX::MorphTarget** outMorphTarget, EMotionFX::MorphSetupInstance::MorphTarget** outMorphTargetInstance, AZStd::string& outResult);
     MCORE_DEFINECOMMAND_END

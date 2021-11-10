@@ -250,10 +250,15 @@ namespace AZ
             // do nothing
         }
 
+        bool CameraComponent::IsActiveView()
+        {
+            return false;
+        }
+
         void CameraComponent::OnViewportResized(uint32_t width, uint32_t height)
         {
-            AZ_UNUSED(width)
-            AZ_UNUSED(height)
+            AZ_UNUSED(width);
+            AZ_UNUSED(height);
             UpdateAspectRatio();
             UpdateViewToClipMatrix();
         }
@@ -267,7 +272,10 @@ namespace AZ
             else if (m_componentConfig.m_target)
             {
                 const auto& viewport = m_componentConfig.m_target->GetViewport();
-                m_aspectRatio = viewport.m_maxX / viewport.m_maxY;
+                if (viewport.m_maxX > 0.0f && viewport.m_maxY > 0.0f)
+                {
+                    m_aspectRatio = viewport.m_maxX / viewport.m_maxY;
+                }
             }
         }
 

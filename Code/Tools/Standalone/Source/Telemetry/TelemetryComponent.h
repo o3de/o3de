@@ -26,8 +26,8 @@ namespace Telemetry
 
         //////////////////
         // AZ::Component
-        void Activate();
-        void Deactivate();
+        void Activate() override;
+        void Deactivate() override;
         static void Reflect(AZ::ReflectContext* context);
         //////////////////
 

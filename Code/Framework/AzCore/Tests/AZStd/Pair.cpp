@@ -68,7 +68,6 @@ namespace UnitTest
         static constexpr size_t max_expected_size = MaxExpectedSize;
     };
 
-    constexpr size_t pairSize = sizeof(AZStd::compressed_pair<CompressedPairInternal::EmptyStruct, int32_t>);
     using CompressedPairTestConfigs = ::testing::Types<
         CompressedPairTestConfig<CompressedPairInternal::EmptyStruct, CompressedPairInternal::FinalEmptyStruct, 1>
         , CompressedPairTestConfig<CompressedPairInternal::EmptyStruct, int32_t, 4>

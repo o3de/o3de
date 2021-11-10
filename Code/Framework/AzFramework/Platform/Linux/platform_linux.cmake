@@ -7,25 +7,30 @@
 #
 
 # Based on the linux window manager trait, perform the appropriate additional build configurations
-# Only 'xcb', 'wayland', and 'xlib' are recognized
+# Only 'xcb' and 'wayland' are recognized
 if (${PAL_TRAIT_LINUX_WINDOW_MANAGER} STREQUAL "xcb")
 
-    find_library(XCB_LIBRARY xcb)
-
+    set(LY_COMPILE_DEFINITIONS PUBLIC PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
+    set(LY_INCLUDE_DIRECTORIES
+        PUBLIC
+            Platform/Common/Xcb
+    )
+    set(LY_FILES_CMAKE
+        Platform/Common/Xcb/azframework_xcb_files.cmake
+    )
     set(LY_BUILD_DEPENDENCIES
         PRIVATE
-            ${XCB_LIBRARY}
+            3rdParty::X11::xcb
+            3rdParty::X11::xcb_xkb
+            3rdParty::X11::xcb_xfixes
+            3rdParty::X11::xkbcommon
+            3rdParty::X11::xkbcommon_X11
+            xcb-xinput
     )
-
-    set(LY_COMPILE_DEFINITIONS PUBLIC PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
 
 elseif(PAL_TRAIT_LINUX_WINDOW_MANAGER STREQUAL "wayland")
 
     set(LY_COMPILE_DEFINITIONS PUBLIC PAL_TRAIT_LINUX_WINDOW_MANAGER_WAYLAND)
-
-elseif(PAL_TRAIT_LINUX_WINDOW_MANAGER STREQUAL "xlib")
-
-    set(LY_COMPILE_DEFINITIONS PUBLIC PAL_TRAIT_LINUX_WINDOW_MANAGER_XLIB)
 
 else()
 

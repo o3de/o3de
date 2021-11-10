@@ -36,7 +36,7 @@ namespace AZ
         */
         int     m_stackSize;
 
-        JobManagerThreadDesc(int cpuId = -1, int priority = -100000, int stackSize = -1)
+        JobManagerThreadDesc(int cpuId = -1, int priority = 0, int stackSize = -1)
             : m_cpuId(cpuId)
             , m_priority(priority)
             , m_stackSize(stackSize)

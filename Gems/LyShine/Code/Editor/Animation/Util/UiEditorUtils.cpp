@@ -120,7 +120,7 @@ QColor ColorLinearToGamma(ColorF col)
     g = (float)(g <= 0.0031308 ? (12.92 * g) : (1.055 * pow((double)g, 1.0 / 2.4) - 0.055));
     b = (float)(b <= 0.0031308 ? (12.92 * b) : (1.055 * pow((double)b, 1.0 / 2.4) - 0.055));
 
-    return QColor(FtoI(r * 255.0f), FtoI(g * 255.0f), FtoI(b * 255.0f));
+    return QColor(int(r * 255.0f), int(g * 255.0f), int(b * 255.0f));
 }
 
 //////////////////////////////////////////////////////////////////////////

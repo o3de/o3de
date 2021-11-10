@@ -124,7 +124,7 @@ namespace AZ::AtomBridge
         AZ_RTTI(AtomDebugDisplayViewportInterface, "{09AF6A46-0100-4FBF-8F94-E6B221322D14}", AzFramework::DebugDisplayRequestBus::Handler);
 
         explicit AtomDebugDisplayViewportInterface(AZ::RPI::ViewportContextPtr viewportContextPtr);
-        explicit AtomDebugDisplayViewportInterface(uint32_t defaultInstanceAddress);
+        explicit AtomDebugDisplayViewportInterface(uint32_t defaultInstanceAddress, RPI::Scene* scene);
         ~AtomDebugDisplayViewportInterface();
 
         void ResetRenderState();
@@ -193,6 +193,8 @@ namespace AZ::AtomBridge
         AZ::u32 SetState(AZ::u32 state) override;
         void PushMatrix(const AZ::Transform& tm) override;
         void PopMatrix() override;
+        void PushPremultipliedMatrix(const AZ::Matrix3x4& matrix) override;
+        AZ::Matrix3x4 PopPremultipliedMatrix() override;
 
     private:
 

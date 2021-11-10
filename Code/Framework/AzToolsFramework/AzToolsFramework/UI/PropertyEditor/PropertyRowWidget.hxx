@@ -45,6 +45,13 @@ namespace AzToolsFramework
         Q_PROPERTY(bool appendDefaultLabelToName READ GetAppendDefaultLabelToName WRITE AppendDefaultLabelToName)
     public:
         AZ_CLASS_ALLOCATOR(PropertyRowWidget, AZ::SystemAllocator, 0)
+
+        enum class DragImageType
+        {
+            SingleRow,
+            IncludeVisibleChildren
+        };
+
         PropertyRowWidget(QWidget* pParent);
         virtual ~PropertyRowWidget();
 
@@ -86,6 +93,9 @@ namespace AzToolsFramework
         bool GetAppendDefaultLabelToName();
         void AppendDefaultLabelToName(bool doAppend);
 
+        AZ::u32 GetChildRowCount() const;
+        PropertyRowWidget* GetChildRowByIndex(AZ::u32 index) const;
+
         AZStd::vector<PropertyRowWidget*>& GetChildrenRows() { return m_childrenRows; }
         bool HasChildRows() const;
 
@@ -124,6 +134,7 @@ namespace AzToolsFramework
 
         void SetSelectionEnabled(bool selectionEnabled);
         void SetSelected(bool selected);
+        bool GetSelected();
         bool eventFilter(QObject *watched, QEvent *event) override;
         void paintEvent(QPaintEvent*) override;
 
@@ -152,8 +163,17 @@ namespace AzToolsFramework
         bool CanChildrenBeReordered() const;
         bool CanBeReordered() const;
 
+        int GetIndexInParent() const;
+        bool CanMoveUp() const;
+        bool CanMoveDown() const;
+
+        int GetContainingEditorFrameWidth();
+        QPixmap createDragImage(const QColor backgroundColor, const QColor borderColor, const float alpha, DragImageType imageType);
     protected:
         int CalculateLabelWidth() const;
+
+        int GetHeightOfRowAndVisibleChildren();
+        int DrawDragImageAndVisibleChildrenInto(QPainter& painter, int xpos, int ypos);
 
         bool IsHidden(InstanceDataNode* node) const;
 
@@ -216,6 +236,7 @@ namespace AzToolsFramework
         bool m_isMultiSizeContainer = false;
         bool m_isFixedSizeOrSmartPtrContainer = false;
         bool m_custom = false;
+        bool m_canChildrenBeReordered = false;
 
         bool m_isSelected = false;
         bool m_selectionEnabled = false;

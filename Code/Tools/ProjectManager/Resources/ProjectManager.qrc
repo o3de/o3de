@@ -34,6 +34,12 @@
         <file>Warning.svg</file>
         <file>Backgrounds/DefaultBackground.jpg</file>
         <file>Backgrounds/FtueBackground.jpg</file>
-        <file>FeatureTagClose.svg</file>
+        <file>X.svg</file>
+        <file>Refresh.svg</file>
+        <file>Edit.svg</file>
+        <file>Delete.svg</file>
+        <file>Download.svg</file>
+        <file>in_progress.gif</file>
+        <file>gem.svg</file>
     </qresource>
 </RCC>

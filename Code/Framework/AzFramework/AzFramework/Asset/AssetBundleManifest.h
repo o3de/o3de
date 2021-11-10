@@ -8,7 +8,10 @@
 
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {

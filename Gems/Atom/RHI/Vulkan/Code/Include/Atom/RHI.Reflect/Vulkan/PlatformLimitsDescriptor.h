@@ -20,7 +20,7 @@ namespace AZ
     {
         struct FrameGraphExecuterData
         {
-            AZ_TYPE_INFO(FrameGraphExecuterData, "{648B4414-7208-4BFD-8E8F-CF2CA923ABCF}");
+            AZ_TYPE_INFO(AZ::Vulkan::FrameGraphExecuterData, "{648B4414-7208-4BFD-8E8F-CF2CA923ABCF}");
             static void Reflect(AZ::ReflectContext* context);
 
             //Cost per draw/dispatch item
@@ -45,8 +45,8 @@ namespace AZ
         {
             using Base = RHI::PlatformLimitsDescriptor;
         public:
-            AZ_RTTI(Vulkan::PlatformLimitsDescriptor, "{23673F3F-1562-4D1B-B130-553B35B48C64}", Base);
-            AZ_CLASS_ALLOCATOR(PlatformLimitsDescriptor, AZ::SystemAllocator, 0);
+            AZ_RTTI(AZ::Vulkan::PlatformLimitsDescriptor, "{23673F3F-1562-4D1B-B130-553B35B48C64}", Base);
+            AZ_CLASS_ALLOCATOR(AZ::Vulkan::PlatformLimitsDescriptor, AZ::SystemAllocator, 0);
             static void Reflect(AZ::ReflectContext* context);
 
             FrameGraphExecuterData m_frameGraphExecuterData;

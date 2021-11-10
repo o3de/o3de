@@ -187,7 +187,7 @@ AZ_PUSH_DISABLE_WARNING(4996, "-Wunknown-warning-option")
     azstrcat(str, length, "\n");
 
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_DEBUGCALLSTACK_APPEND_MODULENAME
-    GetModuleFileNameA(NULL, s, sizeof(s));
+    AZ::Utils::GetExecutablePath(s, sizeof(s));
     
     // Log EXE filename only if possible (not full EXE path which could contain sensitive info)
     AZStd::string exeName;
@@ -227,7 +227,7 @@ void IDebugCallStack::FatalError(const char* description)
 
 #if defined(WIN32) || !defined(_RELEASE)
     int* p = 0x0;
-    PREFAST_SUPPRESS_WARNING(6011) * p = 1; // we're intentionally crashing here
+    *p = 1; // we're intentionally crashing here
 #endif
 }
 
@@ -237,12 +237,12 @@ void IDebugCallStack::WriteLineToLog(const char* format, ...)
     char        szBuffer[MAX_WARNING_LENGTH];
     va_start(ArgList, format);
     vsnprintf_s(szBuffer, sizeof(szBuffer), sizeof(szBuffer) - 1, format, ArgList);
-    cry_strcat(szBuffer, "\n");
+    azstrcat(szBuffer, MAX_WARNING_LENGTH, "\n");
     szBuffer[sizeof(szBuffer) - 1] = '\0';
     va_end(ArgList);
 
     AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
-    AZ::IO::FileIOBase::GetDirectInstance()->Open("@Log@\\error.log", AZ::IO::GetOpenModeFromStringMode("a+t"), fileHandle);
+    AZ::IO::FileIOBase::GetDirectInstance()->Open("@log@\\error.log", AZ::IO::GetOpenModeFromStringMode("a+t"), fileHandle);
     if (fileHandle != AZ::IO::InvalidHandle)
     {
         AZ::IO::FileIOBase::GetDirectInstance()->Write(fileHandle, szBuffer, strlen(szBuffer));
@@ -254,7 +254,7 @@ void IDebugCallStack::WriteLineToLog(const char* format, ...)
 //////////////////////////////////////////////////////////////////////////
 void IDebugCallStack::StartMemLog()
 {
-    AZ::IO::FileIOBase::GetDirectInstance()->Open("@Log@\\memallocfile.log", AZ::IO::OpenMode::ModeWrite, m_memAllocFileHandle);
+    AZ::IO::FileIOBase::GetDirectInstance()->Open("@log@\\memallocfile.log", AZ::IO::OpenMode::ModeWrite, m_memAllocFileHandle);
 
     assert(m_memAllocFileHandle != AZ::IO::InvalidHandle);
 }

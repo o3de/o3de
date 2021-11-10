@@ -22,14 +22,11 @@ partial ShaderResourceGroup ViewSrg
         uint m_isEnabled;
         uint2 m_shadowmapOriginInSlice;
         uint m_shadowmapSize;
-        uint m_parameterOffset;
-        uint m_parameterCount;
         float m_lightDistanceOfCameraViewFrustum;
         float m_n_f_n; // n / (f - n)
         float m_n_f;   // n - f
         float m_f;     // f
                        // where n: nearDepth, f: farDepth.
-        float2 m_padding; // explicit padding
     };
 
     // Simple Point Lights 
@@ -82,12 +79,12 @@ partial ShaderResourceGroup ViewSrg
     {
         float4x4 m_depthBiasMatrix;
         uint m_shadowmapArraySlice; // array slice who has shadowmap in the atlas.
-        uint m_shadowFilterMethod; // Includes overall filter method in top 16 bits and pcf method in bottom 16 bits.
+        uint m_shadowFilterMethod; 
         float m_boundaryScale;
-        uint m_predictionSampleCount;
         uint m_filteringSampleCount;
         float2 m_unprojectConstants;
         float m_bias;
+        float m_normalShadowBias;
         float m_esmExponent;
         float3 m_padding;
     };
@@ -105,20 +102,19 @@ partial ShaderResourceGroup ViewSrg
 
     struct DirectionalLightShadow
     {
-        float4x4 m_depthBiasMatrices[MaxCascadeCount];
         float4x4 m_lightViewToShadowmapMatrices[MaxCascadeCount];
         float4x4 m_worldToLightViewMatrices[MaxCascadeCount];
         float m_slopeBiasBase[MaxCascadeCount];
         float m_boundaryScale;
         uint m_shadowmapSize; // width and height of shadowmap
         uint m_cascadeCount;
-        uint m_predictionSampleCount;
+        float m_shadowBias; 
+        float m_normalShadowBias; 
         uint m_filteringSampleCount;
         uint m_debugFlags;
         uint m_shadowFilterMethod;
         float m_far_minus_near;
-        uint m_pcfFilterMethod; // Matches with PcfFilterMethod in ShadowConstants.h
-        uint m_padding[3];
+        float3 m_padding;
     };
 
     enum ShadowFilterMethod

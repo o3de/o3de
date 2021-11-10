@@ -37,7 +37,7 @@ namespace EMStudio
 
     public:
         SaveDirtyActorFilesCallback(SceneManagerPlugin* plugin)
-            : SaveDirtyFilesCallback()  { mPlugin = plugin; }
+            : SaveDirtyFilesCallback()  { m_plugin = plugin; }
         ~SaveDirtyActorFilesCallback()                                                      {}
 
         uint32 GetType() const override                                                     { return TYPE_ID; }
@@ -54,7 +54,7 @@ namespace EMStudio
         int SaveDirtyFiles(const AZStd::vector<AZStd::string>& filenamesToSave, const AZStd::vector<ObjectPointer>& objects, MCore::CommandGroup* commandGroup) override;
 
     private:
-        SceneManagerPlugin* mPlugin;
+        SceneManagerPlugin* m_plugin;
     };
 
     class SceneManagerPlugin
@@ -107,22 +107,22 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandAdjustActorInstanceCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandScaleActorDataCallback);
 
-        ImportActorCallback*                    mImportActorCallback;
-        CreateActorInstanceCallback*            mCreateActorInstanceCallback;
-        CommandSelectCallback*                  mSelectCallback;
-        CommandUnselectCallback*                mUnselectCallback;
-        CommandClearSelectionCallback*          mClearSelectionCallback;
-        RemoveActorCallback*                    mRemoveActorCallback;
-        RemoveActorInstanceCallback*            mRemoveActorInstanceCallback;
-        SaveActorAssetInfoCallback*             mSaveActorAssetInfoCallback;
-        CommandAdjustActorCallback*             mAdjustActorCallback;
-        CommandActorSetCollisionMeshesCallback* mActorSetCollisionMeshesCallback;
-        CommandAdjustActorInstanceCallback*     mAdjustActorInstanceCallback;
-        CommandScaleActorDataCallback*          mScaleActorDataCallback;
+        ImportActorCallback*                    m_importActorCallback;
+        CreateActorInstanceCallback*            m_createActorInstanceCallback;
+        CommandSelectCallback*                  m_selectCallback;
+        CommandUnselectCallback*                m_unselectCallback;
+        CommandClearSelectionCallback*          m_clearSelectionCallback;
+        RemoveActorCallback*                    m_removeActorCallback;
+        RemoveActorInstanceCallback*            m_removeActorInstanceCallback;
+        SaveActorAssetInfoCallback*             m_saveActorAssetInfoCallback;
+        CommandAdjustActorCallback*             m_adjustActorCallback;
+        CommandActorSetCollisionMeshesCallback* m_actorSetCollisionMeshesCallback;
+        CommandAdjustActorInstanceCallback*     m_adjustActorInstanceCallback;
+        CommandScaleActorDataCallback*          m_scaleActorDataCallback;
 
-        SaveDirtyActorFilesCallback*            mDirtyFilesCallback;
+        SaveDirtyActorFilesCallback*            m_dirtyFilesCallback;
 
-        ActorsWindow*                           mActorsWindow;
-        ActorPropertiesWindow*                  mActorPropsWindow;
+        ActorsWindow*                           m_actorsWindow;
+        ActorPropertiesWindow*                  m_actorPropsWindow;
     };
 } // namespace EMStudio

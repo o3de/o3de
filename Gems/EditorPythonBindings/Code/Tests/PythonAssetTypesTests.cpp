@@ -17,6 +17,7 @@
 #include <Source/PythonReflectionComponent.h>
 #include <Source/PythonMarshalComponent.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Memory/Memory.h>
@@ -116,7 +117,7 @@ namespace UnitTest
             return AZ::Data::AssetType("{7FD86523-3903-4037-BCD1-542027BFC553}");
         }
 
-        virtual const char* GetFileFilter() const
+        const char* GetFileFilter() const override
         {
             return nullptr;
         }
@@ -366,7 +367,7 @@ namespace UnitTest
         void TearDown() override
         {
             // clearing up memory
-            m_testSink = PythonTraceMessageSink();
+            m_testSink.CleanUp();
             PythonTestingFixture::TearDown();
         }
     };

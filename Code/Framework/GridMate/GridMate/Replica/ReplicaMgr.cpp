@@ -460,7 +460,7 @@ namespace GridMate
         {
             return iter->second;
         }
-        return NULL;
+        return nullptr;
     }
     //-----------------------------------------------------------------------------
     RepIdSeed ReplicaManager::ReserveIdBlock(PeerId requestor)
@@ -867,7 +867,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaManager::UpdateFromReplicas()
     {
-        AZ_PROFILE_TIMER("GridMate", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(GridMate);
 
         if (!IsInitialized())
         {
@@ -888,7 +888,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaManager::UpdateReplicas()
     {
-        AZ_PROFILE_TIMER("GridMate", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(GridMate);
 
         if (!IsInitialized())
         {
@@ -940,7 +940,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaManager::Marshal()
     {
-        AZ_PROFILE_TIMER("GridMate", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(GridMate);
 
         if (!IsReady())
         {
@@ -995,7 +995,7 @@ namespace GridMate
             AZ_Assert(iObj->second, "Detected NULL replica pointer in replica map! (id=0x%x)", replicaId);
             return iObj->second;
         }
-        return ReplicaPtr(NULL);
+        return ReplicaPtr(nullptr);
     }
     //-----------------------------------------------------------------------------
     void ReplicaManager::_Unmarshal(ReadBuffer& rb, ReplicaPeer* pFrom)
@@ -1287,7 +1287,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void ReplicaManager::Unmarshal()
     {
-        AZ_PROFILE_TIMER("GridMate", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(GridMate);
 
         if (!IsInitialized())
         {

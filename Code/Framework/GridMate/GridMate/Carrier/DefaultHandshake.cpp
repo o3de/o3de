@@ -98,7 +98,7 @@ DefaultHandshake::OnConfirmAck(ConnectionID id, ReadBuffer& rb)
 // [11/5/2010]
 //=========================================================================
 bool
-DefaultHandshake::OnNewConnection(const string& address)
+DefaultHandshake::OnNewConnection(const AZStd::string& address)
 {
     (void)address;
     return true; /// We don't have a ban list yet

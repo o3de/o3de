@@ -27,6 +27,35 @@ using namespace AzToolsFramework;
 
 namespace UnitTest
 {
+    void MousePressAndMove(
+        QWidget* widget, const QPoint& initialPositionWidget, const QPoint& mouseDelta, const Qt::MouseButton mouseButton)
+    {
+        QPoint position = widget->mapToGlobal(initialPositionWidget);
+        QTest::mousePress(widget, mouseButton, Qt::NoModifier, position);
+
+        MouseMove(widget, initialPositionWidget, mouseDelta, mouseButton);
+    }
+
+    // Note: There are a series of bugs in Qt that appear to be preventing mouseMove events
+    // firing when sent through the QTest framework. This is a work around for our version
+    // of Qt. In future this can hopefully be simplified. See ^1 for workaround.
+    // More info: Issues with mouse move in Qt
+    // - https://bugreports.qt.io/browse/QTBUG-5232
+    // - https://bugreports.qt.io/browse/QTBUG-69414
+    // - https://lists.qt-project.org/pipermail/development/2019-July/036873.html
+    void MouseMove(QWidget* widget, const QPoint& initialPositionWidget, const QPoint& mouseDelta, const Qt::MouseButton mouseButton)
+    {
+        QPoint nextPosition = widget->mapToGlobal(initialPositionWidget + mouseDelta);
+
+        // ^1 To ensure a mouse move event is fired we must call the test mouse move function
+        // and also send a mouse move event that matches. Each on their own do not appear to
+        // work - please see the links above for more context.
+        QTest::mouseMove(widget, nextPosition);
+        QMouseEvent mouseMoveEvent(
+            QEvent::MouseMove, QPointF(nextPosition), QPointF(nextPosition), Qt::NoButton, mouseButton, Qt::NoModifier);
+        QApplication::sendEvent(widget, &mouseMoveEvent);
+    }
+
     bool TestWidget::eventFilter(QObject* watched, QEvent* event)
     {
         AZ_UNUSED(watched);
@@ -65,13 +94,42 @@ namespace UnitTest
         }
     }
 
+    bool FocusInteractionWidget::event(QEvent* event)
+    {
+        using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
+
+        auto eventType = event->type();
+
+        switch (eventType)
+        {
+        case QEvent::MouseButtonPress:
+            EditorInteractionSystemViewportSelectionRequestBus::Event(
+                AzToolsFramework::GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetDefaultHandler);
+            return true;
+        case QEvent::FocusIn:
+        case QEvent::FocusOut:
+            {
+                bool handled = false;
+                AzToolsFramework::ViewportInteraction::MouseInteraction mouseInteraction;
+                EditorInteractionSystemViewportSelectionRequestBus::EventResult(
+                    handled, AzToolsFramework::GetEntityContextId(),
+                    &EditorInteractionSystemViewportSelectionRequestBus::Events::InternalHandleMouseViewportInteraction,
+                    AzToolsFramework::ViewportInteraction::MouseInteractionEvent(
+                        mouseInteraction, AzToolsFramework::ViewportInteraction::MouseEvent::Down, /*captured=*/false));
+                return handled;
+            }
+        }
+
+        return QWidget::event(event);
+    }
+
     void TestEditorActions::Connect()
     {
         using AzToolsFramework::GetEntityContextId;
         using AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus;
 
         AzToolsFramework::EditorActionRequestBus::Handler::BusConnect();
-        EditorComponentModeNotificationBus::Handler::BusConnect(GetEntityContextId());
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
         m_defaultWidget.setFocus();
     }
 
@@ -79,18 +137,26 @@ namespace UnitTest
     {
         using AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus;
 
-        EditorComponentModeNotificationBus::Handler::BusDisconnect();
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
         AzToolsFramework::EditorActionRequestBus::Handler::BusDisconnect();
     }
 
-    void TestEditorActions::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentTypes)
+    void TestEditorActions::OnEditorModeActivated(
+        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
-        m_componentModeWidget.setFocus();
+        if (mode == ViewportEditorMode::Component)
+        {
+            m_componentModeWidget.setFocus();
+        }
     }
 
-    void TestEditorActions::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentTypes)
+    void TestEditorActions::OnEditorModeDeactivated(
+        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
-        m_defaultWidget.setFocus();
+        if (mode == ViewportEditorMode::Component)
+        {
+            m_defaultWidget.setFocus();
+        }
     }
 
     void TestEditorActions::AddActionViaBus(int id, QAction* action)

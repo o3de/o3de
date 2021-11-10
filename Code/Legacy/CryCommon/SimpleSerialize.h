@@ -6,78 +6,29 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_SIMPLESERIALIZE_H
-#define CRYINCLUDE_CRYCOMMON_SIMPLESERIALIZE_H
 #pragma once
 
-
-#include <ISerialize.h> // <> required for Interfuscator
 #include "TimeValue.h"
+#include <ISerialize.h> // <> required for Interfuscator
 
-template <bool READING>
-class CSimpleSerializeImpl_Reading;
-
-template <>
-class CSimpleSerializeImpl_Reading<true>
-{
-public:
-    CSimpleSerializeImpl_Reading()
-        : m_bCommit(true) {}
-    ILINE bool IsReading() const
-    {
-        return true;
-    }
-    ILINE bool ShouldCommitValues() const
-    {
-        return m_bCommit;
-    }
-    ILINE void Update(ISerializeUpdateFunction* pFunc)
-    {
-        if (m_bCommit)
-        {
-            pFunc->Execute();
-        }
-    }
-protected:
-    bool m_bCommit;
-};
-
-template <>
-class CSimpleSerializeImpl_Reading<false>
-{
-public:
-    ILINE bool IsReading() const
-    {
-        return false;
-    }
-    ILINE bool ShouldCommitValues() const
-    {
-        return true;
-    }
-    ILINE void Update(ISerializeUpdateFunction*)
-    {
-    }
-};
-
-template <bool READING, ESerializationTarget TARGET>
+template<bool READING, ESerializationTarget TARGET>
 class CSimpleSerializeImpl
-    : public CSimpleSerializeImpl_Reading<READING>
 {
 public:
     CSimpleSerializeImpl()
-        : m_failed(false) {}
+        : m_failed(false)
+    {
+    }
+    ILINE bool IsReading() const
+    {
+        return READING;
+    }
     ILINE void BeginGroup(const char* szName)
     {
     }
     ILINE void EndGroup()
     {
     }
-    ILINE ESerializationTarget GetSerializationTarget() const
-    {
-        return TARGET;
-    }
-    ILINE void FlagPartialRead() {}
 
     ILINE bool Ok() const
     {
@@ -94,9 +45,8 @@ private:
     bool m_failed;
 };
 
-template <class Impl>
-class CSimpleSerialize
-    : public ISerialize
+template<class Impl>
+class CSimpleSerialize : public ISerialize
 {
 public:
     ILINE CSimpleSerialize(Impl& impl)
@@ -104,72 +54,45 @@ public:
     {
     }
 
-    void Update(ISerializeUpdateFunction* pFunc)
-    {
-        m_impl.Update(pFunc);
-    }
-
-    void BeginGroup(const char* szName)
+    void BeginGroup(const char* szName) override
     {
         m_impl.BeginGroup(szName);
     }
 
-    bool BeginOptionalGroup(const char* szName, bool condition)
+    bool BeginOptionalGroup(const char* szName, bool condition) override
     {
         return m_impl.BeginOptionalGroup(szName, condition);
     }
 
-    void EndGroup()
+    void EndGroup() override
     {
         m_impl.EndGroup();
     }
 
-    bool IsReading() const
+    bool IsReading() const override
     {
         return m_impl.IsReading();
     }
 
-    bool ShouldCommitValues() const
+    void WriteStringValue(const char* name, SSerializeString& value) override
     {
-        return m_impl.ShouldCommitValues();
+        m_impl.Value(name, value);
+    }
+    void ReadStringValue(const char* name, SSerializeString& curValue) override
+    {
+        m_impl.Value(name, curValue);
     }
 
-    ESerializationTarget GetSerializationTarget() const
-    {
-        return m_impl.GetSerializationTarget();
+#define SERIALIZATION_TYPE(T)                   \
+    void Value(const char* name, T& x) override \
+    {                                           \
+        m_impl.Value(name, x);                  \
     }
-
-    void WriteStringValue(const char* name, SSerializeString& value, uint32 policy)
-    {
-        m_impl.Value(name, value, policy);
-    }
-    void ReadStringValue(const char* name, SSerializeString& curValue, uint32 policy)
-    {
-        m_impl.Value(name, curValue, policy);
-    }
-
-    bool Ok() const
-    {
-        return m_impl.Ok();
-    }
-
-    void FlagPartialRead()
-    {
-        m_impl.FlagPartialRead();
-    }
-
-#define SERIALIZATION_TYPE(T) \
-    virtual void Value(const char* name, T & x, uint32 policy) { m_impl.Value(name, x, policy); }
 #include "SerializationTypes.h"
 #undef SERIALIZATION_TYPE
 
-#define SERIALIZATION_TYPE(T) \
-    virtual void ValueWithDefault([[maybe_unused]] const char* name, [[maybe_unused]] T & x, [[maybe_unused]] const T&defaultValue) { assert(0); }
-#include "SerializationTypes.h"
-    SERIALIZATION_TYPE(SSerializeString)
-#undef SERIALIZATION_TYPE
-
-    Impl * GetInnerImpl() {
+    Impl* GetInnerImpl()
+    {
         return &m_impl;
     }
 
@@ -181,26 +104,5 @@ protected:
 // Support serialization with default values,
 // Require Implementation serialization stub to have Value() method returning boolean.
 //////////////////////////////////////////////////////////////////////////
-template <class Impl>
-class CSimpleSerializeWithDefaults
-    : public CSimpleSerialize<Impl>
-{
-public:
-    ILINE CSimpleSerializeWithDefaults(Impl& impl)
-        : CSimpleSerialize<Impl>(impl) {}
-
-#define SERIALIZATION_TYPE(T)                                                      \
-    virtual void ValueWithDefault(const char* name, T & x, const T&defaultValue) { \
-        if (CSimpleSerialize<Impl>::m_impl.IsReading()) {                          \
-            if (!CSimpleSerialize<Impl>::m_impl.Value(name, x, 0)) {               \
-                x = defaultValue; }                                                \
-        }                                                                          \
-        else if (x != defaultValue) {                                              \
-            CSimpleSerialize<Impl>::m_impl.Value(name, x, 0); }                    \
-    }
-#include "SerializationTypes.h"
-    SERIALIZATION_TYPE(SSerializeString)
-#undef SERIALIZATION_TYPE
-};
-
-#endif // CRYINCLUDE_CRYCOMMON_SIMPLESERIALIZE_H
+template<class Impl>
+using CSimpleSerializeWithDefaults = CSimpleSerialize<Impl>;

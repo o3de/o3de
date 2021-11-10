@@ -44,10 +44,7 @@ namespace AZ
             void SetShadowBias(float bias) override;
             void SetShadowmapMaxSize(ShadowmapSize size) override;
             void SetShadowFilterMethod(ShadowFilterMethod method) override;
-            void SetSofteningBoundaryWidthAngle(float widthInDegrees) override;
-            void SetPredictionSampleCount(uint32_t count) override;
             void SetFilteringSampleCount(uint32_t count) override;
-            void SetPcfMethod(PcfMethod method) override;
             void SetEsmExponent(float exponent) override;
 
         private:

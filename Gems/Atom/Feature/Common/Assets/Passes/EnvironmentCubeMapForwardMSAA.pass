@@ -91,10 +91,10 @@
                     "LoadStoreAction": {
                         "ClearValue": {
                             "Value": [
-                                0.4000000059604645,
-                                0.4000000059604645,
-                                0.4000000059604645,
-                                {}
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
                             ]
                         },
                         "LoadAction": "Clear"
@@ -107,10 +107,10 @@
                     "LoadStoreAction": {
                         "ClearValue": {
                             "Value": [
-                                0.4000000059604645,
-                                0.4000000059604645,
-                                0.4000000059604645,
-                                {}
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
                             ]
                         },
                         "LoadAction": "Clear"
@@ -134,22 +134,6 @@
                 },
                 {
                     "Name": "NormalOutput",
-                    "SlotType": "Output",
-                    "ScopeAttachmentUsage": "RenderTarget",
-                    "LoadStoreAction": {
-                        "ClearValue": {
-                            "Value": [
-                                0.0,
-                                0.0,
-                                0.0,
-                                0.0
-                            ]
-                        },
-                        "LoadAction": "Clear"
-                    }
-                },
-                {
-                    "Name": "ScatterDistanceOutput",
                     "SlotType": "Output",
                     "ScopeAttachmentUsage": "RenderTarget",
                     "LoadStoreAction": {
@@ -257,23 +241,6 @@
                     "AssetRef": {
                         "FilePath": "Textures/BRDFTexture.attimage"
                     }
-                },
-                {
-                    "Name": "ScatterDistanceImage",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "Parent",
-                            "Attachment": "Output"
-                        }
-                    },
-                    "MultisampleSource": {
-                        "Pass": "This",
-                        "Attachment": "DepthStencilInputOutput"
-                    },    
-                    "ImageDescriptor": {
-                        "Format": "R11G11B10_FLOAT",
-                        "SharedQueueMask": "Graphics"
-                    }
                 }
             ],
             "Connections": [
@@ -317,13 +284,6 @@
                     "AttachmentRef": {
                         "Pass": "This",
                         "Attachment": "BRDFTexture"
-                    }
-                },
-                {
-                    "LocalSlot": "ScatterDistanceOutput",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "ScatterDistanceImage"
                     }
                 }
             ]

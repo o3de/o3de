@@ -14,6 +14,9 @@
                 "Platform mac": {
                     "tags": "tools,renderer"
                 },
+                "Platform linux": {
+                    "tags": "tools,renderer"
+                },
                 "Platform server": {
                     "tags": "server"
                 },

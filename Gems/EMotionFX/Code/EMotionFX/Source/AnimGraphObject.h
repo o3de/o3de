@@ -15,7 +15,7 @@
 #include <MCore/Source/Stream.h>
 #include <MCore/Source/CommandLine.h>
 #include <MCore/Source/Color.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Attribute.h>
 #include <MCore/Source/AttributeFloat.h>
 #include <MCore/Source/AttributeInt32.h>
@@ -134,7 +134,7 @@ namespace EMotionFX
         void InitInternalAttributesForAllInstances();   // does the init for all anim graph instances in the parent animgraph
         virtual void InitInternalAttributes(AnimGraphInstance* animGraphInstance);
         virtual void RemoveInternalAttributesForAllInstances();
-        virtual void DecreaseInternalAttributeIndices(uint32 decreaseEverythingHigherThan);
+        virtual void DecreaseInternalAttributeIndices(size_t decreaseEverythingHigherThan);
 
         virtual void Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds);
 
@@ -144,16 +144,16 @@ namespace EMotionFX
         virtual void RecursiveOnChangeMotionSet(AnimGraphInstance* animGraphInstance, MotionSet* newMotionSet)   { MCORE_UNUSED(animGraphInstance); MCORE_UNUSED(newMotionSet); }
         virtual void OnActorMotionExtractionNodeChanged()                                                        {}
 
-        MCORE_INLINE uint32 GetObjectIndex() const                                      { return mObjectIndex; }
-        MCORE_INLINE void SetObjectIndex(size_t index)                                  { mObjectIndex = static_cast<uint32>(index); }
+        MCORE_INLINE size_t GetObjectIndex() const                                      { return m_objectIndex; }
+        MCORE_INLINE void SetObjectIndex(size_t index)                                  { m_objectIndex = index; }
 
-        MCORE_INLINE AnimGraph* GetAnimGraph() const                                    { return mAnimGraph; }
-        MCORE_INLINE void SetAnimGraph(AnimGraph* animGraph)                            { mAnimGraph = animGraph; }
+        MCORE_INLINE AnimGraph* GetAnimGraph() const                                    { return m_animGraph; }
+        MCORE_INLINE void SetAnimGraph(AnimGraph* animGraph)                            { m_animGraph = animGraph; }
 
-        uint32 SaveUniqueData(AnimGraphInstance* animGraphInstance, uint8* outputBuffer) const;  // save and return number of bytes written, when outputBuffer is nullptr only return num bytes it would write
-        uint32 LoadUniqueData(AnimGraphInstance* animGraphInstance, const uint8* dataBuffer);    // load and return number of bytes read, when dataBuffer is nullptr, 0 should be returned
+        size_t SaveUniqueData(AnimGraphInstance* animGraphInstance, uint8* outputBuffer) const;  // save and return number of bytes written, when outputBuffer is nullptr only return num bytes it would write
+        size_t LoadUniqueData(AnimGraphInstance* animGraphInstance, const uint8* dataBuffer);    // load and return number of bytes read, when dataBuffer is nullptr, 0 should be returned
 
-        virtual void RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const;
+        virtual void RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const;
 
         bool GetHasErrorFlag(AnimGraphInstance* animGraphInstance) const;
         void SetHasErrorFlag(AnimGraphInstance* animGraphInstance, bool hasError);
@@ -166,8 +166,8 @@ namespace EMotionFX
         static void Reflect(AZ::ReflectContext* context);
 
     protected:
-        AnimGraph*                          mAnimGraph;
-        uint32                              mObjectIndex;
+        AnimGraph*                          m_animGraph;
+        size_t                              m_objectIndex;
     };
 } // namespace EMotionFX
 

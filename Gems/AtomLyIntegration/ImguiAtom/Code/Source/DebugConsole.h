@@ -122,7 +122,6 @@ namespace AZ
         int m_currentHistoryIndex = -1; //!< The current index into the input history when browsing.
         int m_maxEntriesToDisplay = DefaultMaxEntriesToDisplay; //!< The maximum entries to display.
         int m_maxInputHistorySize = DefaultMaxInputHistorySize; //!< The maximum input history size.
-        int m_logLevelToSet = 0; //!< The minimum log level to set (see AZ::LogLevel).
         bool m_isShowing = false; //!< Is the debug console currently being displayed?
         bool m_autoScroll = true; //!< Should we auto-scroll as new entries are added?
         bool m_forceScroll = false; //!< Do we need to force scroll after input entered?

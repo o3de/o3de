@@ -22,7 +22,7 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <Utils/Utils.h>
 
-namespace 
+namespace
 {
     static const int s_totalAssets = 12;
 }
@@ -44,24 +44,22 @@ namespace UnitTest
             ArgumentContainer argContainer{ {} };
 
             // Append Command Line override for the Project Cache Path
-            AZ::IO::Path cacheProjectRootFolder{ m_tempDir.GetDirectory() };
-            auto projectCachePathOverride = FixedValueString::format(R"(--project-cache-path="%s")", cacheProjectRootFolder.c_str());
-            auto projectPathOverride = FixedValueString{ R"(--project-path=AutomatedTesting)" };
-            argContainer.push_back(projectCachePathOverride.data());
+            auto cacheProjectRootFolder = AZ::IO::Path{ m_tempDir.GetDirectory() } / "Cache";
+            auto projectPathOverride = FixedValueString::format(R"(--project-path="%s")", m_tempDir.GetDirectory());
             argContainer.push_back(projectPathOverride.data());
             m_application = new ToolsTestApplication("AddressedAssetCatalogManager", aznumeric_caster(argContainer.size()), argContainer.data());
 
             m_application->Start(AzFramework::Application::Descriptor());
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-            // By default @assets@ is setup to include the platform at the end. But this test is going to
+            // By default @products@ is setup to include the platform at the end. But this test is going to
             // loop over all platforms and it will be included as part of the relative path of the file.
             // So the asset folder for these tests have to point to the cache project root folder, which
             // doesn't include the platform.
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", cacheProjectRootFolder.c_str());
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", cacheProjectRootFolder.c_str());
 
             for (int platformNum = AzFramework::PlatformId::PC; platformNum < AzFramework::PlatformId::NumPlatformIds; ++platformNum)
             {
@@ -195,10 +193,7 @@ namespace UnitTest
             ArgumentContainer argContainer{ {} };
 
             // Append Command Line override for the Project Cache Path
-            AZ::IO::Path cacheProjectRootFolder{ m_tempDir.GetDirectory() };
-            auto projectCachePathOverride = FixedValueString::format(R"(--project-cache-path="%s")", cacheProjectRootFolder.c_str());
-            auto projectPathOverride = FixedValueString{ R"(--project-path=AutomatedTesting)" };
-            argContainer.push_back(projectCachePathOverride.data());
+            auto projectPathOverride = FixedValueString::format(R"(--project-path="%s")", m_tempDir.GetDirectory());
             argContainer.push_back(projectPathOverride.data());
             m_application = new ToolsTestApplication("MessageTest", aznumeric_caster(argContainer.size()), argContainer.data());
 

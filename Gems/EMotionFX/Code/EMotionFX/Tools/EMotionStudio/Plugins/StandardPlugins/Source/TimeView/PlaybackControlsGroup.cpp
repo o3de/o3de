@@ -129,8 +129,8 @@ namespace EMStudio
             return false;
         }
 
-        const AZ::u32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (AZ::u32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
 

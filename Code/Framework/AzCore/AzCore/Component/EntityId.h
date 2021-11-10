@@ -9,7 +9,7 @@
 #define AZCORE_ENTITY_ID_H
 
 #include <AzCore/base.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/std/string/string.h>
 
 /** @file

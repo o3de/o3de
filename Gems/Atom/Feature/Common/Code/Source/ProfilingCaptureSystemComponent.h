@@ -68,8 +68,8 @@ namespace AZ
 
             // ProfilingCaptureRequestBus overrides...
             bool CapturePassTimestamp(const AZStd::string& outputFilePath) override;
+            bool CaptureCpuFrameTime(const AZStd::string& outputFilePath) override;
             bool CapturePassPipelineStatistics(const AZStd::string& outputFilePath) override;
-            bool CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath) override;
             bool CaptureBenchmarkMetadata(const AZStd::string& benchmarkName, const AZStd::string& outputFilePath) override;
 
         private:
@@ -78,11 +78,9 @@ namespace AZ
             // Recursively collect all the passes from the root pass.
             AZStd::vector<const RPI::Pass*> CollectPassesRecursively(const RPI::Pass* root) const;
 
-            AZStd::vector<AZ::RPI::Pass*> FindPasses(AZStd::vector<AZStd::string>&& passHierarchy) const;
-
             DelayedQueryCaptureHelper m_timestampCapture;
+            DelayedQueryCaptureHelper m_cpuFrameTimeStatisticsCapture;
             DelayedQueryCaptureHelper m_pipelineStatisticsCapture;
-            DelayedQueryCaptureHelper m_cpuProfilingStatisticsCapture;
             DelayedQueryCaptureHelper m_benchmarkMetadataCapture;
         };
     }

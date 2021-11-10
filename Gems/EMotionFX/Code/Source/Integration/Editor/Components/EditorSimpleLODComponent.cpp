@@ -88,7 +88,7 @@ namespace EMotionFX
             if (actorInstance)
             {
                 m_actorInstance = actorInstance.get();
-                const AZ::u32 numLODs = m_actorInstance->GetActor()->GetNumLODLevels();
+                const size_t numLODs = m_actorInstance->GetActor()->GetNumLODLevels();
                 m_configuration.GenerateDefaultValue(numLODs);
             }
             else
@@ -111,7 +111,7 @@ namespace EMotionFX
             if (m_actorInstance != actorInstance)
             {
                 m_actorInstance = actorInstance;
-                const AZ::u32 numLODs = m_actorInstance->GetActor()->GetNumLODLevels();
+                const size_t numLODs = m_actorInstance->GetActor()->GetNumLODLevels();
                 m_configuration.GenerateDefaultValue(numLODs);
             }
         }

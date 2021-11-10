@@ -41,11 +41,17 @@ namespace AZ::NativeUI
         AZStd::string result = DisplayBlockingDialog("Assert Failed!", message, options);
 
         if (result.compare(buttonNames[0]) == 0)
+        {
             return AssertAction::IGNORE_ASSERT;
+        }
         else if (result.compare(buttonNames[1]) == 0)
+        {
             return AssertAction::IGNORE_ALL_ASSERTS;
+        }
         else if (result.compare(buttonNames[2]) == 0)
+        {
             return AssertAction::BREAK;
+        }
 
         return AssertAction::NONE;
     }

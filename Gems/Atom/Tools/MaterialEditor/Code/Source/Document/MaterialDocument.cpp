@@ -6,51 +6,37 @@
  *
  */
 
-#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
-#include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
-#include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
+#include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
-#include <Atom/RPI.Edit/Material/MaterialFunctorSourceData.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/RPI.Reflect/Image/Image.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
+#include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <AtomCore/Instance/Instance.h>
-#include <Document/MaterialDocument.h>
-#include <Atom/Document/MaterialDocumentNotificationBus.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Util/MaterialPropertyUtil.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <Document/MaterialDocument.h>
 
 namespace MaterialEditor
 {
     MaterialDocument::MaterialDocument()
+        : AtomToolsFramework::AtomToolsDocument()
     {
         MaterialDocumentRequestBus::Handler::BusConnect(m_id);
-        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentCreated, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentCreated, m_id);
     }
 
     MaterialDocument::~MaterialDocument()
     {
-        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentDestroyed, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentDestroyed, m_id);
         MaterialDocumentRequestBus::Handler::BusDisconnect();
         Clear();
-    }
-
-    const AZ::Uuid& MaterialDocument::GetId() const
-    {
-        return m_id;
-    }
-
-    AZStd::string_view MaterialDocument::GetAbsolutePath() const
-    {
-        return m_absolutePath;
-    }
-
-    AZStd::string_view MaterialDocument::GetRelativePath() const
-    {
-        return m_relativePath;
     }
 
     AZ::Data::Asset<AZ::RPI::MaterialAsset> MaterialDocument::GetAsset() const
@@ -73,7 +59,7 @@ namespace MaterialEditor
         return &m_materialTypeSourceData;
     }
 
-    const AZStd::any& MaterialDocument::GetPropertyValue(const AZ::Name& propertyFullName) const
+    const AZStd::any& MaterialDocument::GetPropertyValue(const AZ::Name& propertyId) const
     {
         using namespace AZ;
         using namespace RPI;
@@ -84,10 +70,10 @@ namespace MaterialEditor
             return m_invalidValue;
         }
 
-        const auto it = m_properties.find(propertyFullName);
+        const auto it = m_properties.find(propertyId);
         if (it == m_properties.end())
         {
-            AZ_Error("MaterialDocument", false, "Material document property could not be found: '%s'.", propertyFullName.GetCStr());
+            AZ_Error("MaterialDocument", false, "Material document property could not be found: '%s'.", propertyId.GetCStr());
             return m_invalidValue;
         }
 
@@ -95,7 +81,7 @@ namespace MaterialEditor
         return property.GetValue();
     }
 
-    const AtomToolsFramework::DynamicProperty& MaterialDocument::GetProperty(const AZ::Name& propertyFullName) const
+    const AtomToolsFramework::DynamicProperty& MaterialDocument::GetProperty(const AZ::Name& propertyId) const
     {
         if (!IsOpen())
         {
@@ -103,10 +89,10 @@ namespace MaterialEditor
             return m_invalidProperty;
         }
 
-        const auto it = m_properties.find(propertyFullName);
+        const auto it = m_properties.find(propertyId);
         if (it == m_properties.end())
         {
-            AZ_Error("MaterialDocument", false, "Material document property could not be found: '%s'.", propertyFullName.GetCStr());
+            AZ_Error("MaterialDocument", false, "Material document property could not be found: '%s'.", propertyId.GetCStr());
             return m_invalidProperty;
         }
 
@@ -132,7 +118,7 @@ namespace MaterialEditor
         return it->second;
     }
 
-    void MaterialDocument::SetPropertyValue(const AZ::Name& propertyFullName, const AZStd::any& value)
+    void MaterialDocument::SetPropertyValue(const AZ::Name& propertyId, const AZStd::any& value)
     {
         using namespace AZ;
         using namespace RPI;
@@ -143,10 +129,10 @@ namespace MaterialEditor
             return;
         }
 
-        const auto it = m_properties.find(propertyFullName);
+        const auto it = m_properties.find(propertyId);
         if (it == m_properties.end())
         {
-            AZ_Error("MaterialDocument", false, "Material document property could not be found: '%s'.", propertyFullName.GetCStr());
+            AZ_Error("MaterialDocument", false, "Material document property could not be found: '%s'.", propertyId.GetCStr());
             return;
         }
 
@@ -157,8 +143,7 @@ namespace MaterialEditor
         AtomToolsFramework::DynamicProperty& property = it->second;
         property.SetValue(AtomToolsFramework::ConvertToEditableType(propertyValue));
 
-        const AZ::RPI::MaterialPropertyId propertyId = AZ::RPI::MaterialPropertyId::Parse(propertyFullName.GetStringView());
-        const auto propertyIndex = m_materialInstance->FindPropertyIndex(propertyFullName);
+        const auto propertyIndex = m_materialInstance->FindPropertyIndex(propertyId);
         if (!propertyIndex.IsNull())
         {
             if (m_materialInstance->SetPropertyValue(propertyIndex, propertyValue))
@@ -170,17 +155,17 @@ namespace MaterialEditor
                 EditorMaterialFunctorResult result = RunEditorMaterialFunctors(dirtyFlags);
                 for (const Name& changedPropertyGroupName : result.m_updatedPropertyGroups)
                 {
-                    MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentPropertyGroupVisibilityChanged, m_id, changedPropertyGroupName, IsPropertyGroupVisible(changedPropertyGroupName));
+                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentPropertyGroupVisibilityChanged, m_id, changedPropertyGroupName, IsPropertyGroupVisible(changedPropertyGroupName));
                 }
                 for (const Name& changedPropertyName : result.m_updatedProperties)
                 {
-                    MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentPropertyConfigModified, m_id, GetProperty(changedPropertyName));
+                    AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentPropertyConfigModified, m_id, GetProperty(changedPropertyName));
                 }
             }
         }
 
-        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentPropertyValueModified, m_id, property);
-        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentModified, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentPropertyValueModified, m_id, property);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentModified, m_id);
     }
 
     bool MaterialDocument::Open(AZStd::string_view loadPath)
@@ -192,11 +177,11 @@ namespace MaterialEditor
             return false;
         }
 
-        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentOpened, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, m_id);
         return true;
     }
 
-    bool MaterialDocument::Rebuild()
+    bool MaterialDocument::Reopen()
     {
         // Store history and property changes that should be reapplied after reload
         auto undoHistoryToRestore = m_undoHistory;
@@ -222,7 +207,7 @@ namespace MaterialEditor
         RestorePropertyValues(propertyValuesToRestore);
         AZStd::swap(undoHistoryToRestore, m_undoHistory);
         AZStd::swap(undoHistoryIndexToRestore, m_undoHistoryIndex);
-        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentOpened, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, m_id);
         return true;
     }
 
@@ -245,9 +230,11 @@ namespace MaterialEditor
 
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.m_propertyLayout.m_version;
         sourceData.m_materialType = m_materialSourceData.m_materialType;
         sourceData.m_parentMaterial = m_materialSourceData.m_parentMaterial;
+        
+        AZ_Assert(m_materialAsset && m_materialAsset->GetMaterialTypeAsset(), "When IsOpen() is true, these assets should not be null.");
+        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
 
         // Force save data to store forward slashes
         AzFramework::StringFunc::Replace(sourceData.m_materialType, "\\", "/");
@@ -285,7 +272,7 @@ namespace MaterialEditor
 
         AZ_TracePrintf("MaterialDocument", "Material document saved: '%s'.\n", m_absolutePath.data());
 
-        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentSaved, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentSaved, m_id);
 
         m_saveTriggeredInternally = true;
         return true;
@@ -317,9 +304,11 @@ namespace MaterialEditor
 
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.m_propertyLayout.m_version;
         sourceData.m_materialType = m_materialSourceData.m_materialType;
         sourceData.m_parentMaterial = m_materialSourceData.m_parentMaterial;
+        
+        AZ_Assert(m_materialAsset && m_materialAsset->GetMaterialTypeAsset(), "When IsOpen() is true, these assets should not be null.");
+        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
 
         // Force save data to store forward slashes
         AzFramework::StringFunc::Replace(sourceData.m_materialType, "\\", "/");
@@ -348,7 +337,7 @@ namespace MaterialEditor
 
         AZ_TracePrintf("MaterialDocument", "Material document saved: '%s'.\n", normalizedSavePath.c_str());
 
-        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentSaved, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentSaved, m_id);
 
         // If the document is saved to a new file we need to reopen the new document to update assets, paths, property deltas.
         if (!Open(normalizedSavePath))
@@ -388,8 +377,10 @@ namespace MaterialEditor
 
         // create source data from properties
         MaterialSourceData sourceData;
-        sourceData.m_propertyLayoutVersion = m_materialTypeSourceData.m_propertyLayout.m_version;
         sourceData.m_materialType = m_materialSourceData.m_materialType;
+        
+        AZ_Assert(m_materialAsset && m_materialAsset->GetMaterialTypeAsset(), "When IsOpen() is true, these assets should not be null.");
+        sourceData.m_materialTypeVersion = m_materialAsset->GetMaterialTypeAsset()->GetVersion();
 
         // Only assign a parent path if the source was a .material
         if (AzFramework::StringFunc::Path::IsExtension(m_relativePath.c_str(), MaterialSourceData::Extension))
@@ -424,7 +415,7 @@ namespace MaterialEditor
 
         AZ_TracePrintf("MaterialDocument", "Material document saved: '%s'.\n", normalizedSavePath.c_str());
 
-        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentSaved, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentSaved, m_id);
 
         // If the document is saved to a new file we need to reopen the new document to update assets, paths, property deltas.
         if (!Open(normalizedSavePath))
@@ -450,7 +441,7 @@ namespace MaterialEditor
 
         AZ_TracePrintf("MaterialDocument", "Material document closed: '%s'.\n", m_absolutePath.c_str());
 
-        MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentClosed, m_id);
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentClosed, m_id);
 
         // Clearing after notification so paths are still available
         Clear();
@@ -496,7 +487,7 @@ namespace MaterialEditor
             // The history index is one beyond the last executed command. Decrement the index then execute undo.
             m_undoHistory[--m_undoHistoryIndex].first();
             AZ_TracePrintf("MaterialDocument", "Material document undo: '%s'.\n", m_absolutePath.c_str());
-            MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
             return true;
         }
         return false;
@@ -509,7 +500,7 @@ namespace MaterialEditor
             // Execute the current redo command then move the history index to the next position.
             m_undoHistory[m_undoHistoryIndex++].second();
             AZ_TracePrintf("MaterialDocument", "Material document redo: '%s'.\n", m_absolutePath.c_str());
-            MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
             return true;
         }
         return false;
@@ -557,7 +548,7 @@ namespace MaterialEditor
 
             // Assign the index to the end of history
             m_undoHistoryIndex = aznumeric_cast<int>(m_undoHistory.size());
-            MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentUndoStateChanged, m_id);
         }
 
         m_propertyValuesBeforeEdit.clear();
@@ -576,26 +567,26 @@ namespace MaterialEditor
         }
     }
 
-    void MaterialDocument::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID)
+    void MaterialDocument::SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid sourceUUID)
     {
-        if (m_sourceAssetId.m_guid == sourceUUID)
+        auto sourcePath = AZ::RPI::AssetUtils::ResolvePathReference(scanFolder, relativePath);
+
+        if (m_absolutePath == sourcePath)
         {
             // ignore notifications caused by saving the open document
             if (!m_saveTriggeredInternally)
             {
                 AZ_TracePrintf("MaterialDocument", "Material document changed externally: '%s'.\n", m_absolutePath.c_str());
-                MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentExternallyModified, m_id);
+                AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+                    &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentExternallyModified, m_id);
             }
             m_saveTriggeredInternally = false;
         }
-    }
-
-    void MaterialDocument::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-        if (m_dependentAssetIds.find(asset->GetId()) != m_dependentAssetIds.end())
+        else if (m_sourceDependencies.find(sourcePath) != m_sourceDependencies.end())
         {
             AZ_TracePrintf("MaterialDocument", "Material document dependency changed: '%s'.\n", m_absolutePath.c_str());
-            MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentDependencyModified, m_id);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(
+                &AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentDependencyModified, m_id);
         }
     }
 
@@ -607,8 +598,9 @@ namespace MaterialEditor
         bool result = true;
 
         // populate sourceData with properties that meet the filter
-        m_materialTypeSourceData.EnumerateProperties([this, &sourceData, &propertyFilter, &result](const AZStd::string& groupNameId, const AZStd::string& propertyNameId, const auto& propertyDefinition) {
-            const MaterialPropertyId propertyId(groupNameId, propertyNameId);
+        m_materialTypeSourceData.EnumerateProperties([this, &sourceData, &propertyFilter, &result](const AZStd::string& groupName, const AZStd::string& propertyName, const auto& propertyDefinition) {
+
+            const MaterialPropertyId propertyId(groupName, propertyName);
 
             const auto it = m_properties.find(propertyId.GetFullName());
             if (it != m_properties.end() && propertyFilter(it->second))
@@ -623,7 +615,7 @@ namespace MaterialEditor
                         return false;
                     }
 
-                    sourceData.m_properties[groupNameId][propertyNameId].m_value = propertyValue;
+                    sourceData.m_properties[groupName][propertyName].m_value = propertyValue;
                 }
             }
             return true;
@@ -663,7 +655,6 @@ namespace MaterialEditor
             return false;
         }
 
-        m_sourceAssetId = sourceAssetInfo.m_assetId;
         m_relativePath = sourceAssetInfo.m_relativePath;
         if (!AzFramework::StringFunc::Path::Normalize(m_relativePath))
         {
@@ -693,6 +684,12 @@ namespace MaterialEditor
                 return false;
             }
             m_materialTypeSourceData = materialTypeOutcome.GetValue();
+            
+            if (MaterialSourceData::ApplyVersionUpdatesResult::Failed == m_materialSourceData.ApplyVersionUpdates(m_absolutePath))
+            {
+                AZ_Error("MaterialDocument", false, "Material source data could not be auto updated to the latest version of the material type: '%s'.", m_materialSourceData.m_materialType.c_str());
+                return false;
+            }
         }
         else if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), MaterialTypeSourceData::Extension))
         {
@@ -724,14 +721,15 @@ namespace MaterialEditor
         // we can create the asset dynamically from the source data.
         // Long term, the material document should not be concerned with assets at all. The viewport window should be the
         // only thing concerned with assets or instances.
-        auto createResult = m_materialSourceData.CreateMaterialAsset(Uuid::CreateRandom(), m_absolutePath, true);
-        if (!createResult)
+        auto materialAssetResult =
+            m_materialSourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom(), m_absolutePath, true, true, &m_sourceDependencies);
+        if (!materialAssetResult)
         {
             AZ_Error("MaterialDocument", false, "Material asset could not be created from source data: '%s'.", m_absolutePath.c_str());
             return false;
         }
 
-        m_materialAsset = createResult.GetValue();
+        m_materialAsset = materialAssetResult.GetValue();
         if (!m_materialAsset.IsReady())
         {
             AZ_Error("MaterialDocument", false, "Material asset is not ready: '%s'.", m_absolutePath.c_str());
@@ -745,28 +743,35 @@ namespace MaterialEditor
             return false;
         }
 
-        // track material type asset to notify when dependencies change
-        m_dependentAssetIds.insert(materialTypeAsset->GetId());
-        AZ::Data::AssetBus::MultiHandler::BusConnect(materialTypeAsset->GetId());
-
         AZStd::array_view<AZ::RPI::MaterialPropertyValue> parentPropertyValues = materialTypeAsset->GetDefaultPropertyValues();
         AZ::Data::Asset<MaterialAsset> parentMaterialAsset;
         if (!m_materialSourceData.m_parentMaterial.empty())
         {
-            // There is a parent for this material
-            auto parentMaterialResult = AssetUtils::LoadAsset<MaterialAsset>(m_absolutePath, m_materialSourceData.m_parentMaterial);
-            if (!parentMaterialResult)
+            AZ::RPI::MaterialSourceData parentMaterialSourceData;
+            const auto parentMaterialFilePath = AssetUtils::ResolvePathReference(m_absolutePath, m_materialSourceData.m_parentMaterial);
+            if (!AZ::RPI::JsonUtils::LoadObjectFromFile(parentMaterialFilePath, parentMaterialSourceData))
             {
-                AZ_Error("MaterialDocument", false, "Parent material asset could not be loaded: '%s'.", m_materialSourceData.m_parentMaterial.c_str());
+                AZ_Error("MaterialDocument", false, "Material parent source data could not be loaded for: '%s'.", parentMaterialFilePath.c_str());
                 return false;
             }
 
-            parentMaterialAsset = parentMaterialResult.GetValue();
-            parentPropertyValues = parentMaterialAsset->GetPropertyValues();
+            const auto parentMaterialAssetIdResult = AssetUtils::MakeAssetId(parentMaterialFilePath, 0);
+            if (!parentMaterialAssetIdResult)
+            {
+                AZ_Error("MaterialDocument", false, "Material parent asset ID could not be created: '%s'.", parentMaterialFilePath.c_str());
+                return false;
+            }
 
-            // track parent material asset to notify when dependencies change
-            m_dependentAssetIds.insert(parentMaterialAsset->GetId());
-            AZ::Data::AssetBus::MultiHandler::BusConnect(parentMaterialAsset->GetId());
+            auto parentMaterialAssetResult = parentMaterialSourceData.CreateMaterialAssetFromSourceData(
+                parentMaterialAssetIdResult.GetValue(), parentMaterialFilePath, true, true);
+            if (!parentMaterialAssetResult)
+            {
+                AZ_Error("MaterialDocument", false, "Material parent asset could not be created from source data: '%s'.", parentMaterialFilePath.c_str());
+                return false;
+            }
+
+            parentMaterialAsset = parentMaterialAssetResult.GetValue();
+            parentPropertyValues = parentMaterialAsset->GetPropertyValues();
         }
 
         // Creating a material from a material asset will fail if a texture is referenced but not loaded 
@@ -777,14 +782,18 @@ namespace MaterialEditor
             return false;
         }
 
+        // Pipeline State Object changes are always allowed in the material editor because it only runs on developer systems
+        // where such changes are supported at runtime.
+        m_materialInstance->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
+
         // Populate the property map from a combination of source data and assets
         // Assets must still be used for now because they contain the final accumulated value after all other materials
         // in the hierarchy are applied
-        m_materialTypeSourceData.EnumerateProperties([this, &parentPropertyValues](const AZStd::string& groupNameId, const AZStd::string& propertyNameId, const auto& propertyDefinition) {
+        m_materialTypeSourceData.EnumerateProperties([this, &parentPropertyValues](const AZStd::string& groupName, const AZStd::string& propertyName, const auto& propertyDefinition) {
             AtomToolsFramework::DynamicPropertyConfig propertyConfig;
 
             // Assign id before conversion so it can be used in dynamic description
-            propertyConfig.m_id = MaterialPropertyId(groupNameId, propertyNameId).GetCStr();
+            propertyConfig.m_id = MaterialPropertyId(groupName, propertyName).GetCStr();
 
             const auto& propertyIndex = m_materialAsset->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyConfig.m_id);
             const bool propertyIndexInBounds = propertyIndex.IsValid() && propertyIndex.GetIndex() < m_materialAsset->GetPropertyValues().size();
@@ -796,8 +805,8 @@ namespace MaterialEditor
                 propertyConfig.m_showThumbnail = true;
                 propertyConfig.m_originalValue = AtomToolsFramework::ConvertToEditableType(m_materialAsset->GetPropertyValues()[propertyIndex.GetIndex()]);
                 propertyConfig.m_parentValue = AtomToolsFramework::ConvertToEditableType(parentPropertyValues[propertyIndex.GetIndex()]);
-                auto groupDefinition = m_materialTypeSourceData.FindGroup(groupNameId);
-                propertyConfig.m_groupName = groupDefinition ? groupDefinition->m_displayName : groupNameId;
+                auto groupDefinition = m_materialTypeSourceData.FindGroup(groupName);
+                propertyConfig.m_groupName = groupDefinition ? groupDefinition->m_displayName : groupName;
                 m_properties[propertyConfig.m_id] = AtomToolsFramework::DynamicProperty(propertyConfig);
             }
             return true;
@@ -806,7 +815,7 @@ namespace MaterialEditor
         // Populate the property group visibility map
         for (MaterialTypeSourceData::GroupDefinition& group : m_materialTypeSourceData.GetGroupDefinitionsInDisplayOrder())
         {
-            m_propertyGroupVisibility[AZ::Name{group.m_nameId}] = true;
+            m_propertyGroupVisibility[AZ::Name{group.m_name}] = true;
         }
 
         // Adding properties for material type and parent as part of making dynamic
@@ -818,7 +827,7 @@ namespace MaterialEditor
         AtomToolsFramework::DynamicPropertyConfig propertyConfig;
         propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Asset;
         propertyConfig.m_id = "overview.materialType";
-        propertyConfig.m_nameId = "materialType";
+        propertyConfig.m_name = "materialType";
         propertyConfig.m_displayName = "Material Type";
         propertyConfig.m_groupName = "Overview";
         propertyConfig.m_description = "The material type defines the layout, properties, default values, shader connections, and other "
@@ -833,7 +842,7 @@ namespace MaterialEditor
         propertyConfig = {};
         propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Asset;
         propertyConfig.m_id = "overview.parentMaterial";
-        propertyConfig.m_nameId = "parentMaterial";
+        propertyConfig.m_name = "parentMaterial";
         propertyConfig.m_displayName = "Parent Material";
         propertyConfig.m_groupName = "Overview";
         propertyConfig.m_description =
@@ -856,7 +865,7 @@ namespace MaterialEditor
             propertyConfig = {};
             propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::String;
             propertyConfig.m_id = MaterialPropertyId(UvGroupName, shaderInput).GetCStr();
-            propertyConfig.m_nameId = shaderInput;
+            propertyConfig.m_name = shaderInput;
             propertyConfig.m_displayName = shaderInput;
             propertyConfig.m_groupName = "UV Sets";
             propertyConfig.m_description = shaderInput;
@@ -911,15 +920,13 @@ namespace MaterialEditor
     void MaterialDocument::Clear()
     {
         AZ::TickBus::Handler::BusDisconnect();
-        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
 
         m_materialAsset = {};
         m_materialInstance = {};
         m_absolutePath.clear();
         m_relativePath.clear();
-        m_sourceAssetId = {};
-        m_dependentAssetIds.clear();
+        m_sourceDependencies.clear();
         m_saveTriggeredInternally = {};
         m_compilePending = {};
         m_properties.clear();

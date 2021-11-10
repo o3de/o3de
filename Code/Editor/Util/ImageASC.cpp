@@ -24,8 +24,7 @@ bool CImageASC::Save(const QString& fileName, const CFloatImage& image)
     uint32 height = image.GetHeight();
     float* pixels = image.GetData();
 
-    string fileHeader;
-    fileHeader.Format(
+    AZStd::string fileHeader = AZStd::string::format(
         // Number of columns and rows in the data
         "ncols %d\n"
         "nrows %d\n"
@@ -53,12 +52,12 @@ bool CImageASC::Save(const QString& fileName, const CFloatImage& image)
     }
 
     // First print the file header
-    fprintf(file, fileHeader.c_str());
+    fprintf(file, "%s", fileHeader.c_str());
 
     // Then print all the pixels.
-    for (int y = 0; y < height; y++)
+    for (uint32 y = 0; y < height; y++)
     {
-        for (int x = 0; x < width; x++)
+        for (uint32 x = 0; x < width; x++)
         {
             fprintf(file, "%.7f ", pixels[x + y * width]);
         }
@@ -100,7 +99,7 @@ bool CImageASC::Load(const QString& fileName, CFloatImage& image)
 
     // Break all of the values in the file apart into tokens.
 
-    char* nextToken = nullptr;
+    [[maybe_unused]] char* nextToken = nullptr;
     token = azstrtok(str, 0, seps, &nextToken);
 
     // ncols = grid width
@@ -133,7 +132,7 @@ bool CImageASC::Load(const QString& fileName, CFloatImage& image)
     token = azstrtok(nullptr, 0, seps, &nextToken);
     validData = validData && (azstricmp(token, "nodata_value") == 0);
     token = azstrtok(nullptr, 0, seps, &nextToken);
-    nodataValue = atof(token);
+    nodataValue = static_cast<float>(atof(token));
 
     if (!validData)
     {
@@ -158,7 +157,7 @@ bool CImageASC::Load(const QString& fileName, CFloatImage& image)
         if (token != nullptr)
         {
             // Negative heights aren't supported, clamp to 0.
-            pixelValue = max(0.0, atof(token));
+            pixelValue = max<float>(0.0f, static_cast<float>(atof(token)));
 
             // If this is a location we specifically don't have data for, set it to 0.
             if (pixelValue == nodataValue)

@@ -8,13 +8,13 @@
 
 MCORE_INLINE Matrix::Matrix(const Matrix& m)
 {
-    MCore::MemCopy(m16, m.m16, sizeof(Matrix));
+    MCore::MemCopy(m_m16, m.m_m16, sizeof(Matrix));
 }
 
 
 MCORE_INLINE void Matrix::operator = (const Matrix& right)
 {
-    MCore::MemCopy(m16, right.m16, sizeof(Matrix));
+    MCore::MemCopy(m_m16, right.m_m16, sizeof(Matrix));
 }
 
 
@@ -301,7 +301,7 @@ MCORE_INLINE Matrix& Matrix::operator *= (float value)
 {
     for (uint32 i = 0; i < 16; ++i)
     {
-        m16[i] *= value;
+        m_m16[i] *= value;
     }
 
     return *this;

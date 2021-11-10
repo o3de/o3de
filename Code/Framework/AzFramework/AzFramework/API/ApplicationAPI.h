@@ -18,6 +18,7 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/PlatformIncl.h>
 
 #include <AzFramework/CommandLine/CommandLine.h>
 
@@ -66,17 +67,8 @@ namespace AzFramework
         /// Make path relative to the provided root.
         virtual void MakePathRelative(AZStd::string& /*fullPath*/, const char* /*rootPath*/) {}
 
-        /// Gets the engine root path where the modules for the current engine are located.
-        virtual const char* GetEngineRoot() const { return nullptr; }
-
-        /// Retrieves the app root path for the application.
-        virtual const char* GetAppRoot() const { return nullptr; }
-
-#pragma push_macro("GetCommandLine")
-#undef GetCommandLine
         /// Get the Command Line arguments passed in.
         virtual const CommandLine* GetCommandLine() { return nullptr; }
-#pragma pop_macro("GetCommandLine")
 
         /// Get the Command Line arguments passed in. (Avoids collisions with platform specific macros.)
         virtual const CommandLine* GetApplicationCommandLine() { return nullptr; }

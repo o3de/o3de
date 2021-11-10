@@ -127,21 +127,21 @@ namespace MessagePopup
             switch (_buttons)
             {
             case EPopupButtons::EPopupButtons_NoButtons:
-                canvasEntityId = gEnv->pLyShine->LoadCanvas("@assets@/ui/canvases/defaultmessagepopup.uicanvas");
+                canvasEntityId = gEnv->pLyShine->LoadCanvas("@products@/ui/canvases/defaultmessagepopup.uicanvas");
                 break;
             case EPopupButtons::EPopupButtons_Confirm:
-                canvasEntityId = gEnv->pLyShine->LoadCanvas("@assets@/ui/canvases/defaultmessagepopup_confirm.uicanvas");
+                canvasEntityId = gEnv->pLyShine->LoadCanvas("@products@/ui/canvases/defaultmessagepopup_confirm.uicanvas");
                 isNavigationSupported = true;
                 break;
             case EPopupButtons::EPopupButtons_YesNo:
-                canvasEntityId = gEnv->pLyShine->LoadCanvas("@assets@/ui/canvases/defaultmessagepopup_yesno.uicanvas");
+                canvasEntityId = gEnv->pLyShine->LoadCanvas("@products@/ui/canvases/defaultmessagepopup_yesno.uicanvas");
                 isNavigationSupported = true;
                 break;
             }
         }
         else if (_kind == EPopupKind_Toaster)
         {
-            canvasEntityId = gEnv->pLyShine->LoadCanvas("@assets@/ui/canvases/toaster.uicanvas");
+            canvasEntityId = gEnv->pLyShine->LoadCanvas("@products@/ui/canvases/toaster.uicanvas");
         }
 
         if (canvasEntityId.IsValid())

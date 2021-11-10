@@ -63,47 +63,4 @@ namespace PhysX
         AzPhysics::SimulatedBodyEvents::OnTriggerExit::Handler m_onTriggerExitHandler;
     };
 
-
-    //! Dummy component emulating presence of terrain by connecting to TerrainDataRequestBus
-    //! PhysX Terrain Component skips activation if there's no terrain present,
-    //! so in order to test it we also add the DummyTestTerrainComponent.
-    class DummyTestTerrainComponent
-        : public AZ::Component
-        , private AzFramework::Terrain::TerrainDataRequestBus::Handler
-    {
-    public:
-        AZ_COMPONENT(DummyTestTerrainComponent, "{EE4ECA23-9C27-4D5D-9C6F-271A19C0333E}");
-        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
-        {
-            provided.push_back(AZ_CRC_CE("TerrainService"));
-        }
-
-    private:
-        ////////////////////////////////////////////////////////////////////////
-        // AZ::Component interface implementation
-        void Activate() override
-        {
-            AzFramework::Terrain::TerrainDataRequestBus::Handler::BusConnect();
-        }
-        void Deactivate() override
-        {
-            AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
-        }
-        ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
-        // TerrainDataRequestBus interface dummy implementation
-        AZ::Vector2 GetTerrainGridResolution() const override { return {}; }
-        AZ::Aabb GetTerrainAabb() const override { return {}; }
-        float GetHeight(AZ::Vector3, Sampler, bool*) const override { return {}; }
-        float GetHeightFromFloats(float, float, Sampler, bool*) const override { return {}; }
-        AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeight(AZ::Vector3, Sampler, bool*) const override { return {}; }
-        AzFramework::SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(float, float, Sampler, bool*) const override { return {}; }
-        const char* GetMaxSurfaceName(AZ::Vector3, Sampler, bool*) const override { return {}; }
-        bool GetIsHoleFromFloats(float, float, Sampler) const override { return {}; }
-        AZ::Vector3 GetNormal(AZ::Vector3, Sampler, bool*) const override { return {}; }
-        AZ::Vector3 GetNormalFromFloats(float, float, Sampler, bool*) const override { return {}; }
-        ////////////////////////////////////////////////////////////////////////
-    };
-
 } // namespace PhysX

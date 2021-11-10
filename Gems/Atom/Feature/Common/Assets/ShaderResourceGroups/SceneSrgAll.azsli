@@ -11,6 +11,6 @@
 // Please review README.md to understand how this file is used in SceneSrg.azsrg generation 
 
 #ifdef AZ_COLLECTING_PARTIAL_SRGS
-#include <Atom/Feature/Common/Assets/ShaderResourceGroups/SceneTimeSrg.azsli>
+#include <Atom/RPI/ShaderResourceGroups/DefaultSceneSrg.azsli>
 #include <Atom/Feature/Common/Assets/ShaderResourceGroups/SceneSrg.azsli>
 #endif

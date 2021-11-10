@@ -90,7 +90,7 @@ public:
     {
     }
 
-    ~CarrierCallbacksHandler()
+    ~CarrierCallbacksHandler() override
     {
         CarrierEventBus::Handler::BusDisconnect();
     }
@@ -193,7 +193,7 @@ namespace UnitTest
             CarrierCallbacksHandler clientCB, serverCB;
             TestCarrierDesc serverCarrierDesc, clientCarrierDesc;
 
-            string str("Hello this is a carrier test!");
+            AZStd::string str("Hello this is a carrier test!");
 
             const char* targetAddress = "127.0.0.1";
 
@@ -333,7 +333,7 @@ namespace UnitTest
     };
 
     template<class SocketProvider = SocketDriverProvider>
-    class Integ_CarrierAsyncHandshakeTestTemplate
+    class CarrierAsyncHandshakeTestTemplate
         : public GridMateMPTestFixture
         , protected SocketProvider
     {
@@ -377,7 +377,7 @@ namespace UnitTest
             CarrierCallbacksHandler clientCB, serverCB;
             TestCarrierDesc serverCarrierDesc, clientCarrierDesc;
 
-            string str("Hello this is a carrier test!");
+            AZStd::string str("Hello this is a carrier test!");
             clientCarrierDesc.m_driver = SocketProvider::CreateDriverForJoin();
             serverCarrierDesc.m_driver = SocketProvider::CreateDriverForHost();
 
@@ -469,7 +469,7 @@ namespace UnitTest
             CarrierCallbacksHandler clientCB, serverCB;
             TestCarrierDesc serverCarrierDesc, clientCarrierDesc;
 
-            string str("Hello this is a carrier stress test!");
+            AZStd::string str("Hello this is a carrier stress test!");
 
             clientCarrierDesc.m_enableDisconnectDetection = false;
             serverCarrierDesc.m_enableDisconnectDetection = false;
@@ -761,7 +761,7 @@ namespace UnitTest
     };
 
     template<class SocketProvider = SocketDriverProvider>
-    class Integ_CarrierDisconnectDetectionTestTemplate
+    class CarrierDisconnectDetectionTestTemplate
         : public GridMateMPTestFixture
         , protected SocketProvider
     {
@@ -846,7 +846,7 @@ namespace UnitTest
      * Sends reliable messages across different channels to each other
      */
     template<class SocketProvider = SocketDriverProvider>
-    class Integ_CarrierMultiChannelTestTemplate
+    class CarrierMultiChannelTestTemplate
         : public GridMateMPTestFixture
         , protected SocketProvider
     {
@@ -950,7 +950,7 @@ namespace UnitTest
     * Stress tests multiple simultaneous Carriers
     */
     template<class SocketProvider = SocketDriverProvider>
-    class Integ_CarrierMultiStressTestTemplate
+    class CarrierMultiStressTestTemplate
         : public GridMateMPTestFixture
         , protected SocketProvider
     {
@@ -977,7 +977,7 @@ namespace UnitTest
     public:
         void run()
         {
-            AZ_TracePrintf("GridMate", "Integ_CarrierMultiStressTest\n\n");
+            AZ_TracePrintf("GridMate", "CarrierMultiStressTest\n\n");
 
             // initialize transport
             const int k_numChannels = 1;
@@ -1108,7 +1108,7 @@ namespace UnitTest
 
     /*** Congestion control back pressure test */
     template<class SocketProvider = SocketDriverProvider>
-    class Integ_CarrierBackpressureTestTemplate
+    class CarrierBackpressureTestTemplate
         : public GridMateMPTestFixture
         , protected SocketProvider
         , public CarrierEventBus::Handler
@@ -1380,7 +1380,7 @@ namespace UnitTest
     };
 
     template<class SocketProvider = SocketDriverProvider>
-    class Integ_CarrierACKTestTemplate
+    class CarrierACKTestTemplate
         : public GridMateMPTestFixture
         , protected SocketProvider
     {
@@ -1401,7 +1401,7 @@ namespace UnitTest
             CarrierCallbacksHandler clientCB, serverCB;
             CarrierDesc serverCarrierDesc, clientCarrierDesc;
 
-            string str("Hello this is a carrier test!");
+            AZStd::string str("Hello this is a carrier test!");
 
             const char* targetAddress = "127.0.0.1";
 
@@ -1544,13 +1544,13 @@ namespace UnitTest
     //Create specific tests
     using CarrierBasicTest = CarrierBasicTestTemplate<>;
     using CarrierTest = CarrierTestTemplate<>;
-    using Integ_CarrierDisconnectDetectionTest = Integ_CarrierDisconnectDetectionTestTemplate<>;
-    using Integ_CarrierAsyncHandshakeTest = Integ_CarrierAsyncHandshakeTestTemplate<>;
-    using Integ_CarrierStressTest = CarrierStressTestTemplate<>;
-    using Integ_CarrierMultiChannelTest = Integ_CarrierMultiChannelTestTemplate<>;
-    using Integ_CarrierMultiStressTest = Integ_CarrierMultiStressTestTemplate<>;
-    using Integ_CarrierBackpressureTest = Integ_CarrierBackpressureTestTemplate<>;
-    using Integ_CarrierACKTest = Integ_CarrierACKTestTemplate<>;
+    using DISABLED_CarrierDisconnectDetectionTest = CarrierDisconnectDetectionTestTemplate<>;
+    using DISABLED_CarrierAsyncHandshakeTest = CarrierAsyncHandshakeTestTemplate<>;
+    using DISABLED_CarrierStressTest = CarrierStressTestTemplate<>;
+    using DISABLED_CarrierMultiChannelTest = CarrierMultiChannelTestTemplate<>;
+    using DISABLED_CarrierMultiStressTest = CarrierMultiStressTestTemplate<>;
+    using DISABLED_CarrierBackpressureTest = CarrierBackpressureTestTemplate<>;
+    using DISABLED_CarrierACKTest = CarrierACKTestTemplate<>;
 
 #if AZ_TRAIT_GRIDMATE_TEST_WITH_SECURE_SOCKET_DRIVER
 
@@ -1658,20 +1658,20 @@ namespace UnitTest
     using SecureProviderBadHost = SecureDriverProvider<SecureSocketDriver, SecureSocketHandshakeDrop<false>>;
     using SecureProviderBadBoth = SecureDriverProvider<SecureSocketHandshakeDrop<true>, SecureSocketHandshakeDrop<false>>;
 
-    using Integ_CarrierSecureSocketHandshakeTestClient = CarrierBasicTestTemplate<SecureProviderBadClient, 200>;
-    using Integ_CarrierSecureSocketHandshakeTestHost = CarrierBasicTestTemplate<SecureProviderBadHost, 200>;
-    using Integ_CarrierSecureSocketHandshakeTestBoth = CarrierBasicTestTemplate<SecureProviderBadBoth, 200>;
+    using DISABLED_CarrierSecureSocketHandshakeTestClient = CarrierBasicTestTemplate<SecureProviderBadClient, 200>;
+    using DISABLED_CarrierSecureSocketHandshakeTestHost = CarrierBasicTestTemplate<SecureProviderBadHost, 200>;
+    using DISABLED_CarrierSecureSocketHandshakeTestBoth = CarrierBasicTestTemplate<SecureProviderBadBoth, 200>;
 
     //Create secure socket variants of tests
     using CarrierBasicTestSecure = CarrierBasicTestTemplate<SecureDriverProvider<>>;
     using CarrierTestSecure = CarrierTestTemplate<SecureDriverProvider<>>;
-    using Integ_CarrierDisconnectDetectionTestSecure = Integ_CarrierDisconnectDetectionTestTemplate<SecureDriverProvider<>>;
-    using Integ_CarrierAsyncHandshakeTestSecure = Integ_CarrierAsyncHandshakeTestTemplate<SecureDriverProvider<>>;
-    using Integ_CarrierStressTestSecure = CarrierStressTestTemplate<SecureDriverProvider<>>;
-    using Integ_CarrierMultiChannelTestSecure = Integ_CarrierMultiChannelTestTemplate<SecureDriverProvider<>>;
-    using Integ_CarrierMultiStressTestSecure = Integ_CarrierMultiStressTestTemplate<SecureDriverProvider<>>;
-    using Integ_CarrierBackpressureTestSecure = Integ_CarrierBackpressureTestTemplate<SecureDriverProvider<>>;
-    using Integ_CarrierACKTestSecure = Integ_CarrierACKTestTemplate<SecureDriverProvider<>>;
+    using DISABLED_CarrierDisconnectDetectionTestSecure = CarrierDisconnectDetectionTestTemplate<SecureDriverProvider<>>;
+    using DISABLED_CarrierAsyncHandshakeTestSecure = CarrierAsyncHandshakeTestTemplate<SecureDriverProvider<>>;
+    using DISABLED_CarrierStressTestSecure = CarrierStressTestTemplate<SecureDriverProvider<>>;
+    using DISABLED_CarrierMultiChannelTestSecure = CarrierMultiChannelTestTemplate<SecureDriverProvider<>>;
+    using DISABLED_CarrierMultiStressTestSecure = CarrierMultiStressTestTemplate<SecureDriverProvider<>>;
+    using DISABLED_CarrierBackpressureTestSecure = CarrierBackpressureTestTemplate<SecureDriverProvider<>>;
+    using DISABLED_CarrierACKTestSecure = CarrierACKTestTemplate<SecureDriverProvider<>>;
 
 #endif
 }
@@ -1707,7 +1707,7 @@ TEST_F(GridMateCarrierTestFixture, Test_GetSocketErrorString)
     static constexpr char posixErrorWouldBlockPosixErrStr[] = "Resource temporarily unavailable";
     azsnprintf(expectedBuffer.data(), expectedBuffer.size()-1 , "%s", posixErrorWouldBlockPosixErrStr);
 #else
-    azsnprintf(expectedBuffer.data(), expectedBuffer.size()-1 , "%d", AZ_EWOULDBLOCK);
+    azsnprintf(expectedBuffer.data(), expectedBuffer.size()-1 , "%ld", AZ_EWOULDBLOCK);
 #endif // !AZ_TRAIT_USE_POSIX_STRERROR_R
     EXPECT_STREQ(expectedBuffer.data(), socketErrorString);
     EXPECT_STREQ(expectedBuffer.data(), buffer.data());
@@ -1720,30 +1720,30 @@ GM_TEST_SUITE(CarrierSuite)
 GM_TEST(CarrierBasicTest)
 GM_TEST(CarrierTest)
 #endif //AZ_TRAIT_GRIDMATE_UNIT_TEST_DISABLE_CARRIER_SESSION_TESTS
-GM_TEST(Integ_CarrierAsyncHandshakeTest)
+GM_TEST(DISABLED_CarrierAsyncHandshakeTest)
 #if !defined(AZ_DEBUG_BUILD) // this test is a little slow for debug
-GM_TEST(Integ_CarrierStressTest)
-GM_TEST(Integ_CarrierMultiStressTest)
+GM_TEST(DISABLED_CarrierStressTest)
+GM_TEST(DISABLED_CarrierMultiStressTest)
 #endif
-GM_TEST(Integ_CarrierMultiChannelTest)
-GM_TEST(Integ_CarrierBackpressureTest)
-GM_TEST(Integ_CarrierACKTest)
+GM_TEST(DISABLED_CarrierMultiChannelTest)
+GM_TEST(DISABLED_CarrierBackpressureTest)
+GM_TEST(DISABLED_CarrierACKTest)
 
 
 #if AZ_TRAIT_GRIDMATE_TEST_WITH_SECURE_SOCKET_DRIVER
-GM_TEST(CarrierBasicTestSecure)
-GM_TEST(Integ_CarrierSecureSocketHandshakeTestClient)
-GM_TEST(Integ_CarrierSecureSocketHandshakeTestHost)
-GM_TEST(Integ_CarrierSecureSocketHandshakeTestBoth)
+GM_TEST(DISABLED_CarrierBasicTestSecure)
+GM_TEST(DISABLED_CarrierSecureSocketHandshakeTestClient)
+GM_TEST(DISABLED_CarrierSecureSocketHandshakeTestHost)
+GM_TEST(DISABLED_CarrierSecureSocketHandshakeTestBoth)
 GM_TEST(CarrierTestSecure)
-GM_TEST(Integ_CarrierAsyncHandshakeTestSecure)
+GM_TEST(DISABLED_CarrierAsyncHandshakeTestSecure)
 #if !defined(AZ_DEBUG_BUILD) // this test is a little slow for debug
-GM_TEST(Integ_CarrierStressTestSecure)
-GM_TEST(Integ_CarrierMultiStressTestSecure)
+GM_TEST(DISABLED_CarrierStressTestSecure)
+GM_TEST(DISABLED_CarrierMultiStressTestSecure)
 #endif
-GM_TEST(Integ_CarrierMultiChannelTestSecure)
-GM_TEST(Integ_CarrierBackpressureTestSecure)
-GM_TEST(Integ_CarrierACKTestSecure)
+GM_TEST(DISABLED_CarrierMultiChannelTestSecure)
+GM_TEST(DISABLED_CarrierBackpressureTestSecure)
+GM_TEST(DISABLED_CarrierACKTestSecure)
 
 #endif
 

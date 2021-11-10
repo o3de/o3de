@@ -22,6 +22,7 @@ namespace AzFramework
                 ->Field("terminationTime", &SessionConfig::m_terminationTime)
                 ->Field("creatorId", &SessionConfig::m_creatorId)
                 ->Field("sessionProperties", &SessionConfig::m_sessionProperties)
+                ->Field("matchmakingData", &SessionConfig::m_matchmakingData)
                 ->Field("sessionId", &SessionConfig::m_sessionId)
                 ->Field("sessionName", &SessionConfig::m_sessionName)
                 ->Field("dnsName", &SessionConfig::m_dnsName)
@@ -46,6 +47,8 @@ namespace AzFramework
                         "CreatorId", "A unique identifier for a player or entity creating the session.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzFramework::SessionConfig::m_sessionProperties,
                         "SessionProperties", "A collection of custom properties for a session.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AzFramework::SessionConfig::m_matchmakingData,
+                        "MatchmakingData", "The matchmaking process information that was used to create the session.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzFramework::SessionConfig::m_sessionId,
                         "SessionId", "A unique identifier for the session.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &AzFramework::SessionConfig::m_sessionName,

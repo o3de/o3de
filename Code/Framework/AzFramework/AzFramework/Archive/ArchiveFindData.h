@@ -36,56 +36,72 @@ namespace AZ::IO
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::IO::FileDesc::Attribute);
 
+    inline constexpr size_t ArchiveFilenameMaxLength = 256;
+    using ArchiveFileString = AZStd::fixed_string<ArchiveFilenameMaxLength>;
+
     class FindData;
+    //! This is not really an iterator, but a handle
+    //! that extends ownership of any found filenames from an archive file or the file system
     struct ArchiveFileIterator
     {
         ArchiveFileIterator() = default;
-        ArchiveFileIterator(FindData* findData, AZStd::string_view filename, const FileDesc& fileDesc);
+        explicit ArchiveFileIterator(FindData* findData);
 
         ArchiveFileIterator operator++();
         ArchiveFileIterator operator++(int);
 
-        bool operator==(const AZ::IO::ArchiveFileIterator& rhs) const;
-
         explicit operator bool() const;
 
-        size_t GetHash() const;
-
-        inline static constexpr size_t FilenameMaxLength = 256;
-        AZStd::fixed_string<FilenameMaxLength> m_filename;
+        ArchiveFileString m_filename;
         FileDesc m_fileDesc;
-        AZStd::intrusive_ptr<FindData> m_findData{};
 
     private:
         friend class FindData;
+        friend class Archive;
+        AZStd::intrusive_ptr<FindData> m_findData;
         bool m_lastFetchValid{};
     };
 
-    struct ArchiveFileIteratorHash
-    {
-        size_t operator()(const AZ::IO::ArchiveFileIterator& iter) const;
-    };
 
-    struct AZStdStringLessCaseInsensitive
-    {
-        bool operator()(AZStd::string_view left, AZStd::string_view right) const;
-
-        using is_transparent = void;
-    };
     class FindData
         : public AZStd::intrusive_base
     {
     public:
         AZ_CLASS_ALLOCATOR(FindData, AZ::SystemAllocator, 0);
         FindData() = default;
-        AZ::IO::ArchiveFileIterator Fetch();
+        ArchiveFileIterator Fetch();
         void Scan(IArchive* archive, AZStd::string_view path, bool bAllowUseFS = false, bool bScanZips = true);
 
     protected:
         void ScanFS(IArchive* archive, AZStd::string_view path);
+        // Populates the FileSet with files within the that match the path pattern that is
+        // if it refers to a file within a bound archive root or returns the archive root
+        // path if the path pattern matches it.
         void ScanZips(IArchive* archive, AZStd::string_view path);
 
-        using FileSet = AZStd::unordered_set<ArchiveFileIterator, ArchiveFileIteratorHash>;
+        class ArchiveFile
+        {
+        public:
+            friend class FindData;
+
+            ArchiveFile();
+            ArchiveFile(AZStd::string_view filename, const FileDesc& fileDesc);
+
+            size_t GetHash() const;
+            bool operator==(const ArchiveFile& rhs) const;
+
+        private:
+            ArchiveFileString m_filename;
+            FileDesc m_fileDesc;
+        };
+
+        struct ArchiveFileHash
+        {
+            size_t operator()(const ArchiveFile& archiveFile) const;
+        };
+
+        using FileSet = AZStd::unordered_set<ArchiveFile, ArchiveFileHash>;
         FileSet m_fileSet;
     };
+
 }

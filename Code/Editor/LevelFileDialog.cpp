@@ -32,22 +32,6 @@ static const char lastLoadPathFilename[] = "lastLoadPath.preset";
 // Folder in which levels are stored
 static const char kLevelsFolder[] = "Levels";
 
-// List of folder names that are used to detect a level folder
-static const char* kLevelFolderNames[] =
-{
-    "Layers",
-    "Minimap",
-    "LevelData"
-};
-
-// List of files that are used to detect a level folder
-static const char* kLevelFileNames[] =
-{
-    "level.pak",
-    "filelist.xml",
-    "levelshadercache.pak",
-};
-
 CLevelFileDialog::CLevelFileDialog(bool openDialog, QWidget* parent)
     : QDialog(parent)
     , m_bOpenDialog(openDialog)
@@ -98,7 +82,7 @@ CLevelFileDialog::CLevelFileDialog(bool openDialog, QWidget* parent)
         connect(ui->nameLineEdit, &QLineEdit::textChanged, this, &CLevelFileDialog::OnNameChanged);
     }
 
-    // reject invalid file names (see CryStringUtils::IsValidFileName)
+    // reject invalid file names
     ui->nameLineEdit->setValidator(new QRegExpValidator(QRegExp("^[a-zA-Z0-9_\\-./]*$"), ui->nameLineEdit));
 
     ReloadTree();
@@ -315,7 +299,7 @@ void CLevelFileDialog::OnNewFolder()
             const QString newFolderName = inputDlg.textValue();
             const QString newFolderPath = parentFullPath + "/" + newFolderName;
 
-            if (!CryStringUtils::IsValidFileName(newFolderName.toUtf8().data()))
+            if (!AZ::StringFunc::Path::IsValid(newFolderName.toUtf8().data()))
             {
                 QMessageBox box(this);
                 box.setText(tr("Please enter a single, valid folder name(standard English alphanumeric characters only)"));
@@ -416,7 +400,7 @@ bool CLevelFileDialog::ValidateSaveLevelPath(QString& errorMessage) const
     const QString enteredPath = GetEnteredPath();
     const QString levelPath = GetLevelPath();
 
-    if (!CryStringUtils::IsValidFileName(Path::GetFileName(levelPath).toUtf8().data()))
+    if (!AZ::StringFunc::Path::IsValid(Path::GetFileName(levelPath).toUtf8().data()))
     {
         errorMessage = tr("Please enter a valid level name (standard English alphanumeric characters only)");
         return false;
@@ -477,7 +461,7 @@ bool CLevelFileDialog::ValidateLevelPath(const QString& levelPath) const
         QString currentPath = (Path::GetEditingGameDataFolder() + "/" + kLevelsFolder).c_str();
         for (size_t i = 0; i < splittedPath.size() - 1; ++i)
         {
-            currentPath += "/" + splittedPath[i];
+            currentPath += "/" + splittedPath[static_cast<int>(i)];
 
             if (CFileUtil::FileExists(currentPath) || CheckLevelFolder(currentPath))
             {

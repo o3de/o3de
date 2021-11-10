@@ -73,8 +73,8 @@ function(ly_copy source_file target_directory)
                 return()
             endif()
 
-            # fixup the destination so it ends up in Contents/Plugins
-            string(REGEX REPLACE "(.*\\.app/Contents)/MacOS" "\\1/plugins" target_directory "${target_directory}")
+            # fixup the destination so it ends up in Contents/PlugIns
+            string(REGEX REPLACE "(.*\\.app/Contents)/MacOS" "\\1/PlugIns" target_directory "${target_directory}")
 
             set(local_plugin_dirs ${plugin_dirs})
             list(APPEND local_plugin_dirs "${target_directory}")
@@ -211,7 +211,6 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
         if(remove_file_list)
             file(REMOVE_RECURSE ${remove_file_list})
         endif()
-
 
     endif()
 

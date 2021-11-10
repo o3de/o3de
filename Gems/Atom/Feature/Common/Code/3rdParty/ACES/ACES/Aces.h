@@ -124,18 +124,19 @@ namespace AZ
             NumColorConvertionMatrixTypes
         };
 
-        enum ShaperType
+        enum class ShaperType  : uint32_t
         {
             Linear = 0,
             Log2 = 1,
+            PqSmpteSt2084 = 2,
             NumShaperTypes
         };
 
         struct ShaperParams
         {
-            ShaperType type = ShaperType::Linear;
-            float bias = 0.f;
-            float scale = 1.f;
+            ShaperType m_type = ShaperType::Linear;
+            float m_bias = 0.0f;
+            float m_scale = 1.0f;
         };
 
         enum class DisplayMapperOperationType : uint32_t
@@ -151,10 +152,14 @@ namespace AZ
         enum class ShaperPresetType
         {
             None = 0,
-            Log2_48_nits,
-            Log2_1000_nits,
-            Log2_2000_nits,
-            Log2_4000_nits
+            LinearCustomRange,
+            Log2_48Nits,
+            Log2_1000Nits,
+            Log2_2000Nits,
+            Log2_4000Nits,
+            Log2CustomRange,
+            PqSmpteSt2084,
+            NumShaperTypes
         };
 
         enum class ToneMapperType
@@ -171,6 +176,7 @@ namespace AZ
         };
 
         SegmentedSplineParamsC9 GetAcesODTParameters(OutputDeviceTransformType odtType);
+        ShaperParams GetLog2ShaperParameters(float minStops, float maxStops);
         ShaperParams GetAcesShaperParameters(OutputDeviceTransformType odtType);
         Matrix3x3 GetColorConvertionMatrix(ColorConvertionMatrixType type);
 

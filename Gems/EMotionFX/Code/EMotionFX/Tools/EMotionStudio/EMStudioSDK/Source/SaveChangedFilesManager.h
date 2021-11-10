@@ -40,11 +40,11 @@ namespace EMStudio
 
             ObjectPointer();
 
-            EMotionFX::Actor *      mActor;
-            EMotionFX::Motion*      mMotion;
-            EMotionFX::MotionSet*   mMotionSet;
-            EMotionFX::AnimGraph*   mAnimGraph;
-            Workspace*              mWorkspace;
+            EMotionFX::Actor *      m_actor;
+            EMotionFX::Motion*      m_motion;
+            EMotionFX::MotionSet*   m_motionSet;
+            EMotionFX::AnimGraph*   m_animGraph;
+            Workspace*              m_workspace;
         };
 
         SaveDirtyFilesCallback();
@@ -80,8 +80,8 @@ namespace EMStudio
         // dirty files callbacks
         void AddCallback(SaveDirtyFilesCallback* callback);
         void RemoveCallback(SaveDirtyFilesCallback* callback, bool delFromMem = true);
-        SaveDirtyFilesCallback* GetCallback(size_t index) const     { return mSaveDirtyFilesCallbacks[index]; }
-        size_t GetNumCallbacks() const                              { return mSaveDirtyFilesCallbacks.size(); }
+        SaveDirtyFilesCallback* GetCallback(size_t index) const     { return m_saveDirtyFilesCallbacks[index]; }
+        size_t GetNumCallbacks() const                              { return m_saveDirtyFilesCallbacks.size(); }
 
         int SaveDirtyFiles(uint32 type = MCORE_INVALIDINDEX32, uint32 filter = MCORE_INVALIDINDEX32,
                 QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Ok | QDialogButtonBox::Discard | QDialogButtonBox::Cancel
@@ -94,7 +94,7 @@ namespace EMStudio
         void SaveSettings();
 
     private:
-        AZStd::vector<SaveDirtyFilesCallback*>  mSaveDirtyFilesCallbacks;
+        AZStd::vector<SaveDirtyFilesCallback*>  m_saveDirtyFilesCallbacks;
 
         int SaveDirtyFiles(const AZStd::vector<SaveDirtyFilesCallback*>& neededSaveDirtyFilesCallbacks, QDialogButtonBox::StandardButtons buttons);
     };
@@ -115,18 +115,18 @@ namespace EMStudio
         );
         virtual ~SaveDirtySettingsWindow();
 
-        bool GetSaveDirtyFiles()            { return mSaveDirtyFiles; }
+        bool GetSaveDirtyFiles()            { return m_saveDirtyFiles; }
         void GetSelectedFileNames(AZStd::vector<AZStd::string>* outFileNames, AZStd::vector<SaveDirtyFilesCallback::ObjectPointer>* outObjects);
 
     public slots:
-        void OnSaveButton()                 { mSaveDirtyFiles = true;   emit accept(); }
-        void OnSkipSavingButton()           { mSaveDirtyFiles = false;  emit accept(); }
-        void OnCancelButton()               { mSaveDirtyFiles = false;  emit reject(); }
+        void OnSaveButton()                 { m_saveDirtyFiles = true;   emit accept(); }
+        void OnSkipSavingButton()           { m_saveDirtyFiles = false;  emit accept(); }
+        void OnCancelButton()               { m_saveDirtyFiles = false;  emit reject(); }
 
     private:
-        QTableWidget*                                           mTableWidget;
-        bool                                                    mSaveDirtyFiles;
-        AZStd::vector<AZStd::string>                            mFileNames;
-        AZStd::vector<SaveDirtyFilesCallback::ObjectPointer>    mObjects;
+        QTableWidget*                                           m_tableWidget;
+        bool                                                    m_saveDirtyFiles;
+        AZStd::vector<AZStd::string>                            m_fileNames;
+        AZStd::vector<SaveDirtyFilesCallback::ObjectPointer>    m_objects;
     };
 } // namespace EMStudio

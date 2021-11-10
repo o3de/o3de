@@ -313,7 +313,7 @@ namespace UnitTest
             FillSpawnable(NumEntities);
             CreateEntityReferences(refScheme);
 
-            auto callback = [this, refScheme, NumEntities]
+            auto callback = [this, refScheme]
                 (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
             {
                 ValidateEntityReferences(refScheme, NumEntities, entities);
@@ -346,7 +346,7 @@ namespace UnitTest
             FillSpawnable(NumEntities);
             CreateEntityReferences(refScheme);
 
-            auto callback = [this, refScheme, NumEntities]
+            auto callback = [this, refScheme]
                 (AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
             {
                 ValidateEntityReferences(refScheme, NumEntities, entities);
@@ -569,8 +569,11 @@ namespace UnitTest
         FillSpawnable(NumEntities);
         CreateEntityReferences(refScheme);
 
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunused-lambda-capture") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                 // capture. Newer versions issue unused warning
         auto callback =
             [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+        AZ_POP_DISABLE_WARNING
         {
             ValidateEntityReferences(refScheme, NumEntities, entities);
         };
@@ -589,8 +592,11 @@ namespace UnitTest
         FillSpawnable(NumEntities);
         CreateEntityReferences(refScheme);
 
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunused-lambda-capture") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                 // capture. Newer versions issue unused warning
         auto callback =
             [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+        AZ_POP_DISABLE_WARNING
         {
             ValidateEntityReferences(refScheme, NumEntities, entities);
         };
@@ -617,7 +623,7 @@ namespace UnitTest
         CreateEntityReferences(refScheme);
 
         auto callback =
-            [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+            [](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             size_t numElements = entities.size();
 
@@ -671,7 +677,7 @@ namespace UnitTest
         CreateEntityReferences(refScheme);
 
         auto callback =
-            [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+            [](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
         {
             size_t numElements = entities.size();
 
@@ -716,8 +722,11 @@ namespace UnitTest
         FillSpawnable(NumEntities);
         CreateEntityReferences(refScheme);
 
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunused-lambda-capture") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                 // capture. Newer versions issue unused warning
         auto callback =
             [this, refScheme, NumEntities](AzFramework::EntitySpawnTicket::Id, AzFramework::SpawnableConstEntityContainerView entities)
+        AZ_POP_DISABLE_WARNING
         {
             ValidateEntityReferences(refScheme, NumEntities, entities);
         };

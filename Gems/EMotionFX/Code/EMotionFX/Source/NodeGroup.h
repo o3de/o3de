@@ -11,8 +11,8 @@
 // include required files
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
-#include <MCore/Source/SmallArray.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX
@@ -34,7 +34,7 @@ namespace EMotionFX
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
-        NodeGroup(const AZStd::string& groupName = {}, uint16 numNodes = 0, bool enabledOnDefault = true);
+        NodeGroup(const AZStd::string& groupName = {}, size_t numNodes = 0, bool enabledOnDefault = true);
         NodeGroup(const NodeGroup& aOther);
         NodeGroup& operator=(const NodeGroup& aOther);
 
@@ -61,13 +61,13 @@ namespace EMotionFX
          * This will resize the array of node indices. Don't forget to initialize the node values after increasing the number of nodes though.
          * @param numNodes The number of nodes that are inside this group.
          */
-        void SetNumNodes(const uint16 numNodes);
+        void SetNumNodes(size_t numNodes);
 
         /**
          * Get the number of nodes that remain inside this group.
          * @result The number of nodes inside this group.
          */
-        uint16 GetNumNodes() const;
+        size_t GetNumNodes() const;
 
         /**
          * Set the value of a given node.
@@ -75,14 +75,14 @@ namespace EMotionFX
          * @param nodeIndex The value for the given node. This is the node index which points inside the Actor object where this group will belong to.
          *                  To get access to the actual node object use Actor::GetNode( nodeIndex ).
          */
-        void SetNode(uint16 index, uint16 nodeIndex);
+        void SetNode(size_t index, uint16 nodeIndex);
 
         /**
          * Get the node index for a given node inside the group.
          * @param index The node number inside this group, which must be in range of [0..GetNumNodes()-1].
          * @result The node number, which points inside the Actor object. Use Actor::GetNode( returnValue ) to get access to the node information.
          */
-        uint16 GetNode(uint16 index);
+        uint16 GetNode(size_t index) const;
 
         /**
          * Enable all nodes that remain inside this group, for a given actor instance.
@@ -127,13 +127,13 @@ namespace EMotionFX
          * @param index The node index in the group. So for example an index value of 5 will remove the sixth node from the group.
          *              The index value must be in range of [0..GetNumNodes() - 1].
          */
-        void RemoveNodeByGroupIndex(uint16 index);
+        void RemoveNodeByGroupIndex(size_t index);
 
         /**
          * Get direct access to the array of node indices that are part of this group.
          * @result A reference to the array of nodes inside this group. Please use this with care.
          */
-        MCore::SmallArray<uint16>& GetNodeArray();
+        AZStd::vector<uint16>& GetNodeArray();
 
         /**
          * Check whether this group is enabled after actor instance creation time.
@@ -154,8 +154,8 @@ namespace EMotionFX
         void SetIsEnabledOnDefault(bool enabledOnDefault);
 
     private:
-        AZStd::string               mName;              /**< The name of the group. */
-        MCore::SmallArray<uint16>   mNodes;             /**< The node index numbers that are inside this group. */
-        bool                        mEnabledOnDefault;  /**< Specifies whether this group is enabled on default (true) or disabled (false). With on default we mean after directly after the actor instance using this group has been created. */
+        AZStd::string               m_name;              /**< The name of the group. */
+        AZStd::vector<uint16>       m_nodes;             /**< The node index numbers that are inside this group. */
+        bool                        m_enabledOnDefault;  /**< Specifies whether this group is enabled on default (true) or disabled (false). With on default we mean after directly after the actor instance using this group has been created. */
     };
 }   // namespace EMotionFX

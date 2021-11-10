@@ -130,11 +130,13 @@ namespace AzToolsFramework
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_localAngularManipulators.size(); ++manipulatorIndex)
         {
             m_localAngularManipulators[manipulatorIndex]->SetView(CreateManipulatorViewCircle(
-                *m_localAngularManipulators[manipulatorIndex], colors[manipulatorIndex], radius, 0.05f, DrawHalfDottedCircle));
+                *m_localAngularManipulators[manipulatorIndex], colors[manipulatorIndex], radius, m_circleBoundWidth, DrawHalfDottedCircle));
         }
 
+        const float viewAlignedScale = 1.12f;
         m_viewAngularManipulator->SetView(CreateManipulatorViewCircle(
-            *m_viewAngularManipulator, AZ::Color(1.0f, 1.0f, 1.0f, 1.0f), radius + (radius * 0.12f), 0.05f, DrawFullCircle));
+            *m_viewAngularManipulator, AZ::Color(1.0f, 1.0f, 1.0f, 1.0f), radius * viewAlignedScale, m_circleBoundWidth,
+            DrawFullCircle));
     }
 
     bool RotationManipulators::PerformingActionViewAxis() const
@@ -150,5 +152,10 @@ namespace AzToolsFramework
         }
 
         manipulatorFn(m_viewAngularManipulator.get());
+    }
+
+    void RotationManipulators::SetCircleBoundWidth(const float circleBoundWidth)
+    {
+        m_circleBoundWidth = circleBoundWidth;
     }
 } // namespace AzToolsFramework

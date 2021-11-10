@@ -8,6 +8,7 @@
 
 #include <limits>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
@@ -158,6 +159,7 @@ namespace AssetProcessor
         builderDesc.m_busId = m_builderId;
         builderDesc.m_createJobFunction = AZStd::bind(&SettingsRegistryBuilder::CreateJobs, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDesc.m_processJobFunction = AZStd::bind(&SettingsRegistryBuilder::ProcessJob, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
+        builderDesc.m_version = 1;
 
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDesc);
         
@@ -191,10 +193,51 @@ namespace AssetProcessor
             response.m_createJobOutputs.push_back(AZStd::move(job));
         }
 
-        AZ::IO::Path settingsRegistryWildcard = AZ::SettingsRegistryInterface::RegistryFolder;
+        AZ::IO::Path settingsRegistryWildcard = AZStd::string_view(AZ::Utils::GetEnginePath());
+        settingsRegistryWildcard /= AZ::SettingsRegistryInterface::RegistryFolder;
         settingsRegistryWildcard /= "*.setreg";
         response.m_sourceFileDependencyList.emplace_back(AZStd::move(settingsRegistryWildcard.Native()), AZ::Uuid::CreateNull(),
             AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
+
+        auto projectPath = AZ::IO::Path(AZStd::string_view(AZ::Utils::GetProjectPath()));
+        response.m_sourceFileDependencyList.emplace_back(
+            AZStd::move((projectPath / AZ::SettingsRegistryInterface::RegistryFolder / "*.setreg").Native()),
+            AZ::Uuid::CreateNull(),
+            AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
+        response.m_sourceFileDependencyList.emplace_back(
+            AZStd::move((projectPath / AZ::SettingsRegistryInterface::DevUserRegistryFolder / "*.setreg").Native()),
+            AZ::Uuid::CreateNull(),
+            AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
+
+        if (auto settingsRegistry = AZ::Interface<AZ::SettingsRegistryInterface>::Get(); settingsRegistry != nullptr)
+        {
+            AZStd::vector<AzFramework::GemInfo> gemInfos;
+            if (AzFramework::GetGemsInfo(gemInfos, *settingsRegistry))
+            {
+                // Gather unique list of Settings Registry wildcard directories
+                AZStd::vector<AZ::IO::Path> gemSettingsRegistryWildcards;
+                for (const AzFramework::GemInfo& gemInfo : gemInfos)
+                {
+                    for (const AZ::IO::Path& absoluteSourcePath : gemInfo.m_absoluteSourcePaths)
+                    {
+                        auto gemSettingsRegistryWildcard = absoluteSourcePath / AZ::SettingsRegistryInterface::RegistryFolder / "*.setreg";
+                        if (auto foundIt = AZStd::find(gemSettingsRegistryWildcards.begin(), gemSettingsRegistryWildcards.end(), gemSettingsRegistryWildcard);
+                            foundIt == gemSettingsRegistryWildcards.end())
+                        {
+                            gemSettingsRegistryWildcards.emplace_back(gemSettingsRegistryWildcard);
+                        }
+                    }
+                }
+
+                // Add to the Source File Dependency list
+                for (AZ::IO::Path& gemSettingsRegistryWildcard : gemSettingsRegistryWildcards)
+                {
+                    response.m_sourceFileDependencyList.emplace_back(
+                        AZStd::move(gemSettingsRegistryWildcard.Native()), AZ::Uuid::CreateNull(),
+                        AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards);
+                }
+            }
+        }
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
     }
 
@@ -217,6 +260,11 @@ namespace AssetProcessor
         scratchBuffer.reserve(512 * 1024); // Reserve 512kb to avoid repeatedly resizing the buffer;
         AZStd::fixed_vector<AZStd::string_view, AzFramework::MaxPlatformCodeNames> platformCodes;
         AzFramework::PlatformHelper::AppendPlatformCodeNames(platformCodes, request.m_platformInfo.m_identifier);
+        AZ_Assert(platformCodes.size() <= 1, "A one-to-one mapping of asset type platform identifier"
+            " to platform codename is required in the SettingsRegistryBuilder."
+            " The bootstrap.game is now only produced per build configuration and doesn't take into account"
+            " different platforms names");
+
         const AZStd::string& assetPlatformIdentifier = request.m_jobDescription.GetPlatformIdentifier();
         // Determines the suffix that will be used for the launcher based on processing server vs non-server assets
         const char* launcherType = assetPlatformIdentifier != AzFramework::PlatformHelper::GetPlatformName(AzFramework::PlatformId::SERVER)
@@ -251,9 +299,9 @@ namespace AssetProcessor
         outputBuffer.Reserve(512 * 1024); // Reserve 512kb to avoid repeatedly resizing the buffer;
         SettingsExporter exporter(outputBuffer, excludes);
 
-        for (AZStd::string_view platform : platformCodes)
+        if (!platformCodes.empty())
         {
-            AZ::u32 productSubID = static_cast<AZ::u32>(AZStd::hash<AZStd::string_view>{}(platform)); // Deliberately ignoring half the bits.
+            AZStd::string_view platform = platformCodes.front();
             for (size_t i = 0; i < AZStd::size(specializations); ++i)
             {
                 const AZ::SettingsRegistryInterface::Specializations& specialization = specializations[i];
@@ -295,7 +343,7 @@ namespace AssetProcessor
                     // The purpose of this section is to copy the Gem's SourcePaths from the Global Settings Registry
                     // the local SettingsRegistry. The reason this is needed is so that the call to
                     // `MergeSettingsToRegistry_GemRegistries` below is able to locate each gem's "<gem-root>/Registry" folder
-                    // that will be merged into the bootstrap.game.<configuration>.<platform>.setreg file
+                    // that will be merged into the bootstrap.game.<configuration>.setreg file
                     // This is used by the GameLauncher applications to read from a single merged .setreg file
                     // containing the settings needed to run a game/simulation without have access to the source code base registry
                     AZStd::vector<AzFramework::GemInfo> gemInfos;
@@ -337,7 +385,7 @@ namespace AssetProcessor
                 // Merge the Project User and User home settings registry only in non-release builds
                 constexpr bool executeRegDumpCommands = false;
                 AZ::CommandLine* commandLine{};
-                AZ::ComponentApplicationBus::Broadcast([&registry, &commandLine](AZ::ComponentApplicationRequests* appRequests)
+                AZ::ComponentApplicationBus::Broadcast([&commandLine](AZ::ComponentApplicationRequests* appRequests)
                 {
                     commandLine = appRequests->GetAzCommandLine();
                 });
@@ -365,9 +413,8 @@ namespace AssetProcessor
                         return;
                     }
 
-                    outputPath += specialization.GetSpecialization(0); // Append configuration
-                    outputPath += '.';
-                    outputPath += platform;
+                    AZStd::string_view specializationString(specialization.GetSpecialization(0));
+                    outputPath += specializationString; // Append configuration
                     outputPath += ".setreg";
 
                     AZ::IO::SystemFile file;
@@ -384,7 +431,11 @@ namespace AssetProcessor
                     }
                     file.Close();
 
-                    response.m_outputProducts.emplace_back(outputPath, m_assetType, productSubID + aznumeric_cast<AZ::u32>(i));
+                    const AZ::u32 hashedSpecialization = static_cast<AZ::u32>(AZStd::hash<AZStd::string_view>{}(specializationString));
+                    AZ_Assert(hashedSpecialization != 0, "Product ID generation failed for specialization %.*s."
+                        " This can result in a product ID collision with other builders for this asset.",
+                        AZ_STRING_ARG(specializationString));
+                    response.m_outputProducts.emplace_back(outputPath, m_assetType, hashedSpecialization);
                     response.m_outputProducts.back().m_dependenciesHandled = true;
 
                     outputPath.erase(extensionOffset);

@@ -237,14 +237,8 @@ namespace ImageProcessingAtom
     const static AZ::u32 FOURCC_CEnd = IMAGE_BUIDER_MAKEFOURCC('C', 'E', 'n', 'd');    // O3DE extension end
     const static AZ::u32 FOURCC_AttC = IMAGE_BUIDER_MAKEFOURCC('A', 't', 't', 'C');    // Chunk Attached Channel
 
-    //Fourcc for pixel formats which aren't supported by dx10, such as astc formats, etc formats, pvrtc formats
+    //Fourcc for pixel formats which aren't supported by dx10, such as astc formats
     //They are used for dwFourCC of dds header's DDS_PIXELFORMAT to identify non-dx10 pixel formats
-    const static AZ::u32 FOURCC_EAC_R11 = IMAGE_BUIDER_MAKEFOURCC('E', 'A', 'R', ' ');
-    const static AZ::u32 FOURCC_EAC_RG11 = IMAGE_BUIDER_MAKEFOURCC('E', 'A', 'R', 'G');
-    const static AZ::u32 FOURCC_ETC2 = IMAGE_BUIDER_MAKEFOURCC('E', 'T', '2', ' ');
-    const static AZ::u32 FOURCC_ETC2A = IMAGE_BUIDER_MAKEFOURCC('E', 'T', '2', 'A');
-    const static AZ::u32 FOURCC_PVRTC2 = IMAGE_BUIDER_MAKEFOURCC('P', 'V', 'R', '2');
-    const static AZ::u32 FOURCC_PVRTC4 = IMAGE_BUIDER_MAKEFOURCC('P', 'V', 'R', '4');
     const static AZ::u32 FOURCC_ASTC_4x4 = IMAGE_BUIDER_MAKEFOURCC('A', 'S', '4', '4');
     const static AZ::u32 FOURCC_ASTC_5x4 = IMAGE_BUIDER_MAKEFOURCC('A', 'S', '5', '4');
     const static AZ::u32 FOURCC_ASTC_5x5 = IMAGE_BUIDER_MAKEFOURCC('A', 'S', '5', '5');
@@ -260,9 +254,11 @@ namespace ImageProcessingAtom
     const static AZ::u32 FOURCC_ASTC_12x10 = IMAGE_BUIDER_MAKEFOURCC('A', 'S', 'C', 'A');
     const static AZ::u32 FOURCC_ASTC_12x12 = IMAGE_BUIDER_MAKEFOURCC('A', 'S', 'C', 'C');
 
-    //legacy formats names. they are only used for load rc.exe's dds formats
+    //legacy formats names. they are only used for load old dds formats. 
     const static AZ::u32 FOURCC_DXT1 = IMAGE_BUIDER_MAKEFOURCC('D', 'X', 'T', '1');
+    const static AZ::u32 FOURCC_DXT2 = IMAGE_BUIDER_MAKEFOURCC('D', 'X', 'T', '2');
     const static AZ::u32 FOURCC_DXT3 = IMAGE_BUIDER_MAKEFOURCC('D', 'X', 'T', '3');
+    const static AZ::u32 FOURCC_DXT4 = IMAGE_BUIDER_MAKEFOURCC('D', 'X', 'T', '4');
     const static AZ::u32 FOURCC_DXT5 = IMAGE_BUIDER_MAKEFOURCC('D', 'X', 'T', '5');
     const static AZ::u32 FOURCC_3DCP = IMAGE_BUIDER_MAKEFOURCC('A', 'T', 'I', '1');
     const static AZ::u32 FOURCC_3DC = IMAGE_BUIDER_MAKEFOURCC('A', 'T', 'I', '2');

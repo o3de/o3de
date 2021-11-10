@@ -106,7 +106,9 @@ namespace AssetBundler
             }
             auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
                 + "/project_path";
-            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::IO::FixedMaxPath enginePath;
+            registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
             AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
@@ -291,6 +293,9 @@ namespace AssetBundler
 
 int main(int argc, char* argv[])
 {
+    AZ::Debug::Trace::HandleExceptions(true);
+    AZ::Test::ApplyGlobalParameters(&argc, argv);
+
     INVOKE_AZ_UNIT_TEST_MAIN();
 
     AZ::AllocatorInstance<AZ::SystemAllocator>::Create();

@@ -93,40 +93,62 @@ bool RCON_IsRemoteAllowedToConnect(const AZ::AzSock::AzSocketAddress& connectee)
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
+void SRemoteThreadedObject::Start(const char* name)
+{
+    AZStd::thread_desc desc;
+    desc.m_name = name;
 
+    auto function = AZStd::bind(&SRemoteThreadedObject::ThreadFunction, this);
+    m_thread = AZStd::thread(desc, function);
+}
+
+void SRemoteThreadedObject::WaitForThread()
+{
+    if (m_thread.joinable())
+    {
+        m_thread.join();
+    }
+}
+
+void SRemoteThreadedObject::ThreadFunction()
+{
+    Run();
+    Terminate();
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
 void SRemoteServer::StartServer()
 {
     StopServer();
     m_bAcceptClients = true;
-    Start(0, kServerThreadName);
+    Start(kServerThreadName);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void SRemoteServer::StopServer()
 {
-    Stop();
     m_bAcceptClients = false;
     AZ::AzSock::CloseSocket(m_socket);
     m_socket = SOCKET_ERROR;
-    m_lock.Lock();
+
+    AZStd::unique_lock<AZStd::recursive_mutex> lock(m_mutex);
     for (TClients::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
     {
         it->pClient->StopClient();
     }
-    m_lock.Unlock();
-    m_stopEvent.Wait();
-    m_stopEvent.Set();
+    m_stopCondition.wait(lock, [this] { return m_clients.empty(); });
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void SRemoteServer::ClientDone(SRemoteClient* pClient)
 {
-    m_lock.Lock();
+    AZStd::scoped_lock lock(m_mutex);
     for (TClients::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
     {
         if (it->pClient == pClient)
         {
-            it->pClient->Stop();
             delete it->pClient;
             delete it->pEvents;
             m_clients.erase(it);
@@ -136,9 +158,8 @@ void SRemoteServer::ClientDone(SRemoteClient* pClient)
 
     if (m_clients.empty())
     {
-        m_stopEvent.Set();
+        m_stopCondition.notify_all();
     }
-    m_lock.Unlock();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -149,7 +170,6 @@ void SRemoteServer::Terminate()
 /////////////////////////////////////////////////////////////////////////////////////////////
 void SRemoteServer::Run()
 {
-    SetName(kServerThreadName);
     AZ_TRAIT_REMOTECONSOLE_SET_THREAD_AFFINITY
 
     AZSOCKET sClient;
@@ -219,6 +239,11 @@ void SRemoteServer::Run()
 
     while (m_bAcceptClients)
     {
+        AZTIMEVAL timeout { 1, 0 };
+        if (!AZ::AzSock::IsRecvPending(m_socket, &timeout))
+        {
+            continue;
+        }
         AZ::AzSock::AzSocketAddress clientAddress;
         sClient = AZ::AzSock::Accept(m_socket, clientAddress);
         if (!m_bAcceptClients || !AZ::AzSock::IsAzSocketValid(sClient))
@@ -232,12 +257,10 @@ void SRemoteServer::Run()
             continue;
         }
 
-        m_lock.Lock();
-        m_stopEvent.Reset();
+        AZStd::scoped_lock lock(m_mutex);
         SRemoteClient* pClient = new SRemoteClient(this);
         m_clients.push_back(SRemoteClientInfo(pClient));
         pClient->StartClient(sClient);
-        m_lock.Unlock();
     }
     AZ::AzSock::CloseSocket(m_socket);
     CryLog("Remote console terminating.\n");
@@ -247,43 +270,42 @@ void SRemoteServer::Run()
 /////////////////////////////////////////////////////////////////////////////////////////////
 void SRemoteServer::AddEvent(IRemoteEvent* pEvent)
 {
-    m_lock.Lock();
+    AZStd::scoped_lock lock(m_mutex);
     for (TClients::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
     {
         it->pEvents->push_back(pEvent->Clone());
     }
-    m_lock.Unlock();
     delete pEvent;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void SRemoteServer::GetEvents(TEventBuffer& buffer)
 {
-    m_lock.Lock();
+    AZStd::scoped_lock lock(m_mutex);
     buffer = m_eventBuffer;
     m_eventBuffer.clear();
-    m_lock.Unlock();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 bool SRemoteServer::WriteBuffer(SRemoteClient* pClient,  char* buffer, int& size)
 {
-    m_lock.Lock();
     IRemoteEvent* pEvent = nullptr;
-    for (TClients::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
     {
-        if (it->pClient == pClient)
+        AZStd::scoped_lock lock(m_mutex);
+        for (TClients::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
         {
-            TEventBuffer* pEvents = it->pEvents;
-            if (!pEvents->empty())
+            if (it->pClient == pClient)
             {
-                pEvent = pEvents->front();
-                pEvents->pop_front();
+                TEventBuffer* pEvents = it->pEvents;
+                if (!pEvents->empty())
+                {
+                    pEvent = pEvents->front();
+                    pEvents->pop_front();
+                }
+                break;
             }
-            break;
         }
     }
-    m_lock.Unlock();
     const bool res = (pEvent != nullptr);
     if (pEvent)
     {
@@ -297,7 +319,7 @@ bool SRemoteServer::WriteBuffer(SRemoteClient* pClient,  char* buffer, int& size
 bool SRemoteServer::ReadBuffer(const char* buffer, int data)
 {
     bool result = true;
-    
+
     // Sometimes multiple events can come in a single buffer, so make sure we look
     // at the entire thing.
     int bytesRemaining = data;
@@ -306,15 +328,14 @@ bool SRemoteServer::ReadBuffer(const char* buffer, int data)
     {
         // Create the event from the current sub string in the buffer.
         IRemoteEvent* event = SRemoteEventFactory::GetInst()->CreateEventFromBuffer(curBuffer, bytesRemaining);
-        
+
         result &= (event != nullptr);
         if (event)
         {
             if (event->GetType() != eCET_Noop)
             {
-                m_lock.Lock();
+                AZStd::scoped_lock lock(m_mutex);
                 m_eventBuffer.push_back(event);
-                m_lock.Unlock();
             }
             else
             {
@@ -337,7 +358,7 @@ bool SRemoteServer::ReadBuffer(const char* buffer, int data)
 void SRemoteClient::StartClient(AZSOCKET socket)
 {
     m_socket = socket;
-    Start(0, kClientThreadName);
+    Start(kClientThreadName);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -356,7 +377,6 @@ void SRemoteClient::Terminate()
 /////////////////////////////////////////////////////////////////////////////////////////////
 void SRemoteClient::Run()
 {
-    SetName(kClientThreadName);
     AZ_TRAIT_REMOTECONSOLE_SET_THREAD_AFFINITY
 
     char szBuff[kDefaultBufferSize];
@@ -368,6 +388,13 @@ void SRemoteClient::Run()
 
     bool ok = true;
     bool autoCompleteDoneSent = false;
+    
+    // Send a message that is used to verify that the Remote Console connected
+    SNoDataEvent<eCET_ConnectMessage> connectMessage;
+    SRemoteEventFactory::GetInst()->WriteToBuffer(&connectMessage, szBuff, size, kDefaultBufferSize);
+    ok &= SendPackage(szBuff, size);
+    ok &= RecvPackage(szBuff, size);
+    ok &= m_pServer->ReadBuffer(szBuff, size);
     while (ok)
     {
         // read data
@@ -446,10 +473,10 @@ bool SRemoteClient::SendPackage(const char* buffer, int size)
 /////////////////////////////////////////////////////////////////////////////////////////////
 void SRemoteClient::FillAutoCompleteList(AZStd::vector<AZStd::string>& list)
 {
-    AZStd::vector<const char*> cmds;
-    size_t count = gEnv->pConsole->GetSortedVars(nullptr, 0);
+    AZStd::vector<AZStd::string_view> cmds;
+    size_t count = gEnv->pConsole->GetSortedVars(cmds);
     cmds.resize(count);
-    count = gEnv->pConsole->GetSortedVars(&cmds[0], count);
+    count = gEnv->pConsole->GetSortedVars(cmds);
     for (size_t i = 0; i < count; ++i)
     {
         list.push_back(cmds[i]);
@@ -516,6 +543,7 @@ SRemoteEventFactory::SRemoteEventFactory()
 
     REGISTER_EVENT_NODATA(eCET_Strobo_FrameInfoStart);
     REGISTER_EVENT_STRING(eCET_Strobo_FrameInfoAdd);
+    REGISTER_EVENT_NODATA(eCET_ConnectMessage);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////

@@ -30,6 +30,7 @@ namespace AzToolsFramework::ViewportUi
         const ClusterId CreateCluster(Alignment align) override;
         const SwitcherId CreateSwitcher(Alignment align) override;
         void SetClusterActiveButton(ClusterId clusterId, ButtonId buttonId) override;
+        void ClearClusterActiveButton(ClusterId clusterId) override;
         void SetSwitcherActiveButton(SwitcherId switcherId, ButtonId buttonId) override;
         void SetClusterButtonLocked(ClusterId clusterId, ButtonId buttonId, bool isLocked) override;
         void SetClusterButtonTooltip(ClusterId clusterId, ButtonId buttonId, const AZStd::string& tooltip) override;
@@ -40,7 +41,7 @@ namespace AzToolsFramework::ViewportUi
         void RegisterSwitcherEventHandler(SwitcherId switcherId, AZ::Event<ButtonId>::Handler& handler) override;
         void RemoveCluster(ClusterId clusterId) override;
         void RemoveSwitcher(SwitcherId switcherId) override;
-        void SetClusterVisible(ClusterId clusterId, bool visible);
+        void SetClusterVisible(ClusterId clusterId, bool visible) override;
         void SetSwitcherVisible(SwitcherId switcherId, bool visible);
         void SetClusterGroupVisible(const AZStd::vector<ClusterId>& clusterGroup, bool visible) override;
         const TextFieldId CreateTextField(
@@ -49,8 +50,8 @@ namespace AzToolsFramework::ViewportUi
         void RegisterTextFieldCallback(TextFieldId textFieldId, AZ::Event<AZStd::string>::Handler& handler) override;
         void RemoveTextField(TextFieldId textFieldId) override;
         void SetTextFieldVisible(TextFieldId textFieldId, bool visible) override;
-        void CreateComponentModeBorder(const AZStd::string& borderTitle) override;
-        void RemoveComponentModeBorder() override;
+        void CreateViewportBorder(const AZStd::string& borderTitle) override;
+        void RemoveViewportBorder() override;
         void PressButton(ClusterId clusterId, ButtonId buttonId) override;
         void PressButton(SwitcherId switcherId, ButtonId buttonId) override;
 

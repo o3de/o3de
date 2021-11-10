@@ -48,10 +48,22 @@ namespace PhysX
         JointComponent::LeadFollowerInfo leadFollowerInfo;
         ObtainLeadFollowerInfo(leadFollowerInfo);
         if (leadFollowerInfo.m_followerActor == nullptr ||
-            leadFollowerInfo.m_leadBody == nullptr ||
             leadFollowerInfo.m_followerBody == nullptr)
         {
             return;
+        }
+
+        // if there is no lead body, this will be a constraint of the follower's global position, so use invalid body handle.
+        AzPhysics::SimulatedBodyHandle parentHandle = AzPhysics::InvalidSimulatedBodyHandle;
+        if (leadFollowerInfo.m_leadBody != nullptr)
+        {
+            parentHandle = leadFollowerInfo.m_leadBody->m_bodyHandle;
+        }
+        else
+        {
+            AZ_TracePrintf(
+                "PhysX", "Entity [%s] Hinge Joint component missing lead entity. This joint will be a global constraint on the follower's global position.",
+                GetEntity()->GetName().c_str());
         }
 
         HingeJointConfiguration configuration;
@@ -66,7 +78,9 @@ namespace PhysX
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             m_jointHandle = sceneInterface->AddJoint(
-                leadFollowerInfo.m_followerBody->m_sceneOwner, &configuration, leadFollowerInfo.m_leadBody->m_bodyHandle,
+                leadFollowerInfo.m_followerBody->m_sceneOwner,
+                &configuration,
+                parentHandle,
                 leadFollowerInfo.m_followerBody->m_bodyHandle);
             m_jointSceneOwner = leadFollowerInfo.m_followerBody->m_sceneOwner;
         }

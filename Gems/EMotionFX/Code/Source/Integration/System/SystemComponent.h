@@ -24,6 +24,7 @@
 #   include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #   include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #   include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#   include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #endif // EMOTIONFXANIMATION_EDITOR
 
 namespace AZ
@@ -108,9 +109,8 @@ namespace EMotionFX
             void SetMediaRoot(const char* alias);
 
 #if defined (EMOTIONFXANIMATION_EDITOR)
-            void UpdateAnimationEditorPlugins(float delta);
             void NotifyRegisterViews() override;
-            bool IsSystemActive(EditorAnimationSystemRequests::AnimationSystem systemType);
+            bool IsSystemActive(EditorAnimationSystemRequests::AnimationSystem systemType) override;
 
             //////////////////////////////////////////////////////////////////////////////////////
             // AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
@@ -127,6 +127,10 @@ namespace EMotionFX
             AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler> > m_assetHandlers;
             AZStd::unique_ptr<EMotionFXEventHandler> m_eventHandler;
             AZStd::unique_ptr<RenderBackendManager> m_renderBackendManager;
+
+#if defined(EMOTIONFXANIMATION_EDITOR)
+            AZStd::unique_ptr<EMStudio::EMStudioManager> m_emstudioManager;
+#endif // EMOTIONFXANIMATION_EDITOR
         };
     }
 }

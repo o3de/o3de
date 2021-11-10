@@ -22,6 +22,7 @@
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/Feature/SkyBox/SkyBoxFeatureProcessorInterface.h>
 
 #include <Source/Viewport/InputController/MaterialEditorViewportInputController.h>
@@ -278,9 +279,9 @@ namespace MaterialEditor
         // reset environment
         AZ::Transform iblTransform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::Event(m_iblEntityId, &AZ::TransformBus::Events::SetLocalTM, iblTransform);
+
         const AZ::Matrix4x4 rotationMatrix = AZ::Matrix4x4::CreateIdentity();
-        AZ::RPI::ScenePtr scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
-        auto skyBoxFeatureProcessorInterface = scene->GetFeatureProcessor<AZ::Render::SkyBoxFeatureProcessorInterface>();
+        auto skyBoxFeatureProcessorInterface = AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::SkyBoxFeatureProcessorInterface>(m_iblEntityId);
         skyBoxFeatureProcessorInterface->SetCubemapRotationMatrix(rotationMatrix);
 
         if (m_behavior)

@@ -53,7 +53,7 @@ namespace EMotionFX
         const char* GetSceneSettingsName() const override;
 
         // Overloaded.
-        Transform SampleJointTransform(const SampleSettings& settings, AZ::u32 jointSkeletonIndex) const override;
+        Transform SampleJointTransform(const SampleSettings& settings, size_t jointSkeletonIndex) const override;
         void SamplePose(const SampleSettings& settings, Pose* outputPose) const override;
         float SampleMorph(float sampleTime, size_t morphDataIndex) const override;
         float SampleFloat(float sampleTime, size_t floatDataIndex) const override;

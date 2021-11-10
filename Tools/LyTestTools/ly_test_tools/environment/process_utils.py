@@ -12,8 +12,8 @@ import psutil
 import subprocess
 import ctypes
 
+import ly_test_tools
 import ly_test_tools.environment.waiter as waiter
-from ly_test_tools import WINDOWS, MAC
 
 logger = logging.getLogger(__name__)
 _PROCESS_OUTPUT_ENCODING = 'utf-8'
@@ -31,45 +31,59 @@ def kill_processes_named(names, ignore_extensions=False):
     Kills all processes with a given name
 
     :param names: string process name, or list of strings of process name
-    :param ignore_extensions: ignore trailing file extension
+    :param ignore_extensions: ignore trailing file extensions. By default 'abc.exe' will not match 'abc'. Note that
+        enabling this will cause 'abc.exe' to match 'abc', 'abc.bat', and 'abc.sh', though 'abc.GameLauncher.exe'
+        will not match 'abc.DedicatedServer'
     """
     if not names:
         return
 
-    names = [names] if isinstance(names, str) else names
+    name_set = set()
+    if isinstance(names, str):
+        name_set.add(names)
+    else:
+        name_set.update(names)
 
     if ignore_extensions:
-        names = [_remove_extension(name) for name in names]
+        # both exact matches and extensionless
+        stripped_names = set()
+        for name in name_set:
+            stripped_names.add(_remove_extension(name))
+        name_set.update(stripped_names)
 
     # remove any blank names, which may empty the list
-    names = list(filter(lambda x: not x.isspace(), names))
-    if not names:
+    name_set = set(filter(lambda x: not x.isspace(), name_set))
+    if not name_set:
         return
 
-    logger.info(f"Killing all processes named {names}")
-    process_list_to_kill = []
+    logger.info(f"Killing all processes named {name_set}")
+    process_set_to_kill = set()
     for process in _safe_get_processes(['name', 'pid']):
         try:
             proc_name = process.name()
         except psutil.AccessDenied:
-            logger.info(f"Process {process} permissions error during kill_processes_named()", exc_info=True)
+            logger.warning(f"Process {process} permissions error during kill_processes_named()", exc_info=True)
             continue
         except psutil.ProcessLookupError:
-            logger.debug(f"Process {process} could not be killed during kill_processes_named() and was likely already stopped", exc_info=True)
+            logger.debug(f"Process {process} could not be killed during kill_processes_named() and was likely already "
+                         f"stopped", exc_info=True)
             continue
         except psutil.NoSuchProcess:
             logger.debug(f"Process '{process}' was active when list of processes was requested but it was not found "
                          f"during kill_processes_named()", exc_info=True)
             continue
 
+        if proc_name in name_set:
+            logger.debug(f"Found process with name {proc_name}.")
+            process_set_to_kill.add(process)
+
         if ignore_extensions:
-            proc_name = _remove_extension(proc_name)
+            extensionless_name = _remove_extension(proc_name)
+            if extensionless_name in name_set:
+                process_set_to_kill.add(process)
 
-        if proc_name in names:
-            logger.debug(f"Found process with name {proc_name}.  Attempting to kill...")
-            process_list_to_kill.append(process)
-
-    _safe_kill_process_list(process_list_to_kill)
+    if process_set_to_kill:
+        _safe_kill_processes(process_set_to_kill)
 
 
 def kill_processes_started_from(path):
@@ -90,7 +104,7 @@ def kill_processes_started_from(path):
             if process_path.lower().startswith(path.lower()):
                 process_list.append(process)
 
-        _safe_kill_process_list(process_list)
+        _safe_kill_processes(process_list)
     else:
         logger.warning(f"Path:'{path}' not found")
 
@@ -118,7 +132,7 @@ def kill_processes_with_name_not_started_from(name, path):
                 logger.info("%s -> %s" % (os.path.dirname(process_path.lower()), path))
                 proccesses_to_kill.append(process)
 
-        _safe_kill_process_list(proccesses_to_kill)
+        _safe_kill_processes(proccesses_to_kill)
     else:
         logger.warning(f"Path:'{path}' not found")
 
@@ -151,10 +165,12 @@ def process_exists(name, ignore_extensions=False):
     :return: A boolean determining whether the process is alive or not
     """
     name = name.lower()
-    if ignore_extensions:
-        name = _remove_extension(name)
     if name.isspace():
         return False
+
+    if ignore_extensions:
+        name_extensionless = _remove_extension(name)
+
     for process in _safe_get_processes(["name"]):
         try:
             proc_name = process.name().lower()
@@ -165,10 +181,17 @@ def process_exists(name, ignore_extensions=False):
         except psutil.AccessDenied as e:
             logger.info(f"Permissions issue on {process} during process_exists check", exc_info=True)
             continue
-        if ignore_extensions:
-            proc_name = _remove_extension(proc_name)
-        if proc_name == name:
+
+        if proc_name == name:  # abc.exe matches abc.exe
             return True
+        if ignore_extensions:
+            proc_name_extensionless = _remove_extension(proc_name)
+            if proc_name_extensionless == name:  # abc matches abc.exe
+                return True
+            if proc_name == name_extensionless:  # abc.exe matches abc
+                return True
+            # don't check proc_name_extensionless against name_extensionless: abc.exe and abc.exe are already tested,
+            # however xyz.Gamelauncher should not match xyz.DedicatedServer
     return False
 
 
@@ -182,7 +205,7 @@ def process_is_unresponsive(name):
     :param name: the name of the process to check
     :return: True if the specified process is unresponsive and False otherwise
     """
-    if WINDOWS:
+    if ly_test_tools.WINDOWS:
         output = check_output(['tasklist',
                                '/FI', f'IMAGENAME eq {name}',
                                '/FI', 'STATUS eq NOT RESPONDING'])
@@ -194,7 +217,7 @@ def process_is_unresponsive(name):
                 return True
         logger.debug(f"Process '{name}' was not unresponsive.")
         return False
-    elif MAC:
+    else:
         cmd = ["ps", "-axc", "-o", "command,state"]
         output = check_output(cmd)
         for line in output.splitlines()[1:]:
@@ -209,8 +232,6 @@ def process_is_unresponsive(name):
                     return True
         logger.debug(f"Process '{name}' was not unresponsive.")
         return False
-    else:
-        raise NotImplementedError('Only Windows and Mac hosts are supported.')
 
 
 def check_output(command, **kwargs):
@@ -343,17 +364,14 @@ def _safe_kill_process(proc):
     except Exception:  # purposefully broad
         logger.warning("Unexpected exception while terminating process", exc_info=True)
 
-def _safe_kill_process_list(proc_list):
+
+def _safe_kill_processes(processes):
     """
     Kills a given process without raising an error
 
-    :param proc_list: The process list to kill
+    :param processes: An iterable of processes to kill
     """
-
-    def on_terminate(proc):
-        print(f"process '{proc.name()}' with id '{proc.pid}' terminated with exit code {proc.returncode}")
-
-    for proc in proc_list:
+    for proc in processes:
         try:
             logger.info(f"Terminating process '{proc.name()}' with id '{proc.pid}'")
             proc.kill()
@@ -362,12 +380,14 @@ def _safe_kill_process_list(proc_list):
         except psutil.NoSuchProcess:
             logger.debug("Termination request ignored, process was already terminated during iteration", exc_info=True)
         except Exception:  # purposefully broad
-            logger.warning("Unexpected exception while terminating process", exc_info=True)
+            logger.warning("Unexpected exception ignored while terminating process", exc_info=True)
 
+    def on_terminate(proc):
+        logger.info(f"process '{proc.name()}' with id '{proc.pid}' terminated with exit code {proc.returncode}")
     try:
-        psutil.wait_procs(proc_list, timeout=30, callback=on_terminate)
+        psutil.wait_procs(processes, timeout=30, callback=on_terminate)
     except Exception:  # purposefully broad
-        logger.warning("Unexpected exception while waiting for process to terminate", exc_info=True)
+        logger.warning("Unexpected exception while waiting for processes to terminate", exc_info=True)
 
 
 def _terminate_and_confirm_dead(proc):
@@ -385,7 +405,7 @@ def _terminate_and_confirm_dead(proc):
 
 def _remove_extension(filename):
     """
-    Returns a file name without its extension
+    Returns a file name without its extension, if any is present
 
     :param filename: The name of a file
     :return: The name of the file without the extension
@@ -406,7 +426,7 @@ def close_windows_process(pid, timeout=20, raise_on_missing=False):
     :param pid: the pid of the process to kill
     :param raise_on_missing: if set to True, raise RuntimeError if the process does not already exist
     """
-    if not WINDOWS:
+    if not ly_test_tools.WINDOWS:
         raise NotImplementedError("close_windows_process() is only implemented on Windows.")
 
     if pid is None:
@@ -467,3 +487,17 @@ def close_windows_process(pid, timeout=20, raise_on_missing=False):
     # Wait for asyncronous termination
     waiter.wait_for(lambda: pid not in psutil.pids(), timeout=timeout,
                     exc=TimeoutError(f"Process {pid} never terminated"))
+
+
+def get_display_env():
+    """
+    Fetches environment variables with an appropriate display (monitor) configured,
+      useful for subprocess calls to UI applications
+    :return: A dictionary containing environment variables (per os.environ)
+    """
+    env = os.environ.copy()
+    if not ly_test_tools.WINDOWS:
+        if 'DISPLAY' not in env.keys():
+            # assume Display 1 is available in another session
+            env['DISPLAY'] = ':1'
+    return env

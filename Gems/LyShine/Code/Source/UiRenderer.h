@@ -53,14 +53,8 @@ public: // types
         void ResetToDefault()
         {
             // Enable blend/color write
-            m_blendState.m_enable = true;
-            m_blendState.m_writeMask = 0xF;
-            m_blendState.m_blendSource = AZ::RHI::BlendFactor::AlphaSource;
-            m_blendState.m_blendDest = AZ::RHI::BlendFactor::AlphaSourceInverse;
-            m_blendState.m_blendOp = AZ::RHI::BlendOp::Add;
-            m_blendState.m_blendAlphaSource = AZ::RHI::BlendFactor::One;
-            m_blendState.m_blendAlphaDest = AZ::RHI::BlendFactor::Zero;
-            m_blendState.m_blendAlphaOp = AZ::RHI::BlendOp::Add;
+            m_blendStateEnabled = true;
+            m_blendStateWriteMask = 0xF;
 
             // Disable stencil
             m_stencilState = AZ::RHI::StencilState();
@@ -70,7 +64,8 @@ public: // types
             m_modulateAlpha = false;
         }
 
-        AZ::RHI::TargetBlendState m_blendState;
+        uint32_t m_blendStateEnabled = true;
+        uint32_t m_blendStateWriteMask = 0xF;
         AZ::RHI::StencilState m_stencilState;
         bool m_useAlphaTest = false;
         bool m_modulateAlpha = false;
@@ -157,7 +152,6 @@ private: // member functions
 
     //! Create a dynamic draw context for this renderer
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> CreateDynamicDrawContext(
-        AZ::RPI::ScenePtr scene,
         AZ::Data::Instance<AZ::RPI::Shader> uiShader);
 
     //! Bind the global white texture for all the texture units we use
@@ -180,7 +174,8 @@ protected: // attributes
     // Set by user when viewport context is not the main/default viewport
     AZStd::shared_ptr<AZ::RPI::ViewportContext> m_viewportContext;
 
-    AZ::RPI::ScenePtr m_scene;
+    AZ::RPI::ScenePtr m_ownedScene;
+    AZ::RPI::Scene* m_scene = nullptr;
 
 #ifndef _RELEASE
     int m_debugTextureDataRecordLevel = 0;

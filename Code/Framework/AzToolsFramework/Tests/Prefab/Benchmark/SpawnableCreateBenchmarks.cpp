@@ -18,7 +18,7 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_SpawnableCreate, CreateSpawnable_SingleEntityInstance)(::benchmark::State& state)
     {
-        const unsigned int numSpawnables = state.range();
+        const unsigned int numSpawnables = static_cast<unsigned int>(state.range());
 
         AZStd::unique_ptr<Instance> instance(m_prefabSystemComponent->CreatePrefab(
             { CreateEntity("Entity1") },
@@ -33,7 +33,7 @@ namespace Benchmark
             AZStd::vector<AZStd::unique_ptr<AzFramework::Spawnable>> spawnables;
             spawnables.reserve(numSpawnables);
             
-            for (int spwanableCounter = 0; spwanableCounter < numSpawnables; ++spwanableCounter)
+            for (unsigned int spwanableCounter = 0; spwanableCounter < numSpawnables; ++spwanableCounter)
             {
                 AZStd::unique_ptr<AzFramework::Spawnable> spawnable = AZStd::make_unique<AzFramework::Spawnable>();
                 AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(*spawnable, prefabDom);

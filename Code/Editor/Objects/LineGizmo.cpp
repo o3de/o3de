@@ -37,8 +37,8 @@ CLineGizmo::~CLineGizmo()
     {
         m_object[1]->RemoveEventListener(this);
     }
-    m_object[0] = 0;
-    m_object[1] = 0;
+    m_object[0] = nullptr;
+    m_object[1] = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -164,7 +164,7 @@ void CLineGizmo::SetName(const char* sName)
 //////////////////////////////////////////////////////////////////////////
 bool CLineGizmo::HitTest([[maybe_unused]] HitContext& hc)
 {
-    return 0;
+    return false;
     /*
     if (hc.distanceTollerance != 0)
         return 0;

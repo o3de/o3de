@@ -64,7 +64,7 @@ namespace AZ
             bool operator==(const MaterialAssignmentId& rhs) const;
             bool operator!=(const MaterialAssignmentId& rhs) const;
 
-            static constexpr MaterialAssignmentLodIndex NonLodIndex = -1;
+            static constexpr MaterialAssignmentLodIndex NonLodIndex = std::numeric_limits<MaterialAssignmentLodIndex>::max();
 
             MaterialAssignmentLodIndex m_lodIndex = NonLodIndex;
             RPI::ModelMaterialSlot::StableId m_materialSlotStableId = RPI::ModelMaterialSlot::InvalidStableId;

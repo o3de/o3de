@@ -52,7 +52,7 @@ namespace AZ
 
             // load shaders
             AZStd::string verticalBlurShaderFilePath = "Shaders/Reflections/ReflectionScreenSpaceBlurVertical.azshader";
-            Data::Instance<AZ::RPI::Shader> verticalBlurShader = RPI::LoadShader(verticalBlurShaderFilePath);
+            Data::Instance<AZ::RPI::Shader> verticalBlurShader = RPI::LoadCriticalShader(verticalBlurShaderFilePath);
             if (verticalBlurShader == nullptr)
             {
                 AZ_Error("PassSystem", false, "[ReflectionScreenSpaceBlurPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(), verticalBlurShaderFilePath.c_str());
@@ -60,7 +60,7 @@ namespace AZ
             }
 
             AZStd::string horizontalBlurShaderFilePath = "Shaders/Reflections/ReflectionScreenSpaceBlurHorizontal.azshader";
-            Data::Instance<AZ::RPI::Shader> horizontalBlurShader = RPI::LoadShader(horizontalBlurShaderFilePath);
+            Data::Instance<AZ::RPI::Shader> horizontalBlurShader = RPI::LoadCriticalShader(horizontalBlurShaderFilePath);
             if (horizontalBlurShader == nullptr)
             {
                 AZ_Error("PassSystem", false, "[ReflectionScreenSpaceBlurPass '%s']: Failed to load shader '%s'!", GetPathName().GetCStr(), horizontalBlurShaderFilePath.c_str());
@@ -150,7 +150,7 @@ namespace AZ
                 auto transientImageDesc = RHI::ImageDescriptor::Create2D(imageBindFlags, mipSize.m_width, mipSize.m_height, RHI::Format::R16G16B16A16_FLOAT);
 
                 RPI::PassAttachment* transientPassAttachment = aznew RPI::PassAttachment();
-                AZStd::string transientAttachmentName = AZStd::string::format("ReflectionScreenSpace_BlurImage%d", mip);
+                AZStd::string transientAttachmentName = AZStd::string::format("%s.ReflectionScreenSpace_BlurImage%d", GetPathName().GetCStr(), mip);
                 transientPassAttachment->m_name = transientAttachmentName;
                 transientPassAttachment->m_path = transientAttachmentName;
                 transientPassAttachment->m_lifetime = RHI::AttachmentLifetimeType::Transient;
@@ -190,8 +190,8 @@ namespace AZ
                 RPI::PassAttachmentBinding& outputAttachmentBinding = horizontalBlurChildPass->GetInputOutputBinding(1);
                 uint32_t mipLevel = attachmentIndex + 1;
                 RHI::ImageViewDescriptor outputViewDesc;
-                outputViewDesc.m_mipSliceMin = mipLevel;
-                outputViewDesc.m_mipSliceMax = mipLevel;
+                outputViewDesc.m_mipSliceMin = static_cast<int16_t>(mipLevel);
+                outputViewDesc.m_mipSliceMax = static_cast<int16_t>(mipLevel);
                 outputAttachmentBinding.m_unifiedScopeDesc.SetAsImage(outputViewDesc);
                 outputAttachmentBinding.SetAttachment(reflectionImageAttachment);
 

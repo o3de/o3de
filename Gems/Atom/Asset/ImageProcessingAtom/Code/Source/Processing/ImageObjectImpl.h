@@ -36,10 +36,6 @@ namespace ImageProcessingAtom
         AZ::u32 GetWidth(AZ::u32 mip) const override;
         AZ::u32 GetHeight(AZ::u32 mip) const override;
         AZ::u32 GetMipCount() const override;
-        bool IsCubemap() const override
-        {
-            return false;
-        };
 
         void GetImagePointer(AZ::u32 mip, AZ::u8*& pMem, AZ::u32& pitch) const override;
         AZ::u32 GetMipBufSize(AZ::u32 mip) const override;
@@ -61,10 +57,6 @@ namespace ImageProcessingAtom
 
         bool CompareImage(const IImageObjectPtr otherImage) const override;
 
-        bool SaveImage(const char* filename, IImageObjectPtr alphaImage, AZStd::vector<AZStd::string>& outFilePaths) const override;
-        bool SaveImage(AZ::IO::SystemFileStream& out) const override;
-        bool SaveMipToFile(AZ::u32 mip, const AZStd::string& filename) const override;
-
         uint32_t GetTextureMemory() const override;
 
         EAlphaContent GetAlphaContent() const override;
@@ -83,7 +75,6 @@ namespace ImageProcessingAtom
         void SetNumPersistentMips(AZ::u32 nMips) override;
 
         void GlossFromNormals(bool hasAuthoredGloss) override;
-        void ConvertLegacyGloss() override;
         void ClearColor(float r, float g, float b, float a) override;
         //end virtual functions from IImageObject
 

@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <TestImpactFramework/TestImpactTestSequence.h>
+#include <TestImpactFramework/TestImpactPolicy.h>
 
 #include <Artifact/Static/TestImpactDependencyGraphData.h>
 #include <Dependency/TestImpactChangeDependencyList.h>

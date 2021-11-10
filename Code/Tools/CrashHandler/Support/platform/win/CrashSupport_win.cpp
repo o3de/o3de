@@ -10,13 +10,14 @@
 #include <algorithm>
 
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/Utils/Utils.h>
 #include <time.h>
 
 namespace CrashHandler
 {
-    void GetExecutablePathA(char* pathBuffer, int& bufferSize)
+    void GetExecutablePath(char* pathBuffer, int& bufferSize)
     {
-        GetModuleFileNameA(nullptr, pathBuffer, bufferSize);
+        AZ::Utils::GetExecutablePath(pathBuffer, bufferSize);
     }
 
     void GetExecutablePathW(wchar_t* pathBuffer, int& bufferSize)

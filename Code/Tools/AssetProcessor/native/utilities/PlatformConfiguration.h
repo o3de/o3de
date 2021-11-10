@@ -49,6 +49,7 @@ namespace AssetProcessor
         {
         }
 
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
 
         AZ::SettingsRegistryInterface* m_settingsRegistry;
@@ -129,6 +130,8 @@ namespace AssetProcessor
     {
         AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
             AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
 
@@ -152,6 +155,8 @@ namespace AssetProcessor
     {
         AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
             AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
 
         AZStd::vector<ExcludeAssetRecognizer> m_excludeAssetRecognizers;
@@ -169,6 +174,8 @@ namespace AssetProcessor
         }
         AZ::SettingsRegistryInterface::VisitResponse Traverse(AZStd::string_view jsonPath, AZStd::string_view valueName,
             AZ::SettingsRegistryInterface::VisitAction action, AZ::SettingsRegistryInterface::Type) override;
+
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, bool value) override;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZ::s64 value) override;
         void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;

@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/EntityContext.h>
@@ -73,7 +74,7 @@ namespace UnitTest
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
                     editContext->Class<TestSimpleAsset>("TestSimpleAsset", "Test data block for a simple asset mock data block")
-                        ->DataElement(0, &TestSimpleAsset::m_data, "My Data", "A test bool value.")
+                        ->DataElement(nullptr, &TestSimpleAsset::m_data, "My Data", "A test bool value.")
                         ;
                 }
             }
@@ -171,7 +172,7 @@ namespace UnitTest
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::HideChildren)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &PropertyTreeEditorTester::m_myReadOnlyShort, "My Read Only", "A test read only node.")
                             ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
-                        ->DataElement(0, &PropertyTreeEditorTester::m_mySubBlock, "My Sub Block", "sub block test")
+                        ->DataElement(nullptr, &PropertyTreeEditorTester::m_mySubBlock, "My Sub Block", "sub block test")
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)                            
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Grouped")

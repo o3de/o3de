@@ -8,13 +8,11 @@
 
 #pragma once
 
-#include <Atom/RHI/CpuProfilerImpl.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/PipelineStateCache.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI.Reflect/RHISystemDescriptor.h>
 
 namespace AZ
 {
@@ -33,7 +31,7 @@ namespace AZ
             void InitDevice();
 
             //! This function initializes the rest of the RHI/RHI backend. 
-            void Init(const RHISystemDescriptor& descriptor);
+            void Init();
             void Shutdown();
 
             //! An external callback to build the frame graph.
@@ -49,7 +47,7 @@ namespace AZ
             RHI::PipelineStateCache* GetPipelineStateCache() override;
             const RHI::FrameSchedulerCompileRequest& GetFrameSchedulerCompileRequest() const override;
             void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) override;
-            const RHI::CpuTimingStatistics* GetCpuTimingStatistics() const override;
+            double GetCpuFrameTime() const override;
             const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const override;
             const RHI::MemoryStatistics* GetMemoryStatistics() const override;
             const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
@@ -67,9 +65,6 @@ namespace AZ
             RHI::Ptr<RHI::PipelineStateCache> m_pipelineStateCache;
             RHI::FrameScheduler m_frameScheduler;
             RHI::FrameSchedulerCompileRequest m_compileRequest;
-
-            ConstPtr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;
-            RHI::CpuProfilerImpl m_cpuProfiler;
         };
     } // namespace RPI
 } // namespace AZ

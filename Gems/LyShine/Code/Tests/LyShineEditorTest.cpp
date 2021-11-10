@@ -54,14 +54,13 @@
 #include <UiRadioButtonGroupComponent.h>
 #include <UiParticleEmitterComponent.h>
 #include <UiCanvasManager.h>
-#include <Mocks/IRendererMock.h>
 
 AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
 
 using namespace AZ;
 using ::testing::NiceMock;
 
-class LyShineSystemTestComponent 
+class LyShineSystemTestComponent
     : public LyShine::LyShineSystemComponent
 {
     friend class LyShineEditorTest;
@@ -80,30 +79,31 @@ protected:
 
         m_data = AZStd::make_unique<DataMembers>();
         memset(&m_data->m_stubEnv, 0, sizeof(SSystemGlobalEnvironment));
-        m_data->m_stubEnv.pRenderer = &m_data->m_renderer;
         m_data->m_stubEnv.pSystem = &m_data->m_mockSystem;
         gEnv = &m_data->m_stubEnv;
 
         AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
         auto projectPathKey =
             AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::IO::FixedMaxPath enginePath;
+        registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
         m_app.Start(m_descriptor);
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
         // in the unit tests.
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
         const AZStd::string engineRoot = AZ::Test::GetEngineRootPath();
 
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engineRoot.c_str());   
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engineRoot.c_str());
 
         AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
         assetRoot /= "Cache";
 
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());   
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
 
         AZ::SerializeContext* context = nullptr;
         ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);
@@ -212,7 +212,6 @@ protected:
     struct DataMembers
     {
         SSystemGlobalEnvironment m_stubEnv;
-        NiceMock<IRendererMock> m_renderer;
         NiceMock<SystemMock> m_mockSystem;
     };
 

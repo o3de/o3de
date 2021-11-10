@@ -466,7 +466,7 @@ namespace AZ
 
         bool DescriptorSet::IsNullDescriptorInfo(const VkDescriptorImageInfo& descriptorInfo)
         {
-            return descriptorInfo.imageView == VK_NULL_HANDLE;
+            return (descriptorInfo.imageView == VK_NULL_HANDLE && descriptorInfo.sampler == VK_NULL_HANDLE);
         }
 
         bool DescriptorSet::IsNullDescriptorInfo(const VkBufferView& descriptorInfo)

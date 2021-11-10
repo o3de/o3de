@@ -63,7 +63,7 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     // make sure the pixel belongs to this probe volume
     // this is necessary since it could have the correct stencil value but actually reside 
     // in another volume that's in between the camera and the volume we're rendering
-    if (!AabbContainsPoint(ObjectSrg::m_outerAabbMin, ObjectSrg::m_outerAabbMax, positionWS))
+    if (!ObbContainsPoint(ObjectSrg::GetWorldMatrixInverse(), ObjectSrg::m_outerObbHalfLengths, positionWS))
     {
         discard;
     }
@@ -71,11 +71,15 @@ PSOutput MainPS(VSOutput IN, in uint sampleIndex : SV_SampleIndex)
     // determine blend based on position with respect to the inner and outer AABBs
     // if it's inside the inner AABB it blends at 100%, otherwise it's the percentage of the distance between the inner/outer AABB
     float blendWeight = 1.0f;
-    if (!AabbContainsPoint(ObjectSrg::m_innerAabbMin, ObjectSrg::m_innerAabbMax, positionWS))
+    if (!ObbContainsPoint(ObjectSrg::GetWorldMatrixInverse(), ObjectSrg::m_innerObbHalfLengths, positionWS))
     {
         // not inside the inner AABB, so it's in between the inner and outer AABBs
         // compute blend amount based on the distance to the outer AABB
-        blendWeight = ComputeLerpBetweenInnerOuterAABBs(ObjectSrg::m_innerAabbMin, ObjectSrg::m_innerAabbMax, ObjectSrg::m_outerAabbMax, ObjectSrg::m_aabbPos, positionWS);
+        blendWeight = ComputeLerpBetweenInnerOuterOBBs(
+            ObjectSrg::GetWorldMatrixInverse(),
+            ObjectSrg::m_innerObbHalfLengths,
+            ObjectSrg::m_outerObbHalfLengths,
+            positionWS);
     }
 
     // write the blend weight (additive) at this position for the probe volume

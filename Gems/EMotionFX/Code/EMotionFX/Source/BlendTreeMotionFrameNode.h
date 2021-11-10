@@ -55,14 +55,14 @@ namespace EMotionFX
 
             void Reset() override
             {
-                mOldTime = 0.0f;
-                mNewTime = 0.0f;
+                m_oldTime = 0.0f;
+                m_newTime = 0.0f;
                 m_rewindRequested = false;
             }
 
         public:
-            float   mOldTime;
-            float   mNewTime;
+            float   m_oldTime;
+            float   m_newTime;
             bool    m_rewindRequested;
         };
 

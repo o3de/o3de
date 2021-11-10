@@ -713,7 +713,6 @@ namespace UnitTest
 
         TransformBus::Event(m_childId, &TransformBus::Events::SetParentRelative, AZ::EntityId());
 
-        childLocalPos;
         TransformBus::EventResult(childLocalPos, m_childId, &TransformBus::Events::GetLocalTranslation);
         EXPECT_TRUE(childLocalPos == expectedChildLocalPos);
 

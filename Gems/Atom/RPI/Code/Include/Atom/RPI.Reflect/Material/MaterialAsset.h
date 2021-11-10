@@ -19,6 +19,12 @@
 
 #include <AzCore/EBus/Event.h>
 
+namespace UnitTest
+{
+    class MaterialTests;
+    class MaterialAssetTests;
+}
+
 namespace AZ
 {
     class ReflectContext;
@@ -37,9 +43,12 @@ namespace AZ
             , public MaterialReloadNotificationBus::Handler
             , public AssetInitBus::Handler
         {
+            friend class MaterialVersionUpdate;
             friend class MaterialAssetCreator;
             friend class MaterialAssetHandler;
             friend class MaterialAssetCreatorCommon;
+            friend class UnitTest::MaterialTests;
+            friend class UnitTest::MaterialAssetTests;
 
         public:
             AZ_RTTI(MaterialAsset, "{522C7BE0-501D-463E-92C6-15184A2B7AD8}", AZ::Data::AssetData);
@@ -108,6 +117,15 @@ namespace AZ
         private:
             bool PostLoadInit() override;
 
+            //! Realigns property value and name indices with MaterialProperiesLayout by using m_propertyNames. Property names not found in the
+            //! MaterialPropertiesLayout are discarded, while property names not included in m_propertyNames will use the default value
+            //! from m_materialTypeAsset.
+            void RealignPropertyValuesAndNames();
+
+            //! Checks the material type version and potentially applies a series of property changes (most common are simple property renames)
+            //! based on the MaterialTypeAsset's version update procedure.
+            void ApplyVersionUpdates();
+
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
 
@@ -121,11 +139,24 @@ namespace AZ
             // MaterialReloadNotificationBus overrides...
             void OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>& materialTypeAsset) override;
 
+            static const char* s_debugTraceName;
+
             Data::Asset<MaterialTypeAsset> m_materialTypeAsset;
 
             //! Holds values for each material property, used to initialize Material instances.
             //! This is indexed by MaterialPropertyIndex and aligns with entries in m_materialPropertiesLayout.
             AZStd::vector<MaterialPropertyValue> m_propertyValues;
+            //! This is used to realign m_propertyValues as well as itself with MaterialPropertiesLayout when not empty.
+            //! If empty, this implies that m_propertyValues is aligned with the entries in m_materialPropertiesLayout.
+            AZStd::vector<AZ::Name> m_propertyNames;
+
+            //! The materialTypeVersion this materialAsset was based of. If the versions do not match at runtime when a
+            //! materialTypeAsset is loaded, an update will be performed on m_propertyNames if populated. 
+            uint32_t m_materialTypeVersion = 1;
+
+            //! A flag to determine if m_propertyValues needs to be aligned with MaterialPropertiesLayout. Set to true whenever
+            //! m_materialTypeAsset is reinitializing.
+            bool m_isDirty = true;
         };
        
 

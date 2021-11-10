@@ -47,7 +47,7 @@ namespace EMotionFX
         addReferenceNodeAction->trigger();
 
         // Check the expected node now exists.
-        int numNodesAfter= currentNode->GetNumChildNodes();
+        size_t numNodesAfter = currentNode->GetNumChildNodes();
         EXPECT_EQ(1, numNodesAfter);
 
         AnimGraphNode* newNode = currentNode->GetChildNode(0);

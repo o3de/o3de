@@ -18,15 +18,15 @@ using namespace AZ;
 BestFitExternalMapSchema::BestFitExternalMapSchema(const Descriptor& desc)
     : m_desc(desc)
     , m_used(0)
-    , m_freeChunksMap(FreeMapType::key_compare(), AZStdIAllocator(desc.m_mapAllocator != NULL ? desc.m_mapAllocator : &AllocatorInstance<SystemAllocator>::Get()))
-    , m_allocChunksMap(AllocMapType::hasher(), AllocMapType::key_eq(), AZStdIAllocator(desc.m_mapAllocator != NULL ? desc.m_mapAllocator : &AllocatorInstance<SystemAllocator>::Get()))
+    , m_freeChunksMap(FreeMapType::key_compare(), AZStdIAllocator(desc.m_mapAllocator != nullptr ? desc.m_mapAllocator : &AllocatorInstance<SystemAllocator>::Get()))
+    , m_allocChunksMap(AllocMapType::hasher(), AllocMapType::key_eq(), AZStdIAllocator(desc.m_mapAllocator != nullptr ? desc.m_mapAllocator : &AllocatorInstance<SystemAllocator>::Get()))
 {
-    if (m_desc.m_mapAllocator == NULL)
+    if (m_desc.m_mapAllocator == nullptr)
     {
         m_desc.m_mapAllocator = &AllocatorInstance<SystemAllocator>::Get(); // used as our sub allocator
     }
     AZ_Assert(m_desc.m_memoryBlockByteSize > 0, "You must provide memory block size!");
-    AZ_Assert(m_desc.m_memoryBlock != NULL, "You must provide memory block allocated as you with!");
+    AZ_Assert(m_desc.m_memoryBlock != nullptr, "You must provide memory block allocated as you with!");
     //if( m_desc.m_memoryBlock == NULL) there is no point to automate this cause we need to flag this memory special, otherwise there is no point to use this allocator at all
     //  m_desc.m_memoryBlock = azmalloc(SystemAllocator,m_desc.m_memoryBlockByteSize,16);
     m_freeChunksMap.insert(AZStd::make_pair(m_desc.m_memoryBlockByteSize, reinterpret_cast<char*>(m_desc.m_memoryBlock)));
@@ -40,13 +40,13 @@ BestFitExternalMapSchema::pointer_type
 BestFitExternalMapSchema::Allocate(size_type byteSize, size_type alignment, int flags)
 {
     (void)flags;
-    char* address = NULL;
+    char* address = nullptr;
     AZ_Assert(alignment > 0 && (alignment & (alignment - 1)) == 0, "Alignment must be >0 and power of 2!");
     for (int i = 0; i < 2; ++i) // max 2 attempts to allocate
     {
         FreeMapType::iterator iter = m_freeChunksMap.find(byteSize);
         size_t  blockSize = 0;
-        char*   blockAddress = NULL;
+        char*   blockAddress = nullptr;
         size_t  preAllocBlockSize = 0;
         while (iter != m_freeChunksMap.end())
         {
@@ -64,7 +64,7 @@ BestFitExternalMapSchema::Allocate(size_type byteSize, size_type alignment, int 
             }
             ++iter;
         }
-        if (address != NULL)
+        if (address != nullptr)
         {
             // split blocks
             if (preAllocBlockSize)  // if we have a block before the alignment
@@ -94,7 +94,7 @@ BestFitExternalMapSchema::Allocate(size_type byteSize, size_type alignment, int 
 void
 BestFitExternalMapSchema::DeAllocate(pointer_type ptr)
 {
-    if (ptr == 0)
+    if (ptr == nullptr)
     {
         return;
     }
@@ -134,6 +134,12 @@ BestFitExternalMapSchema::GetMaxAllocationSize() const
         return m_freeChunksMap.rbegin()->first;
     }
     return 0;
+}
+
+auto BestFitExternalMapSchema::GetMaxContiguousAllocationSize() const -> size_type
+{
+    // Return the maximum size of any single allocation
+    return AZ_CORE_MAX_ALLOCATOR_SIZE;
 }
 
 //=========================================================================

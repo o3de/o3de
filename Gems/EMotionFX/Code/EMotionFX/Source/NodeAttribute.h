@@ -42,7 +42,7 @@ namespace EMotionFX
          * Clone the node attribute.
          * @result Returns a pointer to a newly created exact copy of the node attribute.
          */
-        virtual NodeAttribute* Clone() = 0;
+        virtual NodeAttribute* Clone() const = 0;
 
     protected:
         /**

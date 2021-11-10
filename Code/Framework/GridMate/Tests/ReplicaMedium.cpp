@@ -596,12 +596,12 @@ public:
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-class MPSession
+class MPSessionMedium
     : public CarrierEventBus::Handler
 {
 public:
 
-    ~MPSession()
+    ~MPSessionMedium() override
     {
         CarrierEventBus::Handler::BusDisconnect();
     }
@@ -708,14 +708,14 @@ enum class TestStatus
     Completed,
 };
 
-class Integ_SimpleTest
+class SimpleTest
     : public UnitTest::GridMateMPTestFixture
     , public ::testing::Test
 {
 public:
-    //GM_CLASS_ALLOCATOR(Integ_SimpleTest);
+    //GM_CLASS_ALLOCATOR(SimpleTest);
 
-    Integ_SimpleTest()
+    SimpleTest()
         : m_sessionCount(0) { }
 
     virtual int GetNumSessions() { return 0; }
@@ -858,15 +858,15 @@ public:
     }
 
     int m_sessionCount;
-    AZStd::array<MPSession, 10> m_sessions;
+    AZStd::array<MPSessionMedium, 10> m_sessions;
     AZStd::unique_ptr<DefaultSimulator> m_defaultSimulator;
 };
 
-class Integ_ReplicaChunkRPCExec
-    : public Integ_SimpleTest
+class ReplicaChunkRPCExec
+    : public SimpleTest
 {
 public:
-    Integ_ReplicaChunkRPCExec()
+    ReplicaChunkRPCExec()
         : m_chunk(nullptr)
         , m_replicaId(0)
     { }
@@ -893,7 +893,7 @@ public:
     ReplicaId m_replicaId;
 };
 
-TEST_F(Integ_ReplicaChunkRPCExec, ReplicaChunkRPCExec)
+TEST_F(ReplicaChunkRPCExec, DISABLED_ReplicaChunkRPCExec)
 {
     RunTickLoop([this](int tick) -> TestStatus
     {
@@ -1050,8 +1050,8 @@ int DestroyRPCChunk::s_afterDestroyFromPrimaryCalls = 0;
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-class Integ_ReplicaDestroyedInRPC
-    : public Integ_SimpleTest
+class ReplicaDestroyedInRPC
+    : public SimpleTest
 {
 public:
     enum
@@ -1080,7 +1080,7 @@ public:
     ReplicaId m_repId[2];
 };
 
-TEST_F(Integ_ReplicaDestroyedInRPC, ReplicaDestroyedInRPC)
+TEST_F(ReplicaDestroyedInRPC, DISABLED_ReplicaDestroyedInRPC)
 {
     RunTickLoop([this](int tick)->TestStatus
     {
@@ -1129,11 +1129,11 @@ TEST_F(Integ_ReplicaDestroyedInRPC, ReplicaDestroyedInRPC)
     });
 }
 
-class Integ_ReplicaChunkAddWhileReplicated
-    : public Integ_SimpleTest
+class ReplicaChunkAddWhileReplicated
+    : public SimpleTest
 {
 public:
-    Integ_ReplicaChunkAddWhileReplicated()
+    ReplicaChunkAddWhileReplicated()
         : m_replica(nullptr)
         , m_chunk(nullptr)
         , m_replicaId(0)
@@ -1161,7 +1161,7 @@ public:
     ReplicaId m_replicaId;
 };
 
-TEST_F(Integ_ReplicaChunkAddWhileReplicated, ReplicaChunkAddWhileReplicated)
+TEST_F(ReplicaChunkAddWhileReplicated, DISABLED_ReplicaChunkAddWhileReplicated)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -1203,11 +1203,11 @@ TEST_F(Integ_ReplicaChunkAddWhileReplicated, ReplicaChunkAddWhileReplicated)
 }
 
 
-class Integ_ReplicaRPCValues
-    : public Integ_SimpleTest
+class ReplicaRPCValues
+    : public SimpleTest
 {
 public:
-    Integ_ReplicaRPCValues()
+    ReplicaRPCValues()
         : m_replica(nullptr)
         , m_chunk(nullptr)
         , m_replicaId(0)
@@ -1236,7 +1236,7 @@ public:
     ReplicaId m_replicaId;
 };
 
-TEST_F(Integ_ReplicaRPCValues, ReplicaRPCValues)
+TEST_F(ReplicaRPCValues, DISABLED_ReplicaRPCValues)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -1257,11 +1257,11 @@ TEST_F(Integ_ReplicaRPCValues, ReplicaRPCValues)
     });
 }
 
-class Integ_FullRPCValues
-    : public Integ_SimpleTest
+class FullRPCValues
+    : public SimpleTest
 {
 public:
-    Integ_FullRPCValues()
+    FullRPCValues()
         : m_replica(nullptr)
         , m_chunk(nullptr)
         , m_replicaId(0)
@@ -1290,7 +1290,7 @@ public:
     ReplicaId m_replicaId;
 };
 
-TEST_F(Integ_FullRPCValues, FullRPCValues)
+TEST_F(FullRPCValues, DISABLED_FullRPCValues)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -1364,11 +1364,11 @@ TEST_F(Integ_FullRPCValues, FullRPCValues)
 }
 
 
-class Integ_ReplicaRemoveProxy
-    : public Integ_SimpleTest
+class ReplicaRemoveProxy
+    : public SimpleTest
 {
 public:
-    Integ_ReplicaRemoveProxy()
+    ReplicaRemoveProxy()
         : m_replica(nullptr)
         , m_replicaId(0)
     {
@@ -1395,7 +1395,7 @@ public:
     ReplicaId m_replicaId;
 };
 
-TEST_F(Integ_ReplicaRemoveProxy, ReplicaRemoveProxy)
+TEST_F(ReplicaRemoveProxy, DISABLED_ReplicaRemoveProxy)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -1424,11 +1424,11 @@ TEST_F(Integ_ReplicaRemoveProxy, ReplicaRemoveProxy)
 }
 
 
-class Integ_ReplicaChunkEvents
-    : public Integ_SimpleTest
+class ReplicaChunkEvents
+    : public SimpleTest
 {
 public:
-    Integ_ReplicaChunkEvents()
+    ReplicaChunkEvents()
         : m_replicaId(InvalidReplicaId)
         , m_chunk(nullptr)
         , m_proxyChunk(nullptr)
@@ -1463,7 +1463,7 @@ public:
     AllEventChunk::Ptr m_proxyChunk;
 };
 
-TEST_F(Integ_ReplicaChunkEvents, ReplicaChunkEvents)
+TEST_F(ReplicaChunkEvents, DISABLED_ReplicaChunkEvents)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -1501,11 +1501,11 @@ TEST_F(Integ_ReplicaChunkEvents, ReplicaChunkEvents)
 }
 
 
-class Integ_ReplicaChunksBeyond32
-    : public Integ_SimpleTest
+class ReplicaChunksBeyond32
+    : public SimpleTest
 {
 public:
-    Integ_ReplicaChunksBeyond32()
+    ReplicaChunksBeyond32()
         : m_replicaId(InvalidReplicaId)
     {
     }
@@ -1537,7 +1537,7 @@ public:
     ReplicaId m_replicaId;
 };
 
-TEST_F(Integ_ReplicaChunksBeyond32, ReplicaChunksBeyond32)
+TEST_F(ReplicaChunksBeyond32, DISABLED_ReplicaChunksBeyond32)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -1565,11 +1565,11 @@ TEST_F(Integ_ReplicaChunksBeyond32, ReplicaChunksBeyond32)
 }
 
 
-class Integ_ReplicaChunkEventsDeactivate
-    : public Integ_SimpleTest
+class ReplicaChunkEventsDeactivate
+    : public SimpleTest
 {
 public:
-    Integ_ReplicaChunkEventsDeactivate()
+    ReplicaChunkEventsDeactivate()
         : m_replica(nullptr)
         , m_replicaId(0)
         , m_chunk(nullptr)
@@ -1604,7 +1604,7 @@ public:
     AllEventChunk::Ptr m_proxyChunk;
 };
 
-TEST_F(Integ_ReplicaChunkEventsDeactivate, ReplicaChunkEventsDeactivate)
+TEST_F(ReplicaChunkEventsDeactivate, DISABLED_ReplicaChunkEventsDeactivate)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -1649,11 +1649,11 @@ TEST_F(Integ_ReplicaChunkEventsDeactivate, ReplicaChunkEventsDeactivate)
 }
 
 
-class Integ_ReplicaDriller
-    : public Integ_SimpleTest
+class ReplicaDriller
+    : public SimpleTest
 {
 public:
-    Integ_ReplicaDriller()
+    ReplicaDriller()
         : m_replicaId(InvalidReplicaId)
     {
     }
@@ -2007,7 +2007,7 @@ public:
         m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
     }
 
-    ~Integ_ReplicaDriller()
+    ~ReplicaDriller() override
     {
         m_driller.BusDisconnect();
     }
@@ -2016,7 +2016,7 @@ public:
     ReplicaId m_replicaId;
 };
 
-TEST_F(Integ_ReplicaDriller, ReplicaDriller)
+TEST_F(ReplicaDriller, DISABLED_ReplicaDriller)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -2082,11 +2082,11 @@ TEST_F(Integ_ReplicaDriller, ReplicaDriller)
 }
 
 
-class Integ_DataSetChangedTest
-    : public Integ_SimpleTest
+class DataSetChangedTest
+    : public SimpleTest
 {
 public:
-    Integ_DataSetChangedTest()
+    DataSetChangedTest()
         : m_replica(nullptr)
         , m_replicaId(0)
         , m_chunk(nullptr)
@@ -2115,7 +2115,7 @@ public:
     DataSetChunk::Ptr m_chunk;
 };
 
-TEST_F(Integ_DataSetChangedTest, DataSetChangedTest)
+TEST_F(DataSetChangedTest, DISABLED_DataSetChangedTest)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -2144,11 +2144,11 @@ TEST_F(Integ_DataSetChangedTest, DataSetChangedTest)
 }
 
 
-class Integ_CustomHandlerTest
-    : public Integ_SimpleTest
+class CustomHandlerTest
+    : public SimpleTest
 {
 public:
-    Integ_CustomHandlerTest()
+    CustomHandlerTest()
         : m_replica(nullptr)
         , m_replicaId(0)
         , m_chunk(nullptr)
@@ -2181,7 +2181,7 @@ public:
     AZStd::scoped_ptr<CustomHandler> m_proxyHandler;
 };
 
-TEST_F(Integ_CustomHandlerTest, CustomHandlerTest)
+TEST_F(CustomHandlerTest, DISABLED_CustomHandlerTest)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -2234,11 +2234,11 @@ TEST_F(Integ_CustomHandlerTest, CustomHandlerTest)
 }
 
 
-class Integ_NonConstMarshalerTest
-    : public Integ_SimpleTest
+class NonConstMarshalerTest
+    : public SimpleTest
 {
 public:
-    Integ_NonConstMarshalerTest()
+    NonConstMarshalerTest()
         : m_replica(nullptr)
         , m_replicaId(0)
         , m_chunk(nullptr)
@@ -2266,7 +2266,7 @@ public:
     NonConstMarshalerChunk::Ptr m_chunk;
 };
 
-TEST_F(Integ_NonConstMarshalerTest, NonConstMarshalerTest)
+TEST_F(NonConstMarshalerTest, DISABLED_NonConstMarshalerTest)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -2309,11 +2309,11 @@ TEST_F(Integ_NonConstMarshalerTest, NonConstMarshalerTest)
 }
 
 
-class Integ_SourcePeerTest
-    : public Integ_SimpleTest
+class SourcePeerTest
+    : public SimpleTest
 {
 public:
-    Integ_SourcePeerTest()
+    SourcePeerTest()
         : m_replica(nullptr)
         , m_replicaId(0)
         , m_chunk(nullptr)
@@ -2343,7 +2343,7 @@ public:
     SourcePeerChunk::Ptr m_chunk2;
 };
 
-TEST_F(Integ_SourcePeerTest, SourcePeerTest)
+TEST_F(SourcePeerTest, DISABLED_SourcePeerTest)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -2404,8 +2404,8 @@ TEST_F(Integ_SourcePeerTest, SourcePeerTest)
 }
 
 
-class Integ_SendWithPriority
-    : public Integ_SimpleTest
+class SendWithPriority
+    : public SimpleTest
 {
 public:
     enum
@@ -2438,8 +2438,8 @@ public:
     {
     public:
         ReplicaDrillerHook()
-            : m_expectedSendValue(Integ_SendWithPriority::kNumReplicas)
-            , m_expectedRecvValue(Integ_SendWithPriority::kNumReplicas)
+            : m_expectedSendValue(SendWithPriority::kNumReplicas)
+            , m_expectedRecvValue(SendWithPriority::kNumReplicas)
         {
         }
 
@@ -2495,7 +2495,7 @@ public:
     PriorityChunk::Ptr m_chunks[kNumReplicas];
 };
 
-TEST_F(Integ_SendWithPriority, SendWithPriority)
+TEST_F(SendWithPriority, DISABLED_SendWithPriority)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -2511,8 +2511,8 @@ TEST_F(Integ_SendWithPriority, SendWithPriority)
 }
 
 
-class Integ_SuspendUpdatesTest
-    : public Integ_SimpleTest
+class SuspendUpdatesTest
+    : public SimpleTest
 {
 public:
     enum
@@ -2597,7 +2597,7 @@ public:
     unsigned int m_numRpcCalled = 0;
 };
 
-TEST_F(Integ_SuspendUpdatesTest, SuspendUpdatesTest)
+TEST_F(SuspendUpdatesTest, DISABLED_SuspendUpdatesTest)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -2657,7 +2657,7 @@ TEST_F(Integ_SuspendUpdatesTest, SuspendUpdatesTest)
 }
 
 
-class Integ_BasicHostChunkDescriptorTest
+class BasicHostChunkDescriptorTest
     : public UnitTest::GridMateMPTestFixture
     , public ::testing::Test
 {
@@ -2694,17 +2694,17 @@ public:
         static int nProxyActivations;
     };
 };
-int Integ_BasicHostChunkDescriptorTest::HostChunk::nPrimaryActivations = 0;
-int Integ_BasicHostChunkDescriptorTest::HostChunk::nProxyActivations = 0;
+int BasicHostChunkDescriptorTest::HostChunk::nPrimaryActivations = 0;
+int BasicHostChunkDescriptorTest::HostChunk::nProxyActivations = 0;
 
-TEST_F(Integ_BasicHostChunkDescriptorTest, BasicHostChunkDescriptorTest)
+TEST_F(BasicHostChunkDescriptorTest, DISABLED_BasicHostChunkDescriptorTest)
 {
     AZ_TracePrintf("GridMate", "\n");
 
     // Register test chunks
     ReplicaChunkDescriptorTable::Get().RegisterChunkType<HostChunk, GridMate::BasicHostChunkDescriptor<HostChunk>>();
 
-    MPSession nodes[nNodes];
+    MPSessionMedium nodes[nNodes];
 
     // initialize transport
     int basePort = 4427;
@@ -2791,8 +2791,8 @@ TEST_F(Integ_BasicHostChunkDescriptorTest, BasicHostChunkDescriptorTest)
  * Create and immedietly destroy primary replica
  * Test that it does not result in any network sync
 */
-class Integ_CreateDestroyPrimary
-    : public Integ_SimpleTest
+class CreateDestroyPrimary
+    : public SimpleTest
     , public Debug::ReplicaDrillerBus::Handler
 {
 public:
@@ -2827,7 +2827,7 @@ public:
     }
 };
 
-TEST_F(Integ_CreateDestroyPrimary, CreateDestroyPrimary)
+TEST_F(CreateDestroyPrimary, DISABLED_CreateDestroyPrimary)
 {
     RunTickLoop([this](int tick)-> TestStatus
     {
@@ -2861,7 +2861,7 @@ TEST_F(Integ_CreateDestroyPrimary, CreateDestroyPrimary)
 * The ReplicaTarget will prevent sending more updates.
 */
 class ReplicaACKfeedbackTestFixture
-    : public Integ_SimpleTest
+    : public SimpleTest
 {
 public:
     ReplicaACKfeedbackTestFixture()
@@ -2893,14 +2893,14 @@ public:
         m_replicaId = m_sessions[sHost].GetReplicaMgr().AddPrimary(replica);
     }
 
-    ~ReplicaACKfeedbackTestFixture()
+    ~ReplicaACKfeedbackTestFixture() override
     {
         m_driller.BusDisconnect();
     }
 
     size_t                              m_replicaBytesSentPrev = 0;
     ReplicaId                           m_replicaId;
-    Integ_ReplicaDriller::ReplicaDrillerHook  m_driller;
+    ReplicaDriller::ReplicaDrillerHook  m_driller;
 };
 
 TEST_F(ReplicaACKfeedbackTestFixture, ReplicaACKfeedbackTest)

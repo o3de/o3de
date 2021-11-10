@@ -14,9 +14,7 @@
 
 #include "CameraComponent.h"
 
-#include <MathConversion.h>
 #include <AzCore/Math/MatrixUtils.h>
-#include <IRenderer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
 namespace Camera
@@ -103,6 +101,7 @@ namespace Camera
                 ->Event("SetNearClipDistance", &CameraRequestBus::Events::SetNearClipDistance)
                 ->Event("SetFarClipDistance", &CameraRequestBus::Events::SetFarClipDistance)
                 ->Event("MakeActiveView", &CameraRequestBus::Events::MakeActiveView)
+                ->Event("IsActiveView", &CameraRequestBus::Events::IsActiveView)
                 ->Event("IsOrthographic", &CameraRequestBus::Events::IsOrthographic)
                 ->Event("SetOrthographic", &CameraRequestBus::Events::SetOrthographic)
                 ->Event("GetOrthographicHalfWidth", &CameraRequestBus::Events::GetOrthographicHalfWidth)

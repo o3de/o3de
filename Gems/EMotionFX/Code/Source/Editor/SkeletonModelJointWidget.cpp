@@ -72,14 +72,7 @@ namespace EMotionFX
 
         setLayout(mainLayout);
 
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
-        QModelIndexList selectedModelIndices;
-        SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
-        if (selectedRowIndicesOutcome.IsSuccess())
-        {
-            selectedModelIndices = selectedRowIndicesOutcome.GetValue();
-        }
-        Reinit(selectedModelIndices);
+        Reinit();
 
         // Connect to the model.
         SkeletonModel* skeletonModel = nullptr;
@@ -92,9 +85,9 @@ namespace EMotionFX
         }
     }
 
-    void SkeletonModelJointWidget::Reinit(const QModelIndexList& selectedModelIndices)
+    void SkeletonModelJointWidget::Reinit()
     {
-        m_selectedModelIndices = selectedModelIndices;
+        const QModelIndexList& selectedModelIndices = GetSelectedModelIndices();
 
         if (!EMStudio::GetManager()->GetIgnoreVisibility() && !isVisible())
         {
@@ -103,15 +96,15 @@ namespace EMotionFX
 
         if (GetActor())
         {
-            if (!m_selectedModelIndices.isEmpty())
+            if (!selectedModelIndices.isEmpty())
             {
-                if (m_selectedModelIndices.size() == 1)
+                if (selectedModelIndices.size() == 1)
                 {
                     m_jointNameLabel->setText(GetNode()->GetName());
                 }
                 else
                 {
-                    m_jointNameLabel->setText(QString("%1 joints selected").arg(m_selectedModelIndices.size()));
+                    m_jointNameLabel->setText(QString("%1 joints selected").arg(selectedModelIndices.size()));
                 }
 
                 m_noSelectionWidget->hide();
@@ -136,7 +129,7 @@ namespace EMotionFX
     void SkeletonModelJointWidget::showEvent(QShowEvent* event)
     {
         QWidget::showEvent(event);
-        Reinit(m_selectedModelIndices);
+        Reinit();
     }
 
     void SkeletonModelJointWidget::OnSelectionChanged([[maybe_unused]] const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
@@ -146,36 +139,28 @@ namespace EMotionFX
         if (skeletonModel)
         {
             const QModelIndexList selectedRows = skeletonModel->GetSelectionModel().selectedRows();
-            Reinit(selectedRows);
         }
+        Reinit();
     }
 
     void SkeletonModelJointWidget::OnDataChanged([[maybe_unused]] const QModelIndex& topLeft, [[maybe_unused]] const QModelIndex& bottomRight, [[maybe_unused]] const QVector<int>& roles)
     {
-        Reinit(m_selectedModelIndices);
+        Reinit();
     }
 
     void SkeletonModelJointWidget::OnModelReset()
     {
-        Reinit(QModelIndexList());
+        Reinit();
     }
 
     Actor* SkeletonModelJointWidget::GetActor() const
     {
         Actor* actor = nullptr;
-        if (!m_selectedModelIndices.empty())
+        SkeletonModel* skeletonModel = nullptr;
+        SkeletonOutlinerRequestBus::BroadcastResult(skeletonModel, &SkeletonOutlinerRequests::GetModel);
+        if (skeletonModel)
         {
-            actor = m_selectedModelIndices[0].data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
-        }
-        
-        if (!actor)
-        {
-            SkeletonModel* skeletonModel = nullptr;
-            SkeletonOutlinerRequestBus::BroadcastResult(skeletonModel, &SkeletonOutlinerRequests::GetModel);
-            if (skeletonModel)
-            {
-                actor = skeletonModel->GetActor();
-            }
+            actor = skeletonModel->GetActor();
         }
         return actor;
     }
@@ -183,10 +168,24 @@ namespace EMotionFX
     Node* SkeletonModelJointWidget::GetNode() const
     {
         Node* node = nullptr;
-        if (!m_selectedModelIndices.empty())
+        const QModelIndexList& selectedModelIndices = GetSelectedModelIndices();
+        if (!selectedModelIndices.empty())
         {
-            node = m_selectedModelIndices[0].data(SkeletonModel::ROLE_POINTER).value<Node*>();
+            node = selectedModelIndices[0].data(SkeletonModel::ROLE_POINTER).value<Node*>();
         }
         return node;
+    }
+
+    QModelIndexList SkeletonModelJointWidget::GetSelectedModelIndices() const
+    {
+        QModelIndexList selectedModelIndices;
+        SkeletonModel* skeletonModel = nullptr;
+        SkeletonOutlinerRequestBus::BroadcastResult(skeletonModel, &SkeletonOutlinerRequests::GetModel);
+        if (skeletonModel)
+        {
+            selectedModelIndices = skeletonModel->GetSelectionModel().selectedRows();
+        }
+
+        return selectedModelIndices;
     }
 } // namespace EMotionFX

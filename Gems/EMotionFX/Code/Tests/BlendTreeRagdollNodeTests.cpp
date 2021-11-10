@@ -105,7 +105,7 @@ namespace EMotionFX
 
     TEST_P(RagdollRootNodeFixture, RagdollRootNodeIsSimulatedTests)
     {
-        Physics::RagdollConfiguration& ragdollConfig = m_actor->GetPhysicsSetup()->GetRagdollConfig();
+        Physics::RagdollConfiguration& ragdollConfig = GetActor()->GetPhysicsSetup()->GetRagdollConfig();
         AZStd::vector<Physics::RagdollNodeConfiguration>& ragdollNodes = ragdollConfig.m_nodes;
         const RagdollRootNodeParam& param = GetParam();
         const AZStd::string ragdollRootNodeName = param.m_ragdollRootNode.c_str();
@@ -115,7 +115,6 @@ namespace EMotionFX
         {
             AddRagdollNodeConfig(ragdollNodes, jointName.c_str());
         }
-        const size_t numRagdollNodes = ragdollNodes.size();
 
         // Create the ragdoll instance and check if the ragdoll root node is set correctly.
         TestRagdoll testRagdoll;
@@ -127,7 +126,7 @@ namespace EMotionFX
         m_actorInstance->SetRagdoll(&testRagdoll);
         RagdollInstance* ragdollInstance = m_actorInstance->GetRagdollInstance();
         const AZ::Outcome<size_t> rootNodeIndex = ragdollInstance->GetRootRagdollNodeIndex();
-        EXPECT_TRUE(rootNodeIndex.IsSuccess()) << "No root node for the ragdoll found.";
+        ASSERT_TRUE(rootNodeIndex.IsSuccess()) << "No root node for the ragdoll found.";
         EXPECT_EQ(ragdollInstance->GetRagdollRootNode()->GetNameString(), ragdollRootNodeName) << "Wrong ragdoll root node.";
 
         // Create an anim graph with a ragdoll node.

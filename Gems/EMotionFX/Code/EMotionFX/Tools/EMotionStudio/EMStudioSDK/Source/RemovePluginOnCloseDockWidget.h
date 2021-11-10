@@ -28,6 +28,6 @@ namespace EMStudio
         void closeEvent(QCloseEvent* event) override;
 
     private:
-        EMStudio::EMStudioPlugin* mPlugin;
+        EMStudio::EMStudioPlugin* m_plugin;
     };
 }

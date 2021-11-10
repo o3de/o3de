@@ -283,7 +283,7 @@ namespace ScriptCanvasEditor
                         loadResult.m_runtimeAsset.Get()->GetData().m_debugMap = luaAssetResult.m_debugMap;
                         loadResult.m_runtimeComponent = loadResult.m_entity->CreateComponent<ScriptCanvas::RuntimeComponent>();
                         CopyAssetEntityIdsToOverrides(runtimeDataOverrides);
-                        loadResult.m_runtimeComponent->SetRuntimeDataOverrides(runtimeDataOverrides);
+                        loadResult.m_runtimeComponent->TakeRuntimeDataOverrides(AZStd::move(runtimeDataOverrides));
                         Execution::Context::InitializeActivationData(loadResult.m_runtimeAsset->GetData());
                         Execution::InitializeInterpretedStatics(loadResult.m_runtimeAsset->GetData());
                     }

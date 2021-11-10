@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/UserSettings/UserSettings.h>
 
@@ -40,7 +41,7 @@ namespace ScriptCanvasEditor
             ScriptCanvasConstructPresets();
             ~ScriptCanvasConstructPresets() override = default;
 
-            void InitializeConstructType(GraphCanvas::ConstructType constructType);            
+            void InitializeConstructType(GraphCanvas::ConstructType constructType) override;
         };
 
         class EditorWorkspace

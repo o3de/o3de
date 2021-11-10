@@ -33,9 +33,9 @@ namespace ScriptCanvasEditor
         ~DynamicSlotComponent() override = default;
         
         // AZ::Component
-        void Init();
-        void Activate();
-        void Deactivate();
+        void Init() override;
+        void Activate() override;
+        void Deactivate() override;
         ////
 
         // GraphCanvas::SceneMemberNotificationBus

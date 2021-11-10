@@ -57,6 +57,35 @@ namespace UnitTest
         }
     }
 
+    TEST_F(RewindableObjectTests, CurrentPreviousTests)
+    {
+        Multiplayer::RewindableObject<uint32_t, RewindableBufferFrames> test(0);
+
+        for (uint32_t i = 0; i < RewindableBufferFrames; ++i)
+        {
+            test = i;
+            EXPECT_EQ(i, test);
+            Multiplayer::GetNetworkTime()->IncrementHostFrameId();
+        }
+
+        {
+            // Test that Get/GetPrevious return different value when not on the owning connection
+            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::HostFrameId>(RewindableBufferFrames - 1), AZ::TimeMs{ 0 }, 1.f, AzNetworking::InvalidConnectionId);
+            EXPECT_EQ(RewindableBufferFrames - 1, test.Get());
+            EXPECT_EQ(RewindableBufferFrames - 2, test.GetPrevious());
+        }
+
+        // Test that Get/GetPrevious return the unaltered frame on the owning conection
+        Multiplayer::GetNetworkTime()->AlterTime(static_cast<Multiplayer::HostFrameId>(RewindableBufferFrames - 1), AZ::TimeMs{ 0 }, 1.f, AzNetworking::ConnectionId(0));
+        {
+            Multiplayer::ScopedAlterTime time(static_cast<Multiplayer::HostFrameId>(RewindableBufferFrames - 1), AZ::TimeMs{ 0 }, 1.f, AzNetworking::ConnectionId(0));
+            test.SetOwningConnectionId(AzNetworking::ConnectionId(0));
+            EXPECT_EQ(RewindableBufferFrames - 1, test.Get());
+            EXPECT_EQ(RewindableBufferFrames - 1, test.GetPrevious());
+        }
+        Multiplayer::GetNetworkTime()->AlterTime(static_cast<Multiplayer::HostFrameId>(RewindableBufferFrames), AZ::TimeMs(0), 1.f, AzNetworking::InvalidConnectionId);
+    }
+
     TEST_F(RewindableObjectTests, OverflowTests)
     {
         Multiplayer::RewindableObject<uint32_t, RewindableBufferFrames> test(0);

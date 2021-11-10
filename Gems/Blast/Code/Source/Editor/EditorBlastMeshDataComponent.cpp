@@ -11,6 +11,7 @@
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -86,7 +87,7 @@ namespace Blast
 
     void EditorBlastMeshDataComponent::Activate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(System);
         OnMeshAssetsChanged();
 
         m_meshFeatureProcessor =
@@ -100,7 +101,7 @@ namespace Blast
 
     void EditorBlastMeshDataComponent::Deactivate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(System);
         EditorComponentBase::Deactivate();
         AZ::Render::MaterialComponentNotificationBus::Handler::BusDisconnect(GetEntityId());
         AZ::TransformNotificationBus::Handler::BusDisconnect(GetEntityId());

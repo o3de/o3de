@@ -181,11 +181,11 @@ namespace
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // test if the given text file starts with the given text string
-    bool TestFileStartString(const string& pathname, const char* expectedStart)
+    bool TestFileStartString(const AZStd::string& pathname, const char* expectedStart)
     {
         // Open the file using CCryFile, this supports it being in the pak file or a standalone file
         CCryFile file;
-        if (!file.Open(pathname, "r"))
+        if (!file.Open(pathname.c_str(), "r"))
         {
             return false;
         }
@@ -212,7 +212,7 @@ namespace
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Check if the given file was saved using AZ serialization
-    bool IsValidAzSerializedFile(const string& pathname)
+    bool IsValidAzSerializedFile(const AZStd::string& pathname)
     {
         return TestFileStartString(pathname, "<ObjectStream");
     }
@@ -585,7 +585,7 @@ AZ::EntityId UiCanvasComponent::FindInteractableToHandleEvent(AZ::Vector2 point)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiCanvasComponent::SaveToXml(const string& assetIdPathname, const string& sourceAssetPathname)
+bool UiCanvasComponent::SaveToXml(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname)
 {
     PrepareAnimationSystemForCanvasSave();
 
@@ -706,7 +706,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
 
     if (includeChildren)
     {
-        children.push_back(*includeChildren);
+        children.insert(children.end(),includeChildren->begin(),includeChildren->end());
     }
 
     // First, check if base name is unique
@@ -1862,7 +1862,7 @@ AZ::RHI::AttachmentId UiCanvasComponent::UseRenderTarget(const AZ::Name& renderT
 
     // Notify LyShine render pass that it needs to rebuild
     QueueRttPassRebuild();
-    
+
     return attachmentImage->GetAttachmentId();
 }
 
@@ -3637,9 +3637,13 @@ void UiCanvasComponent::DestroyRenderTarget()
     if (m_renderTargetHandle > 0)
     {
         ISystem::CrySystemNotificationBus::Handler::BusDisconnect();
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
         gEnv->pRenderer->DestroyDepthSurface(m_renderTargetDepthSurface);
+#endif
         m_renderTargetDepthSurface = nullptr;
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
         gEnv->pRenderer->DestroyRenderTarget(m_renderTargetHandle);
+#endif
         m_renderTargetHandle = -1;
     }
 }
@@ -3680,7 +3684,7 @@ void UiCanvasComponent::RenderCanvasToTexture()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiCanvasComponent::SaveCanvasToFile(const string& pathname, AZ::DataStream::StreamType streamType)
+bool UiCanvasComponent::SaveCanvasToFile(const AZStd::string& pathname, AZ::DataStream::StreamType streamType)
 {
     // Note: This is ok for saving in tools, but we should use the streamer to write objects directly (no memory store)
     AZStd::vector<AZ::u8> dstData;
@@ -3963,7 +3967,7 @@ UiCanvasComponent* UiCanvasComponent::CreateCanvasInternal(UiEntityContext* enti
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-UiCanvasComponent*  UiCanvasComponent::LoadCanvasInternal(const string& pathnameToOpen, bool forEditor, const string& assetIdPathname, UiEntityContext* entityContext,
+UiCanvasComponent*  UiCanvasComponent::LoadCanvasInternal(const AZStd::string& pathnameToOpen, bool forEditor, const AZStd::string& assetIdPathname, UiEntityContext* entityContext,
     const AZ::SliceComponent::EntityIdToEntityIdMap* previousRemapTable, AZ::EntityId previousCanvasId)
 {
     UiCanvasComponent* canvasComponent = nullptr;
@@ -4097,7 +4101,7 @@ UiCanvasComponent* UiCanvasComponent::FixupPostLoad(AZ::Entity* canvasEntity, AZ
 
         canvasComponent->m_editorToGameEntityIdMap = *previousRemapTable;
         ReuseOrGenerateNewIdsAndFixRefs(&entityContainer, canvasComponent->m_editorToGameEntityIdMap, context);
-        
+
         AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(isLoadingRootEntitySuccessful,
             canvasComponent->m_entityContext->GetContextId(),
             &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::HandleRootEntityReloadedFromStream, rootSliceEntity, false, nullptr);

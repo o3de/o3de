@@ -13,6 +13,11 @@
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 
+void OnDebugEntities_ShowBandwidth_Changed(const bool& showBandwidth);
+
+AZ_CVAR(bool, net_DebugEntities_ShowBandwidth, false, &OnDebugEntities_ShowBandwidth_Changed, AZ::ConsoleFunctorFlags::Null,
+    "If true, prints bandwidth values over entities that use a considerable amount of network traffic");
+
 namespace Multiplayer
 {
     void MultiplayerDebugSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -23,30 +28,46 @@ namespace Multiplayer
                 ->Version(1);
         }
     }
+
     void MultiplayerDebugSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("MultiplayerDebugSystemComponent"));
     }
+
     void MultiplayerDebugSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         ;
     }
+
     void MultiplayerDebugSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatbile)
     {
         incompatbile.push_back(AZ_CRC_CE("MultiplayerDebugSystemComponent"));
     }
+
     void MultiplayerDebugSystemComponent::Activate()
     {
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
 #endif
     }
+
     void MultiplayerDebugSystemComponent::Deactivate()
     {
 #ifdef IMGUI_ENABLED
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
 #endif
     }
+
+    void MultiplayerDebugSystemComponent::ShowEntityBandwidthDebugOverlay()
+    {
+        m_reporter = AZStd::make_unique<MultiplayerDebugPerEntityReporter>();
+    }
+
+    void MultiplayerDebugSystemComponent::HideEntityBandwidthDebugOverlay()
+    {
+        m_reporter.reset();
+    }
+
 #ifdef IMGUI_ENABLED
     void MultiplayerDebugSystemComponent::OnImGuiMainMenuUpdate()
     {
@@ -54,9 +75,12 @@ namespace Multiplayer
         {
             ImGui::Checkbox("Networking Stats", &m_displayNetworkingStats);
             ImGui::Checkbox("Multiplayer Stats", &m_displayMultiplayerStats);
+            ImGui::Checkbox("Multiplayer Entity Stats", &m_displayPerEntityStats);
+            ImGui::Checkbox("Multiplayer Hierarchy Debugger", &m_displayHierarchyDebugger);
             ImGui::EndMenu();
         }
     }
+
     void AccumulatePerSecondValues(const MultiplayerStats& stats, const MultiplayerStats::Metric& metric, float& outCallsPerSecond, float& outBytesPerSecond)
     {
         uint64_t summedCalls = 0;
@@ -89,6 +113,7 @@ namespace Multiplayer
         ImGui::Text("%11.2f", bytesPerSecond);
         return open;
     }
+
     bool DrawSummaryRow(const char* name, const MultiplayerStats& stats)
     {
         const MultiplayerStats::Metric propertyUpdatesSent = stats.CalculateTotalPropertyUpdateSentMetrics();
@@ -105,6 +130,7 @@ namespace Multiplayer
         AccumulatePerSecondValues(stats, rpcsRecv, callsPerSecond, bytesPerSecond);
         return DrawMetricsRow(name, true, totalCalls, totalBytes, callsPerSecond, bytesPerSecond);
     }
+
     bool DrawComponentRow(const char* name, const MultiplayerStats& stats, NetComponentId netComponentId)
     {
         const MultiplayerStats::Metric propertyUpdatesSent = stats.CalculateComponentPropertyUpdateSentMetrics(netComponentId);
@@ -121,6 +147,7 @@ namespace Multiplayer
         AccumulatePerSecondValues(stats, rpcsRecv, callsPerSecond, bytesPerSecond);
         return DrawMetricsRow(name, true, totalCalls, totalBytes, callsPerSecond, bytesPerSecond);
     }
+
     void DrawComponentDetails(const MultiplayerStats& stats, NetComponentId netComponentId)
     {
         MultiplayerComponentRegistry* componentRegistry = GetMultiplayerComponentRegistry();
@@ -213,7 +240,6 @@ namespace Multiplayer
     void DrawNetworkingStats()
     {
         const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
-        const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 
         const ImGuiTableFlags flags = ImGuiTableFlags_BordersV
             | ImGuiTableFlags_BordersOuterH
@@ -366,7 +392,6 @@ namespace Multiplayer
     void DrawMultiplayerStats()
     {
         const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
-        const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 
         IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
         MultiplayerComponentRegistry* componentRegistry = GetMultiplayerComponentRegistry();
@@ -432,6 +457,58 @@ namespace Multiplayer
                 DrawMultiplayerStats();
             }
         }
+
+        if (m_displayPerEntityStats)
+        {
+            if (ImGui::Begin("Multiplayer Per Entity Stats", &m_displayPerEntityStats, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                // This overrides @net_DebugNetworkEntity_ShowBandwidth value
+                if (m_reporter == nullptr)
+                {
+                    ShowEntityBandwidthDebugOverlay();
+                }
+
+                if (m_reporter)
+                {
+                    m_reporter->OnImGuiUpdate();
+                }
+            }
+        }
+
+        if (m_displayHierarchyDebugger)
+        {
+            if (ImGui::Begin("Multiplayer Hierarchy Debugger", &m_displayHierarchyDebugger))
+            {
+                if (m_hierarchyDebugger == nullptr)
+                {
+                    m_hierarchyDebugger = AZStd::make_unique<MultiplayerDebugHierarchyReporter>();
+                }
+
+                if (m_hierarchyDebugger)
+                {
+                    m_hierarchyDebugger->OnImGuiUpdate();
+                }
+            }
+        }
+        else
+        {
+            if (m_hierarchyDebugger)
+            {
+                m_hierarchyDebugger.reset();
+            }
+        }
     }
 #endif
+}
+
+void OnDebugEntities_ShowBandwidth_Changed(const bool& showBandwidth)
+{
+    if (showBandwidth)
+    {
+        AZ::Interface<Multiplayer::IMultiplayerDebug>::Get()->ShowEntityBandwidthDebugOverlay();
+    }
+    else
+    {
+        AZ::Interface<Multiplayer::IMultiplayerDebug>::Get()->HideEntityBandwidthDebugOverlay();
+    }
 }

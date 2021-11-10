@@ -30,7 +30,7 @@ namespace EMotionFX
         SetupOutputPort("Normal", OUTPUTPORT_NORMAL, MCore::AttributeVector3::TYPE_ID, PORTID_OUTPUT_NORMAL);
         SetupOutputPort("Intersected", OUTPUTPORT_INTERSECTED, MCore::AttributeFloat::TYPE_ID, PORTID_OUTPUT_INTERSECTED);
 
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }

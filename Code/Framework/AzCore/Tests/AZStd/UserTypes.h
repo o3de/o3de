@@ -56,7 +56,7 @@ namespace UnitTestInternal
         }
 
         // We use this class on the stack often, so alignment more than 16 bytes will not work on all platforms.
-        AZ_ALIGN(int m_data, 16);
+        alignas(16) int m_data;
         bool m_isMoved;
     };
 

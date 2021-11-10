@@ -64,7 +64,7 @@ namespace GridMate
         // OnUpdateStatistics
         // [4/14/2011]
         //=========================================================================
-        void CarrierDriller::OnUpdateStatistics(const GridMate::string& address, const TrafficControl::Statistics& lastSecond, const TrafficControl::Statistics& lifeTime, const TrafficControl::Statistics& effectiveLastSecond, const TrafficControl::Statistics& effectiveLifeTime)
+        void CarrierDriller::OnUpdateStatistics(const AZStd::string& address, const TrafficControl::Statistics& lastSecond, const TrafficControl::Statistics& lifeTime, const TrafficControl::Statistics& effectiveLastSecond, const TrafficControl::Statistics& effectiveLifeTime)
         {
             m_output->BeginTag(m_drillerTag);
             m_output->BeginTag(AZ_CRC("Statistics", 0xe2d38b22));

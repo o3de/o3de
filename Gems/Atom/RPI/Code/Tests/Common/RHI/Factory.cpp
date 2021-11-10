@@ -47,7 +47,6 @@ namespace UnitTest
 
             RHI::Ptr<RHI::Device> device = Get().CreateDevice();
             device->Init(*physicalDevices[0]);
-            device->PostInit(RHI::DeviceDescriptor{});
 
             return device;
         }

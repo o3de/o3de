@@ -198,7 +198,7 @@ class AWSMetricsUtils:
 
             assert state == 'SUCCEEDED', f'Failed to run the named query {named_query.get("Name", {})}'
 
-    def empty_batch_analytics_bucket(self, bucket_name: str) -> None:
+    def empty_bucket(self, bucket_name: str) -> None:
         """
         Empty the S3 bucket following:
         https://boto3.amazonaws.com/v1/documentation/api/latest/guide/migrations3.html
@@ -211,25 +211,18 @@ class AWSMetricsUtils:
         for key in bucket.objects.all():
             key.delete()
 
-    def get_analytics_bucket_name(self, stack_name: str) -> str:
+    def delete_table(self, database_name: str, table_name: str) -> None:
         """
-        Get the name of the deployed S3 bucket.
-        :param stack_name: Name of the CloudFormation stack.
-        :return: Name of the deployed S3 bucket.
+        Delete an existing Glue table.
+
+        :param database_name: Name of the Glue database.
+        :param table_name: Name of the table to delete.
         """
-
-        client = self._aws_util.client('cloudformation')
-
-        response = client.describe_stack_resources(
-            StackName=stack_name
+        client = self._aws_util.client('glue')
+        client.delete_table(
+            DatabaseName=database_name,
+            Name=table_name
         )
-        resources = response.get('StackResources', [])
-
-        for resource in resources:
-            if resource.get('ResourceType') == 'AWS::S3::Bucket':
-                return resource.get('PhysicalResourceId', '')
-
-        return ''
 
 
 @pytest.fixture(scope='function')

@@ -146,7 +146,7 @@ AzQtComponents::SpinBox::setHasError(doubleSpinBox, true);
     {
         QAction* action = new QAction("Up", this);
         action->setShortcut(QKeySequence(Qt::Key_Up));
-        connect(action, &QAction::triggered, [this]()
+        connect(action, &QAction::triggered, []()
         {
             qDebug() << "Up pressed";
         });
@@ -155,7 +155,7 @@ AzQtComponents::SpinBox::setHasError(doubleSpinBox, true);
     {
         QAction* action = new QAction("Down", this);
         action->setShortcut(QKeySequence(Qt::Key_Down));
-        connect(action, &QAction::triggered, [this]()
+        connect(action, &QAction::triggered, []()
         {
             qDebug() << "Down pressed";
         });
@@ -171,7 +171,7 @@ template <typename SpinBoxType, typename ValueType>
 void SpinBoxPage::track(SpinBoxType* spinBox)
 {
     // connect to changes in the spinboxes and listen for the undo state
-    QObject::connect(spinBox, &SpinBoxType::valueChangeBegan, this, [this, spinBox]() {
+    QObject::connect(spinBox, &SpinBoxType::valueChangeBegan, this, [spinBox]() {
         ValueType oldValue = spinBox->value();
         spinBox->setProperty("OldValue", oldValue);
     });

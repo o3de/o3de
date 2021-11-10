@@ -15,11 +15,15 @@
 
 namespace SandboxEditor
 {
+    constexpr AZStd::string_view AssetBrowserMaxItemsShownInSearchSetting = "/Amazon/Preferences/Editor/AssetBrowser/MaxItemsShowInSearch";
     constexpr AZStd::string_view GridSnappingSetting = "/Amazon/Preferences/Editor/GridSnapping";
     constexpr AZStd::string_view GridSizeSetting = "/Amazon/Preferences/Editor/GridSize";
     constexpr AZStd::string_view AngleSnappingSetting = "/Amazon/Preferences/Editor/AngleSnapping";
     constexpr AZStd::string_view AngleSizeSetting = "/Amazon/Preferences/Editor/AngleSize";
     constexpr AZStd::string_view ShowGridSetting = "/Amazon/Preferences/Editor/ShowGrid";
+    constexpr AZStd::string_view StickySelectSetting = "/Amazon/Preferences/Editor/StickySelect";
+    constexpr AZStd::string_view ManipulatorLineBoundWidthSetting = "/Amazon/Preferences/Editor/Manipulator/LineBoundWidth";
+    constexpr AZStd::string_view ManipulatorCircleBoundWidthSetting = "/Amazon/Preferences/Editor/Manipulator/CircleBoundWidth";
     constexpr AZStd::string_view CameraTranslateSpeedSetting = "/Amazon/Preferences/Editor/Camera/TranslateSpeed";
     constexpr AZStd::string_view CameraBoostMultiplierSetting = "/Amazon/Preferences/Editor/Camera/BoostMultiplier";
     constexpr AZStd::string_view CameraRotateSpeedSetting = "/Amazon/Preferences/Editor/Camera/RotateSpeed";
@@ -31,6 +35,10 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraPanSpeedSetting = "/Amazon/Preferences/Editor/Camera/PanSpeed";
     constexpr AZStd::string_view CameraRotateSmoothnessSetting = "/Amazon/Preferences/Editor/Camera/RotateSmoothness";
     constexpr AZStd::string_view CameraTranslateSmoothnessSetting = "/Amazon/Preferences/Editor/Camera/TranslateSmoothness";
+    constexpr AZStd::string_view CameraTranslateSmoothingSetting = "/Amazon/Preferences/Editor/Camera/TranslateSmoothing";
+    constexpr AZStd::string_view CameraRotateSmoothingSetting = "/Amazon/Preferences/Editor/Camera/RotateSmoothing";
+    constexpr AZStd::string_view CameraCaptureCursorLookSetting = "/Amazon/Preferences/Editor/Camera/CaptureCursorLook";
+    constexpr AZStd::string_view CameraDefaultOrbitDistanceSetting = "/Amazon/Preferences/Editor/Camera/DefaultOrbitDistance";
     constexpr AZStd::string_view CameraTranslateForwardIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateForwardId";
     constexpr AZStd::string_view CameraTranslateBackwardIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateBackwardId";
     constexpr AZStd::string_view CameraTranslateLeftIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateLeftId";
@@ -44,6 +52,10 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraOrbitLookIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitLookId";
     constexpr AZStd::string_view CameraOrbitDollyIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitDollyId";
     constexpr AZStd::string_view CameraOrbitPanIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitPanId";
+    constexpr AZStd::string_view CameraFocusIdSetting = "/Amazon/Preferences/Editor/Camera/FocusId";
+    constexpr AZStd::string_view CameraDefaultStartingPositionX = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/x";
+    constexpr AZStd::string_view CameraDefaultStartingPositionY = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/y";
+    constexpr AZStd::string_view CameraDefaultStartingPositionZ = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/z";
 
     template<typename T>
     void SetRegistry(const AZStd::string_view setting, T&& value)
@@ -58,9 +70,13 @@ namespace SandboxEditor
     AZStd::remove_cvref_t<T> GetRegistry(const AZStd::string_view setting, T&& defaultValue)
     {
         AZStd::remove_cvref_t<T> value = AZStd::forward<T>(defaultValue);
-        if (auto* registry = AZ::SettingsRegistry::Get())
+        if (const auto* registry = AZ::SettingsRegistry::Get())
         {
-            registry->Get(value, setting);
+            T potentialValue;
+            if (registry->Get(potentialValue, setting))
+            {
+                value = AZStd::move(potentialValue);
+            }
         }
 
         return value;
@@ -97,6 +113,31 @@ namespace SandboxEditor
     AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks()
     {
         return AZStd::make_unique<EditorViewportSettingsCallbacksImpl>();
+    }
+
+    AZ::Vector3 CameraDefaultEditorPosition()
+    {
+        return AZ::Vector3(
+            aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionX, 0.0)),
+            aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionY, -10.0)),
+            aznumeric_cast<float>(GetRegistry(CameraDefaultStartingPositionZ, 4.0)));
+    }
+
+    void SetCameraDefaultEditorPosition(const AZ::Vector3& defaultCameraPosition)
+    {
+        SetRegistry(CameraDefaultStartingPositionX, defaultCameraPosition.GetX());
+        SetRegistry(CameraDefaultStartingPositionY, defaultCameraPosition.GetY());
+        SetRegistry(CameraDefaultStartingPositionZ, defaultCameraPosition.GetZ());
+    }
+
+    AZ::u64 MaxItemsShownInAssetBrowserSearch()
+    {
+        return GetRegistry(AssetBrowserMaxItemsShownInSearchSetting, aznumeric_cast<AZ::u64>(50));
+    }
+
+    void SetMaxItemsShownInAssetBrowserSearch(const AZ::u64 numberOfItemsShown)
+    {
+        SetRegistry(AssetBrowserMaxItemsShownInSearchSetting, numberOfItemsShown);
     }
 
     bool GridSnappingEnabled()
@@ -147,6 +188,36 @@ namespace SandboxEditor
     void SetShowingGrid(const bool showing)
     {
         SetRegistry(ShowGridSetting, showing);
+    }
+
+    bool StickySelectEnabled()
+    {
+        return GetRegistry(StickySelectSetting, false);
+    }
+
+    void SetStickySelectEnabled(const bool enabled)
+    {
+        SetRegistry(StickySelectSetting, enabled);
+    }
+
+    float ManipulatorLineBoundWidth()
+    {
+        return aznumeric_cast<float>(GetRegistry(ManipulatorLineBoundWidthSetting, 0.1));
+    }
+
+    void SetManipulatorLineBoundWidth(const float lineBoundWidth)
+    {
+        SetRegistry(ManipulatorLineBoundWidthSetting, lineBoundWidth);
+    }
+
+    float ManipulatorCircleBoundWidth()
+    {
+        return aznumeric_cast<float>(GetRegistry(ManipulatorCircleBoundWidthSetting, 0.1));
+    }
+
+    void SetManipulatorCircleBoundWidth(const float circleBoundWidth)
+    {
+        SetRegistry(ManipulatorCircleBoundWidthSetting, circleBoundWidth);
     }
 
     float CameraTranslateSpeed()
@@ -259,6 +330,46 @@ namespace SandboxEditor
         SetRegistry(CameraTranslateSmoothnessSetting, smoothness);
     }
 
+    bool CameraRotateSmoothingEnabled()
+    {
+        return GetRegistry(CameraRotateSmoothingSetting, true);
+    }
+
+    void SetCameraRotateSmoothingEnabled(const bool enabled)
+    {
+        SetRegistry(CameraRotateSmoothingSetting, enabled);
+    }
+
+    bool CameraTranslateSmoothingEnabled()
+    {
+        return GetRegistry(CameraTranslateSmoothingSetting, true);
+    }
+
+    void SetCameraTranslateSmoothingEnabled(const bool enabled)
+    {
+        SetRegistry(CameraTranslateSmoothingSetting, enabled);
+    }
+
+    bool CameraCaptureCursorForLook()
+    {
+        return GetRegistry(CameraCaptureCursorLookSetting, true);
+    }
+
+    void SetCameraCaptureCursorForLook(const bool capture)
+    {
+        SetRegistry(CameraCaptureCursorLookSetting, capture);
+    }
+
+    float CameraDefaultOrbitDistance()
+    {
+        return aznumeric_cast<float>(GetRegistry(CameraDefaultOrbitDistanceSetting, 20.0));
+    }
+
+    void SetCameraDefaultOrbitDistance(const float distance)
+    {
+        SetRegistry(CameraDefaultOrbitDistanceSetting, distance);
+    }
+
     AzFramework::InputChannelId CameraTranslateForwardChannelId()
     {
         return AzFramework::InputChannelId(
@@ -330,7 +441,7 @@ namespace SandboxEditor
 
     void SetCameraTranslateBoostChannelId(AZStd::string_view cameraTranslateBoostId)
     {
-        SetRegistry(CameraTranslateDownIdSetting, cameraTranslateBoostId);
+        SetRegistry(CameraTranslateBoostIdSetting, cameraTranslateBoostId);
     }
 
     AzFramework::InputChannelId CameraOrbitChannelId()
@@ -338,7 +449,7 @@ namespace SandboxEditor
         return AzFramework::InputChannelId(GetRegistry(CameraOrbitIdSetting, AZStd::string("keyboard_key_modifier_alt_l")).c_str());
     }
 
-    void SetCameraOrbitChannelChannelId(AZStd::string_view cameraOrbitId)
+    void SetCameraOrbitChannelId(AZStd::string_view cameraOrbitId)
     {
         SetRegistry(CameraOrbitIdSetting, cameraOrbitId);
     }
@@ -391,5 +502,15 @@ namespace SandboxEditor
     void SetCameraOrbitPanChannelId(AZStd::string_view cameraOrbitPanId)
     {
         SetRegistry(CameraOrbitPanIdSetting, cameraOrbitPanId);
+    }
+
+    AzFramework::InputChannelId CameraFocusChannelId()
+    {
+        return AzFramework::InputChannelId(GetRegistry(CameraFocusIdSetting, AZStd::string("keyboard_key_alphanumeric_X")).c_str());
+    }
+
+    void SetCameraFocusChannelId(AZStd::string_view cameraFocusId)
+    {
+        SetRegistry(CameraFocusIdSetting, cameraFocusId);
     }
 } // namespace SandboxEditor

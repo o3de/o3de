@@ -186,16 +186,20 @@ namespace HierarchyHelpers
                 if (listOfNewlyCreatedTopLevelElements.empty())
                 {
                     // This happens when the serialization version numbers DON'T match.
-                    QMessageBox(QMessageBox::Critical,
-                        "Error",
-                        QString("Failed to load elements. The serialization format is incompatible."),
-                        QMessageBox::Ok, widget->GetEditorWindow()).exec();
+                    QMessageBox(
+                        QMessageBox::Critical, "Error", QString("Failed to load elements. The serialization format is incompatible."), QMessageBox::Ok,
+                        widget->GetEditorWindow())
+                        .exec();
 
                     // Nothing more to do.
                     return LyShine::EntityArray();
                 }
 
-                completeListOfNewlyCreatedTopLevelElements.push_back(listOfNewlyCreatedTopLevelElements);
+                completeListOfNewlyCreatedTopLevelElements.insert(
+                    completeListOfNewlyCreatedTopLevelElements.end(),
+                    listOfNewlyCreatedTopLevelElements.begin(),
+                    listOfNewlyCreatedTopLevelElements.end()
+                );
             }
         }
 

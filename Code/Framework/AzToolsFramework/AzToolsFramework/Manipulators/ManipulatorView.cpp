@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/VectorConversions.h>
 #include <AzCore/std/containers/array.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -21,6 +22,14 @@
 #include <AzToolsFramework/Manipulators/SplineSelectionManipulator.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+
+AZ_CVAR(
+    bool,
+    ed_manipulatorDisplayBoundDebug,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "Display additional debug drawing for manipulator bounds");
 
 namespace AzToolsFramework
 {
@@ -118,6 +127,14 @@ namespace AzToolsFramework
         return quadBound;
     }
 
+    // calculate line in world space (axis and length).
+    static AZStd::pair<AZ::Vector3, AZ::Vector3> CalculateLine(
+        const AZ::Vector3& localPosition, const AZ::Transform& worldFromLocal, const AZ::Vector3& axis, const float length)
+    {
+        return { worldFromLocal.TransformPoint(localPosition),
+                 TransformPositionNoScaling(worldFromLocal, localPosition + (axis * length)) };
+    }
+
     // calculate line bound in world space (axis and length).
     static Picking::BoundShapeLineSegment CalculateLineBound(
         const AZ::Vector3& localPosition,
@@ -127,8 +144,9 @@ namespace AzToolsFramework
         const float width)
     {
         Picking::BoundShapeLineSegment lineBound;
-        lineBound.m_start = worldFromLocal.TransformPoint(localPosition);
-        lineBound.m_end = TransformPositionNoScaling(worldFromLocal, localPosition + (axis * length));
+        const auto line = CalculateLine(localPosition, worldFromLocal, axis, length);
+        lineBound.m_start = line.first;
+        lineBound.m_end = line.second;
         lineBound.m_width = width;
         return lineBound;
     }
@@ -395,13 +413,29 @@ namespace AzToolsFramework
             m_axis, m_cameraCorrectedAxis, managerState, mouseInteraction, manipulatorState.m_worldFromLocal,
             manipulatorState.m_localPosition, cameraState);
 
-        const Picking::BoundShapeLineSegment lineBound = CalculateLineBound(
-            manipulatorState.m_localPosition, manipulatorState.m_worldFromLocal, m_cameraCorrectedAxis, m_length * viewScale,
-            m_width * viewScale);
+        const auto worldLine =
+            CalculateLine(manipulatorState.m_localPosition, manipulatorState.m_worldFromLocal, m_cameraCorrectedAxis, m_length * viewScale);
 
         debugDisplay.SetColor(ViewColor(manipulatorState.m_mouseOver, m_color, m_mouseOverColor).GetAsVector4());
         debugDisplay.SetLineWidth(defaultLineWidth(manipulatorState.m_mouseOver));
-        debugDisplay.DrawLine(lineBound.m_start, lineBound.m_end);
+        debugDisplay.DrawLine(worldLine.first, worldLine.second);
+
+        // ensure length of bound takes into account logical width of line (m_length - m_width)
+        const Picking::BoundShapeLineSegment lineBound = CalculateLineBound(
+            manipulatorState.m_localPosition, manipulatorState.m_worldFromLocal, m_cameraCorrectedAxis, (m_length - m_width) * viewScale,
+            m_width * viewScale);
+
+        if (ed_manipulatorDisplayBoundDebug)
+        {
+            debugDisplay.DrawBall(lineBound.m_start, lineBound.m_width, false);
+            debugDisplay.DrawBall(lineBound.m_end, lineBound.m_width, false);
+
+            const auto line = lineBound.m_end - lineBound.m_start;
+            const auto height = line.GetLength();
+            const auto axis = line / height;
+            const auto center = lineBound.m_start + axis * height * 0.5f;
+            debugDisplay.DrawSolidCylinder(center, axis, lineBound.m_width, height, false);
+        }
 
         RefreshBoundInternal(managerId, manipulatorId, lineBound);
     }
@@ -578,12 +612,29 @@ namespace AzToolsFramework
         const Picking::BoundShapeTorus torusBound = CalculateTorusBound(
             manipulatorState.m_localPosition, manipulatorState.m_worldFromLocal, m_axis, m_radius * viewScale, m_width * viewScale);
 
-        // transform circle based on delta between default z up axis and other axes
-        const AZ::Transform worldFromLocalWithOrientation =
-            AZ::Transform::CreateTranslation(manipulatorState.m_worldFromLocal.GetTranslation()) *
+        const AZ::Transform orientation =
             AZ::Transform::CreateFromQuaternion((QuaternionFromTransformNoScaling(manipulatorState.m_worldFromLocal) *
                                                  AZ::Quaternion::CreateShortestArc(AZ::Vector3::CreateAxisZ(), m_axis))
                                                     .GetNormalized());
+
+        // transform circle based on delta between default z up axis and other axes
+        const AZ::Transform worldFromLocalWithOrientation =
+            AZ::Transform::CreateTranslation(manipulatorState.m_worldFromLocal.GetTranslation()) * orientation;
+
+        if (ed_manipulatorDisplayBoundDebug)
+        {
+            debugDisplay.SetColor(AZ::Colors::BlanchedAlmond);
+            debugDisplay.PushMatrix(orientation);
+            debugDisplay.DrawCircle(torusBound.m_center + AZ::Vector3::CreateAxisZ() * torusBound.m_minorRadius, torusBound.m_majorRadius);
+            debugDisplay.DrawCircle(
+                torusBound.m_center + AZ::Vector3::CreateAxisZ() * torusBound.m_minorRadius,
+                torusBound.m_majorRadius + torusBound.m_minorRadius);
+            debugDisplay.DrawCircle(torusBound.m_center - AZ::Vector3::CreateAxisZ() * torusBound.m_minorRadius, torusBound.m_majorRadius);
+            debugDisplay.DrawCircle(
+                torusBound.m_center - AZ::Vector3::CreateAxisZ() * torusBound.m_minorRadius,
+                torusBound.m_majorRadius + torusBound.m_minorRadius);
+            debugDisplay.PopMatrix();
+        }
 
         debugDisplay.CullOn();
         debugDisplay.PushMatrix(worldFromLocalWithOrientation);
@@ -604,7 +655,10 @@ namespace AzToolsFramework
     }
 
     void DrawFullCircle(
-        AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Vector3& position, const float radius, const AZ::Vector3& /*viewPos*/)
+        AzFramework::DebugDisplayRequests& debugDisplay,
+        const AZ::Vector3& position,
+        const float radius,
+        [[maybe_unused]] const AZ::Vector3& viewPos)
     {
         debugDisplay.DrawCircle(position, radius);
     }

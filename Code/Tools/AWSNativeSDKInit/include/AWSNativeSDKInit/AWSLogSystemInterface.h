@@ -57,14 +57,26 @@ namespace AWSNativeSDKInit
         /**
         * Does a printf style output to the output stream. Don't use this, it's unsafe. See LogStream
         */
+#if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
+        void Log(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const char* formatStr, ...) override;
+#else
         void Log(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const char* formatStr, ...);
+#endif
 
         /**
         * Writes the stream to the output stream.
         */
-        void LogStream(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const Aws::OStringStream &messageStream);
+#if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
+        void LogStream(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const Aws::OStringStream &messageStream) override;
+#else
+        void LogStream(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const Aws::OStringStream& messageStream);
+#endif
 
+#if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
+        void Flush() override;
+#else
         void Flush();
+#endif
 
     private:
         bool ShouldLog(Aws::Utils::Logging::LogLevel logLevel);

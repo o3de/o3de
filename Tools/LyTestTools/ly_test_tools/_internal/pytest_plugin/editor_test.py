@@ -17,7 +17,7 @@ __test__ = False
 def pytest_addoption(parser):
     parser.addoption("--no-editor-batch", action="store_true", help="Don't batch multiple tests in single editor")
     parser.addoption("--no-editor-parallel", action="store_true", help="Don't run multiple editors in parallel")
-    parser.addoption("--parallel-editors", type=int, action="store", help="Override the number editors to run at the same time")
+    parser.addoption("--editors-parallel", type=int, action="store", help="Override the number editors to run at the same time")
 
 # Create a custom custom item collection if the class defines pytest_custom_makeitem function
 # This is used for automtically generating test functions with a custom collector
