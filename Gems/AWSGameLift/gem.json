@@ -12,10 +12,11 @@
     "user_tags": [
         "AWS",
         "Framework",
-        "Network"
+        "Network",
+        "SDK"
     ],
     "icon_path": "preview.png",
-    "requirements": "",
+    "requirements": "Users will need to enable the Multiplayer gem to support the AWSGameLift feature.",
     "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/aws/aws-gamelift/",
     "dependencies": [
         "AWSCore"

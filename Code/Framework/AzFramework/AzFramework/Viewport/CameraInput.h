@@ -651,7 +651,7 @@ namespace AzFramework
     class FocusCameraInput : public CameraInput
     {
     public:
-        using PivotFn = AZStd::function<AZ::Vector3()>;
+        using PivotFn = AZStd::function<AZStd::optional<AZ::Vector3>()>;
 
         FocusCameraInput(const InputChannelId& focusChannelId, FocusOffsetFn offsetFn);
 
