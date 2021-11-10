@@ -7,7 +7,7 @@
  */
 
 #include <DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h>
-//#include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
 //#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
@@ -28,16 +28,20 @@ namespace AZ
 
         bool DiffuseProbeGridDownsamplePass::IsEnabled() const
         {
-            if (!ParentPass::IsEnabled())
-            {
-                return false;
-            }
             const RPI::Scene* scene = GetScene();
             if (!scene)
             {
                 return false;
             }
-            return false;
+            DiffuseProbeGridFeatureProcessor* diffuseProbeGridFeatureProcessor =
+                scene->GetFeatureProcessor<DiffuseProbeGridFeatureProcessor>();
+            if (!diffuseProbeGridFeatureProcessor || diffuseProbeGridFeatureProcessor->GetVisibleRealTimeProbeGrids().empty())
+            {
+                // no diffuse probe grids
+                return false;
+            }
+
+            return true;
         }
     } // namespace Render
 } // namespace AZ

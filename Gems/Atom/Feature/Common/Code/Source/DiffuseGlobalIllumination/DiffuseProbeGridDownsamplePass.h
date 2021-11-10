@@ -20,7 +20,7 @@ namespace AZ
             AZ_RPI_PASS(DiffuseProbeGridDownsamplePass);
       
         public:
-            AZ_RTTI(DiffuseProbeGridDownsamplePass, "{A2B01ADF-078A-4490-BBA6-B50E4CE12C1C}", AZ::RPI::FullscreenTrianglePass);
+            AZ_RTTI(DiffuseProbeGridDownsamplePass, "{C7EF0708-480A-4E12-B968-58DB165EFE4D}", AZ::RPI::FullscreenTrianglePass);
             AZ_CLASS_ALLOCATOR(DiffuseProbeGridDownsamplePass, SystemAllocator, 0);
 
             ~DiffuseProbeGridDownsamplePass() = default;
