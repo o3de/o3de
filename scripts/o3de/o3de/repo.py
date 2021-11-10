@@ -74,11 +74,11 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
             manifest_json_uri = f'{o3de_object_uri}/{manifest_json}'
             manifest_json_sha256 = hashlib.sha256(manifest_json_uri.encode())
             cache_file = cache_folder / str(manifest_json_sha256.hexdigest() + '.json')
-            if cache_file.is_file():
-                parsed_uri = urllib.parse.urlparse(manifest_json_uri)
-                download_file_result = utils.download_file(parsed_uri, cache_file, True)
-                if download_file_result != 0:
-                    return download_file_result
+
+            parsed_uri = urllib.parse.urlparse(manifest_json_uri)
+            download_file_result = utils.download_file(parsed_uri, cache_file, True)
+            if download_file_result != 0:
+                return download_file_result
 
     # Having a repo is also optional
     repo_list = []

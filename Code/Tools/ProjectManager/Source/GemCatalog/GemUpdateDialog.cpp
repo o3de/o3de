@@ -30,8 +30,8 @@ namespace O3DE::ProjectManager
         setLayout(layout);
 
         // Body
-        QLabel* subTitleLabel = new QLabel(tr("%1Update to the latest version of %2?").arg(
-                                           updateAvaliable ? "" : tr("Force "), gemName));
+        QLabel* subTitleLabel = new QLabel(tr("%1 to the latest version of %2?").arg(
+                                           updateAvaliable ? tr("Update") : tr("Force update"), gemName));
         subTitleLabel->setObjectName("gemCatalogDialogSubTitle");
         layout->addWidget(subTitleLabel);
 
@@ -46,7 +46,7 @@ namespace O3DE::ProjectManager
         bodyLabel->setFixedSize(QSize(440, 80));
         layout->addWidget(bodyLabel);
 
-        layout->addSpacing(40);
+        layout->addSpacing();
 
         // Buttons
         QDialogButtonBox* dialogButtons = new QDialogButtonBox();

@@ -106,7 +106,7 @@ namespace O3DE::ProjectManager
 
         FillModel(projectPath);
 
-        m_proxyModel->ResetFilters();
+        m_proxyModel->ResetFilters(false);
         m_proxyModel->sort(/*column=*/0);
 
         if (m_filterWidget)
@@ -235,7 +235,7 @@ namespace O3DE::ProjectManager
         m_proxyModel->sort(/*column=*/0);
 
         // temporary, until we can refresh filter counts 
-        m_proxyModel->ResetFilters();
+        m_proxyModel->ResetFilters(false);
         m_filterWidget->ResetAllFilters();
 
         // Reselect the same selection to proc UI updates
@@ -323,15 +323,15 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox::critical(
                     this, tr("Operation failed"),
-                    tr("Failed to refresh gem repo %1<br>Error:<br>%2").arg(selectedGemRepoUri, refreshResult.GetError().c_str()));
+                    tr("Failed to refresh gem repository %1<br>Error:<br>%2").arg(selectedGemRepoUri, refreshResult.GetError().c_str()));
             }
         }
         // If repo uri isn't specified warn user that repo might not be refreshed
         else
         {
             int result = QMessageBox::warning(
-                this, tr("Gem Repo Unspecified"),
-                tr("The repo for %1 is unspecfied. Repo cannot be automatically refreshed. "
+                this, tr("Gem Repository Unspecified"),
+                tr("The repo for %1 is unspecfied. Repository cannot be automatically refreshed. "
                    "Please ensure this gem's repo is refreshed before attempting to update.")
                     .arg(selectedDisplayGemName),
                 QMessageBox::Cancel, QMessageBox::Ok);
