@@ -120,7 +120,6 @@ set(FILES
     Entity/SliceGameEntityOwnershipService.h
     Entity/SliceGameEntityOwnershipService.cpp
     Entity/SliceGameEntityOwnershipServiceBus.h
-    Entity/PrefabEntityOwnershipService.h
     Components/ComponentAdapter.h
     Components/ComponentAdapter.inl
     Components/ComponentAdapterHelpers.h
