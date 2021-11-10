@@ -59,7 +59,6 @@ set(FILES
     Asset/AssetSeedList.h
     Asset/AssetSystemComponent.cpp
     Asset/AssetSystemComponent.h
-    Asset/CfgFileAsset.h
     Asset/GenericAssetHandler.h
     Asset/AssetBundleManifest.cpp
     Asset/AssetBundleManifest.h
