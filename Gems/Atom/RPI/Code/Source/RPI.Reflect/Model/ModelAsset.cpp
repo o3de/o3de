@@ -201,23 +201,11 @@ namespace AZ
             AZ::Vector3& normal) const
         {
             const BufferAssetView& indexBufferView = mesh.GetIndexBufferAssetView();
-            const AZStd::array_view<ModelLodAsset::Mesh::StreamBufferInfo>& streamBufferList = mesh.GetStreamBufferInfoList();
+            const BufferAssetView* positionBufferView = mesh.GetSemanticBufferAssetView(m_positionName);
 
-            // find position semantic
-            const ModelLodAsset::Mesh::StreamBufferInfo* positionBuffer = nullptr;
-
-            for (const ModelLodAsset::Mesh::StreamBufferInfo& bufferInfo : streamBufferList)
+            if (positionBufferView && positionBufferView->GetBufferAsset().Get())
             {
-                if (bufferInfo.m_semantic.m_name == m_positionName)
-                {
-                    positionBuffer = &bufferInfo;
-                    break;
-                }
-            }
-
-            if (positionBuffer && positionBuffer->m_bufferAssetView.GetBufferAsset().Get())
-            {
-                BufferAsset* bufferAssetViewPtr = positionBuffer->m_bufferAssetView.GetBufferAsset().Get();
+                BufferAsset* bufferAssetViewPtr = positionBufferView->GetBufferAsset().Get();
                 BufferAsset* indexAssetViewPtr = indexBufferView.GetBufferAsset().Get();
 
                 if (!bufferAssetViewPtr || !indexAssetViewPtr)
@@ -225,7 +213,7 @@ namespace AZ
                     return false;
                 }
 
-                RHI::BufferViewDescriptor positionBufferViewDesc = positionBuffer->m_bufferAssetView.GetBufferViewDescriptor();
+                RHI::BufferViewDescriptor positionBufferViewDesc = positionBufferView->GetBufferViewDescriptor();
                 AZStd::array_view<uint8_t> positionRawBuffer = bufferAssetViewPtr->GetBuffer();
 
                 const uint32_t positionElementSize = positionBufferViewDesc.m_elementSize;
@@ -268,14 +256,13 @@ namespace AZ
                         return false;
                     }
 
-                    const float* p = &positionPtr[index0 * StepSize];
-                    a.Set(const_cast<float*>(p)); // faster than AZ::Vector3 c-tor
-
-                    p = &positionPtr[index1 * StepSize];
-                    b.Set(const_cast<float*>(p));
-
-                    p = &positionPtr[index2 * StepSize];
-                    c.Set(const_cast<float*>(p));
+                    // faster than AZ::Vector3 c-tor
+                    const float* aRef = &positionPtr[index0 * StepSize];
+                    a.Set(aRef);
+                    const float* bRef = &positionPtr[index1 * StepSize];
+                    b.Set(bRef);
+                    const float* cRef = &positionPtr[index2 * StepSize];
+                    c.Set(cRef);
 
                     float currentDistanceNormalized;
                     if (AZ::Intersect::IntersectSegmentTriangleCCW(rayStart, rayEnd, a, b, c, intersectionNormal, currentDistanceNormalized))

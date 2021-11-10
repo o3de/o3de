@@ -248,7 +248,8 @@ namespace UnitTest
             return asset;
         }
 
-        AZ::Data::Asset<AZ::RPI::ModelAsset> BuildTestModel(const uint32_t lodCount, const uint32_t sharedMeshCount, const uint32_t separateMeshCount, ExpectedModel& expectedModel)
+        AZ::Data::Asset<AZ::RPI::ModelAsset> BuildTestModel(
+            const uint32_t lodCount, const uint32_t sharedMeshCount, const uint32_t separateMeshCount, ExpectedModel& expectedModel)
         {
             using namespace AZ;
 
@@ -989,6 +990,9 @@ namespace UnitTest
         uint32_t{ 0 }, 2, 1, 1, 2, 3, 4, 5, 6, 5, 7, 6, 0, 4, 2, 4, 6, 2, 1, 3, 5, 5, 3, 7, 0, 1, 4, 4, 1, 5, 2, 6, 3, 6, 7, 3,
     };
 
+    static constexpr AZStd::array QuadPositions = { -1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, -1.0f, -1.0f, 0.0f, 1.0f, -1.0f, 0.0f };
+    static constexpr AZStd::array QuadIndices = { uint32_t{ 0 }, 2, 1, 1, 2, 3 };
+
     // This class creates a Model with one LOD, whose mesh contains 2 planes. Plane 1 is in the XY plane at Z=-0.5, and
     // plane 2 is in the XY plane at Z=0.5. The two planes each have 9 quads which have been triangulated. It only has
     // a position and index buffer.
@@ -1031,42 +1035,61 @@ namespace UnitTest
     static constexpr inline auto minmaxElement = AZStd::minmax_element(begin(TwoSeparatedPlanesIndices), end(TwoSeparatedPlanesIndices));
     static_assert(*minmaxElement.second == (TwoSeparatedPlanesPositions.size() / 3) - 1);
 
-    template<class x> class TD;
     class TestMesh
     {
     public:
+        TestMesh() = default;
+
         TestMesh(const float* positions, size_t positionCount, const uint32_t* indices, size_t indicesCount)
         {
             AZ::RPI::ModelLodAssetCreator lodCreator;
-            lodCreator.Begin(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
+            Begin(lodCreator);
+            Add(lodCreator, positions, positionCount, indices, indicesCount);
+            End(lodCreator);
+        }
 
+        void Begin(AZ::RPI::ModelLodAssetCreator& lodCreator)
+        {
+            lodCreator.Begin(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
+        }
+
+        void Add(
+            AZ::RPI::ModelLodAssetCreator& lodCreator,
+            const float* positions,
+            size_t positionCount,
+            const uint32_t* indices,
+            size_t indicesCount)
+        {
             lodCreator.BeginMesh();
-            lodCreator.SetMeshAabb(AZ::Aabb::CreateFromMinMax({-1.0f, -1.0f, -0.5f}, {1.0f, 1.0f, 0.5f}));
+            lodCreator.SetMeshAabb(AZ::Aabb::CreateFromMinMax({ -1.0f, -1.0f, -0.5f }, { 1.0f, 1.0f, 0.5f }));
             lodCreator.SetMeshMaterialSlot(AZ::Sfmt::GetInstance().Rand32());
 
             {
                 AZ::Data::Asset<AZ::RPI::BufferAsset> indexBuffer = BuildTestBuffer(static_cast<uint32_t>(indicesCount), sizeof(uint32_t));
-                AZStd::copy(indices, indices + indicesCount, reinterpret_cast<uint32_t*>(const_cast<uint8_t*>(indexBuffer->GetBuffer().data())));
-                lodCreator.SetMeshIndexBuffer({
-                    indexBuffer,
-                    AZ::RHI::BufferViewDescriptor::CreateStructured(0, static_cast<uint32_t>(indicesCount), sizeof(uint32_t))
-                });
+                AZStd::copy(
+                    indices, indices + indicesCount, reinterpret_cast<uint32_t*>(const_cast<uint8_t*>(indexBuffer->GetBuffer().data())));
+                lodCreator.SetMeshIndexBuffer(
+                    { indexBuffer,
+                      AZ::RHI::BufferViewDescriptor::CreateStructured(0, static_cast<uint32_t>(indicesCount), sizeof(uint32_t)) });
             }
 
             {
-                AZ::Data::Asset<AZ::RPI::BufferAsset> positionBuffer = BuildTestBuffer(static_cast<uint32_t>(positionCount / 3), sizeof(float) * 3);
-                AZStd::copy(positions, positions + positionCount, reinterpret_cast<float*>(const_cast<uint8_t*>(positionBuffer->GetBuffer().data())));
+                AZ::Data::Asset<AZ::RPI::BufferAsset> positionBuffer =
+                    BuildTestBuffer(static_cast<uint32_t>(positionCount / 3), sizeof(float) * 3);
+                AZStd::copy(
+                    positions, positions + positionCount,
+                    reinterpret_cast<float*>(const_cast<uint8_t*>(positionBuffer->GetBuffer().data())));
                 lodCreator.AddMeshStreamBuffer(
-                    AZ::RHI::ShaderSemantic(AZ::Name("POSITION")),
-                    AZ::Name(),
-                    {
-                        positionBuffer,
-                        AZ::RHI::BufferViewDescriptor::CreateStructured(0, static_cast<uint32_t>(positionCount / 3), sizeof(float) * 3)
-                    }
-                );
+                    AZ::RHI::ShaderSemantic(AZ::Name("POSITION")), AZ::Name(),
+                    { positionBuffer,
+                      AZ::RHI::BufferViewDescriptor::CreateStructured(0, static_cast<uint32_t>(positionCount / 3), sizeof(float) * 3) });
             }
-            lodCreator.EndMesh();
 
+            lodCreator.EndMesh();
+        }
+
+        void End(AZ::RPI::ModelLodAssetCreator& lodCreator)
+        {
             AZ::Data::Asset<AZ::RPI::ModelLodAsset> lodAsset;
             lodCreator.End(lodAsset);
 
@@ -1305,5 +1328,110 @@ namespace UnitTest
             testing::Eq(true));
         EXPECT_THAT(t, testing::FloatEq(1.0f));
         EXPECT_THAT(normal, IsClose(AZ::Vector3::CreateAxisY()));
+    }
+
+    class BruteForceMultiModelIntersectsFixture : public ModelTests
+    {
+    public:
+        void SetUp() override
+        {
+            ModelTests::SetUp();
+            m_mesh = AZStd::make_unique<TestMesh>();
+
+            AZ::RPI::ModelLodAssetCreator lodCreator;
+            m_mesh->Begin(lodCreator);
+
+            
+
+            AZStd::vector<float> offsetQuadPositions;
+            offsetQuadPositions.resize(QuadPositions.size());
+            AZStd::copy(QuadPositions.begin(), QuadPositions.end(), offsetQuadPositions.begin());
+            for (size_t xVertIndex = 0; xVertIndex < offsetQuadPositions.size(); xVertIndex += 3)
+            {
+                offsetQuadPositions[xVertIndex] += 15.0f;
+            }
+
+            const size_t indicesCount = QuadIndices.size() + CubeIndices.size();
+            AZ::Data::Asset<AZ::RPI::BufferAsset> indexBuffer = BuildTestBuffer(static_cast<uint32_t>(indicesCount), sizeof(uint32_t));
+
+            const size_t positionCount = QuadPositions.size() + CubePositions.size();
+            AZ::Data::Asset<AZ::RPI::BufferAsset> positionBuffer =
+                BuildTestBuffer(static_cast<uint32_t>(positionCount / 3), sizeof(float) * 3);
+
+            lodCreator.BeginMesh();
+            lodCreator.SetMeshAabb(AZ::Aabb::CreateFromMinMax({ -1.0f, -1.0f, -0.5f }, { 1.0f, 1.0f, 0.5f }));
+            lodCreator.SetMeshMaterialSlot(AZ::Sfmt::GetInstance().Rand32());
+
+            {
+                AZStd::copy(
+                    CubeIndices.begin(), CubeIndices.end(),
+                    reinterpret_cast<uint32_t*>(const_cast<uint8_t*>(indexBuffer->GetBuffer().data())));
+                lodCreator.SetMeshIndexBuffer(
+                    { indexBuffer,
+                      AZ::RHI::BufferViewDescriptor::CreateStructured(0, static_cast<uint32_t>(CubeIndices.size()), sizeof(uint32_t)) });
+            }
+
+            {
+                AZStd::copy(
+                    CubePositions.begin(), CubePositions.end(),
+                    reinterpret_cast<float*>(const_cast<uint8_t*>(positionBuffer->GetBuffer().data())));
+                lodCreator.AddMeshStreamBuffer(
+                    AZ::RHI::ShaderSemantic(AZ::Name("POSITION")), AZ::Name(),
+                    { positionBuffer,
+                      AZ::RHI::BufferViewDescriptor::CreateStructured(
+                          0, static_cast<uint32_t>(CubePositions.size() / 3), sizeof(float) * 3) });
+            }
+
+            lodCreator.EndMesh();
+
+            lodCreator.BeginMesh();
+            lodCreator.SetMeshAabb(AZ::Aabb::CreateFromMinMax({ -1.0f, -1.0f, -0.5f }, { 1.0f, 1.0f, 0.5f }));
+            lodCreator.SetMeshMaterialSlot(AZ::Sfmt::GetInstance().Rand32());
+
+            AZStd::copy(
+                QuadIndices.begin(), QuadIndices.end(),
+                reinterpret_cast<uint32_t*>(
+                    const_cast<uint8_t*>(indexBuffer->GetBuffer().data() + (CubeIndices.size() * sizeof(uint32_t)))));
+            lodCreator.SetMeshIndexBuffer({ indexBuffer,
+                                            AZ::RHI::BufferViewDescriptor::CreateStructured(
+                                                static_cast<uint32_t>(CubeIndices.size()),
+                                                static_cast<uint32_t>(QuadIndices.size()), sizeof(uint32_t)) });
+
+            AZStd::copy(
+                offsetQuadPositions.begin(), offsetQuadPositions.end(),
+                reinterpret_cast<float*>(
+                    const_cast<uint8_t*>(positionBuffer->GetBuffer().data() + (CubePositions.size() * sizeof(float)))));
+            lodCreator.AddMeshStreamBuffer(
+                AZ::RHI::ShaderSemantic(AZ::Name("POSITION")), AZ::Name(),
+                { positionBuffer,
+                  AZ::RHI::BufferViewDescriptor::CreateStructured(
+                      static_cast<uint32_t>(CubePositions.size() / 3), static_cast<uint32_t>(offsetQuadPositions.size() / 3),
+                      sizeof(float) * 3) });
+
+            lodCreator.EndMesh();
+
+            m_mesh->End(lodCreator);
+        }
+
+        void TearDown() override
+        {
+            m_mesh.reset();
+            ModelTests::TearDown();
+        }
+
+        AZStd::unique_ptr<TestMesh> m_mesh;
+    };
+
+    TEST_F(BruteForceMultiModelIntersectsFixture, IntersectWithSecondMesh)
+    {
+        float t = 0.0f;
+        AZ::Vector3 normal = AZ::Vector3::CreateOne(); // invalid starting normal
+
+        constexpr bool AllowBruteForce = false;
+        EXPECT_THAT(
+            m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
+                AZ::Vector3(15.0f, 0.0f, 5.0f), -AZ::Vector3::CreateAxisZ(10.0f), AllowBruteForce, t, normal),
+            testing::Eq(true));
+        EXPECT_THAT(t, testing::FloatEq(0.5f));
     }
 } // namespace UnitTest
