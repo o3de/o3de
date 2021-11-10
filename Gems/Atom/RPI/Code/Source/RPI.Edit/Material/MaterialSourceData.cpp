@@ -250,7 +250,7 @@ namespace AZ
                 const auto parentTypeAssetId = AssetUtils::MakeAssetId(parentSourceAbsPath, parentSourceData.m_materialType, 0);
                 if (!parentTypeAssetId)
                 {
-                    AZ_Error("MaterialSourceData", false, "Parent material asset ID isn't valid: '%s'.", parentSourceAbsPath.c_str());
+                    AZ_Error("MaterialSourceData", false, "Parent material asset ID wasn't found: '%s'.", parentSourceAbsPath.c_str());
                     return Failure();
                 }
 
