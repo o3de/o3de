@@ -30,6 +30,11 @@ namespace Multiplayer
         CreateComponentDescriptors(m_descriptors);
     }
 
+    MultiplayerModule::~MultiplayerModule()
+    {
+        AZ::NameDictionary::Destroy();
+    }
+
     AZ::ComponentTypeList MultiplayerModule::GetRequiredSystemComponents() const
     {
         return AZ::ComponentTypeList

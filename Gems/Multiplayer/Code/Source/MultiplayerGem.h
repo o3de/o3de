@@ -21,7 +21,7 @@ namespace Multiplayer
         AZ_CLASS_ALLOCATOR(MultiplayerModule, AZ::SystemAllocator, 0);
 
         MultiplayerModule();
-        ~MultiplayerModule() override = default;
+        ~MultiplayerModule() override;
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
