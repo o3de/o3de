@@ -8,6 +8,7 @@
 
 #include <ProjectButtonWidget.h>
 #include <ProjectManagerDefs.h>
+#include <ProjectManager_Traits_Platform.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
 
 #include <QVBoxLayout>
@@ -205,6 +206,12 @@ namespace O3DE::ProjectManager
             { 
                 AzQtComponents::ShowFileOnDesktop(m_projectInfo.m_path);
             });
+#if AZ_TRAIT_PROJECT_MANAGER_CREATE_DESKTOP_SHORTCUT
+            menu->addAction(tr("Create Editor desktop shortcut..."), this, [this]()
+            {
+                    emit OpenCMakeGUI(m_projectInfo);
+            });
+#endif // AZ_TRAIT_PROJECT_MANAGER_CREATE_DESKTOP_SHORTCUT
             menu->addSeparator();
             menu->addAction(tr("Duplicate"), this, [this]() { emit CopyProject(m_projectInfo); });
             menu->addSeparator();
