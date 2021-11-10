@@ -445,9 +445,11 @@ namespace Profiler
             const CachedTimeRegion newRegion(*groupRegionNameItr, entry.m_stackDepth, entry.m_startTick, entry.m_endTick);
             m_savedData[entry.m_threadId].push_back(newRegion);
 
-            // Since we don't serialize the frame boundaries, we need to use the RPI's OnSystemTick event as a heuristic.
-            const static AZ::Name frameBoundaryName = AZ::Name("RPISystem: OnSystemTick");
-            if (entry.m_regionName == frameBoundaryName)
+            // Since we don't serialize the frame boundaries, we will use "Component application simulation tick" from
+            // ComponentApplication::Tick as a heuristic.
+            // hash operation copied from NameDictionary::CalcHash to avoid using a static AZ::Name
+            const uint32_t frameBoundaryHash = AZStd::hash<AZStd::string_view>()("Component application simulation tick") & 0xFFFFFFFF;
+            if (entry.m_regionName.GetHash() == frameBoundaryHash)
             {
                 m_frameEndTicks.push_back(entry.m_endTick);
             }
