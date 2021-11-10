@@ -329,7 +329,7 @@ namespace AZ
                                     }
                                     else
                                     {
-                                        materialAssetCreator.ReportError(
+                                        materialAssetCreator.ReportWarning(
                                             "Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(),
                                             property.second.m_value.GetValue<AZStd::string>().data());
                                     }

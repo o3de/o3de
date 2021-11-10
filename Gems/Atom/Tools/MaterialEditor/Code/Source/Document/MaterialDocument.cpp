@@ -714,6 +714,8 @@ namespace MaterialEditor
             AZ_Error("MaterialDocument", false, "Material document extension not supported: '%s'.", m_absolutePath.c_str());
             return false;
         }
+        
+        const bool elevateWarnings = false;
 
         // In order to support automation, general usability, and 'save as' functionality, the user must not have to wait
         // for their JSON file to be cooked by the asset processor before opening or editing it.
@@ -722,7 +724,7 @@ namespace MaterialEditor
         // Long term, the material document should not be concerned with assets at all. The viewport window should be the
         // only thing concerned with assets or instances.
         auto materialAssetResult =
-            m_materialSourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom(), m_absolutePath, true, true, &m_sourceDependencies);
+            m_materialSourceData.CreateMaterialAssetFromSourceData(Uuid::CreateRandom(), m_absolutePath, elevateWarnings, true, &m_sourceDependencies);
         if (!materialAssetResult)
         {
             AZ_Error("MaterialDocument", false, "Material asset could not be created from source data: '%s'.", m_absolutePath.c_str());
@@ -761,9 +763,9 @@ namespace MaterialEditor
                 AZ_Error("MaterialDocument", false, "Material parent asset ID could not be created: '%s'.", parentMaterialFilePath.c_str());
                 return false;
             }
-
+            
             auto parentMaterialAssetResult = parentMaterialSourceData.CreateMaterialAssetFromSourceData(
-                parentMaterialAssetIdResult.GetValue(), parentMaterialFilePath, true, true);
+                parentMaterialAssetIdResult.GetValue(), parentMaterialFilePath, elevateWarnings, true);
             if (!parentMaterialAssetResult)
             {
                 AZ_Error("MaterialDocument", false, "Material parent asset could not be created from source data: '%s'.", parentMaterialFilePath.c_str());
