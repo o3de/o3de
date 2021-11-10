@@ -98,5 +98,9 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_ReflectionProbeAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_ReflectionProbeAdded as test_module
 
+    @pytest.mark.test_case_id("C36525666")
+    class AtomEditorComponents_SSAOAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_SSAOAdded as test_module
+
     class ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges(EditorSharedTest):
         from Atom.tests import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module
