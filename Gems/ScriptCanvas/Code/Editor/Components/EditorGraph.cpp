@@ -1055,6 +1055,8 @@ namespace ScriptCanvasEditor
             {
                 data->m_scriptCanvasEntity.reset(entity);
                 graph->MarkOwnership(*data);
+                entity->Init();
+                entity->Activate();
                 return data;
             }
         }
@@ -1354,7 +1356,7 @@ namespace ScriptCanvasEditor
 
     void Graph::SignalDirty()
     {
-        SourceHandle handle(ScriptCanvas::DataPtr(m_owner), {}, {});
+        SourceHandle handle(m_owner->shared_from_this(), {}, {});
         GeneralRequestBus::Broadcast(&GeneralRequests::SignalSceneDirty, handle);
     }
 
