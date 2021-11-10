@@ -33,10 +33,6 @@ namespace UnitTest
         {
             m_application = aznew AZ::ComponentApplication;
             AZ::ComponentApplication::Descriptor appDesc;
-            AZ::DynamicModuleDescriptor dynamicModuleDescriptor;
-            dynamicModuleDescriptor.m_dynamicLibraryPath = CAMERA_EDITOR_MODULE;
-            appDesc.m_modules.emplace_back(dynamicModuleDescriptor);
-
             m_entity = m_application->Create(appDesc);
             m_transformComponent = AzToolsFramework::Components::TransformComponent::CreateDescriptor();
             m_application->RegisterComponentDescriptor(m_transformComponent);
