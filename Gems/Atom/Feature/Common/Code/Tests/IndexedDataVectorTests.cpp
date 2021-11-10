@@ -241,7 +241,7 @@ namespace UnitTest
         {
             IntValues.erase(value);
             ++visitCount;
-            return true; // keep iterrating
+            return true; // keep iterating
         });
 
         // All ints should have been visited and found in the set
@@ -253,7 +253,7 @@ namespace UnitTest
         {
             FloatValues.erase(value);
             ++visitCount;
-            return true; // keep iterrating
+            return true; // keep iterating
         });
         
         // All floats should have been visited and found in the set
@@ -264,7 +264,7 @@ namespace UnitTest
         myVec.ForEach<0>([&]([[maybe_unused]] int32_t value) -> bool
         {
             ++visitCount;
-            return false; // stop iterrating
+            return false; // stop iterating
         });
 
         // Since false is immediately returned, only one element should have been visited.

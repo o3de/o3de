@@ -93,7 +93,7 @@ uint GetDetailHeightIndex(TerrainSrg::DetailMaterialData materialData)
     return materialData.m_heightImageIndex & 0x0000FFFF;
 }
 
-// Detail materail value getters
+// Detail material value getters
 
 float3 GetDetailColor(TerrainSrg::DetailMaterialData materialData, float2 uv)
 {
