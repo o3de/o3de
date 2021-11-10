@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/XcbConnectionManager.h>
 #include <AzFramework/XcbEventHandler.h>

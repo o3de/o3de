@@ -39,7 +39,6 @@ namespace PythonBindingsExample
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusConnect();
 
         // prepare the Python binding gem(s)
-        CalculateExecutablePath();
         Start(Descriptor());
 
         AZ::SerializeContext* context;

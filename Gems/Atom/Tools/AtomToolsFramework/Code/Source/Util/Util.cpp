@@ -133,29 +133,12 @@ namespace AtomToolsFramework
 
     bool LaunchTool(const QString& baseName, const QString& extension, const QStringList& arguments)
     {
-        const char* engineRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-        AZ_Assert(engineRoot != nullptr, "AzFramework::ApplicationRequests::GetEngineRoot failed");
+        AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
+        AZ_Assert(!engineRoot.empty(), "Cannot query Engine Path");
 
-        char binFolderName[AZ_MAX_PATH_LEN] = {};
-        AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(binFolderName, AZ_MAX_PATH_LEN);
+        AZ::IO::FixedMaxPath launchPath = AZ::IO::FixedMaxPath(AZ::Utils::GetExecutableDirectory())
+            / (baseName + extension).toUtf8().constData();
 
-        // If it contains the filename, zero out the last path separator character...
-        if (ret.m_pathIncludesFilename)
-        {
-            char* lastSlash = strrchr(binFolderName, AZ_CORRECT_FILESYSTEM_SEPARATOR);
-            if (lastSlash)
-            {
-                *lastSlash = '\0';
-            }
-        }
-
-        const QString path = QString("%1%2%3%4")
-            .arg(binFolderName)
-            .arg(AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING)
-            .arg(baseName)
-            .arg(extension);
-
-        return QProcess::startDetached(path, arguments, engineRoot);
+        return QProcess::startDetached(launchPath.c_str(), arguments, engineRoot.c_str());
     }
 }
