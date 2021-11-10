@@ -33,7 +33,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The id used to identify the primary physical keyboard input device
-        static const InputDeviceId Id;
+        static constexpr inline InputDeviceId Id{"keyboard"};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Check whether an input device id identifies a physical keyboard (regardless of index)
