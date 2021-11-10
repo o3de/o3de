@@ -626,7 +626,7 @@ namespace EMotionFX
                 // Check if we are in game mode.
                 IEditor* editor = nullptr;
                 AzToolsFramework::EditorRequestBus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::GetEditor);
-                inGameMode = editor && editor->IsInGameMode();
+                inGameMode = !editor || editor->IsInGameMode();
 #endif
 
                 // Apply the motion extraction deltas to the character controller / entity transform for all entities.
