@@ -3609,12 +3609,8 @@ namespace AzToolsFramework
         // Do not create manipulators for the container entity of the focused prefab.
         if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
         {
-            AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-            EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
-
-            AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
-
-            if (focusRoot.IsValid())
+            AzFramework::EntityContextId editorEntityContextId = GetEntityContextId();
+            if (AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId); focusRoot.IsValid())
             {
                 m_selectedEntityIds.erase(focusRoot);
             }
