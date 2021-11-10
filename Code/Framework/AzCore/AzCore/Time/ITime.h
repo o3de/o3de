@@ -67,15 +67,15 @@ namespace AZ
 
         //! Returns the current simulation tick delta time.
         //! This is affected by the cvars t_simulationTickScale, t_simulationTickDeltaOverride, and t_maxGameTickDelta.
-        //! @return The number of milliseconds elapsed since the last game tick.
-        virtual TimeMs GetSimulationTickDeltaTimeMs() const = 0;
+        //! @return The number of microseconds elapsed since the last game tick.
+        virtual TimeUs GetSimulationTickDeltaTimeUs() const = 0;
 
         //! Returns the non-manipulated tick time.
-        //! @return The number of milliseconds elapsed since the last game tick.
-        virtual TimeMs GetRealTickDeltaTimeMs() const = 0;
+        //! @return The number of microseconds elapsed since the last game tick.
+        virtual TimeUs GetRealTickDeltaTimeUs() const = 0;
 
         //! Returns the time since application start of when the last simulation tick was updated.
-        virtual TimeMs GetLastSimulationTickTime() const = 0;
+        virtual TimeUs GetLastSimulationTickTime() const = 0;
 
         //! If > 0 this will override the simulation tick delta time with the provided value.
         //! When enabled this will ignore any set simulation tick scale.
@@ -143,19 +143,19 @@ namespace AZ
     }
 
     //! This is a simple convenience wrapper
-    inline TimeMs GetSimulationTickDeltaTimeMs()
+    inline TimeUs GetSimulationTickDeltaTimeUs()
     {
-        return AZ::Interface<ITime>::Get()->GetSimulationTickDeltaTimeMs();
+        return AZ::Interface<ITime>::Get()->GetSimulationTickDeltaTimeUs();
     }
 
     //! This is a simple convenience wrapper
-    inline TimeMs GetRealTickDeltaTimeMs()
+    inline TimeUs GetRealTickDeltaTimeUs()
     {
-        return AZ::Interface<ITime>::Get()->GetRealTickDeltaTimeMs();
+        return AZ::Interface<ITime>::Get()->GetRealTickDeltaTimeUs();
     }
 
     //! This is a simple convenience wrapper
-    inline TimeMs GetLastSimulationTickTime()
+    inline TimeUs GetLastSimulationTickTime()
     {
         return AZ::Interface<ITime>::Get()->GetLastSimulationTickTime();
     }

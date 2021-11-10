@@ -89,8 +89,8 @@ namespace LmbrCentral
 
     void RandomTimedSpawnerComponent::Activate()
     {
-        const AZ::TimeMs elapsedTimeMs = AZ::GetElapsedTimeMs();
-        m_currentTime = AZ::TimeMsToSecondsDouble(elapsedTimeMs);
+        const AZ::TimeUs elapsedTimeUs = AZ::GetElapsedTimeUs();
+        m_currentTime = AZ::TimeUsToSecondsDouble(elapsedTimeUs);
         RandomTimedSpawnerComponentRequestBus::Handler::BusConnect(GetEntityId());
 
         CalculateNextSpawnTime();

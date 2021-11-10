@@ -236,7 +236,7 @@ private:
     IMovieUser* m_pUser;
     IMovieCallback* m_pCallback;
 
-    AZ::TimeMs m_lastUpdateTime;
+    AZ::TimeUs m_lastUpdateTime;
 
     typedef AZStd::vector<AZStd::intrusive_ptr<IAnimSequence> > Sequences;
     Sequences m_sequences;

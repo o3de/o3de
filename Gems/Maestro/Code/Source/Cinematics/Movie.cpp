@@ -233,7 +233,7 @@ CMovieSystem::CMovieSystem(ISystem* pSystem)
     m_bEnableCameraShake = true;
     m_bCutscenesPausedInEditor = true;
     m_sequenceStopBehavior = eSSB_GotoEndTime;
-    m_lastUpdateTime = AZ::Time::ZeroTimeMs;
+    m_lastUpdateTime = AZ::Time::ZeroTimeUs;
     m_bStartCapture = false;
     m_captureFrame = -1;
     m_bEndCapture = false;
@@ -1056,7 +1056,7 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
     }
 
     // don't update more than once if dt==0.0
-    const AZ::TimeMs curTime = AZ::GetLastSimulationTickTime();
+    const AZ::TimeUs curTime = AZ::GetLastSimulationTickTime();
     if (deltaTime == 0.0f && curTime == m_lastUpdateTime && !gEnv->IsEditor())
     {
         return;

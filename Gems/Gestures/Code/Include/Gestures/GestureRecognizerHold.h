@@ -64,7 +64,7 @@ namespace Gestures
         AZ::Vector2 GetStartPosition() const { return m_startPosition; }
         AZ::Vector2 GetCurrentPosition() const { return m_currentPosition; }
 
-        float GetDuration() const { return AZ::TimeMsToSeconds(AZ::GetLastSimulationTickTime() - m_startTime); }
+        float GetDuration() const { return AZ::TimeUsToSeconds(AZ::GetLastSimulationTickTime() - m_startTime); }
 
     private:
         enum class State
@@ -76,7 +76,7 @@ namespace Gestures
 
         Config m_config;
 
-        AZ::TimeMs m_startTime;
+        AZ::TimeUs m_startTime;
         ScreenPosition m_startPosition;
         ScreenPosition m_currentPosition;
 

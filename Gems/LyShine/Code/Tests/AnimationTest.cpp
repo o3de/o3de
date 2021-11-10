@@ -24,15 +24,20 @@ namespace UnitTest
 
         AZ::TimeMs GetElapsedTimeMs() const override
         {
-            return m_timeMs;
+            return AZ::TimeUsToMs(m_timeUs);
+        }
+
+        AZ::TimeUs GetElapsedTimeUs() const override
+        {
+            return m_timeUs;
         }
 
         void AddFrameTime(float sec)
         {
-            m_timeMs += AZ::SecondsToTimeMs(sec);
+            m_timeUs += AZ::SecondsToTimeUs(sec);
         }
 
-        AZ::TimeMs m_timeMs = AZ::Time::ZeroTimeMs;
+        AZ::TimeUs m_timeUs = AZ::Time::ZeroTimeUs;
     };
 
     class TrackEventHandler

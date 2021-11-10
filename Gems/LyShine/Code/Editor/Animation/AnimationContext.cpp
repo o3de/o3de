@@ -34,8 +34,8 @@ namespace Internal
 {
     float GetFrameDeltaTime()
     {
-        const AZ::TimeMs frameDeltaTimeMs = AZ::GetSimulationTickDeltaTimeMs();
-        return AZ::TimeMsToSeconds(frameDeltaTimeMs);
+        const AZ::TimeUs frameDeltaTimeMs = AZ::GetSimulationTickDeltaTimeUs();
+        return AZ::TimeUsToSeconds(frameDeltaTimeMs);
     }
 
     float GetFrameRate()

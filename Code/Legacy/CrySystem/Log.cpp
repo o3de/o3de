@@ -1464,9 +1464,9 @@ void CLog::Update()
 
         if (LogCVars::s_log_tick != 0)
         {
-            static AZ::TimeMs t0 = AZ::GetElapsedTimeMs();
-            const AZ::TimeMs t1 = AZ::GetElapsedTimeMs();
-            const float tSec = AZ::TimeMsToSeconds(t1 - t0);
+            static AZ::TimeUs t0 = AZ::GetElapsedTimeUs();
+            const AZ::TimeUs t1 = AZ::GetElapsedTimeUs();
+            const float tSec = AZ::TimeUsToSeconds(t1 - t0);
             if (tSec > LogCVars::s_log_tick)
             {
                 t0 = t1;

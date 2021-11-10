@@ -161,9 +161,9 @@ namespace
 {
     float GetMovieFrameDeltaTime()
     {
-        // Use GetRealTickDeltaTimeMs for CryMovie, because it should not be affected by pausing game time
-        const AZ::TimeMs delta = AZ::GetRealTickDeltaTimeMs();
-        return AZ::TimeMsToSeconds(delta);
+        // Use GetRealTickDeltaTimeUs for CryMovie, because it should not be affected by pausing game time
+        const AZ::TimeUs delta = AZ::GetRealTickDeltaTimeUs();
+        return AZ::TimeUsToSeconds(delta);
     }
 }
 

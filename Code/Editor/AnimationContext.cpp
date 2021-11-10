@@ -501,8 +501,8 @@ void CAnimationContext::Update()
         return;
     }
 
-    const AZ::TimeMs frameDeltaTimeMs = AZ::GetSimulationTickDeltaTimeMs();
-    const float frameDeltaTime = AZ::TimeMsToSeconds(frameDeltaTimeMs);
+    const AZ::TimeUs frameDeltaTimeUs = AZ::GetSimulationTickDeltaTimeUs();
+    const float frameDeltaTime = AZ::TimeUsToSeconds(frameDeltaTimeUs);
 
     if (!m_bAutoRecording)
     {
@@ -645,8 +645,8 @@ void CAnimationContext::OnPostRender()
     {
         SAnimContext ac;
         ac.dt = 0;
-        const AZ::TimeMs frameDeltaTimeMs = AZ::GetSimulationTickDeltaTimeMs();
-        const float frameDeltaTime = AZ::TimeMsToSeconds(frameDeltaTimeMs);
+        const AZ::TimeUs frameDeltaTimeUs = AZ::GetSimulationTickDeltaTimeUs();
+        const float frameDeltaTime = AZ::TimeUsToSeconds(frameDeltaTimeUs);
         ac.fps = 1.0f / frameDeltaTime;
         ac.time = m_currTime;
         ac.singleFrame = true;
@@ -800,8 +800,8 @@ void CAnimationContext::AnimateActiveSequence()
 
     SAnimContext ac;
     ac.dt = 0;
-    const AZ::TimeMs frameDeltaTimeMs = AZ::GetSimulationTickDeltaTimeMs();
-    const float frameDeltaTime = AZ::TimeMsToSeconds(frameDeltaTimeMs);
+    const AZ::TimeUs frameDeltaTimeUs = AZ::GetSimulationTickDeltaTimeUs();
+    const float frameDeltaTime = AZ::TimeUsToSeconds(frameDeltaTimeUs);
     ac.fps = 1.0f / frameDeltaTime;
     ac.time = m_currTime;
     ac.singleFrame = true;

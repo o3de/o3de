@@ -934,8 +934,8 @@ void CXConsole::Update()
         const float fRepeatDelay = 1.0f / 40.0f;          // in sec (similar to Windows default but might differ from actual setting)
         const float fHitchDelay = 1.0f / 10.0f;               // in sec. Very low, but still reasonable frame-rate (debug builds)
 
-        const AZ::TimeMs delta = AZ::GetRealTickDeltaTimeMs(); // works even when time is manipulated
-        m_fRepeatTimer -= AZ::TimeMsToSeconds(delta); 
+        const AZ::TimeUs delta = AZ::GetRealTickDeltaTimeUs(); // works even when time is manipulated
+        m_fRepeatTimer -= AZ::TimeUsToSeconds(delta); 
 
         if (m_fRepeatTimer <= 0.0f)
         {

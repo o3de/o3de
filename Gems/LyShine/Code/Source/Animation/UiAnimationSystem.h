@@ -165,7 +165,7 @@ private:
 
     IUiAnimationCallback* m_pCallback;
 
-    AZ::TimeMs m_lastUpdateTime;
+    AZ::TimeUs m_lastUpdateTime;
 
     using Sequences = AZStd::vector<AZStd::intrusive_ptr<IUiAnimSequence> >;
     Sequences m_sequences;

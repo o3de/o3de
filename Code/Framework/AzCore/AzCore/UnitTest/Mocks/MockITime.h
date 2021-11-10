@@ -35,9 +35,9 @@ namespace AZ
         MOCK_CONST_METHOD0(GetElapsedTimeUs, TimeUs());
         MOCK_CONST_METHOD0(GetRealElapsedTimeMs, TimeMs());
         MOCK_CONST_METHOD0(GetRealElapsedTimeUs, TimeUs());
-        MOCK_CONST_METHOD0(GetSimulationTickDeltaTimeMs, TimeMs());
-        MOCK_CONST_METHOD0(GetRealTickDeltaTimeMs, TimeMs());
-        MOCK_CONST_METHOD0(GetLastSimulationTickTime, TimeMs());
+        MOCK_CONST_METHOD0(GetSimulationTickDeltaTimeUs, TimeUs());
+        MOCK_CONST_METHOD0(GetRealTickDeltaTimeUs, TimeUs());
+        MOCK_CONST_METHOD0(GetLastSimulationTickTime, TimeUs());
         MOCK_METHOD1(SetSimulationTickDeltaOverride, void(TimeMs));
         MOCK_CONST_METHOD0(GetSimulationTickDeltaOverride, TimeMs());
         MOCK_METHOD1(SetSimulationTickScale, void(float));
@@ -73,19 +73,19 @@ namespace AZ
             return AZ::Time::ZeroTimeUs;
         }
 
-        virtual AZ::TimeMs GetSimulationTickDeltaTimeMs() const override
+        virtual AZ::TimeUs GetSimulationTickDeltaTimeUs() const override
         {
-            return AZ::Time::ZeroTimeMs;
+            return AZ::Time::ZeroTimeUs;
         }
 
-        virtual AZ::TimeMs GetRealTickDeltaTimeMs() const override
+        virtual AZ::TimeUs GetRealTickDeltaTimeUs() const override
         {
-            return AZ::Time::ZeroTimeMs;
+            return AZ::Time::ZeroTimeUs;
         }
 
-        virtual AZ::TimeMs GetLastSimulationTickTime() const override
+        virtual AZ::TimeUs GetLastSimulationTickTime() const override
         {
-            return AZ::Time::ZeroTimeMs;
+            return AZ::Time::ZeroTimeUs;
         }
 
         virtual void SetSimulationTickDeltaOverride([[maybe_unused]]TimeMs timeMs) override

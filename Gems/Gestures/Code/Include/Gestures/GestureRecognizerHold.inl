@@ -43,7 +43,7 @@ inline void Gestures::RecognizerHold::Config::Reflect(AZ::ReflectContext* contex
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline Gestures::RecognizerHold::RecognizerHold(const Config& config)
     : m_config(config)
-    , m_startTime(AZ::Time::ZeroTimeMs)
+    , m_startTime(AZ::Time::ZeroTimeUs)
     , m_startPosition()
     , m_currentPosition()
     , m_currentState(State::Idle)
@@ -105,8 +105,8 @@ inline bool Gestures::RecognizerHold::OnDownEvent(const AZ::Vector2& screenPosit
             // Hold recognition failed.
             m_currentState = State::Idle;
         }
-        else if (const AZ::TimeMs currentTime = AZ::GetLastSimulationTickTime();
-                 AZ::TimeMsToSeconds(currentTime - m_startTime) >= m_config.minSecondsHeld)
+        else if (const AZ::TimeUs currentTime = AZ::GetLastSimulationTickTime();
+                 AZ::TimeUsToSeconds(currentTime - m_startTime) >= m_config.minSecondsHeld)
         {
             // Hold recognition succeeded.
             OnContinuousGestureInitiated();

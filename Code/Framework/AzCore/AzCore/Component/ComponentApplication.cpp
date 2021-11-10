@@ -1424,8 +1424,8 @@ namespace AZ
 
         {
             AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
-            const AZ::TimeMs deltaTimeMs = m_timeSystem->AdvanceTickDeltaTimes();
-            const float deltaTimeSeconds = AZ::TimeMsToSeconds(deltaTimeMs);
+            const AZ::TimeUs deltaTimeUs = m_timeSystem->AdvanceTickDeltaTimes();
+            const float deltaTimeSeconds = AZ::TimeUsToSeconds(deltaTimeUs);
             AZ::TickBus::Broadcast(&TickEvents::OnTick, deltaTimeSeconds, GetTimeAtCurrentTick());
         }
 
@@ -1513,8 +1513,8 @@ namespace AZ
 
     float ComponentApplication::GetTickDeltaTime()
     {
-        const AZ::TimeMs gameTickTime = m_timeSystem->GetSimulationTickDeltaTimeMs();
-        return AZ::TimeMsToSeconds(gameTickTime);
+        const AZ::TimeUs gameTickTime = m_timeSystem->GetSimulationTickDeltaTimeUs();
+        return AZ::TimeUsToSeconds(gameTickTime);
     }
 
     //=========================================================================
@@ -1523,8 +1523,8 @@ namespace AZ
     //=========================================================================
     ScriptTimePoint ComponentApplication::GetTimeAtCurrentTick()
     {
-        const AZ::TimeMs lastGameTickTime = m_timeSystem->GetLastSimulationTickTime();
-        return ScriptTimePoint(AZ::TimeMsToChrono(lastGameTickTime));
+        const AZ::TimeUs lastGameTickTime = m_timeSystem->GetLastSimulationTickTime();
+        return ScriptTimePoint(AZ::TimeUsToChrono(lastGameTickTime));
     }
 
     //=========================================================================

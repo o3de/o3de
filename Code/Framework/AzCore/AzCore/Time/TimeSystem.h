@@ -33,9 +33,9 @@ namespace AZ
         TimeUs GetElapsedTimeUs() const override;
         TimeMs GetRealElapsedTimeMs() const override;
         TimeUs GetRealElapsedTimeUs() const override;
-        TimeMs GetSimulationTickDeltaTimeMs() const override;
-        TimeMs GetRealTickDeltaTimeMs() const override;
-        TimeMs GetLastSimulationTickTime() const override;
+        TimeUs GetSimulationTickDeltaTimeUs() const override;
+        TimeUs GetRealTickDeltaTimeUs() const override;
+        TimeUs GetLastSimulationTickTime() const override;
         void SetSimulationTickDeltaOverride(TimeMs timeMs) override;
         TimeMs GetSimulationTickDeltaOverride() const override;
         void SetSimulationTickScale(float scale) override;
@@ -46,8 +46,8 @@ namespace AZ
         
         //! Advances the Simulation and Real tick delta time counters.
         //! This is called from the owner of the TimeSystem, ComponentApplication in Tick().
-        //! @return The delta in milliseconds from the last call to AdvanceTickDeltaTimes(). Value will be the same as GetSimulationTickDeltaTimeMs().
-        TimeMs AdvanceTickDeltaTimes();
+        //! @return The delta in microseconds from the last call to AdvanceTickDeltaTimes(). Value will be the same as GetSimulationTickDeltaTimeUs().
+        TimeUs AdvanceTickDeltaTimes();
 
         //! If t_simulationTickRate is >0 this will try to have the game delta time run at a maximum of the rate set.
         //! This is called from the owner of the TimeSystem, ComponentApplication in Tick().

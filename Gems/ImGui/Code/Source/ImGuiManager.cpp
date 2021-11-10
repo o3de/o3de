@@ -333,8 +333,8 @@ void ImGuiManager::Render()
     }
 
     // Advance ImGui by Elapsed Frame Time
-    const AZ::TimeMs gameTickTimeMs = AZ::GetSimulationTickDeltaTimeMs();
-    io.DeltaTime = AZ::TimeMsToSeconds(gameTickTimeMs);
+    const AZ::TimeUs gameTickTimeUs = AZ::GetSimulationTickDeltaTimeUs();
+    io.DeltaTime = AZ::TimeUsToSeconds(gameTickTimeUs);
     //// END FROM PREUPDATE
 
     AZ::u32 backBufferWidth = m_windowSize.m_width;

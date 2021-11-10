@@ -104,22 +104,22 @@ namespace AZ
         return static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
     }
 
-    TimeMs TimeSystem::GetSimulationTickDeltaTimeMs() const
+    TimeUs TimeSystem::GetSimulationTickDeltaTimeUs() const
     {
-        return AZ::TimeUsToMs(m_simulationTickDeltaTimeUs);
+        return m_simulationTickDeltaTimeUs;
     }
 
-    TimeMs TimeSystem::GetRealTickDeltaTimeMs() const
+    TimeUs TimeSystem::GetRealTickDeltaTimeUs() const
     {
-        return AZ::TimeUsToMs(m_realTickDeltaTimeUs);
+        return m_realTickDeltaTimeUs;
     }
 
-    TimeMs TimeSystem::GetLastSimulationTickTime() const
+    TimeUs TimeSystem::GetLastSimulationTickTime() const
     {
-        return AZ::TimeUsToMs(m_lastSimulationTickTimeUs);
+        return m_lastSimulationTickTimeUs;
     }
 
-    TimeMs TimeSystem::AdvanceTickDeltaTimes()
+    TimeUs TimeSystem::AdvanceTickDeltaTimes()
     {
         const TimeUs currentTimeUs = static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
 
@@ -132,7 +132,7 @@ namespace AZ
         {
             m_simulationTickDeltaTimeUs = m_simulationTickDeltaOverride;
             m_lastSimulationTickTimeUs = m_simulationTickDeltaTimeUs;
-            return AZ::TimeUsToMs(m_simulationTickDeltaTimeUs);
+            return m_simulationTickDeltaTimeUs;
         }
 
         m_simulationTickDeltaTimeUs = currentTimeUs - m_lastSimulationTickTimeUs;
@@ -144,7 +144,7 @@ namespace AZ
         }
         m_lastSimulationTickTimeUs = currentTimeUs;
 
-        return AZ::TimeUsToMs(m_simulationTickDeltaTimeUs);
+        return m_simulationTickDeltaTimeUs;
     }
 
     void TimeSystem::ApplyTickRateLimiterIfNeeded()
