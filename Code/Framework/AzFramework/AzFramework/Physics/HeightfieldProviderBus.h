@@ -26,10 +26,25 @@ namespace Physics
 
     struct HeightMaterialPoint
     {
+        HeightMaterialPoint(
+            float height = 0.0f, QuadMeshType type = QuadMeshType::SubdivideUpperLeftToBottomRight, uint8_t index = 0)
+            : m_height(height)
+            , m_quadMeshType(type)
+            , m_materialIndex(index)
+            , m_padding(0)
+        {
+        }
+
+        virtual ~HeightMaterialPoint() = default;
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        AZ_RTTI(HeightMaterialPoint, "{DF167ED4-24E6-4F7B-8AB7-42622F7DBAD3}");
         float m_height{ 0.0f }; //!< Holds the height of this point in the heightfield relative to the heightfield entity location.
         QuadMeshType m_quadMeshType{ QuadMeshType::SubdivideUpperLeftToBottomRight }; //!< By default, create two triangles like this |\|, where this point is in the upper left corner.
         uint8_t m_materialIndex{ 0 }; //!< The surface material index for the upper left corner of this quad.
         uint16_t m_padding{ 0 }; //!< available for future use.
+
     };
 
     //! An interface to provide heightfield values.
@@ -37,6 +52,8 @@ namespace Physics
         : public AZ::ComponentBus
     {
     public:
+        static void Reflect(AZ::ReflectContext* context);
+
         //! Returns the distance between each height in the map.
         //! @return Vector containing Column Spacing, Rows Spacing.
         virtual AZ::Vector2 GetHeightfieldGridSpacing() const = 0;
@@ -46,10 +63,26 @@ namespace Physics
         //! @param numRows contains the size of the grid in the y direction.
         virtual void GetHeightfieldGridSize(int32_t& numColumns, int32_t& numRows) const = 0;
 
+        //! Returns the height field gridsize columns.
+        //! @return the size of the grid in the x direction.
+        virtual int32_t GetHeightfieldGridColumns() const = 0;
+
+        //! Returns the height field gridsize rows.
+        //! @return the size of the grid in the y direction.
+        virtual int32_t GetHeightfieldGridRows() const = 0;
+
         //! Returns the height field min and max height bounds.
         //! @param minHeightBounds contains the minimum height that the heightfield can contain.
         //! @param maxHeightBounds contains the maximum height that the heightfield can contain.
         virtual void GetHeightfieldHeightBounds(float& minHeightBounds, float& maxHeightBounds) const = 0;
+
+        //! Returns the height field min height bounds.
+        //! @return the minimum height that the heightfield can contain.
+        virtual float GetHeightfieldMinHeight() const = 0;
+
+        //! Returns the height field max height bounds.
+        //! @return the maximum height that the heightfield can contain.
+        virtual float GetHeightfieldMaxHeight() const = 0;
 
         //! Returns the AABB of the heightfield.
         //! This is provided separately from the shape AABB because the heightfield might choose to modify the AABB bounds.

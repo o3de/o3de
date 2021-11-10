@@ -1181,10 +1181,13 @@ namespace AZ
                     AZ::RHI::ShaderInputConstantIndex useParallaxCorrectionConstantIndex = objectSrg->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_useParallaxCorrection"));
                     AZ_Error("ModelDataInstance", useParallaxCorrectionConstantIndex.IsValid(), "Failed to find ReflectionProbe constant index");
 
+                    AZ::RHI::ShaderInputConstantIndex exposureConstantIndex = objectSrg->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_exposure"));
+                    AZ_Error("MeshDataInstance", exposureConstantIndex.IsValid(), "Failed to find ReflectionProbe constant index");
+
                     // retrieve probe cubemap index
                     Name reflectionCubeMapImageName = Name("m_reflectionProbeCubeMap");
                     RHI::ShaderInputImageIndex reflectionCubeMapImageIndex = objectSrg->FindShaderInputImageIndex(reflectionCubeMapImageName);
-                    AZ_Error("ModelDataInstance", reflectionCubeMapImageIndex.IsValid(), "Failed to find shader image index [%s]", reflectionCubeMapImageName.GetCStr());
+                    AZ_Error("MeshDataInstance", reflectionCubeMapImageIndex.IsValid(), "Failed to find shader image index [%s]", reflectionCubeMapImageName.GetCStr());
 
                     // retrieve the list of probes that contain the centerpoint of the mesh
                     TransformServiceFeatureProcessor* transformServiceFeatureProcessor = m_scene->GetFeatureProcessor<TransformServiceFeatureProcessor>();
@@ -1201,6 +1204,7 @@ namespace AZ
                         objectSrg->SetConstant(innerObbHalfLengthsConstantIndex, reflectionProbes[0]->GetInnerObbWs().GetHalfLengths());
                         objectSrg->SetConstant(useReflectionProbeConstantIndex, true);
                         objectSrg->SetConstant(useParallaxCorrectionConstantIndex, reflectionProbes[0]->GetUseParallaxCorrection());
+                        objectSrg->SetConstant(exposureConstantIndex, reflectionProbes[0]->GetRenderExposure());
 
                         objectSrg->SetImage(reflectionCubeMapImageIndex, reflectionProbes[0]->GetCubeMapImage());
                     }

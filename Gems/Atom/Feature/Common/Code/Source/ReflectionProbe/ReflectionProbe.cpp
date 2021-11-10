@@ -120,15 +120,17 @@ namespace AZ
                     m_scene->RemoveRenderPipeline(m_environmentCubeMapPipelineId);
                     m_environmentCubeMapPass = nullptr;
 
-                    // restore exposure
-                    sceneSrg->SetConstant(m_iblExposureConstantIndex, m_previousExposure);
+                    // restore exposures
+                    sceneSrg->SetConstant(m_globalIblExposureConstantIndex, m_previousGlobalIblExposure);
+                    sceneSrg->SetConstant(m_skyBoxExposureConstantIndex, m_previousSkyBoxExposure);
 
                     m_buildingCubeMap = false;
                 }
                 else
                 {
-                    // set exposure to 0.0 while baking the cubemap
-                    sceneSrg->SetConstant(m_iblExposureConstantIndex, 0.0f);
+                    // set exposures to the user specified value while baking the cubemap
+                    sceneSrg->SetConstant(m_globalIblExposureConstantIndex, m_bakeExposure);
+                    sceneSrg->SetConstant(m_skyBoxExposureConstantIndex, m_bakeExposure);
                 }
             }
 
@@ -162,6 +164,7 @@ namespace AZ
                 m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_outerObbHalfLengthsRenderConstantIndex, m_outerObbWs.GetHalfLengths());
                 m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_innerObbHalfLengthsRenderConstantIndex, m_innerObbWs.GetHalfLengths());
                 m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_useParallaxCorrectionRenderConstantIndex, m_useParallaxCorrection);
+                m_renderOuterSrg->SetConstant(m_reflectionRenderData->m_exposureConstantIndex, m_renderExposure);
                 m_renderOuterSrg->SetImage(m_reflectionRenderData->m_reflectionCubeMapRenderImageIndex, m_cubeMapImage);
                 m_renderOuterSrg->Compile();
 
@@ -172,6 +175,7 @@ namespace AZ
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_outerObbHalfLengthsRenderConstantIndex, m_outerObbWs.GetHalfLengths());
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_innerObbHalfLengthsRenderConstantIndex, m_innerObbWs.GetHalfLengths());
                 m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_useParallaxCorrectionRenderConstantIndex, m_useParallaxCorrection);
+                m_renderInnerSrg->SetConstant(m_reflectionRenderData->m_exposureConstantIndex, m_renderExposure);
                 m_renderInnerSrg->SetImage(m_reflectionRenderData->m_reflectionCubeMapRenderImageIndex, m_cubeMapImage);
                 m_renderInnerSrg->Compile();
 
@@ -303,9 +307,10 @@ namespace AZ
             const RPI::Ptr<RPI::ParentPass>& rootPass = environmentCubeMapPipeline->GetRootPass();
             rootPass->AddChild(m_environmentCubeMapPass);
 
-            // store the current IBL exposure value
+            // store the current IBL exposure values
             Data::Instance<RPI::ShaderResourceGroup> sceneSrg = m_scene->GetShaderResourceGroup();
-            m_previousExposure = sceneSrg->GetConstant<float>(m_iblExposureConstantIndex);
+            m_previousGlobalIblExposure = sceneSrg->GetConstant<float>(m_globalIblExposureConstantIndex);
+            m_previousSkyBoxExposure = sceneSrg->GetConstant<float>(m_skyBoxExposureConstantIndex);
 
             m_scene->AddRenderPipeline(environmentCubeMapPipeline);
         }
@@ -324,6 +329,17 @@ namespace AZ
         void ReflectionProbe::ShowVisualization(bool showVisualization)
         {
             m_meshFeatureProcessor->SetVisible(m_visualizationMeshHandle, showVisualization);
+        }
+
+        void ReflectionProbe::SetRenderExposure(float renderExposure)
+        {
+            m_renderExposure = renderExposure;
+            m_updateSrg = true;
+        }
+
+        void ReflectionProbe::SetBakeExposure(float bakeExposure)
+        {
+            m_bakeExposure = bakeExposure;
         }
 
         const RHI::DrawPacket* ReflectionProbe::BuildDrawPacket(

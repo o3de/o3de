@@ -34,6 +34,13 @@ namespace O3DE::ProjectManager
 
     public:
         CartOverlayWidget(GemModel* gemModel, DownloadController* downloadController, QWidget* parent = nullptr);
+        ~CartOverlayWidget();
+
+    public slots:
+        void GemDownloadAdded(const QString& gemName);
+        void GemDownloadRemoved(const QString& gemName);
+        void GemDownloadProgress(const QString& gemName, int percentage);
+        void GemDownloadComplete(const QString& gemName, bool success);
 
     private:
         QVector<Tag> GetTagsFromModelIndices(const QVector<QModelIndex>& gems) const;
@@ -46,6 +53,9 @@ namespace O3DE::ProjectManager
         QVBoxLayout* m_layout = nullptr;
         GemModel* m_gemModel = nullptr;
         DownloadController* m_downloadController = nullptr;
+
+        QWidget* m_downloadSectionWidget = nullptr;
+        QWidget* m_downloadingListWidget = nullptr;
 
         inline constexpr static int s_width = 240;
     };
