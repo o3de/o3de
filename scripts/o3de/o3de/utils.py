@@ -128,7 +128,7 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite, down
             logger.warn(f'File already downloaded to {download_path}.')
         else:
             try:
-                shutil.rmtree(download_path)
+                os.unlink(download_path)
             except OSError:
                 logger.error(f'Could not remove existing download path {download_path}.')
                 return 1
