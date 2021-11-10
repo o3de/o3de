@@ -846,7 +846,7 @@ namespace EditorPythonBindings
                         {
                             return ConstructPythonProxyObjectByTypename(behaviorClassName, pythonArgs);
                         });
-                        PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::LogClassWithName, subModuleName, behaviorClass, properSyntax);
+                        PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::LogClassWithName, subModuleName, behaviorClass, syntaxName.value());
                     }
                     else
                     {
