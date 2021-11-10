@@ -143,12 +143,6 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             "engineassets/textures/cubemap/default_level_cubemap.dds.4",
             "engineassets/textures/cubemap/default_level_cubemap_diff.dds",
             "engineassets/materials/water/ocean_default.mtl",
-            "engineassets/textures/defaults/spot_default.dds",
-            "engineassets/textures/defaults/spot_default.dds.1",
-            "engineassets/textures/defaults/spot_default.dds.2",
-            "engineassets/textures/defaults/spot_default.dds.3",
-            "engineassets/textures/defaults/spot_default.dds.4",
-            "engineassets/textures/defaults/spot_default.dds.5",
             "materials/material_terrain_default.mtl",
             "textures/skys/night/half_moon.dds",
             "textures/skys/night/half_moon.dds.1",
@@ -241,13 +235,13 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             "ui/textureatlas/sample.texatlasidx",
             "fonts/vera-bold-italic.ttf",
             "fonts/vera-bold.font",
-            "ui/textures/prefab/button_normal.dds",
+            "ui/textures/prefab/button_normal.tif.streamingimage",
             "ui/textures/prefab/button_normal.sprite",
             "fonts/vera-italic.ttf",
             "ui/textureatlas/sample.dds",
             "fonts/vera-bold-italic.font",
             "fonts/vera-bold.ttf",
-            "ui/textures/prefab/button_disabled.dds",
+            "ui/textures/prefab/button_disabled.tif.streamingimage",
             "ui/textures/prefab/button_disabled.sprite",
         ]
 
@@ -310,9 +304,9 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         3. Read and store contents of asset list into memory
         4. Attempt to create a new asset list in without using --allowOverwrites
         5. Verify that Asset Bundler returns false
-        6. Verify that file contents of the orignally created asset list did not change from what was stored in memory
+        6. Verify that file contents of the originally created asset list did not change from what was stored in memory
         7. Attempt to create a new asset list without debug while allowing overwrites
-        8. Verify that file contents of the orignally created asset list changed from what was stored in memory
+        8. Verify that file contents of the originally created asset list changed from what was stored in memory
         """
         helper = bundler_batch_helper
         seed_list = os.path.join(workspace.paths.engine_root(), "Assets", "Engine", "SeedAssetList.seed")  # Engine seed list
@@ -1243,23 +1237,64 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         2. Verify file was created
         3. Verify that only the expected assets are present in the created asset list
         """
-        expected_assets = [
+        expected_assets = sorted([
             "ui/canvases/lyshineexamples/animation/multiplesequences.uicanvas",
-            "ui/textures/prefab/button_normal.sprite"
-        ]
+            "ui/textures/prefab/button_disabled.tif.streamingimage",
+            "ui/textures/prefab/tooltip_sliced.tif.streamingimage",
+            "ui/textures/prefab/button_normal.tif.streamingimage"
+        ])
+        # Printing these lists out can save a step in debugging if this test fails on Jenkins.
+        logger.info(f"expected_assets: {expected_assets}")
+
+        skip_assets = sorted([
+            "ui/scripts/lyshineexamples/animation/multiplesequences.luac",
+            "ui/scripts/lyshineexamples/unloadthiscanvasbutton.luac",
+            "fonts/vera.fontfamily",
+            "fonts/vera-italic.font",
+            "fonts/vera.font",
+            "fonts/vera-bold.font",
+            "fonts/vera-bold-italic.font",
+            "fonts/vera-italic.ttf",
+            "fonts/vera.ttf",
+            "fonts/vera-bold.ttf",
+            "fonts/vera-bold-italic.ttf"
+        ])
+        logger.info(f"skip_assets: {skip_assets}")
+
+        expected_and_skip_assets = sorted(expected_assets + skip_assets)
+        # Printing both together to make it quick to compare the results in the logs for a test failure on Jenkins
+        logger.info(f"expected_and_skip_assets: {expected_and_skip_assets}")
+
+        # First, generate an asset info file without skipping, to get a list that can be used as a baseline to verify
+        # the files were actually skipped, and not just missing.
+        bundler_batch_helper.call_assetLists(
+            assetListFile=bundler_batch_helper['asset_info_file_request'],
+            addSeed="ui/canvases/lyshineexamples/animation/multiplesequences.uicanvas"
+        )
+        assert os.path.isfile(bundler_batch_helper["asset_info_file_result"])
+        assets_in_no_skip_list = []
+        for rel_path in bundler_batch_helper.get_asset_relative_paths(bundler_batch_helper["asset_info_file_result"]):
+            assets_in_no_skip_list.append(rel_path)
+        assets_in_no_skip_list = sorted(assets_in_no_skip_list)
+        logger.info(f"assets_in_no_skip_list: {assets_in_no_skip_list}")
+        assert assets_in_no_skip_list == expected_and_skip_assets
+
+        # Now generate an asset info file using the skip command, and verify the skip files are not in the list.
         bundler_batch_helper.call_assetLists(
             assetListFile=bundler_batch_helper['asset_info_file_request'],
             addSeed="ui/canvases/lyshineexamples/animation/multiplesequences.uicanvas",
-            skip="ui/textures/prefab/button_disabled.sprite,ui/scripts/lyshineexamples/animation/multiplesequences.luac,"
-                 "ui/textures/prefab/tooltip_sliced.sprite,ui/scripts/lyshineexamples/unloadthiscanvasbutton.luac,fonts/vera.fontfamily,fonts/vera-italic.font,"
-                 "fonts/vera.font,fonts/vera-bold.font,fonts/vera-bold-italic.font,fonts/vera-italic.ttf,fonts/vera.ttf,fonts/vera-bold.ttf,fonts/vera-bold-italic.ttf"
+            allowOverwrites="",
+            skip=','.join(skip_assets)
         )
+
         assert os.path.isfile(bundler_batch_helper["asset_info_file_result"])
         assets_in_list = []
         for rel_path in bundler_batch_helper.get_asset_relative_paths(bundler_batch_helper["asset_info_file_result"]):
             assets_in_list.append(rel_path)
+        assets_in_list = sorted(assets_in_list)
+        logger.info(f"assets_in_list: {assets_in_list}")
+        assert assets_in_list == expected_assets
 
-        assert sorted(assets_in_list) == sorted(expected_assets)
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
