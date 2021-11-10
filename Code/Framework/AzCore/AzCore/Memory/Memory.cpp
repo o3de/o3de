@@ -7,22 +7,8 @@
  */
 
 #include <AzCore/Memory/Memory.h>
-#include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/std/parallel/containers/concurrent_fixed_unordered_set.h>
 
-#include <AzCore/Memory/AllocatorManager.h>
-
-AZ::AllocatorStorage::LazyAllocatorRef::~LazyAllocatorRef()
-{
-    m_destructor(*m_allocator);
-}
-
-void AZ::AllocatorStorage::LazyAllocatorRef::Init(size_t size, size_t alignment, CreationFn creationFn, DestructionFn destructionFn)
-{
-    m_allocator = AZ::AllocatorManager::CreateLazyAllocator(size, alignment, creationFn);
-    m_destructor = destructionFn;
-}
 //////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 // New overloads
