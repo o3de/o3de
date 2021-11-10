@@ -7,10 +7,9 @@
  */
 
 #include "FileStateCache.h"
-
-#include <AssetProcessor_Traits_Windows.h>
-
 #include "native/utilities/assetUtils.h"
+#include <AssetProcessor_Traits_Platform.h>
+
 #include <QDir>
 
 namespace AssetProcessor
