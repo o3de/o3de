@@ -100,8 +100,6 @@ set(FILES
     CryAssert_iOS.h
     CryAssert_Linux.h
     CryAssert_Mac.h
-    CryLibrary.cpp
-    CryLibrary.h
     CrySystemLoader.cpp
     CrySystemLoader.h
     Linux32Specific.h
