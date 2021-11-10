@@ -28,7 +28,7 @@ struct IInitializeUIInfo;
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Vector3.h>
 
-#include <CryCommon/CrySystemLoader.h>
+#include <AzCore/Module/DynamicModuleHandle.h>
 
 class ThreadedOnErrorHandler : public QObject
 {
@@ -147,7 +147,7 @@ private:
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     Matrix34 m_playerViewTM;
     struct SSystemUserCallback* m_pSystemUserCallback;
-    AZStd::unique_ptr<CrySystemModuleHandle> m_hSystemHandle;
+    AZStd::unique_ptr<AZ::DynamicModuleHandle> m_hSystemHandle;
     enum EPendingGameMode
     {
         ePGM_NotPending,

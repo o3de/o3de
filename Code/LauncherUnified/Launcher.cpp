@@ -25,7 +25,6 @@
 
 #include <AzGameFramework/Application/GameApplication.h>
 
-#include <CryCommon/CrySystemLoader.h>
 #include <ISystem.h>
 #include <ITimer.h>
 #include <LegacyAllocator.h>
@@ -509,10 +508,17 @@ namespace O3DELauncher
 
         // Create CrySystem.
     #if !defined(AZ_MONOLITHIC_BUILD)
-        AZStd::unique_ptr<CrySystemModuleHandle> crySystemLibrary = CrySystemModuleHandle::Create();
-        if (crySystemLibrary->Load())
+        constexpr const char* crySystemLibraryName = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX  "CrySystem" AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
+        AZStd::unique_ptr<AZ::DynamicModuleHandle> crySystemLibrary = AZ::DynamicModuleHandle::Create(crySystemLibraryName);
+        if (crySystemLibrary->Load(true))
         {
-            systemInitParams.pSystem = crySystemLibrary->CreateSystemInterface(systemInitParams);
+            PFNCREATESYSTEMINTERFACE CreateSystemInterface =
+                crySystemLibrary->GetFunction<PFNCREATESYSTEMINTERFACE>("CreateSystemInterface");
+
+            if (CreateSystemInterface)
+            {
+                systemInitParams.pSystem = CreateSystemInterface(systemInitParams);
+            }
         }
     #else
         systemInitParams.pSystem = CreateSystemInterface(systemInitParams);

@@ -336,13 +336,18 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 {
     m_pSystemUserCallback = new SSystemUserCallback(logo);
 
-    m_hSystemHandle = CrySystemModuleHandle::Create();
-    if (!m_hSystemHandle->Load())
+    constexpr const char* crySystemLibraryName = AZ_TRAIT_OS_DYNAMIC_LIBRARY_PREFIX  "CrySystem" AZ_TRAIT_OS_DYNAMIC_LIBRARY_EXTENSION;
+
+    m_hSystemHandle = AZ::DynamicModuleHandle::Create(crySystemLibraryName);
+    if (!m_hSystemHandle->Load(true))
     {
-        auto errorMessage = AZStd::string::format("%s Loading Failed", CrySystemModuleHandle::ModuleName());
+        auto errorMessage = AZStd::string::format("%s Loading Failed", crySystemLibraryName);
         Error(errorMessage.c_str());
         return AZ::Failure(errorMessage);
     }
+
+    PFNCREATESYSTEMINTERFACE pfnCreateSystemInterface =
+        m_hSystemHandle->GetFunction<PFNCREATESYSTEMINTERFACE>("CreateSystemInterface");
 
     SSystemInitParams sip;
 
@@ -384,7 +389,7 @@ AZ::Outcome<void, AZStd::string> CGameEngine::Init(
 
     AssetProcessConnectionStatus apConnectionStatus;
 
-    m_pISystem = m_hSystemHandle->CreateSystemInterface(sip);
+    m_pISystem = pfnCreateSystemInterface(sip);
 
     if (!gEnv)
     {
