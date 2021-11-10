@@ -437,9 +437,7 @@ namespace ScriptCanvasEditor
         const NodePaletteModelInformation* FindNodePaletteModelInformation(const ScriptCanvas::NodeTypeIdentifier& nodeType) const override;
         ////
 
-        AZ::Outcome<int, AZStd::string> CreateScriptCanvasAsset(AZStd::string_view assetPath, AZ::Data::AssetType assetType, int tabIndex = -1);
-        AZ::Outcome<int, AZStd::string> UpdateScriptCanvasAsset(const AZ::Data::Asset<ScriptCanvas::ScriptCanvasAssetBase>& scriptCanvasAsset);
-        
+        AZ::Outcome<int, AZStd::string> CreateScriptCanvasAsset(AZStd::string_view assetPath, int tabIndex = -1);
         void RefreshScriptCanvasAsset(const AZ::Data::Asset<ScriptCanvas::ScriptCanvasAssetBase>& scriptCanvasAsset);
 
         //! Removes the assetId -> ScriptCanvasAsset mapping and disconnects from the asset tracker
@@ -647,31 +645,6 @@ namespace ScriptCanvasEditor
 
         void OpenNextFile();
 
-        template <typename GraphAssetType, typename AssetHandler>
-        void MakeNewFile()
-        {
-            static int scriptCanvasEditorDefaultNewNameCount = 0;
-
-            AZStd::string newAssetName = AZStd::string::format(ScriptCanvas::AssetDescription::GetAssetNamePattern<GraphAssetType>(), ++scriptCanvasEditorDefaultNewNameCount);
-
-            AZStd::array<char, AZ::IO::MaxPathLength> assetRootArray;
-            if (!AZ::IO::FileIOBase::GetInstance()->ResolvePath(ScriptCanvas::AssetDescription::GetSuggestedSavePath<GraphAssetType>(), assetRootArray.data(), assetRootArray.size()))
-            {
-                AZ_ErrorOnce("Script Canvas", false, "Unable to resolve @projectroot@ path");
-            }
-
-            AZStd::string assetPath;
-            AzFramework::StringFunc::Path::Join(assetRootArray.data(), (newAssetName + ScriptCanvas::AssetDescription::GetExtension<GraphAssetType>()).data(), assetPath);
-
-            auto createOutcome = CreateScriptCanvasAsset(assetPath, azrtti_typeid<GraphAssetType>());
-            if (createOutcome)
-            {
-            }
-            else
-            {
-                AZ_Warning("Script Canvas", createOutcome, "%s", createOutcome.GetError().data());
-            }
-        }
 
         void DisableAssetView(const ScriptCanvasEditor::SourceHandle& memoryAssetId);
         void EnableAssetView(const ScriptCanvasEditor::SourceHandle& memoryAssetId);
