@@ -1237,7 +1237,7 @@ namespace UnitTest
         constexpr float rayLength = 100.0f;
         EXPECT_THAT(
             m_kdTree->RayIntersection(
-                AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(-rayLength), t, normal), testing::Eq(true));
+                AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisZ(-rayLength), t, normal), testing::IsTrue());
         EXPECT_THAT(t, testing::FloatEq(0.005f));
     }
 
@@ -1248,7 +1248,7 @@ namespace UnitTest
 
         constexpr float rayLength = 10.0f;
         EXPECT_THAT(
-            m_kdTree->RayIntersection(AZ::Vector3::CreateAxisZ(0.75f), AZ::Vector3::CreateAxisZ(-rayLength), t, normal), testing::Eq(true));
+            m_kdTree->RayIntersection(AZ::Vector3::CreateAxisZ(0.75f), AZ::Vector3::CreateAxisZ(-rayLength), t, normal), testing::IsTrue());
         EXPECT_THAT(t, testing::FloatEq(0.025f));
     }
 
@@ -1326,7 +1326,7 @@ namespace UnitTest
         EXPECT_THAT(
             m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
                 AZ::Vector3::CreateAxisZ(5.0f), -AZ::Vector3::CreateAxisZ(10.0f), AllowBruteForce, t, normal),
-            testing::Eq(true));
+            testing::IsTrue());
         EXPECT_THAT(t, testing::FloatEq(0.4f));
     }
 
@@ -1340,7 +1340,7 @@ namespace UnitTest
         EXPECT_THAT(
             m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
                 AZ::Vector3::CreateAxisY(10.0f), -AZ::Vector3::CreateAxisY(9.0f), AllowBruteForce, t, normal),
-            testing::Eq(true));
+            testing::IsTrue());
         EXPECT_THAT(t, testing::FloatEq(1.0f));
         EXPECT_THAT(normal, IsClose(AZ::Vector3::CreateAxisY()));
     }
@@ -1407,7 +1407,7 @@ namespace UnitTest
         EXPECT_THAT(
             m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
                 AZ::Vector3(QuadOffsetX, 0.0f, 5.0f), -AZ::Vector3::CreateAxisZ(10.0f), AllowBruteForce, t, normal),
-            testing::Eq(true));
+            testing::IsTrue());
         EXPECT_THAT(t, testing::FloatEq(0.5f));
         EXPECT_THAT(normal, IsClose(AZ::Vector3::CreateAxisZ()));
     }
