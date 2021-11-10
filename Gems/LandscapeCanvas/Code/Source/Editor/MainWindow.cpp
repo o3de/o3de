@@ -2508,7 +2508,7 @@ namespace LandscapeCanvasEditor
 
     void MainWindow::OnPrefabFocusChanged()
     {
-        // Make sure to close any open graphs that aren't currently in p refab focus
+        // Make sure to close any open graphs that aren't currently in prefab focus
         // to prevent the user from making modifications outside of the allowed focus scope
         AZStd::vector<GraphCanvas::DockWidgetId> dockWidgetsToClose;
         for (auto [entityId, dockWidgetId] : m_dockWidgetsByEntity)
