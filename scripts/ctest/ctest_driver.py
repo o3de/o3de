@@ -76,7 +76,7 @@ def _get_only_failed(cmake_build_path):
 
 
 def run_single_test_suite(suite, ctest_path, cmake_build_path, build_config, disable_gpu, only_gpu, generate_xml,
-                          repeat, only_failed, extra_args, soft_repeat_timeout=0):
+                          repeat, extra_args, only_failed=False, soft_repeat_timeout=0):
     """
     Starts CTest to filter down to a specific suite
     :param suite: subset of tests to run, see SUITES_AND_DESCRIPTIONS
@@ -244,7 +244,7 @@ def main():
                                                "failures (e.g. --repeat 3 for running the test three times). When used"
                                                "with --generate-xml, the resulting test reports will be combined, "
                                                "aggregated and summarized.", type=int)
-    parser.add_argument('--only-failed', action='store_true',
+    parser.add_argument('--only-run-failed', action='store_true',
                         help='Enable this option with the --repeat option to run all repeats against the intially failed tests.')
     parser.add_argument('--soft-repeat-timeout', type=int, help='Enable this option with the --repeat option to set a soft timeout in seconds. A repeat iteration will complete its full test run, but will not start the next iteration.')
 
@@ -256,7 +256,7 @@ def main():
 
     args, unknown_args = parser.parse_known_args()
 
-    if not args.repeat and (args.only_failed or args.soft_repeat_timeout):
+    if not args.repeat and (args.only_run_failed or args.soft_repeat_timeout):
         parser.error('The --only-failed and --soft-repeat-timeout option requires the --repeat option.')
 
     # handle the CTEST executable.
@@ -302,7 +302,7 @@ def main():
         only_gpu=args.only_gpu,
         generate_xml=args.generate_xml,
         repeat=args.repeat,
-        only_failed=args.only_failed,
+        only_failed=args.only_run_failed,
         soft_repeat_timeout=args.soft_repeat_timeout,
         extra_args=unknown_args)
 
