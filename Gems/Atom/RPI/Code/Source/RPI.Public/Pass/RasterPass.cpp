@@ -21,6 +21,8 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
 
+#include <AzCore/std/parallel/thread.h>
+
 namespace AZ
 {
     namespace RPI
@@ -211,7 +213,7 @@ namespace AZ
         void RasterPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             RenderPass::SetupFrameGraphDependencies(frameGraph);
-            frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_drawListView.size()));
+            frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_drawListView.size() * AZStd::thread::hardware_concurrency()));
         }
 
         void RasterPass::CompileResources(const RHI::FrameGraphCompileContext& context)
