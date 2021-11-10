@@ -15,6 +15,7 @@
 #include <GemCatalog/GemUpdateDialog.h>
 #include <GemCatalog/GemUninstallDialog.h>
 #include <DownloadController.h>
+#include <ProjectUtils.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -50,6 +51,7 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_headerWidget);
 
         connect(m_gemModel, &GemModel::gemStatusChanged, this, &GemCatalogScreen::OnGemStatusChanged);
+        connect(m_headerWidget, &GemCatalogHeaderWidget::RefreshGems, this, &GemCatalogScreen::Refresh);
         connect(m_headerWidget, &GemCatalogHeaderWidget::OpenGemsRepo, this, &GemCatalogScreen::HandleOpenGemRepo);
         connect(m_headerWidget, &GemCatalogHeaderWidget::AddGem, this, &GemCatalogScreen::OnAddGemClicked);
         connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
@@ -235,6 +237,9 @@ namespace O3DE::ProjectManager
         // temporary, until we can refresh filter counts 
         m_proxyModel->ResetFilters();
         m_filterWidget->ResetAllFilters();
+
+        // Reselect the same selection to proc UI updates
+        m_proxyModel->GetSelectionModel()->select(m_proxyModel->GetSelectionModel()->selection(), QItemSelectionModel::Select);
     }
 
     void GemCatalogScreen::OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies) 
@@ -300,21 +305,83 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::UpdateGem(const QModelIndex& modelIndex)
     {
-        const QString selectedGemName = m_gemModel->GetDisplayName(modelIndex);
-        GemUpdateDialog* confirmUpdateDialog = new GemUpdateDialog(selectedGemName, this);
+        const QString selectedGemName = m_gemModel->GetName(modelIndex);
+        const QString selectedGemLastUpdate = m_gemModel->GetLastUpdated(modelIndex);
+        const QString selectedDisplayGemName = m_gemModel->GetDisplayName(modelIndex);
+        const QString selectedGemRepoUri = m_gemModel->GetRepoUri(modelIndex);
+
+        // Refresh gem repo
+        if (!selectedGemRepoUri.isEmpty())
+        {
+            AZ::Outcome<void, AZStd::string> refreshResult = PythonBindingsInterface::Get()->RefreshGemRepo(selectedGemRepoUri);
+            if (refreshResult.IsSuccess())
+            {
+                Refresh();
+            }
+            else
+            {
+                QMessageBox::critical(
+                    this, tr("Operation failed"),
+                    tr("Failed to refresh gem repo %1<br>Error:<br>%2").arg(selectedGemRepoUri, refreshResult.GetError().c_str()));
+            }
+        }
+        // If repo uri isn't specified warn user that repo might not be refreshed
+        else
+        {
+            int result = QMessageBox::warning(
+                this, tr("Gem Repo Unspecified"),
+                tr("The repo for %1 is unspecfied. Repo cannot be automatically refreshed. "
+                   "Please ensure this gem's repo is refreshed before attempting to update.")
+                    .arg(selectedDisplayGemName),
+                QMessageBox::Cancel, QMessageBox::Ok);
+
+            // Allow user to cancel update to manually refresh repo
+            if (result != QMessageBox::Ok)
+            {
+                return;
+            }
+        }
+
+        // Check if there is an update avaliable now that repo is refreshed
+        bool updateAvaliable = PythonBindingsInterface::Get()->IsGemUpdateAvaliable(selectedGemName, selectedGemLastUpdate);
+
+        GemUpdateDialog* confirmUpdateDialog = new GemUpdateDialog(selectedGemName, updateAvaliable, this);
         if (confirmUpdateDialog->exec() == QDialog::Accepted)
         {
-            // Update Gem
+            m_downloadController->AddGemDownload(selectedGemName);
         }
     }
 
     void GemCatalogScreen::UninstallGem(const QModelIndex& modelIndex)
     {
-        const QString selectedGemName = m_gemModel->GetDisplayName(modelIndex);
-        GemUninstallDialog* confirmUninstallDialog = new GemUninstallDialog(selectedGemName, this);
+        const QString selectedDisplayGemName = m_gemModel->GetDisplayName(modelIndex);
+
+        GemUninstallDialog* confirmUninstallDialog = new GemUninstallDialog(selectedDisplayGemName, this);
         if (confirmUninstallDialog->exec() == QDialog::Accepted)
         {
-            // Uninstall Gem
+            const QString selectedGemPath = m_gemModel->GetPath(modelIndex);
+
+            // Unregister the gem
+            auto unregisterResult = PythonBindingsInterface::Get()->RegisterGem(selectedGemPath, {}, /*remove*/true);
+            if (!unregisterResult)
+            {
+                QMessageBox::critical(this, tr("Failed to unregister gem"), unregisterResult.GetError().c_str());
+            }
+            else
+            {
+                // Remove gem from model
+                m_gemModel->removeRow(modelIndex.row());
+
+                // Delete uninstalled gem directory
+                if (!ProjectUtils::DeleteProjectFiles(selectedGemPath, /*force*/true))
+                {
+                    QMessageBox::critical(
+                        this, tr("Failed to remove gem directory"), tr("Could not delete gem directory at:<br>%1").arg(selectedGemPath));
+                }
+
+                // Show undownloaded remote gem again
+                Refresh();
+            }
         }
     }
 
@@ -351,8 +418,10 @@ namespace O3DE::ProjectManager
         {
             // Add all available gems to the model.
             const QVector<GemInfo>& allGemInfos = allGemInfosResult.GetValue();
-            for (const GemInfo& gemInfo : allGemInfos)
+            for (GemInfo gemInfo : allGemInfos)
             {
+                // Mark as downloaded because this gem was registered with an existing directory
+                gemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
                 m_gemModel->AddGem(gemInfo);
             }
 

@@ -85,6 +85,7 @@ namespace O3DE::ProjectManager
         QString m_licenseLink;
         QString m_directoryLink;
         QString m_documentationLink;
+        QString m_repoUri;
         QString m_version = "Unknown Version";
         QString m_lastUpdatedDate = "Unknown Date";
         int m_binarySizeInKB = 0;

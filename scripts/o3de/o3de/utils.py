@@ -117,7 +117,7 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
-def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite, download_progress_callback = None) -> int:
+def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, download_progress_callback = None) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_path: location path on disk to download file
@@ -128,7 +128,7 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite, down
             logger.warn(f'File already downloaded to {download_path}.')
         else:
             try:
-                shutil.rmtree(download_path)
+                os.unlink(download_path)
             except OSError:
                 logger.error(f'Could not remove existing download path {download_path}.')
                 return 1
@@ -162,7 +162,7 @@ def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, download_prog
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_zip_path: path to output zip file
     """
-    download_file_result = download_file(parsed_uri, download_zip_path, download_progress_callback)
+    download_file_result = download_file(parsed_uri, download_zip_path, True, download_progress_callback)
     if download_file_result != 0:
         return download_file_result
 

@@ -39,10 +39,10 @@ namespace O3DE::ProjectManager
         QLabel* bodyLabel = new QLabel(tr("The Gem and its related files will be uninstalled. This does not affect the Gem’s repository. "
                                           "You can reinstall this Gem from the Catalog, but its contents may be subject to change."));
         bodyLabel->setWordWrap(true);
-        bodyLabel->setFixedWidth(440);
+        bodyLabel->setFixedSize(QSize(440, 80));
         layout->addWidget(bodyLabel);
 
-        layout->addSpacing(60);
+        layout->addSpacing(40);
 
         // Buttons
         QDialogButtonBox* dialogButtons = new QDialogButtonBox();

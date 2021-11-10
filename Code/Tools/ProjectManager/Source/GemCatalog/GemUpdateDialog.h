@@ -19,7 +19,7 @@ namespace O3DE::ProjectManager
     {
         Q_OBJECT // AUTOMOC
     public :
-        explicit GemUpdateDialog(const QString& gemName, QWidget* parent = nullptr);
+        explicit GemUpdateDialog(const QString& gemName, bool updateAvaliable = true, QWidget* parent = nullptr);
         ~GemUpdateDialog() = default;
     };
 } // namespace O3DE::ProjectManager
