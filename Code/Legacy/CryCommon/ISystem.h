@@ -1104,22 +1104,14 @@ inline ISystem* GetISystem()
 //   This function must be called once by each module at the beginning, to setup global pointers.
 void ModuleInitISystem(ISystem* pSystem, const char* moduleName);
 void ModuleShutdownISystem(ISystem* pSystem);
-extern "C" AZ_DLL_EXPORT void InjectEnvironment(void* env);
-extern "C" AZ_DLL_EXPORT void DetachEnvironment();
 
 void* GetModuleInitISystemSymbol();
 void* GetModuleShutdownISystemSymbol();
-void* GetInjectEnvironmentSymbol();
-void* GetDetachEnvironmentSymbol();
 
 #define PREVENT_MODULE_AND_ENVIRONMENT_SYMBOL_STRIPPING \
     AZ_UNUSED(GetModuleInitISystemSymbol()); \
-    AZ_UNUSED(GetModuleShutdownISystemSymbol()); \
-    AZ_UNUSED(GetInjectEnvironmentSymbol()); \
-    AZ_UNUSED(GetDetachEnvironmentSymbol());
+    AZ_UNUSED(GetModuleShutdownISystemSymbol());
 
-
-extern bool g_bProfilerEnabled;
 
 // Summary:
 //   Interface of the DLL.

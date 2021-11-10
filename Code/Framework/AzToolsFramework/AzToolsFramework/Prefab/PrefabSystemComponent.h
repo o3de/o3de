@@ -231,7 +231,7 @@ namespace AzToolsFramework
              */
             void UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom) override;
 
-            void PropagateTemplateChanges(TemplateId templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt) override;
+            void PropagateTemplateChanges(TemplateId templateId, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt) override;
 
             /**
              * Updates all Instances owned by a Template.
@@ -240,7 +240,7 @@ namespace AzToolsFramework
              * @param instanceToExclude An optional reference to an instance of the template being updated that should not be refreshed
              *        as part of propagation.Defaults to nullopt, which means that all instances will be refreshed.
              */
-            void UpdatePrefabInstances(TemplateId templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt);
+            void UpdatePrefabInstances(TemplateId templateId, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt);
 
         private:
             AZ_DISABLE_COPY_MOVE(PrefabSystemComponent);

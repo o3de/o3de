@@ -33,7 +33,7 @@ namespace AZ
             uint32_t m_swapChainsPerCommandList = 8;
 
             // The maximum cost that can be associated with a single command list.
-            uint32_t m_commandListCostThresholdMin = 1000;
+            uint32_t m_commandListCostThresholdMin = 250;
 
             // The maximum number of command lists per scope.
             uint32_t m_commandListsPerScopeMax = 16;

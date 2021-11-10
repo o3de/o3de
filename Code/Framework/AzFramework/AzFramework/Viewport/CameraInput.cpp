@@ -806,12 +806,20 @@ namespace AzFramework
         [[maybe_unused]] float scrollDelta,
         [[maybe_unused]] float deltaTime)
     {
+        const auto pivot = m_pivotFn();
+
+        if (!pivot.has_value())
+        {
+            EndActivation();
+            return targetCamera;
+        }
+
         if (Beginning())
         {
             // as the camera starts, record the camera we would like to end up as
-            m_nextCamera.m_offset = m_offsetFn(m_pivotFn().GetDistance(targetCamera.Translation()));
+            m_nextCamera.m_offset = m_offsetFn(pivot.value().GetDistance(targetCamera.Translation()));
             const auto angles =
-                EulerAngles(AZ::Matrix3x3::CreateFromMatrix3x4(AZ::Matrix3x4::CreateLookAt(targetCamera.Translation(), m_pivotFn())));
+                EulerAngles(AZ::Matrix3x3::CreateFromMatrix3x4(AZ::Matrix3x4::CreateLookAt(targetCamera.Translation(), pivot.value())));
             m_nextCamera.m_pitch = angles.GetX();
             m_nextCamera.m_yaw = angles.GetZ();
             m_nextCamera.m_pivot = targetCamera.m_pivot;

@@ -799,7 +799,8 @@ namespace AZ::AtomBridge
             const float startAngle = DegToRad(startAngleDegrees);
             const float stopAngle = DegToRad(sweepAngleDegrees) + startAngle;
             SingleColorDynamicSizeLineHelper lines(1+static_cast<int>(sweepAngleDegrees/angularStepDegrees));
-            AZ::Vector3 radiusV3 = AZ::Vector3(radius);
+            float aspectRadius = radius / GetAspectRatio();
+            AZ::Vector3 radiusV3 = AZ::Vector3(aspectRadius, radius, radius);
             AZ::Vector3 pos = AZ::Vector3(center.GetX(), center.GetY(), z);
             CreateAxisAlignedArc(
                 lines, 
