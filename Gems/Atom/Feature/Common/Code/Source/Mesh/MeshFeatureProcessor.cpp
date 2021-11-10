@@ -1178,6 +1178,9 @@ namespace AZ
                 AZ::RHI::ShaderInputConstantIndex useParallaxCorrectionConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_useParallaxCorrection"));
                 AZ_Error("MeshDataInstance", useParallaxCorrectionConstantIndex.IsValid(), "Failed to find ReflectionProbe constant index");
 
+                AZ::RHI::ShaderInputConstantIndex exposureConstantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_exposure"));
+                AZ_Error("MeshDataInstance", exposureConstantIndex.IsValid(), "Failed to find ReflectionProbe constant index");
+
                 // retrieve probe cubemap index
                 Name reflectionCubeMapImageName = Name("m_reflectionProbeCubeMap");
                 RHI::ShaderInputImageIndex reflectionCubeMapImageIndex = m_shaderResourceGroup->FindShaderInputImageIndex(reflectionCubeMapImageName);
@@ -1198,6 +1201,7 @@ namespace AZ
                     m_shaderResourceGroup->SetConstant(innerObbHalfLengthsConstantIndex, reflectionProbes[0]->GetInnerObbWs().GetHalfLengths());
                     m_shaderResourceGroup->SetConstant(useReflectionProbeConstantIndex, true);
                     m_shaderResourceGroup->SetConstant(useParallaxCorrectionConstantIndex, reflectionProbes[0]->GetUseParallaxCorrection());
+                    m_shaderResourceGroup->SetConstant(exposureConstantIndex, reflectionProbes[0]->GetRenderExposure());
 
                     m_shaderResourceGroup->SetImage(reflectionCubeMapImageIndex, reflectionProbes[0]->GetCubeMapImage());
                 }

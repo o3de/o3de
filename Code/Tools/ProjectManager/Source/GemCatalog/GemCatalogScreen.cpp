@@ -268,6 +268,7 @@ namespace O3DE::ProjectManager
                 if (added && GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded)
                 {
                     m_downloadController->AddGemDownload(GemModel::GetName(modelIndex));
+                    GemModel::SetDownloadStatus(*m_proxyModel, m_proxyModel->mapFromSource(modelIndex), GemInfo::DownloadStatus::Downloading);
                 }
             }
 
