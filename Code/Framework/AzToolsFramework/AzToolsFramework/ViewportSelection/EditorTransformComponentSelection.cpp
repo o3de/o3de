@@ -28,6 +28,7 @@
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityBus.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
@@ -3604,6 +3605,16 @@ namespace AzToolsFramework
         m_selectedEntityIds.clear();
         m_selectedEntityIds.reserve(selectedEntityIds.size());
         AZStd::copy(selectedEntityIds.begin(), selectedEntityIds.end(), AZStd::inserter(m_selectedEntityIds, m_selectedEntityIds.end()));
+
+        // Do not create manipulators for the container entity of the focused prefab.
+        if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
+        {
+            AzFramework::EntityContextId editorEntityContextId = GetEntityContextId();
+            if (AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId); focusRoot.IsValid())
+            {
+                m_selectedEntityIds.erase(focusRoot);
+            }
+        }
     }
 
     void EditorTransformComponentSelection::OnTransformChanged(
