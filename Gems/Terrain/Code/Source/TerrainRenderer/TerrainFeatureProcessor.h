@@ -358,7 +358,7 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailTextureImage;
         AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
         bool m_forceRebuildDrawPackets{ false };
-        bool m_imagesSetOnViewSrg{ false };
+        bool m_imagesSetOnSrgs{ false };
 
         AZStd::vector<SectorData> m_sectorData;
 

@@ -56,13 +56,16 @@ namespace Terrain
     namespace ViewSrgInputs
     {
         static const char* const HeightmapImage("m_heightmapImage");
+    }
+
+    namespace TerrainSrgInputs
+    {
         static const char* const DetailMaterialIdImage("m_detailMaterialIdImage");
         static const char* const DetailMaterialData("m_detailMaterialData");
         static const char* const DetailMaterialIdImageCenter("m_detailMaterialIdImageCenter");
         static const char* const DetailHalfPixelUv("m_detailHalfPixelUv");
         static const char* const DetailAabb("m_detailAabb");
         static const char* const DetailTextures("m_detailTextures");
-
     }
 
     namespace DetailMaterialInputs
@@ -154,21 +157,6 @@ namespace Terrain
         m_heightmapPropertyIndex = viewSrgLayout->FindShaderInputImageIndex(AZ::Name(ViewSrgInputs::HeightmapImage));
         AZ_Error(TerrainFPName, m_heightmapPropertyIndex.IsValid(), "Failed to find view srg input constant %s.", ViewSrgInputs::HeightmapImage);
         
-        m_detailMaterialIdPropertyIndex = viewSrgLayout->FindShaderInputImageIndex(AZ::Name(ViewSrgInputs::DetailMaterialIdImage));
-        AZ_Error(TerrainFPName, m_detailMaterialIdPropertyIndex.IsValid(), "Failed to find view srg input constant %s.", ViewSrgInputs::DetailMaterialIdImage);
-        
-        m_detailCenterPropertyIndex = viewSrgLayout->FindShaderInputConstantIndex(AZ::Name(ViewSrgInputs::DetailMaterialIdImageCenter));
-        AZ_Error(TerrainFPName, m_detailCenterPropertyIndex.IsValid(), "Failed to find view srg input constant %s.", ViewSrgInputs::DetailMaterialIdImageCenter);
-
-        m_detailHalfPixelUvPropertyIndex = viewSrgLayout->FindShaderInputConstantIndex(AZ::Name(ViewSrgInputs::DetailHalfPixelUv));
-        AZ_Error(TerrainFPName, m_detailHalfPixelUvPropertyIndex.IsValid(), "Failed to find view srg input constant %s.", ViewSrgInputs::DetailHalfPixelUv);
-        
-        m_detailAabbPropertyIndex = viewSrgLayout->FindShaderInputConstantIndex(AZ::Name(ViewSrgInputs::DetailAabb));
-        AZ_Error(TerrainFPName, m_detailAabbPropertyIndex.IsValid(), "Failed to find view srg input constant %s.", ViewSrgInputs::DetailAabb);
-
-        m_detailTexturesIndex = viewSrgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name(ViewSrgInputs::DetailTextures));
-        AZ_Error(TerrainFPName, m_detailTexturesIndex.IsValid(), "Failed to find view srg input constant %s.", ViewSrgInputs::DetailTextures);
-
         // Load the terrain material asynchronously
         const AZStd::string materialFilePath = "Materials/Terrain/DefaultPbrTerrain.azmaterial";
         m_materialAssetLoader = AZStd::make_unique<AZ::RPI::AssetUtils::AsyncAssetLoader>();
@@ -939,7 +927,7 @@ namespace Terrain
             
             // World size changed, so the whole height map needs updating.
             m_dirtyRegion = worldBounds;
-            m_imagesSetOnViewSrg = false;
+            m_imagesSetOnSrgs = false;
         }
         
         int32_t xStart = aznumeric_cast<int32_t>(AZStd::ceilf(m_dirtyRegion.GetMin().GetX() / queryResolution));
@@ -1036,16 +1024,39 @@ namespace Terrain
                 const auto& shaderAsset = shaderItem.GetShaderAsset();
                 m_terrainSrg = AZ::RPI::ShaderResourceGroup::Create(shaderItem.GetShaderAsset(), shaderAsset->GetSupervariantIndex(AZ::Name()), AZ::Name{"TerrainSrg"});
                 AZ_Error(TerrainFPName, m_terrainSrg, "Failed to create Terrain shader resource group");
+                break;
             }
         }
 
-        // Set up the gpu buffer for detail material data
-        AZ::Render::GpuBufferHandler::Descriptor desc;
-        desc.m_bufferName = "Detail Material Data";
-        desc.m_bufferSrgName = ViewSrgInputs::DetailMaterialData;;
-        desc.m_elementSize = sizeof(DetailMaterialShaderData);
-        desc.m_srgLayout = AZ::RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
-        m_detailMaterialDataBuffer = AZ::Render::GpuBufferHandler(desc);
+        AZ_Error(TerrainFPName, m_terrainSrg, "Terrain Srg not found on any shader in the terrain material");
+
+        if (m_terrainSrg)
+        {
+            const AZ::RHI::ShaderResourceGroupLayout* terrainSrgLayout = m_terrainSrg->GetLayout();
+
+            m_detailMaterialIdPropertyIndex = terrainSrgLayout->FindShaderInputImageIndex(AZ::Name(TerrainSrgInputs::DetailMaterialIdImage));
+            AZ_Error(TerrainFPName, m_detailMaterialIdPropertyIndex.IsValid(), "Failed to find view srg input constant %s.", TerrainSrgInputs::DetailMaterialIdImage);
+        
+            m_detailCenterPropertyIndex = terrainSrgLayout->FindShaderInputConstantIndex(AZ::Name(TerrainSrgInputs::DetailMaterialIdImageCenter));
+            AZ_Error(TerrainFPName, m_detailCenterPropertyIndex.IsValid(), "Failed to find view srg input constant %s.", TerrainSrgInputs::DetailMaterialIdImageCenter);
+
+            m_detailHalfPixelUvPropertyIndex = terrainSrgLayout->FindShaderInputConstantIndex(AZ::Name(TerrainSrgInputs::DetailHalfPixelUv));
+            AZ_Error(TerrainFPName, m_detailHalfPixelUvPropertyIndex.IsValid(), "Failed to find view srg input constant %s.", TerrainSrgInputs::DetailHalfPixelUv);
+        
+            m_detailAabbPropertyIndex = terrainSrgLayout->FindShaderInputConstantIndex(AZ::Name(TerrainSrgInputs::DetailAabb));
+            AZ_Error(TerrainFPName, m_detailAabbPropertyIndex.IsValid(), "Failed to find view srg input constant %s.", TerrainSrgInputs::DetailAabb);
+
+            m_detailTexturesIndex = terrainSrgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name(TerrainSrgInputs::DetailTextures));
+            AZ_Error(TerrainFPName, m_detailTexturesIndex.IsValid(), "Failed to find view srg input constant %s.", TerrainSrgInputs::DetailTextures);
+
+            // Set up the gpu buffer for detail material data
+            AZ::Render::GpuBufferHandler::Descriptor desc;
+            desc.m_bufferName = "Detail Material Data";
+            desc.m_bufferSrgName = TerrainSrgInputs::DetailMaterialData;
+            desc.m_elementSize = sizeof(DetailMaterialShaderData);
+            desc.m_srgLayout = terrainSrgLayout;
+            m_detailMaterialDataBuffer = AZ::Render::GpuBufferHandler(desc);
+        }
 
         // Find any macro materials that have already been created.
         TerrainMacroMaterialRequestBus::EnumerateHandlers(
@@ -1244,16 +1255,14 @@ namespace Terrain
                     m_detailTextureBounds.m_max.m_y * DetailTextureScale
                 );
                 AZ::Vector2 detailUvOffset = AZ::Vector2(float(newCenter.m_x) / DetailTextureSize, float(newCenter.m_y) / DetailTextureSize);
-                
-                for (auto& view : process.m_views)
+
+                if (m_terrainSrg)
                 {
-                    auto viewSrg = view->GetShaderResourceGroup();
+                    m_terrainSrg->SetConstant(m_detailAabbPropertyIndex, detailAabb);
+                    m_terrainSrg->SetConstant(m_detailHalfPixelUvPropertyIndex, 0.5f / DetailTextureSize);
+                    m_terrainSrg->SetConstant(m_detailCenterPropertyIndex, detailUvOffset);
 
-                    viewSrg->SetConstant(m_detailAabbPropertyIndex, detailAabb);
-                    viewSrg->SetConstant(m_detailHalfPixelUvPropertyIndex, 0.5f / DetailTextureSize);
-                    viewSrg->SetConstant(m_detailCenterPropertyIndex, detailUvOffset);
-
-                    m_detailMaterialDataBuffer.UpdateSrg(viewSrg.get());
+                    m_detailMaterialDataBuffer.UpdateSrg(m_terrainSrg.get());
                 }
             }
 
@@ -1351,7 +1360,6 @@ namespace Terrain
                 AZStd::array_view<const AZ::RHI::ImageView*> imageViews(m_detailImageViews.data(), m_detailImageViews.size());
                 [[maybe_unused]] bool result = m_terrainSrg->SetImageViewUnboundedArray(m_detailTexturesIndex, imageViews);
                 AZ_Error(TerrainFPName, result, "Failed to set image view unbounded array into shader resource group.");
-                m_terrainSrg->Compile();
             }
         }
 
@@ -1394,14 +1402,17 @@ namespace Terrain
             }
         }
 
-        if (m_detailTextureImage && m_areaData.m_heightmapImage && !m_imagesSetOnViewSrg)
+        if (m_detailTextureImage && m_areaData.m_heightmapImage && !m_imagesSetOnSrgs)
         {
-            m_imagesSetOnViewSrg = true;
+            m_imagesSetOnSrgs = true;
             for (auto& view : process.m_views)
             {
                 auto viewSrg = view->GetShaderResourceGroup();
-                viewSrg->SetImage(m_detailMaterialIdPropertyIndex, m_detailTextureImage);
                 viewSrg->SetImage(m_heightmapPropertyIndex, m_areaData.m_heightmapImage);
+            }
+            if (m_terrainSrg)
+            {
+                m_terrainSrg->SetImage(m_detailMaterialIdPropertyIndex, m_detailTextureImage);
             }
         }
 
@@ -1412,6 +1423,7 @@ namespace Terrain
 
         if (m_terrainSrg && m_forwardPass)
         {
+            m_terrainSrg->Compile();
             m_forwardPass->BindSrg(m_terrainSrg->GetRHIShaderResourceGroup());
         }
     }
@@ -1542,6 +1554,7 @@ namespace Terrain
     
     void TerrainFeatureProcessor::OnMaterialReinitialized([[maybe_unused]] const MaterialInstance& material)
     {
+        PrepareMaterialData();
         for (auto& sectorData : m_sectorData)
         {
             for (auto& drawPacket : sectorData.m_drawPackets)

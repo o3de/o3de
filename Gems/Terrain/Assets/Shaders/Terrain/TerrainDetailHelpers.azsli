@@ -58,44 +58,44 @@ DetailSurface GetDefaultDetailSurface()
 }
 
 // Detail material index getters
-uint GetDetailColorIndex(ViewSrg::DetailMaterialData materialData)
+uint GetDetailColorIndex(TerrainSrg::DetailMaterialData materialData)
 {
     return materialData.m_colorNormalImageIndices & 0x0000FFFF;
 }
 
-uint GetDetailNormalIndex(ViewSrg::DetailMaterialData materialData)
+uint GetDetailNormalIndex(TerrainSrg::DetailMaterialData materialData)
 {
     return materialData.m_colorNormalImageIndices >> 16;
 }
 
-uint GetDetailRoughnessIndex(ViewSrg::DetailMaterialData materialData)
+uint GetDetailRoughnessIndex(TerrainSrg::DetailMaterialData materialData)
 {
     return materialData.m_roughnessMetalnessImageIndices & 0x0000FFFF;
 }
 
-uint GetDetailMetalnessIndex(ViewSrg::DetailMaterialData materialData)
+uint GetDetailMetalnessIndex(TerrainSrg::DetailMaterialData materialData)
 {
     return materialData.m_roughnessMetalnessImageIndices >> 16;
 }
 
-uint GetDetailSpecularF0Index(ViewSrg::DetailMaterialData materialData)
+uint GetDetailSpecularF0Index(TerrainSrg::DetailMaterialData materialData)
 {
     return materialData.m_specularF0OcclusionImageIndices & 0x0000FFFF;
 }
 
-uint GetDetailOcclusionIndex(ViewSrg::DetailMaterialData materialData)
+uint GetDetailOcclusionIndex(TerrainSrg::DetailMaterialData materialData)
 {
     return materialData.m_specularF0OcclusionImageIndices >> 16;
 }
 
-uint GetDetailHeightIndex(ViewSrg::DetailMaterialData materialData)
+uint GetDetailHeightIndex(TerrainSrg::DetailMaterialData materialData)
 {
     return materialData.m_heightImageIndex & 0x0000FFFF;
 }
 
 // Detail materail value getters
 
-float3 GetDetailColor(ViewSrg::DetailMaterialData materialData, float2 uv)
+float3 GetDetailColor(TerrainSrg::DetailMaterialData materialData, float2 uv)
 {
     float3 color = materialData.m_baseColor;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureBaseColor) > 0)
@@ -105,7 +105,7 @@ float3 GetDetailColor(ViewSrg::DetailMaterialData materialData, float2 uv)
     return color * materialData.m_baseColorFactor;
 }
 
-float3 GetDetailNormal(ViewSrg::DetailMaterialData materialData, float2 uv)
+float3 GetDetailNormal(TerrainSrg::DetailMaterialData materialData, float2 uv)
 {
     float2 normal = float2(0.0, 0.0);
     if ((materialData.m_flags & DetailTextureFlags::UseTextureNormal) > 0)
@@ -125,7 +125,7 @@ float3 GetDetailNormal(ViewSrg::DetailMaterialData materialData, float2 uv)
     return GetTangentSpaceNormal(normal, materialData.m_normalFactor);
 }
 
-float GetDetailRoughness(ViewSrg::DetailMaterialData materialData, float2 uv)
+float GetDetailRoughness(TerrainSrg::DetailMaterialData materialData, float2 uv)
 {
     float roughness = materialData.m_roughnessScale;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureRoughness) > 0)
@@ -136,7 +136,7 @@ float GetDetailRoughness(ViewSrg::DetailMaterialData materialData, float2 uv)
     return roughness;
 }
 
-float GetDetailMetalness(ViewSrg::DetailMaterialData materialData, float2 uv)
+float GetDetailMetalness(TerrainSrg::DetailMaterialData materialData, float2 uv)
 {
     float metalness = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureMetallic) > 0)
@@ -146,7 +146,7 @@ float GetDetailMetalness(ViewSrg::DetailMaterialData materialData, float2 uv)
     return metalness * materialData.m_metalFactor;
 }
 
-float GetDetailSpecularF0(ViewSrg::DetailMaterialData materialData, float2 uv)
+float GetDetailSpecularF0(TerrainSrg::DetailMaterialData materialData, float2 uv)
 {
     float specularF0 = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureSpecularF0) > 0)
@@ -156,7 +156,7 @@ float GetDetailSpecularF0(ViewSrg::DetailMaterialData materialData, float2 uv)
     return specularF0 * materialData.m_specularF0Factor;
 }
 
-float GetDetailOcclusion(ViewSrg::DetailMaterialData materialData, float2 uv)
+float GetDetailOcclusion(TerrainSrg::DetailMaterialData materialData, float2 uv)
 {
     float occlusion = 1.0;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureOcclusion) > 0)
@@ -166,7 +166,7 @@ float GetDetailOcclusion(ViewSrg::DetailMaterialData materialData, float2 uv)
     return occlusion * materialData.m_occlusionFactor;
 }
 
-float GetDetailHeight(ViewSrg::DetailMaterialData materialData, float2 uv)
+float GetDetailHeight(TerrainSrg::DetailMaterialData materialData, float2 uv)
 {
     float height = materialData.m_heightFactor;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureHeight) > 0)
@@ -179,7 +179,7 @@ float GetDetailHeight(ViewSrg::DetailMaterialData materialData, float2 uv)
 
 void GetDetailSurfaceForMaterial(inout DetailSurface surface, uint materialId, float2 uv)
 {
-    ViewSrg::DetailMaterialData detailMaterialData = ViewSrg::m_detailMaterialData[materialId];
+    TerrainSrg::DetailMaterialData detailMaterialData = TerrainSrg::m_detailMaterialData[materialId];
 
     surface.m_color = GetDetailColor(detailMaterialData, uv);
     surface.m_normal = GetDetailNormal(detailMaterialData, uv);
@@ -227,9 +227,9 @@ void GetDebugDetailSurface(inout DetailSurface surface, uint material1, uint mat
 
 void GetDetailSurface(inout DetailSurface surface, float2 idUv, float2 uv)
 {
-    uint4 material1 = ViewSrg::m_detailMaterialIdImage.GatherRed(ViewSrg::DetailSampler, idUv, 0).xyzw;
-    uint4 material2 = ViewSrg::m_detailMaterialIdImage.GatherGreen(ViewSrg::DetailSampler, idUv, 0).xyzw;
-    float4 blends = float4(ViewSrg::m_detailMaterialIdImage.GatherBlue(ViewSrg::DetailSampler, idUv, 0).xyzw) / 0xFF;
+    uint4 material1 = TerrainSrg::m_detailMaterialIdImage.GatherRed(TerrainSrg::DetailSampler, idUv, 0).xyzw;
+    uint4 material2 = TerrainSrg::m_detailMaterialIdImage.GatherGreen(TerrainSrg::DetailSampler, idUv, 0).xyzw;
+    float4 blends = float4(TerrainSrg::m_detailMaterialIdImage.GatherBlue(TerrainSrg::DetailSampler, idUv, 0).xyzw) / 0xFF;
 
     if (o_debugDetailMaterialIds)
     {

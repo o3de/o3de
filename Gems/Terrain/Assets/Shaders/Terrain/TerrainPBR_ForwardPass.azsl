@@ -8,17 +8,8 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-ShaderResourceGroupSemantic SRG_Terrain
-{
-    FrequencyId = 7;
-};
-
-ShaderResourceGroup TerrainSrg : SRG_Terrain
-{
-    Texture2D m_detailTextures[]; // bindless array of all textures for detail materials
-}
-
 #include <viewsrg.srgi>
+#include <TerrainSrg.azsli>
 #include <TerrainCommon.azsli>
 #include <TerrainDetailHelpers.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
@@ -118,12 +109,12 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     // ------- Base Color -------
 
     DetailSurface detailSurface = GetDefaultDetailSurface();
-    float2 detailRegionMin = ViewSrg::m_detailAabb.xy;
-    float2 detailRegionMax = ViewSrg::m_detailAabb.zw;
+    float2 detailRegionMin = TerrainSrg::m_detailAabb.xy;
+    float2 detailRegionMax = TerrainSrg::m_detailAabb.zw;
     float2 detailRegionUv = (surface.position.xy - detailRegionMin) / (detailRegionMax - detailRegionMin);
-    if (all(detailRegionUv > ViewSrg::m_detailHalfPixelUv) && all(detailRegionUv < 1.0 - ViewSrg::m_detailHalfPixelUv))
+    if (all(detailRegionUv > TerrainSrg::m_detailHalfPixelUv) && all(detailRegionUv < 1.0 - TerrainSrg::m_detailHalfPixelUv))
     {
-        detailRegionUv += ViewSrg::m_detailMaterialIdImageCenter - (0.5);
+        detailRegionUv += TerrainSrg::m_detailMaterialIdImageCenter - (0.5);
 
         GetDetailSurface(detailSurface, detailRegionUv, detailUv);
 
