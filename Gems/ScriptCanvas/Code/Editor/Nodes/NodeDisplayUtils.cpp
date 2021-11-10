@@ -105,7 +105,7 @@ namespace ScriptCanvasEditor::Nodes
         }
 
         GraphCanvas::TranslationKey key;
-        key << "ScriptCanvas::Node" << azrtti_typeid(node).ToString<AZStd::string>().c_str() << "details";
+        key << "ScriptCanvas::Node" << azrtti_typeid(node).ToString<AZStd::string>() << "details";
 
         GraphCanvas::TranslationRequests::Details details;
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
@@ -114,7 +114,7 @@ namespace ScriptCanvasEditor::Nodes
         for (const auto& slot : node->GetSlots())
         {
             GraphCanvas::TranslationKey slotKey;
-            slotKey << "ScriptCanvas::Node" << azrtti_typeid(node).ToString<AZStd::string>().c_str() << "slots";
+            slotKey << "ScriptCanvas::Node" << azrtti_typeid(node).ToString<AZStd::string>() << "slots";
 
             if (slot.IsVisible())
             {
@@ -135,7 +135,7 @@ namespace ScriptCanvasEditor::Nodes
 
                 slotKeyStr.append(slot.GetName());
 
-                slotKey << slotKeyStr.c_str() << "details";
+                slotKey << slotKeyStr << "details";
 
                 GraphCanvas::TranslationRequests::Details slotDetails;
                 GraphCanvas::TranslationRequestBus::BroadcastResult(slotDetails, &GraphCanvas::TranslationRequests::GetDetails, slotKey, slotDetails);
@@ -443,10 +443,10 @@ namespace ScriptCanvasEditor::Nodes
         graphCanvasEntity->SetName(AZStd::string::format("GC-BusNode: %s", busName.data()));
 
         GraphCanvas::TranslationKey key;
-        key << "EBusHandler" << busName.c_str() << "details";
+        key << "EBusHandler" << busName << "details";
 
         GraphCanvas::TranslationRequests::Details details;
-        details.Name = busName.data();
+        details.Name = busName;
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
         GraphCanvas::NodeRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeRequests::SetTooltip, details.Tooltip);
@@ -479,8 +479,8 @@ namespace ScriptCanvasEditor::Nodes
         key << "EBusHandler" << busName << "methods" << eventName << "details";
 
         GraphCanvas::TranslationRequests::Details details;
-        details.Name = eventName.c_str();
-        details.Subtitle = busName.c_str();
+        details.Name = eventName;
+        details.Subtitle = busName;
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
         // Set the name
@@ -618,7 +618,7 @@ namespace ScriptCanvasEditor::Nodes
                 if (busNode->IsIDRequired() && slot->GetDescriptor() == ScriptCanvas::SlotDescriptors::DataIn())
                 {
                     GraphCanvas::TranslationKey key;
-                    key << Translation::GlobalKeys::EBusHandlerIDKey << ".details";
+                    key << Translation::GlobalKeys::EBusHandlerIDKey << "details";
                     GraphCanvas::TranslationRequests::Details details;
                     GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
                     GraphCanvas::SlotRequestBus::Event(gcSlotId, &GraphCanvas::SlotRequests::SetDetails, details.Name, details.Tooltip);
@@ -1151,7 +1151,7 @@ namespace ScriptCanvasEditor::Nodes
         if (slotEntity)
         {
             GraphCanvas::TranslationKey slotKey;
-            slotKey << "ScriptCanvas::Node" << azrtti_typeid(slot.GetNode()).ToString<AZStd::string>().c_str() << "slots";
+            slotKey << "ScriptCanvas::Node" << azrtti_typeid(slot.GetNode()).ToString<AZStd::string>() << "slots";
 
             AZStd::string slotKeyStr;
             if (slot.IsData())
@@ -1169,7 +1169,7 @@ namespace ScriptCanvasEditor::Nodes
             }
 
             slotKeyStr.append(slot.GetName());
-            slotKey << slotKeyStr.c_str() << "details";
+            slotKey << slotKeyStr << "details";
 
             GraphCanvas::TranslationRequests::Details slotDetails;
             GraphCanvas::TranslationRequestBus::BroadcastResult(slotDetails, &GraphCanvas::TranslationRequests::GetDetails, slotKey, slotDetails);

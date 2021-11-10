@@ -136,11 +136,11 @@ namespace GraphCanvas
 
         if (m_database.find(key) != m_database.end())
         {
-            value = m_database[key].c_str();
+            value = m_database[key];
             return true;
         }
 
-        static bool s_traceMissingItems = true;
+        static bool s_traceMissingItems = false;
         if (s_traceMissingItems)
         {
             AZ_TracePrintf("GraphCanvas", AZStd::string::format("Value not found for key: %s", key.c_str()).c_str());

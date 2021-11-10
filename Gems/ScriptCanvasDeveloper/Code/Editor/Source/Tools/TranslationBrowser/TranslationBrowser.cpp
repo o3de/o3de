@@ -532,7 +532,7 @@ namespace ScriptCanvasDeveloper
 
                                 AZStd::string argumentKey = parameter->m_typeId.ToString<AZStd::string>();
                                 AZStd::string argumentName = parameter->m_name;
-                                AZStd::string argumentDescription = "";
+                                AZStd::string argumentDescription;
 
                                 GetTypeNameAndDescription(parameter->m_typeId, argumentName, argumentDescription);
 
@@ -645,14 +645,13 @@ namespace ScriptCanvasDeveloper
             }
             );
 
-
-        if (!found.empty() && AZ::IO::FileIOBase::GetInstance()->Exists(found.c_str()))
+        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+        AZ_Assert(fileIO, "FileIO is not initialized.");
+        if (!found.empty() && fileIO->Exists(found.c_str()))
         {
             m_ui->btnOpenInExplorer->setEnabled(true);
             m_selection = found;
 
-            AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-            AZ_Assert(fileIO, "FileIO is not initialized.");
             AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
 
             if (const AZ::IO::Result result = fileIO->Open(found.c_str(), AZ::IO::OpenMode::ModeRead, fileHandle))

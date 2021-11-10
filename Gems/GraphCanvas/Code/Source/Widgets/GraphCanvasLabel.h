@@ -52,7 +52,7 @@ namespace GraphCanvas
         void ClearBorderColorOverride();
 
         void SetLabel(const AZStd::string& value);
-        AZStd::string GetLabel() const { return AZStd::string(m_labelText.toStdString().c_str()); }
+        AZStd::string GetLabel() const { return AZStd::string(m_labelText.toUtf8().data()); }
 
         void SetSceneStyle(const AZ::EntityId& sceneId, const char* style);
         void SetStyle(const AZ::EntityId& entityId, const char* styleElement);

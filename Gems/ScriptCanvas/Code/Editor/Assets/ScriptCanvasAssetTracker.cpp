@@ -254,7 +254,7 @@ namespace ScriptCanvasEditor
 
     void AssetTracker::RefreshAll()
     {
-        for (auto& asset : m_assetsInUse)
+        for (const auto& asset : m_assetsInUse)
         {
             auto id = asset.second->GetScriptCanvasId();
             ScriptCanvasEditor::EditorGraphRequestBus::Event(id, &ScriptCanvasEditor::EditorGraphRequests::ClearGraphCanvasScene);

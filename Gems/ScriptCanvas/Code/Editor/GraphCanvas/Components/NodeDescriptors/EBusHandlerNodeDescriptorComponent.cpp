@@ -210,10 +210,10 @@ namespace ScriptCanvasEditor
         {
             if (m_eventTypeToId.find(eventId) == m_eventTypeToId.end())
             {
-                AZStd::string eventName;                
+                AZStd::string eventName;
 
                 for (const HandlerEventConfiguration& testEventConfiguration : eventConfigurations)
-                {                    
+                {
                     if (testEventConfiguration.m_eventId == eventId)
                     {
                         eventName = testEventConfiguration.m_eventName;
