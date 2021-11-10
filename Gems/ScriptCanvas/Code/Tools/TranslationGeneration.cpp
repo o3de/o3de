@@ -49,7 +49,7 @@ namespace ScriptCanvasEditorTools
 
     void TranslationGeneration::TranslateBehaviorClasses()
     {
-        for (const auto behaviorClassPair : m_behaviorContext->m_classes)
+        for (const auto& behaviorClassPair : m_behaviorContext->m_classes)
         {
             TranslateBehaviorClass(behaviorClassPair.second);
         }
@@ -390,7 +390,7 @@ namespace ScriptCanvasEditorTools
         auto getNodeClasses = [this, &nodes](const AZ::SerializeContext::ClassData*, const AZ::Uuid& type)
         {
             bool foundBaseClass = false;
-            auto baseClassVisitorFn = [this, &nodes, &type, &foundBaseClass](const AZ::SerializeContext::ClassData* reflectedBase, const AZ::TypeId& /*rttiBase*/)
+            auto baseClassVisitorFn = [&nodes, &type, &foundBaseClass](const AZ::SerializeContext::ClassData* reflectedBase, const AZ::TypeId& /*rttiBase*/)
             {
                 if (!reflectedBase)
                 {
