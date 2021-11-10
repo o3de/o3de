@@ -227,17 +227,17 @@ namespace PhysX {
                 float twistLower = AZ::DegToRad(AZStd::GetMin(configuration.m_twistLimitLower, configuration.m_twistLimitUpper));
                 float twistUpper = AZ::DegToRad(AZStd::GetMax(configuration.m_twistLimitLower, configuration.m_twistLimitUpper));
                 // make sure there is at least a small difference between the lower and upper limits to avoid problems in PhysX
-                const float minSwingLimitRangeRadians = AZ::DegToRad(JointConstants::MinTwistLimitRangeDegrees);
+                const float minTwistLimitRangeRadians = AZ::DegToRad(JointConstants::MinTwistLimitRangeDegrees);
                 if (const float twistLimitRange = twistUpper - twistLower;
-                    twistLimitRange < minSwingLimitRangeRadians)
+                    twistLimitRange < minTwistLimitRangeRadians)
                 {
                     if (twistUpper > 0.0f)
                     {
-                        twistLower -= (minSwingLimitRangeRadians - twistLimitRange);
+                        twistLower -= (minTwistLimitRangeRadians - twistLimitRange);
                     }
                     else
                     {
-                        twistUpper += (minSwingLimitRangeRadians - twistLimitRange);
+                        twistUpper += (minTwistLimitRangeRadians - twistLimitRange);
                     }
                 }
                 physx::PxJointAngularLimitPair twistLimitPair(twistLower, twistUpper);
