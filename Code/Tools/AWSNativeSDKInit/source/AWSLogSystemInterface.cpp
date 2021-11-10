@@ -10,6 +10,7 @@
 #include <AWSNativeSDKInit/AWSLogSystemInterface.h>
 
 #include <AzCore/base.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Module/Environment.h>
 
 #include <stdarg.h>
@@ -24,6 +25,9 @@ AZ_POP_DISABLE_WARNING
 
 namespace AWSNativeSDKInit
 {
+    AZ_CVAR(int, bg_awsLogLevel, -1, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "AWSLogLevel used to control verbosity of logging system. Off = 0, Fatal = 1, Error = 2, Warn = 3, Info = 4, Debug = 5, Trace = 6");
+
     const char* AWSLogSystemInterface::AWS_API_LOG_PREFIX = "AwsApi-";
     const int AWSLogSystemInterface::MAX_MESSAGE_LENGTH = 4096;
     const char* AWSLogSystemInterface::MESSAGE_FORMAT = "[AWS] %s - %s";
@@ -40,15 +44,12 @@ namespace AWSNativeSDKInit
     Aws::Utils::Logging::LogLevel AWSLogSystemInterface::GetLogLevel() const
     {
         Aws::Utils::Logging::LogLevel newLevel = m_logLevel;
-        static const char* const logLevelEnvVar = "sys_SetLogLevel";
-        auto logVar = AZ::Environment::FindVariable<int>(logLevelEnvVar);
-
-        if (logVar)
+        int awsLogLevel = bg_awsLogLevel;
+        if (awsLogLevel >= 0)
         {
-            newLevel = (Aws::Utils::Logging::LogLevel) *logVar;
+            newLevel = static_cast<Aws::Utils::Logging::LogLevel>(awsLogLevel);
         }
-
-        return newLevel != m_logLevel ? newLevel : m_logLevel;
+        return newLevel;
     }
 
     /**
@@ -78,14 +79,12 @@ namespace AWSNativeSDKInit
     */
     void AWSLogSystemInterface::LogStream(Aws::Utils::Logging::LogLevel logLevel, const char* tag, const Aws::OStringStream &messageStream)
     {
-
         if(!ShouldLog(logLevel)) 
         {
             return;
         }
 
         ForwardAwsApiLogMessage(logLevel, tag, messageStream.str().c_str());
-
     }
 
     bool AWSLogSystemInterface::ShouldLog(Aws::Utils::Logging::LogLevel logLevel)
@@ -93,7 +92,7 @@ namespace AWSNativeSDKInit
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
         Aws::Utils::Logging::LogLevel newLevel = GetLogLevel();
 
-        if (newLevel > Aws::Utils::Logging::LogLevel::Info && newLevel <= Aws::Utils::Logging::LogLevel::Trace && newLevel != m_logLevel)
+        if (newLevel != m_logLevel)
         {
             SetLogLevel(newLevel);
         }
@@ -124,7 +123,7 @@ namespace AWSNativeSDKInit
             break;
 
         case Aws::Utils::Logging::LogLevel::Error:
-            AZ::Debug::Trace::Instance().Warning(__FILE__, __LINE__, AZ_FUNCTION_SIGNATURE, AWSLogSystemInterface::ERROR_WINDOW_NAME, MESSAGE_FORMAT, tag, message);
+            AZ::Debug::Trace::Instance().Error(__FILE__, __LINE__, AZ_FUNCTION_SIGNATURE, AWSLogSystemInterface::ERROR_WINDOW_NAME, MESSAGE_FORMAT, tag, message);
             break;
 
         case Aws::Utils::Logging::LogLevel::Warn:
