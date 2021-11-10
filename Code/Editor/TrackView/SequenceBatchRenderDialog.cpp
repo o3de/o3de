@@ -94,10 +94,9 @@ static void UpdateAtomOutputFrameCaptureView(TrackView::AtomOutputFrameCapture& 
     const AZ::EntityId activeCameraEntityId = TrackView::ActiveCameraEntityId();
     AZ::RPI::ViewPtr view = nullptr;
     AZ::RPI::ViewProviderBus::EventResult(view, activeCameraEntityId, &AZ::RPI::ViewProvider::GetView);
-    AZ_Assert(view, "Cannot retrieve a view associated to a camera entity.");
     atomOutputFrameCapture.UpdateView(
         TrackView::TransformFromEntityId(activeCameraEntityId),
-        TrackView::ProjectionFromCameraEntityId(activeCameraEntityId, static_cast<float>(width), static_cast<float>(height)),
+        TrackView::ProjectionFromCameraEntityId(activeCameraEntityId, aznumeric_cast<float>(width), aznumeric_cast<float>(height)),
         view);
 }
 
