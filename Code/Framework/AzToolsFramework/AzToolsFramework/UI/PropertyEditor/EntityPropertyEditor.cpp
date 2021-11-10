@@ -1194,9 +1194,11 @@ namespace AzToolsFramework
             // Build up components to display
             SharedComponentArray sharedComponentArray;
             BuildSharedComponentArray(sharedComponentArray,
-                !(selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyStandardEntities || selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyPrefabEntities));
+                !(selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyStandardEntities ||
+                  selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyPrefabEntities) ||
+                  selectionEntityTypeInfo == SelectionEntityTypeInfo::ContainerEntityOfFocusedPrefab);
 
-            if (sharedComponentArray.size() == 0 || selectionEntityTypeInfo == SelectionEntityTypeInfo::ContainerEntityOfFocusedPrefab)
+            if (sharedComponentArray.size() == 0)
             {
                 // Don't display the search box if there were no common components.
                 displayComponentSearchBox = false;
