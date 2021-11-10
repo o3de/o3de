@@ -742,25 +742,24 @@ namespace MaterialEditor
         if (!m_materialSourceData.m_parentMaterial.empty())
         {
             AZ::RPI::MaterialSourceData parentMaterialSourceData;
-            const auto parentMaterialFilePath = AssetUtils::ResolvePathReference(m_absolutePath, m_materialSourceData.m_parentMaterial);
-            if (!AZ::RPI::JsonUtils::LoadObjectFromFile(parentMaterialFilePath, parentMaterialSourceData))
+            if (!AZ::RPI::JsonUtils::LoadObjectFromFile(m_materialSourceData.m_parentMaterial, parentMaterialSourceData))
             {
-                AZ_Error("MaterialDocument", false, "Material parent source data could not be loaded for: '%s'.", parentMaterialFilePath.c_str());
+                AZ_Error("MaterialDocument", false, "Material parent source data could not be loaded for: '%s'.", m_materialSourceData.m_parentMaterial.c_str());
                 return false;
             }
 
-            const auto parentMaterialAssetIdResult = AssetUtils::MakeAssetId(parentMaterialFilePath, 0);
+            const auto parentMaterialAssetIdResult = AssetUtils::MakeAssetId(m_materialSourceData.m_parentMaterial, 0);
             if (!parentMaterialAssetIdResult)
             {
-                AZ_Error("MaterialDocument", false, "Material parent asset ID could not be created: '%s'.", parentMaterialFilePath.c_str());
+                AZ_Error("MaterialDocument", false, "Material parent asset ID could not be created: '%s'.", m_materialSourceData.m_parentMaterial.c_str());
                 return false;
             }
 
             auto parentMaterialAssetResult = parentMaterialSourceData.CreateMaterialAssetFromSourceData(
-                parentMaterialAssetIdResult.GetValue(), parentMaterialFilePath, true, true);
+                parentMaterialAssetIdResult.GetValue(), m_materialSourceData.m_parentMaterial, true, true);
             if (!parentMaterialAssetResult)
             {
-                AZ_Error("MaterialDocument", false, "Material parent asset could not be created from source data: '%s'.", parentMaterialFilePath.c_str());
+                AZ_Error("MaterialDocument", false, "Material parent asset could not be created from source data: '%s'.", m_materialSourceData.m_parentMaterial.c_str());
                 return false;
             }
 
