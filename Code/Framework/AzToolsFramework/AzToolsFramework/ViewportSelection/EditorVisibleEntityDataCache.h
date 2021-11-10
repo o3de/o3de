@@ -55,7 +55,11 @@ namespace AzToolsFramework
         bool IsVisibleEntityVisible(size_t index) const;
         bool IsVisibleEntitySelected(size_t index) const;
         bool IsVisibleEntityIconHidden(size_t index) const;
-        bool IsVisibleEntitySelectableInViewport(size_t index) const;
+        //! Returns true if the entity is individually selectable (not inside an entity container)
+        //! @note It may still be desirable to be able to 'click' an entity inside the container to
+        //! select the entire container itself (container root becomes selected) but not select the
+        //! individual entity.
+        bool IsVisibleEntityIndividuallySelectableInViewport(size_t index) const;
 
         AZStd::optional<size_t> GetVisibleEntityIndexFromId(AZ::EntityId entityId) const;
 
