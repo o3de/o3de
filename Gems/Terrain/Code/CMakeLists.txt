@@ -26,8 +26,6 @@ ly_add_target(
             Gem::GradientSignal
             Gem::SurfaceData
             Gem::LmbrCentral
-            
-            
 )
 
 ly_add_target(
@@ -49,8 +47,8 @@ ly_add_target(
 )
 
 # the above module is for use in all client/server types
-ly_create_alias(NAME Terrain.Servers  NAMESPACE Gem TARGETS Gem::Terrain)
-ly_create_alias(NAME Terrain.Clients  NAMESPACE Gem TARGETS Gem::Terrain)
+ly_create_alias(NAME Terrain.Servers  NAMESPACE Gem TARGETS Gem::Terrain Gem::SurfaceData.Servers Gem::GradientSignal.Servers)
+ly_create_alias(NAME Terrain.Clients  NAMESPACE Gem TARGETS Gem::Terrain Gem::SurfaceData.Clients Gem::GradientSignal.Clients)
 
 # If we are on a host platform, we want to add the host tools targets like the Terrain.Editor target which
 # will also depend on Terrain.Static
