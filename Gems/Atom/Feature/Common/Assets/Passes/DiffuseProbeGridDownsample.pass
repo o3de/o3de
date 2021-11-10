@@ -5,7 +5,8 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "DiffuseProbeGridDownsamplePassTemplate",
-            "PassClass": "FullScreenTriangle",
+            //"PassClass": "FullScreenTriangle",
+            "PassClass": "DiffuseProbeGridDownsamplePass",
             "Slots": [
                 {
                     "Name": "NormalInput",
