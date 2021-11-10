@@ -607,6 +607,7 @@ namespace AzToolsFramework
 
         AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
             AzToolsFramework::GetEntityContextId());
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
     }
 
     EntityPropertyEditor::~EntityPropertyEditor()
@@ -619,7 +620,8 @@ namespace AzToolsFramework
         AZ::EntitySystemBus::Handler::BusDisconnect();
         EditorEntityContextNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
-
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
+        
         for (auto& entityId : m_overrideSelectedEntityIds)
         {
             DisconnectFromEntityBuses(entityId);
