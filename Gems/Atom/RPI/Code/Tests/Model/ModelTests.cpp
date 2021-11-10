@@ -1102,7 +1102,7 @@ namespace UnitTest
             Add(lodCreator, positions, positionCount, positionOffset, positionBuffer, indices, indexCount, indexOffset, indexBuffer);
         }
 
-        // complete the asset lot creation process
+        // complete the asset lod creation process
         void End(AZ::RPI::ModelLodAssetCreator& lodCreator)
         {
             AZ::Data::Asset<AZ::RPI::ModelLodAsset> lodAsset;

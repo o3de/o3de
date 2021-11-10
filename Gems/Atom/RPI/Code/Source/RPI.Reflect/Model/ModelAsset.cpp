@@ -222,19 +222,19 @@ namespace AZ
                 // Position is 3 floats
                 if (positionElementSize != sizeof(float) * 3)
                 {
-                    AZ_Warning("ModelAsset", false, "unsupported mesh posiiton format, only full 3 floats per vertex are supported at the moment");
+                    AZ_Warning(
+                        "ModelAsset", false, "unsupported mesh posiiton format, only full 3 floats per vertex are supported at the moment");
                     return false;
                 }
 
                 RHI::BufferViewDescriptor indexBufferViewDesc = indexBufferView.GetBufferViewDescriptor();
                 AZStd::array_view<uint8_t> indexRawBuffer = indexAssetViewPtr->GetBuffer();
 
-                bool anyHit = false;
-
                 const AZ::Vector3 rayEnd = rayStart + rayDir;
                 AZ::Vector3 a, b, c;
                 AZ::Vector3 intersectionNormal;
 
+                bool anyHit = false;
                 float shortestDistanceNormalized = AZStd::numeric_limits<float>::max();
 
                 const AZ::u32* indexPtr = reinterpret_cast<const AZ::u32*>(
@@ -243,8 +243,7 @@ namespace AZ
                     positionRawBuffer.data() + (positionBufferViewDesc.m_elementOffset * positionBufferViewDesc.m_elementSize));
 
                 constexpr int StepSize = 3; // number of values per vertex (x, y, z)
-                for (uint32_t indexIter = 0; indexIter <= indexBufferViewDesc.m_elementCount - StepSize;
-                     indexIter += StepSize, indexPtr += StepSize)
+                for (uint32_t indexIter = 0; indexIter < indexBufferViewDesc.m_elementCount; indexIter += StepSize, indexPtr += StepSize)
                 {
                     AZ::u32 index0 = indexPtr[0];
                     AZ::u32 index1 = indexPtr[1];
@@ -265,7 +264,8 @@ namespace AZ
                     c.Set(cRef);
 
                     float currentDistanceNormalized;
-                    if (AZ::Intersect::IntersectSegmentTriangleCCW(rayStart, rayEnd, a, b, c, intersectionNormal, currentDistanceNormalized))
+                    if (AZ::Intersect::IntersectSegmentTriangleCCW(
+                            rayStart, rayEnd, a, b, c, intersectionNormal, currentDistanceNormalized))
                     {
                         anyHit = true;
 
