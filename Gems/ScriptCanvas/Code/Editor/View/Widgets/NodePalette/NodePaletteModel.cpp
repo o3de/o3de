@@ -84,11 +84,6 @@ namespace
         return false;
     }
 
-    bool MethodHasAttribute(const AZ::BehaviorMethod* method, AZ::Crc32 attribute)
-    {
-        return AZ::FindAttribute(attribute, method->m_attributes) != nullptr; // warning C4800: 'AZ::Attribute *': forcing value to bool 'true' or 'false' (performance warning)
-    }
-
     // Checks for and returns the Category attribute from an AZ::AttributeArray
     AZStd::string GetCategoryPath(const AZ::AttributeArray& attributes, const AZ::BehaviorContext& behaviorContext)
     {
