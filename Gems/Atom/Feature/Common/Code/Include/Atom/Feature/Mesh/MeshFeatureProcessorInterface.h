@@ -20,7 +20,7 @@ namespace AZ
 {
     namespace Render
     {
-        class MeshDataInstance;
+        class ModelDataInstance;
 
         //! Settings to apply to a mesh handle when acquiring it for the first time
         struct MeshHandleDescriptor
@@ -40,7 +40,7 @@ namespace AZ
         public:
             AZ_RTTI(AZ::Render::MeshFeatureProcessorInterface, "{975D7F0C-2E7E-4819-94D0-D3C4E2024721}", FeatureProcessor);
 
-            using MeshHandle = StableDynamicArrayHandle<MeshDataInstance>;
+            using MeshHandle = StableDynamicArrayHandle<ModelDataInstance>;
             using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
 
             //! Acquires a model with an optional collection of material assignments.
@@ -66,7 +66,7 @@ namespace AZ
             //! instead of compiling the srg directly. This way, if the srg has already been queued for compile,
             //! it will not be queued twice in the same frame. The ObjectSrg should not be updated during
             //! Simulate, or it will create a race between updating the data and the call to Compile
-            virtual Data::Instance<RPI::ShaderResourceGroup> GetObjectSrg(const MeshHandle& meshHandle) const = 0;
+            virtual AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>>& GetObjectSrgs(const MeshHandle& meshHandle) const = 0;
             //! Queues the object srg for compile.
             virtual void QueueObjectSrgForCompile(const MeshHandle& meshHandle) const = 0;
             //! Sets the MaterialAssignmentMap for a meshHandle, using just a single material for the DefaultMaterialAssignmentId.
