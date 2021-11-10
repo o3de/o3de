@@ -188,6 +188,10 @@ namespace AZ
         void MaterialTypeAsset::SetReady()
         {
             m_status = AssetStatus::Ready;
+
+            // If this was created dynamically using MaterialTypeAssetCreator (which is what calls SetReady()),
+            // we need to connect to the AssetBus for reloads.
+            PostLoadInit();
         }
 
         bool MaterialTypeAsset::PostLoadInit()
