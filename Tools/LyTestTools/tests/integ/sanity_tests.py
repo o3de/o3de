@@ -44,7 +44,6 @@ class TestAutomatedTestingProject(object):
         test to run on instances without a GPU. We launch the game client executable and wait for the process to exist.
         A try/finally block ensures proper test cleanup if issues occur during the test.
         """
-
         # Kill processes that may interfere with the test
         process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
@@ -72,7 +71,6 @@ class TestAutomatedTestingProject(object):
         `-autotest_mode` arg supresses modal dialogs from interfering with our test. We launch the Editor executable and
         wait for the process to exist.
         """
-
         # Kill processes that may interfere with the test
         process_utils.kill_processes_named(names=process_utils.LY_PROCESS_KILL_LIST, ignore_extensions=True)
 
