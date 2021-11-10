@@ -99,6 +99,7 @@ namespace Multiplayer
     private:
         void RemoveEntities();
         NetEntityId NextId();
+        bool IsHierarchySafeToExit(NetworkEntityHandle& entityHandle, const NetEntityIdSet& entitiesNotInDomain);
 
         NetworkEntityTracker m_networkEntityTracker;
         NetworkEntityAuthorityTracker m_networkEntityAuthorityTracker;
