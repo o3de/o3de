@@ -31,6 +31,9 @@
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Material/Material.h>
+#include <atom/RPI.Public/Pass/PassFilter.h>
+#include <atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <atom/RPI.Public/Pass/RasterPass.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
@@ -129,6 +132,9 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Activate()
     {
+        EnableSceneNotification();
+        CacheForwardPass();
+
         Initialize();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
         
@@ -199,6 +205,8 @@ namespace Terrain
         TerrainMacroMaterialNotificationBus::Handler::BusDisconnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AZ::RPI::MaterialReloadNotificationBus::Handler::BusDisconnect();
+        
+        DisableSceneNotification();
 
         m_patchModel = {};
         m_areaData = {};
@@ -207,6 +215,7 @@ namespace Terrain
         m_macroMaterials.Clear();
         m_materialAssetLoader = {};
         m_materialInstance = {};
+
     }
 
     void TerrainFeatureProcessor::Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet)
@@ -367,6 +376,11 @@ namespace Terrain
         materialRegion.m_materialsForSurfaces.push_back({ surfaceTag, detailMaterialId });
         ++m_detailMaterials.GetData(detailMaterialId).refCount;
         m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
+    }
+
+    void TerrainFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline)
+    {
+        CacheForwardPass();
     }
 
     void TerrainFeatureProcessor::CheckDetailMaterialForDeletion(uint16_t detailMaterialId)
@@ -1014,7 +1028,17 @@ namespace Terrain
 
         m_macroNormalMapIndex = layout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::MacroNormalMap));
         AZ_Error(TerrainFPName, m_macroNormalMapIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::MacroNormalMap);
-        
+
+        for (auto& shaderItem : m_materialInstance->GetShaderCollection())
+        {
+            if (shaderItem.GetShaderAsset()->GetDrawListName() == AZ::Name("forward"))
+            {
+                const auto& shaderAsset = shaderItem.GetShaderAsset();
+                m_terrainSrg = AZ::RPI::ShaderResourceGroup::Create(shaderItem.GetShaderAsset(), shaderAsset->GetSupervariantIndex(AZ::Name()), AZ::Name{"TerrainSrg"});
+                AZ_Error(TerrainFPName, m_terrainSrg, "Failed to create Terrain shader resource group");
+            }
+        }
+
         // Set up the gpu buffer for detail material data
         AZ::Render::GpuBufferHandler::Descriptor desc;
         desc.m_bufferName = "Detail Material Data";
@@ -1105,7 +1129,7 @@ namespace Terrain
                         auto objectSrg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
                         if (!objectSrg)
                         {
-                            AZ_Warning("TerrainFeatureProcessor", false, "Failed to create a new shader resource group, skipping.");
+                            AZ_Warning(TerrainFPName, false, "Failed to create a new shader resource group, skipping.");
                             continue;
                         }
                     
@@ -1121,7 +1145,7 @@ namespace Terrain
                             // set the shader option to select forward pass IBL specular if necessary
                             if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ false }))
                             {
-                                AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
+                                AZ_Warning(TerrainFPName, false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
                             }
                             const uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
                             drawPacket.SetStencilRef(stencilRef);
@@ -1322,16 +1346,12 @@ namespace Terrain
                 }
             }
 
-            if (m_detailImagesUpdated)
+            if (m_detailImagesUpdated && m_terrainSrg)
             {
-                for (auto& view : process.m_views)
-                {
-                    auto viewSrg = view->GetShaderResourceGroup();
-                    AZStd::array_view<const AZ::RHI::ImageView*> imageViews(m_detailImageViews.data(), m_detailImageViews.size());
-                    [[maybe_unused]] bool result = viewSrg->SetImageViewUnboundedArray(m_detailTexturesIndex, imageViews);
-                    AZ_Assert(result, "Failed to set image view unbounded array into shader resource group.");
-                }
-                m_detailImagesUpdated = false;
+                AZStd::array_view<const AZ::RHI::ImageView*> imageViews(m_detailImageViews.data(), m_detailImageViews.size());
+                [[maybe_unused]] bool result = m_terrainSrg->SetImageViewUnboundedArray(m_detailTexturesIndex, imageViews);
+                AZ_Error(TerrainFPName, result, "Failed to set image view unbounded array into shader resource group.");
+                m_terrainSrg->Compile();
             }
         }
 
@@ -1388,6 +1408,11 @@ namespace Terrain
         if (m_materialInstance)
         {
             m_materialInstance->Compile();
+        }
+
+        if (m_terrainSrg && m_forwardPass)
+        {
+            m_forwardPass->BindSrg(m_terrainSrg->GetRHIShaderResourceGroup());
         }
     }
 
@@ -1586,6 +1611,27 @@ namespace Terrain
                 callback(sectorData);
             }
         }
+    }
+
+    void TerrainFeatureProcessor::CacheForwardPass()
+    {
+        auto rasterPassFilter = AZ::RPI::PassFilter::CreateWithPassClass<AZ::RPI::RasterPass>();
+        rasterPassFilter.SetOwenrScene(GetParentScene());
+        AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get();
+        AZ::RHI::DrawListTag forwardTag = rhiSystem->GetDrawListTagRegistry()->AcquireTag(AZ::Name("forward"));
+        AZ::RPI::PassSystemInterface::Get()->ForEachPass(rasterPassFilter,
+            [&](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
+            {
+                auto* rasterPass = azrtti_cast<AZ::RPI::RasterPass*>(pass);
+                    
+                if (rasterPass && rasterPass->GetDrawListTag() == forwardTag)
+                {
+                    m_forwardPass = rasterPass;
+                    return AZ::RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                }
+                return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+            }
+        );
     }
     
     auto TerrainFeatureProcessor::Vector2i::operator+(const Vector2i& rhs) const -> Vector2i

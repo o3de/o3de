@@ -32,6 +32,7 @@ namespace AZ::RPI
     }
     class Material;
     class Model;
+    class RenderPass;
     class StreamingImage;
 }
 
@@ -266,6 +267,9 @@ namespace Terrain
         void OnTerrainSurfaceMaterialMappingChanged(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag, MaterialInstance material) override;
         void OnTerrainSurfaceMaterialMappingRegionChanged(AZ::EntityId entityId, const AZ::Aabb& oldRegion, const AZ::Aabb& newRegion) override;
 
+        // AZ::RPI::SceneNotificationBus overrides...
+        void OnRenderPipelinePassesChanged(AZ::RPI::RenderPipeline* renderPipeline) override;
+
         void Initialize();
         void InitializeTerrainPatch(uint16_t gridSize, float gridSpacing, PatchData& patchdata);
         bool InitializePatchModel();
@@ -301,6 +305,8 @@ namespace Terrain
         AZ::Outcome<AZ::Data::Asset<AZ::RPI::BufferAsset>> CreateBufferAsset(
             const void* data, const AZ::RHI::BufferViewDescriptor& bufferViewDescriptor, const AZStd::string& bufferName);
 
+        void CacheForwardPass();
+
         // System-level parameters
         static constexpr float GridSpacing{ 1.0f };
         static constexpr int32_t GridSize{ 64 }; // number of terrain quads (vertices are m_gridSize + 1)
@@ -311,6 +317,7 @@ namespace Terrain
 
         AZStd::unique_ptr<AZ::RPI::AssetUtils::AsyncAssetLoader> m_materialAssetLoader;
         MaterialInstance m_materialInstance;
+        AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_terrainSrg;
 
         AZ::RHI::ShaderInputConstantIndex m_modelToWorldIndex;
         AZ::RHI::ShaderInputConstantIndex m_terrainDataIndex;
@@ -360,6 +367,7 @@ namespace Terrain
         AZ::Render::IndexedDataVector<DetailMaterialListRegion> m_detailMaterialRegions;
         AZ::Render::SparseVector<DetailMaterialShaderData> m_detailMaterialShaderData;
         AZ::Render::GpuBufferHandler m_detailMaterialDataBuffer;
+        AZ::RPI::RenderPass* m_forwardPass;
 
         AZStd::vector<const AZ::RHI::ImageView*> m_detailImageViews;
         AZStd::vector<uint16_t> m_detailImageViewFreeList;

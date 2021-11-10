@@ -7,6 +7,17 @@
  */
 
 #include <Atom/Features/SrgSemantics.azsli>
+
+ShaderResourceGroupSemantic SRG_Terrain
+{
+    FrequencyId = 7;
+};
+
+ShaderResourceGroup TerrainSrg : SRG_Terrain
+{
+    Texture2D m_detailTextures[]; // bindless array of all textures for detail materials
+}
+
 #include <viewsrg.srgi>
 #include <TerrainCommon.azsli>
 #include <TerrainDetailHelpers.azsli>

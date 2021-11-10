@@ -62,6 +62,10 @@ namespace AZ
             //! It may return nullptr if this pass is independent with any views.
             ViewPtr GetView() const;
 
+            // Add a srg to srg list to be bound for this pass
+            void BindSrg(const RHI::ShaderResourceGroup* srg);
+            
+
         protected:
             explicit RenderPass(const PassDescriptor& descriptor);
 
@@ -95,9 +99,6 @@ namespace AZ
             // Clear the srg list
             void ResetSrgs();
 
-            // Add a srg to srg list to be bound for this pass
-            void BindSrg(const RHI::ShaderResourceGroup* srg);
-            
             // Set srgs for pass's execution
             void SetSrgsForDraw(RHI::CommandList* commandList);
             void SetSrgsForDispatch(RHI::CommandList* commandList);
