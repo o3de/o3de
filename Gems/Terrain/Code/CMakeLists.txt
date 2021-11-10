@@ -76,8 +76,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     )
 
     # the above module is for use in dev tool situations
-    ly_create_alias(NAME Terrain.Builders NAMESPACE Gem TARGETS Gem::Terrain.Editor Gem::SurfaceData.Editor Gem::GradientSignal.Editor)
-    ly_create_alias(NAME Terrain.Tools    NAMESPACE Gem TARGETS Gem::Terrain.Editor Gem::SurfaceData.Editor Gem::GradientSignal.Editor)
+    ly_create_alias(NAME Terrain.Builders NAMESPACE Gem TARGETS Gem::Terrain.Editor Gem::SurfaceData.Builders Gem::GradientSignal.Builders)
+    ly_create_alias(NAME Terrain.Tools    NAMESPACE Gem TARGETS Gem::Terrain.Editor Gem::SurfaceData.Tools Gem::GradientSignal.Tools)
 endif()
 
 ################################################################################
