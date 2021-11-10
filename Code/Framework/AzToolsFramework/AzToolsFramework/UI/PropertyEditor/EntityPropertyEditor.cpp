@@ -893,26 +893,46 @@ namespace AzToolsFramework
     {
         if (!m_prefabsAreEnabled)
         {
-            return m_isLevelEntityEditor ? InspectorLayout::OpenPrefabContainerEntity : InspectorLayout::Entity;
+            return m_isLevelEntityEditor ? InspectorLayout::Level : InspectorLayout::Entity;
         }
 
-        if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
-        {
-            AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-            EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+        // Prefabs layout logic
 
-            AZ::EntityId focusedPrefabContainerEntityId =
-                prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
-            if (AZStd::find(m_selectedEntityIds.begin(), m_selectedEntityIds.end(), focusedPrefabContainerEntityId) !=
-                m_selectedEntityIds.end())
+        // If this is the container entity for the root instance, treat it like a level entity.
+        AZ::EntityId levelContainerEntityId = m_prefabPublicInterface->GetLevelInstanceContainerEntityId();
+        if (AZStd::find(m_selectedEntityIds.begin(), m_selectedEntityIds.end(), levelContainerEntityId) != m_selectedEntityIds.end())
+        {
+            if (m_selectedEntityIds.size() > 1)
             {
-                if (m_selectedEntityIds.size() > 1)
+                return InspectorLayout::Invalid;
+            }
+            else
+            {
+                return InspectorLayout::Level;
+            }
+        }
+        else
+        {
+            // If this is the container entity for the currently focused prefab, utilize a separate layout.
+            if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
+            {
+                AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+                EditorEntityContextRequestBus::BroadcastResult(
+                    editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
+
+                AZ::EntityId focusedPrefabContainerEntityId =
+                    prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+                if (AZStd::find(m_selectedEntityIds.begin(), m_selectedEntityIds.end(), focusedPrefabContainerEntityId) !=
+                    m_selectedEntityIds.end())
                 {
-                    return InspectorLayout::Invalid;
-                }
-                else
-                {
-                    return InspectorLayout::OpenPrefabContainerEntity;
+                    if (m_selectedEntityIds.size() > 1)
+                    {
+                        return InspectorLayout::Invalid;
+                    }
+                    else
+                    {
+                        return InspectorLayout::ContainerEntityOfFocusedPrefab;
+                    }
                 }
             }
         }
@@ -926,7 +946,7 @@ namespace AzToolsFramework
 
         InspectorLayout layout = GetCurrentInspectorLayout();
 
-        if (!m_prefabsAreEnabled && layout == InspectorLayout::OpenPrefabContainerEntity)
+        if (!m_prefabsAreEnabled && layout == InspectorLayout::Level)
         {
             AZStd::string levelName;
             AzToolsFramework::EditorRequestBus::BroadcastResult(levelName, &AzToolsFramework::EditorRequests::GetLevelName);
@@ -968,11 +988,16 @@ namespace AzToolsFramework
 
         InspectorLayout layout = GetCurrentInspectorLayout();
 
-        if (layout == InspectorLayout::OpenPrefabContainerEntity)
+        if (layout == InspectorLayout::Level)
         {
             // The Level Inspector should only have a list of selectable components after the
             // level entity itself is valid (i.e. "selected").
-            return selection.empty() ? SelectionEntityTypeInfo::None : SelectionEntityTypeInfo::OpenPrefabContainerEntity;
+            return selection.empty() ? SelectionEntityTypeInfo::None : SelectionEntityTypeInfo::LevelEntity;
+        }
+
+        if (layout == InspectorLayout::ContainerEntityOfFocusedPrefab)
+        {
+            return selection.empty() ? SelectionEntityTypeInfo::None : SelectionEntityTypeInfo::ContainerEntityOfFocusedPrefab;
         }
 
         if (layout == InspectorLayout::Invalid)
@@ -1137,7 +1162,7 @@ namespace AzToolsFramework
                 m_componentFilter = AZStd::move(GetDefaultComponentFilter());
             }
         }
-        else if (selectionEntityTypeInfo == SelectionEntityTypeInfo::OpenPrefabContainerEntity)
+        else if (selectionEntityTypeInfo == SelectionEntityTypeInfo::LevelEntity)
         {
             if (!m_customFilterSet)
             {
@@ -1145,7 +1170,8 @@ namespace AzToolsFramework
             }
         }
 
-        bool isLevelLayout = GetCurrentInspectorLayout() == InspectorLayout::OpenPrefabContainerEntity;
+        bool isLevelLayout = GetCurrentInspectorLayout() == InspectorLayout::Level;
+        bool isContainerOfFocusedPrefabLayout = GetCurrentInspectorLayout() == InspectorLayout::ContainerEntityOfFocusedPrefab;
 
         m_gui->m_entityDetailsLabel->setText(entityDetailsLabelText);
         m_gui->m_entityDetailsLabel->setVisible(entityDetailsVisible);
@@ -1153,10 +1179,14 @@ namespace AzToolsFramework
         m_gui->m_entityNameLabel->setVisible(hasEntitiesDisplayed);
         m_gui->m_entityIcon->setVisible(hasEntitiesDisplayed);
         m_gui->m_pinButton->setVisible(m_overrideSelectedEntityIds.empty() && hasEntitiesDisplayed && !m_isSystemEntityEditor);
-        m_gui->m_statusLabel->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
-        m_gui->m_statusComboBox->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
-        m_gui->m_entityIdLabel->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
-        m_gui->m_entityIdText->setVisible(hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
+        m_gui->m_statusLabel->setVisible(
+            hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
+        m_gui->m_statusComboBox->setVisible(
+            hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
+        m_gui->m_entityIdLabel->setVisible(
+            hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
+        m_gui->m_entityIdText->setVisible(
+            hasEntitiesDisplayed && !m_isSystemEntityEditor && !isLevelLayout);
 
         bool displayComponentSearchBox = hasEntitiesDisplayed;
         if (hasEntitiesDisplayed)
@@ -1166,7 +1196,7 @@ namespace AzToolsFramework
             BuildSharedComponentArray(sharedComponentArray,
                 !(selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyStandardEntities || selectionEntityTypeInfo == SelectionEntityTypeInfo::OnlyPrefabEntities));
 
-            if (sharedComponentArray.size() == 0)
+            if (sharedComponentArray.size() == 0 || selectionEntityTypeInfo == SelectionEntityTypeInfo::ContainerEntityOfFocusedPrefab)
             {
                 // Don't display the search box if there were no common components.
                 displayComponentSearchBox = false;
@@ -1180,7 +1210,8 @@ namespace AzToolsFramework
             UpdateEntityDisplay();
         }
 
-        m_gui->m_darkBox->setVisible(displayComponentSearchBox && !m_isSystemEntityEditor && !isLevelLayout);
+        m_gui->m_darkBox->setVisible(
+            displayComponentSearchBox && !m_isSystemEntityEditor && !isLevelLayout && !isContainerOfFocusedPrefabLayout);
         m_gui->m_entitySearchBox->setVisible(displayComponentSearchBox);
 
         bool displayAddComponentMenu = CanAddComponentsToSelection(selectionEntityTypeInfo);
