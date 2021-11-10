@@ -30,7 +30,6 @@
 #define SYSTEMINIT_CPP_SECTION_17 17
 #endif
 
-#include "CryLibrary.h"
 #include "CryPath.h"
 
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>

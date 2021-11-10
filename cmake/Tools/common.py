@@ -30,6 +30,9 @@ ENCODING_ERROR_HANDLINGS = 'ignore'     # What to do if we encounter any encodin
 DEFAULT_PAK_ROOT = 'Pak'                # The default Pak root folder under engine root where the game paks are built
 
 if platform.system() == 'Windows':
+    class PlatformError(WindowsError):
+        pass
+
     # Re-use microsoft error codes since this script is meant to only run on windows host platforms
     ERROR_CODE_FILE_NOT_FOUND = 2
     ERROR_CODE_ERROR_NOT_SUPPORTED = 50
@@ -37,6 +40,9 @@ if platform.system() == 'Windows':
     ERROR_CODE_CANNOT_COPY = 266
     ERROR_CODE_ERROR_DIRECTORY = 267
 else:
+    class PlatformError(Exception):
+        pass
+
     # Posix does not match any of the following errors to specific codes, so just the standard '1'
     ERROR_CODE_FILE_NOT_FOUND = 1
     ERROR_CODE_ERROR_NOT_SUPPORTED = 1
@@ -309,7 +315,7 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
 
         # Extract the version and verify
         version_output = subprocess.check_output([tool_source, tool_version_argument],
-                                                 shell=True,
+                                                 shell=(platform.system() == 'Windows'),
                                                  stderr=subprocess.PIPE).decode(DEFAULT_TEXT_READ_ENCODING,
                                                                                 ENCODING_ERROR_HANDLINGS)
         version_match = tool_version_regex.search(version_output)
@@ -330,13 +336,13 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
         return result_version, resolved_override_tool_path
 
     except CalledProcessError as e:
-        error_msg = e.output.decode(DEFAULT_TEXT_READ_ENCODING,
+        error_msg = e.stderr.decode(DEFAULT_TEXT_READ_ENCODING,
                                     ENCODING_ERROR_HANDLINGS)
         raise LmbrCmdError(f"{tool_name} cannot be resolved or there was a problem determining its version number. "
                            f"Either make sure its in the system path environment or a valid path is passed in "
                            f"through the {argument_name} argument.\n{error_msg}",
                            ERROR_CODE_ERROR_NOT_SUPPORTED)
-    except (WindowsError, RuntimeError) as e:
+    except (PlatformError, RuntimeError) as e:
         logging.error(f"Call to '{tool_source}' resulted in error: {e}")
         raise LmbrCmdError(f"{tool_name} cannot be resolved or there was a problem determining its version number. "
                            f"Either make sure its in the system path environment or a valid path is passed in "
@@ -552,7 +558,7 @@ class CommandLineExec(object):
                 call_args.append(str(arguments))
             logging.debug("exec(%s)", subprocess.list2cmdline(call_args))
             result = subprocess.run(call_args,
-                                    shell=True,
+                                    shell=(platform.system() == 'Windows'),
                                     capture_output=capture_stdout,
                                     stderr=subprocess.DEVNULL if not capture_stdout and suppress_stderr else None,
                                     encoding='utf-8',

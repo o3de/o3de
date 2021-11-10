@@ -38,6 +38,7 @@
 
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzFramework/Visibility/EntityVisibilityQuery.h>
+#include <AzFramework/Viewport/ViewportBus.h>
 
 // forward declarations.
 class CBaseObject;
@@ -86,6 +87,7 @@ AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SANDBOX_API EditorViewportWidget final
     : public QtViewport
+    , public AzFramework::ViewportBorderRequestBus::Handler
     , private IEditorNotifyListener
     , private IUndoManagerListener
     , private Camera::EditorCameraRequestBus::Handler
@@ -119,6 +121,9 @@ public:
     // These methods are made public in the derived class because they are called with an object whose static type is known to be this class type.
     void SetFOV(float fov) override;
     float GetFOV() const override;
+
+    // AzFramework::ViewportBorderRequestBus overrides ...
+    AZStd::optional<AzFramework::ViewportBorderPadding> GetViewportBorderPadding() const override;
 
 private:
     ////////////////////////////////////////////////////////////////////////

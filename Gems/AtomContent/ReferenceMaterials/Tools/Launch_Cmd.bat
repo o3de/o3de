@@ -1,4 +1,6 @@
 @echo off
+:: Keep changes local
+SETLOCAL enableDelayedExpansion
 
 REM 
 REM Copyright (c) Contributors to the Open 3D Engine Project
@@ -13,7 +15,7 @@ REM
 :: Puts you in the CMD within the dev environment
 
 :: Set up window
-TITLE O3DE Asset Gem Cmd
+TITLE O3DE DCC Scripting Interface Cmd
 :: Use obvious color to prevent confusion (Grey with Yellow Text)
 COLOR 8E
 
@@ -21,15 +23,12 @@ COLOR 8E
 cd %~dp0
 PUSHD %~dp0
 
-:: Keep changes local
-SETLOCAL enableDelayedExpansion
-
 CALL %~dp0\Project_Env.bat
 
 echo.
 echo _____________________________________________________________________
 echo.
-echo ~    O3DE Asset Gem CMD ...
+echo ~    O3DE %O3DE_PROJECT% Asset Gem CMD ...
 echo _____________________________________________________________________
 echo.
 
