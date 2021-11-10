@@ -686,6 +686,11 @@ namespace AzToolsFramework
             InstanceOptionalReference owningInstance,
             UndoSystem::URSequencePoint* parentUndoBatch)
         {
+            if (!entity)
+            {
+                return AZ::Failure(AZStd::string("Unable to create patch - CreatePatchBasedOnPrefabFocus was passed a nullptr entity."));
+            }
+
             AZ::EntityId entityId = entity->GetId();
 
             PrefabDom beforeState;
@@ -768,8 +773,6 @@ namespace AzToolsFramework
                 if (isInFocusTree && !isOwnedByFocusedPrefabInstance)
                 {
                     // Store change as override
-                    AZ_TracePrintf("PREFAB EDIT", "OVERRIDE");
-
                     if (isNewParentOwnedByDifferentInstance)
                     {
                         InternalHandleInstanceChange(parentUndoBatch, entity, beforeParentId, afterParentId);
@@ -797,8 +800,6 @@ namespace AzToolsFramework
                 else
                 {
                     // Store change to owning prefab
-                    AZ_TracePrintf("PREFAB EDIT", "TEMPLATE");
-
                     InternalHandleEntityChange(parentUndoBatch, entityId, beforeState, afterState, owningInstance);
 
                     if (isNewParentOwnedByDifferentInstance)
@@ -816,6 +817,11 @@ namespace AzToolsFramework
             InstanceOptionalReference owningInstance,
             UndoSystem::URSequencePoint* parentUndoBatch)
         {
+            if (!entity)
+            {
+                return AZ::Failure(AZStd::string("Unable to create patch - CreatePatch was passed a nullptr entity."));
+            }
+
             AZ::EntityId entityId = entity->GetId();
 
             PrefabDom beforeState;
