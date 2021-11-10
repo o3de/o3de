@@ -401,7 +401,7 @@ namespace O3DE::ProjectManager
     {
         const QVector<QModelIndex> toBeAdded = m_gemModel->GatherGemsToBeAdded(/*includeDependencies=*/true);
         const QVector<QModelIndex> toBeRemoved = m_gemModel->GatherGemsToBeRemoved(/*includeDependencies=*/true);
-        if (toBeAdded.isEmpty() && toBeRemoved.isEmpty())
+        if (toBeAdded.isEmpty() && toBeRemoved.isEmpty() && m_downloadController->IsDownloadQueueEmpty())
         {
             return;
         }
