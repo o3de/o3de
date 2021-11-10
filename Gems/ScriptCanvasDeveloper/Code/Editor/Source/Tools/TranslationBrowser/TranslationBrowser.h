@@ -114,57 +114,6 @@ namespace ScriptCanvasDeveloper
 
         void PopulateScriptCanvasNodes();
 
-        /*QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override
-        {
-            if (row >= 0 && row < m_classes.size() && column == 0)
-            {
-                return createIndex(row, column);
-            }
-
-            return {};
-        }
-
-        int rowCount(const QModelIndex& parent = QModelIndex()) const override
-        {
-            return aznumeric_cast<int>(m_topLevelItems.size());
-        }
-
-
-        int columnCount(const QModelIndex& parent = QModelIndex()) const override
-        {
-            return 1;
-        }
-
-
-        QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override
-        {
-            AZ::BehaviorClass* bcClass = m_classes[index.row()];
-            if (bcClass)
-            {
-
-                switch (role)
-                {
-                case Qt::DisplayRole:
-                {
-                    switch (index.column())
-                    {
-                    case 0: return bcClass->m_name.c_str();
-                    }
-                    break;
-                }
-
-                }
-            }
-
-            return {};
-        }
-
-
-        QModelIndex parent(const QModelIndex& child) const override
-        {
-            return {};
-        }*/
-
         QModelIndex parent(const QModelIndex& child) const override
         {
             const auto* node = nodeForIndex(child);
