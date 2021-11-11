@@ -6,10 +6,11 @@
  *
  */
 
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 #include <Atom/Viewport/MaterialViewportRequestBus.h>
 #include <AtomToolsFramework/Inspector/InspectorPropertyGroupWidget.h>
 #include <AtomToolsFramework/Util/Util.h>
-#include <Atom/RPI.Reflect/Model/ModelAsset.h>
+#include <AzCore/Utils/Utils.h>
 #include <Window/PresetBrowserDialogs/LightingPresetBrowserDialog.h>
 #include <Window/PresetBrowserDialogs/ModelPresetBrowserDialog.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
@@ -346,7 +347,7 @@ namespace MaterialEditor
 
     AZStd::string ViewportSettingsInspector::GetDefaultUniqueSaveFilePath(const AZStd::string& baseName) const
     {
-        AZStd::string savePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
+        AZStd::string savePath = AZ::Utils::GetProjectPath().c_str();
         savePath += AZ_CORRECT_FILESYSTEM_SEPARATOR;
         savePath += "Materials";
         savePath += AZ_CORRECT_FILESYSTEM_SEPARATOR;
