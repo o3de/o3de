@@ -24,10 +24,6 @@ fi
 echo [ci_build] cpack --version
 cpack --version
 
-if [[ -n "CPACK_BUCKET" ]]; then
-    CPACK_OPTIONS="-D CPACK_UPLOAD_URL=s3://${CPACK_BUCKET} ${CPACK_OPTIONS}"
-fi
-
 echo [ci_build] cpack -C ${CONFIGURATION} ${CPACK_OPTIONS}
 cpack -C ${CONFIGURATION} ${CPACK_OPTIONS}
 
