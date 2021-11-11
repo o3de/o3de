@@ -11,7 +11,7 @@ set(FILES
     ../Common/Clang/Configurations_clang.cmake
     ../Common/Install_common.cmake
     ../Common/PackagingPostBuild_common.cmake
-    CompilerSettings.cmake
+    CompilerSettings_linux.cmake
     Configurations_linux.cmake
     Install_linux.cmake
     LYTestWrappers_linux.cmake

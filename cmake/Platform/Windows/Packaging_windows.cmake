@@ -137,11 +137,11 @@ if(LY_INSTALLER_DOWNLOAD_URL)
     generate_wix_guid(CPACK_WIX_BOOTSTRAP_UPGRADE_GUID "${_guid_seed_base}_Bootstrap_UpgradeCode")
 
     set(CPACK_PRE_BUILD_SCRIPTS
-        ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPreBuild.cmake
+        ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPreBuild_windows.cmake
     )
 
     set(CPACK_POST_BUILD_SCRIPTS
-        ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPostBuild_linux.cmake
+        ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPostBuild_windows.cmake
     )
 endif()
 
