@@ -219,12 +219,22 @@ namespace Multiplayer
         {
             server_rhi = static_cast<AZ::CVarFixedString>(editorsv_rhi_override);
         }
+
+        const auto console = AZ::Interface<AZ::IConsole>::Get();
+        AZ::CVarFixedString sv_defaultPlayerSpawnAsset;
+
+        if (console->GetCvarValue("sv_defaultPlayerSpawnAsset", sv_defaultPlayerSpawnAsset) != AZ::GetValueResult::Success)
+        {
+            AZ_Assert( false,
+                "MultiplayerEditorSystemComponent::LaunchEditorServer failed! Could not find the sv_defaultPlayerSpawnAsset cvar; the editor-server "
+                "will fall back to using some other default player! Please update this code to use a valid cvar!")
+        }
         
         processLaunchInfo.m_commandlineParameters = AZStd::string::format(
             R"("%s" --project-path "%s" --editorsv_isDedicated true --sv_defaultPlayerSpawnAsset "%s" --rhi "%s")",
             serverPath.c_str(),
             AZ::Utils::GetProjectPath().c_str(),
-            static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str(),
+            sv_defaultPlayerSpawnAsset.c_str(),
             server_rhi.GetCStr()
         );
         processLaunchInfo.m_showWindow = true;
@@ -292,7 +302,9 @@ namespace Multiplayer
                 editorNetworkInterface->Listen(editorsv_port);
 
                 // Launch the editor-server
-                m_serverProcess = LaunchEditorServer();
+                m_serverProcessWatcher = LaunchEditorServer();
+                m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_serverProcessWatcher->GetCommunicator(), "EditorServer");
+                AZ::TickBus::Handler::BusConnect();
             }
             else
             {
