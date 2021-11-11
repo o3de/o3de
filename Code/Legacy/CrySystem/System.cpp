@@ -128,7 +128,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
 #include "SystemEventDispatcher.h"
-#include "HMDBus.h"
 
 #include "RemoteConsole/RemoteConsole.h"
 
@@ -152,8 +151,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 // Define global cvars.
 SSystemCVars g_cvars;
-
-#include <IViewSystem.h>
 
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Component/ComponentApplication.h>
@@ -218,7 +215,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_pProcess = NULL;
     m_pCmdLine = NULL;
     m_pLevelSystem = NULL;
-    m_pViewSystem = NULL;
     m_pLocalizationManager = NULL;
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_2
@@ -434,9 +430,6 @@ void CSystem::ShutDown()
         m_pSystemEventDispatcher->OnSystemEvent(ESYSTEM_EVENT_FULL_SHUTDOWN, 0, 0);
     }
 
-    // Shutdown any running VR devices.
-    EBUS_EVENT(AZ::VR::HMDInitRequestBus, Shutdown);
-
     if (gEnv && gEnv->pLyShine)
     {
         gEnv->pLyShine->Release();
@@ -450,7 +443,6 @@ void CSystem::ShutDown()
     {
         ((CXConsole*)m_env.pConsole)->FreeRenderResources();
     }
-    SAFE_RELEASE(m_pViewSystem);
     SAFE_RELEASE(m_pLevelSystem);
 
     if (m_env.pLog)
@@ -1601,11 +1593,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
 std::shared_ptr<AZ::IO::FileIOBase> CSystem::CreateLocalFileIO()
 {
     return std::make_shared<AZ::IO::LocalFileIO>();
-}
-
-IViewSystem* CSystem::GetIViewSystem()
-{
-    return m_pViewSystem;
 }
 
 ILevelSystem* CSystem::GetILevelSystem()

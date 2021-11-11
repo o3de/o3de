@@ -14,7 +14,6 @@
 struct DisplayContext;
 class CBaseObjectsCache;
 class QPoint;
-class CCamera;
 struct AABB;
 class CViewport;
 
@@ -23,7 +22,6 @@ struct IDisplayViewport
 {
     virtual void Update() = 0;
     virtual float GetScreenScaleFactor(const Vec3& position) const = 0;
-    virtual float GetScreenScaleFactor(const CCamera& camera, const Vec3& object_position) = 0;
     virtual bool HitTestLine(const Vec3& lineP1, const Vec3& lineP2, const QPoint& hitpoint, int pixelRadius, float* pToCameraDistance = 0) const = 0;
 
     /**

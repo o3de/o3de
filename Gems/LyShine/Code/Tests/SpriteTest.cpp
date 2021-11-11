@@ -8,7 +8,6 @@
 
 #include "LyShineTest.h"
 #include <Mocks/ISystemMock.h>
-#include <Mocks/ITextureMock.h>
 #include <Sprite.h>
 
 namespace UnitTest

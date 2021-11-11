@@ -24,7 +24,6 @@
 #include <IConsole.h>
 #include <ITimer.h>
 #include <IRenderer.h>
-#include <IViewSystem.h>
 
 //////////////////////////////////////////////////////////////////////////
 namespace
@@ -615,20 +614,6 @@ bool UiAnimationSystem::InternalStopSequence(IUiAnimSequence* pSequence, bool bA
 //////////////////////////////////////////////////////////////////////////
 bool UiAnimationSystem::AbortSequence(IUiAnimSequence* pSequence, bool bLeaveTime)
 {
-    assert(pSequence);
-
-    // to avoid any camera blending after aborting a cut scene
-    IViewSystem* pViewSystem = gEnv->pSystem->GetIViewSystem();
-    if (pViewSystem)
-    {
-        pViewSystem->SetBlendParams(0, 0, 0);
-        IView* pView = pViewSystem->GetActiveView();
-        if (pView)
-        {
-            pView->ResetBlending();
-        }
-    }
-
     return InternalStopSequence(pSequence, true, !bLeaveTime);
 }
 
