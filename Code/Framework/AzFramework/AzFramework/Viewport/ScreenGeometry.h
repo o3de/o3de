@@ -168,4 +168,16 @@ namespace AzFramework
     {
         return AZ::Vector2(aznumeric_cast<float>(screenVector.m_x), aznumeric_cast<float>(screenVector.m_y));
     }
+
+    //! Return a ScreenPoint from an AZ::Vector2.
+    inline ScreenPoint ScreenPointFromVector2(const AZ::Vector2& vector2)
+    {
+        return ScreenPoint(aznumeric_cast<int>(AZStd::lround(vector2.GetX())), aznumeric_cast<int>(AZStd::lround(vector2.GetY())));
+    }
+
+    //! Return a ScreenVector from an AZ::Vector2.
+    inline ScreenVector ScreenVectorFromVector2(const AZ::Vector2& vector2)
+    {
+        return ScreenVector(aznumeric_cast<int>(AZStd::lround(vector2.GetX())), aznumeric_cast<int>(AZStd::lround(vector2.GetY())));
+    }
 } // namespace AzFramework

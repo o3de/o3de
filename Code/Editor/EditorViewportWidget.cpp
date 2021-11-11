@@ -299,13 +299,9 @@ AzToolsFramework::ViewportInteraction::MousePick EditorViewportWidget::BuildMous
 {
     AzToolsFramework::ViewportInteraction::MousePick mousePick;
     mousePick.m_screenCoordinates = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point);
-    if (const auto& ray = m_renderViewport->ViewportScreenToWorldRay(mousePick.m_screenCoordinates);
-        ray.has_value())
-    {
-        mousePick.m_rayOrigin = ray.value().origin;
-        mousePick.m_rayDirection = ray.value().direction;
-    }
-
+    const auto[origin, direction] = m_renderViewport->ViewportScreenToWorldRay(mousePick.m_screenCoordinates);
+    mousePick.m_rayOrigin = origin;
+    mousePick.m_rayDirection = direction;
     return mousePick;
 }
 
@@ -1688,20 +1684,16 @@ Vec3 EditorViewportWidget::ViewToWorld(
     AZ_UNUSED(collideWithObject);
 
     auto ray = m_renderViewport->ViewportScreenToWorldRay(AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(vp));
-    if (!ray.has_value())
-    {
-        return Vec3(0, 0, 0);
-    }
 
     const float maxDistance = 10000.f;
-    Vec3 v = AZVec3ToLYVec3(ray.value().direction) * maxDistance;
+    Vec3 v = AZVec3ToLYVec3(ray.direction) * maxDistance;
 
     if (!_finite(v.x) || !_finite(v.y) || !_finite(v.z))
     {
         return Vec3(0, 0, 0);
     }
 
-    Vec3 colp = AZVec3ToLYVec3(ray.value().origin) + 0.002f * v;
+    Vec3 colp = AZVec3ToLYVec3(ray.origin) + 0.002f * v;
 
     return colp;
 }
@@ -1740,10 +1732,9 @@ bool EditorViewportWidget::RayRenderMeshIntersection(IRenderMesh* pRenderMesh, c
     return bRes;*/
 }
 
-void EditorViewportWidget::UnProjectFromScreen(float sx, float sy, float sz, float* px, float* py, float* pz) const
+void EditorViewportWidget::UnProjectFromScreen(float sx, float sy, float* px, float* py, float* pz) const
 {
-    AZ::Vector3 wp;
-    wp = m_renderViewport->ViewportScreenToWorld(AzFramework::ScreenPoint{(int)sx, m_rcClient.bottom() - ((int)sy)}, sz).value_or(wp);
+    const AZ::Vector3 wp = m_renderViewport->ViewportScreenToWorld(AzFramework::ScreenPoint{(int)sx, m_rcClient.bottom() - ((int)sy)});
     *px = wp.GetX();
     *py = wp.GetY();
     *pz = wp.GetZ();
@@ -1764,32 +1755,22 @@ void EditorViewportWidget::ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& 
 
     Vec3 pos0, pos1;
     float wx, wy, wz;
-    UnProjectFromScreen(static_cast<float>(vp.x()), static_cast<float>(rc.bottom() - vp.y()), 0.0f, &wx, &wy, &wz);
-    if (!_finite(wx) || !_finite(wy) || !_finite(wz))
-    {
-        return;
-    }
-    if (fabs(wx) > 1000000 || fabs(wy) > 1000000 || fabs(wz) > 1000000)
-    {
-        return;
-    }
-    pos0(wx, wy, wz);
-    UnProjectFromScreen(static_cast<float>(vp.x()), static_cast<float>(rc.bottom() - vp.y()), 1.0f, &wx, &wy, &wz);
-    if (!_finite(wx) || !_finite(wy) || !_finite(wz))
-    {
-        return;
-    }
-    if (fabs(wx) > 1000000 || fabs(wy) > 1000000 || fabs(wz) > 1000000)
-    {
-        return;
-    }
-    pos1(wx, wy, wz);
+    UnProjectFromScreen(static_cast<float>(vp.x()), static_cast<float>(rc.bottom() - vp.y()), &wx, &wy, &wz);
 
-    Vec3 v = (pos1 - pos0);
-    v = v.GetNormalized();
+    if (!_finite(wx) || !_finite(wy) || !_finite(wz))
+    {
+        return;
+    }
+
+    if (fabs(wx) > 1000000 || fabs(wy) > 1000000 || fabs(wz) > 1000000)
+    {
+        return;
+    }
+
+    pos0(wx, wy, wz);
 
     raySrc = pos0;
-    rayDir = v;
+    rayDir = (pos0 - AZVec3ToLYVec3(m_renderViewport->GetCameraState().m_position)).GetNormalized();
 }
 
 //////////////////////////////////////////////////////////////////////////

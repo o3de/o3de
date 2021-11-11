@@ -286,9 +286,7 @@ namespace AtomToolsFramework
 
         // Build camera state from Atom camera transforms
         AzFramework::CameraState cameraState = AzFramework::CreateCameraFromWorldFromViewMatrix(
-            currentView->GetViewToWorldMatrix(),
-            AZ::Vector2{aznumeric_cast<float>(width()), aznumeric_cast<float>(height())}
-        );
+            currentView->GetViewToWorldMatrix(), AZ::Vector2{ aznumeric_cast<float>(width()), aznumeric_cast<float>(height()) });
         AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, currentView->GetViewToClipMatrix());
 
         // Convert from Z-up
@@ -300,53 +298,25 @@ namespace AtomToolsFramework
 
     AzFramework::ScreenPoint RenderViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
     {
-        if (AZ::RPI::ViewPtr currentView = m_viewportContext->GetDefaultView();
-            currentView == nullptr)
-        {
-            return AzFramework::ScreenPoint(0, 0);
-        }
-
-        return AzFramework::WorldToScreen(worldPosition, GetCameraState());
+        return AzFramework::WorldToScreen(
+            worldPosition, m_viewportContext->GetCameraViewMatrix(), m_viewportContext->GetCameraProjectionMatrix(),
+            AZ::Vector2(aznumeric_cast<float>(width()), aznumeric_cast<float>(height())));
     }
 
-    AZStd::optional<AZ::Vector3> RenderViewportWidget::ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth)
+    AZ::Vector3 RenderViewportWidget::ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition)
     {
-        const auto& cameraProjection = m_viewportContext->GetCameraProjectionMatrix();
-        const auto& cameraView = m_viewportContext->GetCameraViewMatrix();
-
-        const AZ::Vector4 normalizedScreenPosition {
-            screenPosition.m_x * 2.f / width() - 1.0f,
-            (height() - screenPosition.m_y) * 2.f / height() - 1.0f,
-            1.f - depth, // [GFX TODO] [ATOM-1501] Currently we always assume reverse depth
-            1.f
-        };
-
-        AZ::Matrix4x4 worldFromScreen = cameraProjection * cameraView;
-        worldFromScreen.InvertFull();
-
-        const AZ::Vector4 projectedPosition = worldFromScreen * normalizedScreenPosition;
-        if (projectedPosition.GetW() == 0.0f)
-        {
-            return {};
-        }
-
-        return projectedPosition.GetAsVector3() / projectedPosition.GetW();
+        return AzFramework::ScreenToWorld(
+            screenPosition, m_viewportContext->GetCameraViewMatrix().GetInverseFast(),
+            m_viewportContext->GetCameraProjectionMatrix().GetInverseFull(),
+            AZ::Vector2(aznumeric_cast<float>(width()), aznumeric_cast<float>(height())));
     }
 
-    AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> RenderViewportWidget::ViewportScreenToWorldRay(
+    AzToolsFramework::ViewportInteraction::ProjectedViewportRay RenderViewportWidget::ViewportScreenToWorldRay(
         const AzFramework::ScreenPoint& screenPosition)
     {
-        auto pos0 = ViewportScreenToWorld(screenPosition, 0.f);
-        auto pos1 = ViewportScreenToWorld(screenPosition, 1.f);
-        if (!pos0.has_value() || !pos1.has_value())
-        {
-            return {};
-        }
-
-        pos0 = m_viewportContext->GetDefaultView()->GetViewToWorldMatrix().GetTranslation();
-        AZ::Vector3 rayOrigin = pos0.value();
-        AZ::Vector3 rayDirection = pos1.value() - pos0.value();
-        rayDirection.Normalize();
+        const AzFramework::CameraState cameraState = GetCameraState();
+        const AZ::Vector3 rayOrigin = AzFramework::ScreenToWorld(screenPosition, cameraState);
+        const AZ::Vector3 rayDirection = (rayOrigin - cameraState.m_position).GetNormalized();
 
         return AzToolsFramework::ViewportInteraction::ProjectedViewportRay{rayOrigin, rayDirection};
     }

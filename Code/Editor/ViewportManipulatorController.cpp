@@ -119,11 +119,12 @@ namespace SandboxEditor
                     aznumeric_cast<int>(position->m_normalizedPosition.GetX() * windowSize.m_width),
                     aznumeric_cast<int>(position->m_normalizedPosition.GetY() * windowSize.m_height));
 
-                const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(event.m_viewportId);
-                const AZ::Vector3 rayOrigin = AzFramework::ScreenToWorld(screenPoint, cameraState);
+                ProjectedViewportRay ray{};
+                ViewportInteractionRequestBus::EventResult(
+                    ray, GetViewportId(), &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPoint);
 
-                m_mouseInteraction.m_mousePick.m_rayOrigin = rayOrigin;
-                m_mouseInteraction.m_mousePick.m_rayDirection = (rayOrigin - cameraState.m_position).GetNormalized();
+                m_mouseInteraction.m_mousePick.m_rayOrigin = ray.origin;
+                m_mouseInteraction.m_mousePick.m_rayDirection = ray.direction;
                 m_mouseInteraction.m_mousePick.m_screenCoordinates = screenPoint;
             }
 

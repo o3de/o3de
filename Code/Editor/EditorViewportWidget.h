@@ -305,7 +305,7 @@ private:
     const DisplayContext& GetDisplayContext() const { return m_displayContext; }
     CBaseObject* GetCameraObject() const;
 
-    void UnProjectFromScreen(float sx, float sy, float sz, float* px, float* py, float* pz) const;
+    void UnProjectFromScreen(float sx, float sy, float* px, float* py, float* pz) const;
     void ProjectToScreen(float ptx, float pty, float ptz, float* sx, float* sy, float* sz) const;
 
     AZ::RPI::ViewPtr GetCurrentAtomView() const;
