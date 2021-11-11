@@ -137,9 +137,16 @@ namespace AZ
         return AZ::Interface<ITime>::Get()->GetElapsedTimeUs();
     }
 
+    //! This is a simple convenience wrapper
     inline TimeMs GetRealElapsedTimeMs()
     {
         return AZ::Interface<ITime>::Get()->GetRealElapsedTimeMs();
+    }
+
+    //! This is a simple convenience wrapper
+    inline TimeUs GetRealElapsedTimeUs()
+    {
+        return AZ::Interface<ITime>::Get()->GetRealElapsedTimeUs();
     }
 
     //! This is a simple convenience wrapper
