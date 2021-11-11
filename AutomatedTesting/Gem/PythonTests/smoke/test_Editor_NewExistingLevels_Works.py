@@ -17,7 +17,7 @@ import ly_test_tools.environment.file_system as file_system
 
 
 @pytest.mark.SUITE_smoke
-@pytest.mark.skipif(not ly_test_tools.WINDOWS, reason="Only suceeds on windows https://github.com/o3de/o3de/issues/5539")
+@pytest.mark.skipif(not ly_test_tools.WINDOWS, reason="Only succeeds on windows https://github.com/o3de/o3de/issues/5539")
 @pytest.mark.parametrize("launcher_platform", ["windows_editor"])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("level", ["temp_level"])
