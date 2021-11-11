@@ -13,7 +13,10 @@ import os
 import pytest
 import subprocess
 
+import ly_test_tools
 
+
+@pytest.mark.skipif(not ly_test_tools.WINDOWS, "SerializeContextTools only available on Windows")
 @pytest.mark.SUITE_smoke
 class TestCLIToolSerializeContextToolsWorks(object):
     def test_CLITool_SerializeContextTools_Works(self, build_directory):
