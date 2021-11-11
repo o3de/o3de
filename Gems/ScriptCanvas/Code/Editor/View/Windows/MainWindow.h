@@ -231,7 +231,6 @@ namespace ScriptCanvasEditor
         , private VariablePaletteRequestBus::Handler
         , private ScriptCanvas::BatchOperationNotificationBus::Handler
         , private AssetGraphSceneBus::Handler
-        //, private AssetTrackerNotificationBus::MultiHandler
 #if SCRIPTCANVAS_EDITOR
         //, public IEditorNotifyListener
 #endif
@@ -240,6 +239,7 @@ namespace ScriptCanvasEditor
         , private GraphCanvas::ViewNotificationBus::Handler
         , public AZ::SystemTickBus::Handler
         , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
+        , private AzToolsFramework::AssetSystemBus::Handler
         , private ScriptCanvas::ScriptCanvasSettingsRequestBus::Handler
     {
         Q_OBJECT
@@ -525,6 +525,8 @@ namespace ScriptCanvasEditor
         AZ::EntityId FindAssetNodeIdByEditorNodeId(const ScriptCanvasEditor::SourceHandle& assetId, AZ::EntityId editorNodeId) const override;
         
     private:
+        void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
+
         void DeleteNodes(const AZ::EntityId& sceneId, const AZStd::vector<AZ::EntityId>& nodes) override;
         void DeleteConnections(const AZ::EntityId& sceneId, const AZStd::vector<AZ::EntityId>& connections) override;
         void DisconnectEndpoints(const AZ::EntityId& sceneId, const AZStd::vector<GraphCanvas::Endpoint>& endpoints) override;

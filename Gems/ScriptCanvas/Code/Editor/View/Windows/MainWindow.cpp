@@ -664,7 +664,7 @@ namespace ScriptCanvasEditor
         ScriptCanvas::BatchOperationNotificationBus::Handler::BusConnect();
         AssetGraphSceneBus::Handler::BusConnect();
         AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
-
+        AzToolsFramework::AssetSystemBus::Handler::BusConnect();
         ScriptCanvas::ScriptCanvasSettingsRequestBus::Handler::BusConnect();
 
         UINotificationBus::Broadcast(&UINotifications::MainWindowCreationEvent, this);
@@ -708,6 +708,7 @@ namespace ScriptCanvasEditor
         ScriptCanvasEditor::GeneralRequestBus::Handler::BusDisconnect();
         GraphCanvas::AssetEditorAutomationRequestBus::Handler::BusDisconnect();
         ScriptCanvas::ScriptCanvasSettingsRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::AssetSystemBus::Handler::BusDisconnect();
 
         Clear();
 
@@ -1109,6 +1110,15 @@ namespace ScriptCanvasEditor
 
         const bool forceTimer = true;
         RestartAutoTimerSave(forceTimer);
+    }
+
+    void MainWindow::SourceFileRemoved
+        ( AZStd::string relativePath
+        , [[maybe_unused]] AZStd::string scanFolder
+        , [[maybe_unused]] AZ::Uuid fileAssetId)
+    {
+        ScriptCanvasEditor::SourceHandle handle(nullptr, fileAssetId, relativePath);
+        UpdateFileState(handle, Tracker::ScriptCanvasFileState::SOURCE_REMOVED);
     }
 
     void MainWindow::SignalSceneDirty(ScriptCanvasEditor::SourceHandle assetId)
@@ -2535,7 +2545,6 @@ namespace ScriptCanvasEditor
 
     bool MainWindow::IsInUndoRedo(const AZ::EntityId& graphCanvasGraphId) const
     {
-        // #sc_editor_asset
         bool isActive = false;
         UndoRequestBus::EventResult(isActive, GetScriptCanvasId(graphCanvasGraphId), &UndoRequests::IsActive);
         return isActive;
@@ -2590,12 +2599,10 @@ namespace ScriptCanvasEditor
 
     void MainWindow::ReconnectSceneBuses(ScriptCanvasEditor::SourceHandle previousAsset, ScriptCanvasEditor::SourceHandle nextAsset)
     {
-        // #sc_editor_asset
-        
         // Disconnect previous asset
         AZ::EntityId previousScriptCanvasSceneId;
         if (previousAsset.IsValid())
-    {
+        {
             previousScriptCanvasSceneId = previousAsset.Get()->GetScriptCanvasId();
             GraphCanvas::SceneNotificationBus::MultiHandler::BusDisconnect(previousScriptCanvasSceneId);
         }
