@@ -78,8 +78,7 @@ namespace AZ
             {
                 // The presentation mode may change when transitioning to or from a vsynced presentation mode
                 // In this case, the swapchain must be recreated.
-                InvalidateNativeSwapChain();
-                CreateSwapchain();
+                m_pendingRecreation = true;
             }
         }
 
