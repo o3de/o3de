@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "MaterialComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "MaterialComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "AssetInfo",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "AssetInfo"
+            }
+        }
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "PolygonPrism",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "PolygonPrism"
+            }
+        }
+    ]
+}

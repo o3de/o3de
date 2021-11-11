@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "CapsuleShapeComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "CapsuleShapeComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

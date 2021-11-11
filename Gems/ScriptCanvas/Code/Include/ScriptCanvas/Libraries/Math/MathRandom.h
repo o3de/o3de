@@ -15,7 +15,7 @@ namespace ScriptCanvas
 {
     namespace RandomNodes
     {
-        static const char* k_categoryName = "Math/Random";
+        static constexpr const char* k_categoryName = "Math/Random";
 
         // RandomColor
         AZ_INLINE void SetRandomColorDefaults(Node& node)

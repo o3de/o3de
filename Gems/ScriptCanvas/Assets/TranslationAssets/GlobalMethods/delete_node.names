@@ -1,0 +1,45 @@
+{
+    "entries": [
+        {
+            "key": "delete_node",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "delete_node",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke delete_node"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after delete_node is invoked"
+                    },
+                    "details": {
+                        "name": "delete_node",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

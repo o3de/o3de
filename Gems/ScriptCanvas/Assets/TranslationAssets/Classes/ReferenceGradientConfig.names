@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "ReferenceGradientConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ReferenceGradientConfig"
+            }
+        }
+    ]
+}

@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{76467598-DB87-59DD-8B65-B7636880EAB4}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "GetNormal",
+                "category": "Math/Plane",
+                "tooltip": "returns the surface normal of Source",
+                "subtitle": "Plane"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Plane: Source",
+                    "details": {
+                        "name": "Plane: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Vector3",
+                    "details": {
+                        "name": "Result: Vector3"
+                    }
+                }
+            ]
+        }
+    ]
+}

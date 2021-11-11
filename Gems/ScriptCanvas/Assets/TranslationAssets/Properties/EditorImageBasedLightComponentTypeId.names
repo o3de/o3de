@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorImageBasedLightComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorImageBasedLightComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

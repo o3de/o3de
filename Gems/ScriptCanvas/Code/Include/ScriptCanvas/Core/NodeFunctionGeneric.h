@@ -94,7 +94,7 @@ namespace ScriptCanvas
         }\
         \
         static const char* GetDependency() { return CATEGORY; }\
-        static const char* GetCategory() { if (ISDEPRECATED) return AZ_STRINGIZE(CATEGORY /Deprecated); else return CATEGORY; };\
+        static const char* GetCategory() { if (IsDeprecated()) return "Deprecated"; else return CATEGORY; };\
         static const char* GetDescription() { return DESCRIPTION; };\
         static const char* GetNodeName() { return #NODE_NAME; };\
         static bool IsDeprecated() { return ISDEPRECATED; };\

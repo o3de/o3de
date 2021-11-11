@@ -252,6 +252,17 @@ namespace ScriptCanvasEditor
         m_assetsInUse.erase(assetId);
     }
 
+    void AssetTracker::RefreshAll()
+    {
+        for (const auto& asset : m_assetsInUse)
+        {
+            auto id = asset.second->GetScriptCanvasId();
+            ScriptCanvasEditor::EditorGraphRequestBus::Event(id, &ScriptCanvasEditor::EditorGraphRequests::ClearGraphCanvasScene);
+            ScriptCanvasEditor::EditorGraphRequestBus::Event(id, &ScriptCanvasEditor::EditorGraphRequests::CreateGraphCanvasScene);
+            ScriptCanvasEditor::EditorGraphRequestBus::Event(id, &ScriptCanvasEditor::EditorGraphRequests::DisplayGraphCanvasScene);
+        }
+    }
+
     void AssetTracker::CreateView(AZ::Data::AssetId assetId, QWidget* parent)
     {
         assetId = CheckAssetId(assetId);

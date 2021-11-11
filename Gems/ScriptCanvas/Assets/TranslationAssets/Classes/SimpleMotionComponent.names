@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "SimpleMotionComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "SimpleMotionComponent"
+            }
+        }
+    ]
+}

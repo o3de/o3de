@@ -1,0 +1,708 @@
+{
+    "entries": [
+        {
+            "key": "SettingsRegistryInterface",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "SettingsRegistryInterface"
+            },
+            "methods": [
+                {
+                    "key": "GetFloat",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFloat"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFloat is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::GetFloat",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8FE8A00F-5FE8-54A1-A314-346843AD21B6}",
+                            "details": {
+                                "name": "AZStd::optional<double>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetFloat",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetFloat"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetFloat is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::SetFloat",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RemoveKey",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RemoveKey"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RemoveKey is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::RemoveKey",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetInt",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetInt"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetInt is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::SetInt",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        },
+                        {
+                            "typeid": "{70D8A282-A1EA-462D-9D04-51EDE81FAC2F}",
+                            "details": {
+                                "name": "AZ::s64"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetUInt",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetUInt"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetUInt is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::SetUInt",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        },
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetBool",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetBool"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetBool is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::GetBool",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0170062C-2E7E-5CEB-BAB8-F7663BEF7B3E}",
+                            "details": {
+                                "name": "AZStd::optional<bool>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetInt",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetInt"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetInt is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::GetInt",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8E0A7AC1-C649-56B4-99CF-8BE08EEFC47B}",
+                            "details": {
+                                "name": "AZStd::optional<AZ::s64>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetUInt",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetUInt"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetUInt is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::GetUInt",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{858A22B8-1B5E-5016-BF33-B2469DD9CAD3}",
+                            "details": {
+                                "name": "AZStd::optional<AZ::u64>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNotifyEvent",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNotifyEvent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNotifyEvent is invoked"
+                    },
+                    "details": {
+                        "name": "Get Notify Event",
+                        "subtitle": "Settings Registry"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "Settings Registry Proxy"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{84290CFC-1335-5341-AD8B-0A3FE9FE46D0}",
+                            "details": {
+                                "name": "Event"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "MergeSettings",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MergeSettings"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MergeSettings is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::MergeSettings",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "MergeSettingsFile",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MergeSettingsFile"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MergeSettingsFile is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::MergeSettingsFile",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetString",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetString is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::GetString",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{B0D91084-263A-54B9-A4F3-7C5F4240E248}",
+                            "details": {
+                                "name": "AZStd::optional<AZStd::basic_string<char, AZStd::char_traits<char>, allocator>>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsValid",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsValid"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsValid is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::IsValid",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "MergeSettingsFolder",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MergeSettingsFolder"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MergeSettingsFolder is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::MergeSettingsFolder",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        },
+                        {
+                            "typeid": "{EB6B8ADF-ABAA-4D22-B596-127F9C611740}",
+                            "details": {
+                                "name": "const SpecializationsProxy&"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetBool",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetBool"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetBool is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::SetBool",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetString",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetString is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::SetString",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DumpSettings",
+                    "context": "SettingsRegistryInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DumpSettings"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DumpSettings is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistryInterface::DumpSettings",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{B0D91084-263A-54B9-A4F3-7C5F4240E248}",
+                            "details": {
+                                "name": "AZStd::optional<AZStd::basic_string<char, AZStd::char_traits<char>, allocator>>"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

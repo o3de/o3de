@@ -1,0 +1,74 @@
+{
+    "entries": [
+        {
+            "key": "CollisionNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Collision",
+                "category": "PhysX"
+            },
+            "methods": [
+                {
+                    "key": "OnCollisionBegin",
+                    "details": {
+                        "name": "On Collision Begin"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{009022A1-16A5-50B0-958F-F69C729985A3}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnCollisionPersist",
+                    "details": {
+                        "name": "On Collision Persist",
+                        "tooltip": "Raised while this collider is in contact with another collider"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{009022A1-16A5-50B0-958F-F69C729985A3}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnCollisionEnd",
+                    "details": {
+                        "name": "On Collision End",
+                        "tooltip": "Raised when a collider loses contact with another collider"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

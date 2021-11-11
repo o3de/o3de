@@ -1,0 +1,15 @@
+{
+    "entries": [
+        {
+            "key": "{B6614CEC-4788-476C-A19A-BA0A8B490C73}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Script Event",
+                "category": "Internal",
+                "tooltip": "Base class for Script Events.",
+                "subtitle": "Internal"
+            }
+        }
+    ]
+}

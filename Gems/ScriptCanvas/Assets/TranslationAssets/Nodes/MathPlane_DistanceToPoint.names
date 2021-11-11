@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "{7D49F3FC-A625-5166-9CF6-6F3757A56C14}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "DistanceToPoint",
+                "category": "Math/Plane",
+                "tooltip": "returns the closest distance from Source to Point",
+                "subtitle": "Plane"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Plane: Source",
+                    "details": {
+                        "name": "Plane: Source"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector3: Point",
+                    "details": {
+                        "name": "Vector3: Point"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Number",
+                    "details": {
+                        "name": "Result: Number"
+                    }
+                }
+            ]
+        }
+    ]
+}

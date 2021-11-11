@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{261E424C-4241-5777-8742-21945C69FD29}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "RotationXDegrees",
+                "category": "Math/Quaternion",
+                "tooltip": "creates a rotation of Degrees around the x-axis",
+                "subtitle": "Quaternion"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Degrees",
+                    "details": {
+                        "name": "Number: Degrees"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Quaternion",
+                    "details": {
+                        "name": "Result: Quaternion"
+                    }
+                }
+            ]
+        }
+    ]
+}

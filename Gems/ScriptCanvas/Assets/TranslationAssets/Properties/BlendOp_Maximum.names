@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "BlendOp_Maximum",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "BlendOp_Maximum::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

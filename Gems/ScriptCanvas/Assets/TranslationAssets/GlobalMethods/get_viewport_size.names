@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "get_viewport_size",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "get_viewport_size",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke get_viewport_size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after get_viewport_size is invoked"
+                    },
+                    "details": {
+                        "name": "get_viewport_size",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

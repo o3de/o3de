@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "UiFaderComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "UiFaderComponent"
+            }
+        }
+    ]
+}

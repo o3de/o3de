@@ -1,0 +1,168 @@
+{
+    "entries": [
+        {
+            "key": "UiDynamicScrollBoxElementNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Dynamic Scroll Box Element Changes",
+                "category": "UI",
+                "tooltip": "Create this handler to receive notifications of dynamic scrollbox element state changes, such as when an element is about to scroll into view"
+            },
+            "methods": [
+                {
+                    "key": "OnElementBecomingVisible",
+                    "details": {
+                        "name": "On Element Becoming Visible",
+                        "tooltip": "Executes when a child of the scroll box is about to become visible. Use this event to populate the child with data for display"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "The child that is about to become visible"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Element Index",
+                                "tooltip": "The index of the child that is about to become visible"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnPrepareElementForSizeCalculation",
+                    "details": {
+                        "name": "On Prepare Element For Size Calculation",
+                        "tooltip": "Executes when elements have variable sizes and are set to auto calculate. Used with lists that are not divided into sections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "The element being prepared"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Element Index",
+                                "tooltip": "The index of the child that is being prepared"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnElementInSectionBecomingVisible",
+                    "details": {
+                        "name": "On Element In Section Becoming Visible",
+                        "tooltip": "Executes when an element in a section is about to become visible. Used to populate the element with data for display. Used with lists that are divided into sections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "The element becoming visible"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Section Index",
+                                "tooltip": "The index of the section that contains the element"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Element Index",
+                                "tooltip": "The index of the child that is becoming visible"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnPrepareElementInSectionForSizeCalculation",
+                    "details": {
+                        "name": "On Prepare Element In Section For Size Calculation",
+                        "tooltip": "Executes when elements in sections have variable sizes and are set to auto calculate. Used with lists that are divided into sections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "The element being prepared"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Section Index",
+                                "tooltip": "The index of the section that is being prepared"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Element Index",
+                                "tooltip": "The index of the child that is being prepared"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnSectionHeaderBecomingVisible",
+                    "details": {
+                        "name": "On Section Header Becoming Visible",
+                        "tooltip": "Executes when a header is about to become visible. Used to populate the header with data for display. Used with lists that are divided into sections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "The header element becoming visible"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Section Index",
+                                "tooltip": "The index of the section that contains the header"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnPrepareSectionHeaderForSizeCalculation",
+                    "details": {
+                        "name": "On Prepare Section Header For Size Calculation",
+                        "tooltip": "Executes when headers have variable sizes and are set to auto calculate. Used with lists that are divided into sections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "The element being prepared"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Section Index",
+                                "tooltip": "The index of the section that is being prepared"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

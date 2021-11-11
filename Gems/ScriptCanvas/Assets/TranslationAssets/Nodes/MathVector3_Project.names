@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "{D24123BA-6C59-5F58-90E2-FCB085384BAA}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Project",
+                "category": "Math/Vector3",
+                "tooltip": "returns the vector of A projected onto B, (Dot(A, B)/(Dot(B, B)) * B",
+                "subtitle": "Vector3"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector3: A",
+                    "details": {
+                        "name": "Vector3: A"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector3: B",
+                    "details": {
+                        "name": "Vector3: B"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Vector3",
+                    "details": {
+                        "name": "Result: Vector3"
+                    }
+                }
+            ]
+        }
+    ]
+}

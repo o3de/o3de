@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "load_all_plugins",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "load_all_plugins",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke load_all_plugins"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after load_all_plugins is invoked"
+                    },
+                    "details": {
+                        "name": "load_all_plugins",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

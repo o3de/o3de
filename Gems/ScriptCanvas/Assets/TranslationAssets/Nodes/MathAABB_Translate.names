@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "{22DBE624-D16E-51E7-BFF5-6C136E8E4581}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Translate",
+                "category": "Math/AABB",
+                "tooltip": "returns the Source with each point added with Translation",
+                "subtitle": "AABB"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_AABB: Source",
+                    "details": {
+                        "name": "AABB: Source"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector3: Translation",
+                    "details": {
+                        "name": "Vector3: Translation"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: AABB",
+                    "details": {
+                        "name": "Result: AABB"
+                    }
+                }
+            ]
+        }
+    ]
+}

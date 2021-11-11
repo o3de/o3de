@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{5C734A52-7CB1-5571-B6B2-F1C19A8CCE5A}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "FromString",
+                "category": "Math/Crc32",
+                "tooltip": "returns a Crc32 from the string",
+                "subtitle": "Crc32"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_String: Value",
+                    "details": {
+                        "name": "String: Value"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: CRC",
+                    "details": {
+                        "name": "Result: CRC"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,84 @@
+{
+    "entries": [
+        {
+            "key": "AnimAudioComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "AnimAudioComponentRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "AddTriggerEvent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddTriggerEvent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddTriggerEvent is invoked"
+                    },
+                    "details": {
+                        "name": "AddTriggerEvent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ClearTriggerEvents",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ClearTriggerEvents"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ClearTriggerEvents is invoked"
+                    },
+                    "details": {
+                        "name": "ClearTriggerEvents"
+                    }
+                },
+                {
+                    "key": "RemoveTriggerEvent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RemoveTriggerEvent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RemoveTriggerEvent is invoked"
+                    },
+                    "details": {
+                        "name": "RemoveTriggerEvent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

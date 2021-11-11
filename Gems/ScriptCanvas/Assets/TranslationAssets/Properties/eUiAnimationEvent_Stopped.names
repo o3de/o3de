@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiAnimationEvent_Stopped",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiAnimationEvent_Stopped::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

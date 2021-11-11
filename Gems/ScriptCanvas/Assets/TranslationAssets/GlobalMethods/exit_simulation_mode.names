@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "exit_simulation_mode",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "exit_simulation_mode",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke exit_simulation_mode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after exit_simulation_mode is invoked"
+                    },
+                    "details": {
+                        "name": "exit_simulation_mode",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

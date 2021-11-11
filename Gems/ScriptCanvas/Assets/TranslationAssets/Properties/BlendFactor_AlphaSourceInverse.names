@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "BlendFactor_AlphaSourceInverse",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "BlendFactor_AlphaSourceInverse::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

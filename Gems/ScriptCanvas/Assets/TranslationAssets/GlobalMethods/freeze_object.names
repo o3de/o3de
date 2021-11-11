@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "freeze_object",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "freeze_object",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke freeze_object"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after freeze_object is invoked"
+                    },
+                    "details": {
+                        "name": "freeze_object",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

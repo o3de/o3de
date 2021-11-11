@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiScrollBoxScrollBarVisibility_AutoHideAndResizeViewport",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiScrollBoxScrollBarVisibility_AutoHideAndResizeViewport::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

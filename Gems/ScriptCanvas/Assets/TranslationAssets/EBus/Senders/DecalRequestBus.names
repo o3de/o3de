@@ -1,0 +1,190 @@
+{
+    "entries": [
+        {
+            "key": "DecalRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "DecalRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "GetMaterial",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetMaterial"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetMaterial is invoked"
+                    },
+                    "details": {
+                        "name": "GetMaterial"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "AssetId"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSortKey",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSortKey"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSortKey is invoked"
+                    },
+                    "details": {
+                        "name": "GetSortKey"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSortKey",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSortKey"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSortKey is invoked"
+                    },
+                    "details": {
+                        "name": "SetSortKey"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetMaterial",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetMaterial"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetMaterial is invoked"
+                    },
+                    "details": {
+                        "name": "SetMaterial"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "AssetId"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetAttenuationAngle",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAttenuationAngle"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAttenuationAngle is invoked"
+                    },
+                    "details": {
+                        "name": "SetAttenuationAngle"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetOpacity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOpacity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOpacity is invoked"
+                    },
+                    "details": {
+                        "name": "GetOpacity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetOpacity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetOpacity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetOpacity is invoked"
+                    },
+                    "details": {
+                        "name": "SetOpacity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetAttenuationAngle",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetAttenuationAngle"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetAttenuationAngle is invoked"
+                    },
+                    "details": {
+                        "name": "GetAttenuationAngle"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -886,6 +886,8 @@ protected:
         // The SlotIterator& parameter is populated with an iterator to the inserted or found slot within the slot list 
         AZ::Outcome<SlotIdIteratorMap::iterator, AZStd::string> FindOrInsertSlot(AZ::s64 index, const SlotConfiguration& slotConfig, SlotIterator& iterOut);
 
+    public:
+
         // This function is only called once, when the node is added to a graph, as opposed to Init(), which will be called 
         // soon after construction, or after deserialization. So the functionality in configure does not need to be idempotent.
         void Configure();

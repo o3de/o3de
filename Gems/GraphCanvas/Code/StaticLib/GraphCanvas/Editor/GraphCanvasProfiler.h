@@ -10,7 +10,7 @@
 #include <AzCore/Debug/Profiler.h>
  
 #define GRAPH_CANVAS_PROFILE_FUNCTION() AZ_PROFILE_FUNCTION(AzToolsFramework);
-#define GRAPH_CANVAS_PROFILE_SCOPE(message) AZ_PROFILE_SCOPE(AzToolsFramework, message);
+#define GRAPH_CANVAS_PROFILE_SCOPE(budget, message) AZ_PROFILE_SCOPE(budget, message);
 
 #if GRAPH_CANVAS_ENABLE_DETAILED_PROFILING
 #define GRAPH_CANVAS_DETAILED_PROFILE_FUNCTION() AZ_PROFILE_FUNCTION(AzToolsFramework);

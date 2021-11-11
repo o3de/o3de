@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "GradientWeightModifierComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "GradientWeightModifierComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

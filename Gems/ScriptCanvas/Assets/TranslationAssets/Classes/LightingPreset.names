@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "LightingPreset",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "LightingPreset"
+            }
+        }
+    ]
+}

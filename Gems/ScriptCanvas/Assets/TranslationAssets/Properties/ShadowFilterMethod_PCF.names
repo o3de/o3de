@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ShadowFilterMethod_PCF",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ShadowFilterMethod_PCF::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,52 @@
+{
+    "entries": [
+        {
+            "key": "{9A2FDC22-90E1-5A32-9670-156BB7EE8149}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "MultiplyAndAdd",
+                "category": "Math",
+                "subtitle": "Math"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Multiplicand",
+                    "details": {
+                        "name": "Number: Multiplicand"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Multiplier",
+                    "details": {
+                        "name": "Number: Multiplier"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Addend",
+                    "details": {
+                        "name": "Number: Addend"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Number",
+                    "details": {
+                        "name": "Result: Number"
+                    }
+                }
+            ]
+        }
+    ]
+}

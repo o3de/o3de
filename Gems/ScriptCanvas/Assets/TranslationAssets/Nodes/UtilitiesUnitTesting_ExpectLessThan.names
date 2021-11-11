@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "{693FD406-8735-4DBB-B0A8-39E7DA467559}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Expect Less Than",
+                "category": "Utilities/Unit Testing",
+                "tooltip": "Expects lhs to be less than rhs"
+            },
+            "slots": [
+                {
+                    "key": "DataInput_Report",
+                    "details": {
+                        "name": "Report"
+                    }
+                },
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Candidate",
+                    "details": {
+                        "name": "Candidate"
+                    }
+                },
+                {
+                    "key": "DataInput_Reference",
+                    "details": {
+                        "name": "Reference"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiAnimationEvent_Aborted",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiAnimationEvent_Aborted::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

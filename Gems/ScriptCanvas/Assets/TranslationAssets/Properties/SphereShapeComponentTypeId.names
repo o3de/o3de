@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "SphereShapeComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "SphereShapeComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

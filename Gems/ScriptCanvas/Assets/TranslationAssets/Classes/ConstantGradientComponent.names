@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "ConstantGradientComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ConstantGradientComponent"
+            }
+        }
+    ]
+}

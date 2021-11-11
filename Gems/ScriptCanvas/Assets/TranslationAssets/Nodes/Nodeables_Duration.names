@@ -1,0 +1,55 @@
+{
+    "entries": [
+        {
+            "key": "{CCF1F41F-39C2-C847-9D9E-0155C8B46E1C}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Duration",
+                "category": "Nodeables",
+                "tooltip": "Triggers a signal every frame during the specified duration.",
+                "subtitle": "Nodeables"
+            },
+            "slots": [
+                {
+                    "key": "Input_Start",
+                    "details": {
+                        "name": "Start"
+                    }
+                },
+                {
+                    "key": "DataInput_Duration",
+                    "details": {
+                        "name": "Duration"
+                    }
+                },
+                {
+                    "key": "Output_On Start",
+                    "details": {
+                        "name": "On Start"
+                    }
+                },
+                {
+                    "key": "Output_OnTick",
+                    "details": {
+                        "name": "OnTick",
+                        "tooltip": "Signaled every frame while the duration is active."
+                    }
+                },
+                {
+                    "key": "DataOutput_Elapsed",
+                    "details": {
+                        "name": "Elapsed"
+                    }
+                },
+                {
+                    "key": "Output_Done",
+                    "details": {
+                        "name": "Done",
+                        "tooltip": "Signaled after waiting for the specified amount of times."
+                    }
+                }
+            ]
+        }
+    ]
+}

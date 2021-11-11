@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiLayoutGridStartingDirection_HorizontalOrder",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiLayoutGridStartingDirection_HorizontalOrder::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

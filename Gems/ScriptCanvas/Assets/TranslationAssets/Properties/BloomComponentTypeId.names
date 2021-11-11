@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "BloomComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "BloomComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

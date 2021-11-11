@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "SystemConfigSpec_Auto",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "SystemConfigSpec_Auto::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}
