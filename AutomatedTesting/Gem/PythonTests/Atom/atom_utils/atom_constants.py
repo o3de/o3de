@@ -259,12 +259,16 @@ class AtomComponentProperties:
         Look Modification component properties. Requires PostFX Layer component.
           - 'requires' a list of component names as strings required by this component.
             Use editor_entity_utils EditorEntity.add_components(list) to add this list of requirements.\n
+          - 'Enable look modification' Toggle active state of the component True/False
+          - 'Color Grading LUT' Asset.id for the LUT used for affecting level look.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Look Modification',
             'requires': [AtomComponentProperties.postfx_layer()],
+            'Enable look modification': 'Controller|Configuration|Enable look modification',
+            'Color Grading LUT': 'Controller|Configuration|Color Grading LUT',
         }
         return properties[property]
 
