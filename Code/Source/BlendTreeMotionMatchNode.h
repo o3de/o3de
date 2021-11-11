@@ -103,7 +103,7 @@ namespace EMotionFX
             AZ::u32 m_sampleRate = 15;
             AZ::u32 m_maxKdTreeDepth = 15;
             AZ::u32 m_minFramesPerKdTreeNode = 1000;
-            EControlSplineMode m_controlSplineMode = MODE_TARGETDRIVEN;
+            TrajectoryQuery::EMode m_trajectoryQueryMode = TrajectoryQuery::MODE_TARGETDRIVEN;
             bool m_mirror = false;
 
             AZ::Debug::Timer m_timer;

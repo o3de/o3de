@@ -28,6 +28,8 @@ set(FILES
     Source/FeatureVelocity.h
     Source/TrajectoryHistory.cpp
     Source/TrajectoryHistory.h
+    Source/TrajectoryQuery.cpp
+    Source/TrajectoryQuery.h
     Source/FrameDatabase.cpp
     Source/FrameDatabase.h
     Source/ImGuiMonitor.cpp

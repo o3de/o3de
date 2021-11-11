@@ -33,6 +33,7 @@ namespace EMotionFX
     namespace MotionMatching
     {
         class BehaviorInstance;
+        class FeatureTrajectory;
 
         class EMFX_API Behavior
         {
@@ -60,6 +61,7 @@ namespace EMotionFX
             virtual void DebugDraw([[maybe_unused]] AZ::RPI::AuxGeomDrawPtr& drawQueue,
                 [[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw,
                 [[maybe_unused]] BehaviorInstance* behaviorInstance) {}
+            virtual FeatureTrajectory* GetTrajectoryFeature() const = 0;
 
             virtual size_t FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& inputPose, const Pose& previousPose, size_t currentFrameIndex, float timeDelta) = 0;
 

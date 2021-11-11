@@ -30,15 +30,6 @@ namespace EMotionFX
         class FeatureVelocity;
         class FeatureTrajectory;
 
-        enum EControlSplineMode : AZ::u8
-        {
-            MODE_TARGETDRIVEN = 0,
-            MODE_ONE = 1,
-            MODE_TWO = 2,
-            MODE_THREE = 3,
-            MODE_FOUR = 4
-        };
-
         class EMFX_API LocomotionBehavior
             : public Behavior
         {
@@ -65,18 +56,15 @@ namespace EMotionFX
                 EMotionFX::DebugDraw::ActorInstanceData& draw,
                 BehaviorInstance* behaviorInstance) override;
 
-            void DebugDrawControlSpline(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-                EMotionFX::DebugDraw::ActorInstanceData& draw,
-                BehaviorInstance* behaviorInstance);
-
             size_t FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& inputPose, const Pose& previousPose, size_t currentFrameIndex, float timeDelta) override;
-            void BuildControlSpline(BehaviorInstance* behaviorInstance, EControlSplineMode mode, const AZ::Vector3& targetPos, const TrajectoryHistory& trajectoryHistory, float timeDelta, float pathRadius, float pathSpeed);
 
             static void Reflect(AZ::ReflectContext* context);
 
             AZ_INLINE FactorWeights& GetFactorWeights() { return m_factorWeights; }
             AZ_INLINE const FactorWeights& GetFactorWeights() const { return m_factorWeights; }
             AZ_INLINE void SetFactorWeights(const FactorWeights& factors) { m_factorWeights = factors; }
+
+            FeatureTrajectory* GetTrajectoryFeature() const override { return m_rootTrajectoryData; }
 
         private:
             void OnSettingsChanged();
@@ -85,10 +73,12 @@ namespace EMotionFX
             FeaturePosition* m_rightFootPositionData = nullptr;
             FeatureVelocity* m_leftFootVelocityData = nullptr;
             FeatureVelocity* m_rightFootVelocityData = nullptr;
+            FeatureVelocity* m_pelvisVelocityData = nullptr;
             FeatureTrajectory* m_rootTrajectoryData = nullptr;
             size_t m_rootNodeIndex = InvalidIndex32;
             size_t m_leftFootNodeIndex = InvalidIndex32;
             size_t m_rightFootNodeIndex = InvalidIndex32;
+            size_t m_pelvisNodeIndex = InvalidIndex32;
             FactorWeights m_factorWeights;
         };
     } // namespace MotionMatching
