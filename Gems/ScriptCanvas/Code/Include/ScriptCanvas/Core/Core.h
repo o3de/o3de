@@ -330,7 +330,7 @@ namespace ScriptCanvasEditor
 
         SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, AZStd::string_view path);
 
-        ~SourceHandle();
+        ~SourceHandle() = default;
 
         bool AnyEquals(const SourceHandle& other) const;
 
