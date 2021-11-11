@@ -216,6 +216,7 @@ namespace EMStudio
     {
         if (m_followCharacter)
         {
+            // When follow charater move is enabled, we are adding the delta of the character movement to the camera per frame.
             AZ::Vector3 camPos = GetViewportContext()->GetCameraTransform().GetTranslation();
             camPos += m_renderer->GetCharacterCenter() - m_prevCharacterPos;
             AZ::Transform newCamTransform = GetViewportContext()->GetCameraTransform();
