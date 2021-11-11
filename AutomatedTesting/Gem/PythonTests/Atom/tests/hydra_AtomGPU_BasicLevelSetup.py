@@ -70,7 +70,6 @@ class Tests:
     viewport_set = (
         "Viewport set to correct size",
         "Viewport not set to correct size")
-# fmt: on
 
 
 def AtomGPU_BasicLevelSetup_SetsUpLevel():
@@ -166,11 +165,11 @@ def AtomGPU_BasicLevelSetup_SetsUpLevel():
 
         # 4. Add Grid component to Grid Entity and set Secondary Grid Spacing.
         grid_component = grid_entity.add_component(AtomComponentProperties.grid())
-        secondary_grid_spacing_property = AtomComponentProperties.grid('Secondary Grid Spacing')
         secondary_grid_spacing_value = 1.0
-        grid_component.set_component_property_value(secondary_grid_spacing_property, secondary_grid_spacing_value)
+        grid_component.set_component_property_value(
+            AtomComponentProperties.grid('Secondary Grid Spacing'), secondary_grid_spacing_value)
         secondary_grid_spacing_set = grid_component.get_component_property_value(
-            secondary_grid_spacing_property) == secondary_grid_spacing_value
+            AtomComponentProperties.grid('Secondary Grid Spacing')) == secondary_grid_spacing_value
         Report.result(Tests.secondary_grid_spacing, secondary_grid_spacing_set)
 
         # 5. Create Global Skylight (IBL) Entity as a child entity of the Default Level Entity.
