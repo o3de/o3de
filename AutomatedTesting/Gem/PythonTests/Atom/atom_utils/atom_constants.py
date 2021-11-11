@@ -55,8 +55,8 @@ class AtomComponentProperties:
     def camera(property: str = 'name') -> str:
         """
         Camera component properties.
-        :param property: From the last element of the property tree path. Default 'name' for component name string.
           - 'Field of view': Sets the value for the camera's FOV (Field of View), i.e. 60.0
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
@@ -200,8 +200,8 @@ class AtomComponentProperties:
     def grid(property: str = 'name') -> str:
         """
         Grid component properties.
-        :param property: From the last element of the property tree path. Default 'name' for component name string.
           - 'Secondary Grid Spacing': The spacing value for the secondary grid, i.e. 1.0
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
@@ -229,8 +229,8 @@ class AtomComponentProperties:
     def hdri_skybox(property: str = 'name') -> str:
         """
         HDRi Skybox component properties.
-        :param property: From the last element of the property tree path. Default 'name' for component name string.
           - 'Cubemap Texture': Path to the asset file to use for the cubemap texture asset.
+        :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
