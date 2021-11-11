@@ -1186,12 +1186,6 @@ AZ_POP_DISABLE_WARNING
 
     InlineInitializationProcessing("CSystem::Init End");
 
-    if (gEnv->IsDedicated())
-    {
-        SCVarsClientConfigSink CVarsClientConfigSink;
-        LoadConfiguration("client.cfg", &CVarsClientConfigSink);
-    }
-
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
 
