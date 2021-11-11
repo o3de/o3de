@@ -34,12 +34,8 @@ namespace Camera
         //////////////////////////////////////////////////////////////////////////
         // ICameraLookAtBehavior
         void AdjustLookAtTarget(float deltaTime, const AZ::Transform& targetTransform, AZ::Transform& outLookAtTargetTransform) override;
-        void Activate(AZ::EntityId) override
-        {
-        }
-        void Deactivate() override
-        {
-        }
+        void Activate(AZ::EntityId) override{}
+        void Deactivate() override {}
 
         bool XAndYIgnored() const;
         bool XAndZIgnored() const;
