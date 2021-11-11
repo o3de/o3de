@@ -63,8 +63,6 @@ namespace UnitTest
 
         const AZ::Entity::DependencySortOutcome sortOutcome = entity->EvaluateDependenciesGetDetails();
         EXPECT_FALSE(sortOutcome.IsSuccess());
-
-        entity.reset();
     }
 
     TEST_F(TerrainSurfaceGradientListTest, SurfaceGradientActivateSuccess)
@@ -78,9 +76,7 @@ namespace UnitTest
 
         entity->Activate();
 
-
-
-        entity.reset();
+        EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
     }
 
     TEST_F(TerrainSurfaceGradientListTest, SurfaceGradientReturnsSurfaceWeights)

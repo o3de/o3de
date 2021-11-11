@@ -82,8 +82,6 @@ TEST_F(TerrainHeightGradientListComponentTest, MissingRequiredComponentsActivate
 
     const AZ::Entity::DependencySortOutcome sortOutcome = entity->EvaluateDependenciesGetDetails();
     EXPECT_FALSE(sortOutcome.IsSuccess());
-
-    entity.reset();
 }
 
 TEST_F(TerrainHeightGradientListComponentTest, ActivateEntityActivateSuccess)
@@ -97,8 +95,6 @@ TEST_F(TerrainHeightGradientListComponentTest, ActivateEntityActivateSuccess)
 
     entity->Activate();
     EXPECT_EQ(entity->GetState(), AZ::Entity::State::Active);
-
-    entity.reset();
 }
 
 TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientRefreshesTerrainSystem)
@@ -123,8 +119,6 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientRefreshesTer
 
     // Stop the EXPECT_CALL check now, as OnCompositionChanged will get called twice again during the reset.
     Mock::VerifyAndClearExpectations(&terrainSystem);
-
-    entity.reset();
 }
 
 TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListReturnsHeights)
@@ -169,7 +163,5 @@ TEST_F(TerrainHeightGradientListComponentTest, TerrainHeightGradientListReturnsH
     const float height = outPosition.GetZ();
 
     EXPECT_NEAR(height, mockGradientValue * max, 0.01f);
-
-    entity.reset();
 }
 
