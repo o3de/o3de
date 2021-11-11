@@ -56,6 +56,7 @@ class AtomComponentProperties:
         """
         Camera component properties.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
+          - 'Field of view': Sets the value for the camera's FOV (Field of View), i.e. 60.0
         :return: Full property path OR component name if no property specified.
         """
         properties = {
@@ -200,6 +201,7 @@ class AtomComponentProperties:
         """
         Grid component properties.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
+          - 'Secondary Grid Spacing': The spacing value for the secondary grid, i.e. 1.0
         :return: Full property path OR component name if no property specified.
         """
         properties = {
@@ -228,6 +230,7 @@ class AtomComponentProperties:
         """
         HDRi Skybox component properties.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
+          - 'Cubemap Texture': Path to the asset file to use for the cubemap texture asset.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
@@ -271,6 +274,7 @@ class AtomComponentProperties:
         Material component properties. Requires one of Actor OR Mesh component.
           - 'requires' a list of component names as strings required by this component.
             Only one of these is required at a time for this component.\n
+          - 'Material Asset': Path to the material asset file to use as the material asset.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
