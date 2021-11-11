@@ -1178,8 +1178,10 @@ namespace AzToolsFramework
                         continue;
                     }
 
-                    const AZ::Aabb bound = CalculateEditorEntitySelectionBounds(entityId, viewportInfo);
-                    debugDisplay.DrawSolidBox(bound.GetMin(), bound.GetMax());
+                    if (const AZ::Aabb bound = CalculateEditorEntitySelectionBounds(entityId, viewportInfo); bound.IsValid())
+                    {
+                        debugDisplay.DrawSolidBox(bound.GetMin(), bound.GetMax());
+                    }
                 }
 
                 debugDisplay.DepthTestOn();
