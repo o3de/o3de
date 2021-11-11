@@ -16,6 +16,7 @@
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzFramework/Windowing/WindowBus.h>
+#include <Atom/RPI.Public/ViewProviderBus.h>
 
 // Qt
 #include <QAction>
@@ -91,9 +92,12 @@ namespace
 static void UpdateAtomOutputFrameCaptureView(TrackView::AtomOutputFrameCapture& atomOutputFrameCapture, const int width, const int height)
 {
     const AZ::EntityId activeCameraEntityId = TrackView::ActiveCameraEntityId();
+    AZ::RPI::ViewPtr view = nullptr;
+    AZ::RPI::ViewProviderBus::EventResult(view, activeCameraEntityId, &AZ::RPI::ViewProvider::GetView);
     atomOutputFrameCapture.UpdateView(
         TrackView::TransformFromEntityId(activeCameraEntityId),
-        TrackView::ProjectionFromCameraEntityId(activeCameraEntityId, static_cast<float>(width), static_cast<float>(height)));
+        TrackView::ProjectionFromCameraEntityId(activeCameraEntityId, aznumeric_cast<float>(width), aznumeric_cast<float>(height)),
+        view);
 }
 
 CSequenceBatchRenderDialog::CSequenceBatchRenderDialog(float fps, QWidget* pParent /* = nullptr */)
