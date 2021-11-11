@@ -140,7 +140,6 @@ namespace EMotionFX
             AZ_PROFILE_SCOPE(Animation, "LocomotionBehavior::DebugDraw");
 
             Behavior::DebugDraw(drawQueue, draw, behaviorInstance);
-            DebugDrawControlSpline(drawQueue, draw, behaviorInstance);
 
             // Get the lowest cost frame index from the last search. As we're searching the feature database with a much lower
             // frequency and sample the animation onwards from this, the resulting frame index does not represent the current
@@ -158,62 +157,15 @@ namespace EMotionFX
             {
                 m_features.DebugDraw(drawQueue, draw, behaviorInstance, currentFrame);
             }
-        }
 
-        void LocomotionBehavior::DebugDrawControlSpline(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-            EMotionFX::DebugDraw::ActorInstanceData& draw,
-            BehaviorInstance* behaviorInstance)
-        {
-            AZ_UNUSED(draw);
+            // Draw the desired future trajectory and the sampled version of the past trajectory.
+            const TrajectoryQuery& trajectoryQuery = behaviorInstance->GetTrajectoryQuery();
+            const AZ::Color trajectoryQueryColor = AZ::Color::CreateFromRgba(90,219,64,255);
+            trajectoryQuery.DebugDraw(drawQueue, trajectoryQueryColor);
 
-            const float markerSize = 0.02f;
-            const AZ::Color color = AZ::Color::CreateFromRgba(90,219,64,255);
-
-            const BehaviorInstance::ControlSpline& spline = behaviorInstance->GetControlSpline();
-            if (spline.m_futureSplinePoints.size() > 1)
-            {
-                for (size_t i = 0; i < spline.m_futureSplinePoints.size() - 1; ++i)
-                {
-                    const AZ::Vector3& posA = spline.m_futureSplinePoints[i].m_position;
-                    const AZ::Vector3& posB = spline.m_futureSplinePoints[i + 1].m_position;
-
-                    drawQueue->DrawCylinder(/*center=*/(posB + posA) * 0.5f,
-                        /*direction=*/(posB - posA).GetNormalizedSafe(),
-                        /*radius=*/0.0025f,
-                        /*height=*/(posB - posA).GetLength(),
-                        color,
-                        AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
-                        AZ::RPI::AuxGeomDraw::DepthTest::Off);
-                }
-
-                for (size_t i = 0; i < spline.m_futureSplinePoints.size(); ++i)
-                {
-                    drawQueue->DrawSphere(spline.m_futureSplinePoints[i].m_position,
-                        markerSize,
-                        color,
-                        AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
-                        AZ::RPI::AuxGeomDraw::DepthTest::Off);
-                }
-            }
-
-            if (spline.m_pastSplinePoints.size() > 1)
-            {
-                for (size_t i = 0; i < spline.m_pastSplinePoints.size() - 1; ++i)
-                {
-                    const AZ::Vector3& posA = spline.m_pastSplinePoints[i].m_position;
-                    const AZ::Vector3& posB = spline.m_pastSplinePoints[i + 1].m_position;
-                    draw.DrawLine(posA, posB, color);
-                }
-
-                for (size_t i = 0; i < spline.m_pastSplinePoints.size(); ++i)
-                {
-                    drawQueue->DrawSphere(spline.m_pastSplinePoints[i].m_position,
-                        markerSize,
-                        color,
-                        AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
-                        AZ::RPI::AuxGeomDraw::DepthTest::Off);
-                }
-            }
+            // Draw the trajectory history starting after the sampled version of the past trajectory.
+            const TrajectoryHistory& trajectoryHistory = behaviorInstance->GetTrajectoryHistory();
+            trajectoryHistory.DebugDraw(drawQueue, draw, trajectoryQueryColor, m_rootTrajectoryData->GetPastTimeRange());
         }
 
         void LocomotionBehavior::OnSettingsChanged()
@@ -228,7 +180,6 @@ namespace EMotionFX
             AZ_PROFILE_SCOPE(Animation, "LocomotionBehavior::FindLowestCostFrameIndex");
 
             // Prepare our current pose data.
-            //const BehaviorInstance::ControlSpline& controlSpline = behaviorInstance->GetControlSpline();
             const Frame& currentFrame = m_data.GetFrame(currentFrameIndex);
             MotionInstance* motionInstance = behaviorInstance->GetMotionInstance();
             FeaturePosition::FrameCostContext leftFootPosContext(inputPose, m_features.GetFeatureMatrix());
@@ -240,7 +191,7 @@ namespace EMotionFX
             Feature::CalculateVelocity(m_rightFootNodeIndex, m_rootNodeIndex, motionInstance, rightFootVelocityContext.m_direction, rightFootVelocityContext.m_speed); // TODO: group this with left foot for faster performance
             rootTrajectoryContext.m_pose = &inputPose;
             rootTrajectoryContext.m_facingDirectionRelative = AZ::Vector3(0.0f, 1.0f, 0.0f);
-            rootTrajectoryContext.m_controlSpline = &behaviorInstance->GetControlSpline();
+            rootTrajectoryContext.m_trajectoryQuery = &behaviorInstance->GetTrajectoryQuery();
 
             // 1. Broad-phase search using KD-tree
             {
@@ -352,112 +303,6 @@ namespace EMotionFX
             //    behaviorInstance->GetNearestFrames().size()
             //);
             return minCostFrameIndex;
-        }
-
-        AZ::Vector3 SampleFunction1(float offset, float radius, float phase)
-        {
-            AZ::Vector3 displacement = AZ::Vector3::CreateZero();
-            displacement.SetX(radius * sinf(phase + offset) + radius * 0.75f * cosf(phase * 2.0f + offset * 2.0f));
-            displacement.SetY(radius * cosf(phase + offset));
-            return displacement;
-        }
-
-        AZ::Vector3 SampleFunction2(float offset, float radius, float phase)
-        {
-            AZ::Vector3 displacement = AZ::Vector3::CreateZero();
-            displacement.SetX(radius * sinf(phase + offset) );
-            displacement.SetY(cosf(phase + offset));
-            return displacement;
-        }
-
-        AZ::Vector3 SampleFunction3(float offset, float radius, float phase)
-        {
-            AZ::Vector3 displacement = AZ::Vector3::CreateZero();
-            const float rad = radius * cosf(radius + phase*0.2f);
-            displacement.SetX(rad * sinf(phase + offset));
-            displacement.SetY(rad * cosf(phase + offset));
-            return displacement;
-        }
-
-        AZ::Vector3 SampleFunction4(float offset, float radius, float phase)
-        {
-            AZ::Vector3 displacement = AZ::Vector3::CreateZero();
-            displacement.SetX(radius * sinf(phase + offset));
-            displacement.SetY(radius*2.0f * cosf(phase + offset));
-            return displacement;
-        }
-
-        AZ::Vector3 SampleFunction(EControlSplineMode mode, float offset, float pathRadius, float phase, [[maybe_unused]] const AZ::Vector3& targetPos)
-        {
-            switch (mode)
-            {
-                case MODE_ONE:
-                    return SampleFunction1(offset, pathRadius, phase);
-
-                case MODE_TWO:
-                    return SampleFunction2(offset, pathRadius, phase);
-
-                case MODE_THREE:
-                    return SampleFunction3(offset, pathRadius, phase);
-
-                case MODE_FOUR:
-                    return SampleFunction4(offset, pathRadius, phase);
-            }
-
-            return SampleFunction1(offset, pathRadius, phase);
-        }
-
-        void LocomotionBehavior::BuildControlSpline(BehaviorInstance* behaviorInstance, EControlSplineMode mode, const AZ::Vector3& targetPos, const TrajectoryHistory& trajectoryHistory, float timeDelta, float pathRadius, float pathSpeed)
-        {
-            const ActorInstance* actorInstance = behaviorInstance->GetActorInstance();
-
-            BehaviorInstance::ControlSpline& controlSpline = behaviorInstance->GetControlSpline();
-            const AZ::u32 splinePointCounts = 6;
-            controlSpline.m_futureSplinePoints.resize(splinePointCounts);
-            controlSpline.m_pastSplinePoints.resize(splinePointCounts);
-
-            if (mode == MODE_TARGETDRIVEN)
-            {
-                const AZ::Vector3 curPos = actorInstance->GetWorldSpaceTransform().m_position;
-                if (curPos.IsClose(targetPos, 0.1f))
-                {
-                    for (size_t i = 0; i < splinePointCounts; ++i)
-                    {
-                        controlSpline.m_futureSplinePoints[i].m_position = curPos;
-                    }
-                }
-                else
-                {
-                    // NOTE: Improve it by using a curve to the target.
-                    for (size_t i = 0; i < splinePointCounts; ++i)
-                    {
-                        const float sampleTime = static_cast<float>(i) / (splinePointCounts - 1);
-                        controlSpline.m_futureSplinePoints[i].m_position = curPos.Lerp(targetPos, sampleTime);
-                    }
-                }
-            }
-            else
-            {
-                static float phase = 0.0f;
-                phase += timeDelta * pathSpeed;
-                AZ::Vector3 base = SampleFunction(mode, 0.0f, pathRadius, phase, targetPos);
-                for (size_t i = 0; i < splinePointCounts; ++i)
-                {
-                    const float offset = i * 0.1f;
-                    const AZ::Vector3 curSample = SampleFunction(mode, offset, pathRadius, phase, targetPos);
-                    AZ::Vector3 displacement = curSample - base;
-                    controlSpline.m_futureSplinePoints[i].m_position = actorInstance->GetWorldSpaceTransform().m_position + displacement;
-                    //controlSpline.m_futureSplinePoints[i].m_position = curSample;
-                }
-            }
-
-            // Provide the trajectory history.
-            for (size_t i = 0; i < splinePointCounts; ++i)
-            {
-                const float sampleTime = i / static_cast<float>(splinePointCounts - 1);
-                const AZ::Vector3 position = trajectoryHistory.SampleNormalized(sampleTime);
-                controlSpline.m_pastSplinePoints[i].m_position = position;
-            }
         }
 
         void LocomotionBehavior::Reflect(AZ::ReflectContext* context)

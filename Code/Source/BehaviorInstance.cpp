@@ -208,7 +208,7 @@ namespace EMotionFX
             return m_lowestCostFrameIndex;
         }
 
-        void BehaviorInstance::Update(float timePassedInSeconds)
+        void BehaviorInstance::Update(float timePassedInSeconds, const AZ::Vector3& targetPos, TrajectoryQuery::EMode mode, float pathRadius, float pathSpeed)
         {
             AZ_PROFILE_SCOPE(Animation, "BehaviorInstance::Update");
 
@@ -227,6 +227,16 @@ namespace EMotionFX
             m_trajectoryHistory.AddSample(*m_actorInstance->GetTransformData()->GetCurrentPose());
             // Update the time. After this there is no sample for the updated time in the history as we're about to prepare this with the current update.
             m_trajectoryHistory.Update(timePassedInSeconds);
+
+            // Register the current actor instance position to the history data of the spline.
+            m_trajectoryQuery.Update(m_actorInstance,
+                m_behavior->GetTrajectoryFeature(),
+                m_trajectoryHistory,
+                mode,
+                targetPos,
+                timePassedInSeconds,
+                pathRadius,
+                pathSpeed);
 
             // Calculate the new time value of the motion, but don't set it yet (the syncing might adjust this again)
             m_motionInstance->SetFreezeAtLastFrame(true);
@@ -274,7 +284,7 @@ namespace EMotionFX
                     m_prevMotionInstance->SetCurrentTime(m_motionInstance->GetCurrentTime(), true);
                     m_prevMotionInstance->SetMirrorMotion(m_motionInstance->GetMirrorMotion());
 
-                    //AZ_Printf("EMotionFX", "Frame %d = %f/%f  %f/%f", lowestCostFrameIndex, lowestCostFrame.GetSampleTime(), lowestCostFrame.GetSourceMotion()->GetMaxTime(), newMotionTime, m_motionInstance->GetDuration());
+                    //AZ_Printf("EMotionFX", "Frame %d = %f/%f  %f/%f", lowestCostFrameIndex, lowestCostFrame.GetSampleTime(), lowestCostFrame.GetSourceMotion()->GetDuration(), newMotionTime, m_motionInstance->GetDuration());
                     SetTimeSinceLastFrameSwitch(0.0f);
                     m_lowestCostFrameIndex = lowestCostFrameIndex;
 

@@ -165,10 +165,7 @@ namespace EMotionFX
             TryGetInputVector3(animGraphInstance, INPUTPORT_TARGETPOS, targetPos);
 
             MotionMatching::BehaviorInstance* behaviorInstance = uniqueData->m_behaviorInstance;
-            behaviorInstance->Update(timePassedInSeconds);
-
-            // Register the current actor instance position to the history data of the spline.
-            uniqueData->m_behavior->BuildControlSpline(uniqueData->m_behaviorInstance, m_controlSplineMode, targetPos, behaviorInstance->GetTrajectoryHistory(), timePassedInSeconds, m_pathRadius, m_pathSpeed);
+            behaviorInstance->Update(timePassedInSeconds, targetPos, m_trajectoryQueryMode, m_pathRadius, m_pathSpeed);
 
             // set the current time to the new calculated time
             uniqueData->ClearInheritFlags();
@@ -313,7 +310,7 @@ namespace EMotionFX
                 ->Field("sampleRate", &BlendTreeMotionMatchNode::m_sampleRate)
                 ->Field("lowestCostSearchFrequency", &BlendTreeMotionMatchNode::m_lowestCostSearchFrequency)
                 ->Field("mirror", &BlendTreeMotionMatchNode::m_mirror)
-                ->Field("controlSplineMode", &BlendTreeMotionMatchNode::m_controlSplineMode)
+                ->Field("controlSplineMode", &BlendTreeMotionMatchNode::m_trajectoryQueryMode)
                 ->Field("pathRadius", &BlendTreeMotionMatchNode::m_pathRadius)
                 ->Field("pathSpeed", &BlendTreeMotionMatchNode::m_pathSpeed);
 
@@ -377,12 +374,12 @@ namespace EMotionFX
                 ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
                 ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<float>::max())
                 ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
-                ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeMotionMatchNode::m_controlSplineMode, "Control Spline Mode", "The trajectory function/shape to use.")
-                ->EnumAttribute(MODE_TARGETDRIVEN, "Target driven")
-                ->EnumAttribute(MODE_ONE, "Mode one")
-                ->EnumAttribute(MODE_TWO, "Mode two")
-                ->EnumAttribute(MODE_THREE, "Mode three")
-                ->EnumAttribute(MODE_FOUR, "Mode four");
+                ->DataElement(AZ::Edit::UIHandlers::ComboBox, &BlendTreeMotionMatchNode::m_trajectoryQueryMode, "Trajectory mode", "Desired future trajectory generation mode.")
+                ->EnumAttribute(TrajectoryQuery::MODE_TARGETDRIVEN, "Target driven")
+                ->EnumAttribute(TrajectoryQuery::MODE_ONE, "Mode one")
+                ->EnumAttribute(TrajectoryQuery::MODE_TWO, "Mode two")
+                ->EnumAttribute(TrajectoryQuery::MODE_THREE, "Mode three")
+                ->EnumAttribute(TrajectoryQuery::MODE_FOUR, "Mode four");
         }
     } // namespace MotionMatching
 } // namespace EMotionFX

@@ -259,7 +259,7 @@ namespace EMotionFX
         float FeatureTrajectory::CalculateCost(const FeatureMatrix& featureMatrix,
             size_t frameIndex,
             const Transform& invRootTransform,
-            const AZStd::vector<BehaviorInstance::SplinePoint>& controlPoints,
+            const AZStd::vector<TrajectoryQuery::ControlPoint>& controlPoints,
             const SplineToFeatureMatrixIndex& splineToFeatureMatrixIndex) const
         {
             float cost = 0.0f;
@@ -267,7 +267,7 @@ namespace EMotionFX
 
             for (size_t i = 0; i < controlPoints.size(); ++i)
             {
-                const BehaviorInstance::SplinePoint& controlPoint = controlPoints[i];
+                const TrajectoryQuery::ControlPoint& controlPoint = controlPoints[i];
                 const Sample sample = GetFeatureData(featureMatrix, frameIndex, splineToFeatureMatrixIndex(i));
                 const AZ::Vector2& samplePos = sample.m_position;
                 const AZ::Vector2 controlPointPos = AZ::Vector2(invRootTransform.TransformPoint(controlPoint.m_position)); // Convert so it is relative to where we are and pointing to.
@@ -292,16 +292,16 @@ namespace EMotionFX
 
         float FeatureTrajectory::CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const
         {
-            AZ_Assert(context.m_controlSpline->m_futureSplinePoints.size() == m_numFutureSamples, "Spline number of future points does not match trajecotry frame data number of future points.");
+            AZ_Assert(context.m_trajectoryQuery->GetFutureControlPoints().size() == m_numFutureSamples, "Number of future control points does not match trajecotry frame data number of future points.");
             const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-            return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_controlSpline->m_futureSplinePoints, AZStd::bind(&FeatureTrajectory::CalcFutureFrameDataIndex, this, AZStd::placeholders::_1));
+            return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_trajectoryQuery->GetFutureControlPoints(), AZStd::bind(&FeatureTrajectory::CalcFutureFrameDataIndex, this, AZStd::placeholders::_1));
         }
 
         float FeatureTrajectory::CalculatePastFrameCost(size_t frameIndex, const FrameCostContext& context) const
         {
-            AZ_Assert(context.m_controlSpline->m_pastSplinePoints.size() == m_numPastSamples, "Spline number of past points does not match trajecotry frame data number of past points.");
+            AZ_Assert(context.m_trajectoryQuery->GetPastControlPoints().size() == m_numPastSamples, "Number of past control points does not match trajecotry frame data number of past points.");
             const Transform invRootTransform = context.m_pose->GetWorldSpaceTransform(m_relativeToNodeIndex).Inversed();
-            return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_controlSpline->m_pastSplinePoints, AZStd::bind(&FeatureTrajectory::CalcPastFrameDataIndex, this, AZStd::placeholders::_1));
+            return CalculateCost(context.m_featureMatrix, frameIndex, invRootTransform, context.m_trajectoryQuery->GetPastControlPoints(), AZStd::bind(&FeatureTrajectory::CalcPastFrameDataIndex, this, AZStd::placeholders::_1));
         }
 
         void FeatureTrajectory::Reflect(AZ::ReflectContext* context)

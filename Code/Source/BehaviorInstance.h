@@ -18,6 +18,7 @@
 
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <TrajectoryHistory.h>
+#include <TrajectoryQuery.h>
 
 namespace AZ
 {
@@ -38,22 +39,6 @@ namespace EMotionFX
             AZ_RTTI(BehaviorInstance, "{1ED03AD8-0FB2-431B-AF01-02F7E930EB73}")
             AZ_CLASS_ALLOCATOR_DECL
 
-            //--------------------------------------------------------------------------
-            // HACK TEST TO WORK AROUND REQUIRING A WORKING PARAMETER SYSTEM IN THE BEHAVIORS:
-            struct SplinePoint
-            {
-                AZ::Vector3 m_position;
-                AZ::Vector3 m_direction;
-                float m_speed;
-            };
-
-            struct ControlSpline
-            {
-                AZStd::vector<SplinePoint> m_futureSplinePoints;
-                AZStd::vector<SplinePoint> m_pastSplinePoints;
-            };
-            //--------------------------------------------------------------------------
-
             struct EMFX_API InitSettings
             {
                 ActorInstance* m_actorInstance = nullptr;
@@ -65,7 +50,7 @@ namespace EMotionFX
             void Init(const InitSettings& settings);
             void DebugDraw();
 
-            void Update(float timePassedInSeconds);
+            void Update(float timePassedInSeconds, const AZ::Vector3& targetPos, TrajectoryQuery::EMode mode, float pathRadius, float pathSpeed);
             void Output(Pose& outputPose);
 
             MotionInstance* GetMotionInstance() const { return m_motionInstance; }
@@ -82,9 +67,6 @@ namespace EMotionFX
 
             static void Reflect(AZ::ReflectContext* context);
 
-            // TODO: This is a hack just to work around some limitations of the system now
-            ControlSpline& GetControlSpline() { return m_controlSpline; }
-            const ControlSpline& GetControlSpline() const { return m_controlSpline; }
             float GetNewMotionTime() const { return m_newMotionTime; }
             void SetNewMotionTime(float t) { m_newMotionTime = t; }
 
@@ -98,6 +80,7 @@ namespace EMotionFX
             const AZStd::vector<float>& GetQueryFeatureValues() const { return m_queryFeatureValues; }
             AZStd::vector<float>& GetQueryFeatureValues() { return m_queryFeatureValues; }
 
+            const TrajectoryQuery& GetTrajectoryQuery() const { return m_trajectoryQuery; }
             const TrajectoryHistory& GetTrajectoryHistory() const { return m_trajectoryHistory; }
             Transform GetMotionExtractionDelta() const { return m_motionExtractionDelta; }
 
@@ -115,7 +98,7 @@ namespace EMotionFX
 
             AZStd::vector<float> m_queryFeatureValues;
             AZStd::vector<size_t> m_nearestFrames;
-            ControlSpline m_controlSpline;
+            TrajectoryQuery m_trajectoryQuery;
             TrajectoryHistory m_trajectoryHistory;
             static constexpr float m_trajectorySecsToTrack = 5.0f;
 

@@ -80,7 +80,7 @@ namespace EMotionFX
 
                 const FeatureMatrix& m_featureMatrix;
                 const Pose* m_pose;
-                const BehaviorInstance::ControlSpline* m_controlSpline;
+                const TrajectoryQuery* m_trajectoryQuery;
                 AZ::Vector3 m_facingDirectionRelative = AZ::Vector3(0.0f, 1.0f, 0.0f);
             };
             float CalculateFutureFrameCost(size_t frameIndex, const FrameCostContext& context) const;
@@ -119,7 +119,7 @@ namespace EMotionFX
             float CalculateCost(const FeatureMatrix& featureMatrix,
                 size_t frameIndex,
                 const Transform& invRootTransform,
-                const AZStd::vector<BehaviorInstance::SplinePoint>& controlSplinePoints,
+                const AZStd::vector<TrajectoryQuery::ControlPoint>& controlPoints,
                 const SplineToFeatureMatrixIndex& splineToFeatureMatrixIndex) const;
 
             Sample GetSampleFromPose(const Pose& pose, const Transform& invRootTransform) const;
