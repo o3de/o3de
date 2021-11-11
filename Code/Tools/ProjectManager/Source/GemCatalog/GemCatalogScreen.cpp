@@ -363,7 +363,7 @@ namespace O3DE::ProjectManager
             const QString selectedGemPath = m_gemModel->GetPath(modelIndex);
 
             // Unregister the gem
-            auto unregisterResult = PythonBindingsInterface::Get()->RegisterGem(selectedGemPath, {}, /*remove*/true);
+            auto unregisterResult = PythonBindingsInterface::Get()->UnregisterGem(selectedGemPath);
             if (!unregisterResult)
             {
                 QMessageBox::critical(this, tr("Failed to unregister gem"), unregisterResult.GetError().c_str());
@@ -419,10 +419,8 @@ namespace O3DE::ProjectManager
         {
             // Add all available gems to the model.
             const QVector<GemInfo>& allGemInfos = allGemInfosResult.GetValue();
-            for (GemInfo gemInfo : allGemInfos)
+            for (const GemInfo& gemInfo : allGemInfos)
             {
-                // Mark as downloaded because this gem was registered with an existing directory
-                gemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
                 m_gemModel->AddGem(gemInfo);
             }
 

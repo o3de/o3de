@@ -515,7 +515,11 @@ namespace O3DE::ProjectManager
             auto pyProjectPath = QString_To_Py_Path(projectPath);
             for (auto path : m_manifest.attr("get_all_gems")(pyProjectPath))
             {
-                gems.push_back(GemInfoFromPath(path, pyProjectPath));
+                GemInfo gemInfo = GemInfoFromPath(path, pyProjectPath);
+                // Mark as downloaded because this gem was registered with an existing directory
+                gemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
+
+                gems.push_back(AZStd::move(gemInfo));
             }
         });
         if (!result.IsSuccess())
@@ -560,7 +564,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gemNames));
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::RegisterGem(const QString& gemPath, const QString& projectPath, bool remove)
+    AZ::Outcome<void, AZStd::string> PythonBindings::GemRegistration(const QString& gemPath, const QString& projectPath, bool remove)
     {
         bool registrationResult = false;
         auto result = ExecuteWithLockErrorHandling(
@@ -596,10 +600,21 @@ namespace O3DE::ProjectManager
         }
         else if (!registrationResult)
         {
-            return AZ::Failure<AZStd::string>(AZStd::string::format("Failed to register gem path %s", gemPath.toUtf8().constData()));
+            return AZ::Failure<AZStd::string>(AZStd::string::format(
+                "Failed to %s gem path %s", remove ? "unregister" : "register", gemPath.toUtf8().constData()));
         }
 
         return AZ::Success();
+    }
+
+    AZ::Outcome<void, AZStd::string> PythonBindings::RegisterGem(const QString& gemPath, const QString& projectPath)
+    {
+        return GemRegistration(gemPath, projectPath);
+    }
+
+    AZ::Outcome<void, AZStd::string> PythonBindings::UnregisterGem(const QString& gemPath, const QString& projectPath)
+    {
+        return GemRegistration(gemPath, projectPath, /*remove*/true);
     }
 
     bool PythonBindings::AddProject(const QString& path)

@@ -41,12 +41,12 @@ namespace O3DE::ProjectManager
                                           "Updating this Gem will remove any local changes made to this Gem, "
                                           "and may remove old features that are in use.").arg(
                                               updateAvaliable ? "" : tr("No update detected for Gem. "
-                                              "This will force a redownload of the gem anyways. ")));
+                                              "This will force a re-download of the gem. ")));
         bodyLabel->setWordWrap(true);
         bodyLabel->setFixedSize(QSize(440, 80));
         layout->addWidget(bodyLabel);
 
-        layout->addSpacing();
+        layout->addSpacing(40);
 
         // Buttons
         QDialogButtonBox* dialogButtons = new QDialogButtonBox();

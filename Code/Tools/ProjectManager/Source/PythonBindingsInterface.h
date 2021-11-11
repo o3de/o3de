@@ -95,10 +95,17 @@ namespace O3DE::ProjectManager
          * Registers the gem to the specified project, or to the o3de_manifest.json if no project path is given
          * @param gemPath the path to the gem
          * @param projectPath the path to the project. If empty, will register the external path in o3de_manifest.json
-         * @param remove Unregister instead of registering this gem 
          * @return An outcome with the success flag as well as an error message in case of a failure.
          */
-        virtual AZ::Outcome<void, AZStd::string> RegisterGem(const QString& gemPath, const QString& projectPath = {}, bool remove = false) = 0;
+        virtual AZ::Outcome<void, AZStd::string> RegisterGem(const QString& gemPath, const QString& projectPath = {}) = 0;
+
+        /**
+         * Unregisters the gem from the specified project, or from the o3de_manifest.json if no project path is given
+         * @param gemPath the path to the gem
+         * @param projectPath the path to the project. If empty, will unregister the external path in o3de_manifest.json
+         * @return An outcome with the success flag as well as an error message in case of a failure.
+         */
+        virtual AZ::Outcome<void, AZStd::string> UnregisterGem(const QString& gemPath, const QString& projectPath = {}) = 0;
 
 
         // Projects 
