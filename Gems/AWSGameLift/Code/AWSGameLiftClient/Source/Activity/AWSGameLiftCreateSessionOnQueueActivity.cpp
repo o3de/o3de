@@ -6,9 +6,16 @@
  *
  */
 
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+
 #include <AWSGameLiftSessionConstants.h>
 #include <Activity/AWSGameLiftActivityUtils.h>
 #include <Activity/AWSGameLiftCreateSessionOnQueueActivity.h>
+#include <Request/IAWSGameLiftInternalRequests.h>
+
+#include <aws/core/utils/Outcome.h>
+#include <aws/gamelift/model/StartGameSessionPlacementRequest.h>
 
 namespace AWSGameLift
 {
@@ -47,17 +54,23 @@ namespace AWSGameLift
             return request;
         }
 
-        AZStd::string CreateSessionOnQueue(
-            const Aws::GameLift::GameLiftClient& gameliftClient,
-            const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest)
+        AZStd::string CreateSessionOnQueue(const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest)
         {
+            AZStd::string result = "";
+
+            auto gameliftClient = AZ::Interface<IAWSGameLiftInternalRequests>::Get()->GetGameLiftClient();
+            if (!gameliftClient)
+            {
+                AZ_Error(AWSGameLiftCreateSessionOnQueueActivityName, false, AWSGameLiftClientMissingErrorMessage);
+                return result;
+            }
+
             AZ_TracePrintf(AWSGameLiftCreateSessionOnQueueActivityName,
                 "Requesting StartGameSessionPlacement against Amazon GameLift service ...");
 
-            AZStd::string result = "";
             Aws::GameLift::Model::StartGameSessionPlacementRequest request =
                 BuildAWSGameLiftStartGameSessionPlacementRequest(createSessionOnQueueRequest);
-            auto createSessionOnQueueOutcome = gameliftClient.StartGameSessionPlacement(request);
+            auto createSessionOnQueueOutcome = gameliftClient->StartGameSessionPlacement(request);
             AZ_TracePrintf(AWSGameLiftCreateSessionOnQueueActivityName,
                 "StartGameSessionPlacement request against Amazon GameLift service is complete.");
 
