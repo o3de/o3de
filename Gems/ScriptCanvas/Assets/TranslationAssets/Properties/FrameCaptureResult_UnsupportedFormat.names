@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "FrameCaptureResult_UnsupportedFormat",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "FrameCaptureResult_UnsupportedFormat::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

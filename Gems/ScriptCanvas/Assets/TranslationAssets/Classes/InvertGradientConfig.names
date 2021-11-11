@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "InvertGradientConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "InvertGradientConfig"
+            }
+        }
+    ]
+}

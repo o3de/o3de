@@ -85,10 +85,6 @@ class CWatchdogThread;
 
 #endif
 
-#if defined(LINUX)
-    #include "CryLibrary.h"
-#endif
-
 #ifdef WIN32
 using WIN_HMODULE = void*;
 #else
@@ -226,7 +222,6 @@ public:
     void Quit() override;
     bool IsQuitting() const override;
     void ShutdownFileSystem(); // used to cleanup any file resources, such as cache handle.
-    void SetAffinity();
     const char* GetUserName() override;
     int GetApplicationInstance() override;
     int GetApplicationLogInstance(const char* logFilePath) override;
@@ -239,7 +234,6 @@ public:
     ICryFont* GetICryFont() override{ return m_env.pCryFont; }
     ILog* GetILog() override{ return m_env.pLog; }
     ICmdLine* GetICmdLine() override{ return m_pCmdLine; }
-    IViewSystem* GetIViewSystem() override;
     ILevelSystem* GetILevelSystem() override;
     ISystemEventDispatcher* GetISystemEventDispatcher() override { return m_pSystemEventDispatcher; }
     //////////////////////////////////////////////////////////////////////////
@@ -410,10 +404,6 @@ private: // ------------------------------------------------------
     //! current active process
     IProcess* m_pProcess;
 
-    CCamera m_PhysRendererCamera;
-    ICVar* m_p_draw_helpers_str;
-    int m_iJumpToPhysProfileEnt;
-
     CTimeValue m_lastTickTime;
 
     //! system event dispatcher
@@ -427,9 +417,6 @@ private: // ------------------------------------------------------
 
     //! System to manage levels.
     ILevelSystem* m_pLevelSystem;
-
-    //! System to manage views.
-    IViewSystem* m_pViewSystem;
 
     // XML Utils interface.
     class CXmlUtils* m_pXMLUtils;

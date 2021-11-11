@@ -15,7 +15,5 @@
         "SDK"
     ],
     "icon_path": "preview.png",
-    "requirements": "",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/aws/aws-core/",
-    "dependencies": []
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/aws/aws-core/"
 }

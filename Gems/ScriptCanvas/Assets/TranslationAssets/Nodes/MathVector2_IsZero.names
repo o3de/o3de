@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "{A8F6E886-BFCC-5546-8516-1564C1A56D18}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "IsZero",
+                "category": "Math/Vector2",
+                "tooltip": "returns true if A is within tolerance of the zero vector, else false",
+                "subtitle": "Vector2"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector2: Source",
+                    "details": {
+                        "name": "Vector2: Source"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Tolerance",
+                    "details": {
+                        "name": "Number: Tolerance"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Boolean",
+                    "details": {
+                        "name": "Result: Boolean"
+                    }
+                }
+            ]
+        }
+    ]
+}

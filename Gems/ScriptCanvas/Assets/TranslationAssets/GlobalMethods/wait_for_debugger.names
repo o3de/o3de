@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "wait_for_debugger",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "wait_for_debugger",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke wait_for_debugger"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after wait_for_debugger is invoked"
+                    },
+                    "details": {
+                        "name": "wait_for_debugger",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

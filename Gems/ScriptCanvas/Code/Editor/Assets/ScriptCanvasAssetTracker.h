@@ -61,6 +61,7 @@ namespace ScriptCanvasEditor
         void CreateView(AZ::Data::AssetId assetId, QWidget* parent) override;
         void ClearView(AZ::Data::AssetId assetId) override;
         void UntrackAsset(AZ::Data::AssetId assetId) override;
+        void RefreshAll() override;
 
         // Getters
 

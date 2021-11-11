@@ -48,6 +48,12 @@ namespace EMStudio
             CreateViewOptionEntry(contextMenu, "Joint Orientations", EMotionFX::ActorRenderFlag::RENDER_NODEORIENTATION);
             CreateViewOptionEntry(contextMenu, "Actor Bind Pose", EMotionFX::ActorRenderFlag::RENDER_ACTORBINDPOSE);
             contextMenu->addSeparator();
+            CreateViewOptionEntry(contextMenu, "Hit Detection Colliders", EMotionFX::ActorRenderFlag::RENDER_HITDETECTION_COLLIDERS);
+            CreateViewOptionEntry(contextMenu, "Ragdoll Colliders", EMotionFX::ActorRenderFlag::RENDER_RAGDOLL_COLLIDERS);
+            CreateViewOptionEntry(contextMenu, "Ragdoll Joint Limits", EMotionFX::ActorRenderFlag::RENDER_RAGDOLL_JOINTLIMITS);
+            CreateViewOptionEntry(contextMenu, "Cloth Colliders", EMotionFX::ActorRenderFlag::RENDER_CLOTH_COLLIDERS);
+            CreateViewOptionEntry(contextMenu, "Simulated Object Colliders", EMotionFX::ActorRenderFlag::RENDER_SIMULATEDOBJECT_COLLIDERS);
+            CreateViewOptionEntry(contextMenu, "Simulated Joints", EMotionFX::ActorRenderFlag::RENDER_SIMULATEJOINTS);
         }
 
         // Add the camera button

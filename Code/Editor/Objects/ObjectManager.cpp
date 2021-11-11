@@ -1488,11 +1488,7 @@ bool CObjectManager::HitTestObject(CBaseObject* obj, HitContext& hc)
     if (!bSelectionHelperHit)
     {
         // Fast checking.
-        if (hc.camera && !obj->IsInCameraView(*hc.camera))
-        {
-            return false;
-        }
-        else if (hc.bounds && !obj->IntersectRectBounds(*hc.bounds))
+        if (hc.bounds && !obj->IntersectRectBounds(*hc.bounds))
         {
             return false;
         }

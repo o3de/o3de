@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "BlendFactor_Zero",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "BlendFactor_Zero::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

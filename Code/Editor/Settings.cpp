@@ -112,8 +112,6 @@ SEditorSettings::SEditorSettings()
     m_showCircularDependencyError = true;
     bAutoloadLastLevelAtStartup = false;
     bMuteAudio = false;
-    bEnableGameModeVR = false;
-
 
     objectHideMask = 0;
     objectSelectMask = 0xFFFFFFFF; // Initially all selectable.

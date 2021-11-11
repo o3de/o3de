@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "PhotometricUnit_Ev100_Illuminance",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "PhotometricUnit_Ev100_Illuminance::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

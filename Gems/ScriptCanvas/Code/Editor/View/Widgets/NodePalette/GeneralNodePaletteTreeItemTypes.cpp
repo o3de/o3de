@@ -82,16 +82,17 @@ namespace ScriptCanvasEditor
         , m_isOverload(isOverload)
         , m_propertyStatus(propertyStatus)
     {
-        AZStd::string displayMethodName = TranslationHelper::GetKeyTranslation(TranslationContextGroup::ClassMethod, m_className.toUtf8().data(), m_methodName.toUtf8().data(), TranslationItemType::Node, TranslationKeyId::Name);
+        GraphCanvas::TranslationKey key;
+        key << "BehaviorClass" << className << "methods" << methodName << "details";
 
-        if (displayMethodName.empty())
-        {
-            SetName(m_methodName);
-        }
-        else
-        {
-            SetName(displayMethodName.c_str());
-        }
+        GraphCanvas::TranslationRequests::Details details;
+        details.m_name = methodName;
+        details.m_subtitle = className;
+
+        GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+
+        SetName(details.m_name.c_str());
+        SetToolTip(details.m_tooltip.c_str());
 
         if (propertyStatus == ScriptCanvas::PropertyStatus::Getter)
         {
@@ -100,13 +101,6 @@ namespace ScriptCanvasEditor
         else if (propertyStatus == ScriptCanvas::PropertyStatus::Setter)
         {
             SetName(AZStd::string::format("Set %s", GetName().toUtf8().data()).data());
-        }
-
-        AZStd::string displayEventTooltip = TranslationHelper::GetKeyTranslation(TranslationContextGroup::ClassMethod, m_className.toUtf8().data(), m_methodName.toUtf8().data(), TranslationItemType::Node, TranslationKeyId::Tooltip);
-
-        if (!displayEventTooltip.empty())
-        {
-            SetToolTip(displayEventTooltip.c_str());
         }
 
         SetTitlePalette("MethodNodeTitlePalette");
@@ -230,9 +224,10 @@ namespace ScriptCanvasEditor
     // CustomNodePaletteTreeItem
     //////////////////////////////
 
-    CustomNodePaletteTreeItem::CustomNodePaletteTreeItem(const AZ::Uuid& typeId, AZStd::string_view nodeName)
-        : DraggableNodePaletteTreeItem(nodeName, ScriptCanvasEditor::AssetEditorId)
-        , m_typeId(typeId)
+    CustomNodePaletteTreeItem::CustomNodePaletteTreeItem(const ScriptCanvasEditor::CustomNodeModelInformation& info)
+        : DraggableNodePaletteTreeItem(info.m_displayName, ScriptCanvasEditor::AssetEditorId)
+        , m_info(info)
+        , m_typeId(info.m_typeId)
     {
     }
 

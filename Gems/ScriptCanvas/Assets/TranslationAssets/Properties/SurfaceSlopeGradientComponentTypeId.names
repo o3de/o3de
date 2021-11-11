@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "SurfaceSlopeGradientComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "SurfaceSlopeGradientComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

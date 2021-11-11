@@ -1,0 +1,324 @@
+{
+    "entries": [
+        {
+            "key": "AuthenticationProviderRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "AuthenticationProviderRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "SignOut",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SignOut"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SignOut is invoked"
+                    },
+                    "details": {
+                        "name": "SignOut"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DeviceCodeGrantConfirmSignInAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DeviceCodeGrantConfirmSignInAsync"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DeviceCodeGrantConfirmSignInAsync is invoked"
+                    },
+                    "details": {
+                        "name": "DeviceCodeGrantConfirmSignInAsync"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DeviceCodeGrantSignInAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DeviceCodeGrantSignInAsync"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DeviceCodeGrantSignInAsync is invoked"
+                    },
+                    "details": {
+                        "name": "DeviceCodeGrantSignInAsync"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "PasswordGrantMultiFactorSignInAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke PasswordGrantMultiFactorSignInAsync"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after PasswordGrantMultiFactorSignInAsync is invoked"
+                    },
+                    "details": {
+                        "name": "PasswordGrantMultiFactorSignInAsync"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetAuthenticationTokens",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetAuthenticationTokens"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetAuthenticationTokens is invoked"
+                    },
+                    "details": {
+                        "name": "GetAuthenticationTokens"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{F965D1B2-9DE3-4900-B44B-E58D9F083ACB}",
+                            "details": {
+                                "name": "AuthenticationTokens"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTokensWithRefreshAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTokensWithRefreshAsync"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTokensWithRefreshAsync is invoked"
+                    },
+                    "details": {
+                        "name": "GetTokensWithRefreshAsync"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsSignedIn",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsSignedIn"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsSignedIn is invoked"
+                    },
+                    "details": {
+                        "name": "IsSignedIn"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "PasswordGrantSingleFactorSignInAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke PasswordGrantSingleFactorSignInAsync"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after PasswordGrantSingleFactorSignInAsync is invoked"
+                    },
+                    "details": {
+                        "name": "PasswordGrantSingleFactorSignInAsync"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RefreshTokensAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RefreshTokensAsync"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RefreshTokensAsync is invoked"
+                    },
+                    "details": {
+                        "name": "RefreshTokensAsync"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Initialize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Initialize"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Initialize is invoked"
+                    },
+                    "details": {
+                        "name": "Initialize"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "PasswordGrantMultiFactorConfirmSignInAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke PasswordGrantMultiFactorConfirmSignInAsync"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after PasswordGrantMultiFactorConfirmSignInAsync is invoked"
+                    },
+                    "details": {
+                        "name": "PasswordGrantMultiFactorConfirmSignInAsync"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{36E2943D-23B3-5CBA-A7EC-AA51288075AA}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "IsFinite",
+                "category": "Math/Matrix3x3",
+                "tooltip": "returns true if all numbers in matrix is finite",
+                "subtitle": "Matrix3x3"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Matrix3x3: Source",
+                    "details": {
+                        "name": "Matrix3x3: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Boolean",
+                    "details": {
+                        "name": "Result: Boolean"
+                    }
+                }
+            ]
+        }
+    ]
+}

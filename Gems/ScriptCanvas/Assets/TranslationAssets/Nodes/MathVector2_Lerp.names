@@ -1,0 +1,53 @@
+{
+    "entries": [
+        {
+            "key": "{978B5227-CE5B-501A-8EA8-54DE40DFF558}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Lerp",
+                "category": "Math/Vector2",
+                "tooltip": "returns the linear interpolation (From + ((To - From) * T)",
+                "subtitle": "Vector2"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector2: From",
+                    "details": {
+                        "name": "Vector2: From"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector2: To",
+                    "details": {
+                        "name": "Vector2: To"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: T",
+                    "details": {
+                        "name": "Number: T"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Vector2",
+                    "details": {
+                        "name": "Result: Vector2"
+                    }
+                }
+            ]
+        }
+    ]
+}

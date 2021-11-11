@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "SpawnerConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "SpawnerConfig"
+            }
+        }
+    ]
+}

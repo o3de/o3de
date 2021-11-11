@@ -41,6 +41,10 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_DisplayMapperAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_DisplayMapperAdded as test_module
 
+    @pytest.mark.test_case_id("C36525661")
+    class AtomEditorComponents_EntityReferenceAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_EntityReferenceAdded as test_module
+
     @pytest.mark.test_case_id("C32078121")
     class AtomEditorComponents_ExposureControlAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_ExposureControlAdded as test_module
@@ -97,6 +101,10 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C32078128")
     class AtomEditorComponents_ReflectionProbeAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_ReflectionProbeAdded as test_module
+
+    @pytest.mark.test_case_id("C36525666")
+    class AtomEditorComponents_SSAOAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_SSAOAdded as test_module
 
     class ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges(EditorSharedTest):
         from Atom.tests import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module

@@ -1,0 +1,414 @@
+{
+    "entries": [
+        {
+            "key": "MeshData",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "MeshData"
+            },
+            "methods": [
+                {
+                    "key": "GetVertexIndex",
+                    "context": "MeshData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetVertexIndex"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetVertexIndex is invoked"
+                    },
+                    "details": {
+                        "name": "MeshData::GetVertexIndex",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
+                            "details": {
+                                "name": "MeshData*"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPosition",
+                    "context": "MeshData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPosition"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPosition is invoked"
+                    },
+                    "details": {
+                        "name": "MeshData::GetPosition",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
+                            "details": {
+                                "name": "MeshData*"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetFaceInfo",
+                    "context": "MeshData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFaceInfo"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFaceInfo is invoked"
+                    },
+                    "details": {
+                        "name": "MeshData::GetFaceInfo",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
+                            "details": {
+                                "name": "MeshData*"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{F9F49C1A-014F-46F5-A46F-B56D8CB46C2B}",
+                            "details": {
+                                "name": "const AZ::SceneAPI::DataTypes::IMeshData::Face&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "HasNormalData",
+                    "context": "MeshData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke HasNormalData"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after HasNormalData is invoked"
+                    },
+                    "details": {
+                        "name": "MeshData::HasNormalData",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
+                            "details": {
+                                "name": "MeshData*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNormal",
+                    "context": "MeshData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNormal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNormal is invoked"
+                    },
+                    "details": {
+                        "name": "MeshData::GetNormal",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
+                            "details": {
+                                "name": "MeshData*"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetUsedPointIndexForControlPoint",
+                    "context": "MeshData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetUsedPointIndexForControlPoint"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetUsedPointIndexForControlPoint is invoked"
+                    },
+                    "details": {
+                        "name": "MeshData::GetUsedPointIndexForControlPoint",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
+                            "details": {
+                                "name": "MeshData*"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetVertexCount",
+                    "context": "MeshData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetVertexCount"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetVertexCount is invoked"
+                    },
+                    "details": {
+                        "name": "MeshData::GetVertexCount",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
+                            "details": {
+                                "name": "MeshData*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetFaceCount",
+                    "context": "MeshData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFaceCount"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFaceCount is invoked"
+                    },
+                    "details": {
+                        "name": "MeshData::GetFaceCount",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
+                            "details": {
+                                "name": "MeshData*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetUsedControlPointCount",
+                    "context": "MeshData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetUsedControlPointCount"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetUsedControlPointCount is invoked"
+                    },
+                    "details": {
+                        "name": "MeshData::GetUsedControlPointCount",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
+                            "details": {
+                                "name": "MeshData*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetFaceMaterialId",
+                    "context": "MeshData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFaceMaterialId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFaceMaterialId is invoked"
+                    },
+                    "details": {
+                        "name": "MeshData::GetFaceMaterialId",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
+                            "details": {
+                                "name": "MeshData*"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetControlPointIndex",
+                    "context": "MeshData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetControlPointIndex"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetControlPointIndex is invoked"
+                    },
+                    "details": {
+                        "name": "MeshData::GetControlPointIndex",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
+                            "details": {
+                                "name": "MeshData*"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

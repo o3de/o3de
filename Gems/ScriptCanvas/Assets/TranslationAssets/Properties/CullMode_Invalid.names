@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "CullMode_Invalid",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "CullMode_Invalid::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

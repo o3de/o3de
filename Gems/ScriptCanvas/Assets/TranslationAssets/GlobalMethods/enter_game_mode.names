@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "enter_game_mode",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "enter_game_mode",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke enter_game_mode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after enter_game_mode is invoked"
+                    },
+                    "details": {
+                        "name": "enter_game_mode",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

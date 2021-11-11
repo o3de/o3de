@@ -36,12 +36,9 @@ set(FILES
     ITexture.h
     ITimer.h
     IValidator.h
-    IViewSystem.h
     IWindowMessageHandler.h
     IXml.h
     MicrophoneBus.h
-    HMDBus.h
-    VRCommon.h
     INavigationSystem.h
     IMNM.h
     SerializationTypes.h
@@ -81,7 +78,6 @@ set(FILES
     Cry_Matrix34.h
     Cry_Matrix44.h
     Cry_Vector4.h
-    Cry_Camera.h
     Cry_Color.h
     Cry_Geo.h
     Cry_GeoDistance.h
@@ -100,8 +96,6 @@ set(FILES
     CryAssert_iOS.h
     CryAssert_Linux.h
     CryAssert_Mac.h
-    CryLibrary.cpp
-    CryLibrary.h
     Linux32Specific.h
     Linux64Specific.h
     Linux_Win32Wrapper.h

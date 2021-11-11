@@ -1,0 +1,109 @@
+{
+    "entries": [
+        {
+            "key": "AudioListenerComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "AudioListenerComponentRequestBus",
+                "category": "Audio"
+            },
+            "methods": [
+                {
+                    "key": "SetRotationEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Rotation Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Rotation Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Rotation Entity",
+                        "tooltip": "Specify the entity with the rotational part of the transform that the audio listener will adopt."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "The entity to use for the rotational part of the transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPositionEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Position Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Position Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Position Entity",
+                        "tooltip": "Specify the entity with the positional part of the transform that the audio listener will adopt."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "The entity to use for the positional part of the transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetFullTransformEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Full Transform Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Full Transform Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Full Transform Entity",
+                        "tooltip": "Specify the entity with the full transform that the audio listener will adopt"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "Entity to use for the transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetListenerEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetListenerEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetListenerEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "SetListenerEnabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "PhotometricUnit_Candela",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "PhotometricUnit_Candela::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}
