@@ -89,7 +89,6 @@ protected:
     AZ::SerializeContext* GetSerializeContext() override { return m_serializeContext; }
     AZ::BehaviorContext*  GetBehaviorContext() override { return nullptr; }
     AZ::JsonRegistrationContext* GetJsonRegistrationContext() override { return nullptr; }
-    const char* GetAppRoot() const override { return nullptr; }
     const char* GetEngineRoot() const override { return nullptr; }
     const char* GetExecutableFolder() const override { return nullptr; }
     void EnumerateEntities(const AZ::ComponentApplicationRequests::EntityCallback& /*callback*/) override {}

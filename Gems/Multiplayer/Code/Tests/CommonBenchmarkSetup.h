@@ -41,7 +41,6 @@ namespace Multiplayer
         AZ::SerializeContext* GetSerializeContext() override { return {}; }
         AZ::BehaviorContext* GetBehaviorContext() override { return {}; }
         AZ::JsonRegistrationContext* GetJsonRegistrationContext() override { return {}; }
-        const char* GetAppRoot() const override { return {}; }
         const char* GetEngineRoot() const override { return {}; }
         const char* GetExecutableFolder() const override { return {}; }
         void QueryApplicationType([[maybe_unused]] AZ::ApplicationTypeQuery& appType) const override {}
