@@ -13,6 +13,8 @@ class Tests():
     create_entity              = ("Created test entity",                          "Failed to create test entity")
     character_controller_added = ("Added PhysX Character Controller component",   "Failed to add PhysX Character Controller component")
     character_gameplay_added   = ("Added PhysX Character Gameplay component",     "Failed to add PhysX Character Gameplay component")
+    enter_game_mode            = ("Entered game mode",                            "Failed to enter game mode")
+    exit_game_mode             = ("Exited game mode",                             "Failed to exit game mode")
     character_motion_smooth    = ("Character motion passed smoothness threshold", "Failed to meet smoothness threshold for character motion")
 # fmt: on
 
@@ -50,7 +52,7 @@ def Tick_CharacterGameplayComponentMotionIsSmooth():
 
     helper.init_idle()
     # 1) Load the empty level
-    helper.open_level("Physics", "Base")
+    helper.open_level("", "Base")
 
     # 2) Create an entity
     test_entity = Entity.create_editor_entity("test_entity")
@@ -68,14 +70,14 @@ def Tick_CharacterGameplayComponentMotionIsSmooth():
     # 4) Enter game mode and collect data for the rigid body's z co-ordinate and the time values for a series of frames
     t = []
     z = []
-    general.enter_game_mode()
+    helper.enter_game_mode(Tests.enter_game_mode)
     general.idle_wait_frames(1)
     game_entity_id = general.find_game_entity("test_entity")
-    for timestep in range(100):
+    for frame in range(100):
         t.append(azlmbr.components.TickRequestBus(azlmbr.bus.Broadcast, "GetTimeAtCurrentTick").GetSeconds())
         z.append(azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldZ", game_entity_id))
         general.idle_wait_frames(1)
-    general.exit_game_mode()
+    helper.exit_game_mode(Tests.exit_game_mode)
 
     # 5) Test that the z vs t curve is sufficiently smooth (if the interpolation is not working well, the curve will be less smooth)
     # normalize the t and z data
