@@ -3,13 +3,13 @@
 
     // PLATFORM DEFINITIONS
     // [Platform (unique identifier)]
-    // tags=(comma-seperated-tags)
+    // tags=(comma-separated-tags)
     //
     // note:  the 'identifier' of a platform is the word(s) following the "Platform" keyword (so [Platform pc] means identifier
     //        is 'pc' for example.  This is used to name its assets folder in the cache and should be used in your bootstrap.cfg
     //        or your main.cpp to choose what assets to load for that particular platform.
     //        Its primary use is to enable additional non-host platforms (Ios, android...) that are not the current platform.
-    // note:  'tags' is a comma-seperated list of tags to tag the platform with that builders can inspect to decide what to do.
+    // note:  'tags' is a comma-separated list of tags to tag the platform with that builders can inspect to decide what to do.
 
     // while builders can accept any tags you add in order to make decisions, common tags are
     // tools - this platform can host the tools and editor and such
@@ -68,7 +68,7 @@
                 // metadata extension=original extension to replace
                 // if the metadata extension does not replace the original, then the original can be blank
                 // so for example if your normal file is blah.tif and your metafile for that file is blah.tif.exportsettings
-                // then your declaration would be exportsettings=   ; ie, it would be blank
+                // then your declaration would be exportsettings=   ; i.e., it would be blank
                 // however if your metafile REPLACES the extension (for example, if you have the file blah.i_caf and its metafile is blah.exportsettings)
                 // then you specify the original extension here to narrow the scope.
                 // If a relative path to a specific file is provided instead of an extension, a change to the file will change all files
@@ -87,24 +87,60 @@
                 // available macros are 
                 // @ROOT@ - the location of asset root
                 // @PROJECTROOT@ - the location of the project root, for example 'Q:\MyProjects\RPGSample' 
-                // note that they are sorted by their 'order' value, and the lower the order the more important an asset is
-                // lower order numbers override higher ones.
+                // @PROJECTNAME@ - the name of the project, for example with 'Q:\MyProjects\RPGSample' the project name is 'RPGSample'
+                // @ENGINEROOT@ - the location of the engine root, for example 'Q:\o3de'
+                //
+                // Note that the ScanFolder entries are sorted by their 'order' value where the lower order numbers override higher ones.
+                //
                 // If specified, output will be prepended to every path found in that recognizer's watch folder.
+                //
                 // Note that you can also make the scan folder platform specific by using the keywords include and exclude.
+                //
                 // Both include and exclude can contain either platform tags, platform identifiers or both.
                 // if no include is specified, all currently enabled platforms are included by default.
                 // If includes ARE specified, it will be filtered down by the list of currently enabled platforms. 
                 // "ScanFolder (unique identifier)": {
-                //  "include": "(comma seperated platform tags or identifiers)",
-                //  "exclude": "(comma seperated platform tags or identifiers)"
+                //    "watch": "(the relative path to scan for source assets)",
+                //    "display": "(how to display this scan folder in UX)",
+                //    "order": (some number where lower is more important),
+                //    "recursive": (0 to only scan this folder, 1 to scan other children folders),
+                //    "include": "(comma separated platform tags or identifiers)",
+                //    "exclude": "(comma separated platform tags or identifiers)"
                 // }
                 // For example if you want to include a scan folder only for platforms that have the platform tags tools and renderer 
-                // but omit it for platform mac, you will have a scanfolder rule like
+                // but omit it for platform mac, you will have a scan folder rule like
                 // "ScanFolder (unique identifier)": {
-                // "watch": "@ROOT@/foo",
-                // "include": "tools, renderer",
-                // "exclude": "mac"
+                //   "watch": "@ROOT@/foo",
+                //   "include": "tools, renderer",
+                //   "exclude": "mac"
                 // }
+                //
+                // If the source assets need to be separated by platform, then the root project folder should place the assets in 
+                // separate folders then exclude the other platforms in those scan folders. For example if the target asset platforms 
+                // are Windows-PC, Android, and iOS this could be the layout of the scan folders:
+                //"ScanFolder Project/Assets/Shared": {
+                //    "watch": "@PROJECTROOT@/Shared",
+                //    "display": "@PROJECTNAME@/Shared",
+                //    "recursive": 1
+                //},
+                //"ScanFolder Project/Assets/Windows": {
+                //    "watch": "@PROJECTROOT@/Windows",
+                //    "display": "@PROJECTNAME@/Windows",
+                //    "recursive": 1,
+                //    "exclude": "ios,android"
+                //},
+                //"ScanFolder Project/Assets/Android": {
+                //    "watch": "@PROJECTROOT@/Android",
+                //    "display": "@PROJECTNAME@/Android",
+                //    "recursive": 1,
+                //    "exclude": "ios,pc"
+                //},
+                //"ScanFolder Project/Assets/iOS": {
+                //    "watch": "@PROJECTROOT@/iOS",
+                //    "display": "@PROJECTNAME@/iOS",
+                //    "recursive": 1,
+                //    "exclude": "pc,android"
+                //},
 
                 "ScanFolder Project/Assets": {
                     "watch": "@PROJECTROOT@",
