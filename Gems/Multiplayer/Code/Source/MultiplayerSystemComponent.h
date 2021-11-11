@@ -155,7 +155,6 @@ namespace Multiplayer
         AZ_CONSOLEFUNC(MultiplayerSystemComponent, DumpStats, AZ::ConsoleFunctorFlags::Null, "Dumps stats for the current multiplayer session");
 
         AzNetworking::INetworkInterface* m_networkInterface = nullptr;
-        AzNetworking::INetworkInterface* m_networkEditorInterface = nullptr;
         AZ::ConsoleCommandInvokedEvent::Handler m_consoleCommandHandler;
         AZ::ThreadSafeDeque<AZStd::string> m_cvarCommands;
 

@@ -2,6 +2,7 @@
     "gem_name": "Atom",
     "display_name": "Atom Renderer",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Atom Renderer Gem provides Atom Renderer and its associated tools (such as Material Editor), utilites, libraries, and interfaces.",

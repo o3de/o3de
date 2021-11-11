@@ -115,7 +115,7 @@ class AtomComponentProperties:
         return properties[property]
 
     @staticmethod
-    def diffuse_probe(property: str = 'name') -> str:
+    def diffuse_probe_grid(property: str = 'name') -> str:
         """
         Diffuse Probe Grid component properties. Requires one of 'shapes'.
           - 'shapes' a list of supported shapes as component names.

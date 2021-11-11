@@ -30,7 +30,6 @@
 #define SYSTEMINIT_CPP_SECTION_17 17
 #endif
 
-#include "CryLibrary.h"
 #include "CryPath.h"
 
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
@@ -1185,12 +1184,6 @@ AZ_POP_DISABLE_WARNING
 #endif
 
     InlineInitializationProcessing("CSystem::Init End");
-
-    if (gEnv->IsDedicated())
-    {
-        SCVarsClientConfigSink CVarsClientConfigSink;
-        LoadConfiguration("client.cfg", &CVarsClientConfigSink);
-    }
 
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);

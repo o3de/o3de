@@ -231,7 +231,7 @@ namespace AZ
 
         void ImageAttachmentPreviewPass::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
-            Data::Asset<ShaderAsset> shaderAsset = { asset.GetAs<ShaderAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+            Data::Asset<ShaderAsset> shaderAsset = Data::static_pointer_cast<ShaderAsset>(asset);
             if (shaderAsset)
             {
                 m_needsShaderLoad = true;

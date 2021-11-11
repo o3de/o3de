@@ -9,12 +9,9 @@
 #pragma once
 
 #include <Source/AutoGen/MultiplayerEditor.AutoPacketDispatcher.h>
-
-#include <AzCore/Console/IConsole.h>
-#include <AzCore/Console/ILogger.h>
 #include <AzCore/IO/ByteContainerStream.h>
-#include <AzCore/std/string/string.h>
 #include <AzNetworking/ConnectionLayer/IConnectionListener.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 namespace AzNetworking
 {
@@ -51,5 +48,6 @@ namespace Multiplayer
         AZStd::vector<uint8_t> m_buffer;
         AZ::IO::ByteContainerStream<AZStd::vector<uint8_t>> m_byteStream;
         mutable bool m_isActivated = false;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_componentApplicationLifecycleHandler;
     };
 }

@@ -431,7 +431,12 @@ namespace AZ
         {
             // load shader
             shader = RPI::LoadCriticalShader(filePath);
-            AZ_Error("ReflectionProbeFeatureProcessor", shader, "Failed to find asset for shader [%s]", filePath);
+
+            if (shader == nullptr)
+            {
+                AZ_Error("ReflectionProbeFeatureProcessor", false, "Failed to find asset for shader [%s]", filePath);
+                return;
+            }
 
             // store drawlist tag
             drawListTag = shader->GetDrawListTag();

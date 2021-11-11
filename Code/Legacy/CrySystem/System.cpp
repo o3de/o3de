@@ -16,7 +16,6 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/SystemFile.h>
-#include "CryLibrary.h"
 #include <CryPath.h>
 #include <CrySystemBus.h>
 #include <CryCommon/IFont.h>

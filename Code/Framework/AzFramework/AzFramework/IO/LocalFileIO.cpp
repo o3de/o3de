@@ -635,6 +635,7 @@ namespace AZ
             size_t longestMatch = 0;
             size_t bufStringLength = inBuffer.size();
             AZStd::string_view longestAlias;
+            AZStd::string_view longestResolvedAlias;
 
             for (const auto& [alias, resolvedAlias] : m_aliases)
             {
@@ -653,6 +654,7 @@ namespace AZ
                     {
                         longestMatch = resolvedAlias.size();
                         longestAlias = alias;
+                        longestResolvedAlias = resolvedAlias;
                     }
                 }
             }
@@ -661,7 +663,10 @@ namespace AZ
                 // rearrange the buffer to have
                 // [alias][old path]
                 size_t aliasSize = longestAlias.size();
-                size_t charsToAbsorb = longestMatch;
+                // If the resolved alias ends in a path separator, do not consume it.
+                const bool resolvedAliasEndsInPathSeparator = (longestResolvedAlias.ends_with(AZ::IO::PosixPathSeparator) ||
+                                                               longestResolvedAlias.ends_with(AZ::IO::WindowsPathSeparator));
+                const size_t charsToAbsorb = resolvedAliasEndsInPathSeparator ? longestMatch - 1 : longestMatch;
                 size_t remainingData = bufStringLength - charsToAbsorb;
                 size_t finalStringSize = aliasSize + remainingData;
                 if (finalStringSize >= outBufferLength)

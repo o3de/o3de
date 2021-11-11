@@ -145,7 +145,7 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                tagContainer->Update(ConvertFromModelIndices(tagIndices));
+                tagContainer->Update(GetTagsFromModelIndices(tagIndices));
                 label->setText(QString("%1 %2").arg(tagIndices.size()).arg(tagIndices.size() == 1 ? singularTitle : pluralTitle));
                 widget->show();
             }
@@ -234,17 +234,23 @@ namespace O3DE::ProjectManager
                 for (int downloadingGemNumber = 0; downloadingGemNumber < downloadQueue.size(); ++downloadingGemNumber)
                 {
                     QHBoxLayout* nameProgressLayout = new QHBoxLayout();
-                    TagWidget* newTag = new TagWidget(downloadQueue[downloadingGemNumber]);
+
+                    const QString& gemName = downloadQueue[downloadingGemNumber];
+                    TagWidget* newTag = new TagWidget({gemName, gemName});
                     nameProgressLayout->addWidget(newTag);
+
                     QLabel* progress = new QLabel(downloadingGemNumber == 0? QString("%1%").arg(downloadProgress) : tr("Queued"));
                     nameProgressLayout->addWidget(progress);
+
                     QSpacerItem* spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
                     nameProgressLayout->addSpacerItem(spacer);
-                    QLabel* cancelText = new QLabel(QString("<a href=\"%1\">Cancel</a>").arg(downloadQueue[downloadingGemNumber]));
+
+                    QLabel* cancelText = new QLabel(QString("<a href=\"%1\">Cancel</a>").arg(gemName));
                     cancelText->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
                     connect(cancelText, &QLabel::linkActivated, this, &CartOverlayWidget::OnCancelDownloadActivated);
                     nameProgressLayout->addWidget(cancelText);
                     downloadingItemLayout->addLayout(nameProgressLayout);
+
                     QProgressBar* downloadProgessBar = new QProgressBar();
                     downloadingItemLayout->addWidget(downloadProgessBar);
                     downloadProgessBar->setValue(downloadingGemNumber == 0 ? downloadProgress : 0);
@@ -255,7 +261,7 @@ namespace O3DE::ProjectManager
             }
         };
 
-        auto downloadEnded = [=](bool /*success*/)
+        auto downloadEnded = [=](const QString& /*gemName*/, bool /*success*/)
         {
             update(0); // update the list to remove the gem that has finished
         };
@@ -265,15 +271,15 @@ namespace O3DE::ProjectManager
         update(0);
     }
 
-    QStringList CartOverlayWidget::ConvertFromModelIndices(const QVector<QModelIndex>& gems) const
+    QVector<Tag> CartOverlayWidget::GetTagsFromModelIndices(const QVector<QModelIndex>& gems) const
     {
-        QStringList gemNames;
-        gemNames.reserve(gems.size());
+        QVector<Tag> tags;
+        tags.reserve(gems.size());
         for (const QModelIndex& modelIndex : gems)
         {
-            gemNames.push_back(GemModel::GetDisplayName(modelIndex));
+            tags.push_back({ GemModel::GetDisplayName(modelIndex), GemModel::GetName(modelIndex) });
         }
-        return gemNames;
+        return tags;
     }
 
     CartButton::CartButton(GemModel* gemModel, DownloadController* downloadController, QWidget* parent)
