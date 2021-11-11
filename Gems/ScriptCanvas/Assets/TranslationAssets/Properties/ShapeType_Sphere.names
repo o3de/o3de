@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ShapeType_Sphere",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ShapeType_Sphere::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

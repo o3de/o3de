@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiEmitShape_Point",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiEmitShape_Point::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

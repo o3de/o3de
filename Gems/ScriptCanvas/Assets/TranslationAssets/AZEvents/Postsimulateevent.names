@@ -1,0 +1,56 @@
+{
+    "entries": [
+        {
+            "key": "Postsimulate event",
+            "context": "AZEventHandler",
+            "variant": "",
+            "details": {
+                "name": "Postsimulate event"
+            },
+            "slots": [
+                {
+                    "key": "Tick time",
+                    "details": {
+                        "name": "Tick time"
+                    }
+                },
+                {
+                    "key": "Postsimulate event",
+                    "details": {
+                        "name": "Postsimulate event"
+                    }
+                },
+                {
+                    "key": "Connect",
+                    "details": {
+                        "name": "Connect"
+                    }
+                },
+                {
+                    "key": "Disconnect",
+                    "details": {
+                        "name": "Disconnect"
+                    }
+                },
+                {
+                    "key": "On Connected",
+                    "details": {
+                        "name": "On Connected"
+                    }
+                },
+                {
+                    "key": "On Disconnected",
+                    "details": {
+                        "name": "On Disconnected"
+                    }
+                },
+                {
+                    "key": "OnEvent",
+                    "details": {
+                        "name": "OnEvent"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{46EE9F31-DDE1-5482-9A03-A0D4A6BE429C}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "SurfaceArea",
+                "category": "Math/AABB",
+                "tooltip": "returns the sum of the surface area of all six faces of Source",
+                "subtitle": "AABB"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_AABB: Source",
+                    "details": {
+                        "name": "AABB: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Number",
+                    "details": {
+                        "name": "Result: Number"
+                    }
+                }
+            ]
+        }
+    ]
+}

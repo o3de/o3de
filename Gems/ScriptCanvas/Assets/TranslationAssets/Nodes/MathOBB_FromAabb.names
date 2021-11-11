@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{25B5779B-C1A0-5963-8F5F-1A7C59F675CD}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "FromAabb",
+                "category": "Math/OBB",
+                "tooltip": "converts the Source to an OBB",
+                "subtitle": "OBB"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_AABB: Source",
+                    "details": {
+                        "name": "AABB: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: OBB",
+                    "details": {
+                        "name": "Result: OBB"
+                    }
+                }
+            ]
+        }
+    ]
+}

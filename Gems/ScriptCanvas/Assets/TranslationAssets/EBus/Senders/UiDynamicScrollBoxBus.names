@@ -1,0 +1,758 @@
+{
+    "entries": [
+        {
+            "key": "UiDynamicScrollBoxBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiDynamicScrollBoxBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "SetSectionsEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Sections Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Sections Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Sections Enabled",
+                        "tooltip": "Set whether the list is divided into sections with headers"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Sections Enabled",
+                                "tooltip": "Whether the list is divided into sections with headers"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEstimatedVariableElementSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Estimated Variable Element Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Estimated Variable Element Size is invoked"
+                    },
+                    "details": {
+                        "name": "Get Estimated Variable Element Size",
+                        "tooltip": "Get the estimated size for the variable elements. If set to 0, then element sizes are calculated up front rather than when becoming visible"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetAutoCalculateVariableElementSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Auto-calculate Variable Element Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Auto-calculate Variable Element Size is invoked"
+                    },
+                    "details": {
+                        "name": "Set Auto-calculate Variable Element Size",
+                        "tooltip": "Set whether to auto-calculate the elements when they vary in size"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Auto-calculate",
+                                "tooltip": "Whether to auto-calculate the elements when they vary in size"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEstimatedVariableHeaderSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Estimated Variable Header Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Estimated Variable Header Size is invoked"
+                    },
+                    "details": {
+                        "name": "Get Estimated Variable Header Size",
+                        "tooltip": "Get the estimated size for the variable headers. If set to 0, then header sizes are calculated up front rather than when becoming visible"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEstimatedVariableHeaderSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Estimated Variable Header Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Estimated Variable Header Size is invoked"
+                    },
+                    "details": {
+                        "name": "Set Estimated Variable Header Size",
+                        "tooltip": "Set the estimated size for the variable headers. If set to 0, then header sizes are calculated up front rather than when becoming visible"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Estimated Size",
+                                "tooltip": "The estimated size for the variable headers"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPrototypeElement",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Prototype Element"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Prototype Element is invoked"
+                    },
+                    "details": {
+                        "name": "Set Prototype Element",
+                        "tooltip": "Set the prototype entity used for the elements"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Prototype Element",
+                                "tooltip": "The prototype entity used for the elements"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetElementsVaryInSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Elements Vary In Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Elements Vary In Size is invoked"
+                    },
+                    "details": {
+                        "name": "Set Elements Vary In Size",
+                        "tooltip": "Set whether the elements vary in size"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Elements Vary In Size",
+                                "tooltip": "Whether the elements vary in size"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RemoveElementsFromFront",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Remove Elements From Front"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Remove Elements From Front is invoked"
+                    },
+                    "details": {
+                        "name": "Remove Elements From Front",
+                        "tooltip": "Remove elements from the front of the list"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Number To Remove",
+                                "tooltip": "The number of elements to remove from the front"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetElementIndexOfChild",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Element Index Of Child"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Element Index Of Child is invoked"
+                    },
+                    "details": {
+                        "name": "Get Element Index Of Child",
+                        "tooltip": "Get the element index of the specified child element. Returns -1 if not found."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Child EntityID",
+                                "tooltip": "The child"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int",
+                                "tooltip": "The child"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetElementsVaryInSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Elements Vary In Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Elements Vary In Size is invoked"
+                    },
+                    "details": {
+                        "name": "Get Elements Vary In Size",
+                        "tooltip": "Get whether the elements vary in size"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetHeadersSticky",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Headers Sticky"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Headers Sticky is invoked"
+                    },
+                    "details": {
+                        "name": "Get Headers Sticky",
+                        "tooltip": "Get whether headers stick to the beginning of the visible list area"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetAutoRefreshOnPostActivate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Auto-refresh On Post-activate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Auto-refresh On Post-activate is invoked"
+                    },
+                    "details": {
+                        "name": "Get Auto-refresh On Post-activate",
+                        "tooltip": "Get whether the list should automatically prepare and refresh its content post activation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEstimatedVariableElementSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Estimated Variable Element Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Estimated Variable Element Size is invoked"
+                    },
+                    "details": {
+                        "name": "Set Estimated Variable Element Size",
+                        "tooltip": "Set the estimated size for the variable elements. If set to 0, then element sizes are calculated up front rather than when becoming visible"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Estimated Size",
+                                "tooltip": "The estimated size for the variable elements"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPrototypeHeader",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Prototype Header"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Prototype Header is invoked"
+                    },
+                    "details": {
+                        "name": "Set Prototype Header",
+                        "tooltip": "Set the prototype entity used for the headers"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Prototype Header",
+                                "tooltip": "The prototype entity used for the headers"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSectionsEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Sections Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Sections Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Get Sections Enabled",
+                        "tooltip": "Get whether the list is divided into sections with headers"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ScrollToEnd",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Scroll To End"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Scroll To End is invoked"
+                    },
+                    "details": {
+                        "name": "Scroll To End",
+                        "tooltip": "Scroll to the end of the list"
+                    }
+                },
+                {
+                    "key": "GetPrototypeElement",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Prototype Element"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Prototype Element is invoked"
+                    },
+                    "details": {
+                        "name": "Get Prototype Element",
+                        "tooltip": "Get the prototype entity used for the elements"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetHeadersVaryInSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Headers Vary In Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Headers Vary In Size is invoked"
+                    },
+                    "details": {
+                        "name": "Set Headers Vary In Size",
+                        "tooltip": "Set whether the headers vary in size"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Headers Vary In Size",
+                                "tooltip": "Whether the headers vary in size"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "AddElementsToEnd",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Elements To End"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Elements To End is invoked"
+                    },
+                    "details": {
+                        "name": "Add Elements To End",
+                        "tooltip": "Add elements to the end of the list"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Number To Add",
+                                "tooltip": "The number of elements to add to the end"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Scroll To End If Was At End",
+                                "tooltip": "If set and the scroll box was already scrolled to the end then it will scroll to the end after adding the elements"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetChildAtElementIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Child At Element Index"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Child At Element Index is invoked"
+                    },
+                    "details": {
+                        "name": "Get Child At Element Index",
+                        "tooltip": "Get the child element at the specified element index. Used with lists that are not divided into sections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Child Element Index",
+                                "tooltip": "The index of the child"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "The index of the child"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetHeadersSticky",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Headers Sticky"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Headers Sticky is invoked"
+                    },
+                    "details": {
+                        "name": "Set Headers Sticky",
+                        "tooltip": "Set whether headers stick to the beginning of the visible list area"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Sticky Headers",
+                                "tooltip": "Whether headers stick to the beginning of the visible list area"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetChildAtSectionAndElementIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Child At Section And Element Index"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Child At Section And Element Index is invoked"
+                    },
+                    "details": {
+                        "name": "Get Child At Section And Element Index",
+                        "tooltip": "Get the child element at the specified section index and element index. Used with lists that are divided into sections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Section Index",
+                                "tooltip": "The index of the section"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Element Index",
+                                "tooltip": "The index of the element within the section"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "The index of the section"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetAutoRefreshOnPostActivate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Auto-refresh On Post-activate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Auto-refresh On Post-activate is invoked"
+                    },
+                    "details": {
+                        "name": "Set Auto-refresh On Post-activate",
+                        "tooltip": "Set whether the list should automatically prepare and refresh its content post activation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Auto-refresh",
+                                "tooltip": "Whether the list should automatically prepare and refresh its content post activation"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSectionIndexOfChild",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Section Index Of Child"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Section Index Of Child is invoked"
+                    },
+                    "details": {
+                        "name": "Get Section Index Of Child",
+                        "tooltip": "Get the section index of the specified child element. Returns -1 if not found. Used with lists that are divided into sections"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Child Element",
+                                "tooltip": "The child element"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int",
+                                "tooltip": "The child element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RefreshContent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Refresh Content"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Refresh Content is invoked"
+                    },
+                    "details": {
+                        "name": "Refresh Content",
+                        "tooltip": "Refreshes the content. You should call this when the list size or element content has changed"
+                    }
+                },
+                {
+                    "key": "GetHeadersVaryInSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Headers Vary In Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Headers Vary In Size is invoked"
+                    },
+                    "details": {
+                        "name": "Get Headers Vary In Size",
+                        "tooltip": "Get whether the headers vary in size"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPrototypeHeader",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Prototype Header"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Prototype Header is invoked"
+                    },
+                    "details": {
+                        "name": "Get Prototype Header",
+                        "tooltip": "Get the prototype entity used for the headers"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetAutoCalculateVariableHeaderSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Auto-calculate Variable Header Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Auto-calculate Variable Header Size is invoked"
+                    },
+                    "details": {
+                        "name": "Set Auto-calculate Variable Header Size",
+                        "tooltip": "Set whether to auto calculate the headers when they vary in size"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Auto-calculate",
+                                "tooltip": "Whether to auto calculate the headers when they vary in size"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetAutoCalculateVariableElementSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Auto-calculate Variable Element Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Auto-calculate Variable Element Size is invoked"
+                    },
+                    "details": {
+                        "name": "Get Auto-calculate Variable Element Size",
+                        "tooltip": "Get whether to auto-calculate the elements when they vary in size"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetAutoCalculateVariableHeaderSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Auto-calculate Variable Header Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Auto-calculate Variable Header Size is invoked"
+                    },
+                    "details": {
+                        "name": "Get Auto-calculate Variable Header Size",
+                        "tooltip": "Get whether to auto-calculate the headers when they vary in size"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

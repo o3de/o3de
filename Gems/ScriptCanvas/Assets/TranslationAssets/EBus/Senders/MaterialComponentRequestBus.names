@@ -1,0 +1,1360 @@
+{
+    "entries": [
+        {
+            "key": "MaterialComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "MaterialComponentRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "GetPropertyOverrides",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPropertyOverrides"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPropertyOverrides is invoked"
+                    },
+                    "details": {
+                        "name": "GetPropertyOverrides"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6E6962E1-04C9-56F9-89C4-361031CC1384}",
+                            "details": {
+                                "name": "AZStd::unordered_map"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPropertyOverrides",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPropertyOverrides"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPropertyOverrides is invoked"
+                    },
+                    "details": {
+                        "name": "SetPropertyOverrides"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{6E6962E1-04C9-56F9-89C4-361031CC1384}",
+                            "details": {
+                                "name": "AZStd::unordered_map"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ClearPropertyOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ClearPropertyOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ClearPropertyOverride is invoked"
+                    },
+                    "details": {
+                        "name": "ClearPropertyOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ClearPropertyOverrides",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ClearPropertyOverrides"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ClearPropertyOverrides is invoked"
+                    },
+                    "details": {
+                        "name": "ClearPropertyOverrides"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPropertyOverrideVector4",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPropertyOverrideVector4"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPropertyOverrideVector4 is invoked"
+                    },
+                    "details": {
+                        "name": "GetPropertyOverrideVector4"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPropertyOverrideImageInstance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPropertyOverrideImageInstance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPropertyOverrideImageInstance is invoked"
+                    },
+                    "details": {
+                        "name": "GetPropertyOverrideImageInstance"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{C0311D23-97F1-556C-B6A4-ECD726543686}",
+                            "details": {
+                                "name": "AZStd::intrusive_ptr"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPropertyOverrideUInt32",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPropertyOverrideUInt32"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPropertyOverrideUInt32 is invoked"
+                    },
+                    "details": {
+                        "name": "GetPropertyOverrideUInt32"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPropertyOverrideBool",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPropertyOverrideBool"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPropertyOverrideBool is invoked"
+                    },
+                    "details": {
+                        "name": "GetPropertyOverrideBool"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPropertyOverrideImageAsset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPropertyOverrideImageAsset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPropertyOverrideImageAsset is invoked"
+                    },
+                    "details": {
+                        "name": "GetPropertyOverrideImageAsset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{4BA06517-EDEC-59DC-B5FE-2FDE64BBEF6E}",
+                            "details": {
+                                "name": "Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPropertyOverrideVector2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPropertyOverrideVector2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPropertyOverrideVector2 is invoked"
+                    },
+                    "details": {
+                        "name": "SetPropertyOverrideVector2"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ClearAllPropertyOverrides",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ClearAllPropertyOverrides"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ClearAllPropertyOverrides is invoked"
+                    },
+                    "details": {
+                        "name": "ClearAllPropertyOverrides"
+                    }
+                },
+                {
+                    "key": "ClearMaterialOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ClearMaterialOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ClearMaterialOverride is invoked"
+                    },
+                    "details": {
+                        "name": "ClearMaterialOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPropertyOverrideImageInstance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPropertyOverrideImageInstance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPropertyOverrideImageInstance is invoked"
+                    },
+                    "details": {
+                        "name": "SetPropertyOverrideImageInstance"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{C0311D23-97F1-556C-B6A4-ECD726543686}",
+                            "details": {
+                                "name": "AZStd::intrusive_ptr"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetMaterialSlotLabel",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetMaterialSlotLabel"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetMaterialSlotLabel is invoked"
+                    },
+                    "details": {
+                        "name": "GetMaterialSlotLabel"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPropertyOverrideVector3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPropertyOverrideVector3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPropertyOverrideVector3 is invoked"
+                    },
+                    "details": {
+                        "name": "SetPropertyOverrideVector3"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ClearInvalidMaterialOverrides",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ClearInvalidMaterialOverrides"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ClearInvalidMaterialOverrides is invoked"
+                    },
+                    "details": {
+                        "name": "ClearInvalidMaterialOverrides"
+                    }
+                },
+                {
+                    "key": "SetPropertyOverrideBool",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPropertyOverrideBool"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPropertyOverrideBool is invoked"
+                    },
+                    "details": {
+                        "name": "SetPropertyOverrideBool"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RepairInvalidMaterialOverrides",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RepairInvalidMaterialOverrides"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RepairInvalidMaterialOverrides is invoked"
+                    },
+                    "details": {
+                        "name": "RepairInvalidMaterialOverrides"
+                    }
+                },
+                {
+                    "key": "SetPropertyOverrideString",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPropertyOverrideString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPropertyOverrideString is invoked"
+                    },
+                    "details": {
+                        "name": "SetPropertyOverrideString"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetDefaultMaterialOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetDefaultMaterialOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetDefaultMaterialOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetDefaultMaterialOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "AssetId"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetDefaultMaterialOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetDefaultMaterialOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetDefaultMaterialOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetDefaultMaterialOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "AssetId"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetMaterialOverrides",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetMaterialOverrides"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetMaterialOverrides is invoked"
+                    },
+                    "details": {
+                        "name": "SetMaterialOverrides"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
+                            "details": {
+                                "name": "AZStd::unordered_map"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPropertyOverrideString",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPropertyOverrideString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPropertyOverrideString is invoked"
+                    },
+                    "details": {
+                        "name": "GetPropertyOverrideString"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetMaterialOverrides",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetMaterialOverrides"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetMaterialOverrides is invoked"
+                    },
+                    "details": {
+                        "name": "GetMaterialOverrides"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
+                            "details": {
+                                "name": "AZStd::unordered_map"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetMaterialOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetMaterialOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetMaterialOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetMaterialOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "AssetId"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPropertyOverrideVector4",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPropertyOverrideVector4"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPropertyOverrideVector4 is invoked"
+                    },
+                    "details": {
+                        "name": "SetPropertyOverrideVector4"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPropertyOverrideUInt32",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPropertyOverrideUInt32"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPropertyOverrideUInt32 is invoked"
+                    },
+                    "details": {
+                        "name": "SetPropertyOverrideUInt32"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "FindMaterialAssignmentId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FindMaterialAssignmentId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FindMaterialAssignmentId is invoked"
+                    },
+                    "details": {
+                        "name": "FindMaterialAssignmentId"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPropertyOverrideImageAsset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPropertyOverrideImageAsset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPropertyOverrideImageAsset is invoked"
+                    },
+                    "details": {
+                        "name": "SetPropertyOverrideImageAsset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{4BA06517-EDEC-59DC-B5FE-2FDE64BBEF6E}",
+                            "details": {
+                                "name": "Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPropertyOverrideInt32",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPropertyOverrideInt32"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPropertyOverrideInt32 is invoked"
+                    },
+                    "details": {
+                        "name": "GetPropertyOverrideInt32"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPropertyOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPropertyOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPropertyOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetPropertyOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
+                            "details": {
+                                "name": "any"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetOriginalMaterialAssignments",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOriginalMaterialAssignments"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOriginalMaterialAssignments is invoked"
+                    },
+                    "details": {
+                        "name": "GetOriginalMaterialAssignments"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
+                            "details": {
+                                "name": "AZStd::unordered_map"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPropertyOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPropertyOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPropertyOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetPropertyOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
+                            "details": {
+                                "name": "any"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ClearModelMaterialOverrides",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ClearModelMaterialOverrides"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ClearModelMaterialOverrides is invoked"
+                    },
+                    "details": {
+                        "name": "ClearModelMaterialOverrides"
+                    }
+                },
+                {
+                    "key": "GetDefaultMaterialAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetDefaultMaterialAssetId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetDefaultMaterialAssetId is invoked"
+                    },
+                    "details": {
+                        "name": "GetDefaultMaterialAssetId"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "AssetId"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPropertyOverrideInt32",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPropertyOverrideInt32"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPropertyOverrideInt32 is invoked"
+                    },
+                    "details": {
+                        "name": "SetPropertyOverrideInt32"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPropertyOverrideVector2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPropertyOverrideVector2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPropertyOverrideVector2 is invoked"
+                    },
+                    "details": {
+                        "name": "GetPropertyOverrideVector2"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ClearAllMaterialOverrides",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ClearAllMaterialOverrides"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ClearAllMaterialOverrides is invoked"
+                    },
+                    "details": {
+                        "name": "ClearAllMaterialOverrides"
+                    }
+                },
+                {
+                    "key": "GetPropertyOverrideColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPropertyOverrideColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPropertyOverrideColor is invoked"
+                    },
+                    "details": {
+                        "name": "GetPropertyOverrideColor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPropertyOverrideFloat",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPropertyOverrideFloat"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPropertyOverrideFloat is invoked"
+                    },
+                    "details": {
+                        "name": "SetPropertyOverrideFloat"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ClearLodMaterialOverrides",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ClearLodMaterialOverrides"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ClearLodMaterialOverrides is invoked"
+                    },
+                    "details": {
+                        "name": "ClearLodMaterialOverrides"
+                    }
+                },
+                {
+                    "key": "ClearIncompatibleMaterialOverrides",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ClearIncompatibleMaterialOverrides"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ClearIncompatibleMaterialOverrides is invoked"
+                    },
+                    "details": {
+                        "name": "ClearIncompatibleMaterialOverrides"
+                    }
+                },
+                {
+                    "key": "GetPropertyOverrideVector3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPropertyOverrideVector3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPropertyOverrideVector3 is invoked"
+                    },
+                    "details": {
+                        "name": "GetPropertyOverrideVector3"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ClearDefaultMaterialOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ClearDefaultMaterialOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ClearDefaultMaterialOverride is invoked"
+                    },
+                    "details": {
+                        "name": "ClearDefaultMaterialOverride"
+                    }
+                },
+                {
+                    "key": "SetPropertyOverrideColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPropertyOverrideColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPropertyOverrideColor is invoked"
+                    },
+                    "details": {
+                        "name": "SetPropertyOverrideColor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetMaterialOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetMaterialOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetMaterialOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetMaterialOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "AssetId"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPropertyOverrideFloat",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPropertyOverrideFloat"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPropertyOverrideFloat is invoked"
+                    },
+                    "details": {
+                        "name": "GetPropertyOverrideFloat"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignmentId"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

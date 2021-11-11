@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "SystemConfigPlatform_Mac",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "SystemConfigPlatform_Mac::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

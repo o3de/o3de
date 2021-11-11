@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorOcclusionCullingPlaneComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorOcclusionCullingPlaneComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

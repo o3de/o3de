@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "MeshComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "MeshComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

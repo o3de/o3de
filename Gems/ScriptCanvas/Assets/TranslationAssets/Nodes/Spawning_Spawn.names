@@ -1,0 +1,59 @@
+{
+    "entries": [
+        {
+            "key": "{2447798B-B970-FDBA-A2E2-B563513663F0}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Spawn",
+                "category": "Spawning",
+                "tooltip": "Spawns a selected prefab, positioned using the provided transform inputs",
+                "subtitle": "Spawning"
+            },
+            "slots": [
+                {
+                    "key": "Input_Request Spawn",
+                    "details": {
+                        "name": "Request Spawn"
+                    }
+                },
+                {
+                    "key": "DataInput_Translation",
+                    "details": {
+                        "name": "Translation"
+                    }
+                },
+                {
+                    "key": "DataInput_Rotation",
+                    "details": {
+                        "name": "Rotation"
+                    }
+                },
+                {
+                    "key": "DataInput_Scale",
+                    "details": {
+                        "name": "Scale"
+                    }
+                },
+                {
+                    "key": "Output_Spawn Requested",
+                    "details": {
+                        "name": "Spawn Requested"
+                    }
+                },
+                {
+                    "key": "Output_On Spawn",
+                    "details": {
+                        "name": "On Spawn"
+                    }
+                },
+                {
+                    "key": "DataOutput_SpawnedEntitiesList",
+                    "details": {
+                        "name": "SpawnedEntitiesList"
+                    }
+                }
+            ]
+        }
+    ]
+}

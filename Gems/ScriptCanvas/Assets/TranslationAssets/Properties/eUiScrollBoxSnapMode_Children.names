@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiScrollBoxSnapMode_Children",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiScrollBoxSnapMode_Children::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

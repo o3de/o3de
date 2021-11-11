@@ -1,0 +1,50 @@
+{
+    "entries": [
+        {
+            "key": "{0A38EDCA-0571-48F0-9199-F6168C1EAAF0}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Repeater",
+                "category": "Utilities",
+                "tooltip": "Repeats the output signal the given number of times using the specified delay to space the signals out",
+                "subtitle": "Utilities"
+            },
+            "slots": [
+                {
+                    "key": "DataInput_Repetitions",
+                    "details": {
+                        "name": "Repetitions"
+                    }
+                },
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "key": "Output_Complete",
+                    "details": {
+                        "name": "Complete",
+                        "tooltip": "Signaled upon node exit"
+                    }
+                },
+                {
+                    "key": "Output_Action",
+                    "details": {
+                        "name": "Action",
+                        "tooltip": "The signal that will be repeated"
+                    }
+                },
+                {
+                    "key": "DataInput_Interval",
+                    "details": {
+                        "name": "Interval"
+                    }
+                }
+            ]
+        }
+    ]
+}

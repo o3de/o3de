@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "set_result_to_success",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "set_result_to_success",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke set_result_to_success"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after set_result_to_success is invoked"
+                    },
+                    "details": {
+                        "name": "set_result_to_success",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

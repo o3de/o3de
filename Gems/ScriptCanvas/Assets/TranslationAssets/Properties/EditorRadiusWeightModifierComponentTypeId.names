@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorRadiusWeightModifierComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorRadiusWeightModifierComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

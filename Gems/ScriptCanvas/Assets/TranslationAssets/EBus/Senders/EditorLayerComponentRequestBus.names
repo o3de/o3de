@@ -1,0 +1,80 @@
+{
+    "entries": [
+        {
+            "key": "EditorLayerComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "EditorLayerComponentRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "SetVisibility",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetVisibility"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetVisibility is invoked"
+                    },
+                    "details": {
+                        "name": "SetVisibility"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLayerColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetLayerColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetLayerColor is invoked"
+                    },
+                    "details": {
+                        "name": "SetLayerColor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColorPropertyValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColorPropertyValue"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColorPropertyValue is invoked"
+                    },
+                    "details": {
+                        "name": "GetColorPropertyValue"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

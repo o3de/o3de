@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{D3471394-97F1-5A37-82E0-F570B882F9C9}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "ToAngleDegrees",
+                "category": "Math/Quaternion",
+                "tooltip": "returns the angle of angle-axis pair that Source represents in degrees",
+                "subtitle": "Quaternion"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Quaternion: Source",
+                    "details": {
+                        "name": "Quaternion: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Number",
+                    "details": {
+                        "name": "Result: Number"
+                    }
+                }
+            ]
+        }
+    ]
+}

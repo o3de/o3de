@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "FillMode_Solid",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "FillMode_Solid::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

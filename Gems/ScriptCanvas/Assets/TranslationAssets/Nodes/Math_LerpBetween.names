@@ -1,0 +1,94 @@
+{
+    "entries": [
+        {
+            "key": "{A4CFB2F2-4045-47ED-AE73-ED60C2072EE4}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Lerp Between",
+                "category": "Math",
+                "subtitle": "Math"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Starts the lerp action from the beginning."
+                    }
+                },
+                {
+                    "key": "DataInput_Start",
+                    "details": {
+                        "name": "Start"
+                    }
+                },
+                {
+                    "key": "DataInput_Stop",
+                    "details": {
+                        "name": "Stop"
+                    }
+                },
+                {
+                    "key": "DataInput_Speed",
+                    "details": {
+                        "name": "Speed"
+                    }
+                },
+                {
+                    "key": "DataInput_Maximum Duration",
+                    "details": {
+                        "name": "Maximum Duration"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Executes immediately after the lerp action is started."
+                    }
+                },
+                {
+                    "key": "Input_Cancel",
+                    "details": {
+                        "name": "Cancel",
+                        "tooltip": "Stops the lerp action immediately."
+                    }
+                },
+                {
+                    "key": "Output_Canceled",
+                    "details": {
+                        "name": "Canceled",
+                        "tooltip": "Executes immediately after the operation is canceled."
+                    }
+                },
+                {
+                    "key": "Output_Tick",
+                    "details": {
+                        "name": "Tick",
+                        "tooltip": "Signaled at each step of the lerp."
+                    }
+                },
+                {
+                    "key": "DataOutput_Step",
+                    "details": {
+                        "name": "Step"
+                    }
+                },
+                {
+                    "key": "DataOutput_Percent",
+                    "details": {
+                        "name": "Percent"
+                    }
+                },
+                {
+                    "key": "Output_Lerp Complete",
+                    "details": {
+                        "name": "Lerp Complete",
+                        "tooltip": "Signaled after the last Tick, when the lerp is complete"
+                    }
+                }
+            ]
+        }
+    ]
+}
