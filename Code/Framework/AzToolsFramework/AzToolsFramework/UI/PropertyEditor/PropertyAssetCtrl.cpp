@@ -1072,10 +1072,10 @@ namespace AzToolsFramework
             RefreshAutocompleter();
         }
 
-        // When focus is lost, clear the field if necessary
+        // When focus is lost, revert to the selected asset
         if (!focus && m_incompleteFilename)
         {
-            HandleFieldClear();
+            SetSelectedAssetID(GetCurrentAssetID());
         }
     }
 
