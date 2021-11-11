@@ -155,29 +155,6 @@ endif()
 file(TO_NATIVE_PATH "${_cpack_wix_out_dir}" _cpack_wix_out_dir)
 file(TO_NATIVE_PATH "${_root_path}/python/python.cmd" _python_cmd)
 file(TO_NATIVE_PATH "${_root_path}/scripts/build/tools/upload_to_s3.py" _upload_script)
-file(TO_NATIVE_PATH "${_root_path}/scripts/license_scanner/license_scanner.py" _license_script)
-file(TO_NATIVE_PATH "${_root_path}/scripts/license_scanner/scanner_config.json" _license_config_script)
-
-set(_license_command
-    ${_python_cmd} -s
-    -u ${_license_script}
-    --config-file ${_license_config_script}
-    --license-file-path "${_cpack_wix_out_dir}/NOTICES.txt"
-    --package-file-path "${_cpack_wix_out_dir}/SPDX-License.json"
-)
-
-message(STATUS "Scanning for license files in ${_root_path} ${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION}")
-execute_process(
-    COMMAND ${_license_command} --scan-path ${_root_path} ${LY_PACKAGE_DOWNLOAD_CACHE_LOCATION}
-    RESULT_VARIABLE _license_result
-    ERROR_VARIABLE _license_errors
-    OUTPUT_VARIABLE _license_output
-    ECHO_OUTPUT_VARIABLE
-)
-
-if(NOT ${_license_result} EQUAL 0)
-    message(FATAL_ERROR "An error occurred during license scan.  ${_license_errors}")
-endif()
 
 function(upload_to_s3 in_url in_local_path in_file_regex)
 
@@ -262,7 +239,7 @@ if(CPACK_AUTO_GEN_TAG)
     upload_to_s3(
         ${_latest_upload_url}
         ${_temp_dir}
-        ".*(${_non_versioned_exe}|build_tag.txt)$"
+        ".*(${_non_versioned_exe}|build_tag.txt|)$"
     )
 
     # cleanup the temp files
