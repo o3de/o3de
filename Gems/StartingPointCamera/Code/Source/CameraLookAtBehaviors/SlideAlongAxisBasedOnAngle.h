@@ -23,7 +23,8 @@ namespace Camera
     /// will occur when looking up.  This could also be used for peeking around
     /// corners.  This is primarily useful for third person cameras.
     //////////////////////////////////////////////////////////////////////////
-    class SlideAlongAxisBasedOnAngle : public ICameraLookAtBehavior
+    class SlideAlongAxisBasedOnAngle
+        : public ICameraLookAtBehavior
     {
     public:
         ~SlideAlongAxisBasedOnAngle() override = default;
