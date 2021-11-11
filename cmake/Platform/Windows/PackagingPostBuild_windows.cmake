@@ -17,6 +17,8 @@ set(_bootstrap_out_dir "${CPACK_TOPLEVEL_DIRECTORY}/bootstrap")
 set(_bootstrap_filename "${CPACK_PACKAGE_FILE_NAME}_installer.exe")
 set(_bootstrap_output_file ${_cpack_wix_out_dir}/${_bootstrap_filename})
 
+file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
+
 set(_ext_flags
     -ext WixBalExtension
 )
@@ -56,7 +58,6 @@ set(_light_command
 )
 
 if(CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
-    file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
     file(TO_NATIVE_PATH "${_root_path}/scripts/signer/Platform/Windows/signer.ps1" _sign_script)
 
     unset(_signing_command)
@@ -153,53 +154,16 @@ if(NOT CPACK_UPLOAD_URL)
 endif()
 
 file(TO_NATIVE_PATH "${_cpack_wix_out_dir}" _cpack_wix_out_dir)
-file(TO_NATIVE_PATH "${_root_path}/python/python.cmd" _python_cmd)
-file(TO_NATIVE_PATH "${_root_path}/scripts/build/tools/upload_to_s3.py" _upload_script)
-
-function(upload_to_s3 in_url in_local_path in_file_regex)
-
-    # strip the scheme and extract the bucket/key prefix from the URL
-    string(REPLACE "s3://" "" _stripped_url ${in_url})
-    string(REPLACE "/" ";" _tokens ${_stripped_url})
-
-    list(POP_FRONT _tokens _bucket)
-    string(JOIN "/" _prefix ${_tokens})
-
-    set(_extra_args [[{"ACL":"bucket-owner-full-control"}]])
-
-    set(_upload_command
-        ${_python_cmd} -s
-        -u ${_upload_script}
-        --base_dir ${in_local_path}
-        --file_regex="${in_file_regex}"
-        --bucket ${_bucket}
-        --key_prefix ${_prefix}
-        --extra_args ${_extra_args}
-    )
-
-    if(CPACK_AWS_PROFILE)
-        list(APPEND _upload_command --profile ${CPACK_AWS_PROFILE})
-    endif()
-
-    execute_process(
-        COMMAND ${_upload_command}
-        RESULT_VARIABLE _upload_result
-        OUTPUT_VARIABLE _upload_output
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-    if (NOT ${_upload_result} EQUAL 0)
-        message(FATAL_ERROR "An error occurred uploading to s3.\nOutput:\n${_upload_output}")
-    endif()
-endfunction()
 
 message(STATUS "Uploading artifacts to ${CPACK_UPLOAD_URL}")
-upload_to_s3(
+
+include(${_root_path}/cmake/Platform/Common/PackagingPostBuild_common.cmake)
+
+ly_upload_to_s3(
     ${CPACK_UPLOAD_URL}
     ${_cpack_wix_out_dir}
     ".*(cab|exe|msi)$"
 )
-message(STATUS "Artifact uploading complete!")
 
 # for auto tagged builds, we will also upload a second copy of just the boostrapper
 # to a special "Latest" folder under the branch in place of the commit date/hash
@@ -236,7 +200,7 @@ if(CPACK_AUTO_GEN_TAG)
         _latest_upload_url ${CPACK_UPLOAD_URL}
     )
 
-    upload_to_s3(
+    ly_upload_to_s3(
         ${_latest_upload_url}
         ${_temp_dir}
         ".*(${_non_versioned_exe}|build_tag.txt)$"

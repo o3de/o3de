@@ -10,11 +10,17 @@ set(FILES
     ../Common/Configurations_common.cmake
     ../Common/Clang/Configurations_clang.cmake
     ../Common/Install_common.cmake
+    ../Common/PackagingPostBuild_common.cmake
+    CompilerSettings.cmake
     Configurations_linux.cmake
     Install_linux.cmake
     LYTestWrappers_linux.cmake
     LYWrappers_linux.cmake
+    Packaging_linux.cmake
+    PackagingPostBuild_linux.cmake
     PAL_linux.cmake
     PALDetection_linux.cmake
     RPathChange.cmake
+    runtime_dependencies_linux.cmake.in
+    RuntimeDependencies_linux.cmake    
 )

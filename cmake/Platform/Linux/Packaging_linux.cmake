@@ -57,3 +57,7 @@ set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
     ${CMAKE_BINARY_DIR}/cmake/Platform/Linux/Packaging/prerm 
     ${CMAKE_BINARY_DIR}/cmake/Platform/Linux/Packaging/postrm
 )
+
+set(CPACK_POST_BUILD_SCRIPTS
+    ${CPACK_SOURCE_DIR}/Platform/Linux/PackagingPostBuild_linux.cmake
+)

@@ -141,7 +141,7 @@ if(LY_INSTALLER_DOWNLOAD_URL)
     )
 
     set(CPACK_POST_BUILD_SCRIPTS
-        ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPostBuild.cmake
+        ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPostBuild_linux.cmake
     )
 endif()
 
