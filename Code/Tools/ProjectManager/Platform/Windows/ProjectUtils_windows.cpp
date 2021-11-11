@@ -13,6 +13,7 @@
 #include <QFileInfo>
 #include <QProcess>
 #include <QProcessEnvironment>
+#include <QStandardPaths>
 
 #include <AzCore/Utils/Utils.h>
 
@@ -145,6 +146,26 @@ namespace O3DE::ProjectManager
         AZ::IO::FixedMaxPath GetEditorDirectory()
         {
             return AZ::Utils::GetExecutableDirectory();
+        }
+
+        AZ::Outcome<QString, QString> CreateDesktopShortcut(const QString& filename, const QString& targetPath, const QStringList& arguments)
+        {
+            const QString cmd{"powershell.exe"};
+            const QString shortcutPath = QString("%1\\%2.lnk").arg(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)).arg(filename);
+            const QString arg = QString("$s=(New-Object -COM WScript.Shell).CreateShortcut('%1');$s.TargetPath='%2';$s.Arguments='%3';$s.Save();")
+                    .arg(shortcutPath)
+                    .arg(targetPath)
+                    .arg(arguments.join(' '));
+            auto createShortcutResult = ExecuteCommandResult(cmd, QStringList{"-Command", arg}, QProcessEnvironment::systemEnvironment());
+            if (!createShortcutResult.IsSuccess())
+            {
+                return AZ::Failure(QObject::tr("Failed to create desktop shortcut %1 <br><br>"
+                                               "Please verify you have permission to create files at the specified location.<br><br> %2")
+                                    .arg(shortcutPath)
+                                    .arg(createShortcutResult.GetError()));
+            }
+
+            return AZ::Success(QObject::tr("Desktop shortcut %1 created.").arg(shortcutPath));
         }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

@@ -137,5 +137,10 @@ namespace O3DE::ProjectManager
 
             return editorPath;
         }
+
+        AZ::Outcome<QString, QString> CreateDesktopShortcut(const QString& filename, const QString& targetPath, const QStringList& arguments)
+        {
+            return AZ::Failure(QObject::tr("Creating desktop shortcuts functionality not implemented for this platform yet."));
+        }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager
