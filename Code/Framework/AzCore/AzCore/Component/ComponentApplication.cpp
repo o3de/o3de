@@ -214,7 +214,6 @@ namespace AZ
                 // Update old Project path before attempting to merge in new Settings Registry values in order to prevent recursive calls
                 m_oldProjectPath = newProjectPath;
 
-                // Merge the project.json file into settings registry under ProjectSettingsRootKey path.
                 // Update all the runtime file paths based on the new "project_path" value.
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
             }

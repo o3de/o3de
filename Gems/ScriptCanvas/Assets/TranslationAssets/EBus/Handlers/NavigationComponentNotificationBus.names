@@ -5,22 +5,21 @@
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "Navigation",
-                "category": "AI"
+                "name": "NavigationComponentNotificationBus",
+                "category": "EBus Handlers"
             },
             "methods": [
                 {
                     "key": "OnSearchingForPath",
                     "details": {
-                        "name": "On Searching For Path",
-                        "tooltip": "Executes when the pathfinding request has been submitted to the navigation system"
+                        "name": "OnSearchingForPath"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "Request ID",
-                                "tooltip": "The ID of the path search request"
+                                "name": "RequestId",
+                                "tooltip": "Navigation request Id"
                             }
                         }
                     ]
@@ -28,15 +27,14 @@
                 {
                     "key": "OnTraversalStarted",
                     "details": {
-                        "name": "On Traversal Started",
-                        "tooltip": "Executes when the traversal for the indicated request has started"
+                        "name": "OnTraversalStarted"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "Request ID",
-                                "tooltip": "The ID of the request for which traversal has started"
+                                "name": "RequestId",
+                                "tooltip": "Navigation request Id"
                             }
                         }
                     ]
@@ -73,22 +71,21 @@
                 {
                     "key": "OnTraversalInProgress",
                     "details": {
-                        "name": "On Traversal In Progress",
-                        "tooltip": "Executes when the traversal for the indicated request is in progress"
+                        "name": "OnTraversalInProgress"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "Request ID",
-                                "tooltip": "The ID of the request for which traversal is in progress"
+                                "name": "RequestId",
+                                "tooltip": "Navigation request Id"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
                                 "name": "Distance",
-                                "tooltip": "The remaining distance in the path"
+                                "tooltip": "Distance remaining"
                             }
                         }
                     ]
@@ -96,15 +93,14 @@
                 {
                     "key": "OnTraversalComplete",
                     "details": {
-                        "name": "On Traversal Complete",
-                        "tooltip": "Executes when the traversal for the indicated request has completed successfully"
+                        "name": "OnTraversalComplete"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "Request ID",
-                                "tooltip": "The ID of the request for which traversal has finished"
+                                "name": "RequestId",
+                                "tooltip": "Navigation request Id"
                             }
                         }
                     ]
@@ -112,15 +108,14 @@
                 {
                     "key": "OnTraversalCancelled",
                     "details": {
-                        "name": "On Traversal Cancelled",
-                        "tooltip": "Executes when the traversal for the indicated request was canceled before successful completion."
+                        "name": "OnTraversalCancelled"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "Request ID",
-                                "tooltip": "The ID of the request for which traversal was cancelled"
+                                "name": "RequestId",
+                                "tooltip": "Navigation request Id"
                             }
                         }
                     ]

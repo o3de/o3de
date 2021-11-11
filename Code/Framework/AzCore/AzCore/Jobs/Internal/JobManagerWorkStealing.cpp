@@ -457,8 +457,6 @@ void JobManagerWorkStealing::ProcessJobsInternal(ThreadInfo* info, Job* suspende
             else
             {
                 //attempt to steal a job from another thread's queue
-                AZ_PROFILE_SCOPE(AzCore, "JobManagerWorkStealing::ProcessJobsInternal:WorkStealing");
-
                 unsigned int numStealAttempts = 0;
                 const unsigned int maxStealAttempts = (unsigned int)m_workerThreads.size() * 3; //try every thread a few times before giving up
                 while (!job)

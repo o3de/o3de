@@ -5,29 +5,27 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Navigation",
-                "category": "AI"
+                "name": "NavigationComponentRequestBus"
             },
             "methods": [
                 {
                     "key": "SetAgentSpeed",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Agent Speed"
+                        "tooltip": "When signaled, this will invoke SetAgentSpeed"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Agent Speed is invoked"
+                        "tooltip": "Signaled after SetAgentSpeed is invoked"
                     },
                     "details": {
-                        "name": "Set Agent Speed",
-                        "tooltip": "Sets the agent speed"
+                        "name": "SetAgentSpeed"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Speed"
+                                "name": "float"
                             }
                         }
                     ]
@@ -58,15 +56,14 @@
                     "key": "GetAgentSpeed",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Agent Speed"
+                        "tooltip": "When signaled, this will invoke GetAgentSpeed"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Agent Speed is invoked"
+                        "tooltip": "Signaled after GetAgentSpeed is invoked"
                     },
                     "details": {
-                        "name": "Get Agent Speed",
-                        "tooltip": "Returns the agent speed"
+                        "name": "GetAgentSpeed"
                     },
                     "results": [
                         {
@@ -118,15 +115,13 @@
                         "tooltip": "Signaled after Stop is invoked"
                     },
                     "details": {
-                        "name": "Stop",
-                        "tooltip": "Stop all pathfinding operations for the provided requestID"
+                        "name": "Stop"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "Request ID",
-                                "tooltip": "The ID of the request to be canceled"
+                                "name": "unsigned int"
                             }
                         }
                     ]
@@ -135,24 +130,21 @@
                     "key": "FindPathToEntity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Find Path To Entity"
+                        "tooltip": "When signaled, this will invoke FindPathToEntity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Find Path To Entity is invoked"
+                        "tooltip": "Signaled after FindPathToEntity is invoked"
                     },
                     "details": {
-                        "name": "Find Path To Entity",
-                        "tooltip": "Creates a pathfinding request to navigate toward the specified entity",
-                        "category": "AI/Navigation",
-                        "subtitle": "Navigation"
+                        "name": "FindPathToEntity"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "Target",
-                                "tooltip": "The ID of the entity toward which you want to navigate"
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
                             }
                         }
                     ],
@@ -160,8 +152,7 @@
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int",
-                                "tooltip": "The ID of the entity toward which you want to navigate"
+                                "name": "unsigned int"
                             }
                         }
                     ]

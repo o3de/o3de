@@ -16,7 +16,6 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/SystemFile.h>
-#include "CryLibrary.h"
 #include <CryPath.h>
 #include <CrySystemBus.h>
 #include <CryCommon/IFont.h>
@@ -143,9 +142,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
-// To enable profiling with vtune (https://software.intel.com/en-us/intel-vtune-amplifier-xe), make sure the line below is not commented out
-//#define  PROFILE_WITH_VTUNE
-
 #include <process.h>
 #include <malloc.h>
 #endif
@@ -153,10 +149,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include <ILevelSystem.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
-
-// profilers api.
-VTuneFunction VTResume = NULL;
-VTuneFunction VTPause = NULL;
 
 // Define global cvars.
 SSystemCVars g_cvars;
@@ -516,8 +508,6 @@ void CSystem::ShutDown()
 
     ShutdownFileSystem();
 
-    ShutdownModuleLibraries();
-
     EBUS_EVENT(CrySystemEventBus, OnCrySystemPostShutdown);
 }
 
@@ -696,31 +686,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     {
         m_bPaused = false;
     }
-
-#ifdef PROFILE_WITH_VTUNE
-    if (m_bInDevMode)
-    {
-        if (VTPause != NULL && VTResume != NULL)
-        {
-            static bool bVtunePaused = true;
-
-            const AzFramework::InputChannel* inputChannelScrollLock = AzFramework::InputChannelRequests::FindInputChannel(AzFramework::InputDeviceKeyboard::Key::WindowsSystemScrollLock);
-            const bool bPaused = (inputChannelScrollLock ? inputChannelScrollLock->IsActive() : false);
-
-            {
-                if (bVtunePaused && !bPaused)
-                {
-                    GetIProfilingSystem()->VTuneResume();
-                }
-                if (!bVtunePaused && bPaused)
-                {
-                    GetIProfilingSystem()->VTunePause();
-                }
-                bVtunePaused = bPaused;
-            }
-        }
-    }
-#endif //PROFILE_WITH_VTUNE
 
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
     if (m_bIgnoreUpdates)
@@ -1253,30 +1218,6 @@ CPNoise3* CSystem::GetNoiseGen()
 {
     static CPNoise3 m_pNoiseGen;
     return &m_pNoiseGen;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CProfilingSystem::VTuneResume()
-{
-#ifdef PROFILE_WITH_VTUNE
-    if (VTResume)
-    {
-        CryLogAlways("VTune Resume");
-        VTResume();
-    }
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CProfilingSystem::VTunePause()
-{
-#ifdef PROFILE_WITH_VTUNE
-    if (VTPause)
-    {
-        VTPause();
-        CryLogAlways("VTune Pause");
-    }
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////

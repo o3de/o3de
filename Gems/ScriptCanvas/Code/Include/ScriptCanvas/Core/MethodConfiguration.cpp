@@ -64,9 +64,9 @@ namespace ScriptCanvas
                 GraphCanvas::TranslationRequests::Details details;
                 GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-                if (!details.Name.empty())
+                if (!details.m_name.empty())
                 {
-                    resultSlotName = details.Name;
+                    resultSlotName = details.m_name;
                 }
 
                 SlotId addedSlotId;

@@ -70,11 +70,9 @@ namespace GraphCanvas
         // NodeTitleRequestBus
         void SetDetails(const AZStd::string& title, const AZStd::string& subtitle) override;
         void SetTitle(const AZStd::string& title) override;
-        void SetTranslationKeyedTitle(const TranslationKeyedString& title) override;
         AZStd::string GetTitle() const override;
 
         void SetSubTitle(const AZStd::string& subtitle) override;
-        void SetTranslationKeyedSubTitle(const TranslationKeyedString& subtitle) override;
         AZStd::string GetSubTitle() const override;
 
         QGraphicsWidget* GetGraphicsWidget() override;

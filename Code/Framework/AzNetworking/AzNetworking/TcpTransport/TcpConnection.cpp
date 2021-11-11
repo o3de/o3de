@@ -27,13 +27,11 @@ namespace AzNetworking
         ConnectionId connectionId,
         const IpAddress& remoteAddress,
         TcpNetworkInterface& networkInterface,
-        TcpSocket& socket,
-        TimeoutId timeoutId
+        TcpSocket& socket
     )
         : IConnection(connectionId, remoteAddress)
         , m_networkInterface(networkInterface)
         , m_socket(socket.CloneAndTakeOwnership())
-        , m_timeoutId(timeoutId)
         , m_state(m_socket->IsOpen() ? ConnectionState::Connecting : ConnectionState::Disconnected)
         , m_connectionRole(ConnectionRole::Acceptor)
         , m_registeredSocketFd(InvalidSocketFd)
@@ -162,13 +160,6 @@ namespace AzNetworking
             {
                 break;
             }
-
-            TimeoutQueue::TimeoutItem* timeoutItem = m_networkInterface.m_connectionTimeoutQueue.RetrieveItem(GetTimeoutId());
-            if (timeoutItem == nullptr)
-            {
-                return true;
-            }
-            timeoutItem->UpdateTimeoutTime(startTimeMs);
 
             NetworkOutputSerializer serializer(buffer.GetBuffer(), static_cast<uint32_t>(buffer.GetSize()));
             if (m_state == ConnectionState::Connecting)

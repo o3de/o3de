@@ -548,7 +548,6 @@ public:
             { "BatchMode", m_bConsoleMode },
             { "NullRenderer", m_bNullRenderer },
             { "devmode", m_bDeveloperMode },
-            { "VTUNE", dummy },
             { "runpython", m_bRunPythonScript },
             { "runpythontest", m_bRunPythonTestScript },
             { "version", m_bShowVersionInfo },
@@ -3828,7 +3827,8 @@ void CCryEditApp::OnOpenQuickAccessBar()
     }
 
     QRect geo = m_pQuickAccessBar->geometry();
-    geo.moveCenter(MainWindow::instance()->geometry().center());
+    auto mainWindow = MainWindow::instance();
+    geo.moveCenter(mainWindow->mapToGlobal(mainWindow->geometry().center()));
     m_pQuickAccessBar->setGeometry(geo);
     m_pQuickAccessBar->setVisible(true);
     m_pQuickAccessBar->setFocus();

@@ -210,10 +210,10 @@ namespace ScriptCanvasEditor
         {
             if (m_eventTypeToId.find(eventId) == m_eventTypeToId.end())
             {
-                AZStd::string eventName;                
+                AZStd::string eventName;
 
                 for (const HandlerEventConfiguration& testEventConfiguration : eventConfigurations)
-                {                    
+                {
                     if (testEventConfiguration.m_eventId == eventId)
                     {
                         eventName = testEventConfiguration.m_eventName;
@@ -544,7 +544,7 @@ namespace ScriptCanvasEditor
                             key << Translation::GlobalKeys::EBusHandlerIDKey << ".details";
                             GraphCanvas::TranslationRequests::Details details;
                             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
-                            GraphCanvas::SlotRequestBus::Event(testSlotId, &GraphCanvas::SlotRequests::SetDetails, details.Name, details.Tooltip);
+                            GraphCanvas::SlotRequestBus::Event(testSlotId, &GraphCanvas::SlotRequests::SetDetails, details.m_name, details.m_tooltip);
                             break;
                         }
                     }

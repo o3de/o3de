@@ -107,24 +107,24 @@ namespace GraphCanvas
     GraphCanvas::TranslationRequests::Details TranslationDatabase::GetDetails(const AZStd::string& key, const Details& fallbackDetails)
     {
         Details details;
-        if (!Get(key + ".name", details.Name))
+        if (!Get(key + ".name", details.m_name))
         {
-            details.Name = fallbackDetails.Name;
+            details.m_name = fallbackDetails.m_name;
         }
 
-        if (!Get(key + ".tooltip", details.Tooltip))
+        if (!Get(key + ".tooltip", details.m_tooltip))
         {
-            details.Tooltip = fallbackDetails.Tooltip;
+            details.m_tooltip = fallbackDetails.m_tooltip;
         }
 
-        if (!Get(key + ".subtitle", details.Subtitle))
+        if (!Get(key + ".subtitle", details.m_subtitle))
         {
-            details.Subtitle = fallbackDetails.Subtitle;
+            details.m_subtitle = fallbackDetails.m_subtitle;
         }
 
-        if (!Get(key + ".category", details.Category))
+        if (!Get(key + ".category", details.m_category))
         {
-            details.Category = fallbackDetails.Category;
+            details.m_category = fallbackDetails.m_category;
         }
 
         return details;
@@ -136,11 +136,11 @@ namespace GraphCanvas
 
         if (m_database.find(key) != m_database.end())
         {
-            value = m_database[key].c_str();
+            value = m_database[key];
             return true;
         }
 
-        static bool s_traceMissingItems = true;
+        static bool s_traceMissingItems = false;
         if (s_traceMissingItems)
         {
             AZ_TracePrintf("GraphCanvas", AZStd::string::format("Value not found for key: %s", key.c_str()).c_str());

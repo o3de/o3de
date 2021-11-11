@@ -5,7 +5,8 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ArcBallControllerRequestBus"
+                "name": "Arc Ball Controller",
+                "subtitle": "Camera"
             },
             "methods": [
                 {
@@ -19,13 +20,14 @@
                         "tooltip": "Signaled after GetPan is invoked"
                     },
                     "details": {
-                        "name": "GetPan"
+                        "name": "Get Pan",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Pan"
                             }
                         }
                     ]
@@ -41,13 +43,14 @@
                         "tooltip": "Signaled after GetCenter is invoked"
                     },
                     "details": {
-                        "name": "GetCenter"
+                        "name": "Get Center",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Center"
                             }
                         }
                     ]
@@ -63,13 +66,14 @@
                         "tooltip": "Signaled after SetZoomingSensitivity is invoked"
                     },
                     "details": {
-                        "name": "SetZoomingSensitivity"
+                        "name": "Set Zooming Sensitivity",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Sensitivity"
                             }
                         }
                     ]
@@ -85,13 +89,14 @@
                         "tooltip": "Signaled after GetPitch is invoked"
                     },
                     "details": {
-                        "name": "GetPitch"
+                        "name": "Get Pitch",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Pitch"
                             }
                         }
                     ]
@@ -107,13 +112,14 @@
                         "tooltip": "Signaled after SetPanningSensitivity is invoked"
                     },
                     "details": {
-                        "name": "SetPanningSensitivity"
+                        "name": "Set Panning Sensitivity",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Sensitivity"
                             }
                         }
                     ]
@@ -129,13 +135,14 @@
                         "tooltip": "Signaled after GetZoomingSensitivity is invoked"
                     },
                     "details": {
-                        "name": "GetZoomingSensitivity"
+                        "name": "Get Zooming Sensitivity",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Sensitivity"
                             }
                         }
                     ]
@@ -151,13 +158,14 @@
                         "tooltip": "Signaled after SetHeading is invoked"
                     },
                     "details": {
-                        "name": "SetHeading"
+                        "name": "Set Heading",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Heading"
                             }
                         }
                     ]
@@ -173,13 +181,14 @@
                         "tooltip": "Signaled after GetMaxDistance is invoked"
                     },
                     "details": {
-                        "name": "GetMaxDistance"
+                        "name": "Get Max Distance",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Max Distance"
                             }
                         }
                     ]
@@ -195,13 +204,14 @@
                         "tooltip": "Signaled after SetDistance is invoked"
                     },
                     "details": {
-                        "name": "SetDistance"
+                        "name": "Set Distance",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Distance"
                             }
                         }
                     ]
@@ -217,13 +227,14 @@
                         "tooltip": "Signaled after SetMinDistance is invoked"
                     },
                     "details": {
-                        "name": "SetMinDistance"
+                        "name": "Set Min Distance",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Min Distance"
                             }
                         }
                     ]
@@ -239,13 +250,14 @@
                         "tooltip": "Signaled after SetMaxDistance is invoked"
                     },
                     "details": {
-                        "name": "SetMaxDistance"
+                        "name": "Set Max Distance",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Max Distance"
                             }
                         }
                     ]
@@ -261,13 +273,14 @@
                         "tooltip": "Signaled after GetMinDistance is invoked"
                     },
                     "details": {
-                        "name": "GetMinDistance"
+                        "name": "Get Min Distance",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Min Distance"
                             }
                         }
                     ]
@@ -283,13 +296,14 @@
                         "tooltip": "Signaled after GetHeading is invoked"
                     },
                     "details": {
-                        "name": "GetHeading"
+                        "name": "Get Heading",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Heading"
                             }
                         }
                     ]
@@ -305,13 +319,14 @@
                         "tooltip": "Signaled after GetPanningSensitivity is invoked"
                     },
                     "details": {
-                        "name": "GetPanningSensitivity"
+                        "name": "Get Panning Sensitivity",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Sensitivity"
                             }
                         }
                     ]
@@ -327,13 +342,14 @@
                         "tooltip": "Signaled after SetCenter is invoked"
                     },
                     "details": {
-                        "name": "SetCenter"
+                        "name": "Set Center",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Center"
                             }
                         }
                     ]
@@ -349,13 +365,14 @@
                         "tooltip": "Signaled after SetPan is invoked"
                     },
                     "details": {
-                        "name": "SetPan"
+                        "name": "Set Pan",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Pan"
                             }
                         }
                     ]
@@ -371,13 +388,14 @@
                         "tooltip": "Signaled after SetPitch is invoked"
                     },
                     "details": {
-                        "name": "SetPitch"
+                        "name": "Set Pitch",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Pitch"
                             }
                         }
                     ]
@@ -393,13 +411,14 @@
                         "tooltip": "Signaled after GetDistance is invoked"
                     },
                     "details": {
-                        "name": "GetDistance"
+                        "name": "Get Distance",
+                        "subtitle": "Arc Ball Controller"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Distance"
                             }
                         }
                     ]

@@ -47,25 +47,4 @@ namespace ScriptCanvasEditor::Nodes
             }
         }
     }
-
-
-    AZStd::string GetContextName(const AZ::SerializeContext::ClassData& classData)
-    {
-        if (auto editorDataElement = classData.m_editData ? classData.m_editData->FindElementData(AZ::Edit::ClassElements::EditorData) : nullptr)
-        {
-            if (auto attribute = editorDataElement->FindAttribute(AZ::Edit::Attributes::Category))
-            {
-                if (auto data = azrtti_cast<AZ::Edit::AttributeData<const char*>*>(attribute))
-                {
-                    AZStd::string fullCategoryName = data->Get(nullptr);
-                    AZStd::string delimiter = "/";
-                    AZStd::vector<AZStd::string> results;
-                    AZStd::tokenize(fullCategoryName, delimiter, results);
-                    return results.back();
-                }
-            }
-        }
-
-        return {};
-    }
 }

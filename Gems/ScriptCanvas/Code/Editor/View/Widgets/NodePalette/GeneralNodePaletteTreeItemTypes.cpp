@@ -86,13 +86,13 @@ namespace ScriptCanvasEditor
         key << "BehaviorClass" << className << "methods" << methodName << "details";
 
         GraphCanvas::TranslationRequests::Details details;
-        details.Name = methodName;
-        details.Subtitle = className;
+        details.m_name = methodName;
+        details.m_subtitle = className;
 
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-        SetName(details.Name.c_str());
-        SetToolTip(details.Tooltip.c_str());
+        SetName(details.m_name.c_str());
+        SetToolTip(details.m_tooltip.c_str());
 
         if (propertyStatus == ScriptCanvas::PropertyStatus::Getter)
         {
@@ -224,9 +224,10 @@ namespace ScriptCanvasEditor
     // CustomNodePaletteTreeItem
     //////////////////////////////
 
-    CustomNodePaletteTreeItem::CustomNodePaletteTreeItem(const AZ::Uuid& typeId, AZStd::string_view nodeName)
-        : DraggableNodePaletteTreeItem(nodeName, ScriptCanvasEditor::AssetEditorId)
-        , m_typeId(typeId)
+    CustomNodePaletteTreeItem::CustomNodePaletteTreeItem(const ScriptCanvasEditor::CustomNodeModelInformation& info)
+        : DraggableNodePaletteTreeItem(info.m_displayName, ScriptCanvasEditor::AssetEditorId)
+        , m_info(info)
+        , m_typeId(info.m_typeId)
     {
     }
 

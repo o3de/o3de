@@ -80,8 +80,6 @@ namespace ScriptCanvasEditor
             AZStd::string m_titlePalette;
         };
 
-        AZStd::string GetContextName(const AZ::SerializeContext::ClassData& classData);
-
         // Copies the slot name to the underlying ScriptCanvas Data Slot which matches the slot Id
         void UpdateSlotDatumLabels(AZ::EntityId graphCanvasNodeId);
         void UpdateSlotDatumLabel(const AZ::EntityId& graphCanvasNodeId, ScriptCanvas::SlotId scSlotId, const AZStd::string& name);

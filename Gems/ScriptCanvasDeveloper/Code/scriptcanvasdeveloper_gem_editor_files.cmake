@@ -56,11 +56,6 @@ set(FILES
     Editor/Source/XMLDoc.cpp
     Editor/Source/XMLDoc.h
 
-# Tools/TranslationBrowser
-    Editor/Source/Tools/TranslationBrowser/TranslationBrowser.h
-    Editor/Source/Tools/TranslationBrowser/TranslationBrowser.cpp
-    Editor/Source/Tools/TranslationBrowser/TranslationBrowser.ui
-
 # AutomationActions
     Editor/Source/AutomationActions/DynamicSlotFullCreation.cpp
     Editor/Source/AutomationActions/NodePaletteFullCreation.cpp
