@@ -293,7 +293,7 @@ namespace AzToolsFramework
         return m_impl->m_visibleEntityDatas[index].m_iconHidden;
     }
 
-    bool EditorVisibleEntityDataCache::IsVisibleEntityIndividuallySelectableInViewport(size_t index) const
+    bool EditorVisibleEntityDataCache::IsVisibleEntityIndividuallySelectableInViewport(const size_t index) const
     {
         return m_impl->m_visibleEntityDatas[index].m_visible && !m_impl->m_visibleEntityDatas[index].m_locked &&
             m_impl->m_visibleEntityDatas[index].m_inFocus && !m_impl->m_visibleEntityDatas[index].m_descendantOfClosedContainer;
