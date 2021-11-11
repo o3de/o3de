@@ -972,10 +972,10 @@ namespace Terrain
                 m_areaData.m_rebuildSectors = false;
 
                 m_sectorData.clear();
-                const float xFirstPatchStart = terrainBounds.GetMin().GetX() - fmod(terrainBounds.GetMin().GetX(), GridMeters);
-                const float xLastPatchStart = terrainBounds.GetMax().GetX() - fmod(terrainBounds.GetMax().GetX(), GridMeters);
-                const float yFirstPatchStart = terrainBounds.GetMin().GetY() - fmod(terrainBounds.GetMin().GetY(), GridMeters);
-                const float yLastPatchStart = terrainBounds.GetMax().GetY() - fmod(terrainBounds.GetMax().GetY(), GridMeters);
+                const float xFirstPatchStart = AZStd::floorf(terrainBounds.GetMin().GetX() / GridMeters) * GridMeters;
+                const float xLastPatchStart = AZStd::floorf(terrainBounds.GetMax().GetX() / GridMeters) * GridMeters;
+                const float yFirstPatchStart = AZStd::floorf(terrainBounds.GetMin().GetY() / GridMeters) * GridMeters;
+                const float yLastPatchStart = AZStd::floorf(terrainBounds.GetMax().GetY() / GridMeters) * GridMeters;
             
                 const auto& materialAsset = m_materialInstance->GetAsset();
                 const auto& shaderAsset = materialAsset->GetMaterialTypeAsset()->GetShaderAssetForObjectSrg();
@@ -1217,7 +1217,7 @@ namespace Terrain
 
                     // For every distance doubling beyond a minDistanceForLod0, we only need half the mesh density. Each LOD
                     // is exactly half the resolution of the last.
-                    const float lodForCamera = floorf(AZ::GetMax(0.0f, log2f(sectorDistance / minDistanceForLod0)));
+                    const float lodForCamera = AZStd::floorf(AZ::GetMax(0.0f, log2f(sectorDistance / minDistanceForLod0)));
 
                     // All cameras should render the same LOD so effects like shadows are consistent.
                     lodChoice = AZ::GetMin(lodChoice, aznumeric_cast<uint8_t>(lodForCamera));

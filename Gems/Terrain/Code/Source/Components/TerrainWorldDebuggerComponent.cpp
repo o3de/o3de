@@ -218,6 +218,12 @@ namespace Terrain
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
 
+        // Take the dirty region and adjust the Z values to the world min/max so that even if the dirty region falls outside the current
+        // world bounds, we still update the wireframe accordingly.
+        AZ::Aabb dirtyRegion2D = AZ::Aabb::CreateFromMinMaxValues(
+            dirtyRegion.GetMin().GetX(), dirtyRegion.GetMin().GetY(), worldBounds.GetMin().GetZ(),
+            dirtyRegion.GetMax().GetX(), dirtyRegion.GetMax().GetY(), worldBounds.GetMax().GetZ());
+
         // Calculate the world size of each sector.  Note that this size actually ends at the last point, not the last square.
         // So for example, the sector size for 3 points will go from (*--*--*) even though it will be used to draw (*--*--*--).
         const float xSectorSize = (queryResolution.GetX() * SectorSizeInGridPoints);
@@ -230,7 +236,7 @@ namespace Terrain
 
         // If we haven't cached anything before, or if the world bounds has changed, clear our cache structure and repopulate it
         // with WireframeSector entries with the proper AABB sizes.
-        if (!m_wireframeBounds.IsValid() || !dirtyRegion.IsValid() || !m_wireframeBounds.IsClose(worldBounds))
+        if (!m_wireframeBounds.IsValid() || !dirtyRegion2D.IsValid() || !m_wireframeBounds.IsClose(worldBounds))
         {
             m_wireframeBounds = worldBounds;
 
@@ -266,7 +272,7 @@ namespace Terrain
         // For each sector, if it overlaps with the dirty region, clear it out and recache the wireframe line data.
         for (auto& sector : m_wireframeSectors)
         {
-            if (dirtyRegion.IsValid() && !dirtyRegion.Overlaps(sector.m_aabb))
+            if (dirtyRegion2D.IsValid() && !dirtyRegion2D.Overlaps(sector.m_aabb))
             {
                 continue;
             }

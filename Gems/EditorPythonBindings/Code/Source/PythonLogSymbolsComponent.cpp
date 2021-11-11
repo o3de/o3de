@@ -739,6 +739,11 @@ namespace EditorPythonBindings
         moduleParts.pop_back();
         AzFramework::StringFunc::Append(targetModule, ".pyi");
 
+        // create an __init__.py file as the base module path
+        AZStd::string initModule;
+        AzFramework::StringFunc::Join(initModule, moduleParts.begin(), moduleParts.end(), '.');
+        OpenInitFileAt(initModule);
+
         AZStd::string modulePath;
         AzFramework::StringFunc::Append(modulePath, m_basePath.c_str());
         AzFramework::StringFunc::Append(modulePath, AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);

@@ -698,7 +698,10 @@ namespace GraphModelIntegration
         GraphModel::NodePtrList nodeList;
         for (auto nodeId : nodeIds)
         {
-            nodeList.push_back(m_elementMap.Find<GraphModel::Node>(nodeId));
+            if (GraphModel::NodePtr nodePtr = m_elementMap.Find<GraphModel::Node>(nodeId))
+            {
+                nodeList.push_back(nodePtr);
+            }
         }
 
         return nodeList;

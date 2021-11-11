@@ -2785,7 +2785,7 @@ namespace AzQtComponents
                     RepaintFloatingIndicators();
                 }
                 break;
-            case QEvent::WindowDeactivate:
+            case QEvent::WindowBlocked:
                 // If our main window is deactivated while we are in the middle of
                 // a docking drag operation (e.g. popup dialog for new level), we
                 // should cancel our drag operation because the mouse release event

@@ -21,9 +21,17 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_DecalAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_DecalAdded as test_module
 
+    @pytest.mark.test_case_id("C36525658")
+    class AtomEditorComponents_DeferredFogAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_DeferredFogAdded as test_module
+
     @pytest.mark.test_case_id("C32078119")
     class AtomEditorComponents_DepthOfFieldAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_DepthOfFieldAdded as test_module
+
+    @pytest.mark.test_case_id("C36525659")
+    class AtomEditorComponents_DiffuseProbeGridAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_DiffuseProbeGridAdded as test_module
 
     @pytest.mark.test_case_id("C32078120")
     class AtomEditorComponents_DirectionalLightAdded(EditorSharedTest):

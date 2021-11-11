@@ -82,12 +82,13 @@ namespace O3DE::ProjectManager
             succeeded = false;
         }
 
+        QString gemName = m_gemNames.front();
         m_gemNames.erase(m_gemNames.begin());
-        emit Done(succeeded);
+        emit Done(gemName, succeeded);
 
         if (!m_gemNames.empty())
         {
-            emit StartGemDownload(m_gemNames[0]);
+            emit StartGemDownload(m_gemNames.front());
         }
         else
         {
