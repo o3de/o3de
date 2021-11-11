@@ -22,6 +22,7 @@
 #include <AzFramework/Process/ProcessCommon.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzFramework/IO/LocalFileIO.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -269,17 +270,33 @@ namespace O3DE::ProjectManager
             // Add any missing project buttons and restore buttons to default state
             for (const ProjectInfo& project : projectsVector)
             {
+                ProjectButton* currentButton = nullptr;
                 if (!m_projectButtons.contains(QDir::toNativeSeparators(project.m_path)))
                 {
-                    m_projectButtons.insert(QDir::toNativeSeparators(project.m_path), CreateProjectButton(project));
+                    currentButton = CreateProjectButton(project);
+                    m_projectButtons.insert(QDir::toNativeSeparators(project.m_path), currentButton);
                 }
                 else
                 {
                     auto projectButtonIter = m_projectButtons.find(QDir::toNativeSeparators(project.m_path));
                     if (projectButtonIter != m_projectButtons.end())
                     {
-                        projectButtonIter.value()->RestoreDefaultState();
-                        m_projectsFlowLayout->addWidget(projectButtonIter.value());
+                        currentButton = projectButtonIter.value();
+                        currentButton->RestoreDefaultState();
+                        m_projectsFlowLayout->addWidget(currentButton);
+                    }
+                }
+
+                // Check whether project manager has successfully built the project
+                if (currentButton)
+                {
+                    AZStd::string successfulBuildFilePath = AZStd::string::format("%s/%s",
+                        project.m_path.toStdString().c_str(), "ProjectManagerBuildSuccess");
+
+                    AZ::IO::LocalFileIO fileIO;
+                    if (!fileIO.Exists(successfulBuildFilePath.c_str()))
+                    {
+                        currentButton->ShowBuildRequired();
                     }
                 }
             }

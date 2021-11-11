@@ -10,6 +10,8 @@
 #include <ProjectBuilderWorker.h>
 #include <ProjectButtonWidget.h>
 
+#include <AzFramework/IO/LocalFileIO.h>
+
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QUrl>
@@ -80,6 +82,10 @@ namespace O3DE::ProjectManager
 
     void ProjectBuilderController::HandleResults(const QString& result)
     {
+        AZ::IO::LocalFileIO fileIO;
+        AZStd::string successBuildFilePath = AZStd::string::format("%s/%s",
+            m_projectInfo.m_path.toStdString().c_str(), "ProjectManagerBuildSuccess");
+
         if (!result.isEmpty())
         {
             if (result.contains(tr("log")))
@@ -109,12 +115,21 @@ namespace O3DE::ProjectManager
                 emit NotifyBuildProject(m_projectInfo);
             }
 
+            fileIO.Remove(successBuildFilePath.c_str());
+
             emit Done(false);
             return;
         }
         else
         {
             m_projectInfo.m_buildFailed = false;
+
+            AZ::IO::HandleType fileHandle;
+            if (fileIO.Open(successBuildFilePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText, fileHandle))
+            {
+                // We just need the file to exist
+                fileIO.Close(fileHandle);
+            }
         }
 
         emit Done(true);
