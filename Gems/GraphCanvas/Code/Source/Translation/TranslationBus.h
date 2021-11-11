@@ -10,7 +10,9 @@
 
 #include "TranslationAsset.h"
 
+#include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>
+
 
 namespace GraphCanvas
 {
