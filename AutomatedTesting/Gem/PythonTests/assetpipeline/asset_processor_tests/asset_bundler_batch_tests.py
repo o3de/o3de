@@ -52,10 +52,6 @@ logger = logging.getLogger(__name__)
 targetProjects = ["AutomatedTesting"]
 
 
-def get_project_path(workspace):
-    return os.path.join(workspace.paths.engine_root(), workspace.project)
-
-
 @pytest.fixture
 def local_resources(request, workspace, ap_setup_fixture):
     # Test-level asset folder. Directory contains a subfolder for each test (i.e. C1234567)
@@ -715,7 +711,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                         # Extra arguments for pattern comparison
                         cmd.extend([f"--filePatternType={pattern_type}", f"--filePattern={pattern}"])
                 if workspace.project:
-                    cmd.append(f'--project-path={get_project_path(workspace)}')
+                    cmd.append(f'--project-path={workspace.paths.project()}')
                 return cmd
             # End generate_compare_command()
 
@@ -756,7 +752,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                     output_mac_asset_list = helper.platform_file_name(last_output_arg, platform)
 
                 # Build execution command
-                cmd = generate_compare_command(platform_arg, get_project_path(workspace))
+                cmd = generate_compare_command(platform_arg, workspace.paths.project())
 
                 # Execute command
                 subprocess.check_call(cmd)
@@ -791,7 +787,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                 f"--comparisonRulesFile={rule_file}",
                 f"--comparisonType={args[1]}",
                 r"--addComparison",
-                f"--project-path={get_project_path(workspace)}",
+                f"--project-path={workspace.paths.project()}",
             ]
             if args[1] == "4":
                 # If pattern comparison, append a few extra arguments
@@ -913,7 +909,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                 "--addDefaultSeedListFiles",
                 "--platform=pc",
                 "--print",
-                f"--project-path={get_project_path(workspace)}"
+                f"--project-path={workspace.paths.project()}"
             ],
             universal_newlines=True,
         )
@@ -985,7 +981,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         # Make sure file gets deleted on teardown
         request.addfinalizer(lambda: fs.delete([bundle_result_path], True, False))
 
-        bundles_folder = os.path.join(workspace.paths.engine_root(), workspace.project, "Bundles")
+        bundles_folder = os.path.join(workspace.paths.project(), "Bundles")
         level_pak = r"levels\testdependencieslevel\level.pak"
         bundle_request_path = os.path.join(bundles_folder, "bundle.pak")
         bundle_result_path = os.path.join(bundles_folder,
