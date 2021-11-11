@@ -24,7 +24,7 @@ fi
 echo [ci_build] cpack --version
 cpack --version
 
-echo [ci_build] cpack -C ${CONFIGURATION} ${CPACK_OPTIONS}
-cpack -C ${CONFIGURATION} ${CPACK_OPTIONS}
+eval echo [ci_build] cpack -C ${CONFIGURATION} ${CPACK_OPTIONS}
+eval cpack -C ${CONFIGURATION} ${CPACK_OPTIONS}
 
 popd
