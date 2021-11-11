@@ -590,7 +590,7 @@ AmazonToolbar ToolbarManager::GetObjectToolbar() const
     return t;
 }
 
-QMenu* ToolbarManager::GetPlayButtonMenu() const
+QMenu* ToolbarManager::CreatePlayButtonMenu() const
 {
     QMenu* playButtonMenu = new QMenu("Play Game");
 
@@ -612,7 +612,7 @@ AmazonToolbar ToolbarManager::GetPlayConsoleToolbar() const
     QAction* playAction = m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME);
     QToolButton* playButton = new QToolButton(t.Toolbar());
 
-    QMenu* menu = GetPlayButtonMenu();
+    QMenu* menu = CreatePlayButtonMenu();
     menu->setParent(t.Toolbar());
     playAction->setMenu(menu);
 
