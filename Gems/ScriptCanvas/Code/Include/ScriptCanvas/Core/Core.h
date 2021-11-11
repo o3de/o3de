@@ -344,11 +344,13 @@ namespace ScriptCanvasEditor
 
         GraphPtr Mod() const;
 
-        operator bool() const;
+        bool operator==(const SourceHandle& other) const;
 
-        bool operator!() const;
+        bool operator!=(const SourceHandle& other) const;
 
         const AZStd::string& Path() const;
+
+        bool PathEquals(const SourceHandle& other) const;
 
         AZStd::string ToString() const;
 

@@ -260,7 +260,7 @@ namespace ScriptCanvasEditor
                             activeAssets.push_back(assetSaveData);
                         }
                     }
-                    else if (assetId == focusedAssetId)
+                    else if (assetId.AnyEquals(focusedAssetId))
                     {
                         focusedAssetId.Clear();
                     }
@@ -822,7 +822,7 @@ namespace ScriptCanvasEditor
     void MainWindow::SignalActiveSceneChanged(ScriptCanvasEditor::SourceHandle assetId)
     {
         AZ::EntityId graphId;
-        if (assetId)
+        if (assetId.IsValid())
         {
             EditorGraphRequestBus::EventResult(graphId, assetId.Get()->GetScriptCanvasId(), &EditorGraphRequests::GetGraphCanvasGraphId);
         }
@@ -1251,7 +1251,7 @@ namespace ScriptCanvasEditor
 
     AZ::Outcome<int, AZStd::string> MainWindow::OpenScriptCanvasAsset(ScriptCanvasEditor::SourceHandle scriptCanvasAssetId, int tabIndex)
     {
-        if (scriptCanvasAssetId)
+        if (scriptCanvasAssetId.IsValid())
         {
             return OpenScriptCanvasAssetImplementation(scriptCanvasAssetId, tabIndex);
         }
@@ -1272,7 +1272,7 @@ namespace ScriptCanvasEditor
         m_assetCreationRequests.erase(assetId);
         GeneralAssetNotificationBus::Event(assetId, &GeneralAssetNotifications::OnAssetUnloaded);
 
-        if (assetId)
+        if (assetId.IsValid())
         {
             // Disconnect scene and asset editor buses
             GraphCanvas::SceneNotificationBus::MultiHandler::BusDisconnect(assetId.Get()->GetScriptCanvasId());
@@ -1314,7 +1314,7 @@ namespace ScriptCanvasEditor
 
         OnFileNew();
 
-        bool createdNewAsset = m_activeGraph != previousAssetId;
+        bool createdNewAsset = !(m_activeGraph.AnyEquals(previousAssetId));
 
         if (createdNewAsset)
         {
@@ -1754,7 +1754,7 @@ namespace ScriptCanvasEditor
             return false;
         }
 
-        if (m_activeGraph != inMemoryAssetId)
+        if (!m_activeGraph.AnyEquals(inMemoryAssetId))
         {
             OnChangeActiveGraphTab(inMemoryAssetId);
         }
@@ -2489,7 +2489,7 @@ namespace ScriptCanvasEditor
     {
         AZ::EntityId graphId{};
 
-        if (m_activeGraph)
+        if (m_activeGraph.IsValid())
         {
             EditorGraphRequestBus::EventResult
                 ( graphId, m_activeGraph.Get()->GetScriptCanvasId(), &EditorGraphRequests::GetGraphCanvasGraphId);
@@ -2514,7 +2514,7 @@ namespace ScriptCanvasEditor
     {
         AZ::EntityId graphId{};
 
-        if (assetId)
+        if (assetId.IsValid())
         {
             EditorGraphRequestBus::EventResult
                 ( graphId, assetId.Get()->GetScriptCanvasId(), &EditorGraphRequests::GetGraphCanvasGraphId);
@@ -2525,7 +2525,7 @@ namespace ScriptCanvasEditor
 
     ScriptCanvas::ScriptCanvasId MainWindow::FindScriptCanvasIdByAssetId(const ScriptCanvasEditor::SourceHandle& assetId) const
     {
-        return assetId ? assetId.Get()->GetScriptCanvasId() : ScriptCanvas::ScriptCanvasId{};
+        return assetId.IsValid() ? assetId.Get()->GetScriptCanvasId() : ScriptCanvas::ScriptCanvasId{};
     }
 
     ScriptCanvas::ScriptCanvasId MainWindow::GetScriptCanvasId(const GraphCanvas::GraphId& graphCanvasGraphId) const
@@ -2568,7 +2568,7 @@ namespace ScriptCanvasEditor
             if (tabdata.isValid())
             {
                 auto tabAssetId = tabdata.value<Widget::GraphTabMetadata>();
-                if (tabAssetId.m_assetId == assetId)
+                if (tabAssetId.m_assetId.AnyEquals(assetId))
                 {
                     return tabdata;
                 }
@@ -2594,14 +2594,14 @@ namespace ScriptCanvasEditor
         
         // Disconnect previous asset
         AZ::EntityId previousScriptCanvasSceneId;
-        if (previousAsset)
+        if (previousAsset.IsValid())
     {
             previousScriptCanvasSceneId = previousAsset.Get()->GetScriptCanvasId();
             GraphCanvas::SceneNotificationBus::MultiHandler::BusDisconnect(previousScriptCanvasSceneId);
         }
 
         AZ::EntityId nextAssetGraphCanvasId;
-        if (nextAsset)
+        if (nextAsset.IsValid())
         {
             // Connect the next asset
             EditorGraphRequestBus::EventResult(nextAssetGraphCanvasId, nextAsset.Get()->GetScriptCanvasId(), &EditorGraphRequests::GetGraphCanvasGraphId);
@@ -2622,9 +2622,7 @@ namespace ScriptCanvasEditor
 
     void MainWindow::SetActiveAsset(const ScriptCanvasEditor::SourceHandle& fileAssetId)
     {
-        // #sc_editor_asset
-        
-        if (m_activeGraph == fileAssetId)
+        if (m_activeGraph.AnyEquals(fileAssetId))
         {
             return;
         }
@@ -2827,7 +2825,7 @@ namespace ScriptCanvasEditor
                 {
                     auto assetId = tabdata.value<Widget::GraphTabMetadata>();
 
-                    if (assetId.m_assetId != m_skipTabOnClose)
+                    if (!assetId.m_assetId.AnyEquals(m_skipTabOnClose))
                     {
                         break;
                     }
@@ -2855,7 +2853,7 @@ namespace ScriptCanvasEditor
 
             bool activeSet = false;
 
-            if (tabAssetId.m_assetId == m_activeGraph)
+            if (tabAssetId.m_assetId.AnyEquals(m_activeGraph))
             {
                 SetActiveAsset({});
                 activeSet = true;
