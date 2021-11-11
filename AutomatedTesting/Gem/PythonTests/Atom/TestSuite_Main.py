@@ -65,6 +65,10 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_LightAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_LightAdded as test_module
 
+    @pytest.mark.test_case_id("C36525662")
+    class AtomEditorComponents_LookModificationAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_LookModificationAdded as test_module
+
     @pytest.mark.test_case_id("C32078123")
     class AtomEditorComponents_MaterialAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_MaterialAdded as test_module
