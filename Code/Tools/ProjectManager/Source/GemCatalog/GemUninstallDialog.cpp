@@ -36,7 +36,7 @@ namespace O3DE::ProjectManager
 
         layout->addSpacing(10);
 
-        QLabel* bodyLabel = new QLabel(tr("The Gem and its related files will be uninstalled. This does not affect the Gem’s repository. "
+        QLabel* bodyLabel = new QLabel(tr("The Gem and its related files will be uninstalled. This does not affect the Gem's repository. "
                                           "You can reinstall this Gem from the Catalog, but its contents may be subject to change."));
         bodyLabel->setWordWrap(true);
         bodyLabel->setFixedSize(QSize(440, 80));

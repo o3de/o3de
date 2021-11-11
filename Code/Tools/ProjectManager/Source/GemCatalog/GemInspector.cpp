@@ -127,7 +127,9 @@ namespace O3DE::ProjectManager
         m_binarySizeLabel->setText(tr("Binary Size:  %1").arg(binarySize ? tr("%1 KB").arg(binarySize) : tr("Unknown")));
 
         // Update and Uninstall buttons
-        if (m_model->GetGemOrigin(modelIndex) == GemInfo::Remote && m_model->GetDownloadStatus(modelIndex) == GemInfo::Downloaded)
+        if (m_model->GetGemOrigin(modelIndex) == GemInfo::Remote &&
+            (m_model->GetDownloadStatus(modelIndex) == GemInfo::Downloaded ||
+             m_model->GetDownloadStatus(modelIndex) == GemInfo::DownloadSuccessful))
         {
             m_updateGemButton->show();
             m_uninstallGemButton->show();
