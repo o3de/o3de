@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #if !defined(Q_MOC_RUN)
 #include <QWidget>
 #include <QAction>
@@ -16,7 +14,6 @@
 #endif
 
 #include <Source/Translation/TranslationBus.h>
-
 
 namespace ScriptCanvasDeveloperEditor
 {
