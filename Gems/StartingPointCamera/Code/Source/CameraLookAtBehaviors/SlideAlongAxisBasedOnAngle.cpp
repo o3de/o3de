@@ -61,7 +61,8 @@ namespace Camera
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
                             ->DataElement(0, &SlideAlongAxisBasedOnAngle::m_ignoreZ, "Z", "When active, the Z Component will be ignored.")
                                 ->Attribute(AZ::Edit::Attributes::ReadOnly, &SlideAlongAxisBasedOnAngle::XAndYIgnored)
-                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues);
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
+                    ;
             }
         }
     }
@@ -70,7 +71,7 @@ namespace Camera
         [[maybe_unused]] float deltaTime, [[maybe_unused]] const AZ::Transform& targetTransform, AZ::Transform& outLookAtTargetTransform)
     {
         float angle = GetEulerAngleFromTransform(outLookAtTargetTransform, m_angleTypeToChangeFor);
-        float currentPositionOnRange = -angle / AZ::Constants::HalfPi;  
+        float currentPositionOnRange = -angle / AZ::Constants::HalfPi;
         float slideScale = currentPositionOnRange > 0.0f ? m_maximumPositiveSlideDistance : m_maximumNegativeSlideDistance;
 
         AZ::Vector3 basis = outLookAtTargetTransform.GetBasis(m_axisToSlideAlong);
