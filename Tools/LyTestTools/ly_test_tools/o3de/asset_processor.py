@@ -417,7 +417,7 @@ class AssetProcessor(object):
 
     def process_exists(self):
         if self._ap_proc:
-            return self._ap_proc.poll() is not None
+            return self._ap_proc.poll() is None
         return False
 
     def batch_process(self, timeout=DEFAULT_TIMEOUT_SECONDS, fastscan=True, capture_output=False, platforms=None,
