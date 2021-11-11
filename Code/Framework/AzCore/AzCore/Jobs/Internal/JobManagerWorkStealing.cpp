@@ -83,7 +83,7 @@ AZ_THREAD_LOCAL JobManagerWorkStealing::ThreadInfo* JobManagerWorkStealing::m_cu
 
 JobManagerWorkStealing::JobManagerWorkStealing(const JobManagerDesc& desc)
     : m_isAsynchronous(!desc.m_workerThreads.empty())
-    , m_workerThreads(AZStd::move(CreateWorkerThreads(desc.m_workerThreads)))
+    , m_workerThreads(AZStd::move(CreateWorkerThreads(desc)))
 {
     //allow workers to begin processing after they have all been created, needed to wait since they may access each others queues
     m_initSemaphore.release(static_cast<unsigned int>(desc.m_workerThreads.size()));
@@ -618,8 +618,9 @@ JobManagerWorkStealing::ThreadInfo* JobManagerWorkStealing::FindCurrentThreadInf
     return info;
 }
 
-JobManagerWorkStealing::ThreadList JobManagerWorkStealing::CreateWorkerThreads(const JobManagerDesc::DescList& workerDescList)
+JobManagerWorkStealing::ThreadList JobManagerWorkStealing::CreateWorkerThreads(const JobManagerDesc& jmDesc)
 {
+    const JobManagerDesc::DescList& workerDescList = jmDesc.m_workerThreads;
     ThreadList workerThreads(workerDescList.size());
     m_threads.reserve(workerDescList.size());
 
@@ -632,8 +633,14 @@ JobManagerWorkStealing::ThreadList JobManagerWorkStealing::CreateWorkerThreads(c
         info->m_owningManager = this;
         info->m_workerId = iThread;
 
+        char threadName[64];
+        sprintf_s(
+            threadName, 
+            "%s worker thread %d", 
+            jmDesc.m_jobManagerName[0] != '\0' ? jmDesc.m_jobManagerName : "AZ JobManager", 
+            iThread);
         AZStd::thread_desc threadDesc;
-        threadDesc.m_name = "AZ JobManager worker thread";
+        threadDesc.m_name = threadName;
         threadDesc.m_cpuId = desc.m_cpuId;
         threadDesc.m_priority = desc.m_priority;
         if (desc.m_stackSize != 0)
