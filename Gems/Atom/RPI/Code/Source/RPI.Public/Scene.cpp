@@ -44,8 +44,13 @@ namespace AZ
             {
                 auto shaderAsset = RPISystemInterface::Get()->GetCommonShaderAssetForSrgs();
                 scene->m_srg = ShaderResourceGroup::Create(shaderAsset, sceneSrgLayout->GetName());
+                
+                // Set value for constants defined in SceneTimeSrg.azsli
+                scene->m_timeInputIndex = scene->m_srg->FindShaderInputConstantIndex(Name{ "m_time" });
             }
-            
+
+            scene->m_name = sceneDescriptor.m_nameId;
+
             return ScenePtr(scene);
         }
 
@@ -83,10 +88,23 @@ namespace AZ
             return nullptr;
         }
 
+        Scene* Scene::GetSceneForEntityId(AZ::EntityId entityId)
+        {
+            // Find the entity context for the entity ID.
+            AzFramework::EntityContextId entityContextId = AzFramework::EntityContextId::CreateNull();
+            AzFramework::EntityIdContextQueryBus::EventResult(entityContextId, entityId, &AzFramework::EntityIdContextQueryBus::Events::GetOwningContextId);
+
+            if (!entityContextId.IsNull())
+            {
+                return GetSceneForEntityContextId(entityContextId);
+            }
+            return nullptr;
+        }
+
 
         Scene::Scene()
         {
-            m_id = Uuid::CreateRandom();
+            m_id = AZ::Uuid::CreateRandom();
             m_cullingScene = aznew CullingScene();
             SceneRequestBus::Handler::BusConnect(m_id);
             m_drawFilterTagRegistry = RHI::DrawFilterTagRegistry::Create();
@@ -299,7 +317,6 @@ namespace AZ
             // Force to update the lookup table since adding render pipeline would effect any pipeline states created before pass system tick
             RebuildPipelineStatesLookup();
 
-            AZ_Assert(!m_id.IsNull(), "RPI::Scene needs to have a valid uuid.");
             SceneNotificationBus::Event(m_id, &SceneNotification::OnRenderPipelineAdded, pipeline);
         }
         
@@ -396,11 +413,11 @@ namespace AZ
             //[GFX TODO]: the completion job should start here
         }
 
-        void Scene::Simulate([[maybe_unused]] const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy)
+        void Scene::Simulate(RHI::JobPolicy jobPolicy, float simulationTime)
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: Simulate");
 
-            m_simulationTime = tickInfo.m_currentGameTime;
+            m_simulationTime = simulationTime;
 
             // If previous simulation job wasn't done, wait for it to finish.
             if (m_taskGraphActive)
@@ -469,11 +486,9 @@ namespace AZ
         {
             if (m_srg)
             {
-                // Set value for constants defined in SceneTimeSrg.azsli
-                RHI::ShaderInputConstantIndex timeIndex = m_srg->FindShaderInputConstantIndex(Name{ "m_time" });
-                if (timeIndex.IsValid())
+                if (m_timeInputIndex.IsValid())
                 {
-                    m_srg->SetConstant(timeIndex, m_simulationTime);
+                    m_srg->SetConstant(m_timeInputIndex, m_simulationTime);
                 }
 
                 // signal any handlers to update values for their partial scene srg
@@ -606,7 +621,7 @@ namespace AZ
             WaitAndCleanCompletionJob(finalizeDrawListsCompletion);
         }
 
-        void Scene::PrepareRender(const TickTimeInfo& tickInfo, RHI::JobPolicy jobPolicy)
+        void Scene::PrepareRender(RHI::JobPolicy jobPolicy, float simulationTime)
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: PrepareRender");
 
@@ -630,7 +645,7 @@ namespace AZ
                     if (pipeline->NeedsRender())
                     {
                         activePipelines.push_back(pipeline);
-                        pipeline->OnStartFrame(tickInfo);
+                        pipeline->OnStartFrame(simulationTime);
                     }
                 }
             }
@@ -784,6 +799,11 @@ namespace AZ
         const SceneId& Scene::GetId() const
         {
             return m_id;
+        }
+
+        AZ::Name Scene::GetName() const
+        {
+            return m_name;
         }
                 
         bool Scene::SetDefaultRenderPipeline(const RenderPipelineId& pipelineId)

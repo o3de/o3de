@@ -173,8 +173,6 @@ void CryEngineSignalHandler(int signal)
 
 //////////////////////////////////////////////////////////////////////////
 #if defined(WIN32) || defined(LINUX) || defined(APPLE)
-#   define DLL_MODULE_INIT_ISYSTEM "ModuleInitISystem"
-#   define DLL_MODULE_SHUTDOWN_ISYSTEM "ModuleShutdownISystem"
 #   define DLL_INITFUNC_RENDERER "PackageRenderConstructor"
 #   define DLL_INITFUNC_SOUND "CreateSoundSystem"
 #   define DLL_INITFUNC_FONT "CreateCryFontInterface"
@@ -188,8 +186,6 @@ void CryEngineSignalHandler(int signal)
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #else
-#   define DLL_MODULE_INIT_ISYSTEM (LPCSTR)2
-#   define DLL_MODULE_SHUTDOWN_ISYSTEM (LPCSTR)3
 #   define DLL_INITFUNC_RENDERER  (LPCSTR)1
 #   define DLL_INITFUNC_RENDERER  (LPCSTR)1
 #   define DLL_INITFUNC_SOUND     (LPCSTR)1
@@ -445,18 +441,6 @@ AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDLL(const char* dllName)
         return handle;
     }
 
-    //////////////////////////////////////////////////////////////////////////
-    // After loading DLL initialize it by calling ModuleInitISystem
-    //////////////////////////////////////////////////////////////////////////
-    AZStd::string moduleName = PathUtil::GetFileName(dllName);
-
-    typedef void*(*PtrFunc_ModuleInitISystem)(ISystem* pSystem, const char* moduleName);
-    PtrFunc_ModuleInitISystem pfnModuleInitISystem = handle->GetFunction<PtrFunc_ModuleInitISystem>(DLL_MODULE_INIT_ISYSTEM);
-    if (pfnModuleInitISystem)
-    {
-        pfnModuleInitISystem(this, moduleName.c_str());
-    }
-
     return handle;
 }
 
@@ -497,13 +481,6 @@ void CSystem::ShutdownModuleLibraries()
 #if !defined(AZ_MONOLITHIC_BUILD)
     for (auto iterator = m_moduleDLLHandles.begin(); iterator != m_moduleDLLHandles.end(); ++iterator)
     {
-        typedef void*( * PtrFunc_ModuleShutdownISystem )(ISystem* pSystem);
-
-        PtrFunc_ModuleShutdownISystem pfnModuleShutdownISystem = iterator->second->GetFunction<PtrFunc_ModuleShutdownISystem>(DLL_MODULE_SHUTDOWN_ISYSTEM);
-        if (pfnModuleShutdownISystem)
-        {
-            pfnModuleShutdownISystem(this);
-        }
         if (iterator->second->IsLoaded())
         {
             iterator->second->Unload();
@@ -649,7 +626,7 @@ bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
     auto projectName = AZ::Utils::GetProjectName();
     AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Project Name: %s\n", projectName.empty() ? "None specified" : projectName.c_str());
 
-    OpenBasicPaks();
+    OpenPlatformPaks();
 
     // Load game-specific folder.
     LoadConfiguration("game.cfg");
@@ -786,29 +763,19 @@ void CSystem::InitLocalization()
     OpenLanguageAudioPak(language.c_str());
 }
 
-void CSystem::OpenBasicPaks()
+void CSystem::OpenPlatformPaks()
 {
-    static bool bBasicPaksLoaded = false;
-    if (bBasicPaksLoaded)
+    static bool bPlatformPaksLoaded = false;
+    if (bPlatformPaksLoaded)
     {
         return;
     }
-    bBasicPaksLoaded = true;
-
-    // open pak files
-    constexpr AZStd::string_view paksFolder = "@products@/*.pak"; // (@products@ assumed)
-    m_env.pCryPak->OpenPacks(paksFolder);
-
-    InlineInitializationProcessing("CSystem::OpenBasicPaks OpenPacks( paksFolder.c_str() )");
+    bPlatformPaksLoaded = true;
 
     //////////////////////////////////////////////////////////////////////////
     // Open engine packs
     //////////////////////////////////////////////////////////////////////////
 
-    const char* const assetsDir = "@products@";
-
-    // After game paks to have same search order as with files on disk
-    m_env.pCryPak->OpenPack(assetsDir, "engine.pak");
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_15
@@ -816,6 +783,7 @@ void CSystem::OpenBasicPaks()
 #endif
 
 #ifdef AZ_PLATFORM_ANDROID
+    const char* const assetsDir = "@products@";
     // Load Android Obb files if available
     const char* obbStorage = AZ::Android::Utils::GetObbStoragePath();
     AZStd::string mainObbPath = AZStd::move(AZStd::string::format("%s/%s", obbStorage, AZ::Android::Utils::GetObbFileName(true)));
@@ -824,7 +792,7 @@ void CSystem::OpenBasicPaks()
     m_env.pCryPak->OpenPack(assetsDir, patchObbPath.c_str());
 #endif //AZ_PLATFORM_ANDROID
 
-    InlineInitializationProcessing("CSystem::OpenBasicPaks OpenPacks( Engine... )");
+    InlineInitializationProcessing("CSystem::OpenPlatformPaks OpenPacks( Engine... )");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1328,7 +1296,7 @@ AZ_POP_DISABLE_WARNING
         //////////////////////////////////////////////////////////////////////////
         // Open basic pak files after intro movie playback started
         //////////////////////////////////////////////////////////////////////////
-        OpenBasicPaks();
+        OpenPlatformPaks();
 
         //////////////////////////////////////////////////////////////////////////
         // AUDIO

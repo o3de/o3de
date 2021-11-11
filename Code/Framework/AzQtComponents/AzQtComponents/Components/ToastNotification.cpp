@@ -27,7 +27,6 @@ namespace AzQtComponents
         setProperty("HasNoWindowDecorations", true);
 
         setAttribute(Qt::WA_ShowWithoutActivating);
-        setAttribute(Qt::WA_DeleteOnClose);
 
         m_borderRadius = toastConfiguration.m_borderRadius;
         if (m_borderRadius > 0)

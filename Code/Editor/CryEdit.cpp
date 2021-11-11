@@ -45,6 +45,7 @@ AZ_POP_DISABLE_WARNING
 
 // AzCore
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -1684,6 +1685,11 @@ bool CCryEditApp::InitInstance()
     if (!initGameSystemOutcome.IsSuccess())
     {
         return false;
+    }
+
+    if (AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get())
+    {
+        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "LegacySystemInterfaceCreated", R"({})");
     }
 
     // Process some queued events come from system init
@@ -3968,9 +3974,8 @@ void CCryEditApp::OpenLUAEditor(const char* files)
         }
     }
 
-    const char* engineRoot = nullptr;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-    AZ_Assert(engineRoot != nullptr, "Unable to communicate to AzFramework::ApplicationRequests::Bus");
+    AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
+    AZ_Assert(!engineRoot.empty(), "Unable to query Engine Path");
 
     AZStd::string_view exePath;
     AZ::ComponentApplicationBus::BroadcastResult(exePath, &AZ::ComponentApplicationRequests::GetExecutableFolder);
@@ -3989,7 +3994,7 @@ void CCryEditApp::OpenLUAEditor(const char* files)
 #endif
         "%s", argumentQuoteString, aznumeric_cast<int>(exePath.size()), exePath.data(), argumentQuoteString);
 
-    AZStd::string processArgs = AZStd::string::format("%s -engine-path \"%s\"", args.c_str(), engineRoot);
+    AZStd::string processArgs = AZStd::string::format("%s -engine-path \"%s\"", args.c_str(), engineRoot.c_str());
     StartProcessDetached(process.c_str(), processArgs.c_str());
 }
 

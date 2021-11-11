@@ -2,6 +2,7 @@
     "gem_name": "TextureAtlas",
     "display_name": "Texture Atlas",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The Texture Atlas Gem provides the formatting for texture atlases from 2D textures for LyShine.",

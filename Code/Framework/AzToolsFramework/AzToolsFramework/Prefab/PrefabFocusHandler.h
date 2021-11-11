@@ -50,6 +50,7 @@ namespace AzToolsFramework::Prefab
 
         // PrefabFocusPublicInterface overrides ...
         PrefabFocusOperationResult FocusOnOwningPrefab(AZ::EntityId entityId) override;
+        PrefabFocusOperationResult FocusOnParentOfFocusedPrefab(AzFramework::EntityContextId entityContextId) override;
         PrefabFocusOperationResult FocusOnPathIndex(AzFramework::EntityContextId entityContextId, int index) override;
         AZ::EntityId GetFocusedPrefabContainerEntityId(AzFramework::EntityContextId entityContextId) const override;
         bool IsOwningPrefabBeingFocused(AZ::EntityId entityId) const override;

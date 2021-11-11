@@ -51,9 +51,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     RWTexture2D<uint>               m_fragmentListHead;
     RWStructuredBuffer<PPLL_STRUCT> m_linkedListNodes;
     RWBuffer<uint>                  m_linkedListCounter;
-
-    // Linear depth is used for getting the screen to world transform
-    Texture2D<float>                m_linearDepth;
 }
 
 //------------------------------------------------------------------------------
