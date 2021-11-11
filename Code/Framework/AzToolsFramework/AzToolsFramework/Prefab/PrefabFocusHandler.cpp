@@ -175,20 +175,14 @@ namespace AzToolsFramework::Prefab
         m_focusedInstance = focusedInstance;
         m_focusedTemplateId = focusedInstance->get().GetTemplateId();
 
-        AZ::EntityId containerEntityId;
-
-        if (focusedInstance->get().GetParentInstance() != AZStd::nullopt)
-        {
-            containerEntityId = focusedInstance->get().GetContainerEntityId();
-        }
-        else
-        {
-            containerEntityId = AZ::EntityId();
-        }
-            
         // Focus on the descendants of the container entity in the Editor, if the interface is initialized.
         if (m_focusModeInterface)
         {
+            const AZ::EntityId containerEntityId =
+                (focusedInstance->get().GetParentInstance() != AZStd::nullopt)
+                ? focusedInstance->get().GetContainerEntityId()
+                : AZ::EntityId();
+
             m_focusModeInterface->SetFocusRoot(containerEntityId);
         }
 

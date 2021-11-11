@@ -231,7 +231,7 @@ namespace O3DE::ProjectManager
          * @return an outcome with a string error message on failure.
          */
         virtual AZ::Outcome<void, AZStd::string> DownloadGem(
-            const QString& gemName, std::function<void(int)> gemProgressCallback, bool force = false) = 0;
+            const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) = 0;
 
         /**
          * Cancels the current download.

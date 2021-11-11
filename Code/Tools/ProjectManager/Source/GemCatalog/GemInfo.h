@@ -57,6 +57,8 @@ namespace O3DE::ProjectManager
             UnknownDownloadStatus = -1,
             NotDownloaded,
             Downloading,
+            DownloadSuccessful,
+            DownloadFailed,
             Downloaded
         };
         static QString GetDownloadStatusString(DownloadStatus status);

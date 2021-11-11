@@ -1215,7 +1215,8 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gemInfos));
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::DownloadGem(const QString& gemName, std::function<void(int)> gemProgressCallback, bool force)
+    AZ::Outcome<void, AZStd::string> PythonBindings::DownloadGem(
+        const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force)
     {
         // This process is currently limited to download a single gem at a time.
         bool downloadSucceeded = false;
@@ -1230,9 +1231,9 @@ namespace O3DE::ProjectManager
                     false, // skip auto register
                     force, // force overwrite
                     pybind11::cpp_function(
-                        [this, gemProgressCallback](int progress)
+                        [this, gemProgressCallback](int bytesDownloaded, int totalBytes)
                         {
-                            gemProgressCallback(progress);
+                            gemProgressCallback(bytesDownloaded, totalBytes);
 
                             return m_requestCancelDownload;
                         }) // Callback for download progress and cancelling
