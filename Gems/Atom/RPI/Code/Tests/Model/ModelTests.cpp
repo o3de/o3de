@@ -1070,17 +1070,21 @@ namespace UnitTest
             lodCreator.SetMeshAabb(AZ::Aabb::CreateFromMinMax({ -1.0f, -1.0f, -0.5f }, { 1.0f, 1.0f, 0.5f }));
             lodCreator.SetMeshMaterialSlot(AZ::Sfmt::GetInstance().Rand32());
 
-            AZStd::copy(indices, indices + indexCount, reinterpret_cast<uint32_t*>(const_cast<uint8_t*>(indexBuffer->GetBuffer().data())));
-            lodCreator.SetMeshIndexBuffer({ indexBuffer,
-                                            AZ::RHI::BufferViewDescriptor::CreateStructured(
-                                                aznumeric_cast<uint32_t>(indexOffset), aznumeric_cast<uint32_t>(indexCount), sizeof(uint32_t)) });
             AZStd::copy(
-                positions, positions + positionCount, reinterpret_cast<float*>(const_cast<uint8_t*>(positionBuffer->GetBuffer().data())));
+                indices, indices + indexCount,
+                reinterpret_cast<uint32_t*>(const_cast<uint8_t*>(indexBuffer->GetBuffer().data())) + indexOffset);
+            lodCreator.SetMeshIndexBuffer(
+                { indexBuffer,
+                  AZ::RHI::BufferViewDescriptor::CreateStructured(
+                      aznumeric_cast<uint32_t>(indexOffset), aznumeric_cast<uint32_t>(indexCount), sizeof(uint32_t)) });
+            AZStd::copy(
+                positions, positions + positionCount,
+                reinterpret_cast<float*>(const_cast<uint8_t*>(positionBuffer->GetBuffer().data())) + positionOffset);
             lodCreator.AddMeshStreamBuffer(
                 AZ::RHI::ShaderSemantic(AZ::Name("POSITION")), AZ::Name(),
                 { positionBuffer,
                   AZ::RHI::BufferViewDescriptor::CreateStructured(
-                      aznumeric_cast<uint32_t>(positionOffset), aznumeric_cast<uint32_t>(positionCount / 3), sizeof(float) * 3) });
+                      aznumeric_cast<uint32_t>(positionOffset / 3), aznumeric_cast<uint32_t>(positionCount / 3), sizeof(float) * 3) });
 
             lodCreator.EndMesh();
         }
@@ -1382,7 +1386,7 @@ namespace UnitTest
                 indexBuffer);
             // add the quad mesh (offset by the cube position and index data into the same buffer)
             m_mesh->Add(
-                lodCreator, offsetQuadPositions.data(), offsetQuadPositions.size(), /*offset=*/CubePositions.size() / 3, positionBuffer,
+                lodCreator, offsetQuadPositions.data(), offsetQuadPositions.size(), /*offset=*/CubePositions.size(), positionBuffer,
                 QuadIndices.data(), QuadIndices.size(), /*offset=*/CubeIndices.size(), indexBuffer);
 
             m_mesh->End(lodCreator);
@@ -1395,15 +1399,27 @@ namespace UnitTest
         }
 
         AZStd::unique_ptr<TestMesh> m_mesh;
+        inline static constexpr bool AllowBruteForce = false;
     };
 
-    TEST_F(BruteForceMultiModelIntersectsFixture, RayIntersectsWithSecondMesh)
+    TEST_F(BruteForceMultiModelIntersectsFixture, RayIntersectsWithFirstSubMesh)
     {
         float t = 0.0f;
         AZ::Vector3 normal = AZ::Vector3::CreateOne(); // invalid starting normal
+        // fire a ray at the first sub mesh and ensure a successful hit is returned
+        EXPECT_THAT(
+            m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
+                AZ::Vector3(0.0f, 0.0f, 5.0f), -AZ::Vector3::CreateAxisZ(10.0f), AllowBruteForce, t, normal),
+            testing::IsTrue());
+        EXPECT_THAT(t, testing::FloatEq(0.4f));
+        EXPECT_THAT(normal, IsClose(AZ::Vector3::CreateAxisZ()));
+    }
 
+    TEST_F(BruteForceMultiModelIntersectsFixture, RayIntersectsWithSecondSubMesh)
+    {
+        float t = 0.0f;
+        AZ::Vector3 normal = AZ::Vector3::CreateOne(); // invalid starting normal
         // fire a ray at the second sub mesh and ensure a successful hit is returned
-        constexpr bool AllowBruteForce = false;
         EXPECT_THAT(
             m_mesh->GetModel()->LocalRayIntersectionAgainstModel(
                 AZ::Vector3(QuadOffsetX, 0.0f, 5.0f), -AZ::Vector3::CreateAxisZ(10.0f), AllowBruteForce, t, normal),
