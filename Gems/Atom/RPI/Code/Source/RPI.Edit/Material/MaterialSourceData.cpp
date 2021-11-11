@@ -303,7 +303,7 @@ namespace AZ
                     MaterialPropertyId propertyId{ group.first, property.first };
                     if (!property.second.m_value.IsValid())
                     {
-                        AZ_Warning("Material source data", false, "Source data for material property value is invalid.");
+                        materialAssetCreator.ReportWarning("Source data for material property value is invalid.");
                     }
                     else
                     {
