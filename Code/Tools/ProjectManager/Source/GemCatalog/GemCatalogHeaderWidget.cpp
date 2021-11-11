@@ -297,6 +297,7 @@ namespace O3DE::ProjectManager
             QLabel* progressLabel = gemToUpdate->findChild<QLabel*>("DownloadProgressLabel");
             QProgressBar* progressBar = gemToUpdate->findChild<QProgressBar*>("DownloadProgressBar");
 
+            // totalBytes can be 0 if the server does not return a content-length for the object
             if (totalBytes != 0)
             {
                 int downloadPercentage = static_cast<int>((bytesDownloaded / static_cast<float>(totalBytes)) * 100);
