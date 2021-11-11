@@ -41,5 +41,7 @@ namespace UnitTest
         // BoundsRequestBus overrides ...
         AZ::Aabb GetWorldBounds() override;
         AZ::Aabb GetLocalBounds() override;
+
+        AZ::Aabb m_localBounds; //!< Local bounds that can be modified for certain tests (defaults to unit cube).
     };
 } // namespace UnitTest
