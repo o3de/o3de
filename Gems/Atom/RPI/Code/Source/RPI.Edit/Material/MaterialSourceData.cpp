@@ -317,22 +317,20 @@ namespace AZ
                             {
                             case MaterialPropertyDataType::Image:
                                 {
-                                    Outcome<Data::Asset<ImageAsset>> imageAssetResult = MaterialUtils::GetImageAssetReference(
-                                        materialSourceFilePath, property.second.m_value.GetValue<AZStd::string>());
+                                    Data::Asset<ImageAsset> imageAsset;
 
-                                    if (imageAssetResult.IsSuccess())
-                                    {
-                                        auto& imageAsset = imageAssetResult.GetValue();
-                                        // Load referenced images when load material
-                                        imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
-                                        materialAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
-                                    }
-                                    else
+                                    MaterialUtils::GetImageAssetResult result = MaterialUtils::GetImageAssetReference(
+                                        imageAsset, materialSourceFilePath, property.second.m_value.GetValue<AZStd::string>());
+                                    
+                                    if (result == MaterialUtils::GetImageAssetResult::Missing || result == MaterialUtils::GetImageAssetResult::MissingNoFallback)
                                     {
                                         materialAssetCreator.ReportWarning(
                                             "Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(),
                                             property.second.m_value.GetValue<AZStd::string>().data());
                                     }
+                                    
+                                    imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
+                                    materialAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
                                 }
                                 break;
                             case MaterialPropertyDataType::Enum:

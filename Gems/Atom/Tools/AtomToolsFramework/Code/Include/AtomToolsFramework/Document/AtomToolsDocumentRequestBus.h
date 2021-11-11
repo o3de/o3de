@@ -73,6 +73,9 @@ namespace AtomToolsFramework
         //! Can the document be saved
         virtual bool IsSavable() const = 0;
 
+        //! Get a list of warnings about the data that would be good to know before saving
+        virtual AZStd::vector<AZStd::string> GetDataWarnings() const { return {}; }
+
         //! Returns true if there are reversible modifications to the document
         virtual bool CanUndo() const = 0;
 

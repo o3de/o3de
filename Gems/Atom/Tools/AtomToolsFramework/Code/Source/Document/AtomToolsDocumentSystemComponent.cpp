@@ -365,6 +365,24 @@ namespace AtomToolsFramework
             return false;
         }
 
+        AZStd::vector<AZStd::string> dataWarnings;
+        AtomToolsDocumentRequestBus::EventResult(dataWarnings, documentId, &AtomToolsDocumentRequestBus::Events::GetDataWarnings);
+        if (!dataWarnings.empty())
+        {
+            AZStd::string allWarnings;
+            AzFramework::StringFunc::Join(allWarnings, dataWarnings.begin(), dataWarnings.end(), "\n");
+
+            auto result = QMessageBox::warning(
+                QApplication::activeWindow(), QString("Data Warnings"),
+                QString("Are you sure you want to save with the following data warnings? \n\n%1").arg(allWarnings.c_str()),
+                QMessageBox::StandardButton::Yes, QMessageBox::StandardButton::No);
+
+            if (result == QMessageBox::StandardButton::No)
+            {
+                return false;
+            }
+        }
+
         AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
 
         bool result = false;

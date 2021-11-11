@@ -493,12 +493,13 @@ namespace AZ
                         {
                         case MaterialPropertyDataType::Image:
                         {
-                            auto imageAssetResult = MaterialUtils::GetImageAssetReference(
-                                materialTypeSourceFilePath, property.m_value.GetValue<AZStd::string>());
+                            Data::Asset<ImageAsset> imageAsset;
 
-                            if (imageAssetResult)
+                            MaterialUtils::GetImageAssetResult result = MaterialUtils::GetImageAssetReference(
+                                imageAsset, materialTypeSourceFilePath, property.m_value.GetValue<AZStd::string>());
+
+                            if (result == MaterialUtils::GetImageAssetResult::Empty || result == MaterialUtils::GetImageAssetResult::Found)
                             {
-                                auto imageAsset = imageAssetResult.GetValue();
                                 materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
                             }
                             else

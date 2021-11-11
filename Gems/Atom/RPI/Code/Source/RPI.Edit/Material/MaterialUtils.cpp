@@ -28,25 +28,37 @@ namespace AZ
     {
         namespace MaterialUtils
         {
-            Outcome<Data::Asset<ImageAsset>> GetImageAssetReference(AZStd::string_view materialSourceFilePath, const AZStd::string imageFilePath)
+            GetImageAssetResult GetImageAssetReference(Data::Asset<ImageAsset>& imageAsset, AZStd::string_view materialSourceFilePath, const AZStd::string imageFilePath)
             {
+                imageAsset = {};
+
                 if (imageFilePath.empty())
                 {
                     // The image value was present but specified an empty string, meaning the texture asset should be explicitly cleared.
-                    return AZ::Success(Data::Asset<ImageAsset>());
+                    return GetImageAssetResult::Empty;
                 }
                 else
                 {
                     Outcome<Data::AssetId> imageAssetId = AssetUtils::MakeAssetId(materialSourceFilePath, imageFilePath, StreamingImageAsset::GetImageAssetSubId());
+                    
                     if (!imageAssetId.IsSuccess())
                     {
-                        return AZ::Failure();
+                        constexpr static char ErrorMissingTexture[] = "textures/defaults/missing.png";
+                        imageAssetId = AssetUtils::MakeAssetId(ErrorMissingTexture, StreamingImageAsset::GetImageAssetSubId());
+                        
+                        if (imageAssetId.IsSuccess())
+                        {
+                            imageAsset = Data::Asset<ImageAsset>{imageAssetId.GetValue(), azrtti_typeid<StreamingImageAsset>(), imageFilePath};
+                            return GetImageAssetResult::Missing;
+                        }
+                        else
+                        {
+                            return GetImageAssetResult::MissingNoFallback;
+                        }
                     }
-                    else
-                    {
-                        Data::Asset<ImageAsset> unloadedImageAssetReference(imageAssetId.GetValue(), azrtti_typeid<StreamingImageAsset>(), imageFilePath);
-                        return AZ::Success(unloadedImageAssetReference);
-                    }
+                    
+                    imageAsset = Data::Asset<ImageAsset>{imageAssetId.GetValue(), azrtti_typeid<StreamingImageAsset>(), imageFilePath};
+                    return GetImageAssetResult::Found;
                 }
             }
 
