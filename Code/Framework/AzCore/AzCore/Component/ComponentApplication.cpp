@@ -485,16 +485,6 @@ namespace AZ
         constexpr bool executeRegDumpCommands = false;
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
 
-        // Query for the Executable Path using OS specific functions
-        CalculateExecutablePath();
-
-        // Determine the path to the engine
-        CalculateEngineRoot();
-
-        // If the current platform returns an engaged optional from Utils::GetDefaultAppRootPath(), that is used
-        // for the application root.
-        CalculateAppRoot();
-
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
@@ -614,7 +604,8 @@ namespace AZ
     {
         AZ_Assert(!m_isStarted, "Component application already started!");
 
-        if (m_engineRoot.empty())
+        using Type = AZ::SettingsRegistryInterface::Type;
+        if (m_settingsRegistry->GetType(SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder) == Type::NoType)
         {
             ReportBadEngineRoot();
             return nullptr;
@@ -1180,6 +1171,24 @@ namespace AZ
         return ReflectionEnvironment::GetReflectionManager() ? ReflectionEnvironment::GetReflectionManager()->GetReflectContext<JsonRegistrationContext>() : nullptr;
     }
 
+    /// Returns the path to the engine.
+
+    const char* ComponentApplication::GetEngineRoot() const
+    {
+        static IO::FixedMaxPathString engineRoot;
+        engineRoot.clear();
+        m_settingsRegistry->Get(engineRoot, SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        return engineRoot.c_str();
+    }
+
+    const char* ComponentApplication::GetExecutableFolder() const
+    {
+        static IO::FixedMaxPathString exeFolder;
+        exeFolder.clear();
+        m_settingsRegistry->Get(exeFolder, SettingsRegistryMergeUtils::FilePathKey_BinaryFolder);
+        return exeFolder.c_str();
+    }
+
     //=========================================================================
     // CreateReflectionManager
     //=========================================================================
@@ -1483,27 +1492,6 @@ namespace AZ
                 }
             }
         }
-    }
-
-    //=========================================================================
-    // CalculateExecutablePath
-    //=========================================================================
-    void ComponentApplication::CalculateExecutablePath()
-    {
-        m_exeDirectory = Utils::GetExecutableDirectory();
-    }
-
-    void ComponentApplication::CalculateAppRoot()
-    {
-        if (AZStd::optional<AZ::StringFunc::Path::FixedString> appRootPath = Utils::GetDefaultAppRootPath(); appRootPath)
-        {
-            m_appRoot = AZStd::move(*appRootPath);
-        }
-    }
-
-    void ComponentApplication::CalculateEngineRoot()
-    {
-        m_engineRoot = AZ::SettingsRegistryMergeUtils::FindEngineRoot(*m_settingsRegistry).Native();
     }
 
     void ComponentApplication::ResolveModulePath([[maybe_unused]] AZ::OSString& modulePath)

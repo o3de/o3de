@@ -224,8 +224,22 @@ namespace PhysX {
                 physx::PxJointLimitCone limitCone(swingLimitY, swingLimitZ);
                 joint->setSwingLimit(limitCone);
 
-                const float twistLower = AZ::DegToRad(AZStd::GetMin(configuration.m_twistLimitLower, configuration.m_twistLimitUpper));
-                const float twistUpper = AZ::DegToRad(AZStd::GetMax(configuration.m_twistLimitLower, configuration.m_twistLimitUpper));
+                float twistLower = AZ::DegToRad(AZStd::GetMin(configuration.m_twistLimitLower, configuration.m_twistLimitUpper));
+                float twistUpper = AZ::DegToRad(AZStd::GetMax(configuration.m_twistLimitLower, configuration.m_twistLimitUpper));
+                // make sure there is at least a small difference between the lower and upper limits to avoid problems in PhysX
+                const float minTwistLimitRangeRadians = AZ::DegToRad(JointConstants::MinTwistLimitRangeDegrees);
+                if (const float twistLimitRange = twistUpper - twistLower;
+                    twistLimitRange < minTwistLimitRangeRadians)
+                {
+                    if (twistUpper > 0.0f)
+                    {
+                        twistLower -= (minTwistLimitRangeRadians - twistLimitRange);
+                    }
+                    else
+                    {
+                        twistUpper += (minTwistLimitRangeRadians - twistLimitRange);
+                    }
+                }
                 physx::PxJointAngularLimitPair twistLimitPair(twistLower, twistUpper);
                 joint->setTwistLimit(twistLimitPair);
 

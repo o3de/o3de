@@ -49,6 +49,8 @@ namespace O3DE::ProjectManager
         void OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies);
         void OnAddGemClicked();
         void SelectGem(const QString& gemName);
+        void OnGemDownloadResult(const QString& gemName, bool succeeded = true);
+        void Refresh();
 
     protected:
         void hideEvent(QHideEvent* event) override;
@@ -75,5 +77,6 @@ namespace O3DE::ProjectManager
         DownloadController* m_downloadController = nullptr;
         bool m_notificationsEnabled = true;
         QSet<QString> m_gemsToRegisterWithProject;
+        QString m_projectPath = nullptr;
     };
 } // namespace O3DE::ProjectManager

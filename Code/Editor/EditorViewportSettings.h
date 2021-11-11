@@ -33,9 +33,6 @@ namespace SandboxEditor
     //! event will fire when a value in the settings registry (editorpreferences.setreg) is modified.
     SANDBOX_API AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks();
 
-    SANDBOX_API AZ::Vector3 DefaultEditorCameraPosition();
-    SANDBOX_API void SetDefaultCameraEditorPosition(AZ::Vector3 defaultCameraPosition);
-
     SANDBOX_API AZ::u64 MaxItemsShownInAssetBrowserSearch();
     SANDBOX_API void SetMaxItemsShownInAssetBrowserSearch(AZ::u64 numberOfItemsShown);
 
@@ -104,6 +101,12 @@ namespace SandboxEditor
 
     SANDBOX_API bool CameraCaptureCursorForLook();
     SANDBOX_API void SetCameraCaptureCursorForLook(bool capture);
+
+    SANDBOX_API AZ::Vector3 CameraDefaultEditorPosition();
+    SANDBOX_API void SetCameraDefaultEditorPosition(const AZ::Vector3& position);
+
+    SANDBOX_API float CameraDefaultOrbitDistance();
+    SANDBOX_API void SetCameraDefaultOrbitDistance(float distance);
 
     SANDBOX_API AzFramework::InputChannelId CameraTranslateForwardChannelId();
     SANDBOX_API void SetCameraTranslateForwardChannelId(AZStd::string_view cameraTranslateForwardId);

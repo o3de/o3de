@@ -46,7 +46,7 @@ echo     DCCSI_PY_VERSION_RELEASE = %DCCSI_PY_VERSION_RELEASE%
 echo     DCCSI_MAYA_VERSION = %DCCSI_MAYA_VERSION%
 
 :::: Set Maya native project acess to this project
-IF "%MAYA_PROJECT%"=="" (set MAYA_PROJECT=%O3DE_PROJECT%)
+IF "%MAYA_PROJECT%"=="" (set MAYA_PROJECT=%O3DE_PROJECT_PATH%)
 echo     MAYA_PROJECT = %MAYA_PROJECT%
 
 :: maya sdk path

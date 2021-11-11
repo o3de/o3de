@@ -12,15 +12,16 @@
 
 namespace O3DE::ProjectManager
 {
-    TagWidget::TagWidget(const QString& text, QWidget* parent)
-        : QLabel(text, parent)
+    TagWidget::TagWidget(const Tag& tag, QWidget* parent)
+        : QLabel(tag.text, parent)
+        , m_tag(tag)
     {
         setObjectName("TagWidget");
     }
 
     void TagWidget::mousePressEvent([[maybe_unused]] QMouseEvent* event)
     {
-        emit(TagClicked(text()));
+        emit TagClicked(m_tag);
     }
 
     TagContainerWidget::TagContainerWidget(QWidget* parent)
@@ -39,20 +40,34 @@ namespace O3DE::ProjectManager
 
     void TagContainerWidget::Update(const QStringList& tags)
     {
-        FlowLayout* flowLayout = static_cast<FlowLayout*>(layout());
+        Clear();
 
-        // remove old tags
+        foreach (const QString& tag, tags)
+        {
+            TagWidget* tagWidget = new TagWidget({tag, tag});
+            connect(tagWidget, &TagWidget::TagClicked, this, [=](const Tag& clickedTag){ emit TagClicked(clickedTag); });
+            layout()->addWidget(tagWidget);
+        }
+    }
+
+    void TagContainerWidget::Update(const QVector<Tag>& tags)
+    {
+        Clear();
+
+        foreach (const Tag& tag, tags)
+        {
+            TagWidget* tagWidget = new TagWidget(tag);
+            connect(tagWidget, &TagWidget::TagClicked, this, [=](const Tag& clickedTag){ emit TagClicked(clickedTag); });
+            layout()->addWidget(tagWidget);
+        }
+    }
+
+    void TagContainerWidget::Clear()
+    {
         QLayoutItem* layoutItem = nullptr; 
         while ((layoutItem = layout()->takeAt(0)) != nullptr)
         {
             layoutItem->widget()->deleteLater();
-        }
-
-        foreach (const QString& tag, tags)
-        {
-            TagWidget* tagWidget = new TagWidget(tag);
-            connect(tagWidget, &TagWidget::TagClicked, this, [=](const QString& tag){ emit TagClicked(tag); });
-            flowLayout->addWidget(tagWidget);
         }
     }
 } // namespace O3DE::ProjectManager

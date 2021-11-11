@@ -85,8 +85,8 @@ namespace AtomToolsFramework
         AZStd::intrusive_ptr<AtomToolsDocumentSystemSettings> m_settings;
         AZStd::function<AtomToolsDocument*()> m_documentCreator;
         AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<AtomToolsDocument>> m_documentMap;
-        AZStd::unordered_set<AZ::Uuid> m_documentIdsToRebuild;
-        AZStd::unordered_set<AZ::Uuid> m_documentIdsToReopen;
+        AZStd::unordered_set<AZ::Uuid> m_documentIdsWithExternalChanges;
+        AZStd::unordered_set<AZ::Uuid> m_documentIdsWithDependencyChanges;
         const size_t m_maxMessageBoxLineCount = 15;
     };
 } // namespace AtomToolsFramework

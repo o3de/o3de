@@ -27,17 +27,6 @@ namespace Camera
     //////////////////////////////////////////////////////////////////////////
     /// These are intended to be used as an index and needs to be implicitly
     /// convertible to int.  See StartingPointCameraUtilities.h for examples
-    enum VectorComponentType : int
-    {
-        X_Component = 0,
-        Y_Component = 1,
-        Z_Component = 2,
-        None = 3,
-    };
-
-    //////////////////////////////////////////////////////////////////////////
-    /// These are intended to be used as an index and needs to be implicitly
-    /// convertible to int.  See StartingPointCameraUtilities.h for examples
     enum RelativeAxisType : int
     {
         LeftRight = 0,

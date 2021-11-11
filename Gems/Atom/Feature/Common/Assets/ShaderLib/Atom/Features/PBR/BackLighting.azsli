@@ -50,8 +50,13 @@ float3 GetBackLighting(Surface surface, LightingData lightingData, float3 lightI
             // Thin object mode, using thin-film assumption proposed by Jimenez J. et al, 2010, "Real-Time Realistic Skin Translucency"
             // http://www.iryoku.com/translucency/downloads/Real-Time-Realistic-Skin-Translucency.pdf
 
-            result = shadowRatio ? float3(0.0, 0.0, 0.0) : TransmissionKernel(surface.transmission.thickness * transmissionParams.w, rcp(transmissionParams.xyz)) * 
-                           saturate(dot(-surface.normal, dirToLight)) * lightIntensity * shadowRatio;
+            float litRatio = 1.0 - shadowRatio;
+            if (litRatio)
+            {
+                result = TransmissionKernel(surface.transmission.thickness * transmissionParams.w, rcp(transmissionParams.xyz)) * 
+                    saturate(dot(-surface.normal, dirToLight)) * lightIntensity * litRatio;
+            }
+
             break;
     }
     

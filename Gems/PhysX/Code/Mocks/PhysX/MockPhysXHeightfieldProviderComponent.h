@@ -69,6 +69,10 @@ namespace UnitTest
         MOCK_CONST_METHOD1(UpdateHeights, AZStd::vector<float>(const AZ::Aabb& dirtyRegion));
         MOCK_CONST_METHOD1(UpdateHeightsAndMaterials, AZStd::vector<Physics::HeightMaterialPoint>(const AZ::Aabb& dirtyRegion));
         MOCK_CONST_METHOD0(GetHeightfieldAabb, AZ::Aabb());
+        MOCK_CONST_METHOD0(GetHeightfieldMinHeight, float());
+        MOCK_CONST_METHOD0(GetHeightfieldMaxHeight, float());
+        MOCK_CONST_METHOD0(GetHeightfieldGridColumns, int32_t());
+        MOCK_CONST_METHOD0(GetHeightfieldGridRows, int32_t());
     };
 
 } // namespace UnitTest

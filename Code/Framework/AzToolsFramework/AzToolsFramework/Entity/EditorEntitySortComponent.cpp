@@ -11,6 +11,8 @@
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
+#include <AzFramework/API/ApplicationAPI.h>
+#include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
 
 static_assert(sizeof(AZ::u64) == sizeof(AZ::EntityId), "We use AZ::EntityId for Persistent ID, which is a u64 under the hood. These must be the same size otherwise the persistent id will have to be rewritten");
 
@@ -144,6 +146,12 @@ namespace AzToolsFramework
         bool EditorEntitySortComponent::AddChildEntityInternal(const AZ::EntityId& entityId, bool addToBack, EntityOrderArray::iterator insertPosition)
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+            if (m_ignoreIncomingOrderChanges)
+            {
+                return true;
+            }
+
             auto entityItr = m_childEntityOrderCache.find(entityId);
             if (entityItr == m_childEntityOrderCache.end())
             {
@@ -198,6 +206,12 @@ namespace AzToolsFramework
         bool EditorEntitySortComponent::RemoveChildEntity(const AZ::EntityId& entityId)
         {
             AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+            if (m_ignoreIncomingOrderChanges)
+            {
+                return true;
+            }
+
             auto entityItr = m_childEntityOrderCache.find(entityId);
             if (entityItr != m_childEntityOrderCache.end())
             {
@@ -250,11 +264,30 @@ namespace AzToolsFramework
             }
         }
 
+        void EditorEntitySortComponent::OnPrefabInstancePropagationBegin()
+        {
+            m_ignoreIncomingOrderChanges = true;
+        }
+
+        void EditorEntitySortComponent::OnPrefabInstancePropagationEnd()
+        {
+            m_ignoreIncomingOrderChanges = false;
+        }
+
         void EditorEntitySortComponent::MarkDirtyAndSendChangedEvent()
         {
             // mark the order as dirty before sending the ChildEntityOrderArrayUpdated event in order for PrepareSave to be properly handled in the case 
             // one of the event listeners needs to build the InstanceDataHierarchy
             m_entityOrderIsDirty = true;
+
+            // Force an immediate update for prefabs, which won't receive PrepareSave
+            bool isPrefabEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+            if (isPrefabEnabled)
+            {
+                PrepareSave();
+            }
             EditorEntitySortNotificationBus::Event(GetEntityId(), &EditorEntitySortNotificationBus::Events::ChildEntityOrderArrayUpdated);
         }
 
@@ -264,10 +297,20 @@ namespace AzToolsFramework
             // This is a special case for certain EditorComponents only!
             EditorEntitySortRequestBus::Handler::BusConnect(GetEntityId());
             EditorEntityContextNotificationBus::Handler::BusConnect();
+            AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         }
 
         void EditorEntitySortComponent::Activate()
         {
+            // Run the post-serialize handler if prefabs are enabled because PostLoad won't be called automatically
+            bool isPrefabEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+            if (isPrefabEnabled)
+            {
+                PostLoad();
+            }
+
             // Send out that the order for our entity is now updated
             EditorEntitySortNotificationBus::Event(GetEntityId(), &EditorEntitySortNotificationBus::Events::ChildEntityOrderArrayUpdated);
         }
