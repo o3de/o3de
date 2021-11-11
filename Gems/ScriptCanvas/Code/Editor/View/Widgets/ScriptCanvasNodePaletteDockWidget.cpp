@@ -710,7 +710,7 @@ namespace ScriptCanvasEditor
 
                 {
                     m_openTranslationData = new QAction(treeView);
-                    m_openTranslationData->setText("Open Translation Data");
+                    m_openTranslationData->setText("Explore Translation Data");
                     treeView->addAction(m_openTranslationData);
 
                     QObject::connect(m_openTranslationData, &QAction::triggered, this, &NodePaletteDockWidget::OpenTranslationData);
