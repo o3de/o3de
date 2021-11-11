@@ -1593,27 +1593,33 @@ namespace ScriptCanvasEditor
 
     void MainWindow::OnFileNew()
     {
-        static int scriptCanvasEditorDefaultNewNameCount = 0;
-
-        ScriptCanvasAssetDescription description;
-
-        AZStd::string newAssetName = AZStd::string::format(description.GetAssetNamePatternImpl(), ++scriptCanvasEditorDefaultNewNameCount);
-
-        AZStd::array<char, AZ::IO::MaxPathLength> assetRootArray;
-        if (!AZ::IO::FileIOBase::GetInstance()->ResolvePath(description.GetSuggestedSavePathImpl()
-            , assetRootArray.data(), assetRootArray.size()))
-        {
-            AZ_ErrorOnce("Script Canvas", false, "Unable to resolve @projectroot@ path");
-        }
+        int scriptCanvasEditorDefaultNewNameCount = 0;
 
         AZStd::string assetPath;
-        AzFramework::StringFunc::Path::Join(assetRootArray.data(), (newAssetName + description.GetExtensionImpl()).data(), assetPath);
+
+        for (;;)
+        {
+            ScriptCanvasAssetDescription description;
+            AZStd::string newAssetName = AZStd::string::format(description.GetAssetNamePatternImpl(), ++scriptCanvasEditorDefaultNewNameCount);
+            
+            AZStd::array<char, AZ::IO::MaxPathLength> assetRootArray;
+            if (!AZ::IO::FileIOBase::GetInstance()->ResolvePath(description.GetSuggestedSavePathImpl()
+                , assetRootArray.data(), assetRootArray.size()))
+            {
+                AZ_ErrorOnce("Script Canvas", false, "Unable to resolve @projectroot@ path");
+            }
+
+            AzFramework::StringFunc::Path::Join(assetRootArray.data(), (newAssetName + description.GetExtensionImpl()).data(), assetPath);
+            AZ::Data::AssetInfo assetInfo;
+
+            if (!AssetHelpers::GetAssetInfo(assetPath, assetInfo))
+            {
+                break;
+            }
+        }
 
         auto createOutcome = CreateScriptCanvasAsset(assetPath);
-        if (createOutcome)
-        {
-        }
-        else
+        if (!createOutcome.IsSuccess())
         {
             AZ_Warning("Script Canvas", createOutcome, "%s", createOutcome.GetError().data());
         }
@@ -1871,7 +1877,6 @@ namespace ScriptCanvasEditor
         return false;
     }
     
-
     void MainWindow::OnSaveCallBack(const VersionExplorer::FileSaveResult& result)
     {
         const bool saveSuccess = result.fileSaveError.empty();
@@ -1883,8 +1888,28 @@ namespace ScriptCanvasEditor
         {
             // #sc_editor_asset find a tab with the same path name and close non focused old ones with the same name
             // Update the editor with the new information about this asset.
-            const ScriptCanvasEditor::SourceHandle& fileAssetId = memoryAsset;
+            ScriptCanvasEditor::SourceHandle& fileAssetId = memoryAsset;
             int currentTabIndex = m_tabBar->currentIndex();
+
+            AZ::Data::AssetId oldId = fileAssetId.Id();
+            AZ::Data::AssetInfo assetInfo;
+            assetInfo.m_assetId = fileAssetId.Id();
+            AZ_VerifyWarning("ScriptCanvas", AssetHelpers::GetAssetInfo(fileAssetId.Path(), assetInfo)
+                , "Failed to find asset info for source file just saved: %s", fileAssetId.Path().c_str());
+
+            const bool assetIdHasChanged = assetInfo.m_assetId.m_guid != fileAssetId.Id();
+            fileAssetId = SourceHandle(fileAssetId, assetInfo.m_assetId.m_guid, fileAssetId.Path());
+
+            // #sc_editor_asset
+            // check for saving a graph over another graph with an open tab
+            {
+                // find the saved tab by graph*
+                // find all tabs that match old path, and close them
+                // update the save tab index
+                // and the current index
+            }
+
+            // this path is questionable, this is a save request that is not the current graph
             // We've saved as over a new graph, so we need to close the old one.
             if (saveTabIndex != currentTabIndex)
             {
@@ -1908,52 +1933,47 @@ namespace ScriptCanvasEditor
             }
 
             AzFramework::StringFunc::Path::GetFileName(memoryAsset.Path().c_str(), tabName);
-
             // Update the tab's assetId to the file asset Id (necessary when saving a new asset)
             // #sc_editor_asset used to be configure tab...sets the name and file state
-            // m_tabBar->ConfigureTab(saveTabIndex, fileAssetId, tabName);
 
-//             GeneralAssetNotificationBus::Event(memoryAsset, &GeneralAssetNotifications::OnAssetVisualized);
-// 
-//             auto requestorIter = m_assetCreationRequests.find(fileAsset->GetId());
-// 
-//             if (requestorIter != m_assetCreationRequests.end())
-//             {
-//                 auto editorComponents = AZ::EntityUtils::FindDerivedComponents<EditorScriptCanvasComponent>(requestorIter->second.first);
-// 
-//                 if (editorComponents.empty())
-//                 {
-//                     auto firstRequestBus = EditorScriptCanvasComponentRequestBus::FindFirstHandler(requestorIter->second.first);
-// 
-//                     if (firstRequestBus)
-//                     {
-//                         firstRequestBus->SetAssetId(fileAsset->GetId());
-//                     }
-//                 }
-//                 else
-//                 {
-//                     for (auto editorComponent : editorComponents)
-//                     {
-//                         if (editorComponent->GetId() == requestorIter->second.second)
-//                         {
-//                             editorComponent->SetAssetId(fileAsset->GetId());
-//                             break;
-//                         }
-//                     }
-//                 }
-// 
-//                 m_assetCreationRequests.erase(requestorIter);
-//             }
+            if (assetIdHasChanged)
+            {
+                auto entity = memoryAsset.Get()->GetEntity();
+
+                auto editorComponents = AZ::EntityUtils::FindDerivedComponents<EditorScriptCanvasComponent>(entity);
+
+                if (editorComponents.empty())
+                {
+                    if (auto firstRequestBus = EditorScriptCanvasComponentRequestBus::FindFirstHandler(entity->GetId()))
+                    {
+                        firstRequestBus->SetAssetId(memoryAsset.Id());
+                    }
+                }
+                else
+                {
+                    for (auto editorComponent : editorComponents)
+                    {
+                        if (editorComponent->GetAssetId() == oldId)
+                        {
+                            editorComponent->SetAssetId(memoryAsset.Id());
+                            break;
+                        }
+                    }
+                }
+            }             
 
             // Soft switch the asset id here. We'll do a double scene switch down below to actually switch the active assetid
             m_activeGraph = fileAssetId;
 
-            if (tabName.at(tabName.size() - 1) == '*')
+            if (tabName.at(tabName.size() - 1) == '*' || tabName.at(tabName.size() - 1) == '^')
             {
                 tabName = tabName.substr(0, tabName.size() - 2);
             }
 
-            m_tabBar->UpdateFileState(fileAssetId, Tracker::ScriptCanvasFileState::UNMODIFIED);
+            auto tabData = m_tabBar->GetTabData(saveTabIndex);
+            tabData->m_fileState = Tracker::ScriptCanvasFileState::UNMODIFIED;
+            tabData->m_assetId = fileAssetId;
+            m_tabBar->SetTabData(*tabData, saveTabIndex);
             m_tabBar->SetTabText(saveTabIndex, tabName.c_str());
         }
         else
