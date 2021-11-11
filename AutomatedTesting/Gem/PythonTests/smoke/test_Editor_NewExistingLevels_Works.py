@@ -11,6 +11,8 @@ Test should run in both gpu and non gpu
 import pytest
 import os
 from automatedtesting_shared.base import TestAutomationBase
+
+import ly_test_tools
 import ly_test_tools.environment.file_system as file_system
 
 
