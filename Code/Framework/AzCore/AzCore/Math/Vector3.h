@@ -100,7 +100,7 @@ namespace AZ
         void Set(float x, float y, float z);
 
         //! Sets components from an array of 3 floats in xyz order.
-        void Set(float values[]);
+        void Set(const float values[]);
 
         //! Indexed access using operator(), just for convenience.
         float operator()(int32_t index) const;

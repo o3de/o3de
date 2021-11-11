@@ -57,7 +57,9 @@ namespace O3DE::ProjectManager
             UnknownDownloadStatus = -1,
             NotDownloaded,
             Downloading,
-            Downloaded,
+            DownloadSuccessful,
+            DownloadFailed,
+            Downloaded
         };
         static QString GetDownloadStatusString(DownloadStatus status);
 
@@ -81,6 +83,8 @@ namespace O3DE::ProjectManager
         DownloadStatus m_downloadStatus = UnknownDownloadStatus;
         QStringList m_features;
         QString m_requirement;
+        QString m_licenseText;
+        QString m_licenseLink;
         QString m_directoryLink;
         QString m_documentationLink;
         QString m_version = "Unknown Version";
