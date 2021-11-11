@@ -11,6 +11,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Module/Environment.h>
 
 #include <stdarg.h>
@@ -44,10 +45,14 @@ namespace AWSNativeSDKInit
     Aws::Utils::Logging::LogLevel AWSLogSystemInterface::GetLogLevel() const
     {
         Aws::Utils::Logging::LogLevel newLevel = m_logLevel;
-        int awsLogLevel = bg_awsLogLevel;
-        if (awsLogLevel >= 0)
+        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
         {
-            newLevel = static_cast<Aws::Utils::Logging::LogLevel>(awsLogLevel);
+            int awsLogLevel = -1;
+            console->GetCvarValue("bg_awsLogLevel", awsLogLevel);
+            if (awsLogLevel >= 0)
+            {
+                newLevel = static_cast<Aws::Utils::Logging::LogLevel>(awsLogLevel);
+            }
         }
         return newLevel;
     }
