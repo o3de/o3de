@@ -12,8 +12,8 @@ include(${_root_path}/cmake/Platform/Common/PackagingPostBuild_common.cmake)
 # Generate checksum file
 message(STATUS "Generating checksum file...")
 execute_process(
-    COMMAND sha256sum *.deb
-    WORKING_DIRECTORY ${CPACK_TOPLEVEL_DIRECTORY}
+    COMMAND sha256sum "${CPACK_PACKAGE_FILE_NAME}.deb"
+    WORKING_DIRECTORY "${CPACK_TOPLEVEL_DIRECTORY}"
     RESULT_VARIABLE _checksum_result
     ERROR_VARIABLE _checksum_errors
     OUTPUT_VARIABLE _checksum_output
