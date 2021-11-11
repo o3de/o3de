@@ -2579,7 +2579,6 @@ void CCryEditApp::OnViewSwitchToGameFullScreen()
     OnViewSwitchToGame();
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnExportSelectedObjects()
 {
