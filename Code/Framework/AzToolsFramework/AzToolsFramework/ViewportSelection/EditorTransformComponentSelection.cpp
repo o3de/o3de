@@ -1178,8 +1178,10 @@ namespace AzToolsFramework
                         continue;
                     }
 
-                    const AZ::Aabb bound = CalculateEditorEntitySelectionBounds(entityId, viewportInfo);
-                    debugDisplay.DrawSolidBox(bound.GetMin(), bound.GetMax());
+                    if (const AZ::Aabb bound = CalculateEditorEntitySelectionBounds(entityId, viewportInfo); bound.IsValid())
+                    {
+                        debugDisplay.DrawSolidBox(bound.GetMin(), bound.GetMax());
+                    }
                 }
 
                 debugDisplay.DepthTestOn();
@@ -1327,39 +1329,6 @@ namespace AzToolsFramework
 
         translationManipulators->InstallPlanarManipulatorMouseUpCallback(
             [this, manipulatorEntityIds]([[maybe_unused]] const PlanarManipulator::Action& action)
-            {
-                AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
-                    &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,
-                    manipulatorEntityIds->m_entityIds);
-
-                EndRecordManipulatorCommand();
-            });
-
-        // surface
-        translationManipulators->InstallSurfaceManipulatorMouseDownCallback(
-            [this, manipulatorEntityIds]([[maybe_unused]] const SurfaceManipulator::Action& action)
-            {
-                BuildSortedEntityIdVectorFromEntityIdMap(m_entityIdManipulators.m_lookups, manipulatorEntityIds->m_entityIds);
-
-                InitializeTranslationLookup(m_entityIdManipulators);
-
-                m_axisPreview.m_translation = m_entityIdManipulators.m_manipulators->GetLocalTransform().GetTranslation();
-                m_axisPreview.m_orientation = QuaternionFromTransformNoScaling(m_entityIdManipulators.m_manipulators->GetLocalTransform());
-
-                // [ref 1.]
-                BeginRecordManipulatorCommand();
-            });
-
-        translationManipulators->InstallSurfaceManipulatorMouseMoveCallback(
-            [this, prevModifiers, manipulatorEntityIds](const SurfaceManipulator::Action& action) mutable
-            {
-                UpdateTranslationManipulator(
-                    action, manipulatorEntityIds->m_entityIds, m_entityIdManipulators, m_pivotOverrideFrame, prevModifiers,
-                    m_transformChangedInternally, m_spaceCluster.m_spaceLock);
-            });
-
-        translationManipulators->InstallSurfaceManipulatorMouseUpCallback(
-            [this, manipulatorEntityIds]([[maybe_unused]] const SurfaceManipulator::Action& action)
             {
                 AzToolsFramework::EditorTransformChangeNotificationBus::Broadcast(
                     &AzToolsFramework::EditorTransformChangeNotificationBus::Events::OnEntityTransformChanged,

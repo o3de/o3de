@@ -1360,16 +1360,6 @@ void CCryEditApp::CompileCriticalAssets() const
     assetsInQueueNotifcation.BusDisconnect();
     CCryEditApp::OutputStartupMessage(QString("Asset Processor is now ready."));
 
-    // VERY early on, as soon as we can, request that the asset system make sure the following assets take priority over others,
-    // so that by the time we ask for them there is a greater likelihood that they're already good to go.
-    // these can be loaded later but are still important:
-    AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "/texturemsg/");
-    AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "engineassets/materials");
-    AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "engineassets/geomcaches");
-    AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "engineassets/objects");
-
-    // some are specifically extra important and will cause issues if missing completely:
-    AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::CompileAssetSync, "engineassets/objects/default.cgf");
 }
 
 bool CCryEditApp::ConnectToAssetProcessor() const
