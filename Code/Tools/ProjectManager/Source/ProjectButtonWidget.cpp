@@ -224,7 +224,7 @@ namespace O3DE::ProjectManager
                 auto result = ProjectUtils::CreateDesktopShortcut(shortcutName, editorExecutablePath.c_str(), { arg });
                 if(result.IsSuccess())
                 {
-                    QMessageBox::information(this, tr("Shortcut created"), result.GetValue());
+                    QMessageBox::information(this, tr("Desktop Shortcut Created"), result.GetValue());
                 }
                 else
                 {

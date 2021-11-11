@@ -151,7 +151,8 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> CreateDesktopShortcut(const QString& filename, const QString& targetPath, const QStringList& arguments)
         {
             const QString cmd{"powershell.exe"};
-            const QString shortcutPath = QString("%1\\%2.lnk").arg(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation)).arg(filename);
+            const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+            const QString shortcutPath = QString("%1/%2.lnk").arg(desktopPath).arg(filename);
             const QString arg = QString("$s=(New-Object -COM WScript.Shell).CreateShortcut('%1');$s.TargetPath='%2';$s.Arguments='%3';$s.Save();")
                     .arg(shortcutPath)
                     .arg(targetPath)
@@ -165,7 +166,7 @@ namespace O3DE::ProjectManager
                                     .arg(createShortcutResult.GetError()));
             }
 
-            return AZ::Success(QObject::tr("Desktop shortcut %1 created.").arg(shortcutPath));
+            return AZ::Success(QObject::tr("Desktop shortcut created at<br><a href=\"%1\">%2</a>").arg(desktopPath).arg(shortcutPath));
         }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager
