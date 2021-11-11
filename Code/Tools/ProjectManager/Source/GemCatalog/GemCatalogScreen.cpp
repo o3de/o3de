@@ -483,7 +483,7 @@ namespace O3DE::ProjectManager
                         QModelIndex index = m_gemModel->FindIndexByNameString(gemName);
                         if (index.isValid())
                         {
-                            m_gemModel->setData(index, GemInfo::Downloaded, GemModel::RoleDownloadStatus);
+                            m_proxyModel->setData(m_proxyModel->mapFromSource(index), GemInfo::DownloadSuccessful, GemModel::RoleDownloadStatus);
                             m_gemModel->setData(index, gemInfo.m_path, GemModel::RolePath);
                             m_gemModel->setData(index, gemInfo.m_path, GemModel::RoleDirectoryLink);
                         }
@@ -491,6 +491,14 @@ namespace O3DE::ProjectManager
                         return;
                     }
                 }
+            }
+        }
+        else
+        {
+            QModelIndex index = m_gemModel->FindIndexByNameString(gemName);
+            if (index.isValid())
+            {
+                m_proxyModel->setData(m_proxyModel->mapFromSource(index), GemInfo::DownloadFailed, GemModel::RoleDownloadStatus);
             }
         }
     }
