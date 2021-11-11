@@ -32,16 +32,16 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The name used to identify any game-pad input device
-        static const char* Name;
+        static constexpr inline const char* Name{"gamepad"};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The id used to identify a game-pad input device with a specific index
         ///@{
-        static const InputDeviceId IdForIndex0;
-        static const InputDeviceId IdForIndex1;
-        static const InputDeviceId IdForIndex2;
-        static const InputDeviceId IdForIndex3;
-        static const InputDeviceId IdForIndexN(AZ::u32 n);
+        static constexpr inline InputDeviceId IdForIndex0{Name, 0};
+        static constexpr inline InputDeviceId IdForIndex1{Name, 1};
+        static constexpr inline InputDeviceId IdForIndex2{Name, 2};
+        static constexpr inline InputDeviceId IdForIndex3{Name, 3};
+        static constexpr inline InputDeviceId IdForIndexN(AZ::u32 n) { return InputDeviceId(Name, n); }
         ///@}
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -183,6 +183,14 @@ namespace AzFramework
         static void Reflect(AZ::ReflectContext* context);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
+        // Foward declare the internal Implementation class so it can be passed into the constructor
+        class Implementation;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Alias for the function type used to create a custom implementation for this input device
+        using ImplementationFactory = Implementation*(InputDeviceGamepad&);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
         explicit InputDeviceGamepad();
 
@@ -190,6 +198,13 @@ namespace AzFramework
         //! Constructor
         //! \param[in] index Index of the game-pad device
         explicit InputDeviceGamepad(AZ::u32 index);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Constructor
+        //! \param[in] inputDeviceId Id of the input device
+        //! \param[in] implementationFactory Optional override of the default Implementation::Create
+        explicit InputDeviceGamepad(const InputDeviceId& inputDeviceId,
+                                    ImplementationFactory implementationFactory = &Implementation::Create);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Disable copying

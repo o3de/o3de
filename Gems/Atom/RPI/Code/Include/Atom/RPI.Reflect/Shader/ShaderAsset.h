@@ -53,12 +53,12 @@ namespace AZ
         class ShaderAsset final
             : public Data::AssetData
             , public ShaderVariantFinderNotificationBus::Handler
-            , public Data::AssetBus::Handler
             , public AssetInitBus::Handler
         {
             friend class ShaderAssetCreator;
             friend class ShaderAssetHandler;
             friend class ShaderAssetTester;
+            friend class Shader;
         public:
             AZ_RTTI(ShaderAsset, "{823395A3-D570-49F4-99A9-D820CD1DEF98}", Data::AssetData);
             static void Reflect(ReflectContext* context);
@@ -96,7 +96,7 @@ namespace AZ
 
             //! Return the timestamp when the shader asset was built.
             //! This is used to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
-            AZStd::sys_time_t GetShaderAssetBuildTimestamp() const;
+            AZStd::sys_time_t GetBuildTimestamp() const;
 
             //! Returns the shader option group layout.
             const ShaderOptionGroupLayout* GetShaderOptionGroupLayout() const;
@@ -212,21 +212,18 @@ namespace AZ
                 return GetAttribute(shaderStage, attributeName, DefaultSupervariantIndex);
             }
 
-
         private:
-            ///////////////////////////////////////////////////////////////////
-            /// AssetBus overrides
-            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
-            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
-            ///////////////////////////////////////////////////////////////////
-
-            void ReinitializeRootShaderVariant(Data::Asset<Data::AssetData> asset);
-
             ///////////////////////////////////////////////////////////////////
             /// ShaderVariantFinderNotificationBus overrides
             void OnShaderVariantTreeAssetReady(Data::Asset<ShaderVariantTreeAsset> shaderVariantTreeAsset, bool isError) override;
             void OnShaderVariantAssetReady(Data::Asset<ShaderVariantAsset> /*shaderVariantAsset*/, bool /*isError*/) override {};
             ///////////////////////////////////////////////////////////////////
+
+            // Only Shader::OnAssetReloaded() should call this function, because it is pointless for an Asset to
+            // to refresh its own "serialized references" to other assets during  OnAssetReloaded().
+            // The problem is that OnAssetReloaded() doesn't do a good job at updating "serialized references" to other assets,
+            // So some other class must update the reference and that's why Shader() is the best class to do it.
+            void UpdateRootShaderVariantAsset(SupervariantIndex SupervariantIndex, Data::Asset<ShaderVariantAsset> newRootVariant);
 
             //! A Supervariant represents a set of static shader compilation parameters.
             //! Those parameters can be predefined c-preprocessor macros or specific arguments
@@ -297,7 +294,7 @@ namespace AZ
             Name m_drawListName;
 
             //! Use to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
-            AZStd::sys_time_t m_shaderAssetBuildTimestamp = 0; 
+            AZStd::sys_time_t m_buildTimestamp = 0; 
 
 
             ///////////////////////////////////////////////////////////////////

@@ -11,6 +11,7 @@
 
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/conversions.h>
 
 namespace AzFramework
@@ -54,6 +55,7 @@ namespace AzFramework
         RECT m_windowRectToRestoreOnFullScreenExit; //!< The position and size of the window to restore when exiting full screen.
         UINT m_windowStyleToRestoreOnFullScreenExit; //!< The style(s) of the window to restore when exiting full screen.
         bool m_isInBorderlessWindowFullScreenState = false; //!< Was a borderless window used to enter full screen state?
+        bool m_shouldEnterFullScreenStateOnActivate = false; //!< Should we enter full screen state when the window is activated?
 
         using GetDpiForWindowType = UINT(HWND hwnd);
         GetDpiForWindowType* m_getDpiFunction = nullptr;
@@ -233,20 +235,42 @@ namespace AzFramework
             const UINT rawInputHeaderSize = sizeof(RAWINPUTHEADER);
             GetRawInputData((HRAWINPUT)lParam, RID_INPUT, NULL, &rawInputSize, rawInputHeaderSize);
 
-            LPBYTE rawInputBytes = new BYTE[rawInputSize];
+            AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
+            LPBYTE rawInputBytes = rawInputBytesArray.data();
             GetRawInputData((HRAWINPUT)lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
 
             RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
             AzFramework::RawInputNotificationBusWindows::Broadcast(
                 &AzFramework::RawInputNotificationBusWindows::Events::OnRawInputEvent, *rawInput);
 
-            delete [] rawInputBytes;
             break;
         }
         case WM_CHAR:
         {
             const unsigned short codeUnitUTF16 = static_cast<unsigned short>(wParam);
             AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputCodeUnitUTF16Event, codeUnitUTF16);
+            break;
+        }
+        case WM_ACTIVATE:
+        {
+            // Alt-tabbing out of the app while it is in a full screen state does not
+            // work unless we explicitly exit the full screen state upon deactivation,
+            // in which case we want to enter full screen state again upon activation.
+            const bool windowIsNowInactive = (LOWORD(wParam) == WA_INACTIVE);
+            const bool windowFullScreenState = nativeWindowImpl->GetFullScreenState();
+            if (windowIsNowInactive &&
+                windowFullScreenState)
+            {
+                nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate = true;
+                nativeWindowImpl->SetFullScreenState(false);
+            }
+            else if (!windowIsNowInactive &&
+                     !windowFullScreenState &&
+                     nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate)
+            {
+                nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate = false;
+                nativeWindowImpl->SetFullScreenState(true);
+            }
             break;
         }
         case WM_SYSKEYDOWN:

@@ -48,6 +48,8 @@
 
 #include <Source/Translation/TranslationBus.h>
 
+#include <Source/Translation/TranslationBus.h>
+
 namespace ScriptCanvasEditor::Nodes::SlotDisplayHelper
 {
     AZ::EntityId DisplayPropertySlot(AZ::EntityId graphCanvasNodeId, const ScriptCanvas::VisualExtensionSlotConfiguration& propertyConfiguration);

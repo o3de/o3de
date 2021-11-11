@@ -37,13 +37,26 @@ namespace AZ::Render
 
     private:
 
+        float CalculateScaleMultiplier(EMotionFX::ActorInstance* instance) const;
         void PrepareForMesh(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM);
-        void RenderAABB(EMotionFX::ActorInstance* instance);
-        void RenderSkeleton(EMotionFX::ActorInstance* instance);
+        void RenderAABB(EMotionFX::ActorInstance* instance, const AZ::Color& aabbColor);
+        void RenderSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor);
         void RenderEMFXDebugDraw(EMotionFX::ActorInstance* instance);
-        void RenderNormals(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, bool vertexNormals, bool faceNormals);
-        void RenderTangents(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM);
-        void RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM);
+        void RenderNormals(
+            EMotionFX::Mesh* mesh,
+            const AZ::Transform& worldTM,
+            bool vertexNormals,
+            bool faceNormals,
+            float vertexNormalsScale,
+            float faceNormalsScale,
+            float scaleMultiplier,
+            const AZ::Color& vertexNormalsColor,
+            const AZ::Color& faceNormalsColor);
+        void RenderTangents(
+            EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float tangentsScale, float scaleMultiplier,
+            const AZ::Color& tangentsColor, const AZ::Color& mirroredBitangentsColor, const AZ::Color& bitangentsColor);
+        void RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float wireframeScale, float scaleMultiplier,
+            const AZ::Color& wireframeColor);
 
         EMotionFX::Mesh* m_currentMesh = nullptr; /**< A pointer to the mesh whose world space positions are in the pre-calculated positions buffer.
                                            NULL in case we haven't pre-calculated any positions yet. */

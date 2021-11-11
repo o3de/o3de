@@ -10,7 +10,6 @@ AzToolsFramework--EntityOutlinerWidget #m_display_options
 {
     qproperty-icon: url(:/stylesheet/img/UI20/menu-centered.svg);
     qproperty-iconSize: 16px 16px;
-    qproperty-flat: true;
 }
 
 AzToolsFramework--EntityOutlinerWidget QTreeView

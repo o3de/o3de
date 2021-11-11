@@ -209,10 +209,6 @@ namespace AZ
             //! Traversal will stop once all properties have been enumerated or the callback function returns false
             void EnumeratePropertiesInDisplayOrder(const EnumeratePropertiesCallback& callback) const;
 
-            //! Convert the property value into the format that will be stored in the source data
-            //! This is primarily needed to support conversions of special types like enums and images
-            bool ConvertPropertyValueToSourceDataFormat(const PropertyDefinition& propertyDefinition, MaterialPropertyValue& propertyValue) const;
-
             Outcome<Data::Asset<MaterialTypeAsset>> CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath = "", bool elevateWarnings = true) const;
             
             //! Possibly renames @propertyId based on the material version update steps.

@@ -17,11 +17,13 @@
 #include <EMStudio/AnimViewportWidget.h>
 #include <EMStudio/AnimViewportRenderer.h>
 #include <EMStudio/AnimViewportSettings.h>
+#include <EMStudio/AtomRenderPlugin.h>
 
 namespace EMStudio
 {
-    AnimViewportWidget::AnimViewportWidget(QWidget* parent)
-        : AtomToolsFramework::RenderViewportWidget(parent)
+    AnimViewportWidget::AnimViewportWidget(AtomRenderPlugin* parentPlugin)
+        : AtomToolsFramework::RenderViewportWidget(parentPlugin->GetInnerWidget())
+        , m_plugin(parentPlugin)
     {
         setObjectName(QString::fromUtf8("AtomViewportWidget"));
         QSizePolicy qSize(QSizePolicy::Preferred, QSizePolicy::Preferred);
@@ -32,7 +34,8 @@ namespace EMStudio
         setAutoFillBackground(false);
         setStyleSheet(QString::fromUtf8(""));
 
-        m_renderer = AZStd::make_unique<AnimViewportRenderer>(GetViewportContext());
+        m_renderer = AZStd::make_unique<AnimViewportRenderer>(GetViewportContext(), m_plugin->GetRenderOptions());
+        SetScene(m_renderer->GetFrameworkScene(), false);
 
         LoadRenderFlags();
         SetupCameras();
@@ -40,11 +43,13 @@ namespace EMStudio
         Reinit();
 
         AnimViewportRequestBus::Handler::BusConnect();
+        ViewportPluginRequestBus::Handler::BusConnect();
     }
 
     AnimViewportWidget::~AnimViewportWidget()
     {
         SaveRenderFlags();
+        ViewportPluginRequestBus::Handler::BusDisconnect();
         AnimViewportRequestBus::Handler::BusDisconnect();
     }
 
@@ -171,6 +176,7 @@ namespace EMStudio
     {
         RenderViewportWidget::OnTick(deltaTime, time);
         CalculateCameraProjection();
+        RenderCustomPluginData();
     }
 
     void AnimViewportWidget::CalculateCameraProjection()
@@ -181,10 +187,22 @@ namespace EMStudio
         const float height = AZStd::max<float>(aznumeric_cast<float>(windowSize.m_height), 1.0f);
         const float aspectRatio = aznumeric_cast<float>(windowSize.m_width) / height;
 
+        const RenderOptions* renderOptions = m_plugin->GetRenderOptions();
         AZ::Matrix4x4 viewToClipMatrix;
-        AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::Constants::HalfPi, aspectRatio, DepthNear, DepthFar, true);
+        AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::DegToRad(renderOptions->GetFOV()), aspectRatio,
+            renderOptions->GetNearClipPlaneDistance(), renderOptions->GetFarClipPlaneDistance(), true);
 
         viewportContext->GetDefaultView()->SetViewToClipMatrix(viewToClipMatrix);
+    }
+
+    void AnimViewportWidget::RenderCustomPluginData()
+    {
+        const size_t numPlugins = GetPluginManager()->GetNumActivePlugins();
+        for (size_t i = 0; i < numPlugins; ++i)
+        {
+            EMStudioPlugin* plugin = GetPluginManager()->GetActivePlugin(i);
+            plugin->Render(m_renderFlags);
+        }
     }
 
     void AnimViewportWidget::ToggleRenderFlag(EMotionFX::ActorRenderFlag flag)
@@ -219,5 +237,10 @@ namespace EMStudio
             QString name = QString(i);
             settings.setValue(name, (bool)m_renderFlags[i]);
         }
+    }
+
+    AZ::s32 AnimViewportWidget::GetViewportId() const
+    {
+        return GetViewportContext()->GetId();
     }
 } // namespace EMStudio
