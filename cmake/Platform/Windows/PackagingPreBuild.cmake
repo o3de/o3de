@@ -72,7 +72,7 @@ set(_license_command
 
 message(STATUS "Scanning for license files in ${_license_scan_path}")
 execute_process(
-    COMMAND ${_license_command} --scan-path ${_license_scan_path}
+    COMMAND ${_license_command} --scan-path ${_root_path} $ENV{LY_3RDPARTY_PATH}
     RESULT_VARIABLE _license_result
     ERROR_VARIABLE _license_errors
     OUTPUT_VARIABLE _license_output
