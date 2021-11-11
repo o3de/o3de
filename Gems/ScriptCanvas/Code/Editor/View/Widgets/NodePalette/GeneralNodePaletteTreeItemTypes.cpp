@@ -180,6 +180,27 @@ namespace ScriptCanvasEditor
         return m_methodName;
     }
 
+    AZ::IO::Path GlobalMethodEventPaletteTreeItem::GetTranslationDataPath() const
+    {
+        AZStd::string propertyName = m_methodName;
+        AZ::StringFunc::Replace(propertyName, "::Getter", "");
+        AZ::StringFunc::Replace(propertyName, "::Setter", "");
+
+        AZStd::string filename = GraphCanvas::TranslationKey::Sanitize(propertyName);
+
+        return AZ::IO::Path("Properties") / filename;
+    }
+
+    void GlobalMethodEventPaletteTreeItem::GenerateTranslationData()
+    {
+        AZStd::string propertyName = m_methodName;
+        AZ::StringFunc::Replace(propertyName, "::Getter", "");
+        AZ::StringFunc::Replace(propertyName, "::Setter", "");
+
+        ScriptCanvasEditorTools::TranslationGeneration translation;
+        translation.TranslateBehaviorProperty(propertyName);
+    }
+
     //////////////////////////////
     // CreateCustomNodeMimeEvent
     //////////////////////////////

@@ -730,6 +730,71 @@ namespace ScriptCanvasEditorTools
         SaveJSONData("Types/OnDemandReflectedTypes", translationRoot);
     }
 
+    void TranslationGeneration::TranslateBehaviorGlobals()
+    {
+        for (const auto& [propertyName, behaviorProperty] : m_behaviorContext->m_properties)
+        {
+            TranslateBehaviorProperty(propertyName);
+        }
+    }
+
+    void TranslationGeneration::TranslateBehaviorProperty(const AZStd::string& propertyName)
+    {
+        const auto behaviorPropertyEntry = m_behaviorContext->m_properties.find(propertyName);
+        if (behaviorPropertyEntry == m_behaviorContext->m_properties.end())
+        {
+            return;
+        }
+
+        const AZ::BehaviorProperty* behaviorProperty = behaviorPropertyEntry->second;
+
+        TranslationFormat translationRoot;
+
+        if (behaviorProperty->m_getter && !behaviorProperty->m_setter)
+        {
+            Entry entry;
+            entry.m_context = "Constant";
+            entry.m_key = propertyName;
+
+            auto methodName = behaviorProperty->m_getter->m_name;
+            entry.m_details.m_name = methodName;
+            entry.m_details.m_tooltip = behaviorProperty->m_getter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
+            entry.m_details.m_category = "Constants";
+
+            translationRoot.m_entries.push_back(entry);
+        }
+        else
+        {
+            Entry entry;
+            entry.m_context = "BehaviorMethod";
+
+            if (behaviorProperty->m_getter)
+            {
+                entry.m_key = propertyName;
+
+                auto methodName = behaviorProperty->m_getter->m_name;
+                entry.m_details.m_name = methodName;
+                entry.m_details.m_tooltip = behaviorProperty->m_getter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
+
+                translationRoot.m_entries.push_back(entry);
+            }
+
+            if (behaviorProperty->m_setter)
+            {
+                entry.m_key = propertyName;
+
+                auto methodName = behaviorProperty->m_setter->m_name;
+                entry.m_details.m_name = methodName;
+                entry.m_details.m_tooltip = behaviorProperty->m_setter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
+
+                translationRoot.m_entries.push_back(entry);
+            }
+        }
+
+        AZStd::string fileName = AZStd::string::format("Properties/%s", behaviorProperty->m_name.c_str());
+        SaveJSONData(fileName, translationRoot);
+    }
+
     bool TranslationGeneration::TranslateEBusHandler(const AZ::BehaviorEBus* behaviorEbus, TranslationFormat& translationRoot)
     {
         // Must be a valid ebus handler
