@@ -54,7 +54,7 @@ ly_create_alias(NAME Terrain.Clients  NAMESPACE Gem TARGETS Gem::Terrain Gem::Su
 # will also depend on Terrain.Static
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME Terrain.Editor MODULE
+        NAME Terrain.Editor GEM_MODULE
         NAMESPACE Gem
         AUTOMOC
         FILES_CMAKE
