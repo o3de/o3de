@@ -88,7 +88,7 @@ class CoreStack(core.Stack):
         if self.node.try_get_context('disable_access_log') != 'true':
 
             # Auto cleanup bucket and data if requested
-            _remove_storage = self.node.try_get_context('remove_all_storage') == 'true'
+            _remove_storage = self.node.try_get_context('remove_all_storage_on_destroy') == 'true'
             _removal_policy = core.RemovalPolicy.DESTROY if _remove_storage else core.RemovalPolicy.RETAIN
 
             self._server_access_logs_bucket = s3.Bucket(

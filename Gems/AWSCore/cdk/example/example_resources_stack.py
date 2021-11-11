@@ -127,7 +127,7 @@ class ExampleResources(core.Stack):
             )
 
         # Auto cleanup bucket and data if requested
-        _remove_storage = self.node.try_get_context('remove_all_storage') == 'true'
+        _remove_storage = self.node.try_get_context('remove_all_storage_on_destroy') == 'true'
         _removal_policy = core.RemovalPolicy.DESTROY if _remove_storage else core.RemovalPolicy.RETAIN
 
         example_bucket = s3.Bucket(
@@ -178,7 +178,7 @@ class ExampleResources(core.Stack):
         )
 
         # Auto-delete the table when requested
-        if self.node.try_get_context('remove_all_storage') == 'true':
+        if self.node.try_get_context('remove_all_storage_on_destroy') == 'true':
             demo_table.apply_removal_policy(core.RemovalPolicy.DESTROY)
 
         return demo_table
