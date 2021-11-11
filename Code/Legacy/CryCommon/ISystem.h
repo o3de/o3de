@@ -57,7 +57,6 @@ namespace Audio
 struct SFileVersion;
 struct INameTable;
 struct ILevelSystem;
-struct IViewSystem;
 class IXMLBinarySerializer;
 struct IAVI_Reader;
 class CPNoise3;
@@ -75,7 +74,6 @@ namespace AZ
 
 typedef void* WIN_HWND;
 
-class CCamera;
 struct CLoadingTimeProfiler;
 
 class ICmdLine;
@@ -823,8 +821,6 @@ struct ISystem
 
     // return the related subsystem interface
 
-    //
-    virtual IViewSystem* GetIViewSystem() = 0;
     virtual ILevelSystem* GetILevelSystem() = 0;
     virtual ICmdLine* GetICmdLine() = 0;
     virtual ILog* GetILog() = 0;

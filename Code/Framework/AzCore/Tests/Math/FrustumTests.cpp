@@ -552,7 +552,6 @@ namespace UnitTest
         box.testCaseName = "BoxShaped";
         frustums.push_back(box);
 
-        // Default values in a CCamera from Cry_Camera.h
         FrustumTestCase defaultCameraFrustum;
         defaultCameraFrustum.nearTopLeft = AZ::Vector3(-0.204621f, 0.200000f, 0.153465f);
         defaultCameraFrustum.nearTopRight = AZ::Vector3(0.204621f, 0.200000f, 0.153465f);

@@ -138,14 +138,11 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
 
     connect(this, &CViewportTitleDlg::ActionTriggered, MainWindow::instance()->GetActionManager(), &ActionManager::ActionTriggered);
 
-    AZ::VR::VREventBus::Handler::BusConnect();
-
     OnInitDialog();
 }
 
 CViewportTitleDlg::~CViewportTitleDlg()
 {
-    AZ::VR::VREventBus::Handler::BusDisconnect();
     GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
 
@@ -236,10 +233,6 @@ void CViewportTitleDlg::SetupOverflowMenu()
     connect(m_audioMuteAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedMuteAudio);
     overFlowMenu->addAction(m_audioMuteAction);
 
-    m_enableVRAction = new QAction("Enable VR Preview", overFlowMenu);
-    connect(m_enableVRAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedEnableVR);
-    overFlowMenu->addAction(m_enableVRAction);
-
     overFlowMenu->addSeparator();
 
     m_enableGridSnappingAction = new QAction("Enable Grid Snapping", overFlowMenu);
@@ -304,16 +297,6 @@ void CViewportTitleDlg::OnInitDialog()
     auto displayInfoHelper = new CViewportTitleDlgDisplayInfoHelper(this);
     connect(displayInfoHelper, &CViewportTitleDlgDisplayInfoHelper::ViewportInfoStatusUpdated, this, &CViewportTitleDlg::UpdateDisplayInfo);
     UpdateDisplayInfo();
-
-    // This is here just in case this class hasn't been created before
-    // a VR headset was initialized
-    m_enableVRAction->setEnabled(false);
-    if (AZ::VR::HMDDeviceRequestBus::GetTotalNumOfEventHandlers() != 0)
-    {
-        m_enableVRAction->setEnabled(true);
-    }
-
-    AZ::VR::VREventBus::Handler::BusConnect();
 
     QFontMetrics metrics({});
     int width = static_cast<int>(metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier);
@@ -929,23 +912,6 @@ void CViewportTitleDlg::UpdateMuteActionText()
         m_audioMuteAction->setEnabled(false);
         m_audioMuteAction->setText(tr("Mute Audio: Enable Audio Gem"));
     }
-}
-
-void CViewportTitleDlg::OnHMDInitialized()
-{
-    m_enableVRAction->setEnabled(true);
-}
-
-void CViewportTitleDlg::OnHMDShutdown()
-{
-    m_enableVRAction->setEnabled(false);
-}
-
-void CViewportTitleDlg::OnBnClickedEnableVR()
-{
-    gSettings.bEnableGameModeVR = !gSettings.bEnableGameModeVR;
-
-    m_enableVRAction->setText(gSettings.bEnableGameModeVR ? tr("Disable VR Preview") : tr("Enable VR Preview"));
 }
 
 inline double Round(double fVal, double fStep)

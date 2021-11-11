@@ -36,7 +36,6 @@
 
 #include <IAudioSystem.h>
 #include <IConsole.h>
-#include <IViewSystem.h>
 
 #define s_nodeParamsInitialized s_nodeParamsInitializedScene
 #define s_nodeParams s_nodeParamsSene
@@ -796,22 +795,9 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
     cameraParams.fov = 0;
     cameraParams.justActivated = true;
 
-    // Init the defaults with the current view settings.
     // With component entities, the fov and near plane may be animated on an 
     // entity with a Camera component. Don't stomp the values if this update happens
     // after those properties are animated.
-    AZ_Assert(gEnv && gEnv->pSystem, "Expected valid gEnv->pSystem");
-    IViewSystem* viewSystem = gEnv->pSystem->GetIViewSystem();
-    if (viewSystem)
-    {
-        IView* view = viewSystem->GetActiveView();
-        if (view)
-        {
-            SViewParams params = *view->GetCurrentParams();
-            cameraParams.fov = params.fov;
-            cameraParams.nearZ = params.nearplane;
-        }
-    }
 
     ///////////////////////////////////////////////////////////////////
     // find the Scene Camera (Camera Component Camera)  

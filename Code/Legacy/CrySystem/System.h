@@ -234,7 +234,6 @@ public:
     ICryFont* GetICryFont() override{ return m_env.pCryFont; }
     ILog* GetILog() override{ return m_env.pLog; }
     ICmdLine* GetICmdLine() override{ return m_pCmdLine; }
-    IViewSystem* GetIViewSystem() override;
     ILevelSystem* GetILevelSystem() override;
     ISystemEventDispatcher* GetISystemEventDispatcher() override { return m_pSystemEventDispatcher; }
     //////////////////////////////////////////////////////////////////////////
@@ -405,10 +404,6 @@ private: // ------------------------------------------------------
     //! current active process
     IProcess* m_pProcess;
 
-    CCamera m_PhysRendererCamera;
-    ICVar* m_p_draw_helpers_str;
-    int m_iJumpToPhysProfileEnt;
-
     CTimeValue m_lastTickTime;
 
     //! system event dispatcher
@@ -422,9 +417,6 @@ private: // ------------------------------------------------------
 
     //! System to manage levels.
     ILevelSystem* m_pLevelSystem;
-
-    //! System to manage views.
-    IViewSystem* m_pViewSystem;
 
     // XML Utils interface.
     class CXmlUtils* m_pXMLUtils;

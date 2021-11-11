@@ -674,11 +674,6 @@ protected:
     //! Returns if the object can be drawn, and if its selection helper should also be drawn.
     bool CanBeDrawn(const DisplayContext& dc, bool& outDisplaySelectionHelper) const;
 
-    //! Returns if object is in the camera view.
-    virtual bool IsInCameraView(const CCamera& camera);
-    //! Returns vis ratio of object in camera
-    virtual float GetCameraVisRatio(const CCamera& camera);
-
     // Do basic intersection tests
     virtual bool IntersectRectBounds(const AABB& bbox);
     virtual bool IntersectRayBounds(const Ray& ray);
