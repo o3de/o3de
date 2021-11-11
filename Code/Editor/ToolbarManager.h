@@ -134,7 +134,8 @@ private:
 
 class AmazonToolBarExpanderWatcher;
 
-class ToolbarManager : public QObject
+class ToolbarManager
+    : public QObject
 {
     Q_OBJECT
 public:
@@ -181,7 +182,7 @@ private:
     void UpdateAllowedAreas(QToolBar* toolbar);
     bool IsDirty(const AmazonToolbar& toolbar) const;
 
-    QMenu* GetPlayButtonMenu() const;
+    QMenu* CreatePlayButtonMenu() const;
 
     const AmazonToolbar* FindDefaultToolbar(const QString& toolbarName) const;
     AmazonToolbar* FindToolbar(const QString& toolbarName);
