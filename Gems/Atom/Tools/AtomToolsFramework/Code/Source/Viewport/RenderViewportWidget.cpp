@@ -317,7 +317,6 @@ namespace AtomToolsFramework
         const AzFramework::CameraState cameraState = GetCameraState();
         const AZ::Vector3 rayOrigin = AzFramework::ScreenToWorld(screenPosition, cameraState);
         const AZ::Vector3 rayDirection = (rayOrigin - cameraState.m_position).GetNormalized();
-
         return AzToolsFramework::ViewportInteraction::ProjectedViewportRay{rayOrigin, rayDirection};
     }
 

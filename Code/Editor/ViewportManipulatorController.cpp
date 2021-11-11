@@ -8,15 +8,15 @@
 
 #include "ViewportManipulatorController.h"
 
+#include <AzCore/Script/ScriptTimePoint.h>
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
+#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
-#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
-#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
-#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
-#include <AzFramework/Viewport/ScreenGeometry.h>
-#include <AzFramework/Viewport/ViewportScreen.h>
-#include <AzCore/Script/ScriptTimePoint.h>
 
 #include <QApplication>
 
@@ -89,8 +89,14 @@ namespace SandboxEditor
         }
 
         using InteractionBus = AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
-        using namespace AzToolsFramework::ViewportInteraction;
         using AzFramework::InputChannel;
+        using AzToolsFramework::ViewportInteraction::KeyboardModifier;
+        using AzToolsFramework::ViewportInteraction::MouseButton;
+        using AzToolsFramework::ViewportInteraction::MouseEvent;
+        using AzToolsFramework::ViewportInteraction::MouseInteraction;
+        using AzToolsFramework::ViewportInteraction::MouseInteractionEvent;
+        using AzToolsFramework::ViewportInteraction::ProjectedViewportRay;
+        using AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
 
         bool interactionHandled = false;
         float wheelDelta = 0.0f;
@@ -159,8 +165,8 @@ namespace SandboxEditor
             else if (state == InputChannel::State::Ended)
             {
                 // If we've actually logged a mouse down event, forward a mouse up event.
-                // This prevents corner cases like the context menu thinking it should be opened even though no one clicked in this viewport,
-                // due to RenderViewportWidget ensuring all controllers get InputChannel::State::Ended events.
+                // This prevents corner cases like the context menu thinking it should be opened even though no one clicked in this
+                // viewport, due to RenderViewportWidget ensuring all controllers get InputChannel::State::Ended events.
                 if (m_mouseInteraction.m_mouseButtons.m_mouseButtons & mouseButtonValue)
                 {
                     // Erase the button from our state if we're done processing events.
@@ -258,4 +264,4 @@ namespace SandboxEditor
         const double doubleClickThresholdMilliseconds = qApp->doubleClickInterval();
         return (m_curTime.GetMilliseconds() - clickIt->second.GetMilliseconds()) < doubleClickThresholdMilliseconds;
     }
-} //namespace SandboxEditor
+} // namespace SandboxEditor
