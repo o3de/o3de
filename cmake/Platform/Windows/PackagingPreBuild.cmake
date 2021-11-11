@@ -60,7 +60,7 @@ endif()
 
 file(TO_NATIVE_PATH "${_root_path}/scripts/license_scanner/license_scanner.py" _license_script)
 file(TO_NATIVE_PATH "${_root_path}/scripts/license_scanner/scanner_config.json" _license_config_script)
-set(_license_scan_path "${_root_path} ${LY_3RDPARTY_PATH}")
+set(_license_scan_path "${_root_path} $ENV{LY_3RDPARTY_PATH}")
 
 set(_license_command
     ${_python_cmd} -s
