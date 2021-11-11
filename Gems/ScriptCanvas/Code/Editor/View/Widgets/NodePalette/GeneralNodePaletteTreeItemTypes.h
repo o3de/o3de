@@ -121,6 +121,10 @@ namespace ScriptCanvasEditor
 
         const AZStd::string& GetMethodName() const;
 
+        AZ::IO::Path GetTranslationDataPath() const override;
+        void GenerateTranslationData() override;
+
+
     private:
         AZStd::string m_methodName;
     };

@@ -121,6 +121,12 @@ namespace ScriptCanvasEditorTools
         //! Generate the translation data for on-demand reflected types
         void TranslateOnDemandReflectedTypes(TranslationFormat& translationRoot);
 
+        //! Generates the translation data for all global properties and methods in the BehaviorContext
+        void TranslateBehaviorGlobals();
+
+        //! Generates the translation data for the specified property in the BehaviorContext
+        void TranslateBehaviorProperty(const AZStd::string& propertyName);
+
     private:
 
         //! Generates the translation data for a BehaviorEBus that has an BehaviorEBusHandler
