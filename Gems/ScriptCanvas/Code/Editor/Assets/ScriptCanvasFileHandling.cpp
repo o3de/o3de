@@ -144,7 +144,7 @@ namespace ScriptCanvasEditor
     {
         namespace JSRU = AZ::JsonSerializationUtils;
         
-        if (!source)
+        if (!source.IsValid())
         {
             return AZ::Failure(AZStd::string("no source graph to save"));
         }

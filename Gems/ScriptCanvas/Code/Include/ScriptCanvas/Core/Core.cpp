@@ -229,7 +229,7 @@ namespace ScriptCanvasEditor
 
     bool SourceHandle::IsValid() const
     {
-        return *this;
+        return m_data != nullptr;
     }
 
     GraphPtr SourceHandle::Mod() const
@@ -237,19 +237,26 @@ namespace ScriptCanvasEditor
         return m_data ? m_data->ModEditorGraph() : nullptr;
     }
 
-    SourceHandle::operator bool() const
+    bool SourceHandle::operator==(const SourceHandle& other) const
     {
-        return m_data != nullptr;
+        return m_data.get() == other.m_data.get()
+            && m_id == other.m_id
+            && m_path == other.m_path;
     }
 
-    bool SourceHandle::operator!() const
+    bool SourceHandle::operator!=(const SourceHandle& other) const
     {
-        return m_data == nullptr;
+        return !(*this == other);
     }
 
     const AZStd::string& SourceHandle::Path() const
     {
         return m_path;
+    }
+
+    bool SourceHandle::PathEquals(const SourceHandle& other) const
+    {
+        return m_path == other.m_path;
     }
 
     AZStd::string SourceHandle::ToString() const

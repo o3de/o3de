@@ -194,7 +194,7 @@ namespace ScriptCanvasEditor
                 if (tabDataVariant.isValid())
                 {
                     auto tabAssetId = tabDataVariant.value<GraphTabMetadata>(); 
-                    if (tabAssetId.m_assetId == assetId)
+                    if (tabAssetId.m_assetId.AnyEquals(assetId))
                     {
                         return tabIndex;
                     }
@@ -243,7 +243,8 @@ namespace ScriptCanvasEditor
                 if (tabdata.isValid())
                 {
                     auto tabAssetId = tabdata.value<GraphTabMetadata>();
-                    if (tabAssetId.m_assetId && tabAssetId.m_assetId.Get()->GetGraphCanvasGraphId() == graphCanvasGraphId)
+                    if (tabAssetId.m_assetId.IsValid()
+                    && tabAssetId.m_assetId.Get()->GetGraphCanvasGraphId() == graphCanvasGraphId)
                     {
                         return tabAssetId.m_assetId.Get()->GetScriptCanvasId();
                     }
