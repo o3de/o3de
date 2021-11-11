@@ -228,7 +228,6 @@ namespace O3DELauncher
         }
     }
 
-    void CompileCriticalAssets();
     void CreateRemoteFileIO();
 
     bool ConnectToAssetProcessor()
@@ -256,27 +255,9 @@ namespace O3DELauncher
         {
             AZ_TracePrintf("Launcher", "Connected to Asset Processor\n");
             CreateRemoteFileIO();
-            CompileCriticalAssets();
         }
 
         return connectedToAssetProcessor;
-    }
-
-    //! Compiles the critical assets that are within the Engine directory of Open 3D Engine
-    //! This code should be in a centralized location, but doesn't belong in AzFramework
-    //! since it is specific to how Open 3D Engine projects has assets setup
-    void CompileCriticalAssets()
-    {
-        // VERY early on, as soon as we can, request that the asset system make sure the following assets take priority over others,
-        // so that by the time we ask for them there is a greater likelihood that they're already good to go.
-        // these can be loaded later but are still important:
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "/texturemsg/");
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "engineassets/materials");
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "engineassets/geomcaches");
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, "engineassets/objects");
-
-        // some are specifically extra important and will cause issues if missing completely:
-        AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::CompileAssetSync, "engineassets/objects/default.cgf");
     }
 
     //! Remote FileIO to use as a Virtual File System
