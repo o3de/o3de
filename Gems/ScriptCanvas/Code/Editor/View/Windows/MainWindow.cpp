@@ -1266,38 +1266,27 @@ namespace ScriptCanvasEditor
         return m_tabBar->InsertGraphTab(tabIndex, assetId);
     }
 
-    void MainWindow::RemoveScriptCanvasAsset(const ScriptCanvasEditor::SourceHandle& /*assetId*/)
+    void MainWindow::RemoveScriptCanvasAsset(const ScriptCanvasEditor::SourceHandle& assetId)
     {
-        // #sc_editor_asset move what is necessary to the widget
-        /*
-        AssetHelpers::PrintInfo("RemoveScriptCanvasAsset : %s", AssetHelpers::AssetIdToString(assetId).c_str());
-
+        AssetHelpers::PrintInfo("RemoveScriptCanvasAsset : %s", assetId.ToString().c_str());
         m_assetCreationRequests.erase(assetId);
-
         GeneralAssetNotificationBus::Event(assetId, &GeneralAssetNotifications::OnAssetUnloaded);
 
-        AssetTrackerNotificationBus::MultiHandler::BusDisconnect(assetId);
-
-        ScriptCanvasMemoryAsset::pointer memoryAsset;
-        AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, assetId);
-
-        if (memoryAsset)
+        if (assetId)
         {
             // Disconnect scene and asset editor buses
-            GraphCanvas::SceneNotificationBus::MultiHandler::BusDisconnect(memoryAsset->GetScriptCanvasId());
-            GraphCanvas::AssetEditorNotificationBus::Event(ScriptCanvasEditor::AssetEditorId, &GraphCanvas::AssetEditorNotifications::OnGraphUnloaded, memoryAsset->GetGraphId());
+            GraphCanvas::SceneNotificationBus::MultiHandler::BusDisconnect(assetId.Get()->GetScriptCanvasId());
+            GraphCanvas::AssetEditorNotificationBus::Event(ScriptCanvasEditor::AssetEditorId
+                , &GraphCanvas::AssetEditorNotifications::OnGraphUnloaded, assetId.Get()->GetGraphCanvasGraphId());
         }
-
-        AssetTrackerRequestBus::Broadcast(&AssetTrackerRequests::Close, assetId);
 
         int tabIndex = m_tabBar->FindTab(assetId);
         QVariant tabdata = m_tabBar->tabData(tabIndex);
         if (tabdata.isValid())
         {
             auto tabAssetId = tabdata.value<Widget::GraphTabMetadata>();
-            SetActiveAsset(tabAssetId);
+            SetActiveAsset(tabAssetId.m_assetId);
         }
-        */
     }
 
     int MainWindow::CloseScriptCanvasAsset(const ScriptCanvasEditor::SourceHandle& assetId)
@@ -1771,6 +1760,7 @@ namespace ScriptCanvasEditor
         }
 
         PrepareAssetForSave(inMemoryAssetId);
+        ScriptCanvasAssetDescription assetDescription;
 
         AZStd::string suggestedFilename;
         AZStd::string suggestedFileFilter;
@@ -1809,7 +1799,6 @@ namespace ScriptCanvasEditor
             // So we want to break out.
             if (!selectedFile.isEmpty())
             {
-                ScriptCanvasAssetDescription assetDescription;
                 AZStd::string filePath = selectedFile.toUtf8().data();
 
                 if (!AZ::StringFunc::EndsWith(filePath, assetDescription.GetExtensionImpl(), false))
@@ -1849,6 +1838,12 @@ namespace ScriptCanvasEditor
         if (isValidFileName)
         {
             AZStd::string internalStringFile = selectedFile.toUtf8().data();
+
+
+            if (!AZ::StringFunc::EndsWith(internalStringFile, assetDescription.GetExtensionImpl(), false))
+            {
+                internalStringFile += assetDescription.GetExtensionImpl();
+            }
 
             if (!AssetHelpers::IsValidSourceFile(internalStringFile, GetActiveScriptCanvasId()))
             {
@@ -2845,32 +2840,32 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void MainWindow::OnTabCloseRequest(int /*index*/)
+    void MainWindow::OnTabCloseRequest(int index)
     {
-        /*
         QVariant tabdata = m_tabBar->tabData(index);
         if (tabdata.isValid())
         {
             auto tabAssetId = tabdata.value<Widget::GraphTabMetadata>();
 
-            if (tabAssetId == m_activeGraph)
+
+            if (tabAssetId.m_canvasWidget)
             {
-                SetActiveAsset({});
+                tabAssetId.m_canvasWidget->hide();
             }
 
-            ScriptCanvasMemoryAsset::pointer memoryAsset;
-            AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, tabAssetId);
+            bool activeSet = false;
 
-            if (memoryAsset && memoryAsset->GetView())
+            if (tabAssetId.m_assetId == m_activeGraph)
             {
-                memoryAsset->GetView()->hide();
+                SetActiveAsset({});
+                activeSet = true;
             }
 
             m_tabBar->CloseTab(index);
             m_tabBar->update();
-            RemoveScriptCanvasAsset(tabAssetId);
+            RemoveScriptCanvasAsset(tabAssetId.m_assetId);
 
-            if (m_tabBar->count() == 0)
+            if (!activeSet && m_tabBar->count() == 0)
             {
                 // The last tab has been removed.
                 SetActiveAsset({});
@@ -2881,7 +2876,6 @@ namespace ScriptCanvasEditor
             // information
             AddSystemTickAction(SystemTickActionFlag::CloseNextTabAction);
         }
-        */
     }
 
     void MainWindow::OnNodeAdded(const AZ::EntityId& nodeId, bool isPaste)

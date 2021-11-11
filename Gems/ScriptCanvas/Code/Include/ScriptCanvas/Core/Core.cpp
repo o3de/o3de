@@ -203,15 +203,6 @@ namespace ScriptCanvasEditor
         , m_path(path)
     {}
 
-    SourceHandle::~SourceHandle()
-    {
-        AZ_TracePrintf("ScriptCanvas", "Destroy Handle: %p, count %d", m_data.get(), m_data.use_count());
-        if (m_data.use_count() <= 1)
-        {
-            AZ_TracePrintf("ScriptCanvas", "BOOM Handle: %p, count %d", m_data.get(), m_data.use_count());
-        }
-    }
-
     bool SourceHandle::AnyEquals(const SourceHandle& other) const
     {
         return m_data == other.m_data
