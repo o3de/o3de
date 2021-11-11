@@ -1,0 +1,45 @@
+{
+    "entries": [
+        {
+            "key": "SimpleAssetReferenceBase",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "SimpleAssetReferenceBase"
+            },
+            "methods": [
+                {
+                    "key": "SetAssetPath",
+                    "context": "SimpleAssetReferenceBase",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAssetPath"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAssetPath is invoked"
+                    },
+                    "details": {
+                        "name": "SimpleAssetReferenceBase::SetAssetPath",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}",
+                            "details": {
+                                "name": "SimpleAssetReferenceBase*",
+                                "tooltip": "Asset reference as a project-relative path"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

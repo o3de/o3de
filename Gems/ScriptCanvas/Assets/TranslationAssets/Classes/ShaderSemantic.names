@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "key": "ShaderSemantic",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ShaderSemantic"
+            },
+            "methods": [
+                {
+                    "key": "ToString",
+                    "context": "ShaderSemantic",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToString is invoked"
+                    },
+                    "details": {
+                        "name": "ShaderSemantic::ToString",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FFF25F-FE52-4D08-8D96-D04C14048816}",
+                            "details": {
+                                "name": "ShaderSemantic*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

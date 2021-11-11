@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "dump_exposed_classes",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "dump_exposed_classes",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke dump_exposed_classes"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after dump_exposed_classes is invoked"
+                    },
+                    "details": {
+                        "name": "dump_exposed_classes",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,1176 @@
+{
+    "entries": [
+        {
+            "key": "MathQuaternion_VM",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "MathQuaternion_VM"
+            },
+            "methods": [
+                {
+                    "key": "Subtract",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Subtract"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Subtract is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::Subtract",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RotationYDegrees",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RotationYDegrees"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RotationYDegrees is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::RotationYDegrees",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Normalize",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Normalize"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Normalize is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::Normalize",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "LengthReciprocal",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke LengthReciprocal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after LengthReciprocal is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::LengthReciprocal",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateFromEulerAngles",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateFromEulerAngles"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateFromEulerAngles is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::CreateFromEulerAngles",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsIdentity",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsIdentity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsIdentity is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::IsIdentity",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "FromTransform",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromTransform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromTransform is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::FromTransform",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "const Transform&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Lerp",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Lerp"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Lerp is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::Lerp",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RotationZDegrees",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RotationZDegrees"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RotationZDegrees is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::RotationZDegrees",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ConvertTransformToRotation",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ConvertTransformToRotation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ConvertTransformToRotation is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::ConvertTransformToRotation",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "const Transform&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ShortestArc",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ShortestArc"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ShortestArc is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::ShortestArc",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RotationXDegrees",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RotationXDegrees"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RotationXDegrees is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::RotationXDegrees",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsZero",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsZero"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsZero is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::IsZero",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsClose",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsClose"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsClose is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::IsClose",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Length",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Length"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Length is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::Length",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Conjugate",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Conjugate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Conjugate is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::Conjugate",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ToAngleDegrees",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToAngleDegrees"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToAngleDegrees is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::ToAngleDegrees",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Dot",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Dot"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Dot is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::Dot",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Negate",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Negate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Negate is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::Negate",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Add",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::Add",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "MultiplyByNumber",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MultiplyByNumber"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MultiplyByNumber is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::MultiplyByNumber",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Slerp",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Slerp"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Slerp is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::Slerp",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "InvertFull",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke InvertFull"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after InvertFull is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::InvertFull",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "FromMatrix4x4",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromMatrix4x4"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromMatrix4x4 is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::FromMatrix4x4",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
+                            "details": {
+                                "name": "const Matrix4x4&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RotateVector3",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RotateVector3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RotateVector3 is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::RotateVector3",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "FromMatrix3x3",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromMatrix3x3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromMatrix3x3 is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::FromMatrix3x3",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "const Matrix3x3&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Squad",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Squad"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Squad is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::Squad",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "FromAxisAngleDegrees",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromAxisAngleDegrees"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromAxisAngleDegrees is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::FromAxisAngleDegrees",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "LengthSquared",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke LengthSquared"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after LengthSquared is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::LengthSquared",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsFinite",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsFinite"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsFinite is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::IsFinite",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DivideByNumber",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DivideByNumber"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DivideByNumber is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::DivideByNumber",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "MultiplyByRotation",
+                    "context": "MathQuaternion_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MultiplyByRotation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MultiplyByRotation is invoked"
+                    },
+                    "details": {
+                        "name": "MathQuaternion_VM::MultiplyByRotation",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        },
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

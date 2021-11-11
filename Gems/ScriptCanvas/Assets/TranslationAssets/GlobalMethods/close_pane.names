@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "close_pane",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "close_pane",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke close_pane"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after close_pane is invoked"
+                    },
+                    "details": {
+                        "name": "close_pane",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

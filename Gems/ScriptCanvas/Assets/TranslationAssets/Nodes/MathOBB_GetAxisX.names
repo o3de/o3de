@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{924A1027-ECC4-574D-808A-E4A4EB128552}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "GetAxisX",
+                "category": "Math/OBB",
+                "tooltip": "returns the X-Axis of Source",
+                "subtitle": "OBB"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_OBB: Source",
+                    "details": {
+                        "name": "OBB: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Vector3",
+                    "details": {
+                        "name": "Result: Vector3"
+                    }
+                }
+            ]
+        }
+    ]
+}

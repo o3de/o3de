@@ -1,0 +1,59 @@
+{
+    "entries": [
+        {
+            "key": "UiInteractableNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Interactable",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "OnHoverStart",
+                    "details": {
+                        "name": "On Hover Start",
+                        "tooltip": "Executes when the interactive element starts being hovered"
+                    }
+                },
+                {
+                    "key": "OnHoverEnd",
+                    "details": {
+                        "name": "On Hover End",
+                        "tooltip": "Executes when the interactive element ends being hovered"
+                    }
+                },
+                {
+                    "key": "OnPressed",
+                    "details": {
+                        "name": "On Pressed",
+                        "tooltip": "Executes when the interactive element has been pressed"
+                    }
+                },
+                {
+                    "key": "OnReleased",
+                    "details": {
+                        "name": "On Released",
+                        "tooltip": "Executes when the interactive element has been released"
+                    }
+                },
+                {
+                    "key": "OnReceivedHoverByNavigatingFromDescendant",
+                    "details": {
+                        "name": "On Received Hover By Navigating From Descendant",
+                        "tooltip": "Executes when the interactive element receives the hover by being navigated to from a descendant"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Descendant EntityID",
+                                "tooltip": "The descendant element"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

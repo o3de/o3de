@@ -1,0 +1,34 @@
+{
+    "entries": [
+        {
+            "key": "FrameCaptureNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "FrameCaptureNotificationBus"
+            },
+            "methods": [
+                {
+                    "key": "OnCaptureFinished",
+                    "details": {
+                        "name": "OnCaptureFinished"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{1328993D-4413-5E46-9116-3AA5C25E97D2}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Conjugate",
+                "category": "Math/Quaternion",
+                "tooltip": "returns the conjugate of the source, (-x, -y, -z, w)",
+                "subtitle": "Quaternion"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Quaternion: Source",
+                    "details": {
+                        "name": "Quaternion: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Quaternion",
+                    "details": {
+                        "name": "Result: Quaternion"
+                    }
+                }
+            ]
+        }
+    ]
+}

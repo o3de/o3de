@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{60E6D939-6105-53CB-865B-4F401A1B487B}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "LengthReciprocal",
+                "category": "Math/Vector4",
+                "tooltip": "returns the 1 / magnitude of the source",
+                "subtitle": "Vector4"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector4: Source",
+                    "details": {
+                        "name": "Vector4: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Number",
+                    "details": {
+                        "name": "Result: Number"
+                    }
+                }
+            ]
+        }
+    ]
+}

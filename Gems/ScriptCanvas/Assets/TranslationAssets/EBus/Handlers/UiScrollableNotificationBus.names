@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "UiScrollableNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Scrollable",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "OnScrollableValueChanging",
+                    "details": {
+                        "name": "On Scrollable Value Changing",
+                        "tooltip": "Executes when the scroll value is changing"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Scroll Value",
+                                "tooltip": "The new scroll value [0-1]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnScrollableValueChanged",
+                    "details": {
+                        "name": "On Scrollable Value Changed",
+                        "tooltip": "Executes when the scroll value has changed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Scroll Value",
+                                "tooltip": "The new scroll value [0-1]"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

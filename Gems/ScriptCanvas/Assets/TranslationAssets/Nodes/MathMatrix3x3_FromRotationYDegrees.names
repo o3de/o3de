@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{A69D13B7-FBC3-5038-93CD-4FB822CFF8D4}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "FromRotationYDegrees",
+                "category": "Math/Matrix3x3",
+                "tooltip": "returns a rotation matrix representing a rotation in degrees around Y-axis",
+                "subtitle": "Matrix3x3"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Degrees",
+                    "details": {
+                        "name": "Number: Degrees"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Matrix3x3",
+                    "details": {
+                        "name": "Result: Matrix3x3"
+                    }
+                }
+            ]
+        }
+    ]
+}

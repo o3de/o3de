@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{DFCF0A6F-9907-52B1-BBF3-632CB929C1B1}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "FromTranslation",
+                "category": "Math/Transform",
+                "tooltip": "returns a translation matrix and the rotation set to zero",
+                "subtitle": "Transform"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector3: Translation",
+                    "details": {
+                        "name": "Vector3: Translation"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Transform",
+                    "details": {
+                        "name": "Result: Transform"
+                    }
+                }
+            ]
+        }
+    ]
+}

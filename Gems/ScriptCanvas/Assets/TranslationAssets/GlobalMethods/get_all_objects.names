@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "get_all_objects",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "get_all_objects",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke get_all_objects"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after get_all_objects is invoked"
+                    },
+                    "details": {
+                        "name": "get_all_objects",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
+                            "details": {
+                                "name": "AZStd::vector<AZStd::basic_string<char, AZStd::char_traits<char>, allocator>, allocator>"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

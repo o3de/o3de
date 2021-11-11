@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "BlendFactor_ColorSource1",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "BlendFactor_ColorSource1::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

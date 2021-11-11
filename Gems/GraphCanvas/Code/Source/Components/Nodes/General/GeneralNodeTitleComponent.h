@@ -68,12 +68,11 @@ namespace GraphCanvas
         ////
 
         // NodeTitleRequestBus
+        void SetDetails(const AZStd::string& title, const AZStd::string& subtitle) override;
         void SetTitle(const AZStd::string& title) override;
-        void SetTranslationKeyedTitle(const TranslationKeyedString& title) override;
         AZStd::string GetTitle() const override;
 
         void SetSubTitle(const AZStd::string& subtitle) override;
-        void SetTranslationKeyedSubTitle(const TranslationKeyedString& subtitle) override;
         AZStd::string GetSubTitle() const override;
 
         QGraphicsWidget* GetGraphicsWidget() override;
@@ -96,8 +95,8 @@ namespace GraphCanvas
     private:
         GeneralNodeTitleComponent(const GeneralNodeTitleComponent&) = delete;
 
-        TranslationKeyedString m_title;
-        TranslationKeyedString m_subTitle;
+        AZStd::string m_title;
+        AZStd::string m_subTitle;
 
         AZStd::string          m_basePalette;
 
@@ -123,9 +122,10 @@ namespace GraphCanvas
 
         void Activate();
         void Deactivate();
-        
-        void SetTitle(const TranslationKeyedString& title);
-        void SetSubTitle(const TranslationKeyedString& subtitle);
+
+        void SetDetails(const AZStd::string& title, const AZStd::string& subtitle);
+        void SetTitle(const AZStd::string& title);
+        void SetSubTitle(const AZStd::string& subtitle);
 
         void SetPaletteOverride(AZStd::string_view paletteOverride);
         void SetPaletteOverride(const AZ::Uuid& uuid);

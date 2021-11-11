@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{5E449312-5741-59EB-A778-7FB6C75DB90A}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "FromRotationZDegrees",
+                "category": "Math/Matrix3x3",
+                "tooltip": "returns a rotation matrix representing a rotation in degrees around Z-axis",
+                "subtitle": "Matrix3x3"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Degrees",
+                    "details": {
+                        "name": "Number: Degrees"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Matrix3x3",
+                    "details": {
+                        "name": "Result: Matrix3x3"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,977 @@
+{
+    "entries": [
+        {
+            "key": "AnimGraphComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "AnimGraphComponentRequestBus",
+                "category": "Animation"
+            },
+            "methods": [
+                {
+                    "key": "GetVisualizeEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetVisualizeEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetVisualizeEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "GetVisualizeEnabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetNamedParameterRotation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetNamedParameterRotation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetNamedParameterRotation is invoked"
+                    },
+                    "details": {
+                        "name": "SetNamedParameterRotation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParameterString",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetParameterString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetParameterString is invoked"
+                    },
+                    "details": {
+                        "name": "SetParameterString"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNamedParameterString",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNamedParameterString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNamedParameterString is invoked"
+                    },
+                    "details": {
+                        "name": "GetNamedParameterString"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNamedParameterVector2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNamedParameterVector2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNamedParameterVector2 is invoked"
+                    },
+                    "details": {
+                        "name": "GetNamedParameterVector2"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParameterFloat",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetParameterFloat"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetParameterFloat is invoked"
+                    },
+                    "details": {
+                        "name": "GetParameterFloat"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParameterRotation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetParameterRotation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetParameterRotation is invoked"
+                    },
+                    "details": {
+                        "name": "SetParameterRotation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNamedParameterFloat",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNamedParameterFloat"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNamedParameterFloat is invoked"
+                    },
+                    "details": {
+                        "name": "GetNamedParameterFloat"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParameterBool",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetParameterBool"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetParameterBool is invoked"
+                    },
+                    "details": {
+                        "name": "SetParameterBool"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "FindParameterName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FindParameterName"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FindParameterName is invoked"
+                    },
+                    "details": {
+                        "name": "FindParameterName"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNamedParameterBool",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNamedParameterBool"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNamedParameterBool is invoked"
+                    },
+                    "details": {
+                        "name": "GetNamedParameterBool"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParameterFloat",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetParameterFloat"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetParameterFloat is invoked"
+                    },
+                    "details": {
+                        "name": "SetParameterFloat"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParameterVector2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetParameterVector2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetParameterVector2 is invoked"
+                    },
+                    "details": {
+                        "name": "GetParameterVector2"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParameterBool",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetParameterBool"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetParameterBool is invoked"
+                    },
+                    "details": {
+                        "name": "GetParameterBool"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetNamedParameterVector3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetNamedParameterVector3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetNamedParameterVector3 is invoked"
+                    },
+                    "details": {
+                        "name": "SetNamedParameterVector3"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "FindParameterIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FindParameterIndex"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FindParameterIndex is invoked"
+                    },
+                    "details": {
+                        "name": "FindParameterIndex"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetNamedParameterString",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetNamedParameterString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetNamedParameterString is invoked"
+                    },
+                    "details": {
+                        "name": "SetNamedParameterString"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParameterVector3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetParameterVector3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetParameterVector3 is invoked"
+                    },
+                    "details": {
+                        "name": "SetParameterVector3"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParameterVector3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetParameterVector3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetParameterVector3 is invoked"
+                    },
+                    "details": {
+                        "name": "GetParameterVector3"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SyncAnimGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SyncAnimGraph"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SyncAnimGraph is invoked"
+                    },
+                    "details": {
+                        "name": "SyncAnimGraph"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParameterRotationEuler",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetParameterRotationEuler"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetParameterRotationEuler is invoked"
+                    },
+                    "details": {
+                        "name": "SetParameterRotationEuler"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParameterRotationEuler",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetParameterRotationEuler"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetParameterRotationEuler is invoked"
+                    },
+                    "details": {
+                        "name": "GetParameterRotationEuler"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParameterRotation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetParameterRotation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetParameterRotation is invoked"
+                    },
+                    "details": {
+                        "name": "GetParameterRotation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNamedParameterRotationEuler",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNamedParameterRotationEuler"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNamedParameterRotationEuler is invoked"
+                    },
+                    "details": {
+                        "name": "GetNamedParameterRotationEuler"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DesyncAnimGraph",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DesyncAnimGraph"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DesyncAnimGraph is invoked"
+                    },
+                    "details": {
+                        "name": "DesyncAnimGraph"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetNamedParameterRotationEuler",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetNamedParameterRotationEuler"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetNamedParameterRotationEuler is invoked"
+                    },
+                    "details": {
+                        "name": "SetNamedParameterRotationEuler"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParameterVector2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetParameterVector2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetParameterVector2 is invoked"
+                    },
+                    "details": {
+                        "name": "SetParameterVector2"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        },
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNamedParameterRotation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNamedParameterRotation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNamedParameterRotation is invoked"
+                    },
+                    "details": {
+                        "name": "GetNamedParameterRotation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetNamedParameterBool",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetNamedParameterBool"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetNamedParameterBool is invoked"
+                    },
+                    "details": {
+                        "name": "SetNamedParameterBool"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetVisualizeEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetVisualizeEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetVisualizeEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "SetVisualizeEnabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetNamedParameterFloat",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetNamedParameterFloat"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetNamedParameterFloat is invoked"
+                    },
+                    "details": {
+                        "name": "SetNamedParameterFloat"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetNamedParameterVector2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetNamedParameterVector2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetNamedParameterVector2 is invoked"
+                    },
+                    "details": {
+                        "name": "SetNamedParameterVector2"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNamedParameterVector3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNamedParameterVector3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNamedParameterVector3 is invoked"
+                    },
+                    "details": {
+                        "name": "GetNamedParameterVector3"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParameterString",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetParameterString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetParameterString is invoked"
+                    },
+                    "details": {
+                        "name": "GetParameterString"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

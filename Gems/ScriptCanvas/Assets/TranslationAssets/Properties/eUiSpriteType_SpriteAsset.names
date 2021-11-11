@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiSpriteType_SpriteAsset",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiSpriteType_SpriteAsset::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

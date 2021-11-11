@@ -1,0 +1,80 @@
+{
+    "entries": [
+        {
+            "key": "TriggerEvent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "TriggerEvent"
+            },
+            "methods": [
+                {
+                    "key": "GetTriggerEntityId",
+                    "context": "TriggerEvent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTriggerEntityId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTriggerEntityId is invoked"
+                    },
+                    "details": {
+                        "name": "TriggerEvent::Get Trigger EntityId",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7A0851A3-2CBD-4A03-85D5-1C40221E7F61}",
+                            "details": {
+                                "name": "TriggerEvent*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetOtherEntityId",
+                    "context": "TriggerEvent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOtherEntityId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOtherEntityId is invoked"
+                    },
+                    "details": {
+                        "name": "TriggerEvent::Get Other EntityId",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7A0851A3-2CBD-4A03-85D5-1C40221E7F61}",
+                            "details": {
+                                "name": "TriggerEvent*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

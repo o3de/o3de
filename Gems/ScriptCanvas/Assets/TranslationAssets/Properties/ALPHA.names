@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ALPHA",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ALPHA::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

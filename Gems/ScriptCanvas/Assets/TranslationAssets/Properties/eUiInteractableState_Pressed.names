@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiInteractableState_Pressed",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiInteractableState_Pressed::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

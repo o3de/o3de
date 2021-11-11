@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ShapeType_Box",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ShapeType_Box::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,42 @@
+{
+    "entries": [
+        {
+            "key": "{399A2608-77E3-41F9-90FA-58A9B6E0E34D}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Tick Delay",
+                "category": "Timing",
+                "tooltip": "Delays all incoming execution for the specified number of ticks"
+            },
+            "slots": [
+                {
+                    "key": "DataInput_Ticks",
+                    "details": {
+                        "name": "Ticks"
+                    }
+                },
+                {
+                    "key": "DataInput_Tick Order",
+                    "details": {
+                        "name": "Tick Order"
+                    }
+                },
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "When signaled, execution is delayed at this node for the specified amount of frames."
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Signaled after waiting for the specified amount of frames."
+                    }
+                }
+            ]
+        }
+    ]
+}

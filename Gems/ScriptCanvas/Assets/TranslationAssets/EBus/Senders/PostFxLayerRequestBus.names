@@ -1,0 +1,102 @@
+{
+    "entries": [
+        {
+            "key": "PostFxLayerRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "PostFxLayerRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "SetPriority",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPriority"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPriority is invoked"
+                    },
+                    "details": {
+                        "name": "SetPriority"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPriority",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPriority"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPriority is invoked"
+                    },
+                    "details": {
+                        "name": "GetPriority"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetOverrideFactor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetOverrideFactor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetOverrideFactor is invoked"
+                    },
+                    "details": {
+                        "name": "SetOverrideFactor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetOverrideFactor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOverrideFactor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOverrideFactor is invoked"
+                    },
+                    "details": {
+                        "name": "GetOverrideFactor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

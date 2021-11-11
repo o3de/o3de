@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiFillEdgeOrigin_Top",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiFillEdgeOrigin_Top::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,142 @@
+{
+    "entries": [
+        {
+            "key": "ShaderCollectionItem",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ShaderCollectionItem"
+            },
+            "methods": [
+                {
+                    "key": "GetShaderAsset",
+                    "context": "ShaderCollectionItem",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetShaderAsset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetShaderAsset is invoked"
+                    },
+                    "details": {
+                        "name": "ShaderCollectionItem::GetShaderAsset",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{64C7F381-3313-46E8-B23B-D7AA9A915F35}",
+                            "details": {
+                                "name": "Item*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{C3B16018-28FB-5CFE-B871-25B6E2F0B110}",
+                            "details": {
+                                "name": "const Asset<ShaderAsset>&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetShaderAssetId",
+                    "context": "ShaderCollectionItem",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetShaderAssetId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetShaderAssetId is invoked"
+                    },
+                    "details": {
+                        "name": "ShaderCollectionItem::GetShaderAssetId",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{64C7F381-3313-46E8-B23B-D7AA9A915F35}",
+                            "details": {
+                                "name": "Item*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "const AssetId&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetShaderVariantId",
+                    "context": "ShaderCollectionItem",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetShaderVariantId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetShaderVariantId is invoked"
+                    },
+                    "details": {
+                        "name": "ShaderCollectionItem::GetShaderVariantId",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{64C7F381-3313-46E8-B23B-D7AA9A915F35}",
+                            "details": {
+                                "name": "Item*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{27B1FEC2-8C8A-47D7-A034-6609FA092B34}",
+                            "details": {
+                                "name": "const ShaderVariantId&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetShaderOptionGroup",
+                    "context": "ShaderCollectionItem",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetShaderOptionGroup"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetShaderOptionGroup is invoked"
+                    },
+                    "details": {
+                        "name": "ShaderCollectionItem::GetShaderOptionGroup",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{64C7F381-3313-46E8-B23B-D7AA9A915F35}",
+                            "details": {
+                                "name": "Item*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{906F69F5-52F0-4095-9562-0E91DDDE6E2F}",
+                            "details": {
+                                "name": "const ShaderOptionGroup&"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

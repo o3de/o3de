@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorNonUniformScaleComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorNonUniformScaleComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

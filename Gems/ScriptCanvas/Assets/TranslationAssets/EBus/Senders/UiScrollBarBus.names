@@ -1,0 +1,289 @@
+{
+    "entries": [
+        {
+            "key": "UiScrollBarBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiScrollBarBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "GetAutoFadeSpeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetAutoFadeSpeed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetAutoFadeSpeed is invoked"
+                    },
+                    "details": {
+                        "name": "GetAutoFadeSpeed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsAutoFadeEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsAutoFadeEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsAutoFadeEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "IsAutoFadeEnabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetAutoFadeSpeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAutoFadeSpeed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAutoFadeSpeed is invoked"
+                    },
+                    "details": {
+                        "name": "SetAutoFadeSpeed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetHandleEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Handle Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Handle Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Handle Entity",
+                        "tooltip": "Gets the handle element"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Handle EntityID",
+                                "tooltip": "The handle element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetHandleEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Handle Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Handle Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Handle Entity",
+                        "tooltip": "Gets the handle element"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetAutoFadeDelay",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetAutoFadeDelay"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetAutoFadeDelay is invoked"
+                    },
+                    "details": {
+                        "name": "GetAutoFadeDelay"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetMinHandlePixelSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Min Handle Pixel Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Min Handle Pixel Size is invoked"
+                    },
+                    "details": {
+                        "name": "Get Min Handle Pixel Size",
+                        "tooltip": "Gets the minimum size of the handle"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetAutoFadeEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAutoFadeEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAutoFadeEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "SetAutoFadeEnabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetHandleSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Handle Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Handle Size is invoked"
+                    },
+                    "details": {
+                        "name": "Set Handle Size",
+                        "tooltip": "Sets the size of the handle relative to the scroll bar"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Handle Size",
+                                "tooltip": "The size of the handle relative to the scroll bar [0-1]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetMinHandlePixelSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Min Handle Pixel Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Min Handle Pixel Size is invoked"
+                    },
+                    "details": {
+                        "name": "Set Min Handle Pixel Size",
+                        "tooltip": "Sets the minimum size of the handle"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Min Handle Size",
+                                "tooltip": "The minimum size of the handle in pixels"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetHandleSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Handle Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Handle Size is invoked"
+                    },
+                    "details": {
+                        "name": "Get Handle Size",
+                        "tooltip": "Gets the size of the handle relative to the scroll bar"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetAutoFadeDelay",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAutoFadeDelay"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAutoFadeDelay is invoked"
+                    },
+                    "details": {
+                        "name": "SetAutoFadeDelay"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

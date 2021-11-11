@@ -1,0 +1,35 @@
+{
+    "entries": [
+        {
+            "key": "{E70E232F-9B2E-5802-9A58-422D47D88405}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "One",
+                "category": "Math/Color",
+                "tooltip": "returns a Color with every element set to 1",
+                "subtitle": "Color"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Color",
+                    "details": {
+                        "name": "Result: Color"
+                    }
+                }
+            ]
+        }
+    ]
+}

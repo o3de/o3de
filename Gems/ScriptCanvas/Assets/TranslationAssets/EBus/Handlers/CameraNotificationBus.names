@@ -1,0 +1,59 @@
+{
+    "entries": [
+        {
+            "key": "CameraNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "CameraNotificationBus"
+            },
+            "methods": [
+                {
+                    "key": "OnCameraAdded",
+                    "details": {
+                        "name": "OnCameraAdded"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnCameraRemoved",
+                    "details": {
+                        "name": "OnCameraRemoved"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnActiveViewChanged",
+                    "details": {
+                        "name": "OnActiveViewChanged"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

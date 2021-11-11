@@ -1,0 +1,21 @@
+{
+    "entries": [
+        {
+            "key": "VariableNotification",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "VariableNotification",
+                "tooltip": "Notifications from the Variables in the current Script Canvas graph"
+            },
+            "methods": [
+                {
+                    "key": "OnVariableValueChanged",
+                    "details": {
+                        "name": "OnVariableValueChanged"
+                    }
+                }
+            ]
+        }
+    ]
+}

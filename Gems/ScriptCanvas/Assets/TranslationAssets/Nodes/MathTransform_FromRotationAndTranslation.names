@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "{C2A304B1-9D48-5A2A-BCEE-69BCD72379E3}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "FromRotationAndTranslation",
+                "category": "Math/Transform",
+                "tooltip": "returns a transform from the rotation and the translation",
+                "subtitle": "Transform"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Quaternion: Rotation",
+                    "details": {
+                        "name": "Quaternion: Rotation"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector3: Translation",
+                    "details": {
+                        "name": "Vector3: Translation"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Transform",
+                    "details": {
+                        "name": "Result: Transform"
+                    }
+                }
+            ]
+        }
+    ]
+}

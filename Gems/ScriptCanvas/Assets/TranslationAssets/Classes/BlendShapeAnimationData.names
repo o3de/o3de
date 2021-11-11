@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "BlendShapeAnimationData",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "BlendShapeAnimationData"
+            }
+        }
+    ]
+}

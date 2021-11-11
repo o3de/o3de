@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "SmoothStepGradientComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "SmoothStepGradientComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

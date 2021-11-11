@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "StencilOp_DecrementSaturate",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "StencilOp_DecrementSaturate::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

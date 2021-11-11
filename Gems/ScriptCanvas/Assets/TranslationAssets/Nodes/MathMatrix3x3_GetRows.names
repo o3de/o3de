@@ -1,0 +1,53 @@
+{
+    "entries": [
+        {
+            "key": "{8DE78AF8-44B4-58D8-AC3B-7B4ED77B75DF}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "GetRows",
+                "category": "Math/Matrix3x3",
+                "tooltip": "returns all rows from matrix",
+                "subtitle": "Matrix3x3"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Matrix3x3: Source",
+                    "details": {
+                        "name": "Matrix3x3: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Row1: Vector3",
+                    "details": {
+                        "name": "Row1: Vector3"
+                    }
+                },
+                {
+                    "key": "DataOutput_Row2: Vector3",
+                    "details": {
+                        "name": "Row2: Vector3"
+                    }
+                },
+                {
+                    "key": "DataOutput_Row3: Vector3",
+                    "details": {
+                        "name": "Row3: Vector3"
+                    }
+                }
+            ]
+        }
+    ]
+}

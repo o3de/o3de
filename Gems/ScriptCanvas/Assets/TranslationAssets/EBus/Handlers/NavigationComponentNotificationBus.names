@@ -1,0 +1,126 @@
+{
+    "entries": [
+        {
+            "key": "NavigationComponentNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "NavigationComponentNotificationBus",
+                "category": "EBus Handlers"
+            },
+            "methods": [
+                {
+                    "key": "OnSearchingForPath",
+                    "details": {
+                        "name": "OnSearchingForPath"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "RequestId",
+                                "tooltip": "Navigation request Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnTraversalStarted",
+                    "details": {
+                        "name": "OnTraversalStarted"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "RequestId",
+                                "tooltip": "Navigation request Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnTraversalPathUpdate",
+                    "details": {
+                        "name": "OnTraversalPathUpdate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "RequestId",
+                                "tooltip": "Navigation request Id"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "NextPathPosition",
+                                "tooltip": "Next path position"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "InflectionPosition",
+                                "tooltip": "Next inflection position"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnTraversalInProgress",
+                    "details": {
+                        "name": "OnTraversalInProgress"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "RequestId",
+                                "tooltip": "Navigation request Id"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Distance",
+                                "tooltip": "Distance remaining"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnTraversalComplete",
+                    "details": {
+                        "name": "OnTraversalComplete"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "RequestId",
+                                "tooltip": "Navigation request Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnTraversalCancelled",
+                    "details": {
+                        "name": "OnTraversalCancelled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "RequestId",
+                                "tooltip": "Navigation request Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

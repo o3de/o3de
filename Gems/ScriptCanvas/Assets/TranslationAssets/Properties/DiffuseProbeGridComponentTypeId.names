@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DiffuseProbeGridComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DiffuseProbeGridComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

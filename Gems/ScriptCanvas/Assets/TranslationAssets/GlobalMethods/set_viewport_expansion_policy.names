@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "set_viewport_expansion_policy",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "set_viewport_expansion_policy",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke set_viewport_expansion_policy"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after set_viewport_expansion_policy is invoked"
+                    },
+                    "details": {
+                        "name": "set_viewport_expansion_policy",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

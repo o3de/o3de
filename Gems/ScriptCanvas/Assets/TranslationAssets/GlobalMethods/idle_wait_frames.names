@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "idle_wait_frames",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "idle_wait_frames",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke idle_wait_frames"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after idle_wait_frames is invoked"
+                    },
+                    "details": {
+                        "name": "idle_wait_frames",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

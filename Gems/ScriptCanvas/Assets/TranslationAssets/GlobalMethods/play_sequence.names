@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "play_sequence",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "play_sequence",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke play_sequence"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after play_sequence is invoked"
+                    },
+                    "details": {
+                        "name": "play_sequence",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

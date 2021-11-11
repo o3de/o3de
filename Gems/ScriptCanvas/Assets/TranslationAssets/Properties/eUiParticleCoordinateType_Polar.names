@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiParticleCoordinateType_Polar",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiParticleCoordinateType_Polar::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

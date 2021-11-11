@@ -1,0 +1,359 @@
+{
+    "entries": [
+        {
+            "key": "SimpleMotionComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "SimpleMotionComponentRequestBus",
+                "category": "Animation"
+            },
+            "methods": [
+                {
+                    "key": "BlendOutTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke BlendOutTime"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after BlendOutTime is invoked"
+                    },
+                    "details": {
+                        "name": "BlendOutTime"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetBlendInTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetBlendInTime"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetBlendInTime is invoked"
+                    },
+                    "details": {
+                        "name": "GetBlendInTime"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "PlayMotion",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke PlayMotion"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after PlayMotion is invoked"
+                    },
+                    "details": {
+                        "name": "PlayMotion"
+                    }
+                },
+                {
+                    "key": "GetMotion",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetMotion"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetMotion is invoked"
+                    },
+                    "details": {
+                        "name": "GetMotion"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "AssetId"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetBlendOutTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetBlendOutTime"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetBlendOutTime is invoked"
+                    },
+                    "details": {
+                        "name": "GetBlendOutTime"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ReverseMotion",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Reverse Motion"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Reverse Motion is invoked"
+                    },
+                    "details": {
+                        "name": "Reverse Motion"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPlaySpeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPlaySpeed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPlaySpeed is invoked"
+                    },
+                    "details": {
+                        "name": "GetPlaySpeed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPlayTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPlayTime"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPlayTime is invoked"
+                    },
+                    "details": {
+                        "name": "GetPlayTime"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RetargetMotion",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Retarget Motion"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Retarget Motion is invoked"
+                    },
+                    "details": {
+                        "name": "Retarget Motion"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPlaySpeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Play Speed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Play Speed is invoked"
+                    },
+                    "details": {
+                        "name": "Set Play Speed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Motion",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Motion"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Motion is invoked"
+                    },
+                    "details": {
+                        "name": "Motion"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "AssetId"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "BlendInTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke BlendInTime"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after BlendInTime is invoked"
+                    },
+                    "details": {
+                        "name": "BlendInTime"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetLoopMotion",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetLoopMotion"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetLoopMotion is invoked"
+                    },
+                    "details": {
+                        "name": "GetLoopMotion"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "PlayTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke PlayTime"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after PlayTime is invoked"
+                    },
+                    "details": {
+                        "name": "PlayTime"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "LoopMotion",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Loop Motion"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Loop Motion is invoked"
+                    },
+                    "details": {
+                        "name": "Loop Motion"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "MirrorMotion",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Mirror Motion"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Mirror Motion is invoked"
+                    },
+                    "details": {
+                        "name": "Mirror Motion"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "delete_selected",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "delete_selected",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke delete_selected"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after delete_selected is invoked"
+                    },
+                    "details": {
+                        "name": "delete_selected",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

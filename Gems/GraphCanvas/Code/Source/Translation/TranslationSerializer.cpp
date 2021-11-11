@@ -35,8 +35,10 @@ namespace GraphCanvas
             }
             else
             {
+                AZStd::string existingValue = translationFormat->m_database[finalKey.c_str()];
+
                 // There is a name collision
-                AZStd::string error = AZStd::string::format("Unable to store key: %s with value: %s because that key already exists", finalKey.c_str(), it.GetString());
+                AZStd::string error = AZStd::string::format("Unable to store key: %s with value: %s because that key already exists with value: %s (proposed: %s)", finalKey.c_str(), it.GetString(), existingValue.c_str(), it.GetString());
                 AZ_Error("TranslationSerializer", false, error.c_str());
             }
         }

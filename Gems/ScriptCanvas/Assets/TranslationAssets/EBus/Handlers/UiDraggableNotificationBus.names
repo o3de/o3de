@@ -1,0 +1,63 @@
+{
+    "entries": [
+        {
+            "key": "UiDraggableNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Draggable",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "OnDragStart",
+                    "details": {
+                        "name": "On Drag Start",
+                        "tooltip": "Executes when dragging is detected on the draggable component. For mouse or touch input, this occurs when movement has been detected after the press or touch"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Position",
+                                "tooltip": "The position of the start of the drag"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnDrag",
+                    "details": {
+                        "name": "On Drag",
+                        "tooltip": "Executes each time the drag position changes during dragging. \"On Drag\" events happen only between \"On Drag Start\" and \"On Drag End\" events"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Position",
+                                "tooltip": "The position of the drag"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnDragEnd",
+                    "details": {
+                        "name": "On Drag End",
+                        "tooltip": "Executes at the end of dragging when the release input event occurs. The \"On Drag End\" notification is sent before the \"On Drop\" drop target notification"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Position",
+                                "tooltip": "The position of the end of the drag"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

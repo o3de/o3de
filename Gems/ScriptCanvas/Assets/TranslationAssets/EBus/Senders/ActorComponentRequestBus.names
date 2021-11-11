@@ -1,0 +1,212 @@
+{
+    "entries": [
+        {
+            "key": "ActorComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "ActorComponentRequestBus",
+                "category": "Animation"
+            },
+            "methods": [
+                {
+                    "key": "GetRenderCharacter",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetRenderCharacter"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetRenderCharacter is invoked"
+                    },
+                    "details": {
+                        "name": "GetRenderCharacter"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DetachFromEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Detach From Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Detach From Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Detach From Entity"
+                    }
+                },
+                {
+                    "key": "GetRenderActorVisible",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetRenderActorVisible"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetRenderActorVisible is invoked"
+                    },
+                    "details": {
+                        "name": "GetRenderActorVisible"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "AttachToEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Attach To Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Attach To Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Attach To Entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetRenderCharacter",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetRenderCharacter"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetRenderCharacter is invoked"
+                    },
+                    "details": {
+                        "name": "SetRenderCharacter"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetJointTransform",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetJointTransform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetJointTransform is invoked"
+                    },
+                    "details": {
+                        "name": "GetJointTransform"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DebugDrawRoot",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Debug Draw Root"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Debug Draw Root is invoked"
+                    },
+                    "details": {
+                        "name": "Debug Draw Root"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetJointIndexByName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetJointIndexByName"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetJointIndexByName is invoked"
+                    },
+                    "details": {
+                        "name": "GetJointIndexByName"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

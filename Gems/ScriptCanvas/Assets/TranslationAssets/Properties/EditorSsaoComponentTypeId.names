@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorSsaoComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorSsaoComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

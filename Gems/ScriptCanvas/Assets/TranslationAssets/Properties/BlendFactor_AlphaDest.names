@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "BlendFactor_AlphaDest",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "BlendFactor_AlphaDest::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

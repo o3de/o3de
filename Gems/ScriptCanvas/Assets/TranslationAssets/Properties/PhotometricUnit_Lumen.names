@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "PhotometricUnit_Lumen",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "PhotometricUnit_Lumen::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,110 @@
+{
+    "entries": [
+        {
+            "key": "SceneGraphName",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "SceneGraphName"
+            },
+            "methods": [
+                {
+                    "key": "GetPath",
+                    "context": "SceneGraphName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPath"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPath is invoked"
+                    },
+                    "details": {
+                        "name": "SceneGraphName::GetPath",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4077AC3C-B301-4F5A-BEA7-54D6511AEC2E}",
+                            "details": {
+                                "name": "AZ::SceneAPI::Containers::SceneGraph::Name*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetName",
+                    "context": "SceneGraphName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetName"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetName is invoked"
+                    },
+                    "details": {
+                        "name": "SceneGraphName::GetName",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4077AC3C-B301-4F5A-BEA7-54D6511AEC2E}",
+                            "details": {
+                                "name": "AZ::SceneAPI::Containers::SceneGraph::Name*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ToString",
+                    "context": "SceneGraphName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToString is invoked"
+                    },
+                    "details": {
+                        "name": "SceneGraphName::ToString",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4077AC3C-B301-4F5A-BEA7-54D6511AEC2E}",
+                            "details": {
+                                "name": "const AZ::SceneAPI::Containers::SceneGraph::Name&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

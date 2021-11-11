@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorExposureControlComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorExposureControlComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

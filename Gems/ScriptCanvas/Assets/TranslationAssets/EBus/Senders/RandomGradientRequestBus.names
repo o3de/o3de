@@ -1,0 +1,58 @@
+{
+    "entries": [
+        {
+            "key": "RandomGradientRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "RandomGradientRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "GetRandomSeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetRandomSeed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetRandomSeed is invoked"
+                    },
+                    "details": {
+                        "name": "GetRandomSeed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetRandomSeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetRandomSeed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetRandomSeed is invoked"
+                    },
+                    "details": {
+                        "name": "SetRandomSeed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

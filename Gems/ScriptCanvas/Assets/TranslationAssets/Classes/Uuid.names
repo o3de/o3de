@@ -1,0 +1,335 @@
+{
+    "entries": [
+        {
+            "key": "Uuid",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "UUID",
+                "category": "Utilities"
+            },
+            "methods": [
+                {
+                    "key": "CreateRandom",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateRandom"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateRandom is invoked"
+                    },
+                    "details": {
+                        "name": "Uuid::CreateRandom",
+                        "category": "Utilities"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "UUID",
+                                "tooltip": "Universally Unique Identifier"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateNull",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateNull"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateNull is invoked"
+                    },
+                    "details": {
+                        "name": "Uuid::CreateNull",
+                        "category": "Utilities"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Null UUID",
+                                "tooltip": "Null Universally Unique Identifier"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Create",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create is invoked"
+                    },
+                    "details": {
+                        "name": "Uuid::Create",
+                        "category": "Utilities"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateName",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateName"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateName is invoked"
+                    },
+                    "details": {
+                        "name": "Uuid::CreateName",
+                        "category": "Utilities"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Clone",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clone"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clone is invoked"
+                    },
+                    "details": {
+                        "name": "Uuid::Clone",
+                        "category": "Utilities"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "const AZ::Uuid&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "LessThan",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke LessThan"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after LessThan is invoked"
+                    },
+                    "details": {
+                        "name": "Uuid::LessThan",
+                        "category": "Utilities"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ::Uuid*"
+                            }
+                        },
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "const AZ::Uuid&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Boolean"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsNull",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsNull"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsNull is invoked"
+                    },
+                    "details": {
+                        "name": "Uuid::IsNull",
+                        "category": "Utilities"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "UUID",
+                                "tooltip": "Universally Unique Identifier"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Boolean"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateString",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateString is invoked"
+                    },
+                    "details": {
+                        "name": "Uuid::CreateString",
+                        "category": "Utilities"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        },
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ToString",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToString is invoked"
+                    },
+                    "details": {
+                        "name": "Uuid::ToString",
+                        "category": "Utilities"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "UUID",
+                                "tooltip": "Universally Unique Identifier"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "String"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Equal",
+                    "context": "Uuid",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Equal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Equal is invoked"
+                    },
+                    "details": {
+                        "name": "Uuid::Equal",
+                        "category": "Utilities"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "UUID A",
+                                "tooltip": "Universally Unique Identifier A"
+                            }
+                        },
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "UUID B",
+                                "tooltip": "Universally Unique Identifier B"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Boolean"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

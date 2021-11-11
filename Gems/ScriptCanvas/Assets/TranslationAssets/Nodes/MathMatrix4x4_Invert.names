@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{4E82FDCE-50B3-5AFD-8E96-57E982B94D74}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Invert",
+                "category": "Math/Matrix4x4",
+                "tooltip": "returns inverse of Matrix",
+                "subtitle": "Matrix4x4"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Matrix4x4: Source",
+                    "details": {
+                        "name": "Matrix4x4: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Matrix4x4",
+                    "details": {
+                        "name": "Result: Matrix4x4"
+                    }
+                }
+            ]
+        }
+    ]
+}

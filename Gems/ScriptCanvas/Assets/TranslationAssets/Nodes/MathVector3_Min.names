@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "{343EA674-C05F-5803-BB86-C6D26C3F6D89}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Min",
+                "category": "Math/Vector3",
+                "tooltip": "returns the vector (min(A.x, B.x), min(A.y, B.y), min(A.z, B.z))",
+                "subtitle": "Vector3"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector3: A",
+                    "details": {
+                        "name": "Vector3: A"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector3: B",
+                    "details": {
+                        "name": "Vector3: B"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Vector3",
+                    "details": {
+                        "name": "Result: Vector3"
+                    }
+                }
+            ]
+        }
+    ]
+}

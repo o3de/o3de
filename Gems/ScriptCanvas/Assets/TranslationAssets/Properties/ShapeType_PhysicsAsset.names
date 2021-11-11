@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ShapeType_PhysicsAsset",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ShapeType_PhysicsAsset::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

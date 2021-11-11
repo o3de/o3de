@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "hide_all_objects",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "hide_all_objects",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke hide_all_objects"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after hide_all_objects is invoked"
+                    },
+                    "details": {
+                        "name": "hide_all_objects",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

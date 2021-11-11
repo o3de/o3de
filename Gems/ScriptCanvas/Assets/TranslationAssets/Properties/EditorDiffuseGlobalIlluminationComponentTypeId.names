@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorDiffuseGlobalIlluminationComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorDiffuseGlobalIlluminationComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

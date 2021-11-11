@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{8250935C-5B8D-5DF4-9E09-FDA2A445C099}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "ToScale",
+                "category": "Math/Matrix3x3",
+                "tooltip": "returns scale part of the transformation matrix",
+                "subtitle": "Matrix3x3"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Matrix3x3: Source",
+                    "details": {
+                        "name": "Matrix3x3: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Vector3",
+                    "details": {
+                        "name": "Result: Vector3"
+                    }
+                }
+            ]
+        }
+    ]
+}

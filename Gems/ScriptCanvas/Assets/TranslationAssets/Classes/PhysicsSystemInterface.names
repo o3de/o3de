@@ -1,0 +1,138 @@
+{
+    "entries": [
+        {
+            "key": "PhysicsSystemInterface",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "PhysicsSystemInterface"
+            },
+            "methods": [
+                {
+                    "key": "GetOnPresimulateEvent",
+                    "context": "PhysicsSystemInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOnPresimulateEvent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOnPresimulateEvent is invoked"
+                    },
+                    "details": {
+                        "name": "PhysicsSystemInterface::GetOnPresimulateEvent",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{F0A3166F-115C-5C3E-8D65-28FBA4420028}",
+                            "details": {
+                                "name": "Event<float >*"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetOnPostsimulateEvent",
+                    "context": "PhysicsSystemInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOnPostsimulateEvent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOnPostsimulateEvent is invoked"
+                    },
+                    "details": {
+                        "name": "PhysicsSystemInterface::GetOnPostsimulateEvent",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{F0A3166F-115C-5C3E-8D65-28FBA4420028}",
+                            "details": {
+                                "name": "Event<float >*"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSceneHandle",
+                    "context": "PhysicsSystemInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSceneHandle"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSceneHandle is invoked"
+                    },
+                    "details": {
+                        "name": "PhysicsSystemInterface::GetSceneHandle",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B6F4D92A-061B-4CB3-AAB5-984B599A53AE}",
+                            "details": {
+                                "name": "SystemInterface*"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "const AZStd::basic_string<char, AZStd::char_traits<char>, alloc"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{36669095-4036-5479-B116-41A32E4E16EA}",
+                            "details": {
+                                "name": "tuple<Crc32 AZ::s8 >"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetScene",
+                    "context": "PhysicsSystemInterface",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetScene"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetScene is invoked"
+                    },
+                    "details": {
+                        "name": "PhysicsSystemInterface::GetScene",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B6F4D92A-061B-4CB3-AAB5-984B599A53AE}",
+                            "details": {
+                                "name": "SystemInterface*"
+                            }
+                        },
+                        {
+                            "typeid": "{36669095-4036-5479-B116-41A32E4E16EA}",
+                            "details": {
+                                "name": "tuple<Crc32 AZ::s8 >"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{52BD8163-BDC4-4B09-ABB2-11DD1F601FFD}",
+                            "details": {
+                                "name": "Scene*"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

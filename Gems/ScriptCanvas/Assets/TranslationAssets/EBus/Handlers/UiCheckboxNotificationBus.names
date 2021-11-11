@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "UiCheckboxNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Checkbox",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "OnCheckboxStateChange",
+                    "details": {
+                        "name": "On Checkbox State Change",
+                        "tooltip": "Executes when the checkbox state has changed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Checked",
+                                "tooltip": "Indicates whether the checkbox is checked"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,82 @@
+{
+    "entries": [
+        {
+            "key": "Multi-Position Audio Requests",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Multi-Position Audio Requests"
+            },
+            "methods": [
+                {
+                    "key": "AddEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddEntity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddEntity is invoked"
+                    },
+                    "details": {
+                        "name": "AddEntity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RemoveEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RemoveEntity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RemoveEntity is invoked"
+                    },
+                    "details": {
+                        "name": "RemoveEntity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetBehaviorType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetBehaviorType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetBehaviorType is invoked"
+                    },
+                    "details": {
+                        "name": "SetBehaviorType"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

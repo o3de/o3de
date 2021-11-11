@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{E699BC04-CAA6-5E1A-BBC0-797510227CBC}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "GetMin",
+                "category": "Math/AABB",
+                "tooltip": "returns the Vector3 that is the min value on each axis of Source",
+                "subtitle": "AABB"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_AABB: Source",
+                    "details": {
+                        "name": "AABB: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Vector3",
+                    "details": {
+                        "name": "Result: Vector3"
+                    }
+                }
+            ]
+        }
+    ]
+}

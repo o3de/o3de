@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "redo",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "redo",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke redo"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after redo is invoked"
+                    },
+                    "details": {
+                        "name": "redo",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}
