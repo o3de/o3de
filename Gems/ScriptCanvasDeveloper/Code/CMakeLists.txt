@@ -61,7 +61,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME ScriptCanvasDeveloper.Editor GEM_MODULE
         NAMESPACE Gem
         AUTOMOC
-        AUTOUIC
         FILES_CMAKE
             scriptcanvasdeveloper_gem_editor_files.cmake
         INCLUDE_DIRECTORIES
