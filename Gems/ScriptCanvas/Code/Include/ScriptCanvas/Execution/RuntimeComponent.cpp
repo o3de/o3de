@@ -22,11 +22,6 @@
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
 #include <AzCore/Asset/AssetSerializer.h>
 
-namespace AZ
-{
-    AZ_TYPE_INFO_SPECIALIZE(AZ::Data::Asset<AZ::DynamicSliceAsset>, "{D9A4EB57-198B-4A0D-B1FB-D1B11FF88C66}");
-}
-
 AZ_DECLARE_BUDGET(ScriptCanvas);
 
 namespace RuntimeComponentCpp
