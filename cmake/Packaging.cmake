@@ -143,7 +143,7 @@ ly_install(FILES ${_cmake_package_dest}
 
 file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/scripts/license_scanner/license_scanner.py" _license_script)
 file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/scripts/license_scanner/scanner_config.json" _license_config_script)
-set(_license_scan_path "${CMAKE_CURRENT_SOURCE_DIR} ${(CPACK_LY_3P_PACKAGE_DIRECTORY}")
+set(_license_scan_path "${CMAKE_CURRENT_SOURCE_DIR} ${CPACK_LY_3P_PACKAGE_DIRECTORY}")
 set(CPACK_3P_LICENSE_FILE "${CPACK_BINARY_DIR}/NOTICES.txt")
 set(CPACK_3P_MANIFEST_FILE "${CPACK_BINARY_DIR}/SPDX-License.json")
 
