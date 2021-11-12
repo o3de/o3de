@@ -1,0 +1,24 @@
+{
+    "Amazon": {
+        "AssetProcessor": {
+            "Settings": {
+                "Platforms": {
+                    "pc": "enabled",
+                    "server": "enabled"
+                },
+                "Jobs": {
+                    "minJobs": 1,
+                    "maxJobs": 7
+                },
+                "ScanFolder Project/Assets": {
+                    "watch": "@PROJECTROOT@/Assets"
+                },
+                "ScanFolder Project/Gem": {
+                    "watch": "@PROJECTROOT@/Gem",
+                    "recursive": 1,
+                    "order": 10
+                }
+            }
+        }
+    }
+}

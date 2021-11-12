@@ -3586,6 +3586,10 @@ namespace AssetProcessor
                         }
 
                         auto scanFolderInfo = m_platformConfig->GetScanFolderByPath(scanFolderName);
+                        if (!scanFolderInfo)
+                        {
+                            return false;
+                        }
 
                         // Make an absolute path that is ScanFolderPath + Part of search path before the wildcard
                         QDir rooted(scanFolderName);
