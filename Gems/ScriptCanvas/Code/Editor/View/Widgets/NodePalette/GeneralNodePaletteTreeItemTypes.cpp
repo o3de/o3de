@@ -151,13 +151,11 @@ namespace ScriptCanvasEditor
         : DraggableNodePaletteTreeItem(nodeModelInformation.m_methodName, ScriptCanvasEditor::AssetEditorId)
         , m_methodName{ nodeModelInformation.m_methodName }
     {
-        SetToolTip(QString::fromUtf8(nodeModelInformation.m_displayName.data(),
-            aznumeric_cast<int>(nodeModelInformation.m_displayName.size())));
-
         SetToolTip(QString::fromUtf8(nodeModelInformation.m_toolTip.data(),
             aznumeric_cast<int>(nodeModelInformation.m_toolTip.size())));
 
         SetTitlePalette("MethodNodeTitlePalette");
+        SetName(nodeModelInformation.m_displayName.c_str());
     }
 
     GraphCanvas::GraphCanvasMimeEvent* GlobalMethodEventPaletteTreeItem::CreateMimeEvent() const

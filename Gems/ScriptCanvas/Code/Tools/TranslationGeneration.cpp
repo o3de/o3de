@@ -764,7 +764,7 @@ namespace ScriptCanvasEditorTools
 
         Entry entry;
 
-        TranslateBehaviorProperty(behaviorProperty, "", "Constant", &entry);
+        TranslateBehaviorProperty(behaviorProperty, propertyName, "Constant", &entry);
 
         TranslationFormat translationRoot;
         translationRoot.m_entries.push_back(entry);
@@ -830,6 +830,9 @@ namespace ScriptCanvasEditorTools
         if (!entry)
         {
             entry = &localEntry;
+        }
+        else if (entry->m_key.empty())
+        {
             entry->m_key = className;
             entry->m_context = context;
         }
