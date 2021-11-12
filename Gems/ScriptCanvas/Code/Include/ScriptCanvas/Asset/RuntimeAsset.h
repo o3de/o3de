@@ -76,7 +76,7 @@ namespace ScriptCanvas
         AZStd::vector<AZ::BehaviorValueParameter> m_activationInputStorage;
         Execution::ActivationInputRange m_activationInputRange;
 
-        // used to initialized statics only once, and not necessarily on the loading thread
+        // used to initialize statics only once, and not necessarily on the loading thread
         bool m_areStaticsInitialized = false;
 
         bool RequiresStaticInitialization() const;
