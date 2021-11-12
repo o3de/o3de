@@ -103,6 +103,7 @@ namespace O3DE::ProjectManager
     signals:
         void AddGem();
         void OpenGemsRepo();
+        void RefreshGems();
         
     private:
         AzQtComponents::SearchLineEdit* m_filterLineEdit = nullptr;

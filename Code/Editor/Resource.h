@@ -104,6 +104,7 @@
 #define ID_FILE_EXPORTTOGAMENOSURFACETEXTURE       33473
 #define ID_VIEW_SWITCHTOGAME                       33477
 #define ID_VIEW_SWITCHTOGAME_FULLSCREEN            33478
+#define ID_VIEW_SWITCHTOGAME_VIEWPORT              33479
 #define ID_MOVE_OBJECT                             33481
 #define ID_RENAME_OBJ                              33483
 #define ID_FETCH                                   33496

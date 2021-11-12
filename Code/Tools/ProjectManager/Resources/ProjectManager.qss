@@ -563,6 +563,52 @@ QProgressBar::chunk {
     margin-top:5px;
 }
 
+#gemCatalogUpdateGemButton,
+#gemCatalogUninstallGemButton 
+{
+    qproperty-flat: true;
+    min-height:24px;
+    max-height:24px;
+    border-radius: 3px;
+    text-align:center;
+    font-size:12px;
+    font-weight:600;
+}
+
+#gemCatalogUpdateGemButton {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #888888, stop: 1.0 #555555);
+}
+#gemCatalogUpdateGemButton:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #999999, stop: 1.0 #666666);
+}
+#gemCatalogUpdateGemButton:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #555555, stop: 1.0 #777777);
+}
+
+#footer > #gemCatalogUninstallGemButton,
+#gemCatalogUninstallGemButton {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #E32C27, stop: 1.0 #951D21);
+}
+#footer > #gemCatalogUninstallGemButton:hover,
+#gemCatalogUninstallGemButton:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #FD3129, stop: 1.0 #AF2221);
+}
+#footer > #gemCatalogUninstallGemButton:pressed,
+#gemCatalogUninstallGemButton:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #951D1F, stop: 1.0 #C92724);
+}
+
+#gemCatalogDialogSubTitle {
+    font-size:14px;
+    font-weight:600;
+}
+
 /************** Filter Tag widget **************/
 
 #FilterTagWidgetTextLabel {

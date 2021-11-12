@@ -61,6 +61,7 @@ namespace O3DE::ProjectManager
         item->setData(gemInfo.m_downloadStatus, RoleDownloadStatus);
         item->setData(gemInfo.m_licenseText, RoleLicenseText);
         item->setData(gemInfo.m_licenseLink, RoleLicenseLink);
+        item->setData(gemInfo.m_repoUri, RoleRepoUri);
 
         appendRow(item);
 
@@ -255,6 +256,11 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleLicenseLink).toString();
     }
 
+    QString GemModel::GetRepoUri(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleRepoUri).toString();
+    }
+
     GemModel* GemModel::GetSourceModel(QAbstractItemModel* model)
     {
         GemSortFilterProxyModel* proxyModel = qobject_cast<GemSortFilterProxyModel*>(model);
@@ -369,11 +375,30 @@ namespace O3DE::ProjectManager
 
     void GemModel::OnRowsAboutToBeRemoved(const QModelIndex& parent, int first, int last)
     {
+        bool selectedRowRemoved = false;
         for (int i = first; i <= last; ++i)
         {
             QModelIndex modelIndex = index(i, 0, parent);
             const QString& gemName = GetName(modelIndex);
             m_nameToIndexMap.remove(gemName);
+
+            if (GetSelectionModel()->isRowSelected(i))
+            {
+                selectedRowRemoved = true;
+            }
+        }
+
+        // Select a valid row if currently selected row was removed
+        if (selectedRowRemoved)
+        {
+            for (const QModelIndex& index :  m_nameToIndexMap)
+            {
+                if (index.isValid())
+                {
+                    GetSelectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
+                    break;
+                }
+            }
         }
     }
 
