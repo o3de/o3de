@@ -142,8 +142,12 @@ endif()
 # some other frameworks that have built-in online installer support.
 message(STATUS "Copying installer artifacts to upload directory...")
 file(REMOVE_RECURSE ${CPACK_UPLOAD_DIRECTORY})
-file(GLOB _artifacts "${_cpack_wix_out_dir}/*.msi" "${_cpack_wix_out_dir}/*.cab") 
-list(APPEND _artifacts ${CPACK_3P_LICENSE_FILE} ${CPACK_3P_MANIFEST_FILE})
+file(GLOB _artifacts 
+    "${_cpack_wix_out_dir}/*.msi" 
+    "${_cpack_wix_out_dir}/*.cab" 
+    ${CPACK_3P_LICENSE_FILE} 
+    ${CPACK_3P_MANIFEST_FILE}
+)
 file(COPY ${_artifacts}
     DESTINATION ${CPACK_UPLOAD_DIRECTORY}
 )
