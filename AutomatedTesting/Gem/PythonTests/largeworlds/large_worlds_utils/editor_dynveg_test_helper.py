@@ -19,6 +19,25 @@ import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.projectroot, 'Gem', 'PythonTests'))
 import editor_python_test_tools.hydra_editor_utils as hydra
+from editor_python_test_tools.editor_entity_utils import EditorEntity, EditorComponent
+from editor_python_test_tools.prefab_utils import Prefab
+
+
+def create_temp_mesh_prefab(mesh_asset_path, prefab_filename):
+    # Create initial entity
+    root = EditorEntity.create_editor_entity(name=prefab_filename)
+    assert root.exists(), "Failed to create entity"
+    # Add mesh component
+    mesh_component = root.add_component("Mesh")
+    assert root.has_component("Mesh") and mesh_component.is_enabled(), "Failed to add/activate Mesh component"
+    # Assign the specified mesh asset
+    mesh_asset = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", mesh_asset_path, math.Uuid(), False)
+    mesh_component.set_component_property_value("Controller|Configuration|Mesh Asset", mesh_asset)
+    assert mesh_component.get_component_property_value("Controller|Configuration|Mesh Asset"), \
+        "Failed to set Mesh asset"
+    # Create and return the temporary/in-memory prefab
+    temp_prefab = Prefab.create_prefab([root], prefab_filename)
+    return temp_prefab
 
 
 def create_surface_entity(name, center_point, box_size_x, box_size_y, box_size_z):
@@ -52,6 +71,40 @@ def create_mesh_surface_entity_with_slopes(name, center_point, uniform_scale):
     return surface_entity
 
 
+def create_prefab_spawner(name, center_point, box_size_x, box_size_y, box_size_z, prefab_asset_path):
+    # Create a vegetation area entity to use as our test vegetation spawner
+    spawner_entity = EditorEntity.create_editor_entity_at(center_point, name=name)
+    spawner_entity.add_components(["Vegetation Layer Spawner", "Box Shape", "Vegetation Asset List"])
+    if spawner_entity.id.IsValid():
+        print(f"'{spawner_entity.get_name()}' created")
+    spawner_entity.components[1].set_component_property_value("Box Shape|Box Configuration|Dimensions",
+                                                              math.Vector3(box_size_x, box_size_y, box_size_z))
+
+    # Set the vegetation area to a Prefab spawner with a specific prefab asset selected
+    prefab_spawner = vegetation.PrefabInstanceSpawner()
+    prefab_spawner.SetPrefabAssetPath(prefab_asset_path)
+    descriptor = spawner_entity.components[2].get_component_property_value("Configuration|Embedded Assets|[0]")
+    descriptor.spawner = prefab_spawner
+    spawner_entity.components[2].set_component_property_value("Configuration|Embedded Assets|[0]", descriptor)
+    return spawner_entity
+
+def create_empty_spawner(name, center_point, box_size_x, box_size_y, box_size_z):
+    # Create a vegetation area entity to use as our test vegetation spawner
+    spawner_entity = EditorEntity.create_editor_entity_at(center_point, name=name)
+    spawner_entity.add_components(["Vegetation Layer Spawner", "Box Shape", "Vegetation Asset List"])
+    if spawner_entity.id.IsValid():
+        print(f"'{spawner_entity.get_name()}' created")
+    spawner_entity.components[1].set_component_property_value("Box Shape|Box Configuration|Dimensions",
+                                                              math.Vector3(box_size_x, box_size_y, box_size_z))
+
+    # Set the vegetation area to an empty spawner
+    empty_spawner = vegetation.EmptyInstanceSpawner()
+    descriptor = spawner_entity.components[2].get_component_property_value("Configuration|Embedded Assets|[0]")
+    descriptor.spawner = empty_spawner
+    spawner_entity.components[2].set_component_property_value("Configuration|Embedded Assets|[0]", descriptor)
+    return spawner_entity
+
+
 def create_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_z, dynamic_slice_asset_path):
     # Create a vegetation area entity to use as our test vegetation spawner
     spawner_entity = hydra.Entity(name)
@@ -67,7 +120,7 @@ def create_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_
     # Set the vegetation area to a Dynamic Slice spawner with a specific slice asset selected
     dynamic_slice_spawner = vegetation.DynamicSliceInstanceSpawner()
     dynamic_slice_spawner.SetSliceAssetPath(dynamic_slice_asset_path)
-    descriptor = hydra.get_component_property_value(spawner_entity.components[2], 'Configuration|Embedded Assets|[0]')
+    descriptor = vegetation.Descriptor()
     descriptor.spawner = dynamic_slice_spawner
     spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]", descriptor)
     return spawner_entity
