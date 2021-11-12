@@ -135,14 +135,6 @@ if(LY_INSTALLER_DOWNLOAD_URL)
 
     # the bootstrapper will at the very least need a different upgrade guid
     generate_wix_guid(CPACK_WIX_BOOTSTRAP_UPGRADE_GUID "${_guid_seed_base}_Bootstrap_UpgradeCode")
-
-    set(CPACK_PRE_BUILD_SCRIPTS
-        ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPreBuild_windows.cmake
-    )
-
-    set(CPACK_POST_BUILD_SCRIPTS
-        ${CPACK_SOURCE_DIR}/Platform/Windows/PackagingPostBuild_windows.cmake
-    )
 endif()
 
 set(CPACK_WIX_CANDLE_EXTRA_FLAGS

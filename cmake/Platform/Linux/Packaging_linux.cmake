@@ -14,9 +14,6 @@ set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-linux-x86_64")
 set(CPACK_CMAKE_PACKAGE_FILE "${_cmake_package_name}.tar.gz")
 set(CPACK_CMAKE_PACKAGE_HASH "3f827544f9c82e74ddf5016461fdfcfea4ede58a26f82612f473bf6bfad8bfc2")
 
-# For Linux strip debug symbols. In Windows it doesnt install the pdb files, so this is consistent.
-set(CPACK_STRIP_FILES TRUE)
-
 # get all the package dependencies, extracted from scripts\build\build_node\Platform\Linux\package-list.ubuntu-focal.txt
 set(package_dependencies
     libffi7
@@ -56,8 +53,4 @@ set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA
     ${CMAKE_BINARY_DIR}/cmake/Platform/Linux/Packaging/postinst 
     ${CMAKE_BINARY_DIR}/cmake/Platform/Linux/Packaging/prerm 
     ${CMAKE_BINARY_DIR}/cmake/Platform/Linux/Packaging/postrm
-)
-
-set(CPACK_POST_BUILD_SCRIPTS
-    ${CPACK_SOURCE_DIR}/Platform/Linux/PackagingPostBuild_linux.cmake
 )

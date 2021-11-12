@@ -11,6 +11,7 @@ set(FILES
     ../Common/Clang/Configurations_clang.cmake
     ../Common/Install_common.cmake
     ../Common/PackagingPostBuild_common.cmake
+    ../Common/PackagingPreBuild_common.cmake
     CompilerSettings_linux.cmake
     Configurations_linux.cmake
     Install_linux.cmake
@@ -18,6 +19,7 @@ set(FILES
     LYWrappers_linux.cmake
     Packaging_linux.cmake
     PackagingPostBuild_linux.cmake
+    PackagingPreBuild_linux.cmake
     PAL_linux.cmake
     PALDetection_linux.cmake
     RPathChange.cmake

@@ -75,112 +75,11 @@ if(NOT CPACK_GENERATOR)
     return()
 endif()
 
-if(${CPACK_DESIRED_CMAKE_VERSION} VERSION_LESS ${CMAKE_MINIMUM_REQUIRED_VERSION})
-    message(FATAL_ERROR
-        "The desired version of CMake to be included in the package is "
-        "below the minimum required version of CMake to run")
-endif()
+# Set common CPACK variables to all platforms/generators
+set(CPACK_STRIP_FILES TRUE) # always strip symbols on packaging
 
-# pull down the desired copy of CMake so it can be included in the package
-if(NOT (CPACK_CMAKE_PACKAGE_FILE AND CPACK_CMAKE_PACKAGE_HASH))
-    message(FATAL_ERROR
-        "Packaging is missing one or more following properties required to include CMake: "
-        " CPACK_CMAKE_PACKAGE_FILE, CPACK_CMAKE_PACKAGE_HASH")
-endif()
-
-set(_cmake_package_dest ${CPACK_BINARY_DIR}/${CPACK_CMAKE_PACKAGE_FILE})
-
-if(EXISTS ${_cmake_package_dest})
-    file(SHA256 ${_cmake_package_dest} hash_of_downloaded_file)
-    if (NOT "${hash_of_downloaded_file}" STREQUAL "${CPACK_CMAKE_PACKAGE_HASH}")
-        message(STATUS "CMake ${CPACK_DESIRED_CMAKE_VERSION} found at ${_cmake_package_dest} but expected hash missmatches, re-downloading...")
-        file(REMOVE ${_cmake_package_dest})
-    else()
-        message(STATUS "CMake ${CPACK_DESIRED_CMAKE_VERSION} found")
-    endif()
-endif()
-if(NOT EXISTS ${_cmake_package_dest})
-    # download it
-    string(REPLACE "." ";" _version_componets "${CPACK_DESIRED_CMAKE_VERSION}")
-    list(GET _version_componets 0 _major_version)
-    list(GET _version_componets 1 _minor_version)
-
-    set(_url_version_tag "v${_major_version}.${_minor_version}")
-    set(_package_url "https://cmake.org/files/${_url_version_tag}/${CPACK_CMAKE_PACKAGE_FILE}")
-
-    message(STATUS "Downloading CMake ${CPACK_DESIRED_CMAKE_VERSION} for packaging...")
-    download_file(
-        URL ${_package_url}
-        TARGET_FILE ${_cmake_package_dest}
-        EXPECTED_HASH ${CPACK_CMAKE_PACKAGE_HASH}
-        RESULTS _results
-    )
-    list(GET _results 0 _status_code)
-
-    if (${_status_code} EQUAL 0 AND EXISTS ${_cmake_package_dest})
-        message(STATUS "CMake ${CPACK_DESIRED_CMAKE_VERSION} found")
-    else()
-        file(REMOVE ${_cmake_package_dest})
-        list(REMOVE_AT _results 0)
-
-        set(_error_message "An error occurred, code ${_status_code}.  URL ${_package_url} - ${_results}")
-
-        if(${_status_code} EQUAL 1)
-            string(APPEND _error_message
-                "  Please double check the CPACK_CMAKE_PACKAGE_FILE and "
-                "CPACK_CMAKE_PACKAGE_HASH properties before trying again.")
-        endif()
-
-        message(FATAL_ERROR ${_error_message})
-    endif()
-endif()
-
-ly_install(FILES ${_cmake_package_dest}
-    DESTINATION ./Tools/Redistributables/CMake
-    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-)
-
-# the version string and git tags are intended to be synchronized so it should be safe to use that instead
-# of directly calling into git which could get messy in certain scenarios
-if(${CPACK_PACKAGE_VERSION} VERSION_GREATER "0.0.0.0")
-    set(_3rd_party_license_filename NOTICES.txt)
-
-    set(_3rd_party_license_url "https://raw.githubusercontent.com/o3de/3p-package-source/${CPACK_PACKAGE_VERSION}/${_3rd_party_license_filename}")
-    set(_3rd_party_license_dest ${CPACK_BINARY_DIR}/${_3rd_party_license_filename})
-
-    # use the plain file downloader as we don't have the file hash available and using a dummy will
-    # delete the file once it fails hash verification
-    file(DOWNLOAD
-        ${_3rd_party_license_url}
-        ${_3rd_party_license_dest}
-        STATUS _status
-        TLS_VERIFY ON
-    )
-    list(POP_FRONT _status _status_code)
-
-    if (${_status_code} EQUAL 0 AND EXISTS ${_3rd_party_license_dest})
-        ly_install(FILES ${_3rd_party_license_dest}
-            DESTINATION .
-            COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-        )
-    else()
-        file(REMOVE ${_3rd_party_license_dest})
-        message(FATAL_ERROR "Failed to acquire the 3rd Party license manifest file at ${_3rd_party_license_url}.  Error: ${_status}")
-    endif()
-endif()
-
-# checks for and removes trailing slash
-function(strip_trailing_slash in_url out_url)
-    string(LENGTH ${in_url} _url_length)
-    MATH(EXPR _url_length "${_url_length}-1")
-
-    string(SUBSTRING ${in_url} 0 ${_url_length} _clean_url)
-    if("${in_url}" STREQUAL "${_clean_url}/")
-        set(${out_url} ${_clean_url} PARENT_SCOPE)
-    else()
-        set(${out_url} ${in_url} PARENT_SCOPE)
-    endif()
-endfunction()
+set(CPACK_PRE_BUILD_SCRIPTS ${pal_dir}/PackagingPreBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
+set(CPACK_POST_BUILD_SCRIPTS ${pal_dir}/PackagingPostBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 
 # IMPORTANT: required to be included AFTER setting all property overrides
 include(CPack REQUIRED)
@@ -248,6 +147,19 @@ foreach(external_dir ${LY_INSTALL_EXTERNAL_BUILD_DIRS})
         "include(${external_dir}/CPackComponents.cmake)\n"
     )
 endforeach()
+
+# checks for and removes trailing slash
+function(strip_trailing_slash in_url out_url)
+    string(LENGTH ${in_url} _url_length)
+    MATH(EXPR _url_length "${_url_length}-1")
+
+    string(SUBSTRING ${in_url} 0 ${_url_length} _clean_url)
+    if("${in_url}" STREQUAL "${_clean_url}/")
+        set(${out_url} ${_clean_url} PARENT_SCOPE)
+    else()
+        set(${out_url} ${in_url} PARENT_SCOPE)
+    endif()
+endfunction()
 
 if(LY_INSTALLER_DOWNLOAD_URL)
     strip_trailing_slash(${LY_INSTALLER_DOWNLOAD_URL} LY_INSTALLER_DOWNLOAD_URL)

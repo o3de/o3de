@@ -16,6 +16,7 @@ set(FILES
     ../Common/Install_common.cmake
     ../Common/LYWrappers_default.cmake
     ../Common/PackagingPostBuild_common.cmake
+    ../Common/PackagingPreBuild_common.cmake
     ../Common/TargetIncludeSystemDirectories_unsupported.cmake
     Configurations_windows.cmake
     LYTestWrappers_windows.cmake

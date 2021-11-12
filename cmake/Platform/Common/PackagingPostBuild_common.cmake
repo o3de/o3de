@@ -6,11 +6,22 @@
 #
 #
 
-file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
-include(${_root_path}/cmake/LYPackage_S3Downloader.cmake)
+message(STATUS "Executing packaging postbuild...")
+
+# ly_is_s3_url
+# if the given URL is a s3 url of thr form "s3://(stuff)" then sets
+# the output_variable_name to TRUE otherwise unsets it.
+function (ly_is_s3_url download_url output_variable_name)
+    if ("${download_url}" MATCHES "s3://.*")
+        set(${output_variable_name} TRUE PARENT_SCOPE)
+    else()
+        unset(${output_variable_name} PARENT_SCOPE)
+    endif()
+endfunction()
 
 function(ly_upload_to_url in_url in_local_path in_file_regex)
 
+    message(STATUS "Uploading ${in_local_path}/${in_file_regex} artifacts to ${CPACK_UPLOAD_URL}")
     ly_is_s3_url(${in_url} _is_s3_bucket)
     if(NOT _is_s3_bucket)
         message(FATAL_ERROR "Only S3 installer uploading is supported at this time")
@@ -25,8 +36,8 @@ function(ly_upload_to_url in_url in_local_path in_file_regex)
 
     set(_extra_args [[{"ACL":"bucket-owner-full-control"}]])
 
-    file(TO_NATIVE_PATH "${_root_path}/python/python.cmd" _python_cmd)
-    file(TO_NATIVE_PATH "${_root_path}/scripts/build/tools/upload_to_s3.py" _upload_script)
+    file(TO_NATIVE_PATH "${LY_ROOT_FOLDER}/python/python.cmd" _python_cmd)
+    file(TO_NATIVE_PATH "${LY_ROOT_FOLDER}/scripts/build/tools/upload_to_s3.py" _upload_script)
     set(_upload_command
         ${_python_cmd} -s
         -u ${_upload_script}
@@ -54,3 +65,49 @@ function(ly_upload_to_url in_url in_local_path in_file_regex)
         message(FATAL_ERROR "An error occurred uploading to s3.\nOutput:\n${_upload_output}")
     endif()
 endfunction()
+
+function(ly_upload_to_latest in_url in_path in_suffix))
+
+    message(STATUS "Updating latest tagged build")
+
+    # make sure we can extra the commit info from the URL first
+    string(REGEX MATCH "([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9a-zA-Z]+)"
+        commit_info ${in_url}
+    )
+    if(NOT commit_info)
+        message(FATAL_ERROR "Failed to extract the build tag")
+    endif()
+
+    # Create a temp directory where we are going to rename the file to take out the version
+    # and replace it with "${in_suffix}", then upload it
+    set(temp_dir ${CPACK_BINARY_DIR}/temp)
+    if(NOT EXISTS ${temp_dir})
+        file(MAKE_DIRECTORY ${temp_dir})
+    endif()
+    file(COPY ${in_path} DESTINATION ${temp_dir})
+
+    cmake_path(GET in_path FILENAME in_path_filename)
+    string(REPLACE "${CPACK_PACKAGE_VERSION}" "${in_suffix}" non_versioned_in_path_filename ${in_path_filename})
+    file(RENAME "${temp_dir}/${in_path_filename}" "${temp_dir}/${non_versioned_in_path_filename}")
+
+    # include the commit info in a text file that will live next to the exe
+    set(_temp_info_file ${temp_dir}/build_tag.txt)
+    file(WRITE ${_temp_info_file} ${commit_info})
+
+    # update the URL and upload
+    string(REPLACE
+        ${commit_info} "Latest"
+        latest_upload_url ${in_url}
+    )
+
+    ly_upload_to_url(
+        ${latest_upload_url}
+        ${temp_dir}
+        ".*(${non_versioned_in_path_filename}|build_tag.txt)$"
+    )
+
+    # cleanup the temp files
+    file(REMOVE_RECURSE ${temp_dir})
+
+    message(STATUS "Latest build update complete!")
+endif()
