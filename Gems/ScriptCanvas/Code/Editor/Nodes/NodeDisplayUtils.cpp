@@ -271,11 +271,12 @@ namespace ScriptCanvasEditor::Nodes
         case ScriptCanvas::MethodType::Event:
             graphCanvasEntity->CreateComponent<EBusSenderNodeDescriptorComponent>();
             break;
-        case ScriptCanvas::MethodType::Member:
         case ScriptCanvas::MethodType::Getter:
         case ScriptCanvas::MethodType::Setter:
+        case ScriptCanvas::MethodType::Member:
         case ScriptCanvas::MethodType::Free:
             graphCanvasEntity->CreateComponent<ClassMethodNodeDescriptorComponent>();
+            break;
             break;
         default:
             AZ_Error("ScriptCanvas", false, "Invalid method node type, node creation failed. This node needs to be deleted.");
@@ -304,10 +305,11 @@ namespace ScriptCanvasEditor::Nodes
         GraphCanvas::TranslationKey key;
         key = isEBusSender ? "EBusSender" : "BehaviorClass";
         key << className;
+
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", details);
 
-        // Set the class' category as the subtitle fallback
-        details.m_subtitle = details.m_category;
+        // Set the class' name as the subtitle fallback
+        details.m_subtitle = details.m_name;
 
         // Get the method's text data
         key << "methods" << methodName;

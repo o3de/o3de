@@ -269,6 +269,7 @@ namespace ScriptCanvasEditorTools
                     }
                 }
 
+                // Results (Output Slots)
                 const AZ::BehaviorParameter* resultParameter = behaviorMethod->HasResult() ? behaviorMethod->GetResult() : nullptr;
                 if (resultParameter)
                 {
@@ -288,6 +289,19 @@ namespace ScriptCanvasEditorTools
                 }
 
                 entry.m_methods.push_back(methodEntry);
+            }
+        }
+
+        // Behavior Class properties
+        if (!behaviorClass->m_properties.empty())
+        {
+            for (const auto& propertyEntry : behaviorClass->m_properties)
+            {
+                AZ::BehaviorProperty* behaviorProperty = propertyEntry.second;
+                if (behaviorProperty)
+                {
+                    TranslateBehaviorProperty(behaviorProperty, behaviorClass->m_name, "BehaviorClass", &entry);
+                }
             }
         }
 
@@ -748,51 +762,107 @@ namespace ScriptCanvasEditorTools
 
         const AZ::BehaviorProperty* behaviorProperty = behaviorPropertyEntry->second;
 
+        Entry entry;
+
+        TranslateBehaviorProperty(behaviorProperty, "", "Constant", &entry);
+
         TranslationFormat translationRoot;
-
-        if (behaviorProperty->m_getter && !behaviorProperty->m_setter)
-        {
-            Entry entry;
-            entry.m_context = "Constant";
-            entry.m_key = propertyName;
-
-            auto methodName = behaviorProperty->m_getter->m_name;
-            entry.m_details.m_name = methodName;
-            entry.m_details.m_tooltip = behaviorProperty->m_getter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
-            entry.m_details.m_category = "Constants";
-
-            translationRoot.m_entries.push_back(entry);
-        }
-        else
-        {
-            Entry entry;
-            entry.m_context = "BehaviorMethod";
-
-            if (behaviorProperty->m_getter)
-            {
-                entry.m_key = propertyName;
-
-                auto methodName = behaviorProperty->m_getter->m_name;
-                entry.m_details.m_name = methodName;
-                entry.m_details.m_tooltip = behaviorProperty->m_getter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
-
-                translationRoot.m_entries.push_back(entry);
-            }
-
-            if (behaviorProperty->m_setter)
-            {
-                entry.m_key = propertyName;
-
-                auto methodName = behaviorProperty->m_setter->m_name;
-                entry.m_details.m_name = methodName;
-                entry.m_details.m_tooltip = behaviorProperty->m_setter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
-
-                translationRoot.m_entries.push_back(entry);
-            }
-        }
+        translationRoot.m_entries.push_back(entry);
 
         AZStd::string fileName = AZStd::string::format("Properties/%s", behaviorProperty->m_name.c_str());
         SaveJSONData(fileName, translationRoot);
+    }
+
+    void TranslationGeneration::TranslateMethod(AZ::BehaviorMethod* behaviorMethod, Method& methodEntry)
+    {
+        // Arguments (Input Slots)
+        if (behaviorMethod->GetNumArguments() > 0)
+        {
+            for (size_t argIndex = 0; argIndex < behaviorMethod->GetNumArguments(); ++argIndex)
+            {
+                const AZ::BehaviorParameter* parameter = behaviorMethod->GetArgument(argIndex);
+
+                Argument argument;
+
+                AZStd::string argumentKey = parameter->m_typeId.ToString<AZStd::string>();
+                AZStd::string argumentName = parameter->m_name;
+                AZStd::string argumentDescription = "";
+
+                Helpers::GetTypeNameAndDescription(parameter->m_typeId, argumentName, argumentDescription);
+
+                argument.m_typeId = argumentKey;
+                argument.m_details.m_name = parameter->m_name;
+                argument.m_details.m_category = "";
+                argument.m_details.m_tooltip = argumentDescription;
+
+                methodEntry.m_arguments.push_back(argument);
+            }
+        }
+
+        // Results (Output Slots)
+        const AZ::BehaviorParameter* resultParameter = behaviorMethod->HasResult() ? behaviorMethod->GetResult() : nullptr;
+        if (resultParameter)
+        {
+            Argument result;
+
+            AZStd::string resultKey = resultParameter->m_typeId.ToString<AZStd::string>();
+            AZStd::string resultName = resultParameter->m_name;
+            AZStd::string resultDescription = "";
+
+            Helpers::GetTypeNameAndDescription(resultParameter->m_typeId, resultName, resultDescription);
+
+            result.m_typeId = resultKey;
+            result.m_details.m_name = resultParameter->m_name;
+            result.m_details.m_tooltip = resultDescription;
+
+            methodEntry.m_results.push_back(result);
+        }
+    }
+
+    void TranslationGeneration::TranslateBehaviorProperty(const AZ::BehaviorProperty* behaviorProperty, const AZStd::string& className, const AZStd::string& context, Entry* entry)
+    {
+        if (!behaviorProperty->m_getter && !behaviorProperty->m_setter)
+        {
+            return;
+        }
+
+        Entry localEntry;
+        if (!entry)
+        {
+            entry = &localEntry;
+            entry->m_key = className;
+            entry->m_context = context;
+        }
+
+        if (behaviorProperty->m_getter)
+        {
+            Method method;
+
+            auto methodName = behaviorProperty->m_getter->m_name;
+            method.m_key = behaviorProperty->m_name;
+            method.m_details.m_name = methodName;
+            method.m_details.m_tooltip = behaviorProperty->m_getter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
+
+            TranslateMethod(behaviorProperty->m_getter, method);
+
+            entry->m_methods.push_back(method);
+
+        }
+
+        if (behaviorProperty->m_setter)
+        {
+            Method method;
+
+            auto methodName = behaviorProperty->m_setter->m_name;
+            method.m_key = behaviorProperty->m_name;
+            method.m_details.m_name = methodName;
+            method.m_details.m_tooltip = behaviorProperty->m_setter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
+
+            TranslateMethod(behaviorProperty->m_setter, method);
+
+            entry->m_methods.push_back(method);
+        }
+
     }
 
     bool TranslationGeneration::TranslateEBusHandler(const AZ::BehaviorEBus* behaviorEbus, TranslationFormat& translationRoot)
