@@ -290,15 +290,27 @@ namespace ScriptCanvasEditor::Nodes
         const AZStd::string& className = methodNode->GetMethodClassName();
         const AZStd::string& methodName = methodNode->GetName();
 
-        GraphCanvas::TranslationKey key;
-        key = isEBusSender ? "EBusSender" : "BehaviorClass";
-        key << className;
-        key << "methods" << methodName;
-
         GraphCanvas::TranslationRequests::Details details;
         details.m_name = methodName;
 
+        GraphCanvas::TranslationKey key;
+        key = isEBusSender ? "EBusSender" : "BehaviorClass";
+        key << className;
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", details);
+
+        // Set the class' category as the subtitle fallback
+        details.m_subtitle = details.m_category;
+
+        // Get the method's text data
+        key << "methods" << methodName;
+        GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", details);
+
+        // Add to the tooltip the C++ class for reference
+        if (!details.m_tooltip.empty())
+        {
+            details.m_tooltip.append("\n");
+        }
+        details.m_tooltip.append(AZStd::string::format("[C++] %s", className.c_str()));
 
         GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetDetails, details.m_name, details.m_subtitle);
         GraphCanvas::NodeRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeRequests::SetTooltip, details.m_tooltip);
@@ -449,6 +461,13 @@ namespace ScriptCanvasEditor::Nodes
         details.m_name = busName;
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
+        // Add to the tooltip the C++ class for reference
+        if (!details.m_tooltip.empty())
+        {
+            details.m_tooltip.append("\n");
+        }
+        details.m_tooltip.append(AZStd::string::format("[C++] %s", busName.c_str()));
+
         GraphCanvas::NodeRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeRequests::SetTooltip, details.m_tooltip);
         GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetTitle, details.m_name);
         GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetDefaultPalette, "HandlerWrapperNodeTitlePalette");
@@ -485,6 +504,13 @@ namespace ScriptCanvasEditor::Nodes
 
         // Set the name
         graphCanvasEntity->SetName(AZStd::string::format("GC-Node(%s)", decoratedName.c_str()));
+
+        // Add to the tooltip the C++ class for reference
+        if (!details.m_tooltip.empty())
+        {
+            details.m_tooltip.append("\n");
+        }
+        details.m_tooltip.append(AZStd::string::format("[C++] %s", busName.c_str()));
 
         GraphCanvas::NodeRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeRequests::SetTooltip, details.m_tooltip);
 
@@ -730,7 +756,7 @@ namespace ScriptCanvasEditor::Nodes
         return graphCanvasNodeId;
     }
 
-// Function Nodes
+    // Function Nodes
     AZ::EntityId DisplayFunctionNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::FunctionCallNode* functionNode)
     {
         return DisplayFunctionNode(graphCanvasGraphId, const_cast<ScriptCanvas::Nodes::Core::FunctionCallNode*>(functionNode));
