@@ -590,6 +590,16 @@ AmazonToolbar ToolbarManager::GetObjectToolbar() const
     return t;
 }
 
+QMenu* ToolbarManager::CreatePlayButtonMenu() const
+{
+    QMenu* playButtonMenu = new QMenu("Play Game");
+
+    playButtonMenu->addAction(m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_VIEWPORT));
+    playButtonMenu->addAction(m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN));
+
+    return playButtonMenu;
+}
+
 AmazonToolbar ToolbarManager::GetPlayConsoleToolbar() const
 {
     AmazonToolbar t = AmazonToolbar("PlayConsole", QObject::tr("Play Controls"));
@@ -598,8 +608,17 @@ AmazonToolbar ToolbarManager::GetPlayConsoleToolbar() const
     t.AddAction(ID_TOOLBAR_WIDGET_SPACER_RIGHT, ORIGINAL_TOOLBAR_VERSION); 
     t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, ORIGINAL_TOOLBAR_VERSION);
-    t.AddAction(ID_VIEW_SWITCHTOGAME, TOOLBARS_WITH_PLAY_GAME);
-    t.AddAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN, TOOLBARS_WITH_PLAY_GAME);
+
+    QAction* playAction = m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME);
+    QToolButton* playButton = new QToolButton(t.Toolbar());
+
+    QMenu* menu = CreatePlayButtonMenu();
+    menu->setParent(t.Toolbar());
+    playAction->setMenu(menu);
+
+    playButton->setDefaultAction(playAction);
+    t.AddWidget(playButton, ID_VIEW_SWITCHTOGAME, ORIGINAL_TOOLBAR_VERSION);
+
     t.AddAction(ID_TOOLBAR_SEPARATOR, ORIGINAL_TOOLBAR_VERSION);
     t.AddAction(ID_SWITCH_PHYSICS, TOOLBARS_WITH_PLAY_GAME);    
     return t;
@@ -728,7 +747,14 @@ void AmazonToolbar::SetActionsOnInternalToolbar(ActionManager* actionManager)
         {
             if (actionManager->HasAction(actionId))
             {
-                m_toolbar->addAction(actionManager->GetAction(actionId));
+                if (actionData.widget != nullptr)
+                {
+                    m_toolbar->addWidget(actionData.widget);
+                }
+                else
+                {
+                    m_toolbar->addAction(actionManager->GetAction(actionId));
+                }
             }
         }
     }
@@ -1367,7 +1393,12 @@ void AmazonToolbar::InstantiateToolbar(QMainWindow* mainWindow, ToolbarManager* 
 
 void AmazonToolbar::AddAction(int actionId, int toolbarVersionAdded)
 {
-    m_actions.push_back({ actionId, toolbarVersionAdded });
+    AddWidget(nullptr, actionId, toolbarVersionAdded);
+}
+
+void AmazonToolbar::AddWidget(QWidget* widget, int actionId, int toolbarVersionAdded)
+{
+    m_actions.push_back({ actionId, toolbarVersionAdded, widget });
 }
 
 void AmazonToolbar::Clear()
