@@ -597,9 +597,9 @@ namespace AzToolsFramework
                 pte.SetVisibleEnforcement(true);
             }
 
-            AzToolsFramework::UndoSystem::URSequencePoint* currentUndoOperation;
+            AzToolsFramework::UndoSystem::URSequencePoint* modifyPropertyUndoOperation;
             ToolsApplicationRequests::Bus::BroadcastResult(
-                currentUndoOperation, &ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
+                modifyPropertyUndoOperation, &ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
             ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::AddDirtyEntity, componentInstance.GetEntityId());
             PropertyOutcome result = pte.SetProperty(propertyPath, value);
             if (result.IsSuccess())
