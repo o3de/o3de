@@ -42,6 +42,8 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) override;
         AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) override;
+        AZ::Outcome<void, AZStd::string> RegisterGem(const QString& gemPath, const QString& projectPath = {}) override;
+        AZ::Outcome<void, AZStd::string> UnregisterGem(const QString& gemPath, const QString& projectPath = {}) override;
 
         // Project
         AZ::Outcome<ProjectInfo> CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo) override;
@@ -58,9 +60,15 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<ProjectTemplateInfo>> GetProjectTemplates(const QString& projectPath = {}) override;
 
         // Gem Repos
+        AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri) override;
+        bool RefreshAllGemRepos() override;
         bool AddGemRepo(const QString& repoUri) override;
         bool RemoveGemRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
+        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemRepoGemsInfos() override;
+        AZ::Outcome<void, AZStd::string> DownloadGem(const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) override;
+        void CancelDownload() override;
+        bool IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated) override;
 
     private:
         AZ_DISABLE_COPY_MOVE(PythonBindings);
@@ -71,6 +79,7 @@ namespace O3DE::ProjectManager
         GemRepoInfo GetGemRepoInfo(pybind11::handle repoUri);
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
         ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
+        AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
         bool RegisterThisEngine();
         bool StopPython();
 
@@ -87,6 +96,10 @@ namespace O3DE::ProjectManager
         pybind11::handle m_enableGemProject;
         pybind11::handle m_disableGemProject;
         pybind11::handle m_editProjectProperties;
+        pybind11::handle m_download;
+        pybind11::handle m_repo;
         pybind11::handle m_pathlib;
+
+        bool m_requestCancelDownload = false;
     };
 }

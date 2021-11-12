@@ -16,16 +16,15 @@ def PrefabBasicWorkflow_CreateAndDeletePrefab():
 
     prefab_test_utils.open_base_tests_level()
 
-    # Creates a new Entity at the root level
-    # Asserts if creation didn't succeed
+    # Creates a new entity at the root level
     car_entity = EditorEntity.create_editor_entity()
     car_prefab_entities = [car_entity]
 
-    # Asserts if prefab creation doesn't succeeds 
+    # Creates a prefab from the new entity
     _, car = Prefab.create_prefab(
         car_prefab_entities, CAR_PREFAB_FILE_NAME)
 
-    # Asserts if prefab deletion fails
+    # Deletes the prefab instance
     Prefab.remove_prefabs([car])
 
 if __name__ == "__main__":

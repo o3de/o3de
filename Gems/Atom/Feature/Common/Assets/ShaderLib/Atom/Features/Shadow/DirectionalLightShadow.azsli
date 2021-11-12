@@ -14,6 +14,7 @@
 #include "ShadowmapAtlasLib.azsli"
 #include "BicubicPcfFilters.azsli"
 #include "ReceiverPlaneDepthBias.azsli"
+#include "NormalOffsetShadows.azsli"
 
 // Before including this azsli file, a PassSrg must be defined with the following members:
 // Texture2DArray<float> m_directionalLightShadowmap;
@@ -45,6 +46,7 @@ class DirectionalLightShadow
     static void GetShadowCoords(
         uint lightIndex,
         float3 worldPosition,
+        float3 worldNormal,
         out float3 shadowCoords[ViewSrg::MaxCascadeCount]);
 
     //! This calculates visibility ratio of the surface from the light origin.
@@ -109,18 +111,22 @@ class DirectionalLightShadow
 void DirectionalLightShadow::GetShadowCoords(
     uint lightIndex,
     float3 worldPosition,
+    float3 worldNormal,
     out float3 shadowCoords[ViewSrg::MaxCascadeCount])
 {
-    const uint cascadeCount = ViewSrg::m_directionalLightShadows[lightIndex].m_cascadeCount;
     const float shadowBias = ViewSrg::m_directionalLightShadows[lightIndex].m_shadowBias;
+
     const float4x4 lightViewToShadowmapMatrices[ViewSrg::MaxCascadeCount] = ViewSrg::m_directionalLightShadows[lightIndex].m_lightViewToShadowmapMatrices;
     const float4x4 worldToLightViewMatrices[ViewSrg::MaxCascadeCount] = ViewSrg::m_directionalLightShadows[lightIndex].m_worldToLightViewMatrices;
-    
-    for (uint index = 0; index < cascadeCount; ++index)
-    {
-        float4 lightSpacePos = mul(worldToLightViewMatrices[index], float4(worldPosition, 1.));
-        lightSpacePos.z += shadowBias;
 
+    const uint cascadeCount = ViewSrg::m_directionalLightShadows[lightIndex].m_cascadeCount;
+    const float3 shadowOffset = ComputeNormalShadowOffset(ViewSrg::m_directionalLightShadows[lightIndex].m_normalShadowBias, worldNormal, ViewSrg::m_directionalLightShadows[lightIndex].m_shadowmapSize);
+
+    for (uint index = 0; index < cascadeCount; ++index)
+    {        
+        float4 lightSpacePos = mul(worldToLightViewMatrices[index], float4(worldPosition + shadowOffset, 1.));
+        lightSpacePos.z += shadowBias;
+        
         const float4 clipSpacePos = mul(lightViewToShadowmapMatrices[index], lightSpacePos);                
         shadowCoords[index] = clipSpacePos.xyz / clipSpacePos.w;
     }

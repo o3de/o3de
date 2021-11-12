@@ -57,9 +57,7 @@ namespace UnitTest
             ArgumentContainer argContainer{ {} };
 
             // Append Command Line override for the Project Cache Path
-            auto projectCachePathOverride = FixedValueString::format(R"(--project-cache-path="%s")", m_tempDir.GetDirectory());
-            auto projectPathOverride = FixedValueString{ R"(--project-path=AutomatedTesting)" };
-            argContainer.push_back(projectCachePathOverride.data());
+            auto projectPathOverride = FixedValueString::format(R"(--project-path="%s")", m_tempDir.GetDirectory());
             argContainer.push_back(projectPathOverride.data());
             m_application = new ToolsTestApplication("AssetFileInfoListComparisonTest", aznumeric_caster(argContainer.size()), argContainer.data());
             AzToolsFramework::AssetSeedManager assetSeedManager;
@@ -100,7 +98,7 @@ namespace UnitTest
             m_application->Start(AzFramework::Application::Descriptor());
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
@@ -223,7 +221,7 @@ namespace UnitTest
 
             // AssetFileInfo should contain {2*, 4*, 5}
             AzToolsFramework::AssetFileInfoList assetFileInfoList;
-           
+
             ASSERT_TRUE(AZ::Utils::LoadObjectFromFileInPlace(TempFiles[FileIndex::ResultAssetFileInfoList], assetFileInfoList)) << "Unable to read the asset file info list.\n";
 
             EXPECT_EQ(assetFileInfoList.m_fileInfoList.size(), 3);
@@ -256,7 +254,7 @@ namespace UnitTest
                 }
             }
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[2], m_assets[4], m_assets[5] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
@@ -298,7 +296,7 @@ namespace UnitTest
             {
                 firstAssetIdToAssetFileInfoMap[assetFileInfo.m_assetId] = AZStd::move(assetFileInfo);
             }
-            
+
             AzToolsFramework::AssetFileInfoList secondAssetFileInfoList;
             ASSERT_TRUE(AZ::Utils::LoadObjectFromFileInPlace(TempFiles[FileIndex::SecondAssetFileInfoList], secondAssetFileInfoList)) << "Unable to read the asset file info list.\n";
 
@@ -315,7 +313,7 @@ namespace UnitTest
                 auto foundSecond = secondAssetIdToAssetFileInfoMap.find(assetFileInfo.m_assetId);
                 if (foundSecond != secondAssetIdToAssetFileInfoMap.end())
                 {
-                    // Even if the asset Id is present in both the AssetFileInfo List, it should match the file hash from the second AssetFileInfo list 
+                    // Even if the asset Id is present in both the AssetFileInfo List, it should match the file hash from the second AssetFileInfo list
                     for (int idx = 0; idx < AzToolsFramework::AssetFileInfo::s_arraySize; idx++)
                     {
                         if (foundSecond->second.m_hash[idx] != assetFileInfo.m_hash[idx])
@@ -343,7 +341,7 @@ namespace UnitTest
                 }
             }
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[0], m_assets[1], m_assets[2], m_assets[3], m_assets[4], m_assets[5] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
@@ -403,7 +401,7 @@ namespace UnitTest
                 }
             }
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[1], m_assets[2], m_assets[3], m_assets[4] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
@@ -462,7 +460,7 @@ namespace UnitTest
                 }
             }
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[5] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
@@ -493,7 +491,7 @@ namespace UnitTest
 
             EXPECT_EQ(assetFileInfoList.m_fileInfoList.size(), 5);
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[0], m_assets[1], m_assets[2], m_assets[3], m_assets[4] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
@@ -601,7 +599,7 @@ namespace UnitTest
                 }
             }
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[2] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
@@ -625,12 +623,12 @@ namespace UnitTest
             AssetFileInfoListComparison::ComparisonData filePatternComparisonData(AssetFileInfoListComparison::ComparisonType::FilePattern,"$1", "Asset[0-3].txt", AssetFileInfoListComparison::FilePatternType::Regex);
             filePatternComparisonData.m_firstInput = TempFiles[FileIndex::FirstAssetFileInfoList];
             assetFileInfoListComparison.AddComparisonStep(filePatternComparisonData);
-            
+
             AzToolsFramework::AssetFileInfoListComparison::ComparisonData deltaComparisonData(AzToolsFramework::AssetFileInfoListComparison::ComparisonType::Delta, TempFiles[FileIndex::ResultAssetFileInfoList]);
             deltaComparisonData.m_firstInput = "$1";
             deltaComparisonData.m_secondInput = TempFiles[FileIndex::SecondAssetFileInfoList];
             assetFileInfoListComparison.AddComparisonStep(deltaComparisonData);
-            
+
             ASSERT_TRUE(assetFileInfoListComparison.CompareAndSaveResults().IsSuccess()) << "Multiple Comparison Operation( FilePattern + Delta ) failed.\n";
             // Output of the FilePattern Operation should be {0,1,2,3}
             // Output of the Delta Operation should be {2*,4*,5}
@@ -666,7 +664,7 @@ namespace UnitTest
                 }
             }
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[2], m_assets[4], m_assets[5] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)
@@ -738,7 +736,7 @@ namespace UnitTest
                 }
             }
 
-            // Verifying that correct assetId are present in the assetFileInfo list 
+            // Verifying that correct assetId are present in the assetFileInfo list
             AZStd::unordered_set<AZ::Data::AssetId> expectedAssetIds{ m_assets[4], m_assets[5] };
 
             for (const AzToolsFramework::AssetFileInfo& assetFileInfo : assetFileInfoList.m_fileInfoList)

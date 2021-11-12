@@ -92,8 +92,9 @@
     "templates": [
         "Templates/AssetGem",
         "Templates/DefaultGem",
-        "Templates/CustomTool",
         "Templates/DefaultProject",
-        "Templates/MinimalProject"
+        "Templates/CppToolGem",
+        "Templates/MinimalProject",
+        "Templates/PythonToolGem"
     ]
 }

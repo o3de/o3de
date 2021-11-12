@@ -84,8 +84,8 @@ namespace AZ
             bool LoadPassTemplateMappings(const AZStd::string& templateMappingPath);
             bool LoadPassTemplateMappings(Data::Asset<AnyAsset> mappingAsset);
 
-            //! Returns a list of passes found in the pass name mapping using the provided pass filter
-            AZStd::vector<Pass*> FindPasses(const PassFilter& passFilter) const;
+            //! Visit each pass which matches the filter
+            void ForEachPass(const PassFilter& passFilter, AZStd::function<PassFilterExecutionFlow(Pass*)> passFunction);
 
         private:
 

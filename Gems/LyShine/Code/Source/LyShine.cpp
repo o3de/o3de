@@ -653,12 +653,12 @@ void CLyShine::OnRenderTick()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CLyShine::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapScene)
+void CLyShine::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
 {
     // Load cursor if its path was set before RPI was initialized
     LoadUiCursor();
 
-    LyShinePassDataRequestBus::Handler::BusConnect(AZ::RPI::RPISystemInterface::Get()->GetDefaultScene()->GetId());
+    LyShinePassDataRequestBus::Handler::BusConnect(bootstrapScene->GetId());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

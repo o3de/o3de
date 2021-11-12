@@ -26,6 +26,7 @@
 #include <Atom/RPI.Public/Pass/PassLibrary.h>
 #include <Atom/RPI.Public/Pass/PassDefines.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 
 #include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
@@ -236,6 +237,11 @@ namespace AZ
         {
             uint32_t bindingIndex = m_outputBindingIndices[index];
             return m_attachmentBindings[bindingIndex];
+        }
+
+        const PassTemplate* Pass::GetPassTemplate() const
+        {
+            return m_template.get();
         }
 
         void Pass::AddAttachmentBinding(PassAttachmentBinding attachmentBinding)
@@ -1210,6 +1216,12 @@ namespace AZ
             m_queueState = PassQueueState::NoQueue;
 
             InitializeInternal();
+            
+            // Need to recreate the dest attachment because the source attachment might be changed
+            if (!m_attachmentCopy.expired())
+            {
+                m_attachmentCopy.lock()->InvalidateDestImage();
+            }
 
             m_state = PassState::Initialized;
         }
@@ -1295,6 +1307,9 @@ namespace AZ
             
             // readback attachment with output state
             UpdateReadbackAttachment(params, false);
+
+            // update attachment copy for preview
+            UpdateAttachmentCopy(params);
 
             UpdateConnectedOutputBindings();
         }
@@ -1481,6 +1496,14 @@ namespace AZ
                 // Read the attachment for one frame. The reference can be released afterwards
                 m_attachmentReadback->FrameBegin(params);
                 m_attachmentReadback = nullptr;
+            }
+        }
+
+        void Pass::UpdateAttachmentCopy(FramePrepareParams params)
+        {
+            if (!m_attachmentCopy.expired())
+            {
+                m_attachmentCopy.lock()->FrameBegin(params);
             }
         }
 

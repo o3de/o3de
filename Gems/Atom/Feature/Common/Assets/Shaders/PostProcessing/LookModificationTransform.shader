@@ -1,5 +1,5 @@
 { 
-    "Source" : "LookModificationTransform",
+    "Source" : "LookModificationTransform.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

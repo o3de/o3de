@@ -36,7 +36,6 @@ namespace O3DE::ProjectManager
         const QColor m_backgroundColor = QColor("#333333"); // Outside of the actual repo item
         const QColor m_itemBackgroundColor = QColor("#404040"); // Background color of the repo item
         const QColor m_borderColor = QColor("#1E70EB");
-        const QColor m_buttonEnabledColor = QColor("#1E70EB");
 
         // Item
         inline constexpr static int s_height = 72; // Repo item total height
@@ -53,13 +52,6 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_creatorMaxWidth = 115;
         inline constexpr static int s_updatedMaxWidth = 125;
 
-        // Button
-        inline constexpr static int s_buttonWidth = 32;
-        inline constexpr static int s_buttonHeight = 16;
-        inline constexpr static int s_buttonBorderRadius = 8;
-        inline constexpr static int s_buttonCircleRadius = s_buttonBorderRadius - 2;
-        inline constexpr static int s_buttonSpacing = 20;
-
         // Icon
         inline constexpr static int s_iconSize = 24;
         inline constexpr static int s_iconSpacing = 16;
@@ -68,13 +60,14 @@ namespace O3DE::ProjectManager
 
     signals:
         void RemoveRepo(const QModelIndex& modelIndex);
+        void RefreshRepo(const QModelIndex& modelIndex);
 
     protected:
         void CalcRects(const QStyleOptionViewItem& option, QRect& outFullRect, QRect& outItemRect, QRect& outContentRect) const;
         QRect GetTextRect(QFont& font, const QString& text, qreal fontSize) const;
         QRect CalcButtonRect(const QRect& contentRect) const;
         QRect CalcDeleteButtonRect(const QRect& contentRect) const;
-        void DrawButton(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const;
+        QRect CalcRefreshButtonRect(const QRect& contentRect) const;
         void DrawEditButtons(QPainter* painter, const QRect& contentRect) const;
 
         QAbstractItemModel* m_model = nullptr;

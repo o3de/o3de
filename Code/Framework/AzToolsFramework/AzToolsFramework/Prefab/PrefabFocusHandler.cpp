@@ -16,6 +16,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabFocusUndo.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -79,7 +80,46 @@ namespace AzToolsFramework::Prefab
             auto editUndo = aznew PrefabFocusUndo("Edit Prefab");
             editUndo->Capture(entityId);
             editUndo->SetParent(undoBatch.GetUndoBatch());
-            ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::RunRedoSeparately, editUndo);
+            FocusOnPrefabInstanceOwningEntityId(entityId);
+        }
+
+        return AZ::Success();
+    }
+
+    PrefabFocusOperationResult PrefabFocusHandler::FocusOnParentOfFocusedPrefab(
+        [[maybe_unused]] AzFramework::EntityContextId entityContextId)
+    {
+        // If only one instance is in the hierarchy, this operation is invalid
+        size_t hierarchySize = m_instanceFocusHierarchy.size();
+        if (hierarchySize <= 1)
+        {
+            return AZ::Failure(
+                AZStd::string("Prefab Focus Handler: Could not complete FocusOnParentOfFocusedPrefab operation while focusing on the root."));
+        }
+
+        // Retrieve parent of currently focused prefab.
+        InstanceOptionalReference parentInstance = m_instanceFocusHierarchy[hierarchySize - 2];
+
+        // Use container entity of parent Instance for focus operations.
+        AZ::EntityId entityId = parentInstance->get().GetContainerEntityId();
+
+        // Initialize Undo Batch object
+        ScopedUndoBatch undoBatch("Edit Prefab");
+
+        // Clear selection
+        {
+            const EntityIdList selectedEntities = EntityIdList{};
+            auto selectionUndo = aznew SelectionCommand(selectedEntities, "Clear Selection");
+            selectionUndo->SetParent(undoBatch.GetUndoBatch());
+            ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, selectedEntities);
+        }
+
+        // Edit Prefab
+        {
+            auto editUndo = aznew PrefabFocusUndo("Edit Prefab");
+            editUndo->Capture(entityId);
+            editUndo->SetParent(undoBatch.GetUndoBatch());
+            FocusOnPrefabInstanceOwningEntityId(entityId);
         }
 
         return AZ::Success();
@@ -94,9 +134,7 @@ namespace AzToolsFramework::Prefab
 
         InstanceOptionalReference focusedInstance = m_instanceFocusHierarchy[index];
 
-        FocusOnOwningPrefab(focusedInstance->get().GetContainerEntityId());
-
-        return AZ::Success();
+        return FocusOnOwningPrefab(focusedInstance->get().GetContainerEntityId());
     }
 
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId)
@@ -137,20 +175,14 @@ namespace AzToolsFramework::Prefab
         m_focusedInstance = focusedInstance;
         m_focusedTemplateId = focusedInstance->get().GetTemplateId();
 
-        AZ::EntityId containerEntityId;
-
-        if (focusedInstance->get().GetParentInstance() != AZStd::nullopt)
-        {
-            containerEntityId = focusedInstance->get().GetContainerEntityId();
-        }
-        else
-        {
-            containerEntityId = AZ::EntityId();
-        }
-            
         // Focus on the descendants of the container entity in the Editor, if the interface is initialized.
         if (m_focusModeInterface)
         {
+            const AZ::EntityId containerEntityId =
+                (focusedInstance->get().GetParentInstance() != AZStd::nullopt)
+                ? focusedInstance->get().GetContainerEntityId()
+                : AZ::EntityId();
+
             m_focusModeInterface->SetFocusRoot(containerEntityId);
         }
 
@@ -206,6 +238,34 @@ namespace AzToolsFramework::Prefab
         return instance.has_value() && (&instance->get() == &m_focusedInstance->get());
     }
 
+    bool PrefabFocusHandler::IsOwningPrefabInFocusHierarchy(AZ::EntityId entityId) const
+    {
+        if (!m_focusedInstance.has_value())
+        {
+            // PrefabFocusHandler has not been initialized yet.
+            return false;
+        }
+
+        if (!entityId.IsValid())
+        {
+            return false;
+        }
+
+        InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+
+        while (instance.has_value())
+        {
+            if (&instance->get() == &m_focusedInstance->get())
+            {
+                return true;
+            }
+
+            instance = instance->get().GetParentInstance();
+        }
+
+        return false;
+    }
+
     const AZ::IO::Path& PrefabFocusHandler::GetPrefabFocusPath([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
         return m_instanceFocusPath;
@@ -227,7 +287,7 @@ namespace AzToolsFramework::Prefab
 
     void PrefabFocusHandler::OnEntityInfoUpdatedName(AZ::EntityId entityId, [[maybe_unused]]const AZStd::string& name)
     {
-        // Determine if the entityId is the container for any of the instances in the vector
+        // Determine if the entityId is the container for any of the instances in the vector.
         auto result = AZStd::find_if(
             m_instanceFocusHierarchy.begin(), m_instanceFocusHierarchy.end(),
             [entityId](const InstanceOptionalReference& instance)
@@ -251,6 +311,25 @@ namespace AzToolsFramework::Prefab
         PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
     }
 
+    void PrefabFocusHandler::OnPrefabTemplateDirtyFlagUpdated(TemplateId templateId, [[maybe_unused]] bool status)
+    {
+        // Determine if the templateId matches any of the instances in the vector.
+        auto result = AZStd::find_if(
+            m_instanceFocusHierarchy.begin(), m_instanceFocusHierarchy.end(),
+            [templateId](const InstanceOptionalReference& instance)
+            {
+                return (instance->get().GetTemplateId() == templateId);
+            }
+        );
+
+        if (result != m_instanceFocusHierarchy.end())
+        {
+            // Refresh the path and notify changes.
+            RefreshInstanceFocusPath();
+            PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
+        }
+    }
+
     void PrefabFocusHandler::RefreshInstanceFocusList()
     {
         m_instanceFocusHierarchy.clear();
@@ -265,17 +344,42 @@ namespace AzToolsFramework::Prefab
             currentInstance = currentInstance->get().GetParentInstance();
         }
 
-        // Invert the vector, since we need the top instance to be at index 0
+        // Invert the vector, since we need the top instance to be at index 0.
         AZStd::reverse(m_instanceFocusHierarchy.begin(), m_instanceFocusHierarchy.end());
     }
 
     void PrefabFocusHandler::RefreshInstanceFocusPath()
     {
+        auto prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
+
         m_instanceFocusPath.clear();
+
+        size_t index = 0;
+        size_t maxIndex = m_instanceFocusHierarchy.size() - 1;
 
         for (const InstanceOptionalReference& instance : m_instanceFocusHierarchy)
         {
-            m_instanceFocusPath.Append(instance->get().GetContainerEntity()->get().GetName());
+            AZStd::string prefabName;
+
+            if (index < maxIndex)
+            {
+                // Get the filename without the extension (stem).
+                prefabName = instance->get().GetTemplateSourcePath().Stem().Native();
+            }
+            else
+            {
+                // Get the full filename.
+                prefabName = instance->get().GetTemplateSourcePath().Filename().Native();
+            }
+
+            if (prefabSystemComponentInterface->IsTemplateDirty(instance->get().GetTemplateId()))
+            {
+                prefabName += "*";
+            }
+
+            m_instanceFocusPath.Append(prefabName);
+
+            ++index;
         }
     }
 

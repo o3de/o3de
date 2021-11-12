@@ -192,7 +192,9 @@ void AssetProcessorManagerTest::SetUp()
     registry->Set(cacheRootKey, tempPath.absoluteFilePath("Cache").toUtf8().constData());
     auto projectPathKey =
         AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-    registry->Set(projectPathKey, "AutomatedTesting");
+    AZ::IO::FixedMaxPath enginePath;
+    registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+    registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
     AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
     m_data->m_databaseLocationListener.BusConnect();
@@ -241,7 +243,7 @@ void AssetProcessorManagerTest::SetUp()
     m_mockApplicationManager->BusConnect();
 
     m_assetProcessorManager.reset(new AssetProcessorManager_Test(m_config.get()));
-    m_assertAbsorber.Clear();
+    m_errorAbsorber->Clear();
 
     m_isIdling = false;
 
@@ -332,9 +334,9 @@ TEST_F(AssetProcessorManagerTest, UnitTestForGettingJobInfoBySourceUUIDSuccess)
     EXPECT_STRCASEEQ(relFileName.toUtf8().data(), response.m_jobList[0].m_sourceFile.c_str());
     EXPECT_STRCASEEQ(tempPath.filePath("subfolder1").toUtf8().data(), response.m_jobList[0].m_watchFolder.c_str());
 
-    ASSERT_EQ(m_assertAbsorber.m_numWarningsAbsorbed, 0);
-    ASSERT_EQ(m_assertAbsorber.m_numErrorsAbsorbed, 0);
-    ASSERT_EQ(m_assertAbsorber.m_numAssertsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numWarningsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
 }
 
 TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToDatabase)
@@ -386,9 +388,9 @@ TEST_F(AssetProcessorManagerTest, WarningsAndErrorsReported_SuccessfullySavedToD
     ASSERT_EQ(response.m_jobList[0].m_warningCount, 11);
     ASSERT_EQ(response.m_jobList[0].m_errorCount, 22);
 
-    ASSERT_EQ(m_assertAbsorber.m_numWarningsAbsorbed, 0);
-    ASSERT_EQ(m_assertAbsorber.m_numErrorsAbsorbed, 0);
-    ASSERT_EQ(m_assertAbsorber.m_numAssertsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numWarningsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
 }
 
 
@@ -1310,8 +1312,8 @@ void PathDependencyTest::SetUp()
 
 void PathDependencyTest::TearDown()
 {
-    ASSERT_EQ(m_assertAbsorber.m_numAssertsAbsorbed, 0);
-    ASSERT_EQ(m_assertAbsorber.m_numErrorsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 0);
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
 
     AssetProcessorManagerTest::TearDown();
 }
@@ -1615,7 +1617,7 @@ TEST_F(PathDependencyTest, AssetProcessed_Impl_SelfReferrentialProductDependency
     mainFile.m_products.push_back(productAssetId);
 
     // tell the APM that the asset has been processed and allow it to bubble through its event queue:
-    m_assertAbsorber.Clear();
+    m_errorAbsorber->Clear();
     m_assetProcessorManager->AssetProcessed(jobDetails.m_jobEntry, processJobResponse);
     ASSERT_TRUE(BlockUntilIdle(5000));
 
@@ -1625,8 +1627,8 @@ TEST_F(PathDependencyTest, AssetProcessed_Impl_SelfReferrentialProductDependency
     ASSERT_TRUE(dependencyContainer.empty());
 
     // We are testing 2 different dependencies, so we should get 2 warnings
-    ASSERT_EQ(m_assertAbsorber.m_numWarningsAbsorbed, 2);
-    m_assertAbsorber.Clear();
+    ASSERT_EQ(m_errorAbsorber->m_numWarningsAbsorbed, 2);
+    m_errorAbsorber->Clear();
 }
 
 // This test shows the process of deferring resolution of a path dependency works.
@@ -1943,8 +1945,8 @@ TEST_F(PathDependencyTest, WildcardDependencies_ExcludePathsExisting_ResolveCorr
     );
 
     // Test asset PrimaryFile1 has 4 conflict dependencies
-    ASSERT_EQ(m_assertAbsorber.m_numErrorsAbsorbed, 4);
-    m_assertAbsorber.Clear();
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 4);
+    m_errorAbsorber->Clear();
 }
 
 TEST_F(PathDependencyTest, WildcardDependencies_Deferred_ResolveCorrectly)
@@ -2091,8 +2093,8 @@ TEST_F(PathDependencyTest, WildcardDependencies_ExcludedPathDeferred_ResolveCorr
     // Test asset PrimaryFile1 has 4 conflict dependencies
     // After test assets dep2 and dep3 are processed,
     // another 2 errors will be raised because of the confliction
-    ASSERT_EQ(m_assertAbsorber.m_numErrorsAbsorbed, 6);
-    m_assertAbsorber.Clear();
+    ASSERT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 6);
+    m_errorAbsorber->Clear();
 }
 
 void PathDependencyTest::RunWildcardTest(bool useCorrectDatabaseSeparator, AssetBuilderSDK::ProductPathDependencyType pathDependencyType, bool buildDependenciesFirst)
@@ -4137,11 +4139,19 @@ struct LockedFileTest
         switch (message.GetMessageType())
         {
         case SourceFileNotificationMessage::MessageType:
-            if (const auto sourceFileMessage = azrtti_cast<const SourceFileNotificationMessage*>(&message);
-                sourceFileMessage != nullptr && sourceFileMessage->m_type == SourceFileNotificationMessage::NotificationType::FileRemoved
-                && m_callback)
+            if (const auto sourceFileMessage = azrtti_cast<const SourceFileNotificationMessage*>(&message); sourceFileMessage != nullptr &&
+                sourceFileMessage->m_type == SourceFileNotificationMessage::NotificationType::FileRemoved)
             {
-                m_callback();
+                // The File Remove message will occur before an attempt to delete the file
+                // Wait for more than 1 File Remove message.
+                // This indicates the AP has attempted to delete the file once, failed to do so and is now retrying
+                ++m_deleteCounter;
+
+                if(m_deleteCounter > 1 && m_callback)
+                {
+                    m_callback();
+                    m_callback = {}; // Unset it to be safe, we only intend to run the callback once
+                }
             }
             break;
         default:
@@ -4165,6 +4175,7 @@ struct LockedFileTest
         ModtimeScanningTest::TearDown();
     }
 
+    AZStd::atomic_int m_deleteCounter{ 0 };
     AZStd::function<void()> m_callback;
 };
 
@@ -4204,6 +4215,10 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeleteFails)
 
 TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
 {
+    // This test is intended to verify the AP will successfully retry deleting a source asset
+    // when one of its product assets is locked temporarily
+    // We'll lock the file by holding it open
+
     auto theFile = m_data->m_absolutePath[1].toUtf8();
     const char* theFileString = theFile.constData();
     auto [sourcePath, productPath] = *m_data->m_productPaths.find(theFileString);
@@ -4216,19 +4231,22 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
     ASSERT_GT(m_data->m_productPaths.size(), 0);
     QFile product(productPath);
 
+    // Open the file and keep it open to lock it
+    // We'll start a thread later to unlock the file
+    // This will allow us to test how AP handles trying to delete a locked file
     ASSERT_TRUE(product.open(QIODevice::ReadOnly));
 
     // Check if we can delete the file now, if we can't, proceed with the test
     // If we can, it means the OS running this test doesn't lock open files so there's nothing to test
     if (!AZ::IO::SystemFile::Delete(productPath.toUtf8().constData()))
     {
-        AZStd::thread workerThread;
+        m_deleteCounter = 0;
 
-        m_callback = [&product, &workerThread]() {
-            workerThread = AZStd::thread([&product]() {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(60));
-                product.close();
-            });
+        // Set up a callback which will fire after at least 1 retry
+        // Unlock the file at that point so AP can successfully delete it
+        m_callback = [&product]()
+        {
+            product.close();
         };
 
         QMetaObject::invokeMethod(
@@ -4238,8 +4256,9 @@ TEST_F(LockedFileTest, DeleteFile_LockedProduct_DeletesWhenReleased)
 
         EXPECT_FALSE(QFile::exists(productPath));
         EXPECT_EQ(m_data->m_deletedSources.size(), 1);
-
-        workerThread.join();
+        
+        EXPECT_GT(m_deleteCounter, 1); // Make sure the AP tried more than once to delete the file
+        m_errorAbsorber->ExpectAsserts(0);
     }
     else
     {

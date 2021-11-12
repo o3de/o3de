@@ -31,7 +31,6 @@ namespace AzQtComponents
     {
         Q_OBJECT
     public:    
-        AZ_CLASS_ALLOCATOR(ToastNotification, AZ::SystemAllocator, 0);
         
         ToastNotification(QWidget* parent, const ToastConfiguration& toastConfiguration);
         virtual ~ToastNotification();
@@ -45,6 +44,8 @@ namespace AzQtComponents
         void ShowToastAtPoint(const QPoint& screenPosition, const QPointF& anchorPoint);
 
         void UpdatePosition(const QPoint& screenPosition, const QPointF& anchorPoint);
+
+        bool IsDuplicate(const ToastConfiguration& toastConfiguration);
         
         // QDialog
         void showEvent(QShowEvent* showEvent) override;
@@ -52,6 +53,8 @@ namespace AzQtComponents
         void mousePressEvent(QMouseEvent* mouseEvent) override;
         bool eventFilter(QObject* object, QEvent* event) override;
         
+        void paintEvent(QPaintEvent* event) override;
+
     public slots:
         void StartTimer();
         void FadeOut();
@@ -62,13 +65,14 @@ namespace AzQtComponents
         
     private:
         QPropertyAnimation* m_fadeAnimation;
-
+        ToastConfiguration m_configuration;
         bool   m_closeOnClick;
         QTimer m_lifeSpan;
+        uint32_t m_borderRadius = 0;
 
         AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
         AZStd::chrono::milliseconds m_fadeDuration;
-        AZStd::unique_ptr<Ui::ToastNotification> m_ui;        
+        QScopedPointer<Ui::ToastNotification> m_ui;        
         AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
     };
 } // namespace AzQtComponents
