@@ -585,4 +585,47 @@ namespace UnitTest
         // Expect the generated suite data to match that of the raw run text
         EXPECT_TRUE(suites == expectedSuites);
     }
+
+    TEST(PyTestRunSuiteFactory, FooBar)
+    {
+        const AZStd::string rawRun =
+            "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+            "<testsuites>\n"
+            "  <testsuite errors=\"1\" failures=\"1\" hostname=\"LHR14-3497F632\" name=\"pytest\" skipped=\"1\" tests=\"4\" "
+            "time=\"378.792\" timestamp=\"2021-10-28T09:55:42.050709\">\n"
+            "    <properties>\n"
+            "      <property name=\"timestamp\" value=\"2021-10-28T09-55-42-078715\"/>\n"
+            "      <property name=\"hostname\" value=\"LHR14-3497F632\"/>\n"
+            "      <property name=\"username\" value=\"jonawals\"/>\n"
+            "      <property name=\"build\" value=\"windows\"/>\n"
+            "    </properties>\n"
+            "    <testcase classname=\"AutomatedTesting.Gem.PythonTests.Atom.TestSuite_Main.TestAtomEditorComponentsMain\" "
+            "file=\"AutomatedTesting\\Gem\\PythonTests\\Atom\\TestSuite_Main.py\" line=\"27\" "
+            "name=\"test_AtomEditorComponents_AddedToEntity[windows-auto_test-windows_editor-AutomatedTesting]\" time=\"128.487\">\n"
+            "      <properties>\n"
+            "        <property name=\"timestamp\" value=\"2021-10-28T09-55-42-078715\"/>\n"
+            "        <property name=\"log\" value=\"TestSuite_Main_TestAtomEditorComponentsMain_test_AtomEditorC-logs.zip\"/>\n"
+            "      </properties>\n"
+            "    </testcase>\n"
+            "    <testcase classname=\"AutomatedTesting.Gem.PythonTests.Atom.TestSuite_Main.TestAtomEditorComponentsMain\" "
+            "file=\"AutomatedTesting\\Gem\\PythonTests\\Atom\\TestSuite_Main.py\" line=\"199\" "
+            "name=\"test_AtomEditorComponents_LightComponent[windows-auto_test-windows_editor-AutomatedTesting]\">\n"
+            "      <skipped/>\n"
+            "    </testcase>\n"
+            "    <testcase classname=\"AutomatedTesting.Gem.PythonTests.Atom.TestSuite_Main.TestMaterialEditorBasicTests\" "
+            "file=\"AutomatedTesting\\Gem\\PythonTests\\Atom\\TestSuite_Main.py\" line=\"284\" "
+            "name=\"test_MaterialEditorBasicTests[windows-MaterialEditor-windows_generic-AutomatedTesting]\" time=\"175.259\">\n"
+            "      <failure message=\\\"AssertionError: Did not get idle state from AP, message was instead: error_[WinError 10054] An \"\n"
+            "            \"existing connection was forcibly closed by the remote host\\\">Some failure message</failure>\n"
+            "    </testcase>\n"
+            "    <testcase classname=\"AutomatedTesting.Gem.PythonTests.Atom.TestSuite_Main.TestMaterialEditorBasicTests\" "
+            "file=\"AutomatedTesting\\Gem\\PythonTests\\Atom\\TestSuite_Main.py\" line=\"284\" "
+            "name=\"test_Dummy[windows-MaterialEditor-windows_generic-AutomatedTesting]\" time=\"175.259\">\n"
+            "      <error message=\\\"Hello\\\">Some error message</failure>\n"
+            "    </testcase>\n"
+            "  </testsuite>\n"
+            "</testsuites>";
+
+        const AZStd::vector<TestImpact::TestRunSuite> suites = TestImpact::PyTest::TestRunSuitesFactory(rawRun);
+    }
 } // namespace UnitTest

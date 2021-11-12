@@ -66,20 +66,20 @@ namespace UnitTest
 
             const AZStd::vector<AZStd::string> cmds =
             {
-                "E:/o3de_TIF_Feature/python/python.cmd -m pytest E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/assetpipeline/fbx_tests/pythonassetbuildertests.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/SceneProcessingTests.PythonAssetBuilderTests.xml",
-                "E:/o3de_TIF_Feature/python/python.cmd -m pytest E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/Atom/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/Atom_TestSuite_Main.xml",
-                "E:/o3de_TIF_Feature/python/python.cmd -m pytest E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/Atom/TestSuite_Main_GPU.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/Atom_TestSuite_Main_GPU.xml",
-                "E:/o3de_TIF_Feature/python/python.cmd -m pytest E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/physics/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/PhysicsTests_Main.xml",
-                "E:/o3de_TIF_Feature/python/python.cmd -m pytest E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/WhiteBox/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/WhiteBoxTests.xml",
-                "E:/o3de_TIF_Feature/python/python.cmd -m pytest E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/NvCloth/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/NvClothTests_Main.xml",
-                "E:/o3de_TIF_Feature/python/python.cmd -m pytest E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/prefab/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/PrefabTests.xml",
-                "E:/o3de_TIF_Feature/python/python.cmd -m pytest E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/Blast/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/BlastTests_Main.xml",
-                "E:/o3de_TIF_Feature/python/python.cmd -m pytest E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/largeworlds/dyn_veg/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/DynamicVegetationTests_Main.xml",
-                "E:/o3de_TIF_Feature/python/python.cmd -m pytest E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/largeworlds/landscape_canvas/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/LandscapeCanvasTests_Main.xml",
-                "E:/o3de_TIF_Feature/python/python.cmd -m pytest E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/editor/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/EditorTests_Main.xml",
-                "E:/o3de_TIF_Feature/python/python.cmd -m pytest E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/editor/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/EditorTests_Main_GPU.xml",
-                "E:/o3de_TIF_Feature/python/python.cmd -m pytest E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/smoke/test_Editor_NewExistingLevels_Works.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/EditorTestWithGPU.xml",
-                "E:/o3de_TIF_Feature/python/python.cmd -m pytest E:/o3de_TIF_Feature/Gems/Atom/RPI/Tools/atom_rpi_tools/tests  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/atom_rpi_tools_tests.xml"
+                 "E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/Atom/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/Atom_TestSuite_Main.xml"
+                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/Atom/TestSuite_Main_GPU.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/Atom_TestSuite_Main_GPU.xml"
+                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/assetpipeline/fbx_tests/pythonassetbuildertests.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/SceneProcessingTests.PythonAssetBuilderTests.xml"
+                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/physics/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/PhysicsTests_Main.xml"
+                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/WhiteBox/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/WhiteBoxTests.xml"
+                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/NvCloth/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/NvClothTests_Main.xml"
+                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/prefab/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/PrefabTests.xml"
+                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/Blast/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/BlastTests_Main.xml"
+                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/largeworlds/dyn_veg/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/DynamicVegetationTests_Main.xml"
+                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/largeworlds/landscape_canvas/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/LandscapeCanvasTests_Main.xml"
+                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/editor/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/EditorTests_Main.xml"
+                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/editor/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/EditorTests_Main_GPU.xml"
+                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/smoke/test_Editor_NewExistingLevels_Works.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/EditorTestWithGPU.xml"
+                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/Gems/Atom/RPI/Tools/atom_rpi_tools/tests  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/atom_rpi_tools_tests.xml"
             };
 
             //JobData jobData("");
@@ -94,6 +94,14 @@ namespace UnitTest
                 id++;
                 jobInfos.push_back(JobInfo({ id }, {cmd}, JobData("")));
             }
+
+           //jobInfos.push_back(JobInfo(
+           //    { 1 },
+           //    { "E:/o3de_TIF_Feature/python/python.cmd -m pytest "
+           //      "E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/assetpipeline/fbx_tests/pythonassetbuildertests.py  "
+           //      "--build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ "
+           //      "--junitxml=e:/SceneProcessingTests.PythonAssetBuilderTests.xml" },
+           //    JobData("e:/SceneProcessingTests.PythonAssetBuilderTests.xml")));
 
             auto [result, runnerJobs] = m_testRunner.RunTests(
                 jobInfos,
