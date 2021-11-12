@@ -94,15 +94,6 @@ namespace ScriptCanvasEditor
         SetName(details.m_name.c_str());
         SetToolTip(details.m_tooltip.c_str());
 
-        if (propertyStatus == ScriptCanvas::PropertyStatus::Getter)
-        {
-            SetName(AZStd::string::format("Get %s", GetName().toUtf8().data()).data());
-        }
-        else if (propertyStatus == ScriptCanvas::PropertyStatus::Setter)
-        {
-            SetName(AZStd::string::format("Set %s", GetName().toUtf8().data()).data());
-        }
-
         SetTitlePalette("MethodNodeTitlePalette");
     }
 
