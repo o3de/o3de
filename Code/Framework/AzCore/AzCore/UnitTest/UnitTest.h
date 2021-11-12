@@ -193,7 +193,23 @@ namespace UnitTest
         TraceBusHookUniqueDisableToken(TraceBusHook* traceBusHook);
         ~TraceBusHookUniqueDisableToken();
 
-        AZ_DISABLE_COPY(TraceBusHookUniqueDisableToken);
+        TraceBusHookUniqueDisableToken(const TraceBusHookUniqueDisableToken&) = delete;
+        TraceBusHookUniqueDisableToken& operator=(const TraceBusHookUniqueDisableToken&) = delete;
+        TraceBusHookUniqueDisableToken(TraceBusHookUniqueDisableToken&& rhs)
+        {
+            *this = AZStd::move(rhs);
+        }
+        TraceBusHookUniqueDisableToken& operator=(TraceBusHookUniqueDisableToken&& rhs)
+        {
+            if (this != &rhs)
+            {
+                ReEnable();
+                m_traceBusHook = rhs.m_traceBusHook;
+                rhs.m_traceBusHook = nullptr;
+            }
+
+            return *this;
+        }
         
     private:
         void ReEnable();
