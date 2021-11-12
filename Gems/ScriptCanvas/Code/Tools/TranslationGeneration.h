@@ -22,6 +22,7 @@ namespace AZ
     class BehaviorContext;
     class BehaviorEBus;
     class BehaviorMethod;
+    class BehaviorProperty;
     class Entity;
     class SerializeContext;
 }
