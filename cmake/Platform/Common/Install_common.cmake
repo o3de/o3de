@@ -174,7 +174,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     # Since imported targets cannot contain build dependencies, we need another way to propagate the runtime dependencies.
     # We dont want to put such dependencies in the interface because a user can mistakenly use a symbol that is not available 
     # when using the engine from source (and that the author of the target didn't want to set public). 
-    # To overcome this, we will actually expose teh private build dependencies as runtime dependencies. Our runtime dependency
+    # To overcome this, we will actually expose the private build dependencies as runtime dependencies. Our runtime dependency
     # algorithm will walk recursively also through static libraries and will only copy binaries to the output.
     unset(RUNTIME_DEPENDENCIES_PLACEHOLDER) 
     if(interface_build_dependencies_props)
