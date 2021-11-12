@@ -94,6 +94,7 @@ namespace TrackViewPythonBindingsUnitTests
 
             m_app.Start(appDesc);
             m_app.RegisterComponentDescriptor(AzToolsFramework::TrackViewComponent::CreateDescriptor());
+            AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
         }
 
         void TearDown() override
