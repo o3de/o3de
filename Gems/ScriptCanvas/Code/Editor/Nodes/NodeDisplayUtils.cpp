@@ -266,6 +266,7 @@ namespace ScriptCanvasEditor::Nodes
         graphCanvasEntity->CreateComponent<SlotMappingComponent>(methodNode->GetEntityId());
         graphCanvasEntity->CreateComponent<SceneMemberMappingComponent>(methodNode->GetEntityId());
 
+        bool isAccessor = false;
         switch (methodNode->GetMethodType())
         {
         case ScriptCanvas::MethodType::Event:
@@ -273,8 +274,9 @@ namespace ScriptCanvasEditor::Nodes
             break;
         case ScriptCanvas::MethodType::Getter:
         case ScriptCanvas::MethodType::Setter:
-        case ScriptCanvas::MethodType::Member:
         case ScriptCanvas::MethodType::Free:
+            isAccessor = true;
+        case ScriptCanvas::MethodType::Member:
             graphCanvasEntity->CreateComponent<ClassMethodNodeDescriptorComponent>();
             break;
             break;
@@ -297,14 +299,29 @@ namespace ScriptCanvasEditor::Nodes
 
         const bool isEBusSender = (methodNode->GetMethodType() == ScriptCanvas::MethodType::Event);
         const AZStd::string& className = methodNode->GetMethodClassName();
-        const AZStd::string& methodName = methodNode->GetName();
+        AZStd::string methodName = methodNode->GetName();
+
+        GraphCanvas::TranslationKey key;
+
+        if (isAccessor)
+        {
+            AZ::StringFunc::Replace(methodName, "::Getter", "");
+            AZ::StringFunc::Replace(methodName, "::Setter", "");
+        }
 
         GraphCanvas::TranslationRequests::Details details;
         details.m_name = methodName;
 
-        GraphCanvas::TranslationKey key;
-        key = isEBusSender ? "EBusSender" : "BehaviorClass";
-        key << className;
+        AZStd::string context;
+        if (methodNode->GetMethodType() == ScriptCanvas::MethodType::Free)
+        {
+            context = "Constant";
+        }
+        else
+        {
+            context = isEBusSender ? "EBusSender" : "BehaviorClass";
+        }
+        key << context << className;
 
         GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", details);
 
@@ -351,8 +368,8 @@ namespace ScriptCanvasEditor::Nodes
 
                     if (slot.IsData())
                     {
-                        key = isEBusSender ? "EBusSender" : "BehaviorClass";
-                        key << className << "methods" << methodName;
+                        key.clear();
+                        key << context << className << "methods" << methodName;
                         if (slot.IsData() && slot.IsInput())
                         {
                             key << "params";

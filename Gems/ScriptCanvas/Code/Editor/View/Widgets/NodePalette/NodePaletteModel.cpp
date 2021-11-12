@@ -1050,16 +1050,21 @@ namespace ScriptCanvasEditor
         if (auto registerIter = m_registeredNodes.find(nodeIdentifier); registerIter == m_registeredNodes.end())
         {
             auto  methodModelInformation = AZStd::make_unique<GlobalMethodNodeModelInformation>();
-            methodModelInformation->m_methodName = behaviorMethod.m_name;
             methodModelInformation->m_nodeIdentifier = nodeIdentifier;
+            methodModelInformation->m_methodName = behaviorMethod.m_name;
 
             methodModelInformation->m_titlePaletteOverride = "MethodNodeTitlePalette";
 
+            AZStd::string name = behaviorProperty->m_name;
+            AZ::StringFunc::Replace(name, "::Getter", "");
+            AZ::StringFunc::Replace(name, "::Setter", "");
+
             GraphCanvas::TranslationKey key;
-            key << "Constant" << behaviorProperty->m_name.c_str() << "details";
+            key << "Constant" << name << "details";
 
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+
 
             methodModelInformation->m_displayName = details.m_name;
             methodModelInformation->m_toolTip = details.m_tooltip;
