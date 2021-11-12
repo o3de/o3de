@@ -557,8 +557,8 @@ function(ly_setup_runtime_dependencies)
             string(TOUPPER ${conf} UCONF)
             ly_install(CODE
 "function(ly_copy source_file target_directory)
-    cmake_path(GET source_file FILENAME file_name)
-    file(INSTALL FILES \"\${source_file}\" DESTINATION \"\${target_directory}\" MESSAGE_NEVER)
+    cmake_path(APPEND full_target_directory \$ENV{DESTDIR} \${CMAKE_INSTALL_PREFIX} \${target_directory})
+    file(INSTALL FILES \"\${source_file}\" DESTINATION \"\${full_target_directory}\" MESSAGE_NEVER)
 endfunction()"
                 COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
             )

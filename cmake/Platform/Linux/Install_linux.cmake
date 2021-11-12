@@ -9,7 +9,7 @@
 #! ly_setup_runtime_dependencies_copy_function_override: Linux-specific copy function to handle RPATH fixes
 set(ly_copy_template [[
 function(ly_copy source_file target_directory)
-    set(full_target_directory "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/${target_directory}")
+    cmake_path(APPEND full_target_directory $ENV{DESTDIR} ${CMAKE_INSTALL_PREFIX} ${target_directory})
     file(COPY "${source_file}" DESTINATION "${full_target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
     cmake_path(NORMAL_PATH full_target_directory)
     get_filename_component(target_filename "${source_file}" NAME)
