@@ -464,24 +464,24 @@ class TestUnlockFile(unittest.TestCase):
     def setUp(self):
         self.file_name = 'file'
 
+    @mock.patch('os.stat')
     @mock.patch('os.chmod')
     @mock.patch('os.access')
-    @mock.patch('os.stat')
     def test_UnlockFile_WriteLocked_UnlockFile(self, mock_access, mock_chmod, mock_stat):
         mock_access.return_value = False
-        mock_stat.return_value = MockStatResult(stat.S_IREAD)
+        os.stat.return_value = MockStatResult(stat.S_IREAD)
 
         success = file_system.unlock_file(self.file_name)
         mock_chmod.assert_called_once_with(self.file_name, stat.S_IREAD | stat.S_IWRITE)
 
         self.assertTrue(success)
 
+    @mock.patch('os.stat')
     @mock.patch('os.chmod')
     @mock.patch('os.access')
-    @mock.patch('os.stat')
     def test_UnlockFile_AlreadyUnlocked_LogAlreadyUnlocked(self, mock_access, mock_chmod, mock_stat):
         mock_access.return_value = True
-        mock_stat.return_value = MockStatResult(stat.S_IREAD | stat.S_IWRITE)
+        os.stat.return_value = MockStatResult(stat.S_IREAD | stat.S_IWRITE)
 
         success = file_system.unlock_file(self.file_name)
 
@@ -493,24 +493,24 @@ class TestLockFile(unittest.TestCase):
     def setUp(self):
         self.file_name = 'file'
 
+    @mock.patch('os.stat')
     @mock.patch('os.chmod')
     @mock.patch('os.access')
-    @mock.patch('os.stat')
     def test_LockFile_UnlockedFile_FileLockedSuccessReturnsTrue(self, mock_access, mock_chmod, mock_stat):
         mock_access.return_value = True
-        mock_stat.return_value = MockStatResult(stat.S_IREAD | stat.S_IWRITE)
+        os.stat.return_value = MockStatResult(stat.S_IREAD | stat.S_IWRITE)
 
         success = file_system.lock_file(self.file_name)
         mock_chmod.assert_called_once_with(self.file_name, stat.S_IREAD)
 
         self.assertTrue(success)
 
+    @mock.patch('os.stat')
     @mock.patch('os.chmod')
     @mock.patch('os.access')
-    @mock.patch('os.stat')
     def test_LockFile_AlreadyLocked_FileLockedFailedReturnsFalse(self, mock_access, mock_chmod, mock_stat):
         mock_access.return_value = False
-        mock_stat.return_value = MockStatResult(stat.S_IREAD)
+        os.stat.return_value = MockStatResult(stat.S_IREAD)
 
         success = file_system.lock_file(self.file_name)
 

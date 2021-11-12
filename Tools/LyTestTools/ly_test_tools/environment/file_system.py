@@ -237,7 +237,7 @@ def lock_file(file_name):
     """
     if os.access(file_name, os.W_OK):
         file_stat = os.stat(file_name)
-        os.chmod(file_name, file_stat.st_mode | stat.S_IREAD)
+        os.chmod(file_name, file_stat.st_mode & (~stat.S_IWRITE))
         logger.warning(f'Write locking file {file_name}')
         return True
     else:
