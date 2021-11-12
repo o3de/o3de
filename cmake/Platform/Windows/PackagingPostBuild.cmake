@@ -201,7 +201,7 @@ endfunction()
 message(STATUS "Uploading artifacts to ${CPACK_UPLOAD_URL}")
 upload_to_s3(
     ${CPACK_UPLOAD_URL}
-    ${_cpack_wix_out_dir}
+    ${CPACK_UPLOAD_DIRECTORY}
     ".*(cab|exe|msi|txt|json)$"
 )
 message(STATUS "Artifact uploading complete!")
