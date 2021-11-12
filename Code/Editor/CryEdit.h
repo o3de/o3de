@@ -212,6 +212,7 @@ public:
     void OnEditFetch();
     void OnFileExportToGameNoSurfaceTexture();
     void OnViewSwitchToGame();
+    void OnViewSwitchToGameFullScreen();
     void OnViewDeploy();
     void DeleteSelectedEntities(bool includeDescendants);
     void OnMoveObject();
