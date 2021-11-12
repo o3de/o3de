@@ -18,6 +18,7 @@
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QTableView>
 #include <QtGui/QSyntaxHighlighter>
+#include <QMessageBox>
 
 // AzQtComponents
 #include <AzQtComponents/Components/StyledLineEdit.h>
@@ -808,14 +809,35 @@ void ConsoleVariableItemDelegate::setModelData(QWidget* editor, QAbstractItemMod
 {
     if (auto* doubleEditor = qobject_cast<AzQtComponents::SliderDoubleCombo*>(editor))
     {
+        QRegExp rx("((-?\\d+)(\\.\\d+)?)");
+        if (!rx.exactMatch(QString::number(doubleEditor->value())))
+        {
+            QMessageBox::information(NULL, "Title", "Enter data of the <double> type", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+            return;
+        }
         model->setData(index, doubleEditor->value());
     }
     else if (auto* intEditor = qobject_cast<AzQtComponents::SliderCombo*>(editor))
     {
+        QRegExp rx("(-?\\d+)");
+        if (!rx.exactMatch(QString::number(intEditor->value())))
+        {
+            QMessageBox::information(NULL, "Title", "Enter data of the <int> type", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+            return;
+        }
         model->setData(index, intEditor->value());
     }
     else if (auto* lineEdit = qobject_cast<AzQtComponents::StyledLineEdit*>(editor))
     {
+        if (lineEdit->text() != "")
+        {
+            QRegExp rx("([((-?\\d+)(\\.\\d+)?)\\s]+)|([A-Za-z0-9_\\-\\=\\;\\/\\.\\\\]+)");
+            if (!rx.exactMatch(lineEdit->text()))
+            {
+                QMessageBox::information(NULL, "Title", "Special characters are not allowed", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+                return;
+            }
+        }
         model->setData(index, lineEdit->text());
     }
 }
