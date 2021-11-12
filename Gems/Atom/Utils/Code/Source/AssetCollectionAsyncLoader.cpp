@@ -123,6 +123,8 @@ namespace AZ
 
         // Prepare to create a cancellable job.
         AZ::JobManagerDesc desc;
+        desc.m_jobManagerName = "AssetCollectionAsyncLoader";
+
         AZ::JobManagerThreadDesc threadDesc;
         desc.m_workerThreads.push_back(threadDesc);
         m_jobManager = AZStd::make_unique<AZ::JobManager>(desc);
