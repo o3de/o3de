@@ -124,10 +124,16 @@ namespace ScriptCanvasEditorTools
         //! Generates the translation data for all global properties and methods in the BehaviorContext
         void TranslateBehaviorGlobals();
 
-        //! Generates the translation data for the specified property in the BehaviorContext
+        //! Generates the translation data for the specified property in the BehaviorContext (global, by name)
         void TranslateBehaviorProperty(const AZStd::string& propertyName);
 
+        //! Generates the translation data for the specified property in the BehaviorContext
+        void TranslateBehaviorProperty(const AZ::BehaviorProperty* behaviorProperty, const AZStd::string& className, const AZStd::string& context, Entry* entry = nullptr);
+
     private:
+
+        //! Utility to populate a BehaviorMethod's translation data
+        void TranslateMethod(AZ::BehaviorMethod* behaviorMethod, Method& methodEntry);
 
         //! Generates the translation data for a BehaviorEBus that has an BehaviorEBusHandler
         bool TranslateEBusHandler(const AZ::BehaviorEBus* behaviorEbus, TranslationFormat& translationRoot);

@@ -1,11 +1,45 @@
 {
     "entries": [
         {
+            "key": "assetId",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Get Asset Id",
+                "category": "Constants"
+            }
+        },
+        {
+            "key": "assetType",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Get Asset Type"
+            }
+        },
+        {
+            "key": "sizeBytes",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Get Size Bytes"
+            }
+        },
+        {
+            "key": "relativePath",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Get Relative Path",
+                "category": "Constants"
+            }
+        },
+        {
             "key": "AssetInfo",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "AssetInfo"
+                "name": "Asset Info"
             }
         }
     ]
