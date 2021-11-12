@@ -525,6 +525,7 @@ namespace ScriptCanvas
 
         void SignalDeserialized();
 
+        virtual AZStd::string GetNodeTypeName() const;
         virtual AZStd::string GetDebugName() const;
         virtual AZStd::string GetNodeName() const;
 
