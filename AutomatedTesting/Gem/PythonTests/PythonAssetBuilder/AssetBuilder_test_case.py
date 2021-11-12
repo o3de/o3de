@@ -10,9 +10,9 @@ import azlmbr.editor
 import azlmbr.math
 import azlmbr.legacy.general
 
-def raise_and_stop(msg):
-    print (msg)
-    azlmbr.editor.EditorToolsApplicationRequestBus(azlmbr.bus.Broadcast, 'ExitNoPrompt')
+print('Starting mock asset tests')
+azlmbr.legacy.general.idle_enable(True)
+azlmbr.legacy.general.idle_wait(1.0)
 
 # These tests are meant to check that the test_asset.mock source asset turned into
 # a test_asset.mock_asset product asset via the Python asset builder system
@@ -20,11 +20,15 @@ mockAssetType = azlmbr.math.Uuid_CreateString('{9274AD17-3212-4651-9F3B-7DCCB080
 mockAssetPath = 'gem/pythontests/pythonassetbuilder/test_asset.mock_asset'
 assetId = azlmbr.asset.AssetCatalogRequestBus(azlmbr.bus.Broadcast, 'GetAssetIdByPath', mockAssetPath, mockAssetType, False)
 if (assetId.is_valid() is False):
-    raise_and_stop(f'Mock AssetId is not valid! Got {assetId.to_string()} instead')
+    print(f'Mock AssetId is not valid! Got {assetId.to_string()} instead')
+else:
+    print(f'Mock AssetId is valid!')
 
 assetIdString = assetId.to_string()
 if (assetIdString.endswith(':528cca58') is False):
-    raise_and_stop(f'Mock AssetId {assetIdString} has unexpected sub-id for {mockAssetPath}!')
+    print(f'Mock AssetId {assetIdString} has unexpected sub-id for {mockAssetPath}!')
+else:
+    print(f'Mock AssetId has expected sub-id for {mockAssetPath}!')
 
 print ('Mock asset exists')
 
@@ -36,7 +40,7 @@ def test_azmodel_product(generatedModelAssetPath):
     if (assetId.is_valid()):
         print(f'AssetId found for asset ({generatedModelAssetPath}) found')
     else:
-        raise_and_stop(f'Asset at path {generatedModelAssetPath} has unexpected asset ID ({assetIdString})!')
+        print(f'Asset at path {generatedModelAssetPath} has unexpected asset ID ({assetIdString})!')
 
 test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_positive_1.azmodel')
 test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_z_negative_1.azmodel')
@@ -46,4 +50,5 @@ test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100
 test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_x_negative_1.azmodel')
 test_azmodel_product('gem/pythontests/pythonassetbuilder/geom_group_fbx_cube_100cm_center_1.azmodel')
 
+print('Finished mock asset tests')
 azlmbr.editor.EditorToolsApplicationRequestBus(azlmbr.bus.Broadcast, 'ExitNoPrompt')
