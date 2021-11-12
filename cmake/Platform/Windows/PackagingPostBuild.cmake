@@ -202,7 +202,7 @@ message(STATUS "Uploading artifacts to ${CPACK_UPLOAD_URL}")
 upload_to_s3(
     ${CPACK_UPLOAD_URL}
     ${CPACK_UPLOAD_DIRECTORY}
-    ".*(cab|exe|msi|txt|json)$"
+    ".*(cab|exe|msi|${CPACK_3P_LICENSE_FILE}|${CPACK_3P_MANIFEST_FILE})$"
 )
 message(STATUS "Artifact uploading complete!")
 
@@ -235,6 +235,12 @@ if(CPACK_AUTO_GEN_TAG)
     set(_temp_info_file ${_temp_dir}/build_tag.txt)
     file(WRITE ${_temp_info_file} ${_commit_info})
 
+    # Copy license files into the upload directory
+    file(COPY ${CPACK_3P_LICENSE_FILE} 
+        ${CPACK_3P_MANIFEST_FILE}
+        DESTINATION ${_temp_dir}
+    )
+
     # update the URL and upload
     string(REPLACE
         ${_commit_info} "Latest"
@@ -244,7 +250,7 @@ if(CPACK_AUTO_GEN_TAG)
     upload_to_s3(
         ${_latest_upload_url}
         ${_temp_dir}
-        ".*(${_non_versioned_exe}|build_tag.txt|)$"
+        ".*(${_non_versioned_exe}|build_tag.txt|${CPACK_3P_LICENSE_FILE}|${CPACK_3P_MANIFEST_FILE})$"
     )
 
     # cleanup the temp files
