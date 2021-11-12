@@ -597,11 +597,16 @@ namespace AzToolsFramework
                 pte.SetVisibleEnforcement(true);
             }
 
+            AzToolsFramework::UndoSystem::URSequencePoint* currentUndoOperation;
+            ToolsApplicationRequests::Bus::BroadcastResult(
+                currentUndoOperation, &ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
+            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::AddDirtyEntity, componentInstance.GetEntityId());
             PropertyOutcome result = pte.SetProperty(propertyPath, value);
             if (result.IsSuccess())
             {
                 PropertyEditorEntityChangeNotificationBus::Event(componentInstance.GetEntityId(), &PropertyEditorEntityChangeNotifications::OnEntityComponentPropertyChanged, componentInstance.GetComponentId());
             }
+            ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::EndUndoBatch);
 
             return result;
         }
