@@ -76,7 +76,7 @@ namespace UnitTest
         AZ::JobContext* m_jobContext{ nullptr };
         IO::FileIOBase* m_prevFileIO{ nullptr };
         IO::IStreamer* m_streamer{ nullptr };
-        AZStd::unique_ptr<TraceBusHookUniqueDisableToken> m_traceBusDisableToken{ nullptr };
+        TraceBusHookUniqueDisableToken m_traceBusDisableToken;
         TestFileIOBase m_fileIO;
         AZStd::vector<AZStd::string> m_assetsWritten;
     };

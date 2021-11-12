@@ -1848,7 +1848,7 @@ namespace UnitTest
     TEST_F(AssetJobsFloodTest, ContainerLoadTest_SimpleCircularPreload_LoadsRoot)
 #endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
-        m_traceBusDisableToken->ReEnable();
+        m_traceBusDisableToken = {};
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
         m_assetHandlerAndCatalog->m_numCreations = 0;
@@ -1904,7 +1904,7 @@ namespace UnitTest
     TEST_F(AssetJobsFloodTest, ContainerLoadTest_DoubleCircularPreload_LoadsOne)
 #endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
-        m_traceBusDisableToken->ReEnable();
+        m_traceBusDisableToken = {};
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
         m_assetHandlerAndCatalog->m_numCreations = 0;
@@ -1965,7 +1965,7 @@ namespace UnitTest
     TEST_F(AssetJobsFloodTest, ContainerLoadTest_CircularPreLoadBelowRoot_LoadCompletes)
 #endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
-        m_traceBusDisableToken->ReEnable();
+        m_traceBusDisableToken = {};
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
         m_assetHandlerAndCatalog->m_numCreations = 0;
@@ -2655,7 +2655,7 @@ namespace UnitTest
 
     TEST_F(AssetManagerTests, BlockUntilLoadComplete_NotQueued_Fails)
     {
-        m_traceBusDisableToken->ReEnable();
+        m_traceBusDisableToken = {};
         m_assetHandlerAndCatalog->SetArtificialDelayMilliseconds(0, 500);
 
         {

@@ -86,7 +86,7 @@ namespace UnitTest
 
     TEST_F(AssetManagerSystemTest, AssetManager_SetInstance_AssertsWhenAlreadyCreated)
     {
-        m_traceBusDisableToken->ReEnable();
+        m_traceBusDisableToken = {};
 
         // Create an asset manager instance
         AssetManager::Descriptor desc;
@@ -284,7 +284,7 @@ namespace UnitTest
 
     TEST_F(AssetManagerShutdownTest, AssetManagerShutdown_UnregisteringHandler_WhileJobsFlight_Assert)
     {
-        m_traceBusDisableToken->ReEnable();
+        m_traceBusDisableToken = {};
 
         {
             Asset<AssetWithCustomData> asset1 = AssetManager::Instance().GetAsset<AssetWithCustomData>(MyAsset1Id, AZ::Data::AssetLoadBehavior::Default);
@@ -533,7 +533,7 @@ namespace UnitTest
     // Test for serialize class data which contains a reference asset which handler wasn't registered to AssetManager
     TEST_F(AssetManagerTest, AssetSerializerAssetReferenceTest)
     {
-        m_traceBusDisableToken->ReEnable();
+        m_traceBusDisableToken = {};
 
         auto assetId = AssetId("{3E971FD2-DB5F-4617-9061-CCD3606124D0}", 0);
         
@@ -614,7 +614,7 @@ namespace UnitTest
 
     TEST_F(AssetManagerTest, AssetPtrRefCount)
     {
-        m_traceBusDisableToken->ReEnable();
+        m_traceBusDisableToken = {};
 
         // Asset ptr tests.
         Asset<EmptyAssetWithInstanceCount> someAsset = AssetManager::Instance().CreateAsset<EmptyAssetWithInstanceCount>(Uuid::CreateRandom(), AZ::Data::AssetLoadBehavior::Default);
@@ -742,7 +742,7 @@ namespace UnitTest
 
     TEST_F(AssetManagerTest, AssetManager_UnregisterHandler_OnlyErrorsForAssetsCreatedByAssetManager)
     {
-        m_traceBusDisableToken->ReEnable();
+        m_traceBusDisableToken = {};
 
         // Unregister fixture handler(MyAssetHandlerAndCatalog) until the end of the test
         AssetManager::Instance().UnregisterHandler(m_assetHandlerAndCatalog);

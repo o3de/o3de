@@ -189,12 +189,15 @@ namespace UnitTest
     // So we need to ensure the bus is always reconnected between tests
     struct TraceBusHookUniqueDisableToken
     {
+        TraceBusHookUniqueDisableToken() = default;
         TraceBusHookUniqueDisableToken(TraceBusHook* traceBusHook);
         ~TraceBusHookUniqueDisableToken();
 
+        AZ_DISABLE_COPY(TraceBusHookUniqueDisableToken);
+        
+    private:
         void ReEnable();
 
-    private:
         TraceBusHook* m_traceBusHook{};
     };
 
@@ -206,7 +209,7 @@ namespace UnitTest
         TraceBusHookEnvironmentInterface() = default;
         virtual ~TraceBusHookEnvironmentInterface() = default;
         
-        virtual AZStd::unique_ptr<TraceBusHookUniqueDisableToken> Disable() = 0;
+        virtual TraceBusHookUniqueDisableToken Disable() = 0;
     };
     
     class TraceBusHook
@@ -235,9 +238,9 @@ namespace UnitTest
             m_environmentSetup = true;
         }
 
-        AZStd::unique_ptr<TraceBusHookUniqueDisableToken> Disable() override
+        TraceBusHookUniqueDisableToken Disable() override
         {
-            return AZStd::make_unique<TraceBusHookUniqueDisableToken>(this);
+            return TraceBusHookUniqueDisableToken(this);
         }
 
         void TeardownEnvironment() override
