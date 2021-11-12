@@ -81,8 +81,8 @@ namespace Terrain
         static const char* const RoughnessMap("roughness.textureMap");
         static const char* const RoughnessUseTexture("roughness.useTexture");
         static const char* const RoughnessFactor("roughness.factor");
-        static const char* const RoughnessUpperBound("roughness.lowerBound");
-        static const char* const RoughnessLowerBound("roughness.upperBound");
+        static const char* const RoughnessLowerBound("roughness.lowerBound");
+        static const char* const RoughnessUpperBound("roughness.upperBound");
         static const char* const SpecularF0Map("specularF0.textureMap");
         static const char* const SpecularF0UseTexture("specularF0.useTexture");
         static const char* const SpecularF0Factor("specularF0.factor");
@@ -1017,6 +1017,7 @@ namespace Terrain
         m_macroNormalMapIndex = layout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::MacroNormalMap));
         AZ_Error(TerrainFPName, m_macroNormalMapIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::MacroNormalMap);
 
+        m_terrainSrg = {};
         for (auto& shaderItem : m_materialInstance->GetShaderCollection())
         {
             if (shaderItem.GetShaderAsset()->GetDrawListName() == AZ::Name("forward"))
@@ -1224,7 +1225,7 @@ namespace Terrain
                 }
             }
 
-            if (m_dirtyDetailRegion.IsValid() || !cameraPosition.IsClose(m_previousCameraPosition))
+            if (m_dirtyDetailRegion.IsValid() || !cameraPosition.IsClose(m_previousCameraPosition) || m_detailImagesUpdated)
             {
                 int32_t newDetailTexturePosX = aznumeric_cast<int32_t>(AZStd::roundf(cameraPosition.GetX() / DetailTextureScale));
                 int32_t newDetailTexturePosY = aznumeric_cast<int32_t>(AZStd::roundf(cameraPosition.GetY() / DetailTextureScale));
@@ -1355,11 +1356,13 @@ namespace Terrain
                 }
             }
 
-            if (m_detailImagesUpdated && m_terrainSrg)
+            // Currently there seems to be a bug in unbounded image arrays where flickering can occur if this isn't updated every frame.
+            if (m_terrainSrg/* && m_detailImagesUpdated*/)
             {
                 AZStd::array_view<const AZ::RHI::ImageView*> imageViews(m_detailImageViews.data(), m_detailImageViews.size());
                 [[maybe_unused]] bool result = m_terrainSrg->SetImageViewUnboundedArray(m_detailTexturesIndex, imageViews);
                 AZ_Error(TerrainFPName, result, "Failed to set image view unbounded array into shader resource group.");
+                m_detailImagesUpdated = false;
             }
         }
 
@@ -1562,6 +1565,8 @@ namespace Terrain
                 drawPacket.Update(*GetParentScene());
             }
         }
+        m_imagesSetOnSrgs = false;
+        m_detailImagesUpdated = true;
     }
 
     void TerrainFeatureProcessor::SetWorldSize([[maybe_unused]] AZ::Vector2 sizeInMeters)

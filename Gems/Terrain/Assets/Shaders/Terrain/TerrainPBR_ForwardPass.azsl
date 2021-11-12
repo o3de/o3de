@@ -112,12 +112,16 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     float2 detailRegionMin = TerrainSrg::m_detailAabb.xy;
     float2 detailRegionMax = TerrainSrg::m_detailAabb.zw;
     float2 detailRegionUv = (surface.position.xy - detailRegionMin) / (detailRegionMax - detailRegionMin);
+    bool hasDetailSurface = false;
+
     if (all(detailRegionUv > TerrainSrg::m_detailHalfPixelUv) && all(detailRegionUv < 1.0 - TerrainSrg::m_detailHalfPixelUv))
     {
         detailRegionUv += TerrainSrg::m_detailMaterialIdImageCenter - (0.5);
+        hasDetailSurface = GetDetailSurface(detailSurface, detailRegionUv, detailUv);
+    }
 
-        GetDetailSurface(detailSurface, detailRegionUv, detailUv);
-
+    if (hasDetailSurface)
+    {
         float3 blendedColor = lerp(detailSurface.m_color, macroColor, detailFactor);
         float blendedSpecularF0 = lerp(detailSurface.m_specularF0, 0.5, detailFactor);
         surface.SetAlbedoAndSpecularF0(blendedColor, blendedSpecularF0, detailSurface.m_metalness * (1.0 - detailFactor));

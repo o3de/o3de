@@ -225,7 +225,7 @@ void GetDebugDetailSurface(inout DetailSurface surface, uint material1, uint mat
     surface.m_height = 0.5;
 }
 
-void GetDetailSurface(inout DetailSurface surface, float2 idUv, float2 uv)
+bool GetDetailSurface(inout DetailSurface surface, float2 idUv, float2 uv)
 {
     uint4 material1 = TerrainSrg::m_detailMaterialIdImage.GatherRed(TerrainSrg::DetailSampler, idUv, 0).xyzw;
     uint4 material2 = TerrainSrg::m_detailMaterialIdImage.GatherGreen(TerrainSrg::DetailSampler, idUv, 0).xyzw;
@@ -234,8 +234,14 @@ void GetDetailSurface(inout DetailSurface surface, float2 idUv, float2 uv)
     if (o_debugDetailMaterialIds)
     {
         GetDebugDetailSurface(surface, material1.x, material2.x, blends.x, idUv);
-        return;
+        return true;
     }
 
-    GetDetailSurfaceForMaterial(surface, material1.r, uv);
+    if (material1.x == 0xFF)
+    {
+        return false;
+    }
+
+    GetDetailSurfaceForMaterial(surface, material1.x, uv);
+    return true;
 }
