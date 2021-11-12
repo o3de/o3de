@@ -910,6 +910,12 @@ namespace AssetBuilderSDK
         //! There can be multiple builders running at once, so we need to filter out ones coming from other builders
         AZStd::thread_id m_jobThreadId;
     };
+
+    //! Get hash for whole file
+    //! @filePath the path for the file
+    //! @bytesReadOut output the read file size in bytes
+    //! @hashMsDelay [Do not use except for unit test] add a delay in ms for between each block reading.
+    AZ::u64 GetFileHash(const char* filePath, AZ::IO::SizeType* bytesReadOut = nullptr, int hashMsDelay = 0);
 } // namespace AssetBuilderSDK
 
 namespace AZ
