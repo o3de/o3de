@@ -5,14 +5,15 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-def DeletePrefab_ContainingASingleEntity():
+def CreatePrefab_WithSingleEntity():
 
     CAR_PREFAB_FILE_NAME = 'car_prefab'
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
+    from editor_python_test_tools.utils import Report
     from editor_python_test_tools.prefab_utils import Prefab
 
-    import prefab.tests.PrefabTestUtils as prefab_test_utils
+    import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     prefab_test_utils.open_base_tests_level()
 
@@ -21,12 +22,8 @@ def DeletePrefab_ContainingASingleEntity():
     car_prefab_entities = [car_entity]
 
     # Creates a prefab from the new entity
-    _, car = Prefab.create_prefab(
-        car_prefab_entities, CAR_PREFAB_FILE_NAME)
-
-    # Deletes the prefab instance
-    Prefab.remove_prefabs([car])
+    Prefab.create_prefab(car_prefab_entities, CAR_PREFAB_FILE_NAME)
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(DeletePrefab_ContainingASingleEntity)
+    Report.start_test(CreatePrefab_WithSingleEntity)

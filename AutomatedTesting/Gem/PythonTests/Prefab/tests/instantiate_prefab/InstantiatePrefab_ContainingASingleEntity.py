@@ -15,7 +15,7 @@ def InstantiatePrefab_ContainingASingleEntity():
 
     from editor_python_test_tools.prefab_utils import Prefab
 
-    import prefab.tests.PrefabTestUtils as prefab_test_utils
+    import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     prefab_test_utils.open_base_tests_level()
 

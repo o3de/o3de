@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-def DetachPrefab_UnderAnotherPrefab():
+def ReparentPrefab_UnderAnotherPrefab():
 
     CAR_PREFAB_FILE_NAME = 'car_prefab'
     WHEEL_PREFAB_FILE_NAME = 'wheel_prefab'
@@ -18,7 +18,7 @@ def DetachPrefab_UnderAnotherPrefab():
         from editor_python_test_tools.editor_entity_utils import EditorEntity
         from editor_python_test_tools.prefab_utils import Prefab
 
-        import prefab.tests.PrefabTestUtils as prefab_test_utils
+        import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
         prefab_test_utils.open_base_tests_level()
 
@@ -41,11 +41,8 @@ def DetachPrefab_UnderAnotherPrefab():
         # Reparents the wheel prefab instance to the container entity of the car prefab instance
         await wheel.ui_reparent_prefab_instance(car.container_entity.id)
 
-        # Detaches the wheel prefab instance
-        Prefab.detach_prefab(wheel)
-
     run_test()
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(DetachPrefab_UnderAnotherPrefab)
+    Report.start_test(ReparentPrefab_UnderAnotherPrefab)
