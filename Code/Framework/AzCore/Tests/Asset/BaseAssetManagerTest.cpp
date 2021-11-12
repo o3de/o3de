@@ -67,7 +67,15 @@ namespace UnitTest
     {
         SerializeContextFixture::SetUp();
 
+        auto traceBusHookInterface = AZ::Interface<TraceBusHookEnvironmentInterface>::Get();
+
+        ASSERT_NE(traceBusHookInterface, nullptr);
+
+        // Disable the default environment trace bus suppressor
+        m_traceBusDisableToken = traceBusHookInterface->Disable();
+
         AZ::JobManagerDesc jobDesc;
+
         AZ::JobManagerThreadDesc threadDesc;
         for (size_t threadCount = 0; threadCount < GetNumJobManagerThreads(); threadCount++)
         {

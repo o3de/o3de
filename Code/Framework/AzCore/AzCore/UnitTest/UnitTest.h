@@ -20,6 +20,7 @@
 #include <AzCore/std/typetraits/has_member_function.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/Interface/Interface.h>
 
 namespace UnitTest
 {
@@ -181,9 +182,37 @@ namespace UnitTest
         }
     };
 
+    class TraceBusHook;
+
+    // Helper class to automatically re-enable the TraceBusHook when going out of scope
+    // This is necessary because the TraceBusHook is part of the Environment which does not reset after each test run
+    // So we need to ensure the bus is always reconnected between tests
+    struct TraceBusHookUniqueDisableToken
+    {
+        TraceBusHookUniqueDisableToken(TraceBusHook* traceBusHook);
+        ~TraceBusHookUniqueDisableToken();
+
+        void ReEnable();
+
+    private:
+        TraceBusHook* m_traceBusHook{};
+    };
+
+    struct TraceBusHookEnvironmentInterface
+    {
+        AZ_RTTI(TraceBusHookEnvironmentInterface, "{DCDC9C73-C8EB-4003-B915-FF8E5D34EF28}");
+        AZ_DISABLE_COPY_MOVE(TraceBusHookEnvironmentInterface);
+
+        TraceBusHookEnvironmentInterface() = default;
+        virtual ~TraceBusHookEnvironmentInterface() = default;
+        
+        virtual [[nodiscard]] AZStd::unique_ptr<TraceBusHookUniqueDisableToken> Disable() = 0;
+    };
+    
     class TraceBusHook
         : public AZ::Test::ITestEnvironment
         , public TraceBusRedirector
+        , TraceBusHookEnvironmentInterface
     {
     public:
         void SetupEnvironment() override
@@ -201,13 +230,22 @@ namespace UnitTest
 #endif
             BusConnect();
 
+            AZ::Interface<TraceBusHookEnvironmentInterface>::Register(this);
+
             m_environmentSetup = true;
+        }
+
+        AZStd::unique_ptr<TraceBusHookUniqueDisableToken> Disable() override
+        {
+            return AZStd::make_unique<TraceBusHookUniqueDisableToken>(this);
         }
 
         void TeardownEnvironment() override
         {
             if (m_environmentSetup)
             {
+                AZ::Interface<TraceBusHookEnvironmentInterface>::Unregister(this);
+
                 BusDisconnect();
 
                 if (m_createdAllocator)
@@ -260,6 +298,28 @@ namespace UnitTest
         bool m_createdAllocator = false;
     };
 
+    inline TraceBusHookUniqueDisableToken::TraceBusHookUniqueDisableToken(TraceBusHook* traceBusHook)
+        : m_traceBusHook(traceBusHook)
+    {
+        if (m_traceBusHook)
+        {
+            m_traceBusHook->BusDisconnect();
+        }
+    }
+
+    inline TraceBusHookUniqueDisableToken::~TraceBusHookUniqueDisableToken()
+    {
+        ReEnable();
+    }
+
+    inline void UnitTest::TraceBusHookUniqueDisableToken::ReEnable()
+    {
+        if (m_traceBusHook)
+        {
+            m_traceBusHook->BusConnect();
+            m_traceBusHook = nullptr;
+        }
+    }
 }
 
 

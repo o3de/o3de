@@ -608,24 +608,9 @@ namespace UnitTest
         AZ::Data::AssetData::AssetStatus expected_base_status = AZ::Data::AssetData::AssetStatus::Ready;
         EXPECT_EQ(baseStatus, expected_base_status);
     }
-
-    struct DebugListener : AZ::Interface<IDebugAssetEvent>::Registrar
-    {
-        void AssetStatusUpdate(AZ::Data::AssetId id, AZ::Data::AssetData::AssetStatus status) override
-        {
-            AZ::Debug::Trace::Output(
-                "", AZStd::string::format("Status %s - %d\n", id.ToString<AZStd::string>().c_str(), static_cast<int>(status)).c_str());
-        }
-        void ReleaseAsset(AZ::Data::AssetId id) override
-        {
-            AZ::Debug::Trace::Output(
-                "", AZStd::string::format("Release %s\n", id.ToString<AZStd::string>().c_str()).c_str());
-        }
-    };
-
+    
     TEST_F(AssetJobsFloodTest, RapidAcquireAndRelease)
     {
-        DebugListener listener;  
         auto assetUuids = {
             MyAsset1Id,
             MyAsset2Id,
@@ -1863,6 +1848,7 @@ namespace UnitTest
     TEST_F(AssetJobsFloodTest, ContainerLoadTest_SimpleCircularPreload_LoadsRoot)
 #endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
+        m_traceBusDisableToken->ReEnable();
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
         m_assetHandlerAndCatalog->m_numCreations = 0;
@@ -1918,6 +1904,7 @@ namespace UnitTest
     TEST_F(AssetJobsFloodTest, ContainerLoadTest_DoubleCircularPreload_LoadsOne)
 #endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
+        m_traceBusDisableToken->ReEnable();
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
         m_assetHandlerAndCatalog->m_numCreations = 0;
@@ -1978,6 +1965,7 @@ namespace UnitTest
     TEST_F(AssetJobsFloodTest, ContainerLoadTest_CircularPreLoadBelowRoot_LoadCompletes)
 #endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
+        m_traceBusDisableToken->ReEnable();
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
         m_assetHandlerAndCatalog->m_numCreations = 0;
@@ -2667,6 +2655,7 @@ namespace UnitTest
 
     TEST_F(AssetManagerTests, BlockUntilLoadComplete_NotQueued_Fails)
     {
+        m_traceBusDisableToken->ReEnable();
         m_assetHandlerAndCatalog->SetArtificialDelayMilliseconds(0, 500);
 
         {
