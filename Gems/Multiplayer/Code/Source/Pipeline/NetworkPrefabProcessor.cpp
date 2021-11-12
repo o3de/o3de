@@ -167,7 +167,9 @@ namespace Multiplayer
                 if (parentId.IsValid() && !prefabNetEntityIds.contains(parentId))
                 {
                     // Clear parent ID for net entities parented to a non-net entity.
-                    // To be addressed by the spawnable aliases system.
+                    // To be addressed by the spawnable aliases system where non-net entities
+                    // will be spawned together with the networked ones in which case we'll keep
+                    // the cross-spawnable references.
                     transformComponent->SetParent(AZ::EntityId());
                 }
             }
