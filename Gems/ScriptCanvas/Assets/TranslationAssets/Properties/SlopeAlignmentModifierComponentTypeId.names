@@ -1,25 +1,23 @@
 {
     "entries": [
         {
-            "key": "ShapeType_Box",
+            "key": "SlopeAlignmentModifierComponentTypeId",
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "Get Shape Type: Box",
-                "category": "Constants/Physics"
+                "name": ""
             },
             "methods": [
                 {
-                    "key": "ShapeType_Box",
+                    "key": "SlopeAlignmentModifierComponentTypeId",
                     "details": {
-                        "name": "Get Shape Type: Box",
-                        "subtitle": "Shape Type"
+                        "name": "SlopeAlignmentModifierComponentTypeId::Getter"
                     },
                     "results": [
                         {
-                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
                             "details": {
-                                "name": "Shape Type"
+                                "name": "AZ::Uuid"
                             }
                         }
                     ]
