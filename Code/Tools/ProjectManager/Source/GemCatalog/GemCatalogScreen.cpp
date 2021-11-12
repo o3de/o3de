@@ -126,7 +126,8 @@ namespace O3DE::ProjectManager
         // Select the first entry after everything got correctly sized
         QTimer::singleShot(200, [=]{
             QModelIndex firstModelIndex = m_gemModel->index(0, 0);
-            m_gemModel->GetSelectionModel()->select(firstModelIndex, QItemSelectionModel::ClearAndSelect);
+            QModelIndex proxyIndex = m_proxyModel->mapFromSource(firstModelIndex);
+            m_proxyModel->GetSelectionModel()->setCurrentIndex(proxyIndex, QItemSelectionModel::ClearAndSelect);
         });
     }
 
@@ -209,7 +210,7 @@ namespace O3DE::ProjectManager
             const bool gemFound = gemInfoHash.contains(gemName);
             if (!gemFound && !m_gemModel->IsAdded(index) && !m_gemModel->IsAddedDependency(index))
             {
-                m_gemModel->removeRow(i);
+                m_gemModel->RemoveGem(index);
             }
             else
             {
@@ -239,7 +240,7 @@ namespace O3DE::ProjectManager
         m_filterWidget->ResetAllFilters();
 
         // Reselect the same selection to proc UI updates
-        m_proxyModel->GetSelectionModel()->select(m_proxyModel->GetSelectionModel()->selection(), QItemSelectionModel::Select);
+        m_proxyModel->GetSelectionModel()->setCurrentIndex(m_proxyModel->GetSelectionModel()->currentIndex(), QItemSelectionModel::Select);
     }
 
     void GemCatalogScreen::OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies) 
@@ -268,7 +269,7 @@ namespace O3DE::ProjectManager
                 if (added && GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded)
                 {
                     m_downloadController->AddGemDownload(GemModel::GetName(modelIndex));
-                    GemModel::SetDownloadStatus(*m_proxyModel, m_proxyModel->mapFromSource(modelIndex), GemInfo::DownloadStatus::Downloading);
+                    GemModel::SetDownloadStatus(*m_gemModel, modelIndex, GemInfo::DownloadStatus::Downloading);
                 }
             }
 
@@ -300,7 +301,7 @@ namespace O3DE::ProjectManager
         }
 
         QModelIndex proxyIndex = m_proxyModel->mapFromSource(modelIndex);
-        m_proxyModel->GetSelectionModel()->select(proxyIndex, QItemSelectionModel::ClearAndSelect);
+        m_proxyModel->GetSelectionModel()->setCurrentIndex(proxyIndex, QItemSelectionModel::ClearAndSelect);
         m_gemListView->scrollTo(proxyIndex);
     }
 
@@ -370,8 +371,10 @@ namespace O3DE::ProjectManager
             }
             else
             {
+                const QString selectedGemName = m_gemModel->GetName(modelIndex);
+
                 // Remove gem from model
-                m_gemModel->removeRow(modelIndex.row());
+                m_gemModel->RemoveGem(modelIndex);
 
                 // Delete uninstalled gem directory
                 if (!ProjectUtils::DeleteProjectFiles(selectedGemPath, /*force*/true))
@@ -382,6 +385,11 @@ namespace O3DE::ProjectManager
 
                 // Show undownloaded remote gem again
                 Refresh();
+
+                // Select remote gem
+                QModelIndex remoteGemIndex = m_gemModel->FindIndexByNameString(selectedGemName);
+                QModelIndex proxyIndex = m_proxyModel->mapFromSource(remoteGemIndex);
+                m_proxyModel->GetSelectionModel()->setCurrentIndex(proxyIndex, QItemSelectionModel::ClearAndSelect);
             }
         }
     }
@@ -564,7 +572,8 @@ namespace O3DE::ProjectManager
         if (succeeded)
         {
             // refresh the information for downloaded gems
-            const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allGemInfosResult = PythonBindingsInterface::Get()->GetAllGemInfos(m_projectPath);
+            const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allGemInfosResult =
+                PythonBindingsInterface::Get()->GetAllGemInfos(m_projectPath);
             if (allGemInfosResult.IsSuccess())
             {
                 // we should find the gem name now in all gem infos
@@ -572,15 +581,33 @@ namespace O3DE::ProjectManager
                 {
                     if (gemInfo.m_name == gemName)
                     {
-                        QModelIndex index = m_gemModel->FindIndexByNameString(gemName);
-                        if (index.isValid())
+                        QModelIndex oldIndex = m_gemModel->FindIndexByNameString(gemName);
+                        if (oldIndex.isValid())
                         {
-                            m_proxyModel->setData(m_proxyModel->mapFromSource(index), GemInfo::DownloadSuccessful, GemModel::RoleDownloadStatus);
-                            m_gemModel->setData(index, gemInfo.m_path, GemModel::RolePath);
-                            m_gemModel->setData(index, gemInfo.m_path, GemModel::RoleDirectoryLink);
+                            // Check if old gem is selected
+                            bool oldGemSelected = false;
+                            if (m_gemModel->GetSelectionModel()->currentIndex() == oldIndex)
+                            {
+                                oldGemSelected = true;
+                            }
+
+                            // Remove old remote gem
+                            m_gemModel->RemoveGem(oldIndex);
+
+                            // Add new downloaded version of gem
+                            QModelIndex newIndex = m_gemModel->AddGem(gemInfo);
+                            GemModel::SetDownloadStatus(*m_gemModel, newIndex, GemInfo::DownloadSuccessful);
+                            GemModel::SetIsAdded(*m_gemModel, newIndex, true);
+
+                            // Select new version of gem if it was previously selected
+                            if (oldGemSelected)
+                            {
+                                QModelIndex proxyIndex = m_proxyModel->mapFromSource(newIndex);
+                                m_proxyModel->GetSelectionModel()->setCurrentIndex(proxyIndex, QItemSelectionModel::ClearAndSelect);
+                            }
                         }
 
-                        return;
+                        break;
                     }
                 }
             }
@@ -590,7 +617,7 @@ namespace O3DE::ProjectManager
             QModelIndex index = m_gemModel->FindIndexByNameString(gemName);
             if (index.isValid())
             {
-                m_proxyModel->setData(m_proxyModel->mapFromSource(index), GemInfo::DownloadFailed, GemModel::RoleDownloadStatus);
+                GemModel::SetDownloadStatus(*m_gemModel, index, GemInfo::DownloadFailed);
             }
         }
     }
