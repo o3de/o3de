@@ -33,12 +33,8 @@ def DynVegUtils_TempPrefabCreationWorks():
 
     import os
 
-    import azlmbr.editor as editor
-    import azlmbr.legacy.general as general
-    import azlmbr.bus as bus
     import azlmbr.math as math
 
-    import editor_python_test_tools.hydra_editor_utils as hydra
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
     from editor_python_test_tools.utils import Report, Tracer
     from editor_python_test_tools.utils import TestHelper as helper
@@ -72,9 +68,9 @@ def DynVegUtils_TempPrefabCreationWorks():
             Report.result(prefab_created, helper.wait_for_condition(lambda: PrefabInstance.is_valid(prefab[1]), 3.0))
 
         # 4) Assign the temp prefab to the prefab instance spawner, and validate the instance count
-        #for prefab_filename in mesh_prefabs:
-        spawner_entity = dynveg.create_prefab_spawner("PrefabSpawner", center_point, 16.0, 16.0, 16.0,
-                                                      get_prefab_file_path("Sphere"))
+        for prefab_filename in mesh_prefabs:
+            spawner_entity = dynveg.create_prefab_spawner("PrefabSpawner", center_point, 16.0, 16.0, 16.0,
+                                                          get_prefab_file_path(get_prefab_file_path(prefab_filename)))
 
         # 5) Report errors/asserts
         helper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
@@ -83,7 +79,7 @@ def DynVegUtils_TempPrefabCreationWorks():
         for assert_info in error_tracer.asserts:
             Report.info(f"Assert: {assert_info.filename} {assert_info.function} | {assert_info.message}")
 
-    general.idle_wait(20.0)
+
 if __name__ == "__main__":
 
     from editor_python_test_tools.utils import Report
