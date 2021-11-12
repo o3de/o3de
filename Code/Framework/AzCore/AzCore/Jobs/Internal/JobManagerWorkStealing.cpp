@@ -633,14 +633,12 @@ JobManagerWorkStealing::ThreadList JobManagerWorkStealing::CreateWorkerThreads(c
         info->m_owningManager = this;
         info->m_workerId = iThread;
 
-        char threadName[64];
-        sprintf_s(
-            threadName, 
+        AZStd::fixed_string<128> threadName = AZStd::fixed_string<128>::format(
             "%s worker thread %d", 
             jmDesc.m_jobManagerName[0] != '\0' ? jmDesc.m_jobManagerName : "AZ JobManager", 
             iThread);
         AZStd::thread_desc threadDesc;
-        threadDesc.m_name = threadName;
+        threadDesc.m_name = threadName.c_str();
         threadDesc.m_cpuId = desc.m_cpuId;
         threadDesc.m_priority = desc.m_priority;
         if (desc.m_stackSize != 0)
