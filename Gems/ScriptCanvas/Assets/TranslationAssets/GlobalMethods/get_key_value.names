@@ -1,0 +1,71 @@
+{
+    "entries": [
+        {
+            "key": "get_key_value",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "get_key_value",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke get_key_value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after get_key_value is invoked"
+                    },
+                    "details": {
+                        "name": "get_key_value",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
+                            "details": {
+                                "name": "any"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

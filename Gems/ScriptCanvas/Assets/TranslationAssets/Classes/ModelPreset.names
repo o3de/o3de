@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "ModelPreset",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ModelPreset"
+            }
+        }
+    ]
+}

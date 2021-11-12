@@ -59,7 +59,9 @@ namespace O3DE::ProjectManager
     signals:
         void StartGemDownload(const QString& gemName);
         void Done(const QString& gemName, bool success = true);
-        void GemDownloadProgress(int percentage);
+        void GemDownloadAdded(const QString& gemName);
+        void GemDownloadRemoved(const QString& gemName);
+        void GemDownloadProgress(const QString& gemName, int percentage);
 
     private:
         DownloadWorker* m_worker;

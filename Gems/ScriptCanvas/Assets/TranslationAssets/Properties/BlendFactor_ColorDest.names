@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "BlendFactor_ColorDest",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "BlendFactor_ColorDest::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

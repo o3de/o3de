@@ -20,7 +20,7 @@ namespace ScriptCanvas
     {
         using namespace Data;
         using namespace MathNodeUtilities;
-        static const char* k_categoryName = "Math/Quaternion";
+        static constexpr const char* k_categoryName = "Math/Quaternion";
 
         AZ_INLINE QuaternionType Add(QuaternionType a, QuaternionType b)
         {

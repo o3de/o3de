@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "set_time",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "set_time",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke set_time"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after set_time is invoked"
+                    },
+                    "details": {
+                        "name": "set_time",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

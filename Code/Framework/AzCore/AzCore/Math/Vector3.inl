@@ -186,7 +186,7 @@ namespace AZ
     }
 
 
-    AZ_MATH_INLINE void Vector3::Set(float values[])
+    AZ_MATH_INLINE void Vector3::Set(const float values[])
     {
         m_value = Simd::Vec3::LoadImmediate(values[0], values[1], values[2]);
     }

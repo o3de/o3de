@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiImageSequenceImageType_Stretched",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiImageSequenceImageType_Stretched::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

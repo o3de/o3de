@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "{CE4AF636-AB72-589D-92E9-A3C75A3F9C7F}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Overlaps",
+                "category": "Math/AABB",
+                "tooltip": "returns true if A overlaps B, else false",
+                "subtitle": "AABB"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_AABB: A",
+                    "details": {
+                        "name": "AABB: A"
+                    }
+                },
+                {
+                    "key": "DataInput_AABB: B",
+                    "details": {
+                        "name": "AABB: B"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Boolean",
+                    "details": {
+                        "name": "Result: Boolean"
+                    }
+                }
+            ]
+        }
+    ]
+}

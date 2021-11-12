@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "open_file_box",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "open_file_box",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke open_file_box"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after open_file_box is invoked"
+                    },
+                    "details": {
+                        "name": "open_file_box",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

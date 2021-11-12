@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "UiLayoutCellUnspecifiedSize",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "UiLayoutCellUnspecifiedSize::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

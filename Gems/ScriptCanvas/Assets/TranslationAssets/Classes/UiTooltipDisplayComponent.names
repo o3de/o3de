@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "UiTooltipDisplayComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "UiTooltipDisplayComponent"
+            }
+        }
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "EntityType",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "EntityType"
+            }
+        }
+    ]
+}

@@ -1,0 +1,50 @@
+{
+    "entries": [
+        {
+            "key": "PrefabSystemScriptingBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "PrefabSystemScriptingBus"
+            },
+            "methods": [
+                {
+                    "key": "CreatePrefab",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreatePrefab"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreatePrefab is invoked"
+                    },
+                    "details": {
+                        "name": "CreatePrefab"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

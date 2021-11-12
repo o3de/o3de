@@ -160,6 +160,7 @@ namespace AWSCore
                 // If m_firstThreadCPU isn't -1, then each thread will be
                 // assigned to a specific CPU starting with the specified CPU.
                 AZ::JobManagerDesc jobManagerDesc{};
+                jobManagerDesc.m_jobManagerName = "AWSCore JobManager";
                 AZ::JobManagerThreadDesc threadDesc(m_firstThreadCPU, m_threadPriority, m_threadStackSize);
                 for (int i = 0; i < m_threadCount; ++i)
                 {

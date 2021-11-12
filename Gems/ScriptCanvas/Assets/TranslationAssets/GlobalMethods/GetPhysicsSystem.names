@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "GetPhysicsSystem",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "GetPhysicsSystem",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPhysicsSystem"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPhysicsSystem is invoked"
+                    },
+                    "details": {
+                        "name": "GetPhysicsSystem",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{B6F4D92A-061B-4CB3-AAB5-984B599A53AE}",
+                            "details": {
+                                "name": "SystemInterface*"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

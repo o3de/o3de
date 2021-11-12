@@ -51,9 +51,8 @@ namespace GraphCanvas
         const QBrush& GetBorderColorOverride() const;
         void ClearBorderColorOverride();
 
-        void SetLabel(const AZStd::string& label, const AZStd::string& translationContext = AZStd::string(), const AZStd::string& translationKey = AZStd::string());
-        void SetLabel(const TranslationKeyedString& value);
-        AZStd::string GetLabel() const { return AZStd::string(m_labelText.toStdString().c_str()); }        
+        void SetLabel(const AZStd::string& value);
+        AZStd::string GetLabel() const { return AZStd::string(m_labelText.toUtf8().data()); }
 
         void SetSceneStyle(const AZ::EntityId& sceneId, const char* style);
         void SetStyle(const AZ::EntityId& entityId, const char* styleElement);

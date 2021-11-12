@@ -1,0 +1,117 @@
+{
+    "entries": [
+        {
+            "key": "EntityComponentIdPair",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "EntityComponentIdPair"
+            },
+            "methods": [
+                {
+                    "key": "GetEntityId",
+                    "context": "EntityComponentIdPair",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEntityId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEntityId is invoked"
+                    },
+                    "details": {
+                        "name": "EntityComponentIdPair::GetEntityId",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C845E5EC-5580-4E12-A9B2-9AE7E5B7826F}",
+                            "details": {
+                                "name": "EntityComponentIdPair*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Equal",
+                    "context": "EntityComponentIdPair",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Equal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Equal is invoked"
+                    },
+                    "details": {
+                        "name": "EntityComponentIdPair::Equal",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C845E5EC-5580-4E12-A9B2-9AE7E5B7826F}",
+                            "details": {
+                                "name": "EntityComponentIdPair*"
+                            }
+                        },
+                        {
+                            "typeid": "{C845E5EC-5580-4E12-A9B2-9AE7E5B7826F}",
+                            "details": {
+                                "name": "const EntityComponentIdPair&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ToString",
+                    "context": "EntityComponentIdPair",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToString is invoked"
+                    },
+                    "details": {
+                        "name": "EntityComponentIdPair::ToString",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C845E5EC-5580-4E12-A9B2-9AE7E5B7826F}",
+                            "details": {
+                                "name": "const EntityComponentIdPair*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

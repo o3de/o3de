@@ -36,6 +36,9 @@ namespace EMStudio
         //! Set the camera view mode.
         virtual void SetCameraViewMode(CameraViewMode mode) = 0;
 
+        //! Set the camera follow up
+        virtual void SetFollowCharacter(bool follow) = 0;
+
         //! Toggle render option flag
         virtual void ToggleRenderFlag(EMotionFX::ActorRenderFlag flag) = 0;
     };

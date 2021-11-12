@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "SpawnerComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "SpawnerComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,54 @@
+{
+    "entries": [
+        {
+            "key": "{82C50EAD-D3DD-45D2-BFCE-981D95771DC8}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "ComparisonExpression",
+                "tooltip": "ComparisonExpression"
+            },
+            "slots": [
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                },
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Signal to perform the evaluation when desired."
+                    }
+                },
+                {
+                    "key": "Output_True",
+                    "details": {
+                        "name": "True",
+                        "tooltip": "Signaled if the result of the operation is true."
+                    }
+                },
+                {
+                    "key": "Output_False",
+                    "details": {
+                        "name": "False",
+                        "tooltip": "Signaled if the result of the operation is false."
+                    }
+                },
+                {
+                    "key": "DataInput_Value A",
+                    "details": {
+                        "name": "Value A"
+                    }
+                },
+                {
+                    "key": "DataInput_Value B",
+                    "details": {
+                        "name": "Value B"
+                    }
+                }
+            ]
+        }
+    ]
+}

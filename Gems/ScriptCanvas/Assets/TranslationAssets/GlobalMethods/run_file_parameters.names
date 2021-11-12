@@ -1,0 +1,45 @@
+{
+    "entries": [
+        {
+            "key": "run_file_parameters",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "run_file_parameters",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke run_file_parameters"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after run_file_parameters is invoked"
+                    },
+                    "details": {
+                        "name": "run_file_parameters",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

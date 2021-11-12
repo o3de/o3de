@@ -15,6 +15,7 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/RTTI/AttributeReader.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -467,6 +468,18 @@ namespace AzToolsFramework
         AZ_PROFILE_FUNCTION(AzToolsFramework);
         EntityIdList children;
         EditorEntityInfoRequestBus::EventResult(children, parentId, &EditorEntityInfoRequestBus::Events::GetChildren);
+
+        // If Prefabs are enabled, don't check the order for an invalid parent, just return its children (i.e. the root container entity)
+        // There will currently always be one root container entity, so there's no order to retrieve
+        if (!parentId.IsValid())
+        {
+            bool isPrefabEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+            if (isPrefabEnabled)
+            {
+                return children;
+            }
+        }
 
         EntityIdList entityChildOrder;
         AZ::EntityId sortEntityId = GetEntityIdForSortInfo(parentId);

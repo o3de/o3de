@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "open_level_no_prompt",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "open_level_no_prompt",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke open_level_no_prompt"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after open_level_no_prompt is invoked"
+                    },
+                    "details": {
+                        "name": "open_level_no_prompt",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

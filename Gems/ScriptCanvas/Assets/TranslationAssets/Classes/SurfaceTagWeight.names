@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "SurfaceTagWeight",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "SurfaceTagWeight"
+            }
+        }
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "AnimationData",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "AnimationData"
+            }
+        }
+    ]
+}

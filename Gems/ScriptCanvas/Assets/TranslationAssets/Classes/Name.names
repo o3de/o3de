@@ -1,0 +1,146 @@
+{
+    "entries": [
+        {
+            "key": "Name",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Name"
+            },
+            "methods": [
+                {
+                    "key": "ToString",
+                    "context": "Name",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToString is invoked"
+                    },
+                    "details": {
+                        "name": "Name::ToString",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
+                            "details": {
+                                "name": "Name*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Set",
+                    "context": "Name",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set is invoked"
+                    },
+                    "details": {
+                        "name": "Name::Set",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
+                            "details": {
+                                "name": "Name*"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "AZStd::basic_string_view<char, AZStd::char_traits<char>>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsEmpty",
+                    "context": "Name",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsEmpty"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsEmpty is invoked"
+                    },
+                    "details": {
+                        "name": "Name::IsEmpty",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
+                            "details": {
+                                "name": "Name*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Equal",
+                    "context": "Name",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Equal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Equal is invoked"
+                    },
+                    "details": {
+                        "name": "Name::Equal",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
+                            "details": {
+                                "name": "Name*"
+                            }
+                        },
+                        {
+                            "typeid": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
+                            "details": {
+                                "name": "const Name&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

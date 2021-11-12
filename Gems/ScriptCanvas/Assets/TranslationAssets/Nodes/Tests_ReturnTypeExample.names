@@ -1,0 +1,71 @@
+{
+    "entries": [
+        {
+            "key": "{97C6661E-069C-877B-4FBC-AD14CCCBB43D}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "ReturnTypeExample",
+                "category": "Tests",
+                "tooltip": "Example of returning by value, pointer and reference.",
+                "subtitle": "Tests"
+            },
+            "slots": [
+                {
+                    "key": "Input_Return By Value",
+                    "details": {
+                        "name": "Return By Value"
+                    }
+                },
+                {
+                    "key": "Output_On Return By Value",
+                    "details": {
+                        "name": "On Return By Value"
+                    }
+                },
+                {
+                    "key": "DataOutput_Value",
+                    "details": {
+                        "name": "Value"
+                    }
+                },
+                {
+                    "key": "Input_Return By Pointer",
+                    "details": {
+                        "name": "Return By Pointer"
+                    }
+                },
+                {
+                    "key": "Output_On Return By Pointer",
+                    "details": {
+                        "name": "On Return By Pointer"
+                    }
+                },
+                {
+                    "key": "DataOutput_Pointer",
+                    "details": {
+                        "name": "Pointer"
+                    }
+                },
+                {
+                    "key": "Input_Return By Reference",
+                    "details": {
+                        "name": "Return By Reference"
+                    }
+                },
+                {
+                    "key": "Output_On Return By Reference",
+                    "details": {
+                        "name": "On Return By Reference"
+                    }
+                },
+                {
+                    "key": "DataOutput_Reference",
+                    "details": {
+                        "name": "Reference"
+                    }
+                }
+            ]
+        }
+    ]
+}

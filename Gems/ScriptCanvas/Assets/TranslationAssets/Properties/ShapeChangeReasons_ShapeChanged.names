@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ShapeChangeReasons_ShapeChanged",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ShapeChangeReasons_ShapeChanged::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -14,6 +14,4 @@ set(FILES
     Mocks/ISystemMock.h
     Mocks/ITimerMock.h
     Mocks/ICVarMock.h
-    Mocks/ITextureMock.h
-    Mocks/IRemoteConsoleMock.h
 )

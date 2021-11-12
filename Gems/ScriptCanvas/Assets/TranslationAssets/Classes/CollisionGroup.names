@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "CollisionGroup",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "CollisionGroup"
+            }
+        }
+    ]
+}
