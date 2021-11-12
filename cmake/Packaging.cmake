@@ -56,7 +56,7 @@ set(CPACK_LICENSE_URL ${LY_INSTALLER_LICENSE_URL})
 
 file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/.." _root_path)
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}/${CPACK_PACKAGE_VERSION}")
-set(CPACK_LY_3P_PACKAGE_DIRECTORY ${_root_path}/3rdParty/packages)
+set(CPACK_LY_3P_PACKAGE_DIRECTORY "${_root_path}/3rdParty/packages")
 
 # neither of the SOURCE_DIR variables equate to anything during execution of pre/post build scripts
 set(CPACK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -141,7 +141,7 @@ ly_install(FILES ${_cmake_package_dest}
 )
 
 # Scan the engine and 3rd Party folders for licenses
-
+file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/python/python.cmd" _python_cmd)
 file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/scripts/license_scanner/license_scanner.py" _license_script)
 file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/scripts/license_scanner/scanner_config.json" _license_config_script)
 set(_license_scan_path "${CMAKE_CURRENT_SOURCE_DIR} ${CPACK_LY_3P_PACKAGE_DIRECTORY}")
