@@ -68,6 +68,8 @@ def is_excluded(file):
     for path_exclusion in PATH_EXCLUSIONS:
         if fnmatch.fnmatch(file, path_exclusion):
             return True
+    if '\\Template\\' in normalized_file:
+        return True
     with open(file, 'r') as file:
         contents = file.read()
         for exclusion_term in EXCLUSIONS:
