@@ -56,10 +56,10 @@ class EditorSingleTest_WithFileOverrides(EditorSingleTest):
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
+class TestAutomation(EditorTestSuite):
 
     global_extra_cmdline_args = ['-BatchMode', '-autotest_mode',
-                                 'extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]']
+                                 '--regset=/Amazon/Preferences/EnablePrefabSystem=true']
 
     @staticmethod
     def get_number_parallel_editors():
@@ -77,7 +77,10 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomation(EditorTestSuite):
+class TestAutomationNoPrefab(EditorTestSuite):
+
+    global_extra_cmdline_args = ["-BatchMode", "-autotest_mode",
+                                 '--regset=/Amazon/Preferences/EnablePrefabSystem=false']
 
     @staticmethod
     def get_number_parallel_editors():
@@ -318,9 +321,6 @@ class TestAutomation(EditorTestSuite):
        
     class Material_LibraryClearingAssignsDefault(EditorSharedTest):
         from .tests.material import Material_LibraryClearingAssignsDefault as test_module
-        
-    class Collider_AddColliderComponent(EditorSharedTest):
-        from .tests.collider import Collider_AddColliderComponent as test_module
 
     @pytest.mark.xfail(reason="This will fail due to this issue ATOM-15487.")
     class Collider_PxMeshAutoAssignedWhenModifyingRenderMeshComponent(EditorSharedTest):
@@ -349,16 +349,13 @@ class TestAutomation(EditorTestSuite):
 
     class Physics_UndoRedoWorksOnEntityWithPhysComponents(EditorSharedTest):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
-        self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.GROUP_tick
     @pytest.mark.xfail(reason="Test still under development.")
-    def test_Tick_InterpolatedRigidBodyMotionIsSmooth(self, request, workspace, editor, launcher_platform):
+    class Tick_InterpolatedRigidBodyMotionIsSmooth(EditorSharedTest):
         from .tests.tick import Tick_InterpolatedRigidBodyMotionIsSmooth as test_module
-        self._run_test(request, workspace, editor, test_module)
 
     @pytest.mark.GROUP_tick
     @pytest.mark.xfail(reason="Test still under development.")
-    def test_Tick_CharacterGameplayComponentMotionIsSmooth(self, request, workspace, editor, launcher_platform):
+    class Tick_CharacterGameplayComponentMotionIsSmooth(EditorSharedTest):
         from .tests.tick import Tick_CharacterGameplayComponentMotionIsSmooth as test_module
-        self._run_test(request, workspace, editor, test_module)
