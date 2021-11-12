@@ -6,9 +6,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 
-#fmt: off
-
-
 class Tests:
     creation_undo = (
         "UNDO Entity creation success",
@@ -19,9 +16,12 @@ class Tests:
     hdri_skybox_entity_creation = (
         "HDRi Skybox successfully created",
         "HDRi Skybox failed to be created")
-    hdri_skybox_entity_component_added = (
+    hdri_skybox_component = (
         "Entity has an HDRi Skybox component",
         "Entity failed to find HDRi Skybox component")
+    cubemap_property_set = (
+        "Cubemap property set on HDRi Skybox component",
+        "Couldn't set Cubemap property on HDRi Skybox component")
     enter_game_mode = (
         "Entered game mode",
         "Failed to enter game mode")
@@ -43,9 +43,6 @@ class Tests:
     deletion_redo = (
         "REDO deletion success",
         "REDO deletion failed")
-
-
-#fmt: on
 
 
 def AtomEditorComponents_HDRiSkybox_AddedToEntity():
@@ -77,8 +74,11 @@ def AtomEditorComponents_HDRiSkybox_AddedToEntity():
     :return: None
     """
 
+    import os
+
     import azlmbr.legacy.general as general
 
+    from editor_python_test_tools.asset_utils import Asset
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
     from Atom.atom_utils.atom_constants import AtomComponentProperties
@@ -100,7 +100,7 @@ def AtomEditorComponents_HDRiSkybox_AddedToEntity():
         hdri_skybox_component = hdri_skybox_entity.add_component(
             AtomComponentProperties.hdri_skybox())
         Report.critical_result(
-            Tests.hdri_skybox_entity_component_added,
+            Tests.hdri_skybox_component,
             hdri_skybox_entity.has_component(AtomComponentProperties.hdri_skybox()))
 
         # 3. UNDO the entity creation and component addition.
@@ -127,33 +127,44 @@ def AtomEditorComponents_HDRiSkybox_AddedToEntity():
         general.idle_wait_frames(1)
         Report.result(Tests.creation_redo, hdri_skybox_entity.exists())
 
-        # 5. Enter/Exit game mode.
+
+        # 5. Set Cubemap Texture on HDRi Skybox component.
+        skybox_cubemap_asset_path = os.path.join("LightingPresets", "default_iblskyboxcm.exr.streamingimage")
+        skybox_cubemap_material_asset = Asset.find_asset_by_path(skybox_cubemap_asset_path, False)
+        hdri_skybox_component.set_component_property_value(
+            AtomComponentProperties.hdri_skybox('Cubemap Texture'), skybox_cubemap_material_asset.id)
+        get_cubemap_property = hdri_skybox_component.get_component_property_value(
+            AtomComponentProperties.hdri_skybox('Cubemap Texture'))
+        Report.result(Tests.cubemap_property_set, get_cubemap_property == skybox_cubemap_material_asset.id)
+
+
+        # 6. Enter/Exit game mode.
         TestHelper.enter_game_mode(Tests.enter_game_mode)
         general.idle_wait_frames(1)
         TestHelper.exit_game_mode(Tests.exit_game_mode)
 
-        # 6. Test IsHidden.
+        # 7. Test IsHidden.
         hdri_skybox_entity.set_visibility_state(False)
         Report.result(Tests.is_hidden, hdri_skybox_entity.is_hidden() is True)
 
-        # 7. Test IsVisible.
+        # 8. Test IsVisible.
         hdri_skybox_entity.set_visibility_state(True)
         general.idle_wait_frames(1)
         Report.result(Tests.is_visible, hdri_skybox_entity.is_visible() is True)
 
-        # 8. Delete hdri_skybox entity.
+        # 9. Delete hdri_skybox entity.
         hdri_skybox_entity.delete()
         Report.result(Tests.entity_deleted, not hdri_skybox_entity.exists())
 
-        # 9. UNDO deletion.
+        # 10. UNDO deletion.
         general.undo()
         Report.result(Tests.deletion_undo, hdri_skybox_entity.exists())
 
-        # 10. REDO deletion.
+        # 11. REDO deletion.
         general.redo()
         Report.result(Tests.deletion_redo, not hdri_skybox_entity.exists())
 
-        # 11. Look for errors or asserts.
+        # 12. Look for errors or asserts.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
