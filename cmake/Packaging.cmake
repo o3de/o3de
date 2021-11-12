@@ -138,6 +138,7 @@ ly_install(FILES ${_cmake_package_dest}
     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
 )
 
+# Do inital check on workspace path in the event that LY_3RDPARTY_PATH is misconfigurated 
 file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/.." _root_path)
 if (EXISTS "${_root_path}/3rdParty/packages")
     set(CPACK_LY_3P_PACKAGE_DIRECTORY "${_root_path}/3rdParty/packages")
@@ -152,7 +153,7 @@ file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/scripts/license_scanner" _licen
 set(_license_script "${_license_script_path}/license_scanner.py")
 set(_license_config "${_license_script_path}/license_scanner.py")
 
-set(_license_scan_path "${CMAKE_CURRENT_SOURCE_DIR}" "${CPACK_LY_3P_PACKAGE_DIRECTORY}")
+set(_license_scan_path "${CMAKE_CURRENT_SOURCE_DIR} ${CPACK_LY_3P_PACKAGE_DIRECTORY}")
 set(CPACK_3P_LICENSE_FILE "${CPACK_BINARY_DIR}/NOTICES.txt")
 set(CPACK_3P_MANIFEST_FILE "${CPACK_BINARY_DIR}/SPDX-License.json")
 
@@ -166,7 +167,7 @@ set(_license_command
 
 message(STATUS "Scanning for license files in ${_license_scan_path}")
 execute_process(
-    COMMAND ${_license_command} --scan-path ${_license_scan_path}
+    COMMAND ${_license_command} --scan-path "${_license_scan_path}"
     RESULT_VARIABLE _license_result
     ERROR_VARIABLE _license_errors
     OUTPUT_VARIABLE _license_output
