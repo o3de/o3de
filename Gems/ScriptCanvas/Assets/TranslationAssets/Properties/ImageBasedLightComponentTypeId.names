@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ImageBasedLightComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ImageBasedLightComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

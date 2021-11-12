@@ -85,10 +85,6 @@ class CWatchdogThread;
 
 #endif
 
-#if defined(LINUX)
-    #include "CryLibrary.h"
-#endif
-
 #ifdef WIN32
 using WIN_HMODULE = void*;
 #else
@@ -226,7 +222,6 @@ public:
     void Quit() override;
     bool IsQuitting() const override;
     void ShutdownFileSystem(); // used to cleanup any file resources, such as cache handle.
-    void SetAffinity();
     const char* GetUserName() override;
     int GetApplicationInstance() override;
     int GetApplicationLogInstance(const char* logFilePath) override;

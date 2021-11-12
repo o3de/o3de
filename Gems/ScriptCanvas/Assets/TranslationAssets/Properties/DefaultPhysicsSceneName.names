@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DefaultPhysicsSceneName",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DefaultPhysicsSceneName::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,196 @@
+{
+    "entries": [
+        {
+            "key": "UiAnchors",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "UI Anchors",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "SetBottom",
+                    "context": "UiAnchors",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetBottom"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetBottom is invoked"
+                    },
+                    "details": {
+                        "name": "UiAnchors::SetBottom",
+                        "category": "UI"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors",
+                                "tooltip": "The anchors for which to set the bottom anchor"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Bottom",
+                                "tooltip": "The bottom anchor [0-1]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetRight",
+                    "context": "UiAnchors",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetRight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetRight is invoked"
+                    },
+                    "details": {
+                        "name": "UiAnchors::SetRight",
+                        "category": "UI"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors",
+                                "tooltip": "The anchors for which to set the right anchor"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Right",
+                                "tooltip": "The right anchor [0-1]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTop",
+                    "context": "UiAnchors",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTop"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTop is invoked"
+                    },
+                    "details": {
+                        "name": "UiAnchors::SetTop",
+                        "category": "UI"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors",
+                                "tooltip": "The anchors for which to set the top anchor"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Top",
+                                "tooltip": "The top anchor [0-1]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLeft",
+                    "context": "UiAnchors",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetLeft"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetLeft is invoked"
+                    },
+                    "details": {
+                        "name": "UiAnchors::SetLeft",
+                        "category": "UI"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors",
+                                "tooltip": "The anchors for which to set the left anchor"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Left",
+                                "tooltip": "The left anchor [0-1]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetAnchors",
+                    "context": "UiAnchors",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAnchors"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAnchors is invoked"
+                    },
+                    "details": {
+                        "name": "UiAnchors::SetAnchors",
+                        "category": "UI"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors",
+                                "tooltip": "The anchors to set"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Left",
+                                "tooltip": "The left anchor [0-1]"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Top",
+                                "tooltip": "The top anchor [0-1]"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Right",
+                                "tooltip": "The right anchor [0-1]"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Bottom",
+                                "tooltip": "The bottom anchor [0-1]"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

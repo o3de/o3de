@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DiskShapeComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DiskShapeComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

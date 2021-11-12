@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DisplayMapperComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DisplayMapperComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

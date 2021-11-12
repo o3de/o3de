@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiFillType_Linear",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiFillType_Linear::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

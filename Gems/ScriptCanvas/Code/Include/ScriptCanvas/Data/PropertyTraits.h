@@ -25,6 +25,7 @@ namespace ScriptCanvas
             GetterFunction m_getterFunction;
             Data::Type m_propertyType;
             AZStd::string m_propertyName;
+            AZStd::string m_displayName;
         };
         using GetterContainer = AZStd::unordered_map<AZStd::string, GetterWrapper>;
 
@@ -35,6 +36,7 @@ namespace ScriptCanvas
             SetterFunction m_setterFunction;
             Data::Type m_propertyType;
             AZStd::string m_propertyName;
+            AZStd::string m_displayName;
         };
         using SetterContainer = AZStd::unordered_map<AZStd::string, SetterWrapper>;
 
@@ -84,7 +86,7 @@ namespace ScriptCanvas
                 using PropertyType = AZStd::decay_t<AZStd::invoke_result_t<FunctionType, GetterType>>;
                 static_assert(!AZStd::is_void<PropertyType>::value, "Getter function must return a non-void type");
 
-                static GetterWrapper Callback(AZStd::string_view propertyName, const FunctionType& propertyGetter)
+                static GetterWrapper Callback(AZStd::string_view propertyName, const FunctionType& propertyGetter, AZStd::string_view displayName)
                 {
                     GetterFunction getterWrapper = [propertyGetter](const Datum& thisDatum) -> AZ::Outcome<Datum, AZStd::string>
                     {
@@ -97,7 +99,7 @@ namespace ScriptCanvas
                         return AZ::Success(Datum(AZStd::invoke(propertyGetter, thisObject)));
                     };
 
-                    return { getterWrapper, Data::FromAZType<PropertyType>(), propertyName };
+                    return { getterWrapper, Data::FromAZType<PropertyType>(), propertyName, displayName };
                 }
             };
 
@@ -107,7 +109,7 @@ namespace ScriptCanvas
                 static_assert(!AZStd::is_void<SetterType>::value, "Setter function must be either a member function pointer that accepts 1 arguments or an invokable object that accepts 2 argument");
                 static_assert(!AZStd::is_void<PropertyType>::value, "Property being set must be a non-void type");
 
-                static SetterWrapper Callback(AZStd::string_view propertyName, const FunctionType& propertySetter)
+                static SetterWrapper Callback(AZStd::string_view propertyName, const FunctionType& propertySetter, AZStd::string_view displayName)
                 {
                     SetterFunction setterWrapper = [propertySetter](Datum& thisDatum, const Datum& propertyDatum) -> AZ::Outcome<void, AZStd::string>
                     {
@@ -128,7 +130,7 @@ namespace ScriptCanvas
                         return AZ::Success();
                     };
 
-                    return { setterWrapper, Data::FromAZType<PropertyType>(), propertyName };
+                    return { setterWrapper, Data::FromAZType<PropertyType>(), propertyName, displayName };
                 }
             };
         }
@@ -178,20 +180,20 @@ namespace ScriptCanvas
             static GetterContainer GetGetterWrappers(const Data::Type&)
             {
                 GetterContainer getterFunctions;
-                getterFunctions.emplace("x", WrapGetter<decltype(&Data::QuaternionType::GetX)>::Callback("x", &Data::QuaternionType::GetX));
-                getterFunctions.emplace("y", WrapGetter<decltype(&Data::QuaternionType::GetY)>::Callback("y", &Data::QuaternionType::GetY));
-                getterFunctions.emplace("z", WrapGetter<decltype(&Data::QuaternionType::GetZ)>::Callback("z", &Data::QuaternionType::GetZ));
-                getterFunctions.emplace("w", WrapGetter<decltype(&Data::QuaternionType::GetW)>::Callback("w", &Data::QuaternionType::GetW));
+                getterFunctions.emplace("x", WrapGetter<decltype(&Data::QuaternionType::GetX)>::Callback("x", &Data::QuaternionType::GetX, "X"));
+                getterFunctions.emplace("y", WrapGetter<decltype(&Data::QuaternionType::GetY)>::Callback("y", &Data::QuaternionType::GetY, "Y"));
+                getterFunctions.emplace("z", WrapGetter<decltype(&Data::QuaternionType::GetZ)>::Callback("z", &Data::QuaternionType::GetZ, "Z"));
+                getterFunctions.emplace("w", WrapGetter<decltype(&Data::QuaternionType::GetW)>::Callback("w", &Data::QuaternionType::GetW, "W"));
                 return getterFunctions;
             }
 
             static SetterContainer GetSetterWrappers(const Data::Type&)
             {
                 SetterContainer setterFunctions;
-                setterFunctions.emplace("x", WrapSetter<decltype(&Data::QuaternionType::SetX)>::Callback("x", &Data::QuaternionType::SetX));
-                setterFunctions.emplace("y", WrapSetter<decltype(&Data::QuaternionType::SetY)>::Callback("y", &Data::QuaternionType::SetY));
-                setterFunctions.emplace("z", WrapSetter<decltype(&Data::QuaternionType::SetZ)>::Callback("z", &Data::QuaternionType::SetZ));
-                setterFunctions.emplace("w", WrapSetter<decltype(&Data::QuaternionType::SetW)>::Callback("w", &Data::QuaternionType::SetW));
+                setterFunctions.emplace("x", WrapSetter<decltype(&Data::QuaternionType::SetX)>::Callback("x", &Data::QuaternionType::SetX, "X"));
+                setterFunctions.emplace("y", WrapSetter<decltype(&Data::QuaternionType::SetY)>::Callback("y", &Data::QuaternionType::SetY, "Y"));
+                setterFunctions.emplace("z", WrapSetter<decltype(&Data::QuaternionType::SetZ)>::Callback("z", &Data::QuaternionType::SetZ, "Z"));
+                setterFunctions.emplace("w", WrapSetter<decltype(&Data::QuaternionType::SetW)>::Callback("w", &Data::QuaternionType::SetW, "W"));
                 return setterFunctions;
             }
         };
@@ -202,16 +204,16 @@ namespace ScriptCanvas
             static GetterContainer GetGetterWrappers(const Data::Type&)
             {
                 GetterContainer getterFunctions;
-                getterFunctions.emplace("x", WrapGetter<decltype(&Data::Vector2Type::GetX)>::Callback("x", &Data::Vector2Type::GetX));
-                getterFunctions.emplace("y", WrapGetter<decltype(&Data::Vector2Type::GetY)>::Callback("y", &Data::Vector2Type::GetY));
+                getterFunctions.emplace("x", WrapGetter<decltype(&Data::Vector2Type::GetX)>::Callback("x", &Data::Vector2Type::GetX, "X"));
+                getterFunctions.emplace("y", WrapGetter<decltype(&Data::Vector2Type::GetY)>::Callback("y", &Data::Vector2Type::GetY, "Y"));
                 return getterFunctions;
             }
 
             static SetterContainer GetSetterWrappers(const Data::Type&)
             {
                 SetterContainer setterFunctions;
-                setterFunctions.emplace("x", WrapSetter<decltype(&Data::Vector2Type::SetX)>::Callback("x", &Data::Vector2Type::SetX));
-                setterFunctions.emplace("y", WrapSetter<decltype(&Data::Vector2Type::SetY)>::Callback("y", &Data::Vector2Type::SetY));
+                setterFunctions.emplace("x", WrapSetter<decltype(&Data::Vector2Type::SetX)>::Callback("x", &Data::Vector2Type::SetX, "X"));
+                setterFunctions.emplace("y", WrapSetter<decltype(&Data::Vector2Type::SetY)>::Callback("y", &Data::Vector2Type::SetY, "Y"));
                 return setterFunctions;
             }
         };
@@ -222,18 +224,18 @@ namespace ScriptCanvas
             static GetterContainer GetGetterWrappers(const Data::Type&)
             {
                 GetterContainer getterFunctions;
-                getterFunctions.emplace("x", WrapGetter<decltype(&Data::Vector3Type::GetX)>::Callback("x", &Data::Vector3Type::GetX));
-                getterFunctions.emplace("y", WrapGetter<decltype(&Data::Vector3Type::GetY)>::Callback("y", &Data::Vector3Type::GetY));
-                getterFunctions.emplace("z", WrapGetter<decltype(&Data::Vector3Type::GetZ)>::Callback("z", &Data::Vector3Type::GetZ));
+                getterFunctions.emplace("x", WrapGetter<decltype(&Data::Vector3Type::GetX)>::Callback("x", &Data::Vector3Type::GetX, "X"));
+                getterFunctions.emplace("y", WrapGetter<decltype(&Data::Vector3Type::GetY)>::Callback("y", &Data::Vector3Type::GetY, "Y"));
+                getterFunctions.emplace("z", WrapGetter<decltype(&Data::Vector3Type::GetZ)>::Callback("z", &Data::Vector3Type::GetZ, "Z"));
                 return getterFunctions;
             }
 
             static SetterContainer GetSetterWrappers(const Data::Type&)
             {
                 SetterContainer setterFunctions;
-                setterFunctions.emplace("x", WrapSetter<decltype(&Data::Vector3Type::SetX)>::Callback("x", &Data::Vector3Type::SetX));
-                setterFunctions.emplace("y", WrapSetter<decltype(&Data::Vector3Type::SetY)>::Callback("y", &Data::Vector3Type::SetY));
-                setterFunctions.emplace("z", WrapSetter<decltype(&Data::Vector3Type::SetZ)>::Callback("z", &Data::Vector3Type::SetZ));
+                setterFunctions.emplace("x", WrapSetter<decltype(&Data::Vector3Type::SetX)>::Callback("x", &Data::Vector3Type::SetX, "X"));
+                setterFunctions.emplace("y", WrapSetter<decltype(&Data::Vector3Type::SetY)>::Callback("y", &Data::Vector3Type::SetY, "Y"));
+                setterFunctions.emplace("z", WrapSetter<decltype(&Data::Vector3Type::SetZ)>::Callback("z", &Data::Vector3Type::SetZ, "Z"));
                 return setterFunctions;
             }
         };
@@ -244,20 +246,20 @@ namespace ScriptCanvas
             static GetterContainer GetGetterWrappers(const Data::Type&)
             {
                 GetterContainer getterFunctions;
-                getterFunctions.emplace("x", WrapGetter<decltype(&Data::Vector4Type::GetX)>::Callback("x", &Data::Vector4Type::GetX));
-                getterFunctions.emplace("y", WrapGetter<decltype(&Data::Vector4Type::GetY)>::Callback("y", &Data::Vector4Type::GetY));
-                getterFunctions.emplace("z", WrapGetter<decltype(&Data::Vector4Type::GetZ)>::Callback("z", &Data::Vector4Type::GetZ));
-                getterFunctions.emplace("w", WrapGetter<decltype(&Data::Vector4Type::GetW)>::Callback("w", &Data::Vector4Type::GetW));
+                getterFunctions.emplace("x", WrapGetter<decltype(&Data::Vector4Type::GetX)>::Callback("x", &Data::Vector4Type::GetX, "X"));
+                getterFunctions.emplace("y", WrapGetter<decltype(&Data::Vector4Type::GetY)>::Callback("y", &Data::Vector4Type::GetY, "Y"));
+                getterFunctions.emplace("z", WrapGetter<decltype(&Data::Vector4Type::GetZ)>::Callback("z", &Data::Vector4Type::GetZ, "Z"));
+                getterFunctions.emplace("w", WrapGetter<decltype(&Data::Vector4Type::GetW)>::Callback("w", &Data::Vector4Type::GetW, "W"));
                 return getterFunctions;
             }
 
             static SetterContainer GetSetterWrappers(const Data::Type&)
             {
                 SetterContainer setterFunctions;
-                setterFunctions.emplace("x", WrapSetter<decltype(&Data::Vector4Type::SetX)>::Callback("x", &Data::Vector4Type::SetX));
-                setterFunctions.emplace("y", WrapSetter<decltype(&Data::Vector4Type::SetY)>::Callback("y", &Data::Vector4Type::SetY));
-                setterFunctions.emplace("z", WrapSetter<decltype(&Data::Vector4Type::SetZ)>::Callback("z", &Data::Vector4Type::SetZ));
-                setterFunctions.emplace("w", WrapSetter<decltype(&Data::Vector4Type::SetW)>::Callback("w", &Data::Vector4Type::SetW));
+                setterFunctions.emplace("x", WrapSetter<decltype(&Data::Vector4Type::SetX)>::Callback("x", &Data::Vector4Type::SetX, "X"));
+                setterFunctions.emplace("y", WrapSetter<decltype(&Data::Vector4Type::SetY)>::Callback("y", &Data::Vector4Type::SetY, "Y"));
+                setterFunctions.emplace("z", WrapSetter<decltype(&Data::Vector4Type::SetZ)>::Callback("z", &Data::Vector4Type::SetZ, "Z"));
+                setterFunctions.emplace("w", WrapSetter<decltype(&Data::Vector4Type::SetW)>::Callback("w", &Data::Vector4Type::SetW, "W"));
                 return setterFunctions;
             }
         };
@@ -268,20 +270,20 @@ namespace ScriptCanvas
             static GetterContainer GetGetterWrappers(const Data::Type&)
             {
                 GetterContainer getterFunctions;
-                getterFunctions.emplace("r", WrapGetter<decltype(&Data::ColorType::GetR)>::Callback("r", &Data::ColorType::GetR));
-                getterFunctions.emplace("g", WrapGetter<decltype(&Data::ColorType::GetG)>::Callback("g", &Data::ColorType::GetG));
-                getterFunctions.emplace("b", WrapGetter<decltype(&Data::ColorType::GetB)>::Callback("b", &Data::ColorType::GetB));
-                getterFunctions.emplace("a", WrapGetter<decltype(&Data::ColorType::GetA)>::Callback("a", &Data::ColorType::GetA));
+                getterFunctions.emplace("r", WrapGetter<decltype(&Data::ColorType::GetR)>::Callback("r", &Data::ColorType::GetR, "Red"));
+                getterFunctions.emplace("g", WrapGetter<decltype(&Data::ColorType::GetG)>::Callback("g", &Data::ColorType::GetG, "Green"));
+                getterFunctions.emplace("b", WrapGetter<decltype(&Data::ColorType::GetB)>::Callback("b", &Data::ColorType::GetB, "Blue"));
+                getterFunctions.emplace("a", WrapGetter<decltype(&Data::ColorType::GetA)>::Callback("a", &Data::ColorType::GetA, "Alpha"));
                 return getterFunctions;
             }
 
             static SetterContainer GetSetterWrappers(const Data::Type&)
             {
                 SetterContainer setterFunctions;
-                setterFunctions.emplace("r", WrapSetter<decltype(&Data::ColorType::SetR)>::Callback("r", &Data::ColorType::SetR));
-                setterFunctions.emplace("g", WrapSetter<decltype(&Data::ColorType::SetG)>::Callback("g", &Data::ColorType::SetG));
-                setterFunctions.emplace("b", WrapSetter<decltype(&Data::ColorType::SetB)>::Callback("b", &Data::ColorType::SetB));
-                setterFunctions.emplace("a", WrapSetter<decltype(&Data::ColorType::SetA)>::Callback("a", &Data::ColorType::SetA));
+                setterFunctions.emplace("r", WrapSetter<decltype(&Data::ColorType::SetR)>::Callback("r", &Data::ColorType::SetR, "Red"));
+                setterFunctions.emplace("g", WrapSetter<decltype(&Data::ColorType::SetG)>::Callback("g", &Data::ColorType::SetG, "Green"));
+                setterFunctions.emplace("b", WrapSetter<decltype(&Data::ColorType::SetB)>::Callback("b", &Data::ColorType::SetB, "Blue"));
+                setterFunctions.emplace("a", WrapSetter<decltype(&Data::ColorType::SetA)>::Callback("a", &Data::ColorType::SetA, "Alpha"));
                 return setterFunctions;
             }
         };
@@ -292,16 +294,16 @@ namespace ScriptCanvas
             static GetterContainer GetGetterWrappers(const Data::Type&)
             {
                 GetterContainer getterFunctions;
-                getterFunctions.emplace("normal", WrapGetter<decltype(&Data::PlaneType::GetNormal)>::Callback("normal", &Data::PlaneType::GetNormal));
-                getterFunctions.emplace("distance", WrapGetter<decltype(&Data::PlaneType::GetDistance)>::Callback("distance", &Data::PlaneType::GetDistance));
+                getterFunctions.emplace("mormal", WrapGetter<decltype(&Data::PlaneType::GetNormal)>::Callback("normal", &Data::PlaneType::GetNormal, "Normal"));
+                getterFunctions.emplace("distance", WrapGetter<decltype(&Data::PlaneType::GetDistance)>::Callback("distance", &Data::PlaneType::GetDistance, "Distance"));
                 return getterFunctions;
             }
 
             static SetterContainer GetSetterWrappers(const Data::Type&)
             {
                 SetterContainer setterFunctions;
-                setterFunctions.emplace("normal", WrapSetter<decltype(&Data::PlaneType::SetNormal)>::Callback("normal", &Data::PlaneType::SetNormal));
-                setterFunctions.emplace("distance", WrapSetter<decltype(&Data::PlaneType::SetDistance)>::Callback("distance", &Data::PlaneType::SetDistance));
+                setterFunctions.emplace("normal", WrapSetter<decltype(&Data::PlaneType::SetNormal)>::Callback("normal", &Data::PlaneType::SetNormal, "Normal"));
+                setterFunctions.emplace("distance", WrapSetter<decltype(&Data::PlaneType::SetDistance)>::Callback("distance", &Data::PlaneType::SetDistance, "Distance"));
                 return setterFunctions;
             }
         };
@@ -312,17 +314,17 @@ namespace ScriptCanvas
             static GetterContainer GetGetterWrappers(const Data::Type&)
             {
                 GetterContainer getterFunctions;
-                getterFunctions.emplace("basisX", WrapGetter<decltype(&Data::TransformType::GetBasisX)>::Callback("basisX", &Data::TransformType::GetBasisX));
-                getterFunctions.emplace("basisY", WrapGetter<decltype(&Data::TransformType::GetBasisY)>::Callback("basisY", &Data::TransformType::GetBasisY));
-                getterFunctions.emplace("basisZ", WrapGetter<decltype(&Data::TransformType::GetBasisZ)>::Callback("basisZ", &Data::TransformType::GetBasisZ));
-                getterFunctions.emplace("translation", WrapGetter<decltype(&Data::TransformType::GetTranslation)>::Callback("translation", &Data::TransformType::GetTranslation));
+                getterFunctions.emplace("basisX", WrapGetter<decltype(&Data::TransformType::GetBasisX)>::Callback("basisX", &Data::TransformType::GetBasisX, "X Axis"));
+                getterFunctions.emplace("basisY", WrapGetter<decltype(&Data::TransformType::GetBasisY)>::Callback("basisY", &Data::TransformType::GetBasisY, "Y Axis"));
+                getterFunctions.emplace("basisZ", WrapGetter<decltype(&Data::TransformType::GetBasisZ)>::Callback("basisZ", &Data::TransformType::GetBasisZ, "Z Axis"));
+                getterFunctions.emplace("translation", WrapGetter<decltype(&Data::TransformType::GetTranslation)>::Callback("translation", &Data::TransformType::GetTranslation, "Translation"));
                 return getterFunctions;
             }
 
             static SetterContainer GetSetterWrappers(const Data::Type&)
             {
                 SetterContainer setterFunctions;
-                setterFunctions.emplace("translation", WrapSetter<void(AZ::Transform::*)(const AZ::Vector3&)>::Callback("translation", &Data::TransformType::SetTranslation));
+                setterFunctions.emplace("translation", WrapSetter<void(AZ::Transform::*)(const AZ::Vector3&)>::Callback("translation", &Data::TransformType::SetTranslation, "Translation"));
                 return setterFunctions;
             }
         };
@@ -333,16 +335,16 @@ namespace ScriptCanvas
             static GetterContainer GetGetterWrappers(const Data::Type&)
             {
                 GetterContainer getterFunctions;
-                getterFunctions.emplace("min", WrapGetter<decltype(&Data::AABBType::GetMin)>::Callback("min", &Data::AABBType::GetMin));
-                getterFunctions.emplace("max", WrapGetter<decltype(&Data::AABBType::GetMax)>::Callback("max", &Data::AABBType::GetMax));
+                getterFunctions.emplace("min", WrapGetter<decltype(&Data::AABBType::GetMin)>::Callback("min", &Data::AABBType::GetMin, "Minimum"));
+                getterFunctions.emplace("max", WrapGetter<decltype(&Data::AABBType::GetMax)>::Callback("max", &Data::AABBType::GetMax, "Maximum"));
                 return getterFunctions;
             }
 
             static SetterContainer GetSetterWrappers(const Data::Type&)
             {
                 SetterContainer setterFunctions;
-                setterFunctions.emplace("min", WrapSetter<decltype(&Data::AABBType::SetMin)>::Callback("min", &Data::AABBType::SetMin));
-                setterFunctions.emplace("max", WrapSetter<decltype(&Data::AABBType::SetMax)>::Callback("max", &Data::AABBType::SetMax));
+                setterFunctions.emplace("min", WrapSetter<decltype(&Data::AABBType::SetMin)>::Callback("min", &Data::AABBType::SetMin, "Minimum"));
+                setterFunctions.emplace("max", WrapSetter<decltype(&Data::AABBType::SetMax)>::Callback("max", &Data::AABBType::SetMax, "Maximum"));
                 return setterFunctions;
             }
         };
@@ -353,23 +355,23 @@ namespace ScriptCanvas
             static GetterContainer GetGetterWrappers(const Data::Type&)
             {
                 GetterContainer getterFunctions;
-                getterFunctions.emplace("axisX", WrapGetter<decltype(&Data::OBBType::GetAxisX)>::Callback("axisX", &Data::OBBType::GetAxisX));
-                getterFunctions.emplace("axisY", WrapGetter<decltype(&Data::OBBType::GetAxisY)>::Callback("axisY", &Data::OBBType::GetAxisY));
-                getterFunctions.emplace("axisZ", WrapGetter<decltype(&Data::OBBType::GetAxisZ)>::Callback("axisZ", &Data::OBBType::GetAxisZ));
-                getterFunctions.emplace("halfLengthX", WrapGetter<decltype(&Data::OBBType::GetHalfLengthX)>::Callback("halfLengthX", &Data::OBBType::GetHalfLengthX));
-                getterFunctions.emplace("halfLengthY", WrapGetter<decltype(&Data::OBBType::GetHalfLengthY)>::Callback("halfLengthY", &Data::OBBType::GetHalfLengthY));
-                getterFunctions.emplace("halfLengthZ", WrapGetter<decltype(&Data::OBBType::GetHalfLengthZ)>::Callback("halfLengthZ", &Data::OBBType::GetHalfLengthZ));
-                getterFunctions.emplace("position", WrapGetter<decltype(&Data::OBBType::GetPosition)>::Callback("position", &Data::OBBType::GetPosition));
+                getterFunctions.emplace("axisX", WrapGetter<decltype(&Data::OBBType::GetAxisX)>::Callback("axisX", &Data::OBBType::GetAxisX, "X Axis"));
+                getterFunctions.emplace("axisY", WrapGetter<decltype(&Data::OBBType::GetAxisY)>::Callback("axisY", &Data::OBBType::GetAxisY, "Y Axis"));
+                getterFunctions.emplace("Z Axis", WrapGetter<decltype(&Data::OBBType::GetAxisZ)>::Callback("axisZ", &Data::OBBType::GetAxisZ, "Z Axis"));
+                getterFunctions.emplace("halfLengthX", WrapGetter<decltype(&Data::OBBType::GetHalfLengthX)>::Callback("halfLengthX", &Data::OBBType::GetHalfLengthX, "Half Length X"));
+                getterFunctions.emplace("halfLengthY", WrapGetter<decltype(&Data::OBBType::GetHalfLengthY)>::Callback("halfLengthY", &Data::OBBType::GetHalfLengthY, "Half Length Y"));
+                getterFunctions.emplace("halfLengthZ", WrapGetter<decltype(&Data::OBBType::GetHalfLengthZ)>::Callback("halfLengthZ", &Data::OBBType::GetHalfLengthZ, "Half Length Z"));
+                getterFunctions.emplace("position", WrapGetter<decltype(&Data::OBBType::GetPosition)>::Callback("position", &Data::OBBType::GetPosition, "Position"));
                 return getterFunctions;
             }
 
             static SetterContainer GetSetterWrappers(const Data::Type&)
             {
                 SetterContainer setterFunctions;
-                setterFunctions.emplace("halfLengthX", WrapSetter<decltype(&Data::OBBType::SetHalfLengthX)>::Callback("halfLengthX", &Data::OBBType::SetHalfLengthX));
-                setterFunctions.emplace("halfLengthY", WrapSetter<decltype(&Data::OBBType::SetHalfLengthY)>::Callback("halfLengthY", &Data::OBBType::SetHalfLengthY));
-                setterFunctions.emplace("halfLengthZ", WrapSetter<decltype(&Data::OBBType::SetHalfLengthZ)>::Callback("halfLengthZ", &Data::OBBType::SetHalfLengthZ));
-                setterFunctions.emplace("position", WrapSetter<decltype(&Data::OBBType::SetPosition)>::Callback("position", &Data::OBBType::SetPosition));
+                setterFunctions.emplace("halfLengthX", WrapSetter<decltype(&Data::OBBType::SetHalfLengthX)>::Callback("halfLengthX", &Data::OBBType::SetHalfLengthX, "Half Length X"));
+                setterFunctions.emplace("halfLengthY", WrapSetter<decltype(&Data::OBBType::SetHalfLengthY)>::Callback("halfLengthY", &Data::OBBType::SetHalfLengthY, "Half Length Y"));
+                setterFunctions.emplace("halfLengthZ", WrapSetter<decltype(&Data::OBBType::SetHalfLengthZ)>::Callback("halfLengthZ", &Data::OBBType::SetHalfLengthZ, "Half Length Z"));
+                setterFunctions.emplace("position", WrapSetter<decltype(&Data::OBBType::SetPosition)>::Callback("position", &Data::OBBType::SetPosition, "Position"));
                 return setterFunctions;
             }
         };
@@ -380,18 +382,18 @@ namespace ScriptCanvas
             static GetterContainer GetGetterWrappers(const Data::Type&)
             {
                 GetterContainer getterFunctions;
-                getterFunctions.emplace("basisX", WrapGetter<decltype(&Data::Matrix3x3Type::GetBasisX)>::Callback("basisX", &Data::Matrix3x3Type::GetBasisX));
-                getterFunctions.emplace("basisY", WrapGetter<decltype(&Data::Matrix3x3Type::GetBasisY)>::Callback("basisY", &Data::Matrix3x3Type::GetBasisY));
-                getterFunctions.emplace("basisZ", WrapGetter<decltype(&Data::Matrix3x3Type::GetBasisZ)>::Callback("basisZ", &Data::Matrix3x3Type::GetBasisZ));
+                getterFunctions.emplace("basisX", WrapGetter<decltype(&Data::Matrix3x3Type::GetBasisX)>::Callback("basisX", &Data::Matrix3x3Type::GetBasisX, "Position"));
+                getterFunctions.emplace("basisY", WrapGetter<decltype(&Data::Matrix3x3Type::GetBasisY)>::Callback("basisY", &Data::Matrix3x3Type::GetBasisY, "Position"));
+                getterFunctions.emplace("basisZ", WrapGetter<decltype(&Data::Matrix3x3Type::GetBasisZ)>::Callback("basisZ", &Data::Matrix3x3Type::GetBasisZ, "Position"));
                 return getterFunctions;
             }
 
             static SetterContainer GetSetterWrappers(const Data::Type&)
             {
                 SetterContainer setterFunctions;
-                setterFunctions.emplace("basisX", WrapSetter<void(AZ::Matrix3x3::*)(const AZ::Vector3&)>::Callback("basisX", &Data::Matrix3x3Type::SetBasisX));
-                setterFunctions.emplace("basisY", WrapSetter<void(AZ::Matrix3x3::*)(const AZ::Vector3&)>::Callback("basisY", &Data::Matrix3x3Type::SetBasisY));
-                setterFunctions.emplace("basisZ", WrapSetter<void(AZ::Matrix3x3::*)(const AZ::Vector3&)>::Callback("basisZ", &Data::Matrix3x3Type::SetBasisZ));
+                setterFunctions.emplace("basisX", WrapSetter<void(AZ::Matrix3x3::*)(const AZ::Vector3&)>::Callback("basisX", &Data::Matrix3x3Type::SetBasisX, "X Axis"));
+                setterFunctions.emplace("basisY", WrapSetter<void(AZ::Matrix3x3::*)(const AZ::Vector3&)>::Callback("basisY", &Data::Matrix3x3Type::SetBasisY, "Y Axis"));
+                setterFunctions.emplace("basisZ", WrapSetter<void(AZ::Matrix3x3::*)(const AZ::Vector3&)>::Callback("basisZ", &Data::Matrix3x3Type::SetBasisZ, "Z Axis"));
                 return setterFunctions;
             }
         };
@@ -402,20 +404,20 @@ namespace ScriptCanvas
             static GetterContainer GetGetterWrappers(const Data::Type&)
             {
                 GetterContainer getterFunctions;
-                getterFunctions.emplace("basisX", WrapGetter<decltype(&Data::Matrix4x4Type::GetBasisX)>::Callback("basisX", &Data::Matrix4x4Type::GetBasisX));
-                getterFunctions.emplace("basisY", WrapGetter<decltype(&Data::Matrix4x4Type::GetBasisY)>::Callback("basisY", &Data::Matrix4x4Type::GetBasisY));
-                getterFunctions.emplace("basisZ", WrapGetter<decltype(&Data::Matrix4x4Type::GetBasisZ)>::Callback("basisZ", &Data::Matrix4x4Type::GetBasisZ));
-                getterFunctions.emplace("translation", WrapGetter<decltype(&Data::Matrix4x4Type::GetTranslation)>::Callback("translation", &Data::Matrix4x4Type::GetTranslation));
+                getterFunctions.emplace("basisX", WrapGetter<decltype(&Data::Matrix4x4Type::GetBasisX)>::Callback("basisX", &Data::Matrix4x4Type::GetBasisX, "X Axis"));
+                getterFunctions.emplace("basisY", WrapGetter<decltype(&Data::Matrix4x4Type::GetBasisY)>::Callback("basisY", &Data::Matrix4x4Type::GetBasisY, "Y Axis"));
+                getterFunctions.emplace("basisZ", WrapGetter<decltype(&Data::Matrix4x4Type::GetBasisZ)>::Callback("basisZ", &Data::Matrix4x4Type::GetBasisZ, "Z Axis"));
+                getterFunctions.emplace("Translation", WrapGetter<decltype(&Data::Matrix4x4Type::GetTranslation)>::Callback("translation", &Data::Matrix4x4Type::GetTranslation, "Translation"));
                 return getterFunctions;
             }
 
             static SetterContainer GetSetterWrappers(const Data::Type&)
             {
                 SetterContainer setterFunctions;
-                setterFunctions.emplace("basisX", WrapSetter<void(AZ::Matrix4x4::*)(const AZ::Vector4&)>::Callback("basisX", &Data::Matrix4x4Type::SetBasisX));
-                setterFunctions.emplace("basisY", WrapSetter<void(AZ::Matrix4x4::*)(const AZ::Vector4&)>::Callback("basisY", &Data::Matrix4x4Type::SetBasisY));
-                setterFunctions.emplace("basisZ", WrapSetter<void(AZ::Matrix4x4::*)(const AZ::Vector4&)>::Callback("basisZ", &Data::Matrix4x4Type::SetBasisZ));
-                setterFunctions.emplace("translation", WrapSetter<void(AZ::Matrix4x4::*)(const AZ::Vector3&)>::Callback("translation", &Data::Matrix4x4Type::SetTranslation));
+                setterFunctions.emplace("basisX", WrapSetter<void(AZ::Matrix4x4::*)(const AZ::Vector4&)>::Callback("basisX", &Data::Matrix4x4Type::SetBasisX, "X Axis"));
+                setterFunctions.emplace("basisY", WrapSetter<void(AZ::Matrix4x4::*)(const AZ::Vector4&)>::Callback("basisY", &Data::Matrix4x4Type::SetBasisY, "Y Axis"));
+                setterFunctions.emplace("basisZ", WrapSetter<void(AZ::Matrix4x4::*)(const AZ::Vector4&)>::Callback("basisZ", &Data::Matrix4x4Type::SetBasisZ, "Z Axis"));
+                setterFunctions.emplace("translation", WrapSetter<void(AZ::Matrix4x4::*)(const AZ::Vector3&)>::Callback("translation", &Data::Matrix4x4Type::SetTranslation, "Translation"));
                 return setterFunctions;
             }
         };

@@ -25,7 +25,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The id used to identify the primary virtual keyboard input device
-        static const InputDeviceId Id;
+        static constexpr inline InputDeviceId Id{"virtual_keyboard"};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Check whether an input device id identifies a virtual keyboard (regardless of index)

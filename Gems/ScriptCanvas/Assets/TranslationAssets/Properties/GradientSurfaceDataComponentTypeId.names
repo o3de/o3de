@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "GradientSurfaceDataComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "GradientSurfaceDataComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -309,11 +309,6 @@ namespace MockGraphCanvasServices
         m_configuration.SetTooltip(tooltip);
     }
 
-    void MockNodeComponent::SetTranslationKeyedTooltip(const GraphCanvas::TranslationKeyedString& tooltip)
-    {
-        m_configuration.SetTooltip(tooltip.GetDisplayString());
-    }
-
     const AZStd::string MockNodeComponent::GetTooltip() const
     {
         return m_configuration.GetTooltip();

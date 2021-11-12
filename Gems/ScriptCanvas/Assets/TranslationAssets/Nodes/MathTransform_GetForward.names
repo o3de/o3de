@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "{1D27BC5A-44D6-526E-B1EC-4B080B750ED1}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "GetForward",
+                "category": "Math/Transform",
+                "tooltip": "returns the forward direction vector from the specified transform scaled by a given value (O3DE uses Z up, right handed)",
+                "subtitle": "Transform"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Transform: Source",
+                    "details": {
+                        "name": "Transform: Source"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Scale",
+                    "details": {
+                        "name": "Number: Scale"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Vector3",
+                    "details": {
+                        "name": "Result: Vector3"
+                    }
+                }
+            ]
+        }
+    ]
+}

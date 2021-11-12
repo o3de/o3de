@@ -21,9 +21,17 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_DecalAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_DecalAdded as test_module
 
+    @pytest.mark.test_case_id("C36525658")
+    class AtomEditorComponents_DeferredFogAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_DeferredFogAdded as test_module
+
     @pytest.mark.test_case_id("C32078119")
     class AtomEditorComponents_DepthOfFieldAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_DepthOfFieldAdded as test_module
+
+    @pytest.mark.test_case_id("C36525659")
+    class AtomEditorComponents_DiffuseProbeGridAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_DiffuseProbeGridAdded as test_module
 
     @pytest.mark.test_case_id("C32078120")
     class AtomEditorComponents_DirectionalLightAdded(EditorSharedTest):
@@ -32,6 +40,10 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C36525660")
     class AtomEditorComponents_DisplayMapperAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_DisplayMapperAdded as test_module
+
+    @pytest.mark.test_case_id("C36525661")
+    class AtomEditorComponents_EntityReferenceAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_EntityReferenceAdded as test_module
 
     @pytest.mark.test_case_id("C32078121")
     class AtomEditorComponents_ExposureControlAdded(EditorSharedTest):
@@ -89,6 +101,10 @@ class TestAutomation(EditorTestSuite):
     @pytest.mark.test_case_id("C32078128")
     class AtomEditorComponents_ReflectionProbeAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_ReflectionProbeAdded as test_module
+
+    @pytest.mark.test_case_id("C36525666")
+    class AtomEditorComponents_SSAOAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_SSAOAdded as test_module
 
     class ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges(EditorSharedTest):
         from Atom.tests import hydra_ShaderAssetBuilder_RecompilesShaderAsChainOfDependenciesChanges as test_module

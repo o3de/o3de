@@ -1966,7 +1966,7 @@ namespace ScriptCanvasEditor
             }
 
             OnSaveDataDirtied(graphCanvasNodeId);
-            Nodes::CopySlotTranslationKeyedNamesToDatums(graphCanvasNodeId);
+            Nodes::UpdateSlotDatumLabels(graphCanvasNodeId);
         }
 
         m_wrappedNodeGroupings.clear();
@@ -1984,7 +1984,7 @@ namespace ScriptCanvasEditor
 
         for (AZ::EntityId graphCanvasNodeId : graphCanvasNodeIds)
         {
-            Nodes::CopySlotTranslationKeyedNamesToDatums(graphCanvasNodeId);
+            Nodes::UpdateSlotDatumLabels(graphCanvasNodeId);
         }
 
         GraphCanvas::ViewId viewId;

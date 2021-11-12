@@ -1,0 +1,53 @@
+{
+    "entries": [
+        {
+            "key": "{D58A9E0D-5C09-56AB-8D8C-C9C501BA62A3}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "IsClose",
+                "category": "Math/Transform",
+                "tooltip": "returns true if every row of A is within Tolerance of corresponding row in B, else false",
+                "subtitle": "Transform"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Transform: A",
+                    "details": {
+                        "name": "Transform: A"
+                    }
+                },
+                {
+                    "key": "DataInput_Transform: B",
+                    "details": {
+                        "name": "Transform: B"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Tolerance",
+                    "details": {
+                        "name": "Number: Tolerance"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Boolean",
+                    "details": {
+                        "name": "Result: Boolean"
+                    }
+                }
+            ]
+        }
+    ]
+}

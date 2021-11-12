@@ -1,0 +1,24 @@
+{
+    "entries": [
+        {
+            "key": "{797C800D-8C96-4675-B5B5-2A321AC09433}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "ExpressionNodeBase",
+                "category": "Internal",
+                "tooltip": "Base class for any node that wants to evaluate user given expressions.",
+                "subtitle": "Internal"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -54,6 +54,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         {
             processor->Process(context);
         }
+        context.ResolveLinks();
     }
     size_t PrefabConversionPipeline::CalculateProcessorFingerprint(AZ::SerializeContext* context)
     {

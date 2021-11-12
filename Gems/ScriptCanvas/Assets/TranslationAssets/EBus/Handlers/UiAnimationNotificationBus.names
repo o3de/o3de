@@ -1,0 +1,64 @@
+{
+    "entries": [
+        {
+            "key": "UiAnimationNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Animation",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "OnUiAnimationEvent",
+                    "details": {
+                        "name": "On Animation Event",
+                        "tooltip": "Executes when an animation event occurs"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Event Type",
+                                "tooltip": "The type of animation event that occurred (0=Started, 1=Stopped, 2=Aborted, 3=Updated)"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Sequence Name",
+                                "tooltip": "The name of the sequence that triggered the event"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnUiTrackEvent",
+                    "details": {
+                        "name": "OnUiTrackEvent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

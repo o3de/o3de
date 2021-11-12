@@ -1,0 +1,93 @@
+{
+    "entries": [
+        {
+            "key": "TransformNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Transform",
+                "category": "Entity"
+            },
+            "methods": [
+                {
+                    "key": "OnTransformChanged",
+                    "details": {
+                        "name": "On Transform Changed",
+                        "tooltip": "Signals that the local or world transform of the entity changed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Local Transform",
+                                "tooltip": "A reference to the new local transform of the entity"
+                            }
+                        },
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "World Transform",
+                                "tooltip": "A reference to the new world transform of the entity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnParentChanged",
+                    "details": {
+                        "name": "On Parent Changed",
+                        "tooltip": "Signals that the parent of the entity changed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Old Parent",
+                                "tooltip": "The EntityID of the old parent. The EntityID is invalid if there was no old parent"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "New Parent",
+                                "tooltip": "The EntityID of the new parent. The EntityID is invalid if there is no new parent"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnChildAdded",
+                    "details": {
+                        "name": "On Child Added",
+                        "tooltip": "Signals that a child was added to the entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Child",
+                                "tooltip": "The EntityID of the added child"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnChildRemoved",
+                    "details": {
+                        "name": "On Child Removed",
+                        "tooltip": "Signals that a child was removed from the entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Child",
+                                "tooltip": "The EntityID of the removed child"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

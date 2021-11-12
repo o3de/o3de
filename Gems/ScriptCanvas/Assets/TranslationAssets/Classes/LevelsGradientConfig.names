@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "LevelsGradientConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "LevelsGradientConfig"
+            }
+        }
+    ]
+}

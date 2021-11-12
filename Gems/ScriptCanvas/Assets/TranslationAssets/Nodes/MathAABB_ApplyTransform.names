@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "{B1930C91-3527-593E-A382-DACC9E9C2245}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "ApplyTransform",
+                "category": "Math/AABB",
+                "tooltip": "returns the AABB translated and possibly scaled by the Transform",
+                "subtitle": "AABB"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_AABB: Source",
+                    "details": {
+                        "name": "AABB: Source"
+                    }
+                },
+                {
+                    "key": "DataInput_Transform: Transform",
+                    "details": {
+                        "name": "Transform: Transform"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: AABB",
+                    "details": {
+                        "name": "Result: AABB"
+                    }
+                }
+            ]
+        }
+    ]
+}

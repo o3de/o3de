@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{1A6BADCE-77F7-59F4-9F27-6C08B9D13374}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "GetAxisZ",
+                "category": "Math/OBB",
+                "tooltip": "returns the Z-Axis of Source",
+                "subtitle": "OBB"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_OBB: Source",
+                    "details": {
+                        "name": "OBB: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Vector3",
+                    "details": {
+                        "name": "Result: Vector3"
+                    }
+                }
+            ]
+        }
+    ]
+}

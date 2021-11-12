@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "JsonMergePatch",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "JsonMergePatch::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiEmitShape_Quad",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiEmitShape_Quad::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

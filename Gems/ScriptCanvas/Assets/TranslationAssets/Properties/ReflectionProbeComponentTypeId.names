@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ReflectionProbeComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ReflectionProbeComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

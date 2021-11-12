@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "FrameCaptureResult_None",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "FrameCaptureResult_None::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

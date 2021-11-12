@@ -82,8 +82,8 @@ namespace UnitTest
             }
 
             auto transform = aznew AzToolsFramework::Components::TransformComponent;
-            transform->SetParent(parentId);
             entity->AddComponent(transform);
+            transform->SetParent(parentId);
 
             entity->Activate();
 

@@ -560,8 +560,11 @@ namespace ScriptCanvasEditor
 
                         if (slotType == GraphCanvas::SlotTypes::DataSlot)
                         {
-                            GraphCanvas::SlotRequestBus::Event(testSlotId, &GraphCanvas::SlotRequests::SetTranslationKeyedName, TranslationHelper::GetEBusHandlerBusIdNameKey());
-                            GraphCanvas::SlotRequestBus::Event(testSlotId, &GraphCanvas::SlotRequests::SetTranslationKeyedTooltip, TranslationHelper::GetEBusHandlerBusIdTooltipKey());
+                            GraphCanvas::TranslationKey key;
+                            key << Translation::GlobalKeys::EBusHandlerIDKey << "details";
+                            GraphCanvas::TranslationRequests::Details details;
+                            GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
+                            GraphCanvas::SlotRequestBus::Event(testSlotId, &GraphCanvas::SlotRequests::SetDetails, details.m_name, details.m_tooltip);
                             break;
                         }
                     }
