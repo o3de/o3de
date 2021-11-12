@@ -138,11 +138,11 @@ ly_install(FILES ${_cmake_package_dest}
     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
 )
 
-if (EXISTS ${LY_3RDPARTY_PATH}/packages)
-    set(CPACK_LY_3P_PACKAGE_DIRECTORY ${LY_3RDPARTY_PATH}/packages)
-else()
-    file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/.." _root_path)
+file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/.." _root_path)
+if (EXISTS "${_root_path}/3rdParty/packages")
     set(CPACK_LY_3P_PACKAGE_DIRECTORY "${_root_path}/3rdParty/packages")
+else()
+    set(CPACK_LY_3P_PACKAGE_DIRECTORY ${LY_3RDPARTY_PATH}/packages)
 endif()
 
 # Scan the engine and 3rd Party folders for licenses
