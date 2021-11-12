@@ -14,6 +14,7 @@
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/string/fixed_string.h>
 
 #include <AzCore/Debug/Profiler.h>
 

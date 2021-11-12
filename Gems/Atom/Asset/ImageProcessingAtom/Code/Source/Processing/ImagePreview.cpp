@@ -101,7 +101,7 @@ namespace ImageProcessingAtom
     void ImagePreview::InitializeJobSettings()
     {
         AZ::JobManagerDesc desc;
-        jobDesc.m_jobManagerName = "ImagePreview";
+        desc.m_jobManagerName = "ImagePreview";
 
         AZ::JobManagerThreadDesc threadDesc;
         desc.m_workerThreads.push_back(threadDesc);
