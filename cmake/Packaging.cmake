@@ -153,7 +153,6 @@ file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/scripts/license_scanner" _licen
 set(_license_script "${_license_script_path}/license_scanner.py")
 set(_license_config "${_license_script_path}/license_scanner.py")
 
-set(_license_scan_path "${CMAKE_CURRENT_SOURCE_DIR} ${CPACK_LY_3P_PACKAGE_DIRECTORY}")
 set(CPACK_3P_LICENSE_FILE "${CPACK_BINARY_DIR}/NOTICES.txt")
 set(CPACK_3P_MANIFEST_FILE "${CPACK_BINARY_DIR}/SPDX-License.json")
 
@@ -165,9 +164,9 @@ set(_license_command
     --package-file-path ${CPACK_3P_MANIFEST_FILE}
 )
 
-message(STATUS "Scanning for license files in ${_license_scan_path}")
+message(STATUS "Scanning for license files in ${CMAKE_CURRENT_SOURCE_DIR} ${CPACK_LY_3P_PACKAGE_DIRECTORY}")
 execute_process(
-    COMMAND ${_license_command} --scan-path "${_license_scan_path}"
+    COMMAND ${_license_command} --scan-path "${CMAKE_CURRENT_SOURCE_DIR}" "${CPACK_LY_3P_PACKAGE_DIRECTORY}"
     RESULT_VARIABLE _license_result
     ERROR_VARIABLE _license_errors
     OUTPUT_VARIABLE _license_output
