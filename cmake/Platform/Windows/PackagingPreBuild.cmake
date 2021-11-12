@@ -55,32 +55,3 @@ if(NOT ${_signing_result} EQUAL 0)
 else()
     message(STATUS "Signing exes complete!")
 endif()
-
-# Scan the engine and 3rd Party folders for licenses
-
-file(TO_NATIVE_PATH "${_root_path}/scripts/license_scanner/license_scanner.py" _license_script)
-file(TO_NATIVE_PATH "${_root_path}/scripts/license_scanner/scanner_config.json" _license_config_script)
-set(_license_scan_path "${_root_path} ${CPACK_LY_PACKAGE_UNPACK_LOCATION}")
-set(_3p_license_file NOTICES.txt)
-set(_3p_package_file SPDX-License.json)
-
-set(_license_command
-    ${_python_cmd} -s
-    -u ${_license_script}
-    --config-file ${_license_config_script}
-    --license-file-path "${_cpack_wix_out_dir}/${_3p_license_file}"
-    --package-file-path "${_cpack_wix_out_dir}/${_3p_package_file}"
-)
-
-message(STATUS "Scanning for license files in ${_license_scan_path}")
-execute_process(
-    COMMAND ${_license_command} --scan-path "${_root_path}" "${CPACK_LY_PACKAGE_UNPACK_LOCATION}"
-    RESULT_VARIABLE _license_result
-    ERROR_VARIABLE _license_errors
-    OUTPUT_VARIABLE _license_output
-    ECHO_OUTPUT_VARIABLE
-)
-
-if(NOT ${_license_result} EQUAL 0)
-    message(FATAL_ERROR "An error occurred during license scan.  ${_license_errors}")
-endif()

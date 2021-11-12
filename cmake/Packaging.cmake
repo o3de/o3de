@@ -51,12 +51,11 @@ string(TOLOWER "${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}" CPACK_PACKAGE_FI
 
 set(DEFAULT_LICENSE_NAME "Apache-2.0")
 set(DEFAULT_LICENSE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
-
 set(CPACK_RESOURCE_FILE_LICENSE ${DEFAULT_LICENSE_FILE})
 set(CPACK_LICENSE_URL ${LY_INSTALLER_LICENSE_URL})
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}/${CPACK_PACKAGE_VERSION}")
-set(CPACK_LY_3RDPARTY_PATH ${LY_3RDPARTY_PATH})
+set(CPACK_LY_3P_PACKAGE_DIRECTORY @LY_3RDPARTY_PATH@/packages)
 
 # neither of the SOURCE_DIR variables equate to anything during execution of pre/post build scripts
 set(CPACK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -139,6 +138,37 @@ ly_install(FILES ${_cmake_package_dest}
     DESTINATION ./Tools/Redistributables/CMake
     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
 )
+
+# Scan the engine and 3rd Party folders for licenses
+
+file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/scripts/license_scanner/license_scanner.py" _license_script)
+file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/scripts/license_scanner/scanner_config.json" _license_config_script)
+set(_license_scan_path "${CMAKE_CURRENT_SOURCE_DIR} ${(CPACK_LY_3P_PACKAGE_DIRECTORY}")
+set(CPACK_3P_LICENSE_FILE "${CPACK_BINARY_DIR}/NOTICES.txt")
+set(CPACK_3P_MANIFEST_FILE "${CPACK_BINARY_DIR}/SPDX-License.json")
+
+set(_license_command
+    ${_python_cmd} -s
+    -u ${_license_script}
+    --config-file ${_license_config_script}
+    --license-file-path ${CPACK_3P_LICENSE_FILE}
+    --package-file-path ${CPACK_3P_MANIFEST_FILE}
+)
+
+message(STATUS "Scanning for license files in ${_license_scan_path}")
+execute_process(
+    COMMAND ${_license_command} --scan-path "${CMAKE_CURRENT_SOURCE_DIR}" "${CPACK_LY_3P_PACKAGE_DIRECTORY}"
+    RESULT_VARIABLE _license_result
+    ERROR_VARIABLE _license_errors
+    OUTPUT_VARIABLE _license_output
+    ECHO_OUTPUT_VARIABLE
+)
+
+if(NOT ${_license_result} EQUAL 0)
+    message(FATAL_ERROR "An error occurred during license scan.  ${_license_errors}")
+else
+    set(CPACK_RESOURCE_FILE_LICENSE ${})
+endif()
 
 # the version string and git tags are intended to be synchronized so it should be safe to use that instead
 # of directly calling into git which could get messy in certain scenarios
