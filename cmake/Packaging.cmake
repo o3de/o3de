@@ -24,15 +24,14 @@ number will automatically appended as '<version>/<host>'.  If LY_INSTALLER_AUTO_
 full URL format will be: <base_url>/<build_tag>/<host>"
 )
 
-set(LY_INSTALLER_UPLOAD_URL "" CACHE STRING
-"Base URL used to upload the installer artifacts after generation, the host target and version number \
-will automatically appended as '<version>/<host>'.  If LY_INSTALLER_AUTO_GEN_TAG is set, the full URL \
-format will be: <base_url>/<build_tag>/<host>.  Can also be set via LY_INSTALLER_UPLOAD_URL environment \
-variable.  Currently only accepts S3 URLs e.g. s3://<bucket>/<prefix>"
+set(CPACK_UPLOAD_URL "" CACHE STRING
+"URL used to upload the installer artifacts after generation, the host target and version number \
+will automatically appended as '<version>/<host>'. If LY_INSTALLER_AUTO_GEN_TAG is set, the full URL \
+format will be: <base_url>/<build_tag>/<host>. Currently only accepts S3 URLs e.g. s3://<bucket>/<prefix>"
 )
 
-set(LY_INSTALLER_AWS_PROFILE "" CACHE STRING
-"AWS CLI profile for uploading artifacts.  Can also be set via LY_INSTALLER_AWS_PROFILE environment variable."
+set(CPACK_AWS_PROFILE "" CACHE STRING
+"AWS CLI profile for uploading artifacts."
 )
 
 set(CPACK_THREADS 0)
@@ -182,26 +181,6 @@ function(strip_trailing_slash in_url out_url)
         set(${out_url} ${in_url} PARENT_SCOPE)
     endif()
 endfunction()
-
-if(NOT LY_INSTALLER_UPLOAD_URL AND DEFINED ENV{LY_INSTALLER_UPLOAD_URL})
-    set(LY_INSTALLER_UPLOAD_URL $ENV{LY_INSTALLER_UPLOAD_URL})
-endif()
-
-if(LY_INSTALLER_UPLOAD_URL)
-    ly_is_s3_url(${LY_INSTALLER_UPLOAD_URL} _is_s3_bucket)
-    if(NOT _is_s3_bucket)
-        message(FATAL_ERROR "Only S3 installer uploading is supported at this time")
-    endif()
-
-    if (LY_INSTALLER_AWS_PROFILE)
-        set(CPACK_AWS_PROFILE ${LY_INSTALLER_AWS_PROFILE})
-    elseif (DEFINED ENV{LY_INSTALLER_AWS_PROFILE})
-        set(CPACK_AWS_PROFILE $ENV{LY_INSTALLER_AWS_PROFILE})
-    endif()
-
-    strip_trailing_slash(${LY_INSTALLER_UPLOAD_URL} LY_INSTALLER_UPLOAD_URL)
-    set(CPACK_UPLOAD_URL ${LY_INSTALLER_UPLOAD_URL})
-endif()
 
 # IMPORTANT: required to be included AFTER setting all property overrides
 include(CPack REQUIRED)

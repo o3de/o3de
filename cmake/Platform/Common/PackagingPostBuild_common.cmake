@@ -10,7 +10,12 @@ file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
 file(TO_NATIVE_PATH "${_root_path}/python/python.cmd" _python_cmd)
 file(TO_NATIVE_PATH "${_root_path}/scripts/build/tools/upload_to_s3.py" _upload_script)
 
-function(ly_upload_to_s3 in_url in_local_path in_file_regex)
+function(ly_upload_to_url in_url in_local_path in_file_regex)
+
+    ly_is_s3_url(${in_url} _is_s3_bucket)
+    if(NOT _is_s3_bucket)
+        message(FATAL_ERROR "Only S3 installer uploading is supported at this time")
+    endif()
 
     # strip the scheme and extract the bucket/key prefix from the URL
     string(REPLACE "s3://" "" _stripped_url ${in_url})

@@ -159,7 +159,7 @@ message(STATUS "Uploading artifacts to ${CPACK_UPLOAD_URL}")
 
 include(${_root_path}/cmake/Platform/Common/PackagingPostBuild_common.cmake)
 
-ly_upload_to_s3(
+ly_upload_to_url(
     ${CPACK_UPLOAD_URL}
     ${_cpack_wix_out_dir}
     ".*(cab|exe|msi)$"
@@ -200,7 +200,7 @@ if(CPACK_AUTO_GEN_TAG)
         _latest_upload_url ${CPACK_UPLOAD_URL}
     )
 
-    ly_upload_to_s3(
+    ly_upload_to_url(
         ${_latest_upload_url}
         ${_temp_dir}
         ".*(${_non_versioned_exe}|build_tag.txt)$"

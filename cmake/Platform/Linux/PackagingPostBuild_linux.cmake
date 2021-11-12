@@ -28,7 +28,7 @@ endif()
 # TODO: copy public key to ${CPACK_TOPLEVEL_DIRECTORY}
 
 if(CPACK_UPLOAD_URL)
-    ly_upload_to_s3(
+    ly_upload_to_url(
         ${CPACK_UPLOAD_URL}
         ${CPACK_TOPLEVEL_DIRECTORY}
         ".*(deb|asc|.sha256)$"
