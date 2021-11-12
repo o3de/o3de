@@ -162,7 +162,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DO3DE_HOME_PATH=\"${WORKSPACE}/home\" -DO3DE_REGISTER_ENGINE_PATH=\"${WORKSPACE}/o3de\" -DO3DE_REGISTER_THIS_ENGINE=TRUE",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
       "CTEST_OPTIONS": "-L (SUITE_sandbox) --no-tests=error"
