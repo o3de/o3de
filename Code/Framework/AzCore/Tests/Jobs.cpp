@@ -10,7 +10,6 @@
 #include <AzCore/Jobs/JobCompletion.h>
 #include <AzCore/Jobs/JobCompletionSpin.h>
 #include <AzCore/Jobs/JobFunction.h>
-#include <AzCore/Jobs/LegacyJobExecutor.h>
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/task_group.h>
 #include <AzCore/Jobs/Algorithms.h>
@@ -1396,103 +1395,6 @@ namespace UnitTest
     TEST_F(JobFunctionTestWithCurrentJobArg, Test)
     {
         run();
-    }
-
-    using JobLegacyJobExecutorIsRunning = DefaultJobManagerSetupFixture;
-    TEST_F(JobLegacyJobExecutorIsRunning, Test)
-    {
-        // Note: Legacy JobExecutor exists as an adapter to Legacy CryEngine jobs.
-        // When writing new jobs instead favor direct use of the AZ::Job type family
-        AZ::LegacyJobExecutor jobExecutor;
-        EXPECT_FALSE(jobExecutor.IsRunning());
-
-        // Completion fences and IsRunning()
-        {
-            jobExecutor.PushCompletionFence();
-            EXPECT_TRUE(jobExecutor.IsRunning());
-            jobExecutor.PopCompletionFence();
-            EXPECT_FALSE(jobExecutor.IsRunning());
-        }
-
-        AZStd::atomic_bool jobExecuted{ false };
-        AZStd::binary_semaphore jobSemaphore;
-
-        jobExecutor.StartJob([&jobSemaphore, &jobExecuted]
-            {
-                // Wait until the test thread releases
-                jobExecuted = true;
-                jobSemaphore.acquire();
-            }
-        );
-        EXPECT_TRUE(jobExecutor.IsRunning());
-
-        // Allow the job to complete
-        jobSemaphore.release();
-
-        // Wait for completion
-        jobExecutor.WaitForCompletion();
-        EXPECT_FALSE(jobExecutor.IsRunning());
-        EXPECT_TRUE(jobExecuted);
-    }
-
-    using JobLegacyJobExecutorWaitForCompletion = DefaultJobManagerSetupFixture;
-    TEST_F(JobLegacyJobExecutorWaitForCompletion, Test)
-    {
-        // Note: Legacy JobExecutor exists as an adapter to Legacy CryEngine jobs.
-        // When writing new jobs instead favor direct use of the AZ::Job type family
-        AZ::LegacyJobExecutor jobExecutor;
-
-        // Semaphores used to park job threads until released
-        const AZ::u32 numParkJobs = AZ::JobContext::GetGlobalContext()->GetJobManager().GetNumWorkerThreads();
-        AZStd::vector<AZStd::binary_semaphore> jobSemaphores(numParkJobs);
-
-        // Data destination for workers
-        const AZ::u32 workJobCount = numParkJobs * 2;
-        AZStd::vector<AZ::u32> jobData(workJobCount, 0);
-
-        // Touch completion multiple times as a test of correctly transitioning in and out of the all jobs completed state
-        AZ::u32 NumCompletionCycles = 5;
-        for (AZ::u32 completionItrIdx = 0; completionItrIdx < NumCompletionCycles; ++completionItrIdx)
-        {
-            // Intentionally park every job thread
-            for (auto& jobSemaphore : jobSemaphores)
-            {
-                jobExecutor.StartJob([&jobSemaphore]
-                {
-                    jobSemaphore.acquire();
-                }
-                );
-            }
-            EXPECT_TRUE(jobExecutor.IsRunning());
-
-            // Kick off verifiable "work" jobs
-            for (AZ::u32 i = 0; i < workJobCount; ++i)
-            {
-                jobExecutor.StartJob([i, &jobData]
-                {
-                    jobData[i] = i + 1;
-                }
-                );
-            }
-            EXPECT_TRUE(jobExecutor.IsRunning());
-
-            // Now released our parked job threads
-            for (auto& jobSemaphore : jobSemaphores)
-            {
-                jobSemaphore.release();
-            }
-
-            // And wait for all jobs to finish
-            jobExecutor.WaitForCompletion();
-            EXPECT_FALSE(jobExecutor.IsRunning());
-
-            // Verify our workers ran and clear data
-            for (size_t i = 0; i < workJobCount; ++i)
-            {
-                EXPECT_EQ(jobData[i], i + 1);
-                jobData[i] = 0;
-            }
-        }
     }
 
     class JobCompletionCompleteNotScheduled

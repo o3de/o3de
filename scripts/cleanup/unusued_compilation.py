@@ -14,7 +14,12 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../bui
 import ci_build
 
 EXTENSIONS_OF_INTEREST = ('.c', '.cc', '.cpp', '.cxx', '.h', '.hpp', '.hxx', '.inl')
-EXCLUSIONS = ('AZ_DECLARE_MODULE_CLASS')
+EXCLUSIONS = (
+    'AZ_DECLARE_MODULE_CLASS(', 
+    'REGISTER_QT_CLASS_DESC(',
+    'TEST(',
+    'TEST_F('
+)
 
 def create_filelist(path):
     filelist = set()
@@ -42,6 +47,13 @@ def is_excluded(file):
     normalized_file = os.path.normpath(file)
     if '\\Platform\\' in normalized_file and not '\\Windows\\' in normalized_file:
         return True
+    if '\\Template\\' in normalized_file:
+        return True
+    with open(file, 'r') as file:
+        contents = file.readlines()
+        for exclusion_term in EXCLUSIONS:
+            if exclusion_term in contents:
+                return True
     return False
 
 def filter_from_processed(filelist, filter_file_path):
@@ -49,11 +61,7 @@ def filter_from_processed(filelist, filter_file_path):
         return # nothing to filter
     
     with open(filter_file_path, 'r') as filter_file:
-        try:
-            processed_files = [s.strip() for s in filter_file.readlines()]
-        except UnicodeDecodeError as err:
-            print('Error reading file {}, err: {}'.format(filter_file_path, err))
-            sys.exit(1)
+        processed_files = [s.strip() for s in filter_file.readlines()]
     filelist -= set(processed_files)
     filelist = [f for f in filelist if not is_excluded(f)]
 
@@ -65,10 +73,11 @@ def cleanup_unused_compilation(path):
     #    starting over. Removing the "unusued_compilation_processed.txt" will start over.
     filter_file_path = os.path.join(os.getcwd(), 'unusued_compilation_processed.txt')
     filter_from_processed(filelist, filter_file_path)
+    sorted_filelist = sorted(filelist)
     # 3. For each file
-    total_files = len(filelist)
+    total_files = len(sorted_filelist)
     current_files = 1
-    for file in filelist:
+    for file in sorted_filelist:
         print(f"[{current_files}/{total_files}] Trying {file}")
         #   b. create backup
         shutil.copy(file, file + '.bak')
