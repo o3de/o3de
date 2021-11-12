@@ -138,15 +138,20 @@ ly_install(FILES ${_cmake_package_dest}
     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
 )
 
-# Scan the engine and 3rd Party folders for licenses
 if (EXISTS ${LY_3RDPARTY_PATH}/packages)
     set(CPACK_LY_3P_PACKAGE_DIRECTORY ${LY_3RDPARTY_PATH}/packages)
 else()
     file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/.." _root_path)
     set(CPACK_LY_3P_PACKAGE_DIRECTORY "${_root_path}/3rdParty/packages")
+endif()
+
+# Scan the engine and 3rd Party folders for licenses
 file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/python/python.cmd" _python_cmd)
-file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/scripts/license_scanner/license_scanner.py" _license_script)
-file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/scripts/license_scanner/scanner_config.json" _license_config_script)
+file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/scripts/license_scanner" _license_script_path)
+
+set(_license_script "${_license_script_path}/license_scanner.py")
+set(_license_config "${_license_script_path}/license_scanner.py")
+
 set(_license_scan_path "${CMAKE_CURRENT_SOURCE_DIR}" "${CPACK_LY_3P_PACKAGE_DIRECTORY}")
 set(CPACK_3P_LICENSE_FILE "${CPACK_BINARY_DIR}/NOTICES.txt")
 set(CPACK_3P_MANIFEST_FILE "${CPACK_BINARY_DIR}/SPDX-License.json")
@@ -154,7 +159,7 @@ set(CPACK_3P_MANIFEST_FILE "${CPACK_BINARY_DIR}/SPDX-License.json")
 set(_license_command
     ${_python_cmd} -s
     -u ${_license_script}
-    --config-file ${_license_config_script}
+    --config-file ${_license_config}
     --license-file-path ${CPACK_3P_LICENSE_FILE}
     --package-file-path ${CPACK_3P_MANIFEST_FILE}
 )
