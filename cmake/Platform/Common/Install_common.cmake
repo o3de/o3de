@@ -170,7 +170,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     string(REPEAT " " 12 PLACEHOLDER_INDENT)
     get_property(interface_build_dependencies_props TARGET ${TARGET_NAME} PROPERTY LY_DELAYED_LINK)
     unset(INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
-    # We can have private build dependencies that contain directly or indirectly runtime dependencies.
+    # We can have private build dependencies that contains direct or indirect runtime dependencies.
     # Since imported targets cannot contain build dependencies, we need another way to propagate the runtime dependencies.
     # We dont want to put such dependencies in the interface because a user can mistakenly use a symbol that is not available 
     # when using the engine from source (and that the author of the target didn't want to set public). 
