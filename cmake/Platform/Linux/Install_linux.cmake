@@ -10,8 +10,7 @@
 set(ly_copy_template [[
 function(ly_copy source_file target_directory)
     cmake_path(APPEND full_target_directory $ENV{DESTDIR} ${CMAKE_INSTALL_PREFIX} ${target_directory})
-    file(COPY "${source_file}" DESTINATION "${full_target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
-    cmake_path(NORMAL_PATH full_target_directory)
+    file(INSTALL FILES "${source_file}" DESTINATION "${full_target_directory}" MESSAGE_NEVER)
     get_filename_component(target_filename "${source_file}" NAME)
     get_filename_component(target_filename_ext "${source_file}" LAST_EXT)
     if("${target_filename_ext}" STREQUAL ".so")

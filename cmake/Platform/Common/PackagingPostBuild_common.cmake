@@ -7,8 +7,7 @@
 #
 
 file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
-file(TO_NATIVE_PATH "${_root_path}/python/python.cmd" _python_cmd)
-file(TO_NATIVE_PATH "${_root_path}/scripts/build/tools/upload_to_s3.py" _upload_script)
+include(${_root_path}/cmake/LYPackage_S3Downloader.cmake)
 
 function(ly_upload_to_url in_url in_local_path in_file_regex)
 
@@ -26,6 +25,8 @@ function(ly_upload_to_url in_url in_local_path in_file_regex)
 
     set(_extra_args [[{"ACL":"bucket-owner-full-control"}]])
 
+    file(TO_NATIVE_PATH "${_root_path}/python/python.cmd" _python_cmd)
+    file(TO_NATIVE_PATH "${_root_path}/scripts/build/tools/upload_to_s3.py" _upload_script)
     set(_upload_command
         ${_python_cmd} -s
         -u ${_upload_script}
