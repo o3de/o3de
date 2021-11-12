@@ -206,7 +206,7 @@ namespace UnitTest
         TraceBusHookEnvironmentInterface() = default;
         virtual ~TraceBusHookEnvironmentInterface() = default;
         
-        virtual [[nodiscard]] AZStd::unique_ptr<TraceBusHookUniqueDisableToken> Disable() = 0;
+        virtual AZStd::unique_ptr<TraceBusHookUniqueDisableToken> Disable() = 0;
     };
     
     class TraceBusHook
