@@ -167,7 +167,7 @@ execute_process(
 if(NOT ${_license_result} EQUAL 0)
     message(FATAL_ERROR "An error occurred during license scan.  ${_license_errors}")
 else
-    set(CPACK_RESOURCE_FILE_LICENSE ${})
+    set(CPACK_RESOURCE_FILE_LICENSE ${CPACK_3P_LICENSE_FILE})
 endif()
 
 # the version string and git tags are intended to be synchronized so it should be safe to use that instead
