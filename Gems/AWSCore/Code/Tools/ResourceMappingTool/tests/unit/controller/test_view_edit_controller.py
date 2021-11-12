@@ -420,8 +420,30 @@ class TestViewEditController(TestCase):
         self._mocked_view_edit_page.config_file_combobox.currentText.return_value = \
             TestViewEditController._expected_config_file_name
         expected_json_dict: Dict[str, any] = {
-            "dummyKey": "dummyValue",
-            self._expected_account_id_attribute_name: self._expected_account_id_template_vale}
+            "dummyKey": "dummyValue"
+        }
+        mock_json_utils.validate_resources_according_to_json_schema.return_value = []
+        mock_json_utils.convert_resources_to_json_dict.return_value = expected_json_dict
+        mock_file_utils.join_path.return_value = TestViewEditController._expected_config_file_full_path
+        mocked_call_args: call = self._mocked_view_edit_page.save_changes_button.clicked.connect.call_args[0]
+
+        mocked_call_args[0]()  # triggering save_changes_button connected function
+        mock_json_utils.convert_resources_to_json_dict.assert_called_once()
+        mock_json_utils.write_into_json_file.assert_called_once_with(
+            TestViewEditController._expected_config_file_full_path, expected_json_dict)
+        self._mocked_proxy_model.override_all_resources_status.assert_called_once_with(
+            ResourceMappingAttributesStatus(ResourceMappingAttributesStatus.SUCCESS_STATUS_VALUE,
+                                            [ResourceMappingAttributesStatus.SUCCESS_STATUS_VALUE]))
+
+    @patch("controller.view_edit_controller.file_utils")
+    @patch("controller.view_edit_controller.json_utils")
+    def test_page_save_changes_button_json_file_saved_and_template_account_id_unchanged(
+            self, mock_json_utils: MagicMock, mock_file_utils: MagicMock) -> None:
+        self._mocked_view_edit_page.config_file_combobox.currentText.return_value = \
+            TestViewEditController._expected_config_file_name
+        expected_json_dict: Dict[str, any] = {
+            self._expected_account_id_attribute_name: self._expected_account_id_template_vale
+        }
         mock_json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME = self._expected_account_id_attribute_name
         mock_json_utils.RESOURCE_MAPPING_ACCOUNTID_TEMPLATE_VALUE = self._expected_account_id_template_vale
         mock_json_utils.validate_resources_according_to_json_schema.return_value = []
@@ -430,7 +452,31 @@ class TestViewEditController(TestCase):
         mocked_call_args: call = self._mocked_view_edit_page.save_changes_button.clicked.connect.call_args[0]
 
         mocked_call_args[0]()  # triggering save_changes_button connected function
-        assert expected_json_dict["AccountId"] == self._mocked_configuration_manager.configuration.account_id
+        assert expected_json_dict[mock_json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME] == self._expected_account_id_template_vale
+        mock_json_utils.convert_resources_to_json_dict.assert_called_once()
+        mock_json_utils.write_into_json_file.assert_called_once_with(
+            TestViewEditController._expected_config_file_full_path, expected_json_dict)
+        self._mocked_proxy_model.override_all_resources_status.assert_called_once_with(
+            ResourceMappingAttributesStatus(ResourceMappingAttributesStatus.SUCCESS_STATUS_VALUE,
+                                            [ResourceMappingAttributesStatus.SUCCESS_STATUS_VALUE]))
+
+    @patch("controller.view_edit_controller.file_utils")
+    @patch("controller.view_edit_controller.json_utils")
+    def test_page_save_changes_button_json_file_saved_and_empty_account_id_unchanged(
+            self, mock_json_utils: MagicMock, mock_file_utils: MagicMock) -> None:
+        self._mocked_view_edit_page.config_file_combobox.currentText.return_value = \
+            TestViewEditController._expected_config_file_name
+        expected_json_dict: Dict[str, any] = {
+            self._expected_account_id_attribute_name: ''
+        }
+        mock_json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME = self._expected_account_id_attribute_name
+        mock_json_utils.validate_resources_according_to_json_schema.return_value = []
+        mock_json_utils.convert_resources_to_json_dict.return_value = expected_json_dict
+        mock_file_utils.join_path.return_value = TestViewEditController._expected_config_file_full_path
+        mocked_call_args: call = self._mocked_view_edit_page.save_changes_button.clicked.connect.call_args[0]
+
+        mocked_call_args[0]()  # triggering save_changes_button connected function
+        assert expected_json_dict[mock_json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME] == ''
         mock_json_utils.convert_resources_to_json_dict.assert_called_once()
         mock_json_utils.write_into_json_file.assert_called_once_with(
             TestViewEditController._expected_config_file_full_path, expected_json_dict)
