@@ -39,6 +39,17 @@ PATH_EXCLUSIONS = (
     'install\\*',
     'Code\\Framework\\AzCore\\AzCore\\Android\\*'
 )
+PATH_EXCLUSIONS = (
+    '*\\Platform\\Android\\*',
+    '*\\Platform\\Common\\*',
+    '*\\Platform\\iOS\\*',
+    '*\\Platform\\Linux\\*',
+    '*\\Platform\\Mac\\*',
+    'Templates\\*',
+    'python\\*',
+    'build\\*',
+    'install\\*'
+)
 
 def create_filelist(path):
     filelist = set()
