@@ -7,6 +7,7 @@
 #
 
 import argparse
+import fnmatch
 import os
 import shutil
 import sys
@@ -20,6 +21,17 @@ EXCLUSIONS = (
     'TEST(',
     'TEST_F('
 )
+PATH_EXCLUSIONS = (
+    '*\\Platform\\Android\\*',
+    '*\\Platform\\Common\\*',
+    '*\\Platform\\iOS\\*',
+    '*\\Platform\\Linux\\*',
+    '*\\Platform\\Mac\\*',
+    'Templates\\*',
+    'python\\*',
+    'build\\*',
+    'install\\*'
+)
 
 def create_filelist(path):
     filelist = set()
@@ -32,38 +44,37 @@ def create_filelist(path):
                     extension = os.path.splitext(f)[1]
                     extension_lower = extension.lower()
                     if extension_lower in EXTENSIONS_OF_INTEREST:
-                        filelist.add(os.path.join(dp, f))
+                        normalized_file = os.path.normpath(os.path.join(dp, f))
+                        filelist.add(normalized_file)
         else:
             extension = os.path.splitext(input_file)[1]
             extension_lower = extension.lower()
             if extension_lower in EXTENSIONS_OF_INTEREST:
-                filelist.add(os.path.join(os.getcwd(), input_file))
+                normalized_file = os.path.normpath(os.path.join(os.getcwd(), input_file))
+                filelist.add(normalized_file)
             else:
                 print(f'Error, file {input_file} does not have an extension of interest')
                 sys.exit(1)
     return filelist
 
 def is_excluded(file):
-    normalized_file = os.path.normpath(file)
-    if '\\Platform\\' in normalized_file and not '\\Windows\\' in normalized_file:
-        return True
-    if '\\Template\\' in normalized_file:
-        return True
+    for path_exclusion in PATH_EXCLUSIONS:
+        if fnmatch.fnmatch(file, path_exclusion):
+            return True
     with open(file, 'r') as file:
-        contents = file.readlines()
+        contents = file.read()
         for exclusion_term in EXCLUSIONS:
             if exclusion_term in contents:
                 return True
     return False
 
 def filter_from_processed(filelist, filter_file_path):
-    if not os.path.exists(filter_file_path):
-        return # nothing to filter
-    
-    with open(filter_file_path, 'r') as filter_file:
-        processed_files = [s.strip() for s in filter_file.readlines()]
-    filelist -= set(processed_files)
     filelist = [f for f in filelist if not is_excluded(f)]
+    if os.path.exists(filter_file_path):  
+        with open(filter_file_path, 'r') as filter_file:
+            processed_files = [s.strip() for s in filter_file.readlines()]
+            filelist -= set(processed_files)
+    return filelist
 
 def cleanup_unused_compilation(path):
     # 1. Create a list of all h/cpp files (consider multiple extensions)
@@ -72,8 +83,7 @@ def cleanup_unused_compilation(path):
     #    can take a while. If something is found in the middle, we want to be able to continue instead of 
     #    starting over. Removing the "unusued_compilation_processed.txt" will start over.
     filter_file_path = os.path.join(os.getcwd(), 'unusued_compilation_processed.txt')
-    filter_from_processed(filelist, filter_file_path)
-    sorted_filelist = sorted(filelist)
+    filelist = filter_from_processed(filelist, filter_file_path)
     # 3. For each file
     total_files = len(sorted_filelist)
     current_files = 1
