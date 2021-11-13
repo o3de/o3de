@@ -39,17 +39,7 @@ PATH_EXCLUSIONS = (
     'install\\*',
     'Code\\Framework\\AzCore\\AzCore\\Android\\*'
 )
-PATH_EXCLUSIONS = (
-    '*\\Platform\\Android\\*',
-    '*\\Platform\\Common\\*',
-    '*\\Platform\\iOS\\*',
-    '*\\Platform\\Linux\\*',
-    '*\\Platform\\Mac\\*',
-    'Templates\\*',
-    'python\\*',
-    'build\\*',
-    'install\\*'
-)
+
 
 def create_filelist(path):
     filelist = set()
@@ -102,6 +92,7 @@ def cleanup_unused_compilation(path):
     #    starting over. Removing the "unusued_compilation_processed.txt" will start over.
     filter_file_path = os.path.join(os.getcwd(), 'unusued_compilation_processed.txt')
     filelist = filter_from_processed(filelist, filter_file_path)
+    sorted_filelist = sorted(filelist, reverse=True)
     # 3. For each file
     total_files = len(sorted_filelist)
     current_files = 1
