@@ -113,16 +113,12 @@ if(NOT ${_light_result} EQUAL 0)
     message(FATAL_ERROR "An error occurred invoking light.exe.  ${_light_errors}")
 endif()
 
-file(INSTALL FILES ${_bootstrap_output_file}
-    DESTINATION ${CPACK_PACKAGE_DIRECTORY}
-)
-
-message(STATUS "Bootstrap installer generated to ${CPACK_PACKAGE_DIRECTORY}/${_bootstrap_filename}")
+message(STATUS "Bootstrap installer generated to ${_bootstrap_output_file}")
 
 if(CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
-    message(STATUS "Signing bootstrap installer in ${CPACK_PACKAGE_DIRECTORY}")
+    message(STATUS "Signing bootstrap installer in ${_bootstrap_output_file}")
     execute_process(
-        COMMAND ${_signing_command} -bootstrapPath ${CPACK_PACKAGE_DIRECTORY}/${_bootstrap_filename}
+        COMMAND ${_signing_command} -bootstrapPath ${_bootstrap_output_file}
         RESULT_VARIABLE _signing_result
         ERROR_VARIABLE _signing_errors
         OUTPUT_VARIABLE _signing_output
@@ -132,25 +128,26 @@ if(CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
     if(NOT ${_signing_result} EQUAL 0)
         message(FATAL_ERROR "An error occurred during signing bootstrap installer.  ${_signing_errors}")
     endif()
-endif()
 
-# use the internal default path if somehow not specified from cpack_configure_downloads
-if(NOT CPACK_UPLOAD_DIRECTORY)
-    set(CPACK_UPLOAD_DIRECTORY ${CPACK_PACKAGE_DIRECTORY}/CPackUploads)
-endif()
+    # use the internal default path if somehow not specified from cpack_configure_downloads
+    if(NOT CPACK_UPLOAD_DIRECTORY)
+        set(CPACK_UPLOAD_DIRECTORY ${CPACK_PACKAGE_DIRECTORY}/CPackUploads)
+    endif()
 
-# copy the artifacts intended to be uploaded to a remote server into the folder specified
-# through cpack_configure_downloads.  this mimics the same process cpack does natively for
-# some other frameworks that have built-in online installer support.
-message(STATUS "Copying installer artifacts to upload directory...")
-file(REMOVE_RECURSE ${CPACK_UPLOAD_DIRECTORY})
-file(GLOB _artifacts "${_cpack_wix_out_dir}/*.msi" "${_cpack_wix_out_dir}/*.cab")
-file(INSTALL FILES ${_artifacts}
-    DESTINATION ${CPACK_UPLOAD_DIRECTORY}
-)
-message(STATUS "Artifacts copied to ${CPACK_UPLOAD_DIRECTORY}")
-
-if(NOT CPACK_UPLOAD_URL)
+    # copy the artifacts intended to be uploaded to a remote server into the folder specified
+    # through cpack_configure_downloads.  this mimics the same process cpack does natively for
+    # some other frameworks that have built-in online installer support.
+    message(STATUS "Copying installer artifacts to upload directory...")
+    file(REMOVE_RECURSE ${CPACK_UPLOAD_DIRECTORY})
+    file(GLOB _artifacts 
+        "${_cpack_wix_out_dir}/*.msi" 
+        "${_cpack_wix_out_dir}/*.cab"
+        "${_cpack_wix_out_dir}/*.exe"
+    )
+    file(COPY FILES ${_artifacts}
+        DESTINATION ${CPACK_UPLOAD_DIRECTORY}
+    )
+    message(STATUS "Artifacts copied to ${CPACK_UPLOAD_DIRECTORY}")
 
     file(TO_NATIVE_PATH "${_cpack_wix_out_dir}" _cpack_wix_out_dir)
     ly_upload_to_url(

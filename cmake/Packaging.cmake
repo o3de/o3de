@@ -36,6 +36,11 @@ set(CPACK_AWS_PROFILE "" CACHE STRING
 
 set(CPACK_THREADS 0)
 set(CPACK_DESIRED_CMAKE_VERSION 3.20.2)
+if(${CPACK_DESIRED_CMAKE_VERSION} VERSION_LESS ${CMAKE_MINIMUM_REQUIRED_VERSION})
+    message(FATAL_ERROR
+        "The desired version of CMake to be included in the package is "
+        "below the minimum required version of CMake to run")
+endif()
 
 # set all common cpack variable overrides first so they can be accessible via configure_file
 # when the platform specific settings are applied below.  additionally, any variable with
@@ -70,6 +75,31 @@ set(CPACK_AUTO_GEN_TAG ${LY_INSTALLER_AUTO_GEN_TAG})
 ly_get_absolute_pal_filename(pal_dir ${CPACK_SOURCE_DIR}/Platform/${PAL_HOST_PLATFORM_NAME})
 include(${pal_dir}/Packaging_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 
+# We will download the desired copy of CMake so it can be included in the package, we defer the downloading
+# to the install process, to do so we generate a script that will perform the download and execute such script
+# during the install process (before packaging)
+if(NOT (CPACK_CMAKE_PACKAGE_FILE AND CPACK_CMAKE_PACKAGE_HASH))
+    message(FATAL_ERROR
+        "Packaging is missing one or more following properties required to include CMake: "
+        " CPACK_CMAKE_PACKAGE_FILE, CPACK_CMAKE_PACKAGE_HASH")
+endif()
+
+# We download it to a different location because CPACK_PACKAGING_INSTALL_PREFIX will be removed during
+# cpack generation. CPACK_BINARY_DIR persists across cpack invocations
+set(LY_CMAKE_PACKAGE_DOWNLOAD_PATH ${CPACK_BINARY_DIR}/${CPACK_CMAKE_PACKAGE_FILE})
+
+configure_file(${LY_ROOT_FOLDER}/cmake/Packaging/CMakeDownload.cmake.in
+    ${CPACK_BINARY_DIR}/CMakeDownload.cmake
+    @ONLY
+)
+ly_install(SCRIPT ${CPACK_BINARY_DIR}/CMakeDownload.cmake
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+)
+ly_install(FILES ${LY_CMAKE_PACKAGE_DOWNLOAD_PATH}
+    DESTINATION Tools/Redistributables/CMake
+    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
+)
+
 # if we get here and the generator hasn't been set, then a non fatal error occurred disabling packaging support
 if(NOT CPACK_GENERATOR)
     return()
@@ -77,7 +107,6 @@ endif()
 
 # Set common CPACK variables to all platforms/generators
 set(CPACK_STRIP_FILES TRUE) # always strip symbols on packaging
-
 set(CPACK_PRE_BUILD_SCRIPTS ${pal_dir}/PackagingPreBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 set(CPACK_POST_BUILD_SCRIPTS ${pal_dir}/PackagingPostBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 

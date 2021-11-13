@@ -66,7 +66,7 @@ function(ly_upload_to_url in_url in_local_path in_file_regex)
     endif()
 endfunction()
 
-function(ly_upload_to_latest in_url in_path in_suffix))
+function(ly_upload_to_latest in_url in_path)
 
     message(STATUS "Updating latest tagged build")
 
@@ -79,7 +79,7 @@ function(ly_upload_to_latest in_url in_path in_suffix))
     endif()
 
     # Create a temp directory where we are going to rename the file to take out the version
-    # and replace it with "${in_suffix}", then upload it
+    # and then upload it
     set(temp_dir ${CPACK_BINARY_DIR}/temp)
     if(NOT EXISTS ${temp_dir})
         file(MAKE_DIRECTORY ${temp_dir})
@@ -87,7 +87,7 @@ function(ly_upload_to_latest in_url in_path in_suffix))
     file(COPY ${in_path} DESTINATION ${temp_dir})
 
     cmake_path(GET in_path FILENAME in_path_filename)
-    string(REPLACE "${CPACK_PACKAGE_VERSION}" "${in_suffix}" non_versioned_in_path_filename ${in_path_filename})
+    string(REPLACE "_${CPACK_PACKAGE_VERSION}" "" non_versioned_in_path_filename ${in_path_filename})
     file(RENAME "${temp_dir}/${in_path_filename}" "${temp_dir}/${non_versioned_in_path_filename}")
 
     # include the commit info in a text file that will live next to the exe
@@ -108,6 +108,6 @@ function(ly_upload_to_latest in_url in_path in_suffix))
 
     # cleanup the temp files
     file(REMOVE_RECURSE ${temp_dir})
-
     message(STATUS "Latest build update complete!")
-endif()
+
+endfunction()

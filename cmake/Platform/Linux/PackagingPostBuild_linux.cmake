@@ -38,12 +38,12 @@ if(CPACK_UPLOAD_URL)
     # for auto tagged builds, we will also upload a second copy of just the boostrapper
     # to a special "Latest" folder under the branch in place of the commit date/hash
     if(CPACK_AUTO_GEN_TAG)
-        ly_upload_to_latest(${CPACK_UPLOAD_URL} ${_bootstrap_output_file} "latest")
+        ly_upload_to_latest(${CPACK_UPLOAD_URL} ${_bootstrap_output_file})
         if(NOT ${_checksum_result} EQUAL 0)
             # replace the name fo the binary inside
-            string(REPLACE "${CPACK_PACKAGE_VERSION}" "latest" non_versioned_checksum_output ${_checksum_output})
+            string(REPLACE "_${CPACK_PACKAGE_VERSION}" "" non_versioned_checksum_output ${_checksum_output})
             file(WRITE "${CPACK_BINARY_DIR}/checksum.sha256" "${_checksum_output}")
-            ly_upload_to_latest(${CPACK_UPLOAD_URL} "${CPACK_BINARY_DIR}/checksum.sha256" "latest")
+            ly_upload_to_latest(${CPACK_UPLOAD_URL} "${CPACK_BINARY_DIR}/checksum.sha256")
         endif()
     endif()
 endif()
