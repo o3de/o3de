@@ -138,7 +138,7 @@ function(ly_copy source_file target_directory)
     get_filename_component(target_filename "${source_file}" NAME)
     cmake_path(APPEND full_target_directory $ENV{DESTDIR} ${CMAKE_INSTALL_PREFIX} ${target_directory} ${target_filename})
     file(INSTALL FILES "${source_file}" DESTINATION "${full_target_directory}" FOLLOW_SYMLINK_CHAIN)
-    cmake_path(APPEND target_file_path ${full_target_directory} ${target_filename})
+    cmake_path(APPEND full_target_file ${full_target_directory} ${target_filename})
 
     # Our Qt and Python frameworks aren't in the correct bundle format to be codesigned.
     if("${target_filename}" MATCHES "(Qt[^.]+)\\.[Ff]ramework")
@@ -167,5 +167,3 @@ endfunction()
 function(ly_codesign_sdk)
     codesign_file(${LY_INSTALL_PATH_ORIGINAL}/O3DE_SDK.app "none")
 endfunction()
-
-
