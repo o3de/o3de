@@ -80,10 +80,7 @@ macro(ly_package_message)
     endif()
 endmacro()
 
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/packages)
-
 include(${LY_ROOT_FOLDER}/cmake/LYPackage_S3Downloader.cmake)
-
 
 # Attempts one time to download a file.
 # sets should_retry to true if the caller should retry due to an intermittent problem

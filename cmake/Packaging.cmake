@@ -66,6 +66,7 @@ set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CPACK_PACKAGE_NAME}/${CPACK_PACKAGE_VERSI
 # neither of the SOURCE_DIR variables equate to anything during execution of pre/post build scripts
 set(CPACK_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CPACK_BINARY_DIR ${CMAKE_BINARY_DIR}/_CPack) # to match other CPack out dirs
+set(CPACK_OUTPUT_FILE_PREFIX CPackUploads)
 
 # this config file allows the dynamic setting of cpack variables at cpack-time instead of cmake configure
 set(CPACK_PROJECT_CONFIG_FILE ${CPACK_SOURCE_DIR}/PackagingConfig.cmake)
@@ -107,6 +108,7 @@ endif()
 
 # Set common CPACK variables to all platforms/generators
 set(CPACK_STRIP_FILES TRUE) # always strip symbols on packaging
+set(CPACK_PACKAGE_CHECKSUM MD5) # Generate checksum file
 set(CPACK_PRE_BUILD_SCRIPTS ${pal_dir}/PackagingPreBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 set(CPACK_POST_BUILD_SCRIPTS ${pal_dir}/PackagingPostBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 

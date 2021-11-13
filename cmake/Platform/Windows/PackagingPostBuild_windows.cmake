@@ -128,27 +128,29 @@ if(CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
     if(NOT ${_signing_result} EQUAL 0)
         message(FATAL_ERROR "An error occurred during signing bootstrap installer.  ${_signing_errors}")
     endif()
+endif()
 
-    # use the internal default path if somehow not specified from cpack_configure_downloads
-    if(NOT CPACK_UPLOAD_DIRECTORY)
-        set(CPACK_UPLOAD_DIRECTORY ${CPACK_PACKAGE_DIRECTORY}/CPackUploads)
-    endif()
+# use the internal default path if somehow not specified from cpack_configure_downloads
+if(NOT CPACK_UPLOAD_DIRECTORY)
+    set(CPACK_UPLOAD_DIRECTORY ${CPACK_PACKAGE_DIRECTORY}/CPackUploads)
+endif()
 
-    # copy the artifacts intended to be uploaded to a remote server into the folder specified
-    # through cpack_configure_downloads.  this mimics the same process cpack does natively for
-    # some other frameworks that have built-in online installer support.
-    message(STATUS "Copying installer artifacts to upload directory...")
-    file(REMOVE_RECURSE ${CPACK_UPLOAD_DIRECTORY})
-    file(GLOB _artifacts 
-        "${_cpack_wix_out_dir}/*.msi" 
-        "${_cpack_wix_out_dir}/*.cab"
-        "${_cpack_wix_out_dir}/*.exe"
-    )
-    file(COPY FILES ${_artifacts}
-        DESTINATION ${CPACK_UPLOAD_DIRECTORY}
-    )
-    message(STATUS "Artifacts copied to ${CPACK_UPLOAD_DIRECTORY}")
+# copy the artifacts intended to be uploaded to a remote server into the folder specified
+# through cpack_configure_downloads.  this mimics the same process cpack does natively for
+# some other frameworks that have built-in online installer support.
+message(STATUS "Copying installer artifacts to upload directory...")
+file(REMOVE_RECURSE ${CPACK_UPLOAD_DIRECTORY})
+file(GLOB _artifacts 
+    "${_cpack_wix_out_dir}/*.msi" 
+    "${_cpack_wix_out_dir}/*.cab"
+    "${_cpack_wix_out_dir}/*.exe"
+)
+file(COPY ${_artifacts}
+    DESTINATION ${CPACK_UPLOAD_DIRECTORY}
+)
+message(STATUS "Artifacts copied to ${CPACK_UPLOAD_DIRECTORY}")
 
+if(CPACK_UPLOAD_URL)
     file(TO_NATIVE_PATH "${_cpack_wix_out_dir}" _cpack_wix_out_dir)
     ly_upload_to_url(
         ${CPACK_UPLOAD_URL}
@@ -159,6 +161,6 @@ if(CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
     # for auto tagged builds, we will also upload a second copy of just the boostrapper
     # to a special "Latest" folder under the branch in place of the commit date/hash
     if(CPACK_AUTO_GEN_TAG)
-        ly_upload_to_latest(${CPACK_UPLOAD_URL} ${_bootstrap_output_file} "installer")
+        ly_upload_to_latest(${CPACK_UPLOAD_URL} ${_bootstrap_output_file})
     endif()
 endif()
