@@ -309,12 +309,20 @@ void {{ ClassName }}::Set{{ UpperFirst(Property.attrib['Name']) }}(const {{ Prop
 {#
 
 #}
+{% macro PrintRpcParameters(printPrefix, paramDefines) %}
+{% if paramDefines|count > 0 %}
+{{ printPrefix }}{{ ', '.join(paramDefines) }}
+{% endif %}
+{% endmacro %}
+{#
+
+#}
 {% macro DefineRpcInvocation(Component, ClassName, Property, InvokeFrom, HandleOn) %}
 {%     set paramNames   = [] %}
 {%     set paramTypes   = [] %}
 {%     set paramDefines = [] %}
 {{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
-void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramDefines) }})
+void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ PrintRpcParameters('', paramDefines) }})
 {
     constexpr Multiplayer::RpcIndex rpcId = static_cast<Multiplayer::RpcIndex>({{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ UpperFirst(Property.attrib['Name']) }});
 {% if Property.attrib['IsReliable']|booleanTrue %}
@@ -358,7 +366,7 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(par
 {%     set paramTypes   = [] %}
 {%     set paramDefines = [] %}
 {{     AutoComponentMacros.ParseRpcParams(Property, paramNames, paramTypes, paramDefines) }}
-            ->Method("{{ UpperFirst(Property.attrib['Name']) }}", []({{ ClassName }}* self, {{ ', '.join(paramDefines) }}) {
+            ->Method("{{ UpperFirst(Property.attrib['Name']) }}", []({{ ClassName }}* self{{ PrintRpcParameters(', ', paramDefines) }}) {
 {%                    if (InvokeFrom == 'Server')  %}
                         self->{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(paramNames) }});
 {%                    elif (InvokeFrom == 'Authority') or (InvokeFrom == 'Autonomous') %}
@@ -372,7 +380,7 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(par
                         }
 {%                    endif %}
                     })
-            ->Method("{{ UpperFirst(Property.attrib['Name']) }}ByEntityId", [](AZ::EntityId id, {{ ', '.join(paramDefines) }}) {
+            ->Method("{{ UpperFirst(Property.attrib['Name']) }}ByEntityId", [](AZ::EntityId id{{ PrintRpcParameters(', ', paramDefines) }}) {
 
                         AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
                         if (!entity)
@@ -497,9 +505,9 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
             if (m_controller)
             {
                 AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Authority, "Entity proxy does not have authority");
-                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
+                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection{{ PrintRpcParameters(', ', rpcParamList) }});
 {%            if (Property.attrib['GenerateEventBindings']|booleanTrue == true) %}
-                m_controller->Get{{ UpperFirst(Property.attrib['Name']) }}Event().Signal({{ ', '.join(rpcParamList) }});
+                m_controller->Get{{ UpperFirst(Property.attrib['Name']) }}Event().Signal({{ PrintRpcParameters('', rpcParamList) }});
 {%            endif %}
             }
             else // Note that this rpc is marked reliable, trigger the appropriate rpc event so it can be forwarded
@@ -513,15 +521,15 @@ case {{ UpperFirst(Component.attrib['Name']) }}Internal::RemoteProcedure::{{ Upp
             if (m_controller)
             {
                 AZ_Assert(GetNetBindComponent()->GetNetEntityRole() == Multiplayer::NetEntityRole::Autonomous, "Entity proxy does not have autonomy");
-                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
+                m_controller->Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection{{ PrintRpcParameters(', ', rpcParamList) }});
 {%            if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
-                m_controller->Get{{ UpperFirst(Property.attrib['Name']) }}Event().Signal({{ ', '.join(rpcParamList) }});
+                m_controller->Get{{ UpperFirst(Property.attrib['Name']) }}Event().Signal({{ PrintRpcParameters('', rpcParamList) }});
 {%            endif %}
             }
 {% elif HandleOn == 'Client' %}
-            Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection, {{ ', '.join(rpcParamList) }});
+            Handle{{ UpperFirst(Property.attrib['Name']) }}(invokingConnection{{ PrintRpcParameters(', ', rpcParamList) }});
 {%        if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
-            m_{{ UpperFirst(Property.attrib['Name']) }}Event.Signal({{ ', '.join(rpcParamList) }});
+            m_{{ UpperFirst(Property.attrib['Name']) }}Event.Signal({{ PrintRpcParameters('', rpcParamList) }});
 {%        endif %}
 {% endif %}
         }
