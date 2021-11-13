@@ -155,7 +155,10 @@ namespace ScriptCanvasEditor
             aznumeric_cast<int>(nodeModelInformation.m_toolTip.size())));
 
         SetTitlePalette("MethodNodeTitlePalette");
-        SetName(nodeModelInformation.m_displayName.c_str());
+        if (!nodeModelInformation.m_displayName.empty())
+        {
+            SetName(nodeModelInformation.m_displayName.c_str());
+        }
     }
 
     GraphCanvas::GraphCanvasMimeEvent* GlobalMethodEventPaletteTreeItem::CreateMimeEvent() const
