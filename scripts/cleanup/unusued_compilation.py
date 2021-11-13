@@ -68,8 +68,6 @@ def is_excluded(file):
     for path_exclusion in PATH_EXCLUSIONS:
         if fnmatch.fnmatch(file, path_exclusion):
             return True
-    if '\\Template\\' in normalized_file:
-        return True
     with open(file, 'r') as file:
         contents = file.read()
         for exclusion_term in EXCLUSIONS:
@@ -78,7 +76,7 @@ def is_excluded(file):
     return False
 
 def filter_from_processed(filelist, filter_file_path):
-    filelist = set([f for f in filelist if not is_excluded(f)])
+    filelist = [f for f in filelist if not is_excluded(f)]
     if os.path.exists(filter_file_path):  
         with open(filter_file_path, 'r') as filter_file:
             processed_files = [s.strip() for s in filter_file.readlines()]
@@ -93,7 +91,6 @@ def cleanup_unused_compilation(path):
     #    starting over. Removing the "unusued_compilation_processed.txt" will start over.
     filter_file_path = os.path.join(os.getcwd(), 'unusued_compilation_processed.txt')
     filelist = filter_from_processed(filelist, filter_file_path)
-    sorted_filelist = sorted(filelist)
     # 3. For each file
     total_files = len(sorted_filelist)
     current_files = 1
