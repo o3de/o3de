@@ -19,7 +19,8 @@ EXCLUSIONS = (
     'AZ_DECLARE_MODULE_CLASS(', 
     'REGISTER_QT_CLASS_DESC(',
     'TEST(',
-    'TEST_F('
+    'TEST_F(',
+    'INSTANTIATE_TEST_CASE_P('
 )
 PATH_EXCLUSIONS = (
     '*\\Platform\\Android\\*',
@@ -84,6 +85,7 @@ def cleanup_unused_compilation(path):
     #    starting over. Removing the "unusued_compilation_processed.txt" will start over.
     filter_file_path = os.path.join(os.getcwd(), 'unusued_compilation_processed.txt')
     filelist = filter_from_processed(filelist, filter_file_path)
+    sorted_filelist = sorted(filelist, reverse=True)
     # 3. For each file
     total_files = len(sorted_filelist)
     current_files = 1
