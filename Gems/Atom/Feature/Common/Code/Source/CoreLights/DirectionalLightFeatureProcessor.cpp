@@ -1262,19 +1262,16 @@ namespace AZ
             const Vector3 normalizeByBufferSize = Vector3(invShadowmapSize, invShadowmapSize, invShadowmapSize);
 
             const Vector3 worldUnitsPerTexel = (orthoMax - orthoMin) * normalizeByBufferSize;
-            static bool m_bMoveLightTexelSize = true;
-            if (m_bMoveLightTexelSize)
-            {
-                // We snap the camera to 1 pixel increments so that moving the camera does not cause the shadows to jitter.
-                // This is a matter of dividing by the world space size of a texel
-                orthoMin /= worldUnitsPerTexel;
-                orthoMin = orthoMin.GetFloor();
-                orthoMin *= worldUnitsPerTexel;
 
-                orthoMax /= worldUnitsPerTexel;
-                orthoMax = orthoMax.GetFloor();
-                orthoMax *= worldUnitsPerTexel;
-            }
+            // We snap the camera to 1 pixel increments so that moving the camera does not cause the shadows to jitter.
+            // This is a matter of dividing by the world space size of a texel
+            orthoMin /= worldUnitsPerTexel;
+            orthoMin = orthoMin.GetFloor();
+            orthoMin *= worldUnitsPerTexel;
+
+            orthoMax /= worldUnitsPerTexel;
+            orthoMax = orthoMax.GetFloor();
+            orthoMax *= worldUnitsPerTexel;
         }
 
         void DirectionalLightFeatureProcessor::UpdateShadowmapViews(LightHandle handle)
