@@ -9,13 +9,26 @@
 #pragma once
 
 #include <Components/TerrainPhysicsColliderComponent.h>
-#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <LmbrCentral/Component/EditorWrappedComponentBase.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 namespace Terrain
 {
+    struct DebugImageQuad
+    {
+        AZ::Vector3 m_point0;
+        AZ::Vector3 m_point1;
+        AZ::Vector3 m_point2;
+        AZ::Vector3 m_point3;
+    };
+
     class EditorTerrainPhysicsColliderComponent
         : public LmbrCentral::EditorWrappedComponentBase<TerrainPhysicsColliderComponent, TerrainPhysicsColliderConfig>
+        , protected AzFramework::EntityDebugDisplayEventBus::Handler
+        , protected AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         using BaseClassType = LmbrCentral::EditorWrappedComponentBase<TerrainPhysicsColliderComponent, TerrainPhysicsColliderConfig>;
@@ -28,5 +41,26 @@ namespace Terrain
         static constexpr auto s_icon = "Editor/Icons/Components/TerrainLayerSpawner.svg";
         static constexpr auto s_viewportIcon = "Editor/Icons/Components/Viewport/TerrainLayerSpawner.svg";
         static constexpr auto s_helpUrl = "";
+
+        // AZ::Component
+        void Activate() override;
+        void Deactivate() override;
+
+    protected:
+
+        // AzFramework::EntityDebugDisplayEventBus
+        void DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
+
+        // AzFramework::Terrain::TerrainDataNotificationBus
+        void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
+
+        bool m_visibleInEditor = true;
+        AZ::Color m_drawColor = AzFramework::ViewportColors::WireColor;
+
+        mutable AZStd::shared_mutex m_drawMutex;
+
+        AZStd::vector<DebugImageQuad> m_debugQuads;
+
+        void GenerateDebugDrawData();
     };
 }
