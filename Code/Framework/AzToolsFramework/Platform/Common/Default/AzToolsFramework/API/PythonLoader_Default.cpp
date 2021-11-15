@@ -8,7 +8,7 @@
 
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 
-namespace AzToolsFramework::EmbeddedPyton
+namespace AzToolsFramework::EmbeddedPython
 {
     void LoadLibPython() {}
 }
