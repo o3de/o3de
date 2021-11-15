@@ -123,7 +123,7 @@ def create_vegetation_area(name, center_point, box_size_x, box_size_y, box_size_
     # Set the vegetation area to a Dynamic Slice spawner with a specific slice asset selected
     dynamic_slice_spawner = vegetation.DynamicSliceInstanceSpawner()
     dynamic_slice_spawner.SetSliceAssetPath(dynamic_slice_asset_path)
-    descriptor = vegetation.Descriptor()
+    descriptor = hydra.get_component_property_value(spawner_entity.components[2], 'Configuration|Embedded Assets|[0]')
     descriptor.spawner = dynamic_slice_spawner
     spawner_entity.get_set_test(2, "Configuration|Embedded Assets|[0]", descriptor)
     return spawner_entity

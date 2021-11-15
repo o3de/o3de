@@ -33,7 +33,6 @@ def DynVegUtils_TempPrefabCreationWorks():
 
     import azlmbr.asset as asset
     import azlmbr.bus as bus
-    import azlmbr.legacy.general as general
     import azlmbr.math as math
 
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
@@ -73,7 +72,7 @@ def DynVegUtils_TempPrefabCreationWorks():
         )
         test_physx_mesh_asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", os.path.join(
             "assets", "objects", "foliage", "cedar.pxmesh"), math.Uuid(), False)
-        dynveg.create_temp_physx_mesh_collider(test_physx_mesh_asset_id, "CedarTree_Collision")
+        dynveg.create_temp_physx_mesh_collider(test_physx_mesh_asset_id, physx_prefab_filename)
         Report.result(physx_collider_prefab_created, helper.wait_for_condition(lambda:
                                                                                PrefabInstance.is_valid(prefab[1]), 3.0))
 
