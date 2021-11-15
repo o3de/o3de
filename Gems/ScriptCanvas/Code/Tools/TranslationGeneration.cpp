@@ -106,8 +106,7 @@ namespace ScriptCanvasEditorTools
                 Method eventEntry;
                 const char* eventName = event.first.c_str();
 
-                AZStd::string cleanName = GraphCanvas::TranslationKey::Sanitize(eventName);
-                eventEntry.m_key = cleanName;
+                eventEntry.m_key = eventName;
 
                 prettyName = Helpers::GetStringAttribute(behaviorEBus, AZ::ScriptCanvasAttributes::PrettyName);
                 eventEntry.m_details.m_name = prettyName.empty() ? eventName : prettyName;
@@ -124,7 +123,21 @@ namespace ScriptCanvasEditorTools
                     Argument argument;
                     auto argumentType = method->GetArgument(i)->m_typeId;
 
+                    // Check the BC for metadata
+
                     Helpers::GetTypeNameAndDescription(argumentType, argument.m_details.m_name, argument.m_details.m_tooltip);
+
+                    auto name = method->GetArgumentName(i);
+                    if (!name->empty())
+                    {
+                        argument.m_details.m_name = *name;
+                    }
+
+                    auto tooltip = method->GetArgumentToolTip(i);
+                    if (!tooltip->empty())
+                    {
+                        argument.m_details.m_tooltip = *tooltip;
+                    }
 
                     argument.m_typeId = argumentType.ToString<AZStd::string>();
 
@@ -136,7 +149,14 @@ namespace ScriptCanvasEditorTools
                     Argument result;
 
                     auto resultType = method->GetResult()->m_typeId;
+
                     Helpers::GetTypeNameAndDescription(resultType, result.m_details.m_name, result.m_details.m_tooltip);
+
+                    auto tooltip = method->GetArgumentToolTip(0);
+                    if (!tooltip->empty())
+                    {
+                        result.m_details.m_tooltip = *tooltip;
+                    }
 
                     result.m_typeId = resultType.ToString<AZStd::string>();
 
@@ -922,6 +942,22 @@ namespace ScriptCanvasEditorTools
                         if (argumentName.empty())
                         {
                             Helpers::GetTypeNameAndDescription(parameter.m_typeId, argumentName, argumentDescription);
+                        }
+
+                        if (!event.m_metadataParameters.empty() && event.m_metadataParameters.size() > argIndex)
+                        {
+                            auto name = event.m_metadataParameters[argIndex].m_name;
+                            auto tooltip = event.m_metadataParameters[argIndex].m_toolTip;
+
+                            if (!name.empty())
+                            {
+                                argumentName = name;
+                            }
+
+                            if (!tooltip.empty())
+                            {
+                                argumentDescription = tooltip;
+                            }
                         }
 
                         argument.m_typeId = argumentKey;
