@@ -1099,17 +1099,6 @@ AZ_POP_DISABLE_WARNING
                                                             AzFramework::SystemCursorState::ConstrainedAndHidden);
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        // TIME
-        //////////////////////////////////////////////////////////////////////////
-        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Time initialization");
-        if (!m_Time.Init())
-        {
-            AZ_Assert(false, "Failed to initialize CTimer instance.");
-            return false;
-        }
-        m_Time.ResetTimer();
-
         // CONSOLE
         //////////////////////////////////////////////////////////////////////////
         if (!InitConsole())

@@ -362,23 +362,11 @@ namespace AzToolsFramework
         // Tick the component app.
         AZ::ComponentApplication* pApp = nullptr;
         EBUS_EVENT_RESULT(pApp, AZ::ComponentApplicationBus, GetApplication);
-        if (pApp)
+        if (pApp && m_ptrTicker)
         {
-            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-            static AZStd::chrono::system_clock::time_point lastUpdate = now;
-
-            AZStd::chrono::duration<float> delta = now - lastUpdate;
-            float deltaTime = delta.count();
-
-            lastUpdate = now;
-
-            if (m_ptrTicker)
-            {
-                AZ::SystemTickBus::ExecuteQueuedEvents();
-                AZ::SystemTickBus::Broadcast(&AZ::SystemTickEvents::OnSystemTick);
-                pApp->Tick(deltaTime);
-            }
-
+            AZ::SystemTickBus::ExecuteQueuedEvents();
+            AZ::SystemTickBus::Broadcast(&AZ::SystemTickEvents::OnSystemTick);
+            pApp->Tick();
         }
 
         m_bTicking = false;

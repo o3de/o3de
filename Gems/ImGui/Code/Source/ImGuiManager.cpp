@@ -16,6 +16,7 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/std/containers/fixed_unordered_map.h>
+#include <AzCore/Time/ITime.h>
 #include <AzFramework/Input/Buses/Requests/InputTextEntryRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
@@ -23,7 +24,6 @@
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 #include <AzFramework/Input/Devices/VirtualKeyboard/InputDeviceVirtualKeyboard.h>
 #include <IConsole.h>
-#include <ITimer.h>
 #include <imgui/imgui_internal.h>
 #include <sstream>
 #include <string>
@@ -333,7 +333,8 @@ void ImGuiManager::Render()
     }
 
     // Advance ImGui by Elapsed Frame Time
-    io.DeltaTime = gEnv->pTimer->GetFrameTime();
+    const AZ::TimeUs gameTickTimeUs = AZ::GetSimulationTickDeltaTimeUs();
+    io.DeltaTime = AZ::TimeUsToSeconds(gameTickTimeUs);
     //// END FROM PREUPDATE
 
     AZ::u32 backBufferWidth = m_windowSize.m_width;
