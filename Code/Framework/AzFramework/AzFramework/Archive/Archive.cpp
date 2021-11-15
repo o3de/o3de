@@ -1241,6 +1241,7 @@ namespace AZ::IO
 
             m_arrZips.insert(revItZip.base(), desc);
 
+            lock.unlock();
             m_levelOpenEvent.Signal(levelDirs);
         }
 
