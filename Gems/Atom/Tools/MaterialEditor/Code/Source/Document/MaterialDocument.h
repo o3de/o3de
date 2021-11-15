@@ -104,7 +104,8 @@ namespace MaterialEditor
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
         //////////////////////////////////////////////////////////////////////////
 
-        bool SavePropertiesToSourceData(AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const;
+        bool SavePropertiesToSourceData(
+            const AZStd::string& exportPath, AZ::RPI::MaterialSourceData& sourceData, PropertyFilterFunction propertyFilter) const;
 
         bool OpenInternal(AZStd::string_view loadPath);
 
