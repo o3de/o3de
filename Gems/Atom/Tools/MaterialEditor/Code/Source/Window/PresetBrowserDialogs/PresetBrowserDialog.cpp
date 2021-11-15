@@ -21,6 +21,7 @@
 #include <QLabel>
 #include <QLineEdit>
 #include <QMenu>
+#include <QVBoxLayout>
 
 namespace MaterialEditor
 {
@@ -52,29 +53,36 @@ namespace MaterialEditor
     {
         const QSize gridSize = m_ui->m_presetList->gridSize();
         m_ui->m_presetList->setGridSize(
-            QSize(AZStd::max(gridSize.width(), size.width() + 10), AZStd::max(gridSize.height(), size.height() + 10)));
+            QSize(AZStd::max(gridSize.width(), size.width() + 10), AZStd::max(gridSize.height(), size.height() + 10 + 15)));
 
         QListWidgetItem* item = new QListWidgetItem(m_ui->m_presetList);
         item->setData(Qt::UserRole, title);
-        item->setSizeHint(size + QSize(4, 4));
+        item->setSizeHint(size + QSize(4, 19));
         m_ui->m_presetList->addItem(item);
 
-        AzToolsFramework::Thumbnailer::ThumbnailWidget* thumbnail = new AzToolsFramework::Thumbnailer::ThumbnailWidget(m_ui->m_presetList);
+        QWidget* itemWidget = new QWidget(m_ui->m_presetList);
+        itemWidget->setLayout(new QVBoxLayout(itemWidget));
+        itemWidget->layout()->setSpacing(0);
+        itemWidget->layout()->setMargin(0);
+
+        AzQtComponents::ElidingLabel* header = new AzQtComponents::ElidingLabel(itemWidget);
+        header->setText(title);
+        header->setFixedSize(QSize(size.width(), 15));
+        header->setMargin(0);
+        header->setStyleSheet("background-color: rgb(35, 35, 35)");
+        AzQtComponents::Text::addPrimaryStyle(header);
+        AzQtComponents::Text::addLabelStyle(header);
+        itemWidget->layout()->addWidget(header);
+
+        AzToolsFramework::Thumbnailer::ThumbnailWidget* thumbnail = new AzToolsFramework::Thumbnailer::ThumbnailWidget(itemWidget);
         thumbnail->setFixedSize(size);
         thumbnail->SetThumbnailKey(
             MAKE_TKEY(AzToolsFramework::AssetBrowser::ProductThumbnailKey, assetId),
             AzToolsFramework::Thumbnailer::ThumbnailContext::DefaultContext);
         thumbnail->updateGeometry();
+        itemWidget->layout()->addWidget(thumbnail);
 
-        AzQtComponents::ElidingLabel* previewLabel = new AzQtComponents::ElidingLabel(thumbnail);
-        previewLabel->setText(title);
-        previewLabel->setFixedSize(QSize(size.width(), 15));
-        previewLabel->setMargin(0);
-        previewLabel->setStyleSheet("background-color: rgb(35, 35, 35)");
-        AzQtComponents::Text::addPrimaryStyle(previewLabel);
-        AzQtComponents::Text::addLabelStyle(previewLabel);
-
-        m_ui->m_presetList->setItemWidget(item, thumbnail);
+        m_ui->m_presetList->setItemWidget(item, itemWidget);
 
         return item;
     }
