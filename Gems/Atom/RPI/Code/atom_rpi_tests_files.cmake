@@ -10,8 +10,6 @@ set(FILES
     Tests/Buffer/BufferTests.cpp
     Tests/Common/AssetManagerTestFixture.cpp
     Tests/Common/AssetManagerTestFixture.h
-    Tests/Common/AssetSystemStub.cpp
-    Tests/Common/AssetSystemStub.h
     Tests/Common/ErrorMessageFinder.cpp
     Tests/Common/ErrorMessageFinder.h
     Tests/Common/ErrorMessageFinderTests.cpp

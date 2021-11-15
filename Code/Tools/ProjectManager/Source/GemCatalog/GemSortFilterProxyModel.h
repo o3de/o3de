@@ -70,7 +70,7 @@ namespace O3DE::ProjectManager
         void SetFeatures(const QSet<QString>& features) { m_featureFilter = features; InvalidateFilter(); }
 
         void InvalidateFilter();
-        void ResetFilters();
+        void ResetFilters(bool clearSearchString = true);
 
     signals:
         void OnInvalidated();

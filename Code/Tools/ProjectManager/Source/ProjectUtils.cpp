@@ -628,11 +628,11 @@ namespace O3DE::ProjectManager
                 return AZ::Failure(QObject::tr("Process for command '%1' timed out at %2 seconds").arg(cmd).arg(commandTimeoutSeconds));
             }
             int resultCode = execProcess.exitCode();
+            QString resultOutput = execProcess.readAllStandardOutput();
             if (resultCode != 0)
             {
-                return AZ::Failure(QObject::tr("Process for command '%1' failed (result code %2").arg(cmd).arg(resultCode));
+                return AZ::Failure(QObject::tr("Process for command '%1' failed (result code %2) %3").arg(cmd).arg(resultCode).arg(resultOutput));
             }
-            QString resultOutput = execProcess.readAllStandardOutput();
             return AZ::Success(resultOutput);
         }
 

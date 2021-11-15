@@ -8,7 +8,11 @@
 
 #include <ProjectButtonWidget.h>
 #include <ProjectManagerDefs.h>
+#include <ProjectUtils.h>
+#include <ProjectManager_Traits_Platform.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
+#include <AzCore/IO/SystemFile.h>
+#include <AzCore/IO/Path/Path.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -23,6 +27,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QDesktopServices>
+#include <QMessageBox>
 
 namespace O3DE::ProjectManager
 {
@@ -205,6 +210,29 @@ namespace O3DE::ProjectManager
             { 
                 AzQtComponents::ShowFileOnDesktop(m_projectInfo.m_path);
             });
+
+#if AZ_TRAIT_PROJECT_MANAGER_CREATE_DESKTOP_SHORTCUT
+            menu->addAction(tr("Create Editor desktop shortcut..."), this, [this]()
+            {
+                AZ::IO::FixedMaxPath executableDirectory = ProjectUtils::GetEditorDirectory();
+                AZStd::string executableFilename = "Editor";
+                AZ::IO::FixedMaxPath editorExecutablePath = executableDirectory / (executableFilename + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
+
+                const QString shortcutName = QString("%1 Editor").arg(m_projectInfo.m_displayName); 
+                const QString arg = QString("--regset=\"/Amazon/AzCore/Bootstrap/project_path=%1\"").arg(m_projectInfo.m_path);
+
+                auto result = ProjectUtils::CreateDesktopShortcut(shortcutName, editorExecutablePath.c_str(), { arg });
+                if(result.IsSuccess())
+                {
+                    QMessageBox::information(this, tr("Desktop Shortcut Created"), result.GetValue());
+                }
+                else
+                {
+                    QMessageBox::critical(this, tr("Failed to create shortcut"), result.GetError());
+                }
+            });
+#endif // AZ_TRAIT_PROJECT_MANAGER_CREATE_DESKTOP_SHORTCUT
+
             menu->addSeparator();
             menu->addAction(tr("Duplicate"), this, [this]() { emit CopyProject(m_projectInfo); });
             menu->addSeparator();
