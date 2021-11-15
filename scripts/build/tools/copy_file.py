@@ -15,9 +15,9 @@ import shutil
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--src_dir', dest='src_dir', required=True, help='Source directory to copy files from, if not specified, current directory is used.')
-    parser.add_argument('-r', '--file_regex', dest='file_regex', required=True, help='Globbing pattern used to match file names to copy.')
-    parser.add_argument('-t', '--target_dir', dest="target_dir", required=True, help='Target directory to copy files to.')
+    parser.add_argument('-s', '--src-dir', dest='src_dir', required=True, help='Source directory to copy files from, if not specified, current directory is used.')
+    parser.add_argument('-r', '--file-regex', dest='file_regex', required=True, help='Globbing pattern used to match file names to copy.')
+    parser.add_argument('-t', '--target-dir', dest="target_dir", required=True, help='Target directory to copy files to.')
     args = parser.parse_args()
     if not os.path.isdir(args.src_dir):
         print('ERROR: src_dir is not a valid directory.')
