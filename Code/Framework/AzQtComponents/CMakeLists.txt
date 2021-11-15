@@ -13,7 +13,7 @@ endif()
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 
 ly_add_target(
-    NAME AzQtComponents SHARED
+    NAME AzQtComponents STATIC
     NAMESPACE AZ
     AUTOMOC
     AUTOUIC
