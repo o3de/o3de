@@ -155,7 +155,7 @@ namespace WhiteBox
 
         // special handling for edges in the process of being restored - an edge may be clicked
         // and remain 'orphaned' from a polygon until another connection (loop) can be made.
-        for (const Api::EdgeHandle edgeHandleRestore : m_edgeHandlesBeingRestored)
+        for (const Api::EdgeHandle& edgeHandleRestore : m_edgeHandlesBeingRestored)
         {
             if (AZStd::any_of(
                     interactiveEdgeHandles.begin(), interactiveEdgeHandles.end(),
