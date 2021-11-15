@@ -76,6 +76,11 @@ set(CPACK_AUTO_GEN_TAG ${LY_INSTALLER_AUTO_GEN_TAG})
 ly_get_absolute_pal_filename(pal_dir ${CPACK_SOURCE_DIR}/Platform/${PAL_HOST_PLATFORM_NAME})
 include(${pal_dir}/Packaging_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 
+# if we get here and the generator hasn't been set, then a non fatal error occurred disabling packaging support
+if(NOT CPACK_GENERATOR)
+    return()
+endif()
+
 # We will download the desired copy of CMake so it can be included in the package, we defer the downloading
 # to the install process, to do so we generate a script that will perform the download and execute such script
 # during the install process (before packaging)
@@ -100,11 +105,6 @@ ly_install(FILES ${LY_CMAKE_PACKAGE_DOWNLOAD_PATH}
     DESTINATION Tools/Redistributables/CMake
     COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
 )
-
-# if we get here and the generator hasn't been set, then a non fatal error occurred disabling packaging support
-if(NOT CPACK_GENERATOR)
-    return()
-endif()
 
 # Set common CPACK variables to all platforms/generators
 set(CPACK_STRIP_FILES TRUE) # always strip symbols on packaging
