@@ -1,46 +1,102 @@
 {
     "entries": [
         {
-            "key": "assetId",
-            "context": "BehaviorClass",
-            "variant": "",
-            "details": {
-                "name": "Get Asset Id",
-                "category": "Constants"
-            }
-        },
-        {
-            "key": "assetType",
-            "context": "BehaviorClass",
-            "variant": "",
-            "details": {
-                "name": "Get Asset Type"
-            }
-        },
-        {
-            "key": "sizeBytes",
-            "context": "BehaviorClass",
-            "variant": "",
-            "details": {
-                "name": "Get Size Bytes"
-            }
-        },
-        {
-            "key": "relativePath",
-            "context": "BehaviorClass",
-            "variant": "",
-            "details": {
-                "name": "Get Relative Path",
-                "category": "Constants"
-            }
-        },
-        {
             "key": "AssetInfo",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
                 "name": "Asset Info"
-            }
+            },
+            "methods": [
+                {
+                    "key": "assetId",
+                    "details": {
+                        "name": "Get Asset Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6D8372B-8419-4287-B478-1353709A972F}",
+                            "details": {
+                                "name": "Asset Info"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "assetType",
+                    "details": {
+                        "name": "Get Asset Type"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6D8372B-8419-4287-B478-1353709A972F}",
+                            "details": {
+                                "name": "Asset Info"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Type"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "sizeBytes",
+                    "details": {
+                        "name": "Get Size (Bytes)"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6D8372B-8419-4287-B478-1353709A972F}",
+                            "details": {
+                                "name": "Asset Info"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Size (Bytes)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "relativePath",
+                    "details": {
+                        "name": "Get Relative Path"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6D8372B-8419-4287-B478-1353709A972F}",
+                            "details": {
+                                "name": "Asset Info"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Relative Path"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
