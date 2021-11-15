@@ -295,8 +295,7 @@ namespace O3DE::ProjectManager
                     bool projectBuiltSuccessfully = false;
                     if (settingsRegistry)
                     {
-                        QString settingsKey =
-                            QString("%1/Projects/%2/BuiltSuccesfully").arg(ProjectManagerKeyPrefix).arg(project.m_projectName);
+                        QString settingsKey = GetProjectBuiltSuccessfullyKey(project.m_projectName);
                         settingsRegistry->Get(projectBuiltSuccessfully, settingsKey.toStdString().c_str());
                     }
                     if (!projectBuiltSuccessfully)

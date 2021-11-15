@@ -8,9 +8,14 @@
 
 #pragma once
 
+#if !defined(Q_MOC_RUN)
+#include <QString>
+#endif
+
 namespace O3DE::ProjectManager
 {
     static constexpr char ProjectManagerKeyPrefix[] = "/O3DE/ProjectManager";
 
     void SaveProjectManagerSettings();
+    QString GetProjectBuiltSuccessfullyKey(const QString& projectName);
 }

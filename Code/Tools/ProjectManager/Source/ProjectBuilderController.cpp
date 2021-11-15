@@ -17,8 +17,6 @@
 #include <QDesktopServices>
 #include <QUrl>
 
-
-
 namespace O3DE::ProjectManager
 {
     ProjectBuilderController::ProjectBuilderController(const ProjectInfo& projectInfo, ProjectButton* projectButton, QWidget* parent)
@@ -35,7 +33,7 @@ namespace O3DE::ProjectManager
         if (settingsRegistry)
         {
             // Remove key here in case Project Manager crashing while building that causes HandleResults to not be called
-            QString settingsKey = QString("%1/Projects/%2/BuiltSuccesfully").arg(ProjectManagerKeyPrefix).arg(m_projectInfo.m_projectName);
+            QString settingsKey = GetProjectBuiltSuccessfullyKey(m_projectInfo.m_projectName);
             settingsRegistry->Remove(settingsKey.toStdString().c_str());
             SaveProjectManagerSettings();
         }
@@ -93,7 +91,7 @@ namespace O3DE::ProjectManager
 
     void ProjectBuilderController::HandleResults(const QString& result)
     {
-        QString settingsKey = QString("%1/Projects/%2/BuiltSuccesfully").arg(ProjectManagerKeyPrefix).arg(m_projectInfo.m_projectName);
+        QString settingsKey = GetProjectBuiltSuccessfullyKey(m_projectInfo.m_projectName);
 
         if (!result.isEmpty())
         {

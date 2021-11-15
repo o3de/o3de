@@ -46,4 +46,9 @@ namespace O3DE::ProjectManager
 
         AZ_Warning("ProjectManager", saved, "Unable to save Project Manager registry file to path: %s", o3deUserPath.c_str());
     }
+
+    QString GetProjectBuiltSuccessfullyKey(const QString& projectName)
+    {
+        return QString("%1/Projects/%2/BuiltSuccessfully").arg(ProjectManagerKeyPrefix).arg(projectName);
+    }
 }

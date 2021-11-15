@@ -286,10 +286,8 @@ namespace O3DE::ProjectManager
             if (newProjectSettings.m_projectName != m_projectInfo.m_projectName)
             {
                 // update reg key
-                QString oldSettingsKey =
-                    QString("%1/Projects/%2/BuiltSuccesfully").arg(ProjectManagerKeyPrefix).arg(m_projectInfo.m_projectName);
-                QString newSettingsKey =
-                    QString("%1/Projects/%2/BuiltSuccesfully").arg(ProjectManagerKeyPrefix).arg(newProjectSettings.m_projectName);
+                QString oldSettingsKey = GetProjectBuiltSuccessfullyKey(m_projectInfo.m_projectName);
+                QString newSettingsKey = GetProjectBuiltSuccessfullyKey(newProjectSettings.m_projectName);
 
                 auto settingsRegistry = AZ::SettingsRegistry::Get();
                 bool projectBuiltSuccessfully = false;
