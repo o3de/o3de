@@ -1,0 +1,284 @@
+{
+    "entries": [
+        {
+            "key": "EditorTransformComponentSelectionRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "EditorTransformComponentSelectionRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "CopyTranslationToSelectedEntitiesGroup",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CopyTranslationToSelectedEntitiesGroup"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CopyTranslationToSelectedEntitiesGroup is invoked"
+                    },
+                    "details": {
+                        "name": "CopyTranslationToSelectedEntitiesGroup"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CopyOrientationToSelectedEntitiesIndividual",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CopyOrientationToSelectedEntitiesIndividual"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CopyOrientationToSelectedEntitiesIndividual is invoked"
+                    },
+                    "details": {
+                        "name": "CopyOrientationToSelectedEntitiesIndividual"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CopyOrientationToSelectedEntitiesGroup",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CopyOrientationToSelectedEntitiesGroup"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CopyOrientationToSelectedEntitiesGroup is invoked"
+                    },
+                    "details": {
+                        "name": "CopyOrientationToSelectedEntitiesGroup"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CopyTranslationToSelectedEntitiesIndividual",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CopyTranslationToSelectedEntitiesIndividual"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CopyTranslationToSelectedEntitiesIndividual is invoked"
+                    },
+                    "details": {
+                        "name": "CopyTranslationToSelectedEntitiesIndividual"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CopyScaleToSelectedEntitiesIndividualLocal",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CopyScaleToSelectedEntitiesIndividualLocal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CopyScaleToSelectedEntitiesIndividualLocal is invoked"
+                    },
+                    "details": {
+                        "name": "CopyScaleToSelectedEntitiesIndividualLocal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OverrideManipulatorTranslation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke OverrideManipulatorTranslation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after OverrideManipulatorTranslation is invoked"
+                    },
+                    "details": {
+                        "name": "OverrideManipulatorTranslation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RefreshManipulators",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RefreshManipulators"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RefreshManipulators is invoked"
+                    },
+                    "details": {
+                        "name": "RefreshManipulators"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OverrideManipulatorOrientation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke OverrideManipulatorOrientation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after OverrideManipulatorOrientation is invoked"
+                    },
+                    "details": {
+                        "name": "OverrideManipulatorOrientation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTransformMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTransformMode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTransformMode is invoked"
+                    },
+                    "details": {
+                        "name": "GetTransformMode"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CopyScaleToSelectedEntitiesIndividualWorld",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CopyScaleToSelectedEntitiesIndividualWorld"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CopyScaleToSelectedEntitiesIndividualWorld is invoked"
+                    },
+                    "details": {
+                        "name": "CopyScaleToSelectedEntitiesIndividualWorld"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTransformMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTransformMode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTransformMode is invoked"
+                    },
+                    "details": {
+                        "name": "SetTransformMode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ResetTranslationForSelectedEntitiesLocal",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ResetTranslationForSelectedEntitiesLocal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ResetTranslationForSelectedEntitiesLocal is invoked"
+                    },
+                    "details": {
+                        "name": "ResetTranslationForSelectedEntitiesLocal"
+                    }
+                },
+                {
+                    "key": "ResetOrientationForSelectedEntitiesLocal",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ResetOrientationForSelectedEntitiesLocal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ResetOrientationForSelectedEntitiesLocal is invoked"
+                    },
+                    "details": {
+                        "name": "ResetOrientationForSelectedEntitiesLocal"
+                    }
+                }
+            ]
+        }
+    ]
+}

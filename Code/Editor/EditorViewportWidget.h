@@ -10,7 +10,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Cry_Camera.h>
 
 #include <QSet>
 
@@ -172,7 +171,6 @@ private:
     void ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& rayDir) const override;
     Vec3 ViewToWorldNormal(const QPoint& vp, bool onlyTerrain, bool bTestRenderMesh = false) override;
     float GetScreenScaleFactor(const Vec3& worldPoint) const override;
-    float GetScreenScaleFactor(const CCamera& camera, const Vec3& object_position) override;
     float GetAspectRatio() const override;
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
     bool IsBoundsVisible(const AABB& box) const override;

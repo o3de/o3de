@@ -79,6 +79,9 @@ namespace ScriptCanvasEditor
         //! Used to make sure assets that are unloaded also get removed from tracking
         virtual void UntrackAsset([[maybe_unused]] AZ::Data::AssetId assetId) {}
 
+        //! Recreates the view for all tracked assets
+        virtual void RefreshAll() {}
+
         using AssetList = AZStd::vector<ScriptCanvasMemoryAsset::pointer>;
 
         // Accessors

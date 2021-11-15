@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "SystemConfigPlatform_Pc",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "SystemConfigPlatform_Pc::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

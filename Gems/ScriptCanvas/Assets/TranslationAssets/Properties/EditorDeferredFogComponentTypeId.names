@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorDeferredFogComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorDeferredFogComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

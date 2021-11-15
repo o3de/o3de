@@ -1,0 +1,30 @@
+{
+    "entries" : [
+        {
+            "key": "EBusSenderBusId",
+            "context": "Globals",
+            "details": {
+                "name": "Source",
+                "tooltip": "Identifies the sender of the event"
+            }
+        },
+        {
+            "key": "EBusHandlerBusId",
+            "context": "Globals",
+            "details": 
+            {
+                "name": "Source",
+                "tooltip": "Will handle the event sent to this identifier"
+            }
+        },
+        {
+            "key": "MissingFunction",
+            "context": "Globals",
+            "details": 
+            {
+                "name": "Missing",
+                "tooltip": "Missing Function"
+            }
+        }
+    ]
+}

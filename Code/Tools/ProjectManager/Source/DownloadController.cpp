@@ -41,9 +41,11 @@ namespace O3DE::ProjectManager
     void DownloadController::AddGemDownload(const QString& gemName)
     {
         m_gemNames.push_back(gemName);
+        emit GemDownloadAdded(gemName);
+
         if (m_gemNames.size() == 1)
         {
-            m_worker->SetGemToDownload(m_gemNames[0], false);
+            m_worker->SetGemToDownload(m_gemNames.front(), false);
             m_workerThread.start();
         }
     }
@@ -62,6 +64,7 @@ namespace O3DE::ProjectManager
             else
             {
                 m_gemNames.erase(findResult);
+                emit GemDownloadRemoved(gemName);
             }
         }
     }
@@ -69,7 +72,7 @@ namespace O3DE::ProjectManager
     void DownloadController::UpdateUIProgress(int progress)
     {
         m_lastProgress = progress;
-        emit GemDownloadProgress(progress);
+        emit GemDownloadProgress(m_gemNames.front(), progress);
     }
 
     void DownloadController::HandleResults(const QString& result)
@@ -82,12 +85,13 @@ namespace O3DE::ProjectManager
             succeeded = false;
         }
 
+        QString gemName = m_gemNames.front();
         m_gemNames.erase(m_gemNames.begin());
-        emit Done(succeeded);
+        emit Done(gemName, succeeded);
 
         if (!m_gemNames.empty())
         {
-            emit StartGemDownload(m_gemNames[0]);
+            emit StartGemDownload(m_gemNames.front());
         }
         else
         {

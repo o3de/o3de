@@ -1,0 +1,51 @@
+{
+    "entries": [
+        {
+            "key": "{33E12915-EFCA-4AA7-A188-D694DAD58980}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Event Handler",
+                "category": "Core",
+                "tooltip": "Allows you to handle a event."
+            },
+            "slots": [
+                {
+                    "key": "Input_Connect",
+                    "details": {
+                        "name": "Connect",
+                        "tooltip": "Connect this event handler to the specified entity."
+                    }
+                },
+                {
+                    "key": "Input_Disconnect",
+                    "details": {
+                        "name": "Disconnect",
+                        "tooltip": "Disconnect this event handler."
+                    }
+                },
+                {
+                    "key": "Output_OnConnected",
+                    "details": {
+                        "name": "OnConnected",
+                        "tooltip": "Signaled when a connection has taken place."
+                    }
+                },
+                {
+                    "key": "Output_OnDisconnected",
+                    "details": {
+                        "name": "OnDisconnected",
+                        "tooltip": "Signaled when this event handler is disconnected."
+                    }
+                },
+                {
+                    "key": "Output_OnFailure",
+                    "details": {
+                        "name": "OnFailure",
+                        "tooltip": "Signaled when it is not possible to connect this handler."
+                    }
+                }
+            ]
+        }
+    ]
+}

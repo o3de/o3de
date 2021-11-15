@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ShadowmapSize_2045",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ShadowmapSize_2045::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

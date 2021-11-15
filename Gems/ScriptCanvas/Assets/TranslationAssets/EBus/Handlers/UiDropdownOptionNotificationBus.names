@@ -1,0 +1,22 @@
+{
+    "entries": [
+        {
+            "key": "UiDropdownOptionNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Dropdown Option",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "OnDropdownOptionSelected",
+                    "details": {
+                        "name": "On Dropdown Option Selected",
+                        "tooltip": "Executes when the dropdown option was selected"
+                    }
+                }
+            ]
+        }
+    ]
+}

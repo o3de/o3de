@@ -18,9 +18,11 @@ namespace PhysX
 {
     namespace JointConstants
     {
-        // Setting swing limits to very small values can cause extreme stability problems, so clamp above a small
+        // Setting joint limits to very small values can cause extreme stability problems, so clamp above a small
         // threshold.
         static const float MinSwingLimitDegrees = 1.0f;
+        // Minimum range between lower and upper twist limits.
+        static const float MinTwistLimitRangeDegrees = 1.0f;
     } // namespace JointConstants
 
     namespace Utils

@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "{8305B5C9-1B9F-4D5B-B3E7-66925F491E9D}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Divide by Number (/)",
+                "category": "Math",
+                "tooltip": "Divides certain types by a given number",
+                "subtitle": "Math"
+            },
+            "slots": [
+                {
+                    "key": "DataInput_Divisor",
+                    "details": {
+                        "name": "Divisor"
+                    }
+                },
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -111,7 +111,6 @@ namespace UnitTest
         AZ::SerializeContext* GetSerializeContext() override { return m_context.get(); }
         AZ::BehaviorContext*  GetBehaviorContext() override { return nullptr; }
         AZ::JsonRegistrationContext* GetJsonRegistrationContext() override { return m_jsonRegistrationContext.get(); }
-        const char* GetAppRoot() const override { return nullptr; }
         const char* GetEngineRoot() const override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
         void EnumerateEntities(const AZ::ComponentApplicationRequests::EntityCallback& /*callback*/) override {}
@@ -988,7 +987,6 @@ namespace UnitTest
             ASSERT_TRUE(process->IsSucceed());
 
             SaveImageToFile(process->GetOutputImage(), "rgb", 10);
-            SaveImageToFile(process->GetOutputAlphaImage(), "alpha", 10);
 
             process->GetAppendOutputProducts(outProducts);
 

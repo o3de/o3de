@@ -48,6 +48,12 @@ namespace EMStudio
             CreateViewOptionEntry(contextMenu, "Joint Orientations", EMotionFX::ActorRenderFlag::RENDER_NODEORIENTATION);
             CreateViewOptionEntry(contextMenu, "Actor Bind Pose", EMotionFX::ActorRenderFlag::RENDER_ACTORBINDPOSE);
             contextMenu->addSeparator();
+            CreateViewOptionEntry(contextMenu, "Hit Detection Colliders", EMotionFX::ActorRenderFlag::RENDER_HITDETECTION_COLLIDERS);
+            CreateViewOptionEntry(contextMenu, "Ragdoll Colliders", EMotionFX::ActorRenderFlag::RENDER_RAGDOLL_COLLIDERS);
+            CreateViewOptionEntry(contextMenu, "Ragdoll Joint Limits", EMotionFX::ActorRenderFlag::RENDER_RAGDOLL_JOINTLIMITS);
+            CreateViewOptionEntry(contextMenu, "Cloth Colliders", EMotionFX::ActorRenderFlag::RENDER_CLOTH_COLLIDERS);
+            CreateViewOptionEntry(contextMenu, "Simulated Object Colliders", EMotionFX::ActorRenderFlag::RENDER_SIMULATEDOBJECT_COLLIDERS);
+            CreateViewOptionEntry(contextMenu, "Simulated Joints", EMotionFX::ActorRenderFlag::RENDER_SIMULATEJOINTS);
         }
 
         // Add the camera button
@@ -81,6 +87,19 @@ namespace EMStudio
                     // Send the reset camera event.
                     AnimViewportRequestBus::Broadcast(&AnimViewportRequestBus::Events::ResetCamera);
                 });
+
+            cameraMenu->addSeparator();
+            m_followCharacterAction = cameraMenu->addAction("Follow Character");
+            m_followCharacterAction->setCheckable(true);
+            m_followCharacterAction->setChecked(false);
+            connect(m_followCharacterAction, &QAction::triggered, this,
+                [this]()
+                {
+                    AnimViewportRequestBus::Broadcast(
+                        &AnimViewportRequestBus::Events::SetFollowCharacter, m_followCharacterAction->isChecked());
+                    ;
+                });
+
             cameraButton->setMenu(cameraMenu);
             cameraButton->setText("Camera Option");
             cameraButton->setPopupMode(QToolButton::InstantPopup);

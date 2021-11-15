@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "GradientTransformComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "GradientTransformComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

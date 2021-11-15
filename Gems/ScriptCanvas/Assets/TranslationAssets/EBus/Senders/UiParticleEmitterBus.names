@@ -1,0 +1,2412 @@
+{
+    "entries": [
+        {
+            "key": "UiParticleEmitterBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiParticleEmitterBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "SetParticleColorTintVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Color Tint Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Color Tint Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Color Tint Variation",
+                        "tooltip": "Sets the variation in color tint of the emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Variation",
+                                "tooltip": "The variation in color tint of the emitted particles [0-1]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSpriteSheetFrameDelay",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Sprite Sheet Frame Delay"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Sprite Sheet Frame Delay is invoked"
+                    },
+                    "details": {
+                        "name": "Get Sprite Sheet Frame Delay",
+                        "tooltip": "Gets the delay between each sprite sheet frame"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleAlpha",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Alpha"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Alpha is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Alpha",
+                        "tooltip": "Sets the alpha of the emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Alpha",
+                                "tooltip": "The alpha of the emitted particles [0-1]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsEmitting",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Emitting"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Emitting is invoked"
+                    },
+                    "details": {
+                        "name": "Is Emitting",
+                        "tooltip": "Returns whether the emitter is currently emitting"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Height"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Height is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Height",
+                        "tooltip": "Sets the height of the emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Height",
+                                "tooltip": "The height of the emitted particles"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSpriteSheetCellIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Sprite Sheet Cell Index"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Sprite Sheet Cell Index is invoked"
+                    },
+                    "details": {
+                        "name": "Get Sprite Sheet Cell Index",
+                        "tooltip": "Gets the sprite sheet cell index to be used for emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsParticleInitialRotationFromInitialVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Particle Initial Rotation From Initial Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Particle Initial Rotation From Initial Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Is Particle Initial Rotation From Initial Velocity",
+                        "tooltip": "Returns whether the particle will be initially orientated so that the top of each particle points towards the initial velocity vector"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleLifetime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Lifetime"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Lifetime is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Lifetime",
+                        "tooltip": "Gets the lifetime of the emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsRandomSeedFixed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Random Seed Fixed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Random Seed Fixed is invoked"
+                    },
+                    "details": {
+                        "name": "Is Random Seed Fixed",
+                        "tooltip": "Returns whether the emitter uses a fixed random seed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSpritePathname",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Sprite Pathname"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Sprite Pathname is invoked"
+                    },
+                    "details": {
+                        "name": "Get Sprite Pathname",
+                        "tooltip": "Gets the source location of the image to be used by the emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleLifetimeVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Lifetime Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Lifetime Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Lifetime Variation",
+                        "tooltip": "Gets the variation in lifetime of the emitted particles. A variation of 5 seconds will be up to 5 seconds on either side of the chosen initial lifetime"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Color is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Color",
+                        "tooltip": "Gets the color of the emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleInitialRotationVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Initial Rotation Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Initial Rotation Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Initial Rotation Variation",
+                        "tooltip": "Gets the variation of the initial rotation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleLifetimeVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Lifetime Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Lifetime Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Lifetime Variation",
+                        "tooltip": "Sets the variation in lifetime of the emitted particles. A variation of 5 seconds will be up to 5 seconds on either side of the chosen initial lifetime"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Variation",
+                                "tooltip": "The variation in lifetime of the emitted particles. A variation of 5 seconds will be up to 5 seconds on either side of the chosen initial lifetime"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsEmitOnEdge",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Emit On Edge"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Emit On Edge is invoked"
+                    },
+                    "details": {
+                        "name": "Is Emit On Edge",
+                        "tooltip": "Returns whether the particles are emitted on the edge of the selected shape"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleRotationSpeedVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Rotation Speed Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Rotation Speed Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Rotation Speed Variation",
+                        "tooltip": "Gets the variation in rotation speed of the emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsEmitOnActivate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Emit On Activate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Emit On Activate is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Emit On Activate",
+                        "tooltip": "Sets whether the particle emitter starts emitting when the component is activated"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Emit on Activate",
+                                "tooltip": "Indicates whether the particle emitter starts emitting when the component is activated"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleRotationSpeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Rotation Speed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Rotation Speed is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Rotation Speed",
+                        "tooltip": "Gets the rotation speed of the emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleRotationSpeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Rotation Speed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Rotation Speed is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Rotation Speed",
+                        "tooltip": "Sets the rotation speed of the emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Rotation Speed",
+                                "tooltip": "The rotation speed of the emitted particles in degrees clockwise per second"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsParticlePositionRelativeToEmitter",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Particle Position Relative To Emitter"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Particle Position Relative To Emitter is invoked"
+                    },
+                    "details": {
+                        "name": "Is Particle Position Relative To Emitter",
+                        "tooltip": "Returns whether the emitted particles move relative to the emitter"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsParticleAspectRatioLocked",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Particle Aspect Ratio Locked"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Particle Aspect Ratio Locked is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Particle Aspect Ratio Locked",
+                        "tooltip": "Sets whether the width and height of the emitted particles will be locked into the current aspect ratio"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Aspect Ratio Locked",
+                                "tooltip": "Indicates whether the width and height of the emitted particles will be locked into the current aspect ratio"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEmitAngleVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Emit Angle Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Emit Angle Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Set Emit Angle Variation",
+                        "tooltip": "Sets the variation in the emit angle"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Variation",
+                                "tooltip": "The variation in the emit angle in degrees. A variation of 10 would be up to +/- 10 degrees on each side of the current emit angle"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleLifetime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Lifetime"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Lifetime is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Lifetime",
+                        "tooltip": "Sets the lifetime of the emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Lifetime",
+                                "tooltip": "The lifetime of the emitted particles in seconds"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSpriteSheetFrameDelay",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Sprite Sheet Frame Delay"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Sprite Sheet Frame Delay is invoked"
+                    },
+                    "details": {
+                        "name": "Set Sprite Sheet Frame Delay",
+                        "tooltip": "Sets the delay between each sprite sheet frame"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Delay",
+                                "tooltip": "The delay in seconds between each sprite sheet frame"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsParticleInitialRotationFromInitialVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Particle Initial Rotation From Initial Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Particle Initial Rotation From Initial Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Particle Initial Rotation From Initial Velocity",
+                        "tooltip": "Sets whether the particle will be initially orientated so that the top of each particles points towards the initial velocity vector"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Initial Rotation from Velocity",
+                                "tooltip": "Indicates whether the particle will be initially orientated so that the top of each particles points towards the initial velocity vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleAccelerationMovementSpace",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Acceleration Movement Space"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Acceleration Movement Space is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Acceleration Movement Space",
+                        "tooltip": "Sets the coordinate system used for the acceleration of particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Coordinate System",
+                                "tooltip": "The coordinate system used for the acceleration of particles (0=Cartesian, 1=Polar)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsSpriteSheetAnimated",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Sprite Sheet Animated"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Sprite Sheet Animated is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Sprite Sheet Animated",
+                        "tooltip": "Sets whether the sprite sheet cell index changes over time on each particle"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Animated",
+                                "tooltip": "Indicates whether the sprite sheet cell index changes over time on each particle"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsParticleCountLimited",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Particle Count Limited"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Particle Count Limited is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Particle Count Limited",
+                        "tooltip": "Sets whether there is a limit to the amount of active particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Particle Count Limited",
+                                "tooltip": "Indicates whether there is a limit to the amount of active particles"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Size is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Size",
+                        "tooltip": "Gets the size of the emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleAccelerationMovementSpace",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Acceleration Movement Space"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Acceleration Movement Space is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Acceleration Movement Space",
+                        "tooltip": "Gets the coordinate system used for the acceleration of particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEmitAngle",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Emit Angle"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Emit Angle is invoked"
+                    },
+                    "details": {
+                        "name": "Set Emit Angle",
+                        "tooltip": "Sets the angle that particles are emitted along"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Angle",
+                                "tooltip": "The angle that particles are emitted along, in degrees clockwise from straight up"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleEmitRate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Emit Rate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Emit Rate is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Emit Rate",
+                        "tooltip": "Sets the particle emitter emit rate"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Emit Rate",
+                                "tooltip": "The particle emitter emit rate in particles per second"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetMaxParticles",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Max Particles"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Max Particles is invoked"
+                    },
+                    "details": {
+                        "name": "Get Max Particles",
+                        "tooltip": "Gets the limit of the amount of active particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleColorBrightnessVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Color Brightness Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Color Brightness Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Color Brightness Variation",
+                        "tooltip": "Gets the variation in color brightness of the emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetMaxParticles",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Max Particles"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Max Particles is invoked"
+                    },
+                    "details": {
+                        "name": "Set Max Particles",
+                        "tooltip": "Sets the limit of the amount of active particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Max Particles",
+                                "tooltip": "The limit of the amount of active particles"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetInsideEmitDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Inside Emit Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Inside Emit Distance is invoked"
+                    },
+                    "details": {
+                        "name": "Get Inside Emit Distance",
+                        "tooltip": "Gets the distance inside the emitter shape edge that particles are emitted"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticlePivot",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Pivot"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Pivot is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Pivot",
+                        "tooltip": "Sets the pivot for the particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Pivot",
+                                "tooltip": "The pivot for the particles from (0,0) at the top left to (1,1) at the bottom right"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleInitialDirectionType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Initial Direction Type"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Initial Direction Type is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Initial Direction Type",
+                        "tooltip": "Gets how the initial direction of the emitted particles are calculated"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEmitterLifetime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Emitter Lifetime"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Emitter Lifetime is invoked"
+                    },
+                    "details": {
+                        "name": "Set Emitter Lifetime",
+                        "tooltip": "Sets the emitter lifetime. When the lifetime is reached the emitter will stop emitting"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Lifetime",
+                                "tooltip": "The emitter lifetime in seconds"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSpriteSheetCellEndIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Sprite Sheet Cell End Index"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Sprite Sheet Cell End Index is invoked"
+                    },
+                    "details": {
+                        "name": "Get Sprite Sheet Cell End Index",
+                        "tooltip": "Gets the end index of the sprite sheet cell range used for sprite sheet animation or for randomly choosing the index"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsEmitOnEdge",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Emit On Edge"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Emit On Edge is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Emit On Edge",
+                        "tooltip": "Sets whether the particles are emitted on the edge of the selected shape"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Emit on Edge",
+                                "tooltip": "Indicates whether the particles are emitted on the edge of the selected shape"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleColorTintVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Color Tint Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Color Tint Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Color Tint Variation",
+                        "tooltip": "Gets the variation in color tint of the emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleInitialVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Initial Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Initial Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Initial Velocity",
+                        "tooltip": "Sets the initial velocity of the emitted particles (used only when the emitter doesn’t control the emit direction)"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Velocity",
+                                "tooltip": "The initial velocity of the emitted particles"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsParticleCountLimited",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Particle Count Limited"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Particle Count Limited is invoked"
+                    },
+                    "details": {
+                        "name": "Is Particle Count Limited",
+                        "tooltip": "Returns whether there is a limit to the amount of active particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleWidthVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Width Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Width Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Width Variation",
+                        "tooltip": "Sets the variation in width of the emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Variation",
+                                "tooltip": "The variation in width of the emitted particles"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetOutsideEmitDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Outside Emit Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Outside Emit Distance is invoked"
+                    },
+                    "details": {
+                        "name": "Get Outside Emit Distance",
+                        "tooltip": "Gets the distance outside the emitter shape edge that particles are emitted"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsParticleLifetimeInfinite",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Particle Lifetime Infinite"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Particle Lifetime Infinite is invoked"
+                    },
+                    "details": {
+                        "name": "Is Particle Lifetime Infinite",
+                        "tooltip": "Returns whether the emitted particles have an infinite lifetime"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsParticleRotationFromVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Particle Rotation From Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Particle Rotation From Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Particle Rotation From Velocity",
+                        "tooltip": "Sets whether the particle will be orientated so that the top of each particles points towards the current velocity vector"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Rotation from Velocity",
+                                "tooltip": "Indicates whether the particle will be orientated so that the top of each particles points towards the current velocity vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsSpriteSheetAnimated",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Sprite Sheet Animated"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Sprite Sheet Animated is invoked"
+                    },
+                    "details": {
+                        "name": "Is Sprite Sheet Animated",
+                        "tooltip": "Returns whether the sprite sheet cell index changes over time on each particle"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetInsideEmitDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Inside Emit Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Inside Emit Distance is invoked"
+                    },
+                    "details": {
+                        "name": "Set Inside Emit Distance",
+                        "tooltip": "Sets the distance inside the emitter shape edge that particles are emitted"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Distance",
+                                "tooltip": "The distance inside the emitter shape edge that particles are emitted"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSpritePathname",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Sprite Pathname"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Sprite Pathname is invoked"
+                    },
+                    "details": {
+                        "name": "Set Sprite Pathname",
+                        "tooltip": "Sets the source location of the image to be used by the emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Pathname",
+                                "tooltip": "The source location of the image to be used by the emitted particles"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEmitterShape",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Emitter Shape"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Emitter Shape is invoked"
+                    },
+                    "details": {
+                        "name": "Get Emitter Shape",
+                        "tooltip": "Gets the emitter shape"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetOutsideEmitDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Outside Emit Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Outside Emit Distance is invoked"
+                    },
+                    "details": {
+                        "name": "Set Outside Emit Distance",
+                        "tooltip": "Sets the distance outside the emitter shape edge that particles are emitted"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Distance",
+                                "tooltip": "The distance outside the emitter shape edge that particles are emitted"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetRandomSeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Random Seed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Random Seed is invoked"
+                    },
+                    "details": {
+                        "name": "Set Random Seed",
+                        "tooltip": "Sets the random seed used by the emitter"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Random Seed",
+                                "tooltip": "The random seed used by the emitter"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsParticleRotationFromVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Particle Rotation From Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Particle Rotation From Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Is Particle Rotation From Velocity",
+                        "tooltip": "Returns whether the particle will be orientated so that the top of each particles points towards the current velocity vector"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetRandomSeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Random Seed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Random Seed is invoked"
+                    },
+                    "details": {
+                        "name": "Get Random Seed",
+                        "tooltip": "Gets the random seed used by the emitter"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleEmitRate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Emit Rate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Emit Rate is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Emit Rate",
+                        "tooltip": "Gets the particle emitter emit rate"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsSpriteSheetIndexRandom",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Sprite Sheet Index Random"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Sprite Sheet Index Random is invoked"
+                    },
+                    "details": {
+                        "name": "Is Sprite Sheet Index Random",
+                        "tooltip": "Returns whether the initial sprite sheet index is randomly chosen"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsEmitting",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Emitting"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Emitting is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Emitting",
+                        "tooltip": "Sets whether the emitter is currently emitting"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Emitting",
+                                "tooltip": "Indicates whether the emitter is currently emitting"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleWidth",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Width"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Width is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Width",
+                        "tooltip": "Gets the width of the emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleInitialRotation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Initial Rotation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Initial Rotation is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Initial Rotation",
+                        "tooltip": "Gets the initial rotation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsSpriteSheetAnimationLooped",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Sprite Sheet Animation Looped"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Sprite Sheet Animation Looped is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Sprite Sheet Animation Looped",
+                        "tooltip": "Sets whether the sprite sheet cell animation is looped"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Animation Looped",
+                                "tooltip": "Indicates whether the sprite sheet cell animation is looped"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleInitialRotationVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Initial Rotation Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Initial Rotation Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Initial Rotation Variation",
+                        "tooltip": "Sets the variation of the initial rotation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Variation",
+                                "tooltip": "The variation of the initial rotation in degrees clockwise measured from straight up"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsRandomSeedFixed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Random Seed Fixed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Random Seed Fixed is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Random Seed Fixed",
+                        "tooltip": "Sets whether the emitter uses a fixed random seed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Seed Fixed",
+                                "tooltip": "Indicates whether the emitter uses a fixed random seed"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsEmitterLifetimeInfinite",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Emitter Lifetime Infinite"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Emitter Lifetime Infinite is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Emitter Lifetime Infinite",
+                        "tooltip": "Sets whether the emitter lifetime is infinite"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Emitter Lifetime Infinite",
+                                "tooltip": "Indicates whether the emitter lifetime is infinite"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEmitAngle",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Emit Angle"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Emit Angle is invoked"
+                    },
+                    "details": {
+                        "name": "Get Emit Angle",
+                        "tooltip": "Gets the angle that particles are emitted along"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsEmitterLifetimeInfinite",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Emitter Lifetime Infinite"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Emitter Lifetime Infinite is invoked"
+                    },
+                    "details": {
+                        "name": "Is Emitter Lifetime Infinite",
+                        "tooltip": "Returns whether the emitter lifetime is infinite"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsHitParticleCountOnActivate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Hit Particle Count On Activate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Hit Particle Count On Activate is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Hit Particle Count On Activate",
+                        "tooltip": "Sets whether the average amount of particles will be emitted and processed when the emitter starts emitting"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Hit on Activate",
+                                "tooltip": "Indicates whether the average amount of particles will be emitted and processed when the emitter starts emitting"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleMovementCoordinateType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Movement Coordinate Type"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Movement Coordinate Type is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Movement Coordinate Type",
+                        "tooltip": "Sets the coordinate system used for the movement of the emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Coordinate System",
+                                "tooltip": "The coordinate system used for the movement of the emitted particles (0=Cartesian, 1=Polar)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSpriteSheetCellEndIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Sprite Sheet Cell End Index"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Sprite Sheet Cell End Index is invoked"
+                    },
+                    "details": {
+                        "name": "Set Sprite Sheet Cell End Index",
+                        "tooltip": "Sets the end index of the sprite sheet cell range used for sprite sheet animation or for randomly choosing the index"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Cell End Index",
+                                "tooltip": "The end index of the sprite sheet cell range"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Color is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Color",
+                        "tooltip": "Sets the color of the emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color",
+                                "tooltip": "The color of the emitted particles"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSpriteSheetCellIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Sprite Sheet Cell Index"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Sprite Sheet Cell Index is invoked"
+                    },
+                    "details": {
+                        "name": "Set Sprite Sheet Cell Index",
+                        "tooltip": "Sets the sprite sheet cell index to be used for emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Cell Index",
+                                "tooltip": "The sprite sheet cell index to be used for emitted particles"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsParticleLifetimeInfinite",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Particle Lifetime Infinite"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Particle Lifetime Infinite is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Particle Lifetime Infinite",
+                        "tooltip": "Sets whether the emitted particles have an infinite lifetime"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Particle Lifetime Infinite",
+                                "tooltip": "Indicates whether the emitted particles have an infinite lifetime"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleSpeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Speed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Speed is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Speed",
+                        "tooltip": "Sets the initial particle speed (used only when the emitter controls the emit direction)"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Speed",
+                                "tooltip": "The initial particle speed"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsHitParticleCountOnActivate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Hit Particle Count On Activate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Hit Particle Count On Activate is invoked"
+                    },
+                    "details": {
+                        "name": "Is Hit Particle Count On Activate",
+                        "tooltip": "Returns whether the average amount of particles will be emitted and processed when the emitter starts emitting"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleAlpha",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Alpha"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Alpha is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Alpha",
+                        "tooltip": "Gets the alpha of the emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEmitAngleVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Emit Angle Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Emit Angle Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Get Emit Angle Variation",
+                        "tooltip": "Gets the variation in the emit angle"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEmitterShape",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Emitter Shape"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Emitter Shape is invoked"
+                    },
+                    "details": {
+                        "name": "Set Emitter Shape",
+                        "tooltip": "Sets the emitter shape"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Shape",
+                                "tooltip": "The emitter shape (0=Point, 1=Circle, 2=Quad)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleSpeedVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Speed Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Speed Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Speed Variation",
+                        "tooltip": "Gets the variation in initial particle speed (used only when the emitter controls the emit direction)"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleAcceleration",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Acceleration"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Acceleration is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Acceleration",
+                        "tooltip": "Sets the acceleration of the emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Acceleration",
+                                "tooltip": "The acceleration of the emitted particles"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleSpeedVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Speed Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Speed Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Speed Variation",
+                        "tooltip": "Sets the variation in initial particle speed (used only when the emitter controls the emit direction)"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Variation",
+                                "tooltip": "The variation in initial particle speed"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsParticleAspectRatioLocked",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Particle Aspect Ratio Locked"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Particle Aspect Ratio Locked is invoked"
+                    },
+                    "details": {
+                        "name": "Is Particle Aspect Ratio Locked",
+                        "tooltip": "Returns whether the width and height of the emitted particles will be locked into the current aspect ratio"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsSpriteSheetAnimationLooped",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Sprite Sheet Animation Looped"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Sprite Sheet Animation Looped is invoked"
+                    },
+                    "details": {
+                        "name": "Is Sprite Sheet Animation Looped",
+                        "tooltip": "Returns whether the sprite sheet cell animation is looped"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleAcceleration",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Acceleration"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Acceleration is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Acceleration",
+                        "tooltip": "Gets the acceleration of the emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsSpriteSheetIndexRandom",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Sprite Sheet Index Random"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Sprite Sheet Index Random is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Sprite Sheet Index Random",
+                        "tooltip": "Sets whether the initial sprite sheet index is randomly chosen"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Index Random",
+                                "tooltip": "Indicates whether the initial sprite sheet index is randomly chosen"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleMovementCoordinateType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Movement Coordinate Type"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Movement Coordinate Type is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Movement Coordinate Type",
+                        "tooltip": "Gets the coordinate system used for the movement of the emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleInitialVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Initial Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Initial Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Initial Velocity",
+                        "tooltip": "Gets the initial velocity of the emitted particles (used only when the emitter doesn’t control the emit direction)"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleWidth",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Width"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Width is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Width",
+                        "tooltip": "Sets the width of the emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Width",
+                                "tooltip": "The width of the emitted particles"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Size is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Size",
+                        "tooltip": "Sets the size of the emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Size",
+                                "tooltip": "The size of the emitted particles"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEmitterLifetime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Emitter Lifetime"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Emitter Lifetime is invoked"
+                    },
+                    "details": {
+                        "name": "Get Emitter Lifetime",
+                        "tooltip": "Gets the emitter lifetime. When the lifetime is reached the emitter will stop emitting"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleSpeed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Speed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Speed is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Speed",
+                        "tooltip": "Gets the initial particle speed (used only when the emitter controls the emit direction)"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleRotationSpeedVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Rotation Speed Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Rotation Speed Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Rotation Speed Variation",
+                        "tooltip": "Sets the variation in rotation speed of the emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Variation",
+                                "tooltip": "The variation in rotation speed of the emitted particles in degrees clockwise per second"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Height"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Height is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Height",
+                        "tooltip": "Gets the height of the emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleHeightVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Height Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Height Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Height Variation",
+                        "tooltip": "Sets the variation in height of the emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Variation",
+                                "tooltip": "The variation in height of the emitted particles"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleInitialRotation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Initial Rotation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Initial Rotation is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Initial Rotation",
+                        "tooltip": "Sets the initial rotation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Rotation",
+                                "tooltip": "The initial rotation in degrees clockwise measured from straight up"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticlePivot",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Pivot"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Pivot is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Pivot",
+                        "tooltip": "Gets the pivot for the particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleWidthVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Width Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Width Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Width Variation",
+                        "tooltip": "Gets the variation in width of the emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsEmitOnActivate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Emit On Activate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Emit On Activate is invoked"
+                    },
+                    "details": {
+                        "name": "Is Emit On Activate",
+                        "tooltip": "Returns whether the particle emitter starts emitting when the component is activated"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIsParticlePositionRelativeToEmitter",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Particle Position Relative To Emitter"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Particle Position Relative To Emitter is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Particle Position Relative To Emitter",
+                        "tooltip": "Sets whether the emitted particles move relative to the emitter"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Relative to Emitter",
+                                "tooltip": "Indicates whether the emitted particles move relative to the emitter"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleInitialDirectionType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Initial Direction Type"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Initial Direction Type is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Initial Direction Type",
+                        "tooltip": "Sets how the initial direction of the emitted particles are calculated"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Initial Direction Type",
+                                "tooltip": "Indicates how the initial direction of the emitted particles are calculated (0=Relative to Emit Angle, 1=Relative to Emitter Center)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetParticleHeightVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Particle Height Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Particle Height Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Get Particle Height Variation",
+                        "tooltip": "Gets the variation in height of the emitted particles"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParticleColorBrightnessVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Particle Color Brightness Variation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Particle Color Brightness Variation is invoked"
+                    },
+                    "details": {
+                        "name": "Set Particle Color Brightness Variation",
+                        "tooltip": "Sets the variation in color brightness of the emitted particles"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Variation",
+                                "tooltip": "The variation in color brightness of the emitted particles [0-1]"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

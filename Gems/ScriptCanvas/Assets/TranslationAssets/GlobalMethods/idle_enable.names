@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "idle_enable",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "idle_enable",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke idle_enable"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after idle_enable is invoked"
+                    },
+                    "details": {
+                        "name": "idle_enable",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

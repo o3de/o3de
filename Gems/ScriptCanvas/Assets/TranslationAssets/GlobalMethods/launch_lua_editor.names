@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "launch_lua_editor",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "launch_lua_editor",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke launch_lua_editor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after launch_lua_editor is invoked"
+                    },
+                    "details": {
+                        "name": "launch_lua_editor",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

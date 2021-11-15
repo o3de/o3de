@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "CullMode_Front",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "CullMode_Front::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

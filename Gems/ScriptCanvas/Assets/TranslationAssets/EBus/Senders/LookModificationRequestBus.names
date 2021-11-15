@@ -1,0 +1,322 @@
+{
+    "entries": [
+        {
+            "key": "LookModificationRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "LookModificationRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "SetColorGradingLutOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetColorGradingLutOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetColorGradingLutOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetColorGradingLutOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetCustomMaxExposure",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetCustomMaxExposure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetCustomMaxExposure is invoked"
+                    },
+                    "details": {
+                        "name": "SetCustomMaxExposure"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetCustomMinExposure",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetCustomMinExposure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetCustomMinExposure is invoked"
+                    },
+                    "details": {
+                        "name": "SetCustomMinExposure"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCustomMinExposure",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCustomMinExposure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCustomMinExposure is invoked"
+                    },
+                    "details": {
+                        "name": "GetCustomMinExposure"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColorGradingLut",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColorGradingLut"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColorGradingLut is invoked"
+                    },
+                    "details": {
+                        "name": "GetColorGradingLut"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{895CEA57-551B-5B79-A32B-B2DA0A912C87}",
+                            "details": {
+                                "name": "Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColorGradingLutIntensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColorGradingLutIntensity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColorGradingLutIntensity is invoked"
+                    },
+                    "details": {
+                        "name": "GetColorGradingLutIntensity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColorGradingLutOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColorGradingLutOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColorGradingLutOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetColorGradingLutOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetColorGradingLut",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetColorGradingLut"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetColorGradingLut is invoked"
+                    },
+                    "details": {
+                        "name": "SetColorGradingLut"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{895CEA57-551B-5B79-A32B-B2DA0A912C87}",
+                            "details": {
+                                "name": "Asset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetColorGradingLutIntensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetColorGradingLutIntensity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetColorGradingLutIntensity is invoked"
+                    },
+                    "details": {
+                        "name": "SetColorGradingLutIntensity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "SetEnabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "GetEnabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetShaperPresetType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetShaperPresetType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetShaperPresetType is invoked"
+                    },
+                    "details": {
+                        "name": "SetShaperPresetType"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetShaperPresetType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetShaperPresetType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetShaperPresetType is invoked"
+                    },
+                    "details": {
+                        "name": "GetShaperPresetType"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCustomMaxExposure",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCustomMaxExposure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCustomMaxExposure is invoked"
+                    },
+                    "details": {
+                        "name": "GetCustomMaxExposure"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,63 @@
+{
+    "entries": [
+        {
+            "key": "{0A2EB488-5A6A-E166-BB62-23FF81499E33}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "InputHandler",
+                "category": "Input",
+                "tooltip": "Handle processed input events found in input binding assets"
+            },
+            "slots": [
+                {
+                    "key": "Input_Connect Event",
+                    "details": {
+                        "name": "Connect Event",
+                        "tooltip": "Connect to input event name as defined in an input binding asset."
+                    }
+                },
+                {
+                    "key": "DataInput_Event Name",
+                    "details": {
+                        "name": "Event Name"
+                    }
+                },
+                {
+                    "key": "Output_On Connect Event",
+                    "details": {
+                        "name": "On Connect Event",
+                        "tooltip": "Connect to input event name as defined in an input binding asset."
+                    }
+                },
+                {
+                    "key": "Output_Pressed",
+                    "details": {
+                        "name": "Pressed",
+                        "tooltip": "Signaled when the input event begins."
+                    }
+                },
+                {
+                    "key": "DataOutput_value",
+                    "details": {
+                        "name": "value"
+                    }
+                },
+                {
+                    "key": "Output_Held",
+                    "details": {
+                        "name": "Held",
+                        "tooltip": "Signaled while the input event is active."
+                    }
+                },
+                {
+                    "key": "Output_Released",
+                    "details": {
+                        "name": "Released",
+                        "tooltip": "Signaled when the input event ends."
+                    }
+                }
+            ]
+        }
+    ]
+}

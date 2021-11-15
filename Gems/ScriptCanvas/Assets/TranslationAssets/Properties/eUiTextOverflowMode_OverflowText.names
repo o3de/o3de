@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiTextOverflowMode_OverflowText",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiTextOverflowMode_OverflowText::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

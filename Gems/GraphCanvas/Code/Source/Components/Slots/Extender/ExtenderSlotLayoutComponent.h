@@ -48,8 +48,8 @@ namespace GraphCanvas
         // SlotNotificationBus
         void OnRegisteredToNode(const AZ::EntityId& nodeId) override;
 
-        void OnNameChanged(const TranslationKeyedString& name) override;
-        void OnTooltipChanged(const TranslationKeyedString& tooltip) override;
+        void OnNameChanged(const AZStd::string& name) override;
+        void OnTooltipChanged(const AZStd::string& tooltip) override;
         ////
 
         // StyleNotificationBus

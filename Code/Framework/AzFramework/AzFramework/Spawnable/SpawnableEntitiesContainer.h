@@ -36,6 +36,12 @@ namespace AzFramework
     public:
         using AlertCallback = AZStd::function<void(uint32_t generation)>;
 
+        enum class CheckIfSpawnableIsLoaded : bool
+        {
+            Yes,
+            No
+        };
+
         //! Constructs a new spawnables entity container that has not been connected.
         SpawnableEntitiesContainer() = default;
         //! Constructs a new spawnables entity container that connects to the provided spawnable.
@@ -48,13 +54,13 @@ namespace AzFramework
         //! Returns a number that identifies the current generation of the container with. The completion callback can still receive
         //!     calls from older generations as processing completes on those. The returned value can be used to help calls tell
         //!     older versions apart from newer ones.
-        [[nodiscard]] uint64_t GetCurrentGeneration() const;
+        [[nodiscard]] uint32_t GetCurrentGeneration() const;
 
         //! Puts in a request to spawn entities using all entities in the provided spawnable as a template.
         void SpawnAllEntities();
         //! Puts in a request to spawn entities using the entities found in the spawnable at the provided indices as a template.
         //! @param entityIndices A list of indices to the entities in the spawnable.
-        void SpawnEntities(AZStd::vector<size_t> entityIndices);
+        void SpawnEntities(AZStd::vector<uint32_t> entityIndices);
         //! Puts in a request to despawn all previous spawned entities.
         void DespawnAllEntities();
 
@@ -73,7 +79,11 @@ namespace AzFramework
         //! other than the calling thread including the main thread. Note that because the alert is queued it can still be called
         //! after the container has been deleted or can be called for a previously assigned spawnable. In the latter case check
         //! if the current generation matches the generation provided with the callback.
-        void Alert(AlertCallback callback);
+        //! @param callback The function called when the alert triggers. This can be called from a different thread than the one that
+        //!     the one that made the call to Alert.
+        //! @param checkSpawnableIsLoaded If true the alert will also block until the spawnable has been loaded. If false then it will
+        //!     be called after all previous calls have completed, but the spawnable may not be loaded at that point.
+        void Alert(AlertCallback callback, CheckIfSpawnableIsLoaded spawnableCheck = CheckIfSpawnableIsLoaded::No);
 
     private:
         void Connect(AZ::Data::Asset<Spawnable> spawnable);

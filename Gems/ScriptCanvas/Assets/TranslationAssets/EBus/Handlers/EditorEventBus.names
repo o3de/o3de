@@ -1,0 +1,20 @@
+{
+    "entries": [
+        {
+            "key": "EditorEventBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "EditorEventBus"
+            },
+            "methods": [
+                {
+                    "key": "NotifyRegisterViews",
+                    "details": {
+                        "name": "NotifyRegisterViews"
+                    }
+                }
+            ]
+        }
+    ]
+}

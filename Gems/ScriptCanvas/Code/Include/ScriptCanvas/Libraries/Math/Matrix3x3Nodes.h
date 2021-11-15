@@ -15,7 +15,7 @@ namespace ScriptCanvas
 {
     namespace Matrix3x3Nodes
     {
-        static const char* k_categoryName = "Math/Matrix3x3";
+        static constexpr const char* k_categoryName = "Math/Matrix3x3";
 
         AZ_INLINE Data::Matrix3x3Type Add(const Data::Matrix3x3Type& lhs, const Data::Matrix3x3Type& rhs)
         {

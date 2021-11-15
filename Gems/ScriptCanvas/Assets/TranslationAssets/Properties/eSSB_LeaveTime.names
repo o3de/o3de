@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eSSB_LeaveTime",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eSSB_LeaveTime::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

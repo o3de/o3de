@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiHAlign_Center",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiHAlign_Center::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

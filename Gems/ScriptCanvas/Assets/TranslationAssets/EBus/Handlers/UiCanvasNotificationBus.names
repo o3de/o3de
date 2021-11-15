@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "key": "UiCanvasNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Canvas",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "OnAction",
+                    "details": {
+                        "name": "On Action",
+                        "tooltip": "Executes when the canvas sends an action"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityID",
+                                "tooltip": "The element that triggered the action"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Action Name",
+                                "tooltip": "The name of the action"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

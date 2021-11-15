@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiParticleInitialDirectionType_RelativeToEmitAngle",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiParticleInitialDirectionType_RelativeToEmitAngle::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

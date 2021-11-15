@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ShapeWeightModifierComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ShapeWeightModifierComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

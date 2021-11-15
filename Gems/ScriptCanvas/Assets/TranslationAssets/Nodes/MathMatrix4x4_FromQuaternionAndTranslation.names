@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "{18B8A477-A413-5477-ACA7-8A27C7C9A966}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "FromQuaternionAndTranslation",
+                "category": "Math/Matrix4x4",
+                "tooltip": "returns a skew-symmetric cross product matrix based on supplied vector",
+                "subtitle": "Matrix4x4"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Quaternion: Rotation",
+                    "details": {
+                        "name": "Quaternion: Rotation"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector3: Translation",
+                    "details": {
+                        "name": "Vector3: Translation"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Matrix4x4",
+                    "details": {
+                        "name": "Result: Matrix4x4"
+                    }
+                }
+            ]
+        }
+    ]
+}

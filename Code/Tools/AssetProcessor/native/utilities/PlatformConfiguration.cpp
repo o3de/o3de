@@ -749,7 +749,7 @@ namespace AssetProcessor
         }
 
         AZStd::vector<AZ::IO::Path> configFiles = AzToolsFramework::AssetUtils::GetConfigFiles(absoluteSystemRoot.toUtf8().constData(),
-            absoluteAssetRoot.toUtf8().constData(), projectPath.toUtf8().constData(),
+            projectPath.toUtf8().constData(),
             addPlatformConfigs, addGemsConfigs && !noGemScanFolders, settingsRegistry);
 
         // First Merge all Engine, Gem and Project specific AssetProcessor*Config.setreg/.inifiles

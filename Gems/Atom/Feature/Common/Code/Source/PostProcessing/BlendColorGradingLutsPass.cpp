@@ -46,7 +46,11 @@ namespace AZ
 
         void BlendColorGradingLutsPass::InitializeShaderVariant()
         {
-            AZ_Assert(m_shader != nullptr, "BlendColorGradingLutsPass %s has a null shader when calling InitializeShaderVariant.", GetPathName().GetCStr());
+            if (m_shader == nullptr)
+            {
+                AZ_Assert(false, "BlendColorGradingLutsPass %s has a null shader when calling InitializeShaderVariant.", GetPathName().GetCStr());
+                return;
+            }
 
             // Total variations is MaxBlendLuts plus one for the fallback case that none of the LUTs are found,
             // and hence zero LUTs are blended resulting in an identity LUT.

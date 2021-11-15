@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{B8B0E83E-F1C3-5F0B-93A5-1756B79E1316}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Negate",
+                "category": "Math/Vector4",
+                "tooltip": "returns the vector Source with each element multiplied by -1",
+                "subtitle": "Vector4"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Vector4: Source",
+                    "details": {
+                        "name": "Vector4: Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Vector4",
+                    "details": {
+                        "name": "Result: Vector4"
+                    }
+                }
+            ]
+        }
+    ]
+}

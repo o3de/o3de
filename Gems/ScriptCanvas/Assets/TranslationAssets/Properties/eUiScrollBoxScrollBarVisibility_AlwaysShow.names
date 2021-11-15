@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiScrollBoxScrollBarVisibility_AlwaysShow",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiScrollBoxScrollBarVisibility_AlwaysShow::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

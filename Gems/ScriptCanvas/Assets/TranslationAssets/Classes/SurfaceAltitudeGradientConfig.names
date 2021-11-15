@@ -1,0 +1,148 @@
+{
+    "entries": [
+        {
+            "key": "SurfaceAltitudeGradientConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "SurfaceAltitudeGradientConfig"
+            },
+            "methods": [
+                {
+                    "key": "GetNumTags",
+                    "context": "SurfaceAltitudeGradientConfig",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNumTags"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNumTags is invoked"
+                    },
+                    "details": {
+                        "name": "SurfaceAltitudeGradientConfig::GetNumTags",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3CB05FC9-6E0F-435E-B420-F027B6716804}",
+                            "details": {
+                                "name": "SurfaceAltitudeGradientConfig*",
+                                "tooltip": "altitude Gradient"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTag",
+                    "context": "SurfaceAltitudeGradientConfig",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTag"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTag is invoked"
+                    },
+                    "details": {
+                        "name": "SurfaceAltitudeGradientConfig::GetTag",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3CB05FC9-6E0F-435E-B420-F027B6716804}",
+                            "details": {
+                                "name": "SurfaceAltitudeGradientConfig*",
+                                "tooltip": "altitude Gradient"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Crc32"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "RemoveTag",
+                    "context": "SurfaceAltitudeGradientConfig",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RemoveTag"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RemoveTag is invoked"
+                    },
+                    "details": {
+                        "name": "SurfaceAltitudeGradientConfig::RemoveTag",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3CB05FC9-6E0F-435E-B420-F027B6716804}",
+                            "details": {
+                                "name": "SurfaceAltitudeGradientConfig*",
+                                "tooltip": "altitude Gradient"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "AddTag",
+                    "context": "SurfaceAltitudeGradientConfig",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AddTag"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AddTag is invoked"
+                    },
+                    "details": {
+                        "name": "SurfaceAltitudeGradientConfig::AddTag",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3CB05FC9-6E0F-435E-B420-F027B6716804}",
+                            "details": {
+                                "name": "SurfaceAltitudeGradientConfig*",
+                                "tooltip": "altitude Gradient"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

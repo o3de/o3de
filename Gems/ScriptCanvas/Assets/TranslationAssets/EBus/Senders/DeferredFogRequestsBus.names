@@ -1,0 +1,498 @@
+{
+    "entries": [
+        {
+            "key": "DeferredFogRequestsBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "DeferredFogRequestsBus"
+            },
+            "methods": [
+                {
+                    "key": "SetNoiseTexture",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetNoiseTexture"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetNoiseTexture is invoked"
+                    },
+                    "details": {
+                        "name": "SetNoiseTexture"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetNoiseTexCoordScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetNoiseTexCoordScale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetNoiseTexCoordScale is invoked"
+                    },
+                    "details": {
+                        "name": "SetNoiseTexCoordScale"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetNoiseTexCoord2Scale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetNoiseTexCoord2Scale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetNoiseTexCoord2Scale is invoked"
+                    },
+                    "details": {
+                        "name": "SetNoiseTexCoord2Scale"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetFogMaxHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFogMaxHeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFogMaxHeight is invoked"
+                    },
+                    "details": {
+                        "name": "GetFogMaxHeight"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNoiseTexCoordScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNoiseTexCoordScale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNoiseTexCoordScale is invoked"
+                    },
+                    "details": {
+                        "name": "GetNoiseTexCoordScale"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNoiseTexCoordVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNoiseTexCoordVelocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNoiseTexCoordVelocity is invoked"
+                    },
+                    "details": {
+                        "name": "GetNoiseTexCoordVelocity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetFogEndDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetFogEndDistance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetFogEndDistance is invoked"
+                    },
+                    "details": {
+                        "name": "SetFogEndDistance"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetFogEndDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFogEndDistance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFogEndDistance is invoked"
+                    },
+                    "details": {
+                        "name": "GetFogEndDistance"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNoiseTexCoord2Scale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNoiseTexCoord2Scale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNoiseTexCoord2Scale is invoked"
+                    },
+                    "details": {
+                        "name": "GetNoiseTexCoord2Scale"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetNoiseTexCoord2Velocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetNoiseTexCoord2Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetNoiseTexCoord2Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "SetNoiseTexCoord2Velocity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetFogStartDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFogStartDistance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFogStartDistance is invoked"
+                    },
+                    "details": {
+                        "name": "GetFogStartDistance"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetFogMaxHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetFogMaxHeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetFogMaxHeight is invoked"
+                    },
+                    "details": {
+                        "name": "SetFogMaxHeight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetNoiseTexCoordVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetNoiseTexCoordVelocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetNoiseTexCoordVelocity is invoked"
+                    },
+                    "details": {
+                        "name": "SetNoiseTexCoordVelocity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNoiseTexCoord2Velocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNoiseTexCoord2Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNoiseTexCoord2Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "GetNoiseTexCoord2Velocity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetFogStartDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetFogStartDistance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetFogStartDistance is invoked"
+                    },
+                    "details": {
+                        "name": "SetFogStartDistance"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetFogMinHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFogMinHeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFogMinHeight is invoked"
+                    },
+                    "details": {
+                        "name": "GetFogMinHeight"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetFogColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFogColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFogColor is invoked"
+                    },
+                    "details": {
+                        "name": "GetFogColor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetOctavesBlendFactor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetOctavesBlendFactor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetOctavesBlendFactor is invoked"
+                    },
+                    "details": {
+                        "name": "SetOctavesBlendFactor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetOctavesBlendFactor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOctavesBlendFactor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOctavesBlendFactor is invoked"
+                    },
+                    "details": {
+                        "name": "GetOctavesBlendFactor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetFogColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetFogColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetFogColor is invoked"
+                    },
+                    "details": {
+                        "name": "SetFogColor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetFogMinHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetFogMinHeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetFogMinHeight is invoked"
+                    },
+                    "details": {
+                        "name": "SetFogMinHeight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNoiseTexture",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetNoiseTexture"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetNoiseTexture is invoked"
+                    },
+                    "details": {
+                        "name": "GetNoiseTexture"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

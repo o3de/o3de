@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "attach_debugger",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "attach_debugger",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke attach_debugger"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after attach_debugger is invoked"
+                    },
+                    "details": {
+                        "name": "attach_debugger",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

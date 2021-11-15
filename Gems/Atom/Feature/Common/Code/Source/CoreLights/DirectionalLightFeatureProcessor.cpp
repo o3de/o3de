@@ -1056,7 +1056,7 @@ namespace AZ
                         // if the shadow is rendering in an EnvironmentCubeMapPass it also needs to be a ReflectiveCubeMap view,
                         // to filter out shadows from objects that are excluded from the cubemap
                         RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassClass<RPI::EnvironmentCubeMapPass>();
-                        passFilter.SetOwenrScene(GetParentScene()); // only handles passes for this scene
+                        passFilter.SetOwnerScene(GetParentScene()); // only handles passes for this scene
                         RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&usageFlags]([[maybe_unused]] RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                             {
                                 usageFlags |= RPI::View::UsageReflectiveCubeMap;

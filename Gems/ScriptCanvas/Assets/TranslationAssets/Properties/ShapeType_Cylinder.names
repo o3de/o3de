@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ShapeType_Cylinder",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ShapeType_Cylinder::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

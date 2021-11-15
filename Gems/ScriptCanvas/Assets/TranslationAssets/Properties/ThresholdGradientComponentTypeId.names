@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ThresholdGradientComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ThresholdGradientComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,53 @@
+{
+    "entries": [
+        {
+            "key": "{82FB60FB-2417-5BDC-ADF7-9C08DE88E793}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "CreateFromEulerAngles",
+                "category": "Math/Quaternion",
+                "tooltip": "Returns a new Quaternion initialized with the specified Angles",
+                "subtitle": "Quaternion"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Pitch",
+                    "details": {
+                        "name": "Number: Pitch"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Roll",
+                    "details": {
+                        "name": "Number: Roll"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Yaw",
+                    "details": {
+                        "name": "Number: Yaw"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Quaternion",
+                    "details": {
+                        "name": "Result: Quaternion"
+                    }
+                }
+            ]
+        }
+    ]
+}

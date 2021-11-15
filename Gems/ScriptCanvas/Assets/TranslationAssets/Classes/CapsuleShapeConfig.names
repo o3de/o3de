@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "CapsuleShapeConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "CapsuleShapeConfig"
+            }
+        }
+    ]
+}
