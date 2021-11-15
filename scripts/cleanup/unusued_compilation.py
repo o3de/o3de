@@ -21,7 +21,10 @@ EXCLUSIONS = (
     'TEST(',
     'TEST_F(',
     'INSTANTIATE_TEST_CASE_P(',
-    'AZ_UNIT_TEST_HOOK('
+    'AZ_UNIT_TEST_HOOK(',
+    'IMPLEMENT_TEST_EXECUTABLE_MAIN(',
+    'DllMain(',
+    'CreatePluginInstance('
 )
 PATH_EXCLUSIONS = (
     '*\\Platform\\Android\\*',
@@ -32,7 +35,8 @@ PATH_EXCLUSIONS = (
     'Templates\\*',
     'python\\*',
     'build\\*',
-    'install\\*'
+    'install\\*',
+    'Code\\Framework\\AzCore\\AzCore\\Android\\*'
 )
 
 def create_filelist(path):
