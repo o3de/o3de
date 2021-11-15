@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AudioSystemComponentRequestBus"
+                "name": "Audio System"
             },
             "methods": [
                 {

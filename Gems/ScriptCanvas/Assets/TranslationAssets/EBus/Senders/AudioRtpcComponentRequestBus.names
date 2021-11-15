@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AudioRtpcComponentRequestBus",
+                "name": "Audio RTPC",
                 "category": "Audio"
             },
             "methods": [
