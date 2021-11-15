@@ -225,7 +225,6 @@ namespace AZ::Render
         const EMotionFX::TransformData* transformData = instance->GetTransformData();
         const EMotionFX::Skeleton* skeleton = instance->GetActor()->GetSkeleton();
         const EMotionFX::Pose* pose = transformData->GetCurrentPose();
-        const size_t numJoints = skeleton->GetNumNodes();
         const size_t numEnabled = instance->GetNumEnabledNodes();
         for (size_t i = 0; i < numEnabled; ++i)
         {
@@ -250,8 +249,9 @@ namespace AZ::Render
             const float cylinderSize = boneLength - boneScale - parentBoneScale;
 
             // Render the bone cylinder, the cylinder will be directed towards the node's parent and must fit between the spheres
-            auxGeom->DrawCylinder(centerWorldPos, boneDirection, boneScale, cylinderSize, skeletonColor);
-            auxGeom->DrawSphere(nodeWorldPos, boneScale, skeletonColor);
+            auxGeom->DrawCylinder(
+                centerWorldPos, boneDirection, boneScale, cylinderSize, skeletonColor, AZ::RPI::AuxGeomDraw::DrawStyle::Solid);
+            auxGeom->DrawSphere(nodeWorldPos, boneScale, skeletonColor, AZ::RPI::AuxGeomDraw::DrawStyle::Solid);
         }
     }
 
