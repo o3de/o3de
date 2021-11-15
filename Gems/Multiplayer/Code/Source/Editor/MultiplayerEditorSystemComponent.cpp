@@ -420,6 +420,8 @@ namespace Multiplayer
 
     void MultiplayerEditorSystemComponent::OnTick(float, AZ::ScriptTimePoint)
     {
+        AZ_TracePrintf("MultiplayerEditorSystemComponent", "OnTick Pump");
+
         m_serverProcessTracePrinter->Pump();
     }
 

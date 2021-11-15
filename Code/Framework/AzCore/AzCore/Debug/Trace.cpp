@@ -26,6 +26,7 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/std/chrono/chrono.h>
+#pragma optimize("", off) //< remember to place this after the #includes so that you only optimize the code you want
 
 namespace AZ::Debug
 {
@@ -523,10 +524,10 @@ namespace AZ::Debug
             EBUS_EVENT(TraceMessageDrillerBus, OnOutput, window, message);
             TraceMessageResult result;
             EBUS_EVENT_RESULT(result, TraceMessageBus, OnOutput, window, message);
-            if (result.m_value)
+            /* if (result.m_value)
             {
                 return;
-            }
+            }*/
         }
 
         // printf on Windows platforms seem to have a buffer length limit of 4096 characters
@@ -537,6 +538,7 @@ namespace AZ::Debug
         fwrite(windowView.data(), 1, windowView.size(), stdout);
         fwrite(windowMessageSeparator.data(), 1, windowMessageSeparator.size(), stdout);
         fwrite(messageView.data(), 1, messageView.size(), stdout);
+        fwrite("\n\r", 1, 2, stdout);
     }
 
     //=========================================================================
@@ -612,3 +614,4 @@ namespace AZ::Debug
         }
     }
 } // namspace AZ::Debug
+#pragma optimize("", on)

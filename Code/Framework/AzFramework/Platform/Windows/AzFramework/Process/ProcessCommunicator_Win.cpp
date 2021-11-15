@@ -8,6 +8,7 @@
 
 
 #include <AzFramework/Process/ProcessCommunicator.h>
+#pragma optimize("", off) //< remember to place this after the #includes so that you only optimize the code you want
 
 namespace AzFramework
 {
@@ -274,3 +275,4 @@ namespace AzFramework
     }
 } // namespace AzToolsFramework
 
+#pragma optimize("", on)
