@@ -21,6 +21,7 @@ EXCLUSIONS = (
     'TEST(',
     'TEST_F(',
     'INSTANTIATE_TEST_CASE_P(',
+    'INSTANTIATE_TYPED_TEST_CASE_P(',
     'AZ_UNIT_TEST_HOOK(',
     'IMPLEMENT_TEST_EXECUTABLE_MAIN(',
     'DllMain(',
@@ -75,7 +76,7 @@ def is_excluded(file):
     return False
 
 def filter_from_processed(filelist, filter_file_path):
-    filelist = [f for f in filelist if not is_excluded(f)]
+    filelist = set([f for f in filelist if not is_excluded(f)])
     if os.path.exists(filter_file_path):  
         with open(filter_file_path, 'r') as filter_file:
             processed_files = [s.strip() for s in filter_file.readlines()]
