@@ -34,6 +34,12 @@ struct FolderRootWatch::PlatformImplementation
         {
             // The CLOEXEC flag prevents the inotify watchers from copying on fork/exec
             m_iNotifyHandle = inotify_init1(IN_CLOEXEC);
+            const auto err = errno;
+
+            if (m_iNotifyHandle < 0)
+            {
+                AZ_Warning("FileWatcher", false, "Unable to initialize inotify, file monitoring will not be available: %s\n", strerror(err));
+            }
         }
         return (m_iNotifyHandle >= 0);
     }
