@@ -21,9 +21,9 @@ if(EXISTS "@LY_CMAKE_PACKAGE_DOWNLOAD_PATH@")
 endif()
 if(NOT EXISTS "@LY_CMAKE_PACKAGE_DOWNLOAD_PATH@")
     # download it
-    string(REPLACE "." ";" _version_componets "@CPACK_DESIRED_CMAKE_VERSION@")
-    list(GET _version_componets 0 _major_version)
-    list(GET _version_componets 1 _minor_version)
+    string(REPLACE "." ";" _version_components "@CPACK_DESIRED_CMAKE_VERSION@")
+    list(GET _version_components 0 _major_version)
+    list(GET _version_components 1 _minor_version)
 
     set(_url_version_tag "v${_major_version}.${_minor_version}")
     set(_package_url "https://cmake.org/files/${_url_version_tag}/@CPACK_CMAKE_PACKAGE_FILE@")
