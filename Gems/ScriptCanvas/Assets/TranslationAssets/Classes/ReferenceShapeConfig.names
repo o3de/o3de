@@ -1,54 +1,52 @@
 {
     "entries": [
         {
-            "key": "CameraNotificationBus",
-            "context": "EBusHandler",
+            "key": "ReferenceShapeConfig",
+            "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Camera",
-                "category": "Camera"
+                "name": "ReferenceShapeConfig"
             },
             "methods": [
                 {
-                    "key": "OnCameraAdded",
+                    "key": "shapeEntityId",
                     "details": {
-                        "name": "On Camera Added"
+                        "name": "ReferenceShapeConfig::shapeEntityId::Getter"
                     },
                     "params": [
                         {
+                            "typeid": "{3E49974D-2EE0-4AF9-92B9-229A22B515C3}",
+                            "details": {
+                                "name": "ReferenceShapeConfig*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "EntityId&",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "OnCameraRemoved",
+                    "key": "shapeEntityId",
                     "details": {
-                        "name": "On Camera Removed"
+                        "name": "ReferenceShapeConfig::shapeEntityId::Setter"
                     },
                     "params": [
                         {
-                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "typeid": "{3E49974D-2EE0-4AF9-92B9-229A22B515C3}",
                             "details": {
-                                "name": "EntityId",
-                                "tooltip": "Entity Unique Id"
+                                "name": "ReferenceShapeConfig*"
                             }
-                        }
-                    ]
-                },
-                {
-                    "key": "OnActiveViewChanged",
-                    "details": {
-                        "name": "On Active View Changed"
-                    },
-                    "params": [
+                        },
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "const EntityId&",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
