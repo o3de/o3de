@@ -9,6 +9,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 
+#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
+
 #include <PythonAssetBuilderSystemComponent.h>
 
 namespace PythonAssetBuilder
@@ -23,6 +25,8 @@ namespace PythonAssetBuilder
         PythonAssetBuilderModule()
             : AZ::Module()
         {
+            AzToolsFramework::EmbeddedPython::LoadLibPython();
+
             m_descriptors.insert(m_descriptors.end(), {
                 PythonAssetBuilderSystemComponent::CreateDescriptor(),
             });

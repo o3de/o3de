@@ -9,6 +9,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 
+#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
+
 #include <PythonSystemComponent.h>
 #include <PythonReflectionComponent.h>
 #include <PythonMarshalComponent.h>
@@ -26,6 +28,8 @@ namespace EditorPythonBindings
         EditorPythonBindingsModule()
             : AZ::Module()
         {
+            AzToolsFramework::EmbeddedPython::LoadLibPython();
+
             m_descriptors.insert(m_descriptors.end(), 
             {
                 PythonSystemComponent::CreateDescriptor(),
