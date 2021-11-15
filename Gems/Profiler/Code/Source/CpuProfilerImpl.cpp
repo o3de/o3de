@@ -8,7 +8,6 @@
 
 #include <CpuProfilerImpl.h>
 
-#include <AzCore/Debug/Timer.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Statistics/StatisticalProfilerProxy.h>

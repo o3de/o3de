@@ -26,7 +26,7 @@ namespace Multiplayer
 
     bool PropertySubscriber::IsDeleting() const
     {
-        return m_markForRemovalTimeMs > AZ::TimeMs{ 0 };
+        return m_markForRemovalTimeMs > AZ::Time::ZeroTimeMs;
     }
 
     bool PropertySubscriber::IsDeleted() const

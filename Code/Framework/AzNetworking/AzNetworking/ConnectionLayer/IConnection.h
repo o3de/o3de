@@ -28,8 +28,8 @@ namespace AzNetworking
         ConnectionQuality(int32_t lossPercentage, AZ::TimeMs latencyMs, AZ::TimeMs varianceMs);
 
         int32_t m_lossPercentage = 0;
-        AZ::TimeMs m_latencyMs = AZ::TimeMs{ 0 };
-        AZ::TimeMs m_varianceMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_latencyMs = AZ::Time::ZeroTimeMs;
+        AZ::TimeMs m_varianceMs = AZ::Time::ZeroTimeMs;
     };
 
     enum class TrustZone

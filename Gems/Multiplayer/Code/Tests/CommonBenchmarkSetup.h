@@ -14,6 +14,7 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/UnitTest/Mocks/MockITime.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <benchmark/benchmark.h>
 #include <Multiplayer/Components/NetBindComponent.h>
@@ -89,20 +90,6 @@ namespace Multiplayer
 
         void OnDisconnect([[maybe_unused]] IConnection* connection, [[maybe_unused]] DisconnectReason reason, [[maybe_unused]] TerminationEndpoint endpoint) override
         {
-        }
-    };
-
-    class BenchmarkTime : public AZ::ITime
-    {
-    public:
-        AZ::TimeMs GetElapsedTimeMs() const override
-        {
-            return {};
-        }
-
-        AZ::TimeUs GetElapsedTimeUs() const override
-        {
-            return {};
         }
     };
 
@@ -349,8 +336,7 @@ namespace Multiplayer
             // Without Multiplayer::RegisterMultiplayerComponents() the stats go to invalid id, which is fine for unit tests
             GetMultiplayer()->GetStats().ReserveComponentStats(Multiplayer::InvalidNetComponentId, 50, 0);
 
-            m_Time = AZStd::make_unique<BenchmarkTime>();
-            AZ::Interface<AZ::ITime>::Register(m_Time.get());
+            m_Time = AZStd::make_unique<AZ::StubTimeSystem>();
 
             m_NetworkTime = AZStd::make_unique<BenchmarkNetworkTime>();
             AZ::Interface<INetworkTime>::Register(m_NetworkTime.get());
@@ -381,7 +367,6 @@ namespace Multiplayer
             m_ConnectionListener.reset();
 
             AZ::Interface<INetworkTime>::Unregister(m_NetworkTime.get());
-            AZ::Interface<AZ::ITime>::Unregister(m_Time.get());
             AZ::Interface<IMultiplayer>::Unregister(m_Multiplayer.get());
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_ComponentApplicationRequests.get());
 
@@ -414,7 +399,7 @@ namespace Multiplayer
 
         AZStd::unique_ptr<BenchmarkMultiplayer> m_Multiplayer;
         AZStd::unique_ptr<BenchmarkNetworkEntityManager> m_NetworkEntityManager;
-        AZStd::unique_ptr<BenchmarkTime> m_Time;
+        AZStd::unique_ptr<AZ::StubTimeSystem> m_Time;
         AZStd::unique_ptr<BenchmarkNetworkTime> m_NetworkTime;
 
         AZStd::unique_ptr<BenchmarkMultiplayerConnection> m_Connection;
