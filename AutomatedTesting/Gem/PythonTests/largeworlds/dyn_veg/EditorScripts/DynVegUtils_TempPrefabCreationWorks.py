@@ -10,18 +10,16 @@ def DynVegUtils_TempPrefabCreationWorks():
     """
     Summary:
     An existing level is opened. Each Prefab setup to be spawned by Dynamic Vegetation tests is created in memory and
-    validated against existing components/mesh assignments. A spawner is then created with the temporary prefabs to ensure
-    proper functionality with Dynamic Vegetation components.
+    validated against existing test slice components/mesh assignments.
 
     Expected Behavior:
-    Temporary prefabs contain the expected components/assets. Instances plant as expected in the assigned area.
+    Temporary prefabs contain the expected components/assets.
 
     Test Steps:
      1) Open an existing level
-     2) Create each of the necessary temporary prefabs, and validate the component/mesh setups
-     3) Create a Vegetation Layer Spawner setup using the temporary prefabs as Prefab Instance Spawner types
-     4) Create a surface to plant on and validate instance counts
-     5) Verify expected instance counts
+     2) Create each of the necessary temporary Mesh prefabs, and validate the component/mesh setups
+     3) Create the necessary temporary PhysX Collider, and validate the component setup
+     4) Report errors/asserts
 
     Note:
     - This test file must be called from the Open 3D Engine Editor command terminal
@@ -33,12 +31,15 @@ def DynVegUtils_TempPrefabCreationWorks():
 
     import os
 
+    import azlmbr.asset as asset
+    import azlmbr.bus as bus
+    import azlmbr.legacy.general as general
     import azlmbr.math as math
 
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
     from editor_python_test_tools.utils import Report, Tracer
     from editor_python_test_tools.utils import TestHelper as helper
-    from editor_python_test_tools.prefab_utils import Prefab, PrefabInstance, get_prefab_file_path
+    from editor_python_test_tools.prefab_utils import PrefabInstance
 
     with Tracer() as error_tracer:
         # Create dictionary for prefab filenames and paths to create using helper function
@@ -54,25 +55,29 @@ def DynVegUtils_TempPrefabCreationWorks():
         helper.init_idle()
         helper.open_level("Prefab", "Base")
 
-        # 2) Create a Dynamic Vegetation surface in preparation of prefab creation
-        center_point = math.Vector3(0.0, 0.0, 0.0)
-        dynveg.create_surface_entity("Planting Surface", center_point, 128.0, 128.0, 1.0)
-
-        # 3) Create each of the Mesh asset prefabs and validate that the prefab created successfully
+        # 2) Create each of the Mesh asset prefabs and validate that the prefab created successfully
         for prefab_filename, asset_path in mesh_prefabs.items():
-            prefab_created = (
-                f"Temporary {prefab_filename} prefab created successfully",
-                f"Failed to create temporary {prefab_filename} prefab"
+            mesh_prefab_created = (
+                f"Temporary mesh prefab: {prefab_filename} created successfully",
+                f"Failed to create temporary mesh prefab: {prefab_filename}"
             )
             prefab = dynveg.create_temp_mesh_prefab(asset_path, prefab_filename)
-            Report.result(prefab_created, helper.wait_for_condition(lambda: PrefabInstance.is_valid(prefab[1]), 3.0))
+            Report.result(mesh_prefab_created, helper.wait_for_condition(lambda:
+                                                                         PrefabInstance.is_valid(prefab[1]), 3.0))
 
-        # 4) Assign the temp prefab to the prefab instance spawner, and validate the instance count
-        for prefab_filename in mesh_prefabs:
-            spawner_entity = dynveg.create_prefab_spawner("PrefabSpawner", center_point, 16.0, 16.0, 16.0,
-                                                          get_prefab_file_path(get_prefab_file_path(prefab_filename)))
+        # 3) Create temp PhysX Collider prefab and validate that the prefab created successfully
+        physx_prefab_filename = "CedarTree_Collision"
+        physx_collider_prefab_created = (
+            f"Temporary mesh prefab: {physx_prefab_filename} created successfully",
+            f"Failed to create temporary mesh prefab: {physx_prefab_filename}"
+        )
+        test_physx_mesh_asset_id = asset.AssetCatalogRequestBus(bus.Broadcast, "GetAssetIdByPath", os.path.join(
+            "assets", "objects", "foliage", "cedar.pxmesh"), math.Uuid(), False)
+        dynveg.create_temp_physx_mesh_collider(test_physx_mesh_asset_id, "CedarTree_Collision")
+        Report.result(physx_collider_prefab_created, helper.wait_for_condition(lambda:
+                                                                               PrefabInstance.is_valid(prefab[1]), 3.0))
 
-        # 5) Report errors/asserts
+        # 4) Report errors/asserts
         helper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")
