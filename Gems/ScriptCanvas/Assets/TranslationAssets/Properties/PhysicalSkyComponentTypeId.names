@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "PhysicalSkyComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "PhysicalSkyComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

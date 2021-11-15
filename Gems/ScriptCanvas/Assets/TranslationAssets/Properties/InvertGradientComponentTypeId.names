@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "InvertGradientComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "InvertGradientComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiTextShrinkToFit_Uniform",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiTextShrinkToFit_Uniform::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

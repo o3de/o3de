@@ -21,7 +21,7 @@
 #include <Common/AssetManagerTestFixture.h>
 #include <Common/RHI/Stubs.h>
 #include <Common/RHI/Factory.h>
-#include <Common/AssetSystemStub.h>
+#include <Atom/Utils/TestUtils/AssetSystemStub.h>
 
 namespace UnitTest
 {

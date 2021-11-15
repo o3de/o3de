@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "AudioPreloadComponentLoadType_Manual",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "AudioPreloadComponentLoadType_Manual::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

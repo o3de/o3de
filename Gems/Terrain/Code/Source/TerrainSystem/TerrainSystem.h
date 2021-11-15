@@ -47,7 +47,8 @@ namespace Terrain
 
         void RegisterArea(AZ::EntityId areaId) override;
         void UnregisterArea(AZ::EntityId areaId) override;
-        void RefreshArea(AZ::EntityId areaId) override;
+        void RefreshArea(
+            AZ::EntityId areaId, AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask) override;
 
         ///////////////////////////////////////////
         // TerrainDataRequestBus::Handler Impl
@@ -164,9 +165,17 @@ namespace Terrain
 
         bool m_terrainSettingsDirty = true;
         bool m_terrainHeightDirty = false;
+        bool m_terrainSurfacesDirty = false;
         AZ::Aabb m_dirtyRegion;
 
+        // Cached data for each terrain area to use when looking up terrain data.
+        struct TerrainAreaData
+        {
+            AZ::Aabb m_areaBounds{ AZ::Aabb::CreateNull() };
+            bool m_useGroundPlane{ false };
+        };
+
         mutable AZStd::shared_mutex m_areaMutex;
-        AZStd::map<AZ::EntityId, AZ::Aabb, TerrainLayerPriorityComparator> m_registeredAreas;
+        AZStd::map<AZ::EntityId, TerrainAreaData, TerrainLayerPriorityComparator> m_registeredAreas;
     };
 } // namespace Terrain

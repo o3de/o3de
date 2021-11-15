@@ -749,7 +749,7 @@ namespace AssetProcessor
         }
 
         AZStd::vector<AZ::IO::Path> configFiles = AzToolsFramework::AssetUtils::GetConfigFiles(absoluteSystemRoot.toUtf8().constData(),
-            absoluteAssetRoot.toUtf8().constData(), projectPath.toUtf8().constData(),
+            projectPath.toUtf8().constData(),
             addPlatformConfigs, addGemsConfigs && !noGemScanFolders, settingsRegistry);
 
         // First Merge all Engine, Gem and Project specific AssetProcessor*Config.setreg/.inifiles
@@ -1633,13 +1633,18 @@ namespace AssetProcessor
 
     bool AssetProcessor::PlatformConfiguration::IsFileExcluded(QString fileName) const
     {
-        for (const ExcludeAssetRecognizer& excludeRecognizer : m_excludeAssetRecognizers)
+        QString relPath, scanFolderName;
+        if (ConvertToRelativePath(fileName, relPath, scanFolderName))
         {
-            if (excludeRecognizer.m_patternMatcher.MatchesPath(fileName.toUtf8().constData()))
+            for (const ExcludeAssetRecognizer& excludeRecognizer : m_excludeAssetRecognizers)
             {
-                return true;
+                if (excludeRecognizer.m_patternMatcher.MatchesPath(relPath.toUtf8().constData()))
+                {
+                    return true;
+                }
             }
         }
+
         return false;
     }
 

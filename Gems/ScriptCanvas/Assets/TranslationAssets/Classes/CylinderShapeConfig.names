@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "CylinderShapeConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "CylinderShapeConfig"
+            }
+        }
+    ]
+}

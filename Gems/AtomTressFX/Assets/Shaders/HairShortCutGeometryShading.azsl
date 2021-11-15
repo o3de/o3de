@@ -52,6 +52,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     //! Originally in TressFXRendering.hlsl this is space 0 
     HairObjectShadeParams   m_hairParams[AMD_TRESSFX_MAX_HAIR_GROUP_RENDER];
 
+    // Will be used as thickness indication to block TT (back) lobe
+    Texture2D<float>        m_accumInvAlpha;
+
     // Linear depth is used for getting the screen to world transform
     Texture2D<float>        m_linearDepth;
 
@@ -164,9 +167,11 @@ float4 HairShortCutGeometryColorPS(PS_INPUT_HAIR input) : SV_Target
 
     float2 pixelCoord = input.Position.xy;
     float depth = input.Position.z;
-    // [To Do] - the thickness will need to be corrected somehow since this technique doesn't 
-    // keeps track of the accumulated alpha / thickness
-    float thickness = alpha;  
+
+    // The following is a quick correction to remove the TT lobe (back lobe) contribution in case 
+    // the hair is thick.  We do that by accumulating alpha from the hair for the blend operation
+    // and this can be used here as an indication of thickness.
+    float thickness = saturate(1.0 - PassSrg::m_accumInvAlpha[int2(pixelCoord)]);
     float3 shadedFragment = TressFXShading(pixelCoord, depth, input.Tangent.xyz, strandColor.rgb, thickness, RenderParamsIndex);
 
     // Color channel: Pre-multiply with alpha to create non-normalized weighted sum.

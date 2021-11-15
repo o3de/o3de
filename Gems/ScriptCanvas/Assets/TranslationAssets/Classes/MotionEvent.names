@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "MotionEvent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "MotionEvent"
+            }
+        }
+    ]
+}

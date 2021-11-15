@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "TransformPivot_Object",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "TransformPivot_Object::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiScaleToDeviceMode_UniformScaleToFitX",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiScaleToDeviceMode_UniformScaleToFitX::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "InputSystemRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "InputSystemRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "RecreateEnabledInputDevices",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RecreateEnabledInputDevices"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RecreateEnabledInputDevices is invoked"
+                    },
+                    "details": {
+                        "name": "RecreateEnabledInputDevices"
+                    }
+                }
+            ]
+        }
+    ]
+}

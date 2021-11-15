@@ -27,7 +27,6 @@
 
 // Editor
 #include "MainStatusBarItems.h"
-#include "CryLibrary.h"
 #include "ProcessInfo.h"
 
 
@@ -419,7 +418,7 @@ void MemoryStatusItem::updateStatus()
 GeneralStatusItem::GeneralStatusItem(QString name, MainStatusBar* parent)
     : StatusBarItem(name, parent)
 {
-    connect(parent, SIGNAL(messageChanged(QString)), this, SLOT(update()));
+    connect(parent, &MainStatusBar::messageChanged, this, [this](const QString&) { update(); });
 }
 
 QString GeneralStatusItem::CurrentText() const

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "AudioObstructionType_MultiRay",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "AudioObstructionType_MultiRay::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

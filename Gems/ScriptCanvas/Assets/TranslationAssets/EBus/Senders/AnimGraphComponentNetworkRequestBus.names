@@ -1,0 +1,124 @@
+{
+    "entries": [
+        {
+            "key": "AnimGraphComponentNetworkRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "AnimGraphComponentNetworkRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "GetActiveStates",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetActiveStates"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetActiveStates is invoked"
+                    },
+                    "details": {
+                        "name": "GetActiveStates"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3349AACD-BE04-50BC-9478-528BF2ACFD55}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateSnapshot",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateSnapshot"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateSnapshot is invoked"
+                    },
+                    "details": {
+                        "name": "CreateSnapshot"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetActiveStates",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetActiveStates"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetActiveStates is invoked"
+                    },
+                    "details": {
+                        "name": "SetActiveStates"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3349AACD-BE04-50BC-9478-528BF2ACFD55}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsAssetReady",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsAssetReady"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsAssetReady is invoked"
+                    },
+                    "details": {
+                        "name": "IsAssetReady"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "HasSnapshot",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke HasSnapshot"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after HasSnapshot is invoked"
+                    },
+                    "details": {
+                        "name": "HasSnapshot"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

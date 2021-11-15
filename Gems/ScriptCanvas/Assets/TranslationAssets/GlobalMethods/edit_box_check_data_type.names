@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "edit_box_check_data_type",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "edit_box_check_data_type",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke edit_box_check_data_type"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after edit_box_check_data_type is invoked"
+                    },
+                    "details": {
+                        "name": "edit_box_check_data_type",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
+                            "details": {
+                                "name": "any"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -96,95 +96,12 @@ unsigned countElements (const std::vector<T>& arrT, const T& x)
 */
 namespace stl
 {
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Compare member of class/struct.
-    //
-    // e.g. Sort Vec3s by x component
-    //
-    //           std::sort(vec3s.begin(), vec3s.end(), stl::member_compare<Vec3, float, &Vec3::x>());
-    //
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    template <typename OWNER_TYPE, typename MEMBER_TYPE, MEMBER_TYPE OWNER_TYPE::* MEMBER_PTR, typename EQUALITY = std::less<MEMBER_TYPE> >
-    struct member_compare
-    {
-        inline bool operator () (const OWNER_TYPE& lhs, const OWNER_TYPE& rhs) const
-        {
-            return EQUALITY()(lhs.*MEMBER_PTR, rhs.*MEMBER_PTR);
-        }
-    };
-
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Compare member of class/struct against parameter.
-    //
-    // e.g. Find Vec3 with x component less than 1.0
-    //
-    //           std::find_if(vec3s.begin(), vec3s.end(), stl::member_compare_param<Vec3, float, &Vec3::x>(1.0f));
-    //
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    template <typename OWNER_TYPE, typename MEMBER_TYPE, MEMBER_TYPE OWNER_TYPE::* MEMBER_PTR, typename EQUALITY = std::less<MEMBER_TYPE> >
-    struct member_compare_param
-    {
-        inline member_compare_param(const MEMBER_TYPE& _value)
-            : value(_value)
-        {
-        }
-
-        inline bool operator () (const OWNER_TYPE& rhs) const
-        {
-            return EQUALITY()(rhs.*MEMBER_PTR, value);
-        }
-
-        const MEMBER_TYPE& value;
-    };
-
     //////////////////////////////////////////////////////////////////////////
     //! Searches the given entry in the map by key, and if there is none, returns the default value
     //////////////////////////////////////////////////////////////////////////
     template <typename Map>
     inline typename Map::mapped_type find_in_map(const Map& mapKeyToValue, const typename Map::key_type& key, typename Map::mapped_type valueDefault)
     {
-        typename Map::const_iterator it = mapKeyToValue.find (key);
-        if (it == mapKeyToValue.end())
-        {
-            return valueDefault;
-        }
-        else
-        {
-            return it->second;
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    //! Inserts and returns a reference to the given value in the map, or returns the current one if it's already there.
-    //////////////////////////////////////////////////////////////////////////
-    template <typename Map>
-    inline typename Map::mapped_type& map_insert_or_get(Map& mapKeyToValue, const typename Map::key_type& key, const typename Map::mapped_type& defValue = typename Map::mapped_type())
-    {
-        auto&& iresult = mapKeyToValue.insert(typename Map::value_type(key, defValue));
-        return iresult.first->second;
-    }
-
-    // searches the given entry in the map by key, and if there is none, returns the default value
-    // The values are taken/returned in REFERENCEs rather than values
-    template <typename Key, typename mapped_type, typename Traits, typename Allocator>
-    inline mapped_type& find_in_map_ref(std::map<Key, mapped_type, Traits, Allocator>& mapKeyToValue, const Key& key, mapped_type& valueDefault)
-    {
-        typedef std::map<Key, mapped_type, Traits, Allocator> Map;
-        typename Map::iterator it = mapKeyToValue.find (key);
-        if (it == mapKeyToValue.end())
-        {
-            return valueDefault;
-        }
-        else
-        {
-            return it->second;
-        }
-    }
-
-    template <typename Key, typename mapped_type, typename Traits, typename Allocator>
-    inline const mapped_type& find_in_map_ref(const std::map<Key, mapped_type, Traits, Allocator>& mapKeyToValue, const Key& key, const mapped_type& valueDefault)
-    {
-        typedef std::map<Key, mapped_type, Traits, Allocator> Map;
         typename Map::const_iterator it = mapKeyToValue.find (key);
         if (it == mapKeyToValue.end())
         {
@@ -207,20 +124,6 @@ namespace stl
         for (typename Map::const_iterator it = theMap.begin(); it != theMap.end(); ++it)
         {
             array.push_back(it->second);
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    //! Fills vector with contents of set.
-    //////////////////////////////////////////////////////////////////////////
-    template <class Set, class Vector>
-    inline void set_to_vector(const Set& theSet, Vector& array)
-    {
-        array.resize(0);
-        array.reserve(theSet.size());
-        for (typename Set::const_iterator it = theSet.begin(); it != theSet.end(); ++it)
-        {
-            array.push_back(*it);
         }
     }
 
@@ -313,48 +216,6 @@ namespace stl
     }
 
     //////////////////////////////////////////////////////////////////////////
-    //! Push back to container unique element.
-    // @return true if item added, false overwise.
-    template <class CONTAINER, class PREDICATE, typename VALUE>
-    inline bool push_back_unique_if(CONTAINER& container, const PREDICATE& predicate, const VALUE& value)
-    {
-        typename CONTAINER::iterator    end = container.end();
-
-        if (AZStd::find_if(container.begin(), end, predicate) == end)
-        {
-            container.push_back(value);
-
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    //! Push back to container contents of another container
-    template <class Container, class Iter>
-    inline void push_back_range(Container& container, Iter begin, Iter end)
-    {
-        for (Iter it = begin; it != end; ++it)
-        {
-            container.push_back(*it);
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    //! Push back to container contents of another container, if not already present
-    template <class Container, class Iter>
-    inline void push_back_range_unique(Container& container, Iter begin, Iter end)
-    {
-        for (Iter it = begin; it != end; ++it)
-        {
-            push_back_unique(container, *it);
-        }
-    }
-
-    //////////////////////////////////////////////////////////////////////////
     //! Find element in container.
     // @return true if item found.
     template <class Container, class Value>
@@ -371,107 +232,6 @@ namespace stl
     {
         Iterator it = std::lower_bound(first, last, value);
         return (it == last || value != *it) ? last : it;
-    }
-
-    //////////////////////////////////////////////////////////////////////////
-    //! Find element in a sorted container using binary search with logarithmic efficiency.
-    // @return true if item was inserted.
-    template <class Container, class Value>
-    inline bool binary_insert_unique(Container& container, const Value& value)
-    {
-        typename Container::iterator it = std::lower_bound(container.begin(), container.end(), value);
-        if (it != container.end())
-        {
-            if (*it == value)
-            {
-                return false;
-            }
-            container.insert(it, value);
-        }
-        else
-        {
-            container.insert(container.end(), value);
-        }
-        return true;
-    }
-    //////////////////////////////////////////////////////////////////////////
-    //! Find element in a sorted container using binary search with logarithmic efficiency.
-    // and erases if element found.
-    // @return true if item was erased.
-    template <class Container, class Value>
-    inline bool binary_erase(Container& container, const Value& value)
-    {
-        typename Container::iterator it = std::lower_bound(container.begin(), container.end(), value);
-        if (it != container.end() && *it == value)
-        {
-            container.erase(it);
-            return true;
-        }
-        return false;
-    }
-
-    template <typename ItT, typename Func>
-    ItT remove_from_heap(ItT begin, ItT end, ItT at, Func order)
-    {
-        using std::swap;
-
-        --end;
-        if (at == end)
-        {
-            return at;
-        }
-
-        size_t idx = std::distance(begin, at);
-        swap(*end, *at);
-
-        size_t length = std::distance(begin, end);
-        size_t parent, child;
-
-        if (idx > 0 && order(*(begin + idx / 2), *(begin + idx)))
-        {
-            do
-            {
-                parent = idx / 2;
-                swap(*(begin + idx), *(begin + parent));
-                idx = parent;
-
-                if (idx == 0 || order(*(begin + idx), *(begin + idx / 2)))
-                {
-                    return end;
-                }
-            }
-            while (true);
-        }
-        else
-        {
-            do
-            {
-                child = idx * 2 + 1;
-                if (child >= length)
-                {
-                    return end;
-                }
-
-                ItT left = begin + child;
-                ItT right = begin + child + 1;
-
-                if (right < end && order(*left, *right))
-                {
-                    ++child;
-                }
-
-                if (order(*(begin + child), *(begin + idx)))
-                {
-                    return end;
-                }
-
-                swap(*(begin + child), *(begin + idx));
-                idx = child;
-            }
-            while (true);
-        }
-
-        return end;
     }
 
     struct container_object_deleter
@@ -505,18 +265,6 @@ namespace stl
     {
         return type.c_str();
     }
-
-    //////////////////////////////////////////////////////////////////////////
-    //! Case sensetive less key for any type convertable to const char*.
-    //////////////////////////////////////////////////////////////////////////
-    template <class Type>
-    struct less_strcmp
-    {
-        bool operator()(const Type& left, const Type& right) const
-        {
-            return strcmp(constchar_cast(left), constchar_cast(right)) < 0;
-        }
-    };
 
     //////////////////////////////////////////////////////////////////////////
     //! Case insensetive less key for any type convertable to const char*.
@@ -690,89 +438,4 @@ namespace stl
             stl::free_container(container);
         }
     };
-
-    template <typename T, size_t Length, typename Func>
-    inline void for_each_array(T (&buffer)[Length], Func func)
-    {
-        std::for_each(&buffer[0], &buffer[Length], func);
-    }
-
-    template <typename T, typename D, size_t Length, typename Func>
-    inline void for_each_array(StaticInstance<T, D>(&buffer)[Length], Func func)
-    {
-        for (size_t idx = 0; idx < Length; ++idx)
-        {
-            func(*buffer[idx]);
-        }
-    }
-
-    template <typename T>
-    inline void destruct(T* p)
-    {
-        p->~T();
-    }
-}
-
-#define DEFINE_INTRUSIVE_LINKED_LIST(Class) \
-    template<>                              \
-    Class * stl::intrusive_linked_list_node<Class>::m_root_intrusive = nullptr;
-
-// define the maplikestruct, used to approximate the memory requirements for a map node
-namespace stl
-{
-    struct MapLikeStruct
-    {
-        bool color;
-        void* parent;
-        void* left;
-        void* right;
-    };
-}
-template <class Map>
-unsigned sizeOfMap(Map& map)
-{
-    unsigned size = 0;
-    for (typename Map::iterator it = map.begin(); it != map.end(); it++)
-    {
-        typename Map::mapped_type& T = it->second;
-        size += T.Size();
-    }
-    size += map.size() * sizeof(stl::MapLikeStruct);
-    return size;
-}
-template <class Map>
-unsigned sizeOfMapStr(Map& map)
-{
-    unsigned size = 0;
-    for (typename Map::iterator it = map.begin(); it != map.end(); it++)
-    {
-        typename Map::mapped_type& T = it->second;
-        size += T.capacity();
-    }
-    size += map.size() * sizeof(stl::MapLikeStruct);
-    return size;
-}
-template <class Map>
-unsigned sizeOfMapP(Map& map)
-{
-    unsigned size = 0;
-    for (typename Map::iterator it = map.begin(); it != map.end(); it++)
-    {
-        typename Map::mapped_type& T = it->second;
-        size += T->Size();
-    }
-    size += map.size() * sizeof(stl::MapLikeStruct);
-    return size;
-}
-template <class Map>
-unsigned sizeOfMapS(Map& map)
-{
-    unsigned size = 0;
-    for (typename Map::iterator it = map.begin(); it != map.end(); it++)
-    {
-        typename Map::mapped_type& T = it->second;
-        size += sizeof(T);
-    }
-    size += map.size() * sizeof(stl::MapLikeStruct);
-    return size;
 }

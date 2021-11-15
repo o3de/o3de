@@ -1,0 +1,53 @@
+{
+    "entries": [
+        {
+            "key": "{52504B30-D3B4-5C09-80D6-3CAF47DAEB1E}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "IsClose",
+                "category": "Math/Matrix4x4",
+                "tooltip": "returns true if each element of both Matrix are equal within some tolerance",
+                "subtitle": "Matrix4x4"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Matrix4x4: A",
+                    "details": {
+                        "name": "Matrix4x4: A"
+                    }
+                },
+                {
+                    "key": "DataInput_Matrix4x4: B",
+                    "details": {
+                        "name": "Matrix4x4: B"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Tolerance",
+                    "details": {
+                        "name": "Number: Tolerance"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Boolean",
+                    "details": {
+                        "name": "Result: Boolean"
+                    }
+                }
+            ]
+        }
+    ]
+}

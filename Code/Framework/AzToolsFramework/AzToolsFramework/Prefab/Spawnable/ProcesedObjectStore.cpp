@@ -11,7 +11,16 @@
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
-    ProcessedObjectStore::ProcessedObjectStore(AZStd::string uniqueId, AZStd::unique_ptr<AZ::Data::AssetData> asset, SerializerFunction assetSerializer)
+    void ProcessedObjectStore::AssetSmartPtrDeleter::operator()(AZ::Data::AssetData* asset)
+    {
+        if (asset->GetUseCount() == 0)
+        {
+            // Only delete the asset if it wasn't turned into a full asset
+            delete asset;
+        }
+    }
+
+    ProcessedObjectStore::ProcessedObjectStore(AZStd::string uniqueId, AssetSmartPtr asset, SerializerFunction assetSerializer)
         : m_uniqueId(AZStd::move(uniqueId))
         , m_assetSerializer(AZStd::move(assetSerializer))
         , m_asset(AZStd::move(asset))
@@ -62,7 +71,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         return m_referencedAssets;
     }
 
-    AZStd::unique_ptr<AZ::Data::AssetData> ProcessedObjectStore::ReleaseAsset()
+    auto ProcessedObjectStore::ReleaseAsset() -> AssetSmartPtr
     {
         return AZStd::move(m_asset);
     }
@@ -70,6 +79,11 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     uint32_t ProcessedObjectStore::BuildSubId(AZStd::string_view id)
     {
         return AzFramework::SpawnableAssetHandler::BuildSubId(id);
+    }
+
+    uint32_t ProcessedObjectStore::GetSubId() const
+    {
+        return m_asset->GetId().m_subId;
     }
 
     const AZStd::string& ProcessedObjectStore::GetId() const

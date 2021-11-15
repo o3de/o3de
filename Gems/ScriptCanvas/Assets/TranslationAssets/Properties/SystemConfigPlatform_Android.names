@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "SystemConfigPlatform_Android",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "SystemConfigPlatform_Android::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

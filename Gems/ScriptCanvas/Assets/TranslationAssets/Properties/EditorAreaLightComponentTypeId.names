@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorAreaLightComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorAreaLightComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

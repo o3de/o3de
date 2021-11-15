@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "get_current_view_rotation",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "get_current_view_rotation",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke get_current_view_rotation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after get_current_view_rotation is invoked"
+                    },
+                    "details": {
+                        "name": "get_current_view_rotation",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

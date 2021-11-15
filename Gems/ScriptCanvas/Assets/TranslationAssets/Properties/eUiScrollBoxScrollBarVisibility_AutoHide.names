@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiScrollBoxScrollBarVisibility_AutoHide",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiScrollBoxScrollBarVisibility_AutoHide::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

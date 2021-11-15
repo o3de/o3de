@@ -205,7 +205,6 @@ set(FILES
     Passes/SMAAEdgeDetection.pass
     Passes/SMAANeighborhoodBlending.pass
     Passes/SsaoCompute.pass
-    Passes/SsaoHalfRes.pass
     Passes/SsaoParent.pass
     Passes/SubsurfaceScattering.pass
     Passes/Taa.pass

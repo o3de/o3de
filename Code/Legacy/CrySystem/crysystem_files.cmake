@@ -59,11 +59,5 @@ set(FILES
     LevelSystem/LevelSystem.h
     LevelSystem/SpawnableLevelSystem.cpp
     LevelSystem/SpawnableLevelSystem.h
-    ViewSystem/DebugCamera.cpp
-    ViewSystem/DebugCamera.h
-    ViewSystem/View.cpp
-    ViewSystem/View.h
-    ViewSystem/ViewSystem.cpp
-    ViewSystem/ViewSystem.h
     WindowsErrorReporting.cpp
 )

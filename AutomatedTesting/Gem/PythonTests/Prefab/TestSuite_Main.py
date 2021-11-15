@@ -55,3 +55,11 @@ class TestAutomation(TestAutomationBase):
     def test_PrefabBasicWorkflow_CreateAndDuplicatePrefab(self, request, workspace, editor, launcher_platform):
         from .tests import PrefabBasicWorkflow_CreateAndDuplicatePrefab as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
+
+    def test_PrefabComplexWorflow_CreatePrefabOfChildEntity(self, request, workspace, editor, launcher_platform):
+        from .tests import PrefabComplexWorflow_CreatePrefabOfChildEntity as test_module
+        self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
+
+    def test_PrefabComplexWorflow_CreatePrefabInsidePrefab(self, request, workspace, editor, launcher_platform):
+        from .tests import PrefabComplexWorflow_CreatePrefabInsidePrefab as test_module
+        self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)

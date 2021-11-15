@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "LightAttenuationRadiusMode_Explicit",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "LightAttenuationRadiusMode_Explicit::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

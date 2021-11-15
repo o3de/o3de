@@ -70,7 +70,8 @@ namespace AZ
             void InitializeSystemAssets() override;
             void RegisterScene(ScenePtr scene) override;
             void UnregisterScene(ScenePtr scene) override;
-            ScenePtr GetScene(const SceneId& sceneId) const override;
+            Scene* GetScene(const SceneId& sceneId) const override;
+            Scene* GetSceneByName(const AZ::Name& name) const override;
             ScenePtr GetDefaultScene() const override;
             RenderPipelinePtr GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle) override;
             Data::Asset<ShaderAsset> GetCommonShaderAssetForSrgs() const override;
@@ -96,8 +97,7 @@ namespace AZ
             // SystemTickBus::OnTick
             void OnSystemTick() override;
 
-            // Fill system time and game time information for simulation or rendering
-            void FillTickTimeInfo();
+            float GetCurrentTime();
 
             // The set of core asset handlers registered by the system.
             AZStd::vector<AZStd::unique_ptr<Data::AssetHandler>> m_assetHandlers;
@@ -123,7 +123,8 @@ namespace AZ
             // The job policy used for feature processor's rendering prepare
             RHI::JobPolicy m_prepareRenderJobPolicy = RHI::JobPolicy::Parallel;
 
-            TickTimeInfo m_tickTime;
+            ScriptTimePoint m_startTime;
+            float m_currentSimulationTime = 0.0f;
 
             RPISystemDescriptor m_descriptor;
 

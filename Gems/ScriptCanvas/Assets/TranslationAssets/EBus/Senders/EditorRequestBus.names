@@ -1,0 +1,70 @@
+{
+    "entries": [
+        {
+            "key": "EditorRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "EditorRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "RegisterCustomViewPane",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RegisterCustomViewPane"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RegisterCustomViewPane is invoked"
+                    },
+                    "details": {
+                        "name": "RegisterCustomViewPane"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{E9FB803A-2A47-4BCF-8A50-AB4C9D73AED2}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "UnregisterViewPane",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke UnregisterViewPane"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after UnregisterViewPane is invoked"
+                    },
+                    "details": {
+                        "name": "UnregisterViewPane"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

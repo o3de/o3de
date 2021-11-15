@@ -912,24 +912,22 @@ namespace Multiplayer
         ;
     }
 
-    AzNetworking::TimeoutResult EntityReplicationManager::OrphanedEntityRpcs::HandleTimeout(AzNetworking::TimeoutQueue::TimeoutItem& item)
-    {
-        NetEntityId timedOutEntityId = aznumeric_cast<NetEntityId>(item.m_userData);
-        auto entityRpcsIter = m_entityRpcMap.find(timedOutEntityId);
-        if (entityRpcsIter != m_entityRpcMap.end())
-        {
-            for (NetworkEntityRpcMessage& rpcMessage : entityRpcsIter->second.m_rpcMessages)
-            {
-                m_replicationManager.DispatchOrphanedRpc(rpcMessage, nullptr);
-            }
-            m_entityRpcMap.erase(entityRpcsIter);
-        }
-        return AzNetworking::TimeoutResult::Delete;
-    }
-
     void EntityReplicationManager::OrphanedEntityRpcs::Update()
     {
-        m_timeoutQueue.UpdateTimeouts(*this);
+        m_timeoutQueue.UpdateTimeouts([this](AzNetworking::TimeoutQueue::TimeoutItem& item)
+        {
+            NetEntityId timedOutEntityId = aznumeric_cast<NetEntityId>(item.m_userData);
+            auto entityRpcsIter = m_entityRpcMap.find(timedOutEntityId);
+            if (entityRpcsIter != m_entityRpcMap.end())
+            {
+                for (NetworkEntityRpcMessage& rpcMessage : entityRpcsIter->second.m_rpcMessages)
+                {
+                    m_replicationManager.DispatchOrphanedRpc(rpcMessage, nullptr);
+                }
+                m_entityRpcMap.erase(entityRpcsIter);
+            }
+            return AzNetworking::TimeoutResult::Delete;
+        });
     }
 
     bool EntityReplicationManager::OrphanedEntityRpcs::DispatchOrphanedRpcs(EntityReplicator& entityReplicator)

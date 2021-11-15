@@ -175,6 +175,8 @@ namespace AZ
             bool m_loadDynamicModules = true;
             //! Used by test fixtures to ensure reflection occurs to edit context.
             bool m_createEditContext = false;
+            //! Indicates whether the AssetCatalog.xml should be loaded by default in Application::StartCommon
+            bool m_loadAssetCatalog = true;
         };
 
         ComponentApplication();
@@ -219,13 +221,10 @@ namespace AZ
         BehaviorContext* GetBehaviorContext() override;
         /// Returns the json registration context that has been registered with the app, if there is one.
         JsonRegistrationContext* GetJsonRegistrationContext() override;
-        /// Returns the working root folder that has been registered with the app, if there is one.
-        /// It's expected that derived applications will implement an application root.
-        const char* GetAppRoot() const override { return m_appRoot.c_str(); }
         /// Returns the path to the engine.
-        const char* GetEngineRoot() const override { return m_engineRoot.c_str(); }
+        const char* GetEngineRoot() const override;
         /// Returns the path to the folder the executable is in.
-        const char* GetExecutableFolder() const override { return m_exeDirectory.c_str(); }
+        const char* GetExecutableFolder() const override;
 
         //////////////////////////////////////////////////////////////////////////
         /// TickRequestBus
@@ -350,15 +349,6 @@ namespace AZ
         /// Adds system components requested by modules and the application to the system entity.
         void AddRequiredSystemComponents(AZ::Entity* systemEntity);
 
-        /// Calculates the directory the application executable comes from.
-        void CalculateExecutablePath();
-
-        /// Calculates the root directory of the engine.
-        void CalculateEngineRoot();
-
-        /// Calculates the directory where the bootstrap.cfg file resides.
-        void CalculateAppRoot();
-
         template<typename Iterator>
         static void NormalizePath(Iterator begin, Iterator end, bool doLowercase = true)
         {
@@ -386,9 +376,6 @@ namespace AZ
         void*                                       m_fixedMemoryBlock{ nullptr }; //!< Pointer to the memory block allocator, so we can free it OnDestroy.
         IAllocatorAllocate*                         m_osAllocator{ nullptr };
         EntitySetType                               m_entities;
-        AZ::IO::FixedMaxPath                        m_exeDirectory;
-        AZ::IO::FixedMaxPath                        m_engineRoot;
-        AZ::IO::FixedMaxPath                        m_appRoot;
 
         AZ::SettingsRegistryInterface::NotifyEventHandler m_projectPathChangedHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_projectNameChangedHandler;

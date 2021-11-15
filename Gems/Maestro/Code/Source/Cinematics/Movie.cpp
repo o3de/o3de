@@ -37,7 +37,6 @@
 #include <IConsole.h>
 #include <ITimer.h>
 #include <IRenderer.h>
-#include <IViewSystem.h>
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/SequenceType.h>
 #include <Maestro/Types/AnimParamType.h>
@@ -835,20 +834,6 @@ bool CMovieSystem::InternalStopSequence(IAnimSequence* sequence, bool bAbort, bo
 //////////////////////////////////////////////////////////////////////////
 bool CMovieSystem::AbortSequence(IAnimSequence* sequence, bool bLeaveTime)
 {
-    assert(sequence);
-
-    // to avoid any camera blending after aborting a cut scene
-    IViewSystem* pViewSystem = gEnv->pSystem->GetIViewSystem();
-    if (pViewSystem)
-    {
-        pViewSystem->SetBlendParams(0, 0, 0);
-        IView* pView = pViewSystem->GetActiveView();
-        if (pView)
-        {
-            pView->ResetBlending();
-        }
-    }
-
     return InternalStopSequence(sequence, true, !bLeaveTime);
 }
 

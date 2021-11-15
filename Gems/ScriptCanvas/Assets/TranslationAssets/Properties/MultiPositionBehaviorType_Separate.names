@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "MultiPositionBehaviorType_Separate",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "MultiPositionBehaviorType_Separate::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

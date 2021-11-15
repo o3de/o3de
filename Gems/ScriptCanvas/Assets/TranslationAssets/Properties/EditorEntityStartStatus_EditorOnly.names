@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorEntityStartStatus_EditorOnly",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorEntityStartStatus_EditorOnly::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

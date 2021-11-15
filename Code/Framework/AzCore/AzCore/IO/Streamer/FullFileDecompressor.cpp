@@ -60,6 +60,7 @@ namespace AZ::IO
         , m_alignment(alignment)
     {
         JobManagerDesc jobDesc;
+            jobDesc.m_jobManagerName = "Full File Decompressor";
         u32 numThreads = AZ::GetMin(maxNumJobs, AZStd::thread::hardware_concurrency());
         for (u32 i = 0; i < numThreads; ++i)
         {

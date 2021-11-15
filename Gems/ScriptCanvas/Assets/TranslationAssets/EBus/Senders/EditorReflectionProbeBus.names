@@ -1,0 +1,36 @@
+{
+    "entries": [
+        {
+            "key": "EditorReflectionProbeBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "EditorReflectionProbeBus"
+            },
+            "methods": [
+                {
+                    "key": "BakeReflectionProbe",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke BakeReflectionProbe"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after BakeReflectionProbe is invoked"
+                    },
+                    "details": {
+                        "name": "BakeReflectionProbe"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

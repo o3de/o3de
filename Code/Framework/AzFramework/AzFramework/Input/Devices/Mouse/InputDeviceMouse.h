@@ -31,23 +31,23 @@ namespace AzFramework
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Default sample rate for raw mouse movement events that aims to strike a balance between
         //! responsiveness and performance.
-        static const AZ::u32 MovementSampleRateDefault;
+        static constexpr inline AZ::u32 MovementSampleRateDefault{60};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Sample rate for raw mouse movement that will cause all events received in the same frame
         //! to be queued and dispatched as individual events. This results in maximum responsiveness
         //! but may potentially impact performance depending how many events happen over each frame.
-        static const AZ::u32 MovementSampleRateQueueAll;
+        static constexpr inline AZ::u32 MovementSampleRateQueueAll{std::numeric_limits<AZ::u32>::max()};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Sample rate for raw mouse movement that will cause all events received in the same frame
         //! to be accumulated and dispatched as a single event. Optimal for performance, but results
         //! in sluggish/unresponsive mouse movement, especially when running at low frame rates.
-        static const AZ::u32 MovementSampleRateAccumulateAll;
+        static constexpr inline AZ::u32 MovementSampleRateAccumulateAll{0};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The id used to identify the primary mouse input device
-        static const InputDeviceId Id;
+        static constexpr inline InputDeviceId Id{"mouse"};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Check whether an input device id identifies a mouse (regardless of index)
@@ -123,8 +123,19 @@ namespace AzFramework
         static void Reflect(AZ::ReflectContext* context);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
+        // Foward declare the internal Implementation class so it can be passed into the constructor
+        class Implementation;
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Alias for the function type used to create a custom implementation for this input device
+        using ImplementationFactory = Implementation*(InputDeviceMouse&);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
-        explicit InputDeviceMouse(AzFramework::InputDeviceId id = Id);
+        //! \param[in] inputDeviceId Optional override of the default input device id
+        //! \param[in] implementationFactory Optional override of the default Implementation::Create
+        explicit InputDeviceMouse(const InputDeviceId& inputDeviceId = Id,
+                                  ImplementationFactory implementationFactory = &Implementation::Create);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Disable copying

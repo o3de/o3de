@@ -14,6 +14,7 @@
 #include <QWidget>
 #include <QProcessEnvironment>
 
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Outcome/Outcome.h>
 
 namespace O3DE::ProjectManager
@@ -67,7 +68,8 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QString, QString> GetProjectBuildPath(const QString& projectPath);
         AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath);
         AZ::Outcome<QString, QString> RunGetPythonScript(const QString& enginePath);
-
+        
+        AZ::IO::FixedMaxPath GetEditorDirectory();
 
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

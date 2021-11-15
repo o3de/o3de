@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "TransformMode_Scale",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "TransformMode_Scale::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -173,16 +173,11 @@ namespace GraphModelIntegrationTest
         };
         GraphModel::NodePtrList retrievedNodes;
         GraphModelIntegration::GraphControllerRequestBus::EventResult(retrievedNodes, m_sceneId, &GraphModelIntegration::GraphControllerRequests::GetNodesFromGraphNodeIds, nodeIds);
-        EXPECT_EQ(nodeIds.size(), retrievedNodes.size());
+        // Test that only one node was found.
+        EXPECT_EQ(retrievedNodes.size(), 1);
 
         // Test the first node in the list should be our valid test node
         EXPECT_EQ(retrievedNodes[0], testNode);
-
-        // Test the second node should be a nullptr since it was an invalid NodeId
-        EXPECT_EQ(retrievedNodes[1], nullptr);
-
-        // Test the third node should also be a nullptr since it was a valid NodeId but one that doesn't exist in the scene
-        EXPECT_EQ(retrievedNodes[2], nullptr);
     }
 
     TEST_F(GraphModelIntegrationTests, ExtendableSlotsWithDifferentMinimumValues)

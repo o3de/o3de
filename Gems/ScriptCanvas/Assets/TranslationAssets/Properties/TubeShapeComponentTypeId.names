@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "TubeShapeComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "TubeShapeComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

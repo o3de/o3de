@@ -1,0 +1,441 @@
+{
+    "entries": [
+        {
+            "key": "UiSliderBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiSliderBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "GetValueChangingActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Value Changing Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Value Changing Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Value Changing Action Name",
+                        "tooltip": "Gets the name of the action triggered while the value is changing"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetValueChangingActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Value Changing Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Value Changing Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Set Value Changing Action Name",
+                        "tooltip": "Sets the name of the action triggered while the value is changing"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name",
+                                "tooltip": "The name of the action triggered while the value is changing"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetManipulatorEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Manipulator Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Manipulator Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Manipulator Entity",
+                        "tooltip": "Gets the manipulator element"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTrackEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Track Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Track Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Track Entity",
+                        "tooltip": "Sets the track element"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Track EntityID",
+                                "tooltip": "The track element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetFillEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Fill Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Fill Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Fill Entity",
+                        "tooltip": "Gets the fill element"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetFillEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Fill Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Fill Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Fill Entity",
+                        "tooltip": "Sets the fill element"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Fill EntityID",
+                                "tooltip": "The fill element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetManipulatorEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Manipulator Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Manipulator Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Manipulator Entity",
+                        "tooltip": "Sets the manipulator element"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Manipulator EntityID",
+                                "tooltip": "The manipulator element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetValueChangedActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Value Changed Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Value Changed Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Value Changed Action Name",
+                        "tooltip": "Gets the name of the action triggered when the value has finished changing"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTrackEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Track Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Track Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Track Entity",
+                        "tooltip": "Gets the track element"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetMinValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Min Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Min Value is invoked"
+                    },
+                    "details": {
+                        "name": "Get Min Value",
+                        "tooltip": "Gets the minimum value of the slider"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetMinValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Min Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Min Value is invoked"
+                    },
+                    "details": {
+                        "name": "Set Min Value",
+                        "tooltip": "Sets the minimum value of the slider"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Min Value",
+                                "tooltip": "The minimum value of the slider"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetStepValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Step Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Step Value is invoked"
+                    },
+                    "details": {
+                        "name": "Set Step Value",
+                        "tooltip": "Sets the smallest increment allowed between values. Zero means no restriction"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Step Value",
+                                "tooltip": "The smallest increment allowed between values. Zero means no restriction"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Value is invoked"
+                    },
+                    "details": {
+                        "name": "Set Value",
+                        "tooltip": "Sets the value of the slider"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Value",
+                                "tooltip": "The value of the slider"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetMaxValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Max Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Max Value is invoked"
+                    },
+                    "details": {
+                        "name": "Set Max Value",
+                        "tooltip": "Sets the maximum value of the slider"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Max Value",
+                                "tooltip": "The maximum value of the slider"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetStepValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Step Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Step Value is invoked"
+                    },
+                    "details": {
+                        "name": "Get Step Value",
+                        "tooltip": "Gets the smallest increment allowed between values. Zero means no restriction"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Value is invoked"
+                    },
+                    "details": {
+                        "name": "Get Value",
+                        "tooltip": "Gets the value of the slider"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetMaxValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Max Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Max Value is invoked"
+                    },
+                    "details": {
+                        "name": "Get Max Value",
+                        "tooltip": "Gets the maximum value of the slider"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetValueChangedActionName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Value Changed Action Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Value Changed Action Name is invoked"
+                    },
+                    "details": {
+                        "name": "Set Value Changed Action Name",
+                        "tooltip": "Sets the name of the action triggered when the value is done changing"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name",
+                                "tooltip": "The name of the action triggered when the value is done changing"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -165,7 +165,7 @@ namespace AZ
 
                 void EnablePasses(bool enable);
 
-                bool HasHairParentPass();
+                bool HasHairParentPass(RPI::RenderPipeline* renderPipeline);
 
                 //! The following will serve to register the FP in the Thumbnail system
                 AZStd::vector<AZStd::string> m_hairFeatureProcessorRegistryName;
@@ -217,7 +217,7 @@ namespace AZ
                 bool m_forceClearRenderData = false;
                 bool m_initialized = false;
                 bool m_isEnabled = true;
-                bool m_usePPLLRenderTechnique = true;
+                bool m_usePPLLRenderTechnique = false;
                 static uint32_t s_instanceCount;
 
                 HairGlobalSettings m_hairGlobalSettings;

@@ -1,0 +1,37 @@
+{
+    "entries": [
+        {
+            "key": "CameraSystemRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "CameraSystemRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "GetActiveCamera",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetActiveCamera"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetActiveCamera is invoked"
+                    },
+                    "details": {
+                        "name": "GetActiveCamera"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

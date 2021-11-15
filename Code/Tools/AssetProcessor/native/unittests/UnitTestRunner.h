@@ -21,6 +21,7 @@
 #endif
 
 #include <gtest/gtest.h>
+#include <AzCore/UnitTest/UnitTest.h>
 
 //! These macros can be used for checking your unit tests,
 //! you can check AssetScannerUnitTest.cpp for usage
@@ -165,6 +166,9 @@ namespace UnitTestUtils
 
         bool OnPreAssert([[maybe_unused]] const char* fileName, [[maybe_unused]] int line, [[maybe_unused]] const char* func, [[maybe_unused]] const char* message) override
         {
+            // Print out absorbed asserts since asserts are pretty important and accidentally absorbing unintended ones can lead to difficult-to-detect issues
+            UnitTest::ColoredPrintf(UnitTest::COLOR_YELLOW, "Absorbed Assert: %s\n", message);
+
             ++m_numAssertsAbsorbed;
             if (m_debugMessages)
             {

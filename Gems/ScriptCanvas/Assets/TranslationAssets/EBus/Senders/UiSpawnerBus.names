@@ -1,0 +1,104 @@
+{
+    "entries": [
+        {
+            "key": "UiSpawnerBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiSpawnerBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "Spawn",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Spawn"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Spawn is invoked"
+                    },
+                    "details": {
+                        "name": "Spawn",
+                        "tooltip": "Spawns the slice specified in the component at the element's location"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "SliceInstantiationTicket"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SpawnRelative",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Spawn Relative"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Spawn Relative is invoked"
+                    },
+                    "details": {
+                        "name": "Spawn Relative",
+                        "tooltip": "Spawns the slice specified in the component at the element's location with the specified relative offset"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Relative Position",
+                                "tooltip": "The offset position from the element with the spawner component"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "SliceInstantiationTicket",
+                                "tooltip": "The offset position from the element with the spawner component"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SpawnAbsolute",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Spawn Absolute"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Spawn Absolute is invoked"
+                    },
+                    "details": {
+                        "name": "Spawn Absolute",
+                        "tooltip": "Spawns the slice specified in the component at the specified viewport position"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Viewport Position",
+                                "tooltip": "The viewport position at which to spawn the slice"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "SliceInstantiationTicket",
+                                "tooltip": "The viewport position at which to spawn the slice"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

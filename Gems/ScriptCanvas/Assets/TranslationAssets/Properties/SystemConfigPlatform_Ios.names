@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "SystemConfigPlatform_Ios",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "SystemConfigPlatform_Ios::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

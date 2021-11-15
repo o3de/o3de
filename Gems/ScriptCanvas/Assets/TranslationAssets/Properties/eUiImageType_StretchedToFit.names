@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiImageType_StretchedToFit",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiImageType_StretchedToFit::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

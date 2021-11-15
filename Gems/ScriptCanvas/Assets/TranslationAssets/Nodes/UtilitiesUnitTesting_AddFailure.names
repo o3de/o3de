@@ -1,0 +1,35 @@
+{
+    "entries": [
+        {
+            "key": "{1C4971A7-DE76-4E8E-9381-F579A57B2A78}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Add Failure",
+                "category": "Utilities/Unit Testing",
+                "tooltip": "adds a failure directly to the unit testing framework"
+            },
+            "slots": [
+                {
+                    "key": "DataInput_Report",
+                    "details": {
+                        "name": "Report"
+                    }
+                },
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                }
+            ]
+        }
+    ]
+}

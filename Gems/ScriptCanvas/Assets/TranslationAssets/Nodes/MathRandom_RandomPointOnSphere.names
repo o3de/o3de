@@ -1,0 +1,41 @@
+{
+    "entries": [
+        {
+            "key": "{7DFA3F08-B554-550A-93F8-4D7CBAA775E9}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "RandomPointOnSphere",
+                "category": "Math/Random",
+                "tooltip": "returns a random point on the surface of a sphere",
+                "subtitle": "Random"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Radius",
+                    "details": {
+                        "name": "Number: Radius"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Vector3",
+                    "details": {
+                        "name": "Result: Vector3"
+                    }
+                }
+            ]
+        }
+    ]
+}

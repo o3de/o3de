@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "AreaLightComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "AreaLightComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

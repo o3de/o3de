@@ -24,17 +24,17 @@ namespace AzFramework
         IMatchmakingRequests() = default;
         virtual ~IMatchmakingRequests() = default;
 
-        // Registers a player's acceptance or rejection of a proposed matchmaking.
-        // @param  acceptMatchRequest The request of AcceptMatch operation
+        //! Registers a player's acceptance or rejection of a proposed matchmaking.
+        //! @param  acceptMatchRequest The request of AcceptMatch operation
         virtual void AcceptMatch(const AcceptMatchRequest& acceptMatchRequest) = 0;
 
-        // Create a game match for a group of players.
-        // @param  startMatchmakingRequest The request of StartMatchmaking operation
-        // @return A unique identifier for a matchmaking ticket
+        //! Create a game match for a group of players.
+        //! @param  startMatchmakingRequest The request of StartMatchmaking operation
+        //! @return A unique identifier for a matchmaking ticket
         virtual AZStd::string StartMatchmaking(const StartMatchmakingRequest& startMatchmakingRequest) = 0;
 
-        // Cancels a matchmaking ticket that is currently being processed.
-        // @param  stopMatchmakingRequest The request of StopMatchmaking operation
+        //! Cancels a matchmaking ticket that is currently being processed.
+        //! @param  stopMatchmakingRequest The request of StopMatchmaking operation
         virtual void StopMatchmaking(const StopMatchmakingRequest& stopMatchmakingRequest) = 0;
     };
 
@@ -48,16 +48,16 @@ namespace AzFramework
         IMatchmakingAsyncRequests() = default;
         virtual ~IMatchmakingAsyncRequests() = default;
 
-        // AcceptMatch Async
-        // @param  acceptMatchRequest The request of AcceptMatch operation
+        //! AcceptMatch Async
+        //! @param  acceptMatchRequest The request of AcceptMatch operation
         virtual void AcceptMatchAsync(const AcceptMatchRequest& acceptMatchRequest) = 0;
 
-        // StartMatchmaking Async
-        // @param  startMatchmakingRequest The request of StartMatchmaking operation
+        //! StartMatchmaking Async
+        //! @param  startMatchmakingRequest The request of StartMatchmaking operation
         virtual void StartMatchmakingAsync(const StartMatchmakingRequest& startMatchmakingRequest) = 0;
 
-        // StopMatchmaking Async
-        // @param  stopMatchmakingRequest The request of StopMatchmaking operation
+        //! StopMatchmaking Async
+        //! @param  stopMatchmakingRequest The request of StopMatchmaking operation
         virtual void StopMatchmakingAsync(const StopMatchmakingRequest& stopMatchmakingRequest) = 0;
     };
 
@@ -76,14 +76,14 @@ namespace AzFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
         //////////////////////////////////////////////////////////////////////////
 
-        // OnAcceptMatchAsyncComplete is fired once AcceptMatchAsync completes
+        //! OnAcceptMatchAsyncComplete is fired once AcceptMatchAsync completes
         virtual void OnAcceptMatchAsyncComplete() = 0;
 
-        // OnStartMatchmakingAsyncComplete is fired once StartMatchmakingAsync completes
-        // @param matchmakingTicketId The unique identifier for the matchmaking ticket
+        //! OnStartMatchmakingAsyncComplete is fired once StartMatchmakingAsync completes
+        //! @param matchmakingTicketId The unique identifier for the matchmaking ticket
         virtual void OnStartMatchmakingAsyncComplete(const AZStd::string& matchmakingTicketId) = 0;
 
-        // OnStopMatchmakingAsyncComplete is fired once StopMatchmakingAsync completes
+        //! OnStopMatchmakingAsyncComplete is fired once StopMatchmakingAsync completes
         virtual void OnStopMatchmakingAsyncComplete() = 0;
     };
     using MatchmakingAsyncRequestNotificationBus = AZ::EBus<MatchmakingAsyncRequestNotifications>;

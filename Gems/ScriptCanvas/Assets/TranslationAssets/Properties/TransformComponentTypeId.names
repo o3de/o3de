@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "TransformComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "TransformComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

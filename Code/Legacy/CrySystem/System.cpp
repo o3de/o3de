@@ -16,7 +16,6 @@
 #include <AzCore/Console/Console.h>
 #include <AzCore/IO/IStreamer.h>
 #include <AzCore/IO/SystemFile.h>
-#include "CryLibrary.h"
 #include <CryPath.h>
 #include <CrySystemBus.h>
 #include <CryCommon/IFont.h>
@@ -129,7 +128,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
 #include "SystemEventDispatcher.h"
-#include "HMDBus.h"
 
 #include "RemoteConsole/RemoteConsole.h"
 
@@ -143,9 +141,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 
-// To enable profiling with vtune (https://software.intel.com/en-us/intel-vtune-amplifier-xe), make sure the line below is not commented out
-//#define  PROFILE_WITH_VTUNE
-
 #include <process.h>
 #include <malloc.h>
 #endif
@@ -154,14 +149,8 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 #include <AzFramework/IO/LocalFileIO.h>
 
-// profilers api.
-VTuneFunction VTResume = NULL;
-VTuneFunction VTPause = NULL;
-
 // Define global cvars.
 SSystemCVars g_cvars;
-
-#include <IViewSystem.h>
 
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Component/ComponentApplication.h>
@@ -226,7 +215,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_pProcess = NULL;
     m_pCmdLine = NULL;
     m_pLevelSystem = NULL;
-    m_pViewSystem = NULL;
     m_pLocalizationManager = NULL;
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_2
@@ -442,9 +430,6 @@ void CSystem::ShutDown()
         m_pSystemEventDispatcher->OnSystemEvent(ESYSTEM_EVENT_FULL_SHUTDOWN, 0, 0);
     }
 
-    // Shutdown any running VR devices.
-    EBUS_EVENT(AZ::VR::HMDInitRequestBus, Shutdown);
-
     if (gEnv && gEnv->pLyShine)
     {
         gEnv->pLyShine->Release();
@@ -458,7 +443,6 @@ void CSystem::ShutDown()
     {
         ((CXConsole*)m_env.pConsole)->FreeRenderResources();
     }
-    SAFE_RELEASE(m_pViewSystem);
     SAFE_RELEASE(m_pLevelSystem);
 
     if (m_env.pLog)
@@ -515,8 +499,6 @@ void CSystem::ShutDown()
     SAFE_RELEASE(m_env.pLog);   // creates log backup
 
     ShutdownFileSystem();
-
-    ShutdownModuleLibraries();
 
     EBUS_EVENT(CrySystemEventBus, OnCrySystemPostShutdown);
 }
@@ -696,31 +678,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     {
         m_bPaused = false;
     }
-
-#ifdef PROFILE_WITH_VTUNE
-    if (m_bInDevMode)
-    {
-        if (VTPause != NULL && VTResume != NULL)
-        {
-            static bool bVtunePaused = true;
-
-            const AzFramework::InputChannel* inputChannelScrollLock = AzFramework::InputChannelRequests::FindInputChannel(AzFramework::InputDeviceKeyboard::Key::WindowsSystemScrollLock);
-            const bool bPaused = (inputChannelScrollLock ? inputChannelScrollLock->IsActive() : false);
-
-            {
-                if (bVtunePaused && !bPaused)
-                {
-                    GetIProfilingSystem()->VTuneResume();
-                }
-                if (!bVtunePaused && bPaused)
-                {
-                    GetIProfilingSystem()->VTunePause();
-                }
-                bVtunePaused = bPaused;
-            }
-        }
-    }
-#endif //PROFILE_WITH_VTUNE
 
 #ifndef EXCLUDE_UPDATE_ON_CONSOLE
     if (m_bIgnoreUpdates)
@@ -1255,30 +1212,6 @@ CPNoise3* CSystem::GetNoiseGen()
     return &m_pNoiseGen;
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CProfilingSystem::VTuneResume()
-{
-#ifdef PROFILE_WITH_VTUNE
-    if (VTResume)
-    {
-        CryLogAlways("VTune Resume");
-        VTResume();
-    }
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CProfilingSystem::VTunePause()
-{
-#ifdef PROFILE_WITH_VTUNE
-    if (VTPause)
-    {
-        VTPause();
-        CryLogAlways("VTune Pause");
-    }
-#endif
-}
-
 //////////////////////////////////////////////////////////////////////
 void CSystem::OnLanguageCVarChanged(ICVar* language)
 {
@@ -1660,11 +1593,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
 std::shared_ptr<AZ::IO::FileIOBase> CSystem::CreateLocalFileIO()
 {
     return std::make_shared<AZ::IO::LocalFileIO>();
-}
-
-IViewSystem* CSystem::GetIViewSystem()
-{
-    return m_pViewSystem;
 }
 
 ILevelSystem* CSystem::GetILevelSystem()

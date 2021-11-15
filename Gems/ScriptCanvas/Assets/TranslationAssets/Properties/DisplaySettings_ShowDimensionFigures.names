@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DisplaySettings_ShowDimensionFigures",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DisplaySettings_ShowDimensionFigures::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

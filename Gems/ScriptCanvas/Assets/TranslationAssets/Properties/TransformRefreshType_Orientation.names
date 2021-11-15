@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "TransformRefreshType_Orientation",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "TransformRefreshType_Orientation::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "SystemConfigPlatform_InvalidPlatform",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "SystemConfigPlatform_InvalidPlatform::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

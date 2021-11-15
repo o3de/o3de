@@ -1,0 +1,35 @@
+{
+    "entries": [
+        {
+            "key": "{E1B5F3F8-AFEE-42C9-A22C-CB93F8281CC4}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Switch",
+                "category": "Logic",
+                "tooltip": "Triggers the specified output when triggered."
+            },
+            "slots": [
+                {
+                    "key": "DataInput_Index",
+                    "details": {
+                        "name": "Index"
+                    }
+                },
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out 0",
+                    "details": {
+                        "name": "Out 0",
+                        "tooltip": "Output 0"
+                    }
+                }
+            ]
+        }
+    ]
+}
