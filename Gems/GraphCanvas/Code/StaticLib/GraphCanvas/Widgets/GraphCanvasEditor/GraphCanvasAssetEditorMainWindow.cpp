@@ -41,7 +41,7 @@
 namespace GraphCanvas
 {
     // Default size percentage that the Node Palette dock widget will take up
-    static const float DEFAULT_NODE_PALETTE_SIZE = 0.15f;
+    static const float DEFAULT_NODE_PALETTE_SIZE = 0.25f;
 
     void AssetEditorUserSettings::Reflect(AZ::ReflectContext* context)
     {
