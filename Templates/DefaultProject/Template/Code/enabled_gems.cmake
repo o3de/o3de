@@ -22,6 +22,7 @@ set(ENABLED_GEMS
     Multiplayer
     PhysX
     PrimitiveAssets
+    PrefabBuilder
     SaveData
     ScriptCanvasPhysics
     ScriptEvents
