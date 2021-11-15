@@ -329,18 +329,24 @@ namespace ScriptCanvasEditor::Nodes
         details.m_subtitle = details.m_name;
 
         // Get the method's text data
+        GraphCanvas::TranslationRequests::Details methodDetails;
         key << "methods" << methodName;
-        GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", details);
+        GraphCanvas::TranslationRequestBus::BroadcastResult(methodDetails, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", methodDetails);
+
+        if (methodDetails.m_subtitle.empty())
+        {
+            methodDetails.m_subtitle = details.m_name;
+        }
 
         // Add to the tooltip the C++ class for reference
-        if (!details.m_tooltip.empty())
+        if (!methodDetails.m_tooltip.empty())
         {
-            details.m_tooltip.append("\n");
+            methodDetails.m_tooltip.append("\n");
         }
-        details.m_tooltip.append(AZStd::string::format("[C++] %s", className.c_str()));
+        methodDetails.m_tooltip.append(AZStd::string::format("[C++] %s", className.c_str()));
 
-        GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetDetails, details.m_name, details.m_subtitle);
-        GraphCanvas::NodeRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeRequests::SetTooltip, details.m_tooltip);
+        GraphCanvas::NodeTitleRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeTitleRequests::SetDetails, methodDetails.m_name, methodDetails.m_subtitle);
+        GraphCanvas::NodeRequestBus::Event(graphCanvasNodeId, &GraphCanvas::NodeRequests::SetTooltip, methodDetails.m_tooltip);
 
         int paramIndex = 0;
         int outputIndex = 0;
