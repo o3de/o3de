@@ -444,6 +444,7 @@ def UploadAPLogs(Map options, String branchName, String platformName, String job
             ArchiveArtifactsOnS3(options, "${project}/user/log", "**", "ap_logs/${platformName}/${jobName}/${project}")
         }
     }
+}
 
 def PostBuildCommonSteps(String workspace, boolean mount = true) {
     echo 'Starting post-build common steps...'
