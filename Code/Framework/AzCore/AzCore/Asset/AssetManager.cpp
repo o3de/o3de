@@ -1677,12 +1677,13 @@ namespace AZ
                 // they will trigger a ReleaseAsset call sometime after the AssetManager has begun to shut down, which can lead to
                 // race conditions.
 
-                // Hold on to the m_assetMutex here to avoid a race condition where the asset is fully unloaded and another attempt is made
-                // to load the asset before RemoveActiveStreamerRequest manages to complete
-                AZStd::scoped_lock<AZStd::recursive_mutex> asset_lock(m_assetMutex);
+                // Make sure the streamer request is removed first before the asset is released
+                // If the asset is released first it could lead to a race condition where another thread starts loading the asset
+                // again and attempts to add a new streamer request with the same ID before the old one has been removed, causing
+                // that load request to fail
+                RemoveActiveStreamerRequest(assetId);
                 weakAsset = {};
                 loadingAsset.Reset();
-                RemoveActiveStreamerRequest(assetId);
             };
 
             auto&& [deadline, priority] = GetEffectiveDeadlineAndPriority(*handler, asset.GetType(), loadParams);
