@@ -1425,38 +1425,39 @@ namespace AZ::StringFunc
 
     namespace AssetPath
     {
-            namespace Internal
+        namespace Internal
+        {
+            AZ::u32 CalculateBranchTokenHash(AZStd::string_view engineRootPath)
             {
-                AZ::u32 CalculateBranchTokenHash(AZStd::string_view engineRootPath)
+                // Normalize the token to prepare for CRC32 calculation
+                auto NormalizeEnginePath = [](const char element) -> char
                 {
-                    // Normalize the token to prepare for CRC32 calculation
-                    auto NormalizeEnginePath = [](const char element) -> char
-                    {
-                        // Substitute path separators with '_' and lower case
-                        return element == AZ::IO::WindowsPathSeparator || element == AZ::IO::PosixPathSeparator
-                            ? '_' : static_cast<char>(std::tolower(element));
-                    };
+                    // Substitute path separators with '_' and lower case
+                    return element == AZ::IO::WindowsPathSeparator || element == AZ::IO::PosixPathSeparator
+                        ? '_'
+                        : static_cast<char>(std::tolower(element));
+                };
 
-                    // Trim off trailing path separators
-                    engineRootPath = RStrip(engineRootPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
-                    AZ::IO::FixedMaxPathString enginePath;
-                    AZStd::transform(engineRootPath.begin(), engineRootPath.end(),
-                        AZStd::back_inserter(enginePath), AZStd::move(NormalizeEnginePath));
+                // Trim off trailing path separators
+                engineRootPath = RStrip(engineRootPath, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
+                AZ::IO::FixedMaxPathString enginePath;
+                AZStd::transform(
+                    engineRootPath.begin(), engineRootPath.end(), AZStd::back_inserter(enginePath), AZStd::move(NormalizeEnginePath));
 
-                    // Perform the CRC32 calculation
-                    constexpr bool forceLowercase = true;
-                    return static_cast<AZ::u32>(AZ::Crc32(enginePath.c_str(), enginePath.size(), forceLowercase));
-                }
+                // Perform the CRC32 calculation
+                constexpr bool forceLowercase = true;
+                return static_cast<AZ::u32>(AZ::Crc32(enginePath.c_str(), enginePath.size(), forceLowercase));
             }
-            void CalculateBranchToken(AZStd::string_view engineRootPath, AZStd::string& token)
-            {
-                token = AZStd::string::format("0x%08X", Internal::CalculateBranchTokenHash(engineRootPath));
-            }
-            void CalculateBranchToken(AZStd::string_view engineRootPath, AZ::IO::FixedMaxPathString& token)
-            {
-                token = AZ::IO::FixedMaxPathString::format("0x%08X", Internal::CalculateBranchTokenHash(engineRootPath));
+        } // namespace Internal
+        void CalculateBranchToken(AZStd::string_view engineRootPath, AZStd::string& token)
+        {
+            token = AZStd::string::format("0x%08X", Internal::CalculateBranchTokenHash(engineRootPath));
         }
-    }
+        void CalculateBranchToken(AZStd::string_view engineRootPath, AZ::IO::FixedMaxPathString& token)
+        {
+            token = AZ::IO::FixedMaxPathString::format("0x%08X", Internal::CalculateBranchTokenHash(engineRootPath));
+        }
+    } // namespace AssetPath
 
     namespace AssetDatabasePath
     {
