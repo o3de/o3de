@@ -72,6 +72,8 @@ namespace AZ
             AZStd::mutex m_workQueueMutex;
             AZStd::queue<Command> m_workQueue;
             AZStd::condition_variable m_workQueueCondition;
+            AZStd::mutex m_flushCommandsMutex;
+            AZStd::condition_variable m_flushCommandsCondition;
             AZStd::atomic_bool m_isWorkQueueEmpty;
             AZStd::atomic_bool m_isQuitting;
         };
