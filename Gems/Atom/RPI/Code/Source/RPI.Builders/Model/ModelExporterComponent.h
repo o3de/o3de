@@ -55,7 +55,7 @@ namespace AZ
 
                 AZStd::string_view m_relativeFileName;
                 AZStd::string_view m_extension;
-                const Uuid m_sourceUuid=Uuid::CreateNull();
+                const Uuid m_sourceUuid = Uuid::CreateNull();
                 const DataStream::StreamType m_dataStreamType = DataStream::ST_BINARY;
             };
 

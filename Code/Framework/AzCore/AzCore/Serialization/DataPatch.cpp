@@ -153,9 +153,9 @@ namespace AZ
             return;
         }
         SerializeContext::EnumerateInstanceCallContext callContext(
-            [this](void* instance_pointer, const SerializeContext::ClassData* classData, const SerializeContext::ClassElement* classElement)->bool
+            [this](void* instancePointer, const SerializeContext::ClassData* classData, const SerializeContext::ClassElement* classElement)->bool
             {
-                return BeginNode(instance_pointer,classData,classElement);
+                return BeginNode(instancePointer, classData, classElement);
             },
             [this]()->bool { return EndNode(); },
             m_context,
