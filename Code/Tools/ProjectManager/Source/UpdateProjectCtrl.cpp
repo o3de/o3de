@@ -15,6 +15,9 @@
 #include <UpdateProjectCtrl.h>
 #include <UpdateProjectSettingsScreen.h>
 #include <ProjectUtils.h>
+#include <ProjectManagerSettings.h>
+
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <QDialogButtonBox>
 #include <QMessageBox>
@@ -277,6 +280,23 @@ namespace O3DE::ProjectManager
                 {
                     QMessageBox::critical(this, tr("Project update failed"), tr(result.GetError().c_str()));
                     return false;
+                }
+            }
+
+            if (newProjectSettings.m_projectName != m_projectInfo.m_projectName)
+            {
+                // update reg key
+                QString oldSettingsKey =
+                    QString("%1/Projects/%2/BuiltSuccesfully").arg(ProjectManagerKeyPrefix).arg(m_projectInfo.m_projectName);
+                QString newSettingsKey =
+                    QString("%1/Projects/%2/BuiltSuccesfully").arg(ProjectManagerKeyPrefix).arg(newProjectSettings.m_projectName);
+
+                auto settingsRegistry = AZ::SettingsRegistry::Get();
+                bool projectBuiltSuccessfully = false;
+                if (settingsRegistry && settingsRegistry->Get(projectBuiltSuccessfully, oldSettingsKey.toStdString().c_str()))
+                {
+                    settingsRegistry->Set(newSettingsKey.toStdString().c_str(), projectBuiltSuccessfully);
+                    SaveProjectManagerSettings();
                 }
             }
 

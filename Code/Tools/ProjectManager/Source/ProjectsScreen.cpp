@@ -14,6 +14,7 @@
 #include <ProjectUtils.h>
 #include <ProjectBuilderController.h>
 #include <ScreensCtrl.h>
+#include <ProjectManagerSettings.h>
 
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzCore/Platform.h>
@@ -22,7 +23,7 @@
 #include <AzFramework/Process/ProcessCommon.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzFramework/IO/LocalFileIO.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -290,11 +291,15 @@ namespace O3DE::ProjectManager
                 // Check whether project manager has successfully built the project
                 if (currentButton)
                 {
-                    AZStd::string successfulBuildFilePath = AZStd::string::format("%s/%s",
-                        project.m_path.toStdString().c_str(), "ProjectManagerBuildSuccess");
-
-                    AZ::IO::LocalFileIO fileIO;
-                    if (!fileIO.Exists(successfulBuildFilePath.c_str()))
+                    auto settingsRegistry = AZ::SettingsRegistry::Get();
+                    bool projectBuiltSuccessfully = false;
+                    if (settingsRegistry)
+                    {
+                        QString settingsKey =
+                            QString("%1/Projects/%2/BuiltSuccesfully").arg(ProjectManagerKeyPrefix).arg(project.m_projectName);
+                        settingsRegistry->Get(projectBuiltSuccessfully, settingsKey.toStdString().c_str());
+                    }
+                    if (!projectBuiltSuccessfully)
                     {
                         currentButton->ShowBuildRequired();
                     }

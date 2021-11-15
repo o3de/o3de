@@ -9,12 +9,14 @@
 #include <ProjectBuilderController.h>
 #include <ProjectBuilderWorker.h>
 #include <ProjectButtonWidget.h>
+#include <ProjectManagerSettings.h>
 
-#include <AzFramework/IO/LocalFileIO.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <QMessageBox>
 #include <QDesktopServices>
 #include <QUrl>
+
 
 
 namespace O3DE::ProjectManager
@@ -28,6 +30,15 @@ namespace O3DE::ProjectManager
     {
         m_worker = new ProjectBuilderWorker(m_projectInfo);
         m_worker->moveToThread(&m_workerThread);
+
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        if (settingsRegistry)
+        {
+            // Remove key here in case Project Manager crashing while building that causes HandleResults to not be called
+            QString settingsKey = QString("%1/Projects/%2/BuiltSuccesfully").arg(ProjectManagerKeyPrefix).arg(m_projectInfo.m_projectName);
+            settingsRegistry->Remove(settingsKey.toStdString().c_str());
+            SaveProjectManagerSettings();
+        }
 
         connect(&m_workerThread, &QThread::finished, m_worker, &ProjectBuilderWorker::deleteLater);
         connect(&m_workerThread, &QThread::started, m_worker, &ProjectBuilderWorker::BuildProject);
@@ -82,9 +93,7 @@ namespace O3DE::ProjectManager
 
     void ProjectBuilderController::HandleResults(const QString& result)
     {
-        AZ::IO::LocalFileIO fileIO;
-        AZStd::string successBuildFilePath = AZStd::string::format("%s/%s",
-            m_projectInfo.m_path.toStdString().c_str(), "ProjectManagerBuildSuccess");
+        QString settingsKey = QString("%1/Projects/%2/BuiltSuccesfully").arg(ProjectManagerKeyPrefix).arg(m_projectInfo.m_projectName);
 
         if (!result.isEmpty())
         {
@@ -115,7 +124,12 @@ namespace O3DE::ProjectManager
                 emit NotifyBuildProject(m_projectInfo);
             }
 
-            fileIO.Remove(successBuildFilePath.c_str());
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                settingsRegistry->Remove(settingsKey.toStdString().c_str());
+                SaveProjectManagerSettings();
+            }
 
             emit Done(false);
             return;
@@ -124,11 +138,11 @@ namespace O3DE::ProjectManager
         {
             m_projectInfo.m_buildFailed = false;
 
-            AZ::IO::HandleType fileHandle;
-            if (fileIO.Open(successBuildFilePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText, fileHandle))
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
             {
-                // We just need the file to exist
-                fileIO.Close(fileHandle);
+                settingsRegistry->Set(settingsKey.toStdString().c_str(), true);
+                SaveProjectManagerSettings();
             }
         }
 
