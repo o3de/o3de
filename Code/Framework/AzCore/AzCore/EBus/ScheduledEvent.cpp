@@ -76,7 +76,7 @@ namespace AZ
 
     TimeMs ScheduledEvent::TimeInQueueMs() const
     {
-        return GetElapsedTimeMs() - m_timeInserted;
+        return AZ::GetElapsedTimeMs() - m_timeInserted;
     }
 
     TimeMs ScheduledEvent::RemainingTimeInQueueMs() const

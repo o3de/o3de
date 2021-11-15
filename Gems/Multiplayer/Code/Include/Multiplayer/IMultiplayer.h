@@ -265,7 +265,7 @@ namespace Multiplayer
         }
     private:
         HostFrameId m_previousHostFrameId = InvalidHostFrameId;
-        AZ::TimeMs m_previousHostTimeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_previousHostTimeMs = AZ::Time::ZeroTimeMs;
         AzNetworking::ConnectionId m_previousRewindConnectionId = AzNetworking::InvalidConnectionId;
         float m_previousBlendFactor = DefaultBlendFactor;
     };

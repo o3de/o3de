@@ -11,6 +11,7 @@
 
 #include "ILevelSystem.h"
 #include <AzFramework/Archive/IArchive.h>
+#include <CryCommon/TimeValue.h>
 
 // [LYN-2376] Remove the entire file once legacy slice support is removed
 

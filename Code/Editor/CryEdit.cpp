@@ -80,7 +80,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzQtComponents/Utilities/QtPluginPaths.h>
 
 // CryCommon
-#include <CryCommon/ITimer.h>
 #include <CryCommon/ILevelSystem.h>
 
 // Editor

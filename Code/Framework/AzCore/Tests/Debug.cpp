@@ -6,7 +6,6 @@
  *
  */
 
-#include <AzCore/Debug/Timer.h>
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/TraceMessagesDrillerBus.h>
 #include <AzCore/Debug/Profiler.h>

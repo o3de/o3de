@@ -8,7 +8,6 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <CryCommon/ITimer.h>
 #include <CryCommon/ISystem.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -42,8 +41,8 @@ inline Gestures::RecognizerPinch::RecognizerPinch(const Config& config)
     : m_config(config)
     , m_currentState(State::Idle)
 {
-    m_lastUpdateTimes[0] = 0;
-    m_lastUpdateTimes[1] = 0;
+    m_lastUpdateTimes[0] = AZ::Time::ZeroTimeMs;
+    m_lastUpdateTimes[1] = AZ::Time::ZeroTimeMs;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -112,7 +111,7 @@ inline bool Gestures::RecognizerPinch::OnDownEvent(const AZ::Vector2& screenPosi
     }
 
     m_currentPositions[pointerIndex] = screenPosition;
-    m_lastUpdateTimes[pointerIndex] = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime().GetValue() : 0;
+    m_lastUpdateTimes[pointerIndex] = AZ::GetRealElapsedTimeMs();
     if (m_lastUpdateTimes[0] != m_lastUpdateTimes[1])
     {
         // We need to wait until both touches have been updated this frame.
