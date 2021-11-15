@@ -433,63 +433,77 @@ void ApplicationManagerBase::DestroyPlatformConfiguration()
 
 void ApplicationManagerBase::InitFileMonitor()
 {
-    m_folderWatches.reserve(m_platformConfiguration->GetScanFolderCount());
-    m_watchHandles.reserve(m_platformConfiguration->GetScanFolderCount());
     for (int folderIdx = 0; folderIdx < m_platformConfiguration->GetScanFolderCount(); ++folderIdx)
     {
         const AssetProcessor::ScanFolderInfo& info = m_platformConfiguration->GetScanFolderAt(folderIdx);
-
-        FolderWatchCallbackEx* newFolderWatch = new FolderWatchCallbackEx(info.ScanPath(), "", info.RecurseSubFolders());
-        // hook folder watcher to assess files on add/modify
-        // relevant files will be sent to resource compiler
-        QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileAdded,
-            m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssessAddedFile);
-        QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileModified,
-            m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssessModifiedFile);
-        QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileRemoved,
-            m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssessDeletedFile);
-
-        QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileAdded, [this](QString path) { m_fileStateCache->AddFile(path); });
-        QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileModified, [this](QString path) { m_fileStateCache->UpdateFile(path); });
-        QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileRemoved, [this](QString path) { m_fileStateCache->RemoveFile(path); });
-
-        QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileAdded, [](QString path) { AZ::Interface<AssetProcessor::ExcludedFolderCacheInterface>::Get()->FileAdded(path); });
-
-        QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileAdded,
-            m_fileProcessor.get(), &AssetProcessor::FileProcessor::AssessAddedFile);
-        QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileRemoved,
-            m_fileProcessor.get(), &AssetProcessor::FileProcessor::AssessDeletedFile);
-
-        m_folderWatches.push_back(AZStd::unique_ptr<FolderWatchCallbackEx>(newFolderWatch));
-        m_watchHandles.push_back(m_fileWatcher.AddFolderWatch(newFolderWatch, info.RecurseSubFolders()));
+        m_fileWatcher.AddFolderWatch(info.ScanPath(), info.RecurseSubFolders());
     }
 
-    // also hookup monitoring for the cache (output directory)
     QDir cacheRoot;
     if (AssetUtilities::ComputeProjectCacheRoot(cacheRoot))
     {
-        FolderWatchCallbackEx* newFolderWatch = new FolderWatchCallbackEx(cacheRoot.absolutePath(), "", true);
+        m_fileWatcher.AddFolderWatch(cacheRoot.absolutePath(), true);
+    }
 
-        QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileAdded, [this](QString path) { m_fileStateCache->AddFile(path); });
-        QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileModified, [this](QString path) { m_fileStateCache->UpdateFile(path); });
-        QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileRemoved, [this](QString path) { m_fileStateCache->RemoveFile(path); });
+    if (m_platformConfiguration->GetScanFolderCount() || !cacheRoot.path().isEmpty())
+    {
+        const auto cachePath = QDir::toNativeSeparators(cacheRoot.absolutePath());
 
-        // we only care about cache root deletions.
-        QObject::connect(newFolderWatch, &FolderWatchCallbackEx::fileRemoved,
-            m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AssessDeletedFile);
+        const auto OnFileAdded = [this, cachePath](QString path)
+        {
+            const bool isCacheRoot = path.startsWith(cachePath);
+            if (isCacheRoot)
+            {
+                m_fileStateCache->AddFile(path);
+            }
+            else
+            {
+                m_assetProcessorManager->AssessAddedFile(path);
+                m_fileStateCache->AddFile(path);
+                AZ::Interface<AssetProcessor::ExcludedFolderCacheInterface>::Get()->FileAdded(path);
+                m_fileProcessor->AssetProcessor::FileProcessor::AssessAddedFile(path);
+            }
+        };
 
-        m_folderWatches.push_back(AZStd::unique_ptr<FolderWatchCallbackEx>(newFolderWatch));
-        m_watchHandles.push_back(m_fileWatcher.AddFolderWatch(newFolderWatch));
+        const auto OnFileModified = [this, cachePath](QString path)
+        {
+            const bool isCacheRoot = path.startsWith(cachePath);
+            if (isCacheRoot)
+            {
+                m_assetProcessorManager->AssessModifiedFile(path);
+            }
+            else
+            {
+                m_assetProcessorManager->AssessModifiedFile(path);
+                m_fileStateCache->UpdateFile(path);
+            }
+        };
+
+        const auto OnFileRemoved = [this, cachePath](QString path)
+        {
+            const bool isCacheRoot = path.startsWith(cachePath);
+            if (isCacheRoot)
+            {
+                m_fileStateCache->RemoveFile(path);
+                m_assetProcessorManager->AssessDeletedFile(path);
+            }
+            else
+            {
+                m_assetProcessorManager->AssessDeletedFile(path);
+                m_fileStateCache->RemoveFile(path);
+                m_fileProcessor->AssessDeletedFile(path);
+            }
+        };
+
+        connect(&m_fileWatcher, &FileWatcher::fileAdded, OnFileAdded);
+        connect(&m_fileWatcher, &FileWatcher::fileModified, OnFileModified);
+        connect(&m_fileWatcher, &FileWatcher::fileRemoved, OnFileRemoved);
     }
 }
 
 void ApplicationManagerBase::DestroyFileMonitor()
 {
-    for (int watchHandle : m_watchHandles)
-    {
-        m_fileWatcher.RemoveFolderWatch(watchHandle);
-    }
-    m_folderWatches.resize(0);
+    m_fileWatcher.ClearFolderWatches();
 }
 
 void ApplicationManagerBase::DestroyApplicationServer()
@@ -797,8 +811,6 @@ ApplicationManager::BeforeRunStatus ApplicationManagerBase::BeforeRun()
     //Register all QMetatypes here
     qRegisterMetaType<AzFramework::AssetSystem::AssetStatus>("AzFramework::AssetSystem::AssetStatus");
     qRegisterMetaType<AzFramework::AssetSystem::AssetStatus>("AssetStatus");
-
-    qRegisterMetaType<FileChangeInfo>("FileChangeInfo");
 
     qRegisterMetaType<AssetProcessor::AssetScanningStatus>("AssetScanningStatus");
 
