@@ -423,6 +423,8 @@ namespace O3DE::ProjectManager
             });
         m_cartOverlay->show();
 
+        emit OverlayUpdate(m_cartOverlay);
+        /*
         const QPoint parentPos = m_dropDownButton->mapToParent(m_dropDownButton->pos());
         const QPoint globalPos = m_dropDownButton->mapToGlobal(m_dropDownButton->pos());
         const QPoint offset(-4, 10);
@@ -430,6 +432,7 @@ namespace O3DE::ProjectManager
             globalPos.y() + offset.y(),
             m_cartOverlay->width(),
             m_cartOverlay->height());
+        */
     }
 
     CartButton::~CartButton()
@@ -514,6 +517,8 @@ namespace O3DE::ProjectManager
 
         connect(m_downloadController, &DownloadController::GemDownloadAdded, this, &GemCatalogHeaderWidget::GemDownloadAdded);
         connect(m_downloadController, &DownloadController::GemDownloadRemoved, this, &GemCatalogHeaderWidget::GemDownloadRemoved);
+
+        connect(m_cartButton, &CartButton::OverlayUpdate, this, [this](QWidget* cartOverlay) { emit OverlayUpdate(cartOverlay); });
     }
 
     void GemCatalogHeaderWidget::GemDownloadAdded(const QString& /*gemName*/)

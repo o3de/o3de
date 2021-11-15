@@ -18,8 +18,10 @@
 #include <GemCatalog/GemInspector.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
+
 #include <QSet>
 #include <QString>
+#include <QStackedWidget>
 #endif
 
 namespace O3DE::ProjectManager
@@ -62,14 +64,21 @@ namespace O3DE::ProjectManager
 
     private slots:
         void HandleOpenGemRepo();
-
+        void UpdateAndShowGemCart(QWidget* cartWidget);
 
     private:
+        enum RightPanelWidgetOrder
+        {
+            Inspector = 0,
+            Cart
+        };
+
         void FillModel(const QString& projectPath);
 
         AZStd::unique_ptr<AzToolsFramework::ToastNotificationsView> m_notificationsView;
 
         GemListView* m_gemListView = nullptr;
+        QStackedWidget* m_rightPanelStack = nullptr;
         GemInspector* m_gemInspector = nullptr;
         GemModel* m_gemModel = nullptr;
         GemCatalogHeaderWidget* m_headerWidget = nullptr;

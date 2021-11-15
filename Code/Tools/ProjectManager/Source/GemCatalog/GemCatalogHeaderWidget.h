@@ -70,6 +70,9 @@ namespace O3DE::ProjectManager
         ~CartButton();
         void ShowOverlay();
 
+    signals:
+        void OverlayUpdate(QWidget* cartOverlay);
+
     private:
         void mousePressEvent(QMouseEvent* event) override;
         void hideEvent(QHideEvent*) override;
@@ -104,6 +107,7 @@ namespace O3DE::ProjectManager
         void AddGem();
         void OpenGemsRepo();
         void RefreshGems();
+        void OverlayUpdate(QWidget* cartOverlay);
         
     private:
         AzQtComponents::SearchLineEdit* m_filterLineEdit = nullptr;

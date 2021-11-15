@@ -60,13 +60,25 @@ namespace O3DE::ProjectManager
         hLayout->setMargin(0);
         vLayout->addLayout(hLayout);
 
+        m_rightPanelStack = new QStackedWidget(this);
+        m_rightPanelStack->setFixedWidth(240);
+
+        connect(m_headerWidget, &GemCatalogHeaderWidget::OverlayUpdate, this, &GemCatalogScreen::UpdateAndShowGemCart);
+
         m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), this);
         m_gemInspector = new GemInspector(m_gemModel, this);
-        m_gemInspector->setFixedWidth(240);
 
         connect(m_gemInspector, &GemInspector::TagClicked, [=](const Tag& tag) { SelectGem(tag.id); });
         connect(m_gemInspector, &GemInspector::UpdateGem, this, &GemCatalogScreen::UpdateGem);
         connect(m_gemInspector, &GemInspector::UninstallGem, this, &GemCatalogScreen::UninstallGem);
+
+        // Show the inspector if gem selection changes
+        connect(
+            m_gemModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this,
+            [this]
+            {
+                m_rightPanelStack->setCurrentIndex(RightPanelWidgetOrder::Inspector);
+            });
 
         QWidget* filterWidget = new QWidget(this);
         filterWidget->setFixedWidth(240);
@@ -85,7 +97,9 @@ namespace O3DE::ProjectManager
 
         hLayout->addWidget(filterWidget);
         hLayout->addLayout(middleVLayout);
-        hLayout->addWidget(m_gemInspector);
+
+        hLayout->addWidget(m_rightPanelStack);
+        m_rightPanelStack->addWidget(m_gemInspector);
 
         m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC("GemCatalogNotificationsView"));
         m_notificationsView->SetOffset(QPoint(10, 70));
@@ -302,6 +316,8 @@ namespace O3DE::ProjectManager
         QModelIndex proxyIndex = m_proxyModel->mapFromSource(modelIndex);
         m_proxyModel->GetSelectionModel()->select(proxyIndex, QItemSelectionModel::ClearAndSelect);
         m_gemListView->scrollTo(proxyIndex);
+
+        m_rightPanelStack->setCurrentIndex(RightPanelWidgetOrder::Inspector);
     }
 
     void GemCatalogScreen::UpdateGem(const QModelIndex& modelIndex)
@@ -557,6 +573,18 @@ namespace O3DE::ProjectManager
     void GemCatalogScreen::HandleOpenGemRepo()
     {
         emit ChangeScreenRequest(ProjectManagerScreen::GemRepos);
+    }
+
+    void GemCatalogScreen::UpdateAndShowGemCart(QWidget* cartWidget)
+    {
+        QWidget* previousCart = m_rightPanelStack->widget(RightPanelWidgetOrder::Cart);
+        if (previousCart)
+        {
+            m_rightPanelStack->removeWidget(previousCart);
+        }
+
+        m_rightPanelStack->insertWidget(RightPanelWidgetOrder::Cart, cartWidget);
+        m_rightPanelStack->setCurrentIndex(RightPanelWidgetOrder::Cart);
     }
 
     void GemCatalogScreen::OnGemDownloadResult(const QString& gemName, bool succeeded)
