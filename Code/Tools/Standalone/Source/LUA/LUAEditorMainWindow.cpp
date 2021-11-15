@@ -345,8 +345,17 @@ namespace LUAEditor
             if (selectedAssets.size() == 1)
             {
                 auto selectedAsset = selectedAssets.front();
-                const AZStd::string filePath = selectedAsset->GetFullPath();
-                EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, filePath, true);
+
+                AZStd::string current = selectedAsset->GetFullPath();
+                AZStd::replace(current.begin(), current.end(), '\\', '/');
+
+                const AZStd::string filePath = current;
+
+                auto entry_type = selectedAsset->GetEntryType();
+                if (entry_type == AzToolsFramework::AssetBrowser::AssetBrowserEntry::AssetEntryType::Source)
+                {
+                    EBUS_EVENT(Context_DocumentManagement::Bus, OnLoadDocument, filePath, true);
+                }                    
             }
         });
     }
