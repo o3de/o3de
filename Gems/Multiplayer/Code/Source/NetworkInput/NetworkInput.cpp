@@ -90,8 +90,23 @@ namespace Multiplayer
     {
         for (uint16_t i = 0; i < m_componentInputs.size(); ++i)
         {
-            m_componentInputs[i].get()->LogInputDelta();
+            //AZLOG_WARN(m_componentInputs[i].get()->GetInputDeltaLog().c_str());
         }
+    }
+
+    AZStd::vector<MultiplayerComponentInputDetail> NetworkInput::GetComponentInputDeltaLogs() const
+    {
+        AZStd::vector<MultiplayerComponentInputDetail> logs;
+        for (uint16_t i = 0; i < m_componentInputs.size(); ++i)
+        {
+            MultiplayerComponentInputDetail log = m_componentInputs[i].get()->GetInputDeltaLog();
+            if (!log.elements.empty())
+            {
+                logs.push_back(log);
+            }
+        }
+
+        return logs;
     }
 
     void NetworkInput::AttachNetBindComponent(NetBindComponent* netBindComponent)

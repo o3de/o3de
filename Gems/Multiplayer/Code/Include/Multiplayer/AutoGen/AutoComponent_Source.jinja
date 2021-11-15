@@ -1362,24 +1362,25 @@ namespace {{ Component.attrib['Namespace'] }}
         return {{ ComponentName }}NetworkInput::s_netComponentId;
     }
 
-    void {{ ComponentName }}NetworkInput::LogInputDelta() const
+    Multiplayer::MultiplayerComponentInputDetail {{ ComponentName }}NetworkInput::GetInputDeltaLog() const
     {
-        bool hasDelta = false;
-        AZStd::string output = "**** {{ ComponentName }}NetworkInput changed values:";
+        Multiplayer::MultiplayerComponentInputDetail output;
+        output.name = "{{ ComponentName }}NetworkInput";
 {% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}
         if (m_{{ LowerFirst(Input.attrib['Name']) }} != {{ Input.attrib['Type'] }}({{ Input.attrib['Init'] }}))
         {
-            hasDelta = true;
-            output += "\n      {{ LowerFirst(Input.attrib['Name']) }}";
+            AZStd::pair<AZStd::string, AZStd::string> element;
+            element.first ="{{ LowerFirst(Input.attrib['Name']) }}";
 {% if Input.attrib['Init'] != '' %}
-            output += "="+AZStd::to_string(m_{{ LowerFirst(Input.attrib['Name']) }});
+            element.second = AZStd::to_string(m_{{ LowerFirst(Input.attrib['Name']) }});
+{% else %}
+            element.second = "";
 {% endif %}
+            output.elements.push_back(element);
         }
 {% endcall %}
-        if(hasDelta)
-        {
-            AZLOG_WARN(output.c_str());
-        }
+
+        return output;
     }
 
     bool {{ ComponentName }}NetworkInput::Serialize(AzNetworking::ISerializer& serializer)

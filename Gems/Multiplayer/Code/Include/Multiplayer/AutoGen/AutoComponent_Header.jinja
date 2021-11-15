@@ -354,7 +354,7 @@ namespace {{ Component.attrib['Namespace'] }}
 {%      endif%}
         Multiplayer::NetComponentId GetNetComponentId() const override;
         bool Serialize(AzNetworking::ISerializer& serializer) override;
-        void LogInputDelta() const override;
+        Multiplayer::MultiplayerComponentInputDetail GetInputDeltaLog() const override;
         Multiplayer::IMultiplayerComponentInput& operator =(const Multiplayer::IMultiplayerComponentInput& rhs) override;
 
 {% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}

@@ -15,6 +15,7 @@
 #include <AzNetworking/Serialization/StringifySerializer.h>
 #include <AzNetworking/Serialization/TrackChangedSerializer.h>
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
+#include <Multiplayer/IMultiplayerDebug.h>
 
 namespace Multiplayer
 {
@@ -194,15 +195,24 @@ namespace Multiplayer
 
                 if (lostInput)
                 {
+                    //TODO: Maybe add to Audit Trail here (server)
                     AZLOG(NET_Prediction, "InputLost InputId=%u", aznumeric_cast<uint32_t>(input.GetClientInputId()));
                 }
                 else
                 {
+                    //TODO: Add to Audit Trail here (server)
+                    AZStd::vector<MultiplayerComponentInputDetail> inputLogs = input.GetComponentInputDeltaLogs();
+                    if (!inputLogs.empty())
+                    {
+                        AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
+                            input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName().c_str(), inputLogs);
+                    }
                     AZLOG(NET_Prediction, "Processed InputId=%u", aznumeric_cast<uint32_t>(input.GetClientInputId()));
                 }
             }
             else
             {
+                //TODO: Maybe add to Audit Trail here (server)
                 AZLOG(NET_Prediction, "Dropped InputId=%u", aznumeric_cast<uint32_t>(input.GetClientInputId()));
             }
         }
@@ -334,6 +344,7 @@ namespace Multiplayer
             AZLOG_WARN("** Autonomous Desync - Correcting clientInputId=%d from index=%d",
                 aznumeric_cast<int32_t>(inputId), startReplayIndex);
             startReplayInput.LogComponentInputDelta();
+            //TODO: Maybe add something to the audit trail here
 #ifndef AZ_RELEASE_BUILD
             auto iter = m_predictiveStateHistory.find(inputId);
             if (iter != m_predictiveStateHistory.end())
@@ -500,6 +511,15 @@ namespace Multiplayer
                 }
                 SerializeEntityCorrection(*inputHistory);
                 m_predictiveStateHistory.emplace(m_clientInputId, AZStd::move(inputHistory));
+
+                // TODO: Add to audit trail per input here (client)
+                AZStd::vector<MultiplayerComponentInputDetail> inputLogs = input.GetComponentInputDeltaLogs();
+                if (!inputLogs.empty())
+                {
+                    AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
+                        input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName().c_str(), inputLogs);
+                }
+
             }
 #endif
 

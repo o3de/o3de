@@ -8,11 +8,12 @@
 
 #pragma once
 
+#include "MultiplayerDebugAuditTrail.h"
 #include "MultiplayerDebugHierarchyReporter.h"
+#include "MultiplayerDebugPerEntityReporter.h"
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Interface/Interface.h>
-#include <Debug/MultiplayerDebugPerEntityReporter.h>
 #include <Multiplayer/IMultiplayerDebug.h>
 
 #ifdef IMGUI_ENABLED
@@ -49,6 +50,11 @@ namespace Multiplayer
         //! @{
         void ShowEntityBandwidthDebugOverlay() override;
         void HideEntityBandwidthDebugOverlay() override;
+        void AddAuditEntry(
+            ClientInputId inputId,
+            HostFrameId frameId,
+            AZStd::string name,
+            AZStd::vector<MultiplayerComponentInputDetail> entryDetails) override;
         //! @}
 
 #ifdef IMGUI_ENABLED
@@ -67,5 +73,10 @@ namespace Multiplayer
         
         bool m_displayHierarchyDebugger = false;
         AZStd::unique_ptr<MultiplayerDebugHierarchyReporter> m_hierarchyDebugger;
+
+        bool m_displayNetAuditTrail = false;
+        AZStd::unique_ptr<MultiplayerDebugAuditTrail> m_auditTrail;
+
+        AZStd::deque<AuditTrailInput> m_auditTrailElems;
     };
 }

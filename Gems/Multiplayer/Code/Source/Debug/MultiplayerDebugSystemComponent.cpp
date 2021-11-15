@@ -68,6 +68,30 @@ namespace Multiplayer
         m_reporter.reset();
     }
 
+    void MultiplayerDebugSystemComponent::AddAuditEntry(
+            ClientInputId inputId,
+            HostFrameId frameId,
+            AZStd::string name,
+            AZStd::vector<MultiplayerComponentInputDetail> entryDetails)
+    {
+        if (m_auditTrail != nullptr)
+        {
+            return;
+        }
+
+        while (m_auditTrailElems.size() > 20)
+        {
+            m_auditTrailElems.pop_back();
+        }
+
+        AuditTrailInput elem;
+        elem.inputId = inputId;
+        elem.hostFrameId = frameId;
+        elem.name = name;
+        elem.children = entryDetails;
+        m_auditTrailElems.push_front(elem);
+    }
+
 #ifdef IMGUI_ENABLED
     void MultiplayerDebugSystemComponent::OnImGuiMainMenuUpdate()
     {
@@ -77,6 +101,7 @@ namespace Multiplayer
             ImGui::Checkbox("Multiplayer Stats", &m_displayMultiplayerStats);
             ImGui::Checkbox("Multiplayer Entity Stats", &m_displayPerEntityStats);
             ImGui::Checkbox("Multiplayer Hierarchy Debugger", &m_displayHierarchyDebugger);
+            ImGui::Checkbox("Multiplayer Audit Trail", &m_displayNetAuditTrail);
             ImGui::EndMenu();
         }
     }
@@ -495,6 +520,29 @@ namespace Multiplayer
             if (m_hierarchyDebugger)
             {
                 m_hierarchyDebugger.reset();
+            }
+        }
+
+        if (m_displayNetAuditTrail)
+        {
+            if (ImGui::Begin("Multiplayer Audit Trail", &m_displayNetAuditTrail))
+            {
+                if (m_auditTrail == nullptr)
+                {
+                    m_auditTrail = AZStd::make_unique<MultiplayerDebugAuditTrail>();
+                }
+
+                if (m_auditTrail)
+                {
+                    m_auditTrail->OnImGuiUpdate(m_auditTrailElems);
+                }
+            }
+        }
+        else
+        {
+            if (m_auditTrail)
+            {
+                m_auditTrail.reset();
             }
         }
     }

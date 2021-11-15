@@ -24,5 +24,12 @@ namespace Multiplayer
 
         //! Disables printing of debug text over entities that have significant amount of traffic.
         virtual void HideEntityBandwidthDebugOverlay() = 0;
+
+        //! Adds a string based entry to the Multiplayer audit trail
+        virtual void AddAuditEntry(
+            ClientInputId inputId,
+            HostFrameId frameId,
+            AZStd::string name,
+            AZStd::vector<MultiplayerComponentInputDetail> entryDetails) = 0;
     };
 }

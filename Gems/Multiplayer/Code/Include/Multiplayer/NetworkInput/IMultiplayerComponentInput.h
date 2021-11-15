@@ -20,13 +20,19 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
+    struct MultiplayerComponentInputDetail
+    {
+        AZStd::string name;
+        AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>> elements;
+    };
+
     class IMultiplayerComponentInput
     {
     public:
         virtual ~IMultiplayerComponentInput() = default;
         virtual NetComponentId GetNetComponentId() const = 0;
         virtual bool Serialize(AzNetworking::ISerializer& serializer) = 0;
-        virtual void LogInputDelta() const = 0;
+        virtual MultiplayerComponentInputDetail GetInputDeltaLog() const = 0;
         virtual IMultiplayerComponentInput& operator= (const IMultiplayerComponentInput&) { return *this; }
     };
 
