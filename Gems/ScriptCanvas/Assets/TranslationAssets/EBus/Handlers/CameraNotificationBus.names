@@ -5,13 +5,14 @@
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "CameraNotificationBus"
+                "name": "Camera",
+                "category": "Camera"
             },
             "methods": [
                 {
                     "key": "OnCameraAdded",
                     "details": {
-                        "name": "OnCameraAdded"
+                        "name": "On Camera Added"
                     },
                     "params": [
                         {
@@ -26,7 +27,7 @@
                 {
                     "key": "OnCameraRemoved",
                     "details": {
-                        "name": "OnCameraRemoved"
+                        "name": "On Camera Removed"
                     },
                     "params": [
                         {
@@ -41,7 +42,7 @@
                 {
                     "key": "OnActiveViewChanged",
                     "details": {
-                        "name": "OnActiveViewChanged"
+                        "name": "On Active View Changed"
                     },
                     "params": [
                         {
