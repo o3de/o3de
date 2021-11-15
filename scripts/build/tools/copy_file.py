@@ -38,10 +38,7 @@ def extended_path(path):
         return path
 
 
-def main(args):
-    src_dir = args.src_dir
-    file_regex = args.file_regex
-    target_dir = args.target_dir
+def copy_file(src_dir, file_regex, target_dir):
     if not os.path.isdir(args.target_dir):
         os.makedirs(target_dir)
     for f in glob.glob(os.path.join(src_dir, file_regex), recursive=True):
@@ -57,4 +54,4 @@ def main(args):
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args)
+    copy_file(args.src_dir, args.file_regex, args.target_dir)
