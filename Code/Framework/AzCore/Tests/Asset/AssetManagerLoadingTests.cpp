@@ -652,7 +652,7 @@ namespace UnitTest
             threads.emplace_back([this, &threadCount, &cv, assetUuid]() {
                 bool checkLoaded = true;
 
-                for (int i = 0; i < 5000; i++)
+                for (int i = 0; i < 1000; i++)
                 {
                     Asset<AssetWithAssetReference> asset1 =
                         m_testAssetManager->GetAsset(assetUuid, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::PreLoad);
@@ -678,7 +678,7 @@ namespace UnitTest
         while (threadCount > 0 && !timedOut)
         {
             AZStd::unique_lock<AZStd::mutex> lock(mutex);
-            timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds * 20000));
+            timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds));
         }
 
         ASSERT_EQ(threadCount, 0) << "Thread count is non-zero, a thread has likely deadlocked.  Test will not shut down cleanly.";
@@ -1190,7 +1190,7 @@ namespace UnitTest
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_ContainerFilterTest_ContainersWithAndWithoutFiltering_Success)
 #else
-    TEST_F(AssetJobsFloodTest, DISABLED_ContainerFilterTest_ContainersWithAndWithoutFiltering_Success)
+    TEST_F(AssetJobsFloodTest, ContainerFilterTest_ContainersWithAndWithoutFiltering_Success)
 #endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
