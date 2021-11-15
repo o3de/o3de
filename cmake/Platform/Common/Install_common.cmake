@@ -558,7 +558,7 @@ function(ly_setup_runtime_dependencies)
             ly_install(CODE
 "function(ly_copy source_file target_directory)
     cmake_path(APPEND full_target_directory \$ENV{DESTDIR} \${CMAKE_INSTALL_PREFIX} \${target_directory})
-    file(INSTALL FILES \"\${source_file}\" DESTINATION \"\${full_target_directory}\" MESSAGE_NEVER)
+    file(COPY \"\${source_file}\" DESTINATION \"\${full_target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS} FOLLOW_SYMLINK_CHAIN)
 endfunction()"
                 COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
             )

@@ -148,7 +148,7 @@ function(ly_copy source_file target_directory)
         # format issues(despite the fixes above). But once we've patched the framework above, there's
         # only one executable that we need to sign so we can do it directly.
         set(target_filename "${target_filename}/Versions/5/${CMAKE_MATCH_1}")
-    elseif("${target_filename}" MATCHES "Python.framework")       
+    elseif("${target_filename}" MATCHES "Python.framework")
         fixup_python_framework("${full_target_file}")
         codesign_python_framework_binaries("${full_target_file}")
     endif()
