@@ -80,7 +80,7 @@ namespace GraphCanvas
 
         bool    m_finalized;
         bool    m_isToolBarMenu;
-        float   m_userNodePaletteWidth = 300.f;
+        AZ::u32   m_userNodePaletteWidth = 300;
 
         EditorId                                m_editorId;
 
