@@ -27,7 +27,7 @@ namespace Multiplayer
         CollectHierarchyRoots();
 
         AZ::EntitySystemBus::Handler::BusConnect();
-        m_updateDebugOverlay.Enqueue(AZ::TimeMs{ 0 }, true);
+        m_updateDebugOverlay.Enqueue(AZ::Time::ZeroTimeMs, true);
     }
 
     MultiplayerDebugHierarchyReporter::~MultiplayerDebugHierarchyReporter()

@@ -23,8 +23,6 @@
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/IRenderGraph.h>
 
-#include <ITimer.h>
-
 #include "UiSerialize.h"
 #include "RenderToTextureBus.h"
 

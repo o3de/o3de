@@ -103,13 +103,6 @@ namespace UnitTest
         MOCK_METHOD3(OnDisconnect, void(IConnection*, DisconnectReason, TerminationEndpoint));
     };
 
-    class MockTime : public AZ::ITime
-    {
-    public:
-        MOCK_CONST_METHOD0(GetElapsedTimeUs, AZ::TimeUs());
-        MOCK_CONST_METHOD0(GetElapsedTimeMs, AZ::TimeMs());
-    };
-
     class MockNetworkTime : public Multiplayer::INetworkTime
     {
     public:
