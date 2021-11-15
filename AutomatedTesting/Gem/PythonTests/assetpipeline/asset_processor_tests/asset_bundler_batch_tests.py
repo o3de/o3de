@@ -88,214 +88,6 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         bundler_batch_helper.call_bundles(help="")
         bundler_batch_helper.call_bundleSeed(help="")
 
-    @pytest.mark.BAT
-    @pytest.mark.assetpipeline
-    @pytest.mark.test_case_id("C16877175")
-    @pytest.mark.skip("'animations/animationeditorfiles/sample1.animgraph' missing, needs investigation")
-    def test_WindowsAndMac_CreateAssetList_DependenciesCorrect(self, workspace, bundler_batch_helper):
-        r"""
-        Tests that an asset list created maps dependencies correctly.
-        testdependencieslevel\level.pak and lists of known dependencies are used for validation
-
-        Test Steps:
-        1. Create an asset list from the level.pak
-        2. Create Lists of expected assets in the level.pak
-        3. Add lists of expected assets to a single list
-        4. Compare list of expected assets to actual assets
-        """
-        helper = bundler_batch_helper
-
-        # Create the asset list file
-        helper.call_assetLists(
-            addSeed=r"levels\testdependencieslevel\level.pak",
-            assetListFile=helper['asset_info_file_request']
-        )
-
-        assert os.path.isfile(helper["asset_info_file_result"])
-
-        # Lists of known relative locations of assets
-        default_level_assets = [
-            "engineassets/texturemsg/defaultnouvs.dds",
-            "engineassets/texturemsg/defaultnouvs.dds.1",
-            "engineassets/texturemsg/defaultnouvs.dds.2",
-            "engineassets/texturemsg/defaultnouvs.dds.3",
-            "engineassets/texturemsg/defaultnouvs.dds.4",
-            "engineassets/texturemsg/defaultnouvs.dds.5",
-            "engineassets/texturemsg/defaultnouvs.dds.6",
-            "engineassets/texturemsg/defaultnouvs.dds.7",
-            "engineassets/texturemsg/defaultnouvs_ddn.dds",
-            "engineassets/texturemsg/defaultnouvs_ddn.dds.1",
-            "engineassets/texturemsg/defaultnouvs_ddn.dds.2",
-            "engineassets/texturemsg/defaultnouvs_ddn.dds.3",
-            "engineassets/texturemsg/defaultnouvs_ddn.dds.4",
-            "engineassets/texturemsg/defaultnouvs_ddn.dds.5",
-            "engineassets/texturemsg/defaultnouvs_spec.dds",
-            "engineassets/texturemsg/defaultnouvs_spec.dds.1",
-            "engineassets/texturemsg/defaultnouvs_spec.dds.2",
-            "engineassets/texturemsg/defaultnouvs_spec.dds.3",
-            "engineassets/texturemsg/defaultnouvs_spec.dds.4",
-            "engineassets/texturemsg/defaultnouvs_spec.dds.5",
-            "engineassets/textures/defaults/16_grey.dds",
-            "engineassets/textures/cubemap/default_level_cubemap.dds",
-            "engineassets/textures/cubemap/default_level_cubemap.dds.1",
-            "engineassets/textures/cubemap/default_level_cubemap.dds.2",
-            "engineassets/textures/cubemap/default_level_cubemap.dds.3",
-            "engineassets/textures/cubemap/default_level_cubemap.dds.4",
-            "engineassets/textures/cubemap/default_level_cubemap_diff.dds",
-            "engineassets/materials/water/ocean_default.mtl",
-            "engineassets/textures/defaults/spot_default.dds",
-            "engineassets/textures/defaults/spot_default.dds.1",
-            "engineassets/textures/defaults/spot_default.dds.2",
-            "engineassets/textures/defaults/spot_default.dds.3",
-            "engineassets/textures/defaults/spot_default.dds.4",
-            "engineassets/textures/defaults/spot_default.dds.5",
-            "materials/material_terrain_default.mtl",
-            "textures/skys/night/half_moon.dds",
-            "textures/skys/night/half_moon.dds.1",
-            "textures/skys/night/half_moon.dds.2",
-            "textures/skys/night/half_moon.dds.3",
-            "textures/skys/night/half_moon.dds.4",
-            "textures/skys/night/half_moon.dds.5",
-            "textures/skys/night/half_moon.dds.6",
-            "engineassets/materials/sky/sky.mtl",
-            "levels/testdependencieslevel/level.pak",
-            "levels/testdependencieslevel/terrain/cover.ctc",
-            "levels/testdependencieslevel/terraintexture.pak",
-        ]
-
-        sequence_material_cube_assets = [
-            "textures/test_texture_sequence/test_texture_sequence000.dds",
-            "textures/test_texture_sequence/test_texture_sequence001.dds",
-            "textures/test_texture_sequence/test_texture_sequence002.dds",
-            "textures/test_texture_sequence/test_texture_sequence003.dds",
-            "textures/test_texture_sequence/test_texture_sequence004.dds",
-            "textures/test_texture_sequence/test_texture_sequence005.dds",
-            "objects/_primitives/_box_1x1.cgf",
-            "materials/test_texture_sequence.mtl",
-            "objects/_primitives/_box_1x1.mtl",
-            "textures/_primitives/middle_gray_checker.dds",
-            "textures/_primitives/middle_gray_checker.dds.1",
-            "textures/_primitives/middle_gray_checker.dds.2",
-            "textures/_primitives/middle_gray_checker.dds.3",
-            "textures/_primitives/middle_gray_checker.dds.4",
-            "textures/_primitives/middle_gray_checker.dds.5",
-            "textures/_primitives/middle_gray_checker_ddn.dds",
-            "textures/_primitives/middle_gray_checker_ddn.dds.1",
-            "textures/_primitives/middle_gray_checker_ddn.dds.2",
-            "textures/_primitives/middle_gray_checker_ddn.dds.3",
-            "textures/_primitives/middle_gray_checker_ddn.dds.4",
-            "textures/_primitives/middle_gray_checker_ddn.dds.5",
-            "textures/_primitives/middle_gray_checker_spec.dds",
-            "textures/_primitives/middle_gray_checker_spec.dds.1",
-            "textures/_primitives/middle_gray_checker_spec.dds.2",
-            "textures/_primitives/middle_gray_checker_spec.dds.3",
-            "textures/_primitives/middle_gray_checker_spec.dds.4",
-            "textures/_primitives/middle_gray_checker_spec.dds.5",
-        ]
-
-        character_with_simplified_material_assets = [
-            "objects/characters/jack/jack.actor",
-            "objects/characters/jack/jack.mtl",
-            "objects/characters/jack/textures/jack_diff.dds",
-            "objects/characters/jack/textures/jack_diff.dds.1",
-            "objects/characters/jack/textures/jack_diff.dds.2",
-            "objects/characters/jack/textures/jack_diff.dds.3",
-            "objects/characters/jack/textures/jack_diff.dds.4",
-            "objects/characters/jack/textures/jack_diff.dds.5",
-            "objects/characters/jack/textures/jack_diff.dds.6",
-            "objects/characters/jack/textures/jack_diff.dds.7",
-            "objects/characters/jack/textures/jack_spec.dds",
-            "objects/characters/jack/textures/jack_spec.dds.1",
-            "objects/characters/jack/textures/jack_spec.dds.2",
-            "objects/characters/jack/textures/jack_spec.dds.3",
-            "objects/characters/jack/textures/jack_spec.dds.4",
-            "objects/characters/jack/textures/jack_spec.dds.5",
-            "objects/characters/jack/textures/jack_spec.dds.6",
-            "objects/characters/jack/textures/jack_spec.dds.7",
-            "objects/default/editorprimitive.mtl",
-            "engineassets/textures/grey.dds",
-            "animations/animationeditorfiles/sample0.animgraph",
-            "animations/motions/jack_death_fall_back_zup.motion",
-            "animations/animationeditorfiles/sample1.animgraph",
-            "animations/animationeditorfiles/sample0.motionset",
-            "animations/motions/rin_jump.motion",
-            "animations/animationeditorfiles/sample1.motionset",
-            "animations/motions/rin_idle.motion",
-            "animations/motions/jack_idle_aim_zup.motion",
-        ]
-
-        spawner_assets = [
-            "slices/sphere.dynamicslice",
-            "objects/default/primitive_sphere.cgf",
-            "test1.luac",
-            "test2.luac",
-        ]
-
-        ui_canvas_assets = [
-            "fonts/vera.ttf",
-            "fonts/vera.font",
-            "scriptcanvas/mainmenu.scriptcanvas_compiled",
-            "fonts/vera.fontfamily",
-            "ui/canvas/start.uicanvas",
-            "fonts/vera-italic.font",
-            "ui/textureatlas/sample.texatlasidx",
-            "fonts/vera-bold-italic.ttf",
-            "fonts/vera-bold.font",
-            "ui/textures/prefab/button_normal.dds",
-            "ui/textures/prefab/button_normal.sprite",
-            "fonts/vera-italic.ttf",
-            "ui/textureatlas/sample.dds",
-            "fonts/vera-bold-italic.font",
-            "fonts/vera-bold.ttf",
-            "ui/textures/prefab/button_disabled.dds",
-            "ui/textures/prefab/button_disabled.sprite",
-        ]
-
-        wwise_and_atl_assets = [
-            "libs/gameaudio/wwise/levels/testdependencieslevel/test_dependencies_level.xml",
-            "sounds/wwise/test_bank3.bnk",
-            "sounds/wwise/test_bank4.bnk",
-            "sounds/wwise/test_bank5.bnk",
-            "sounds/wwise/test_bank1.bnk",
-            "sounds/wwise/init.bnk",
-            "sounds/wwise/499820003.wem",
-            "sounds/wwise/196049145.wem",
-        ]
-
-        particle_library_assets = [
-            "libs/particles/milestone2particles.xml",
-            "textures/milestone2/particles/fx_launchermuzzlering_01.dds",
-            "textures/milestone2/particles/fx_launchermuzzlering_01.dds.1",
-            "textures/milestone2/particles/fx_launchermuzzlering_01.dds.2",
-            "textures/milestone2/particles/fx_launchermuzzlering_01.dds.3",
-            "textures/milestone2/particles/fx_launchermuzzlering_01.dds.4",
-            "textures/milestone2/particles/fx_launchermuzzlering_01.dds.5",
-            "textures/milestone2/particles/fx_sparkstreak_01.dds",
-            "textures/milestone2/particles/fx_launchermuzzlefront_01.dds",
-            "textures/milestone2/particles/fx_launchermuzzlefront_01.dds.1",
-            "textures/milestone2/particles/fx_launchermuzzlefront_01.dds.2",
-            "textures/milestone2/particles/fx_launchermuzzlefront_01.dds.3",
-            "textures/milestone2/particles/fx_launchermuzzlefront_01.dds.4",
-            "textures/milestone2/particles/fx_launchermuzzlefront_01.dds.5",
-        ]
-
-        lens_flares_library_assets = ["libs/flares/flares.xml", "textures/lights/flare01.dds"]
-
-        expected_assets_list = default_level_assets
-        expected_assets_list.extend(sequence_material_cube_assets)
-        expected_assets_list.extend(character_with_simplified_material_assets)
-        expected_assets_list.extend(spawner_assets)
-        expected_assets_list.extend(ui_canvas_assets)
-        expected_assets_list.extend(wwise_and_atl_assets)
-        expected_assets_list.extend(particle_library_assets)
-        expected_assets_list.extend(lens_flares_library_assets)  # All expected assets
-
-        # Get actual calculated dependencies from the asset list created
-        actual_assets_list = []
-        for rel_path in helper.get_asset_relative_paths(helper["asset_info_file_result"]):
-            actual_assets_list.append(rel_path)
-
-        assert sorted(actual_assets_list) == sorted(expected_assets_list)
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
@@ -310,9 +102,9 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         3. Read and store contents of asset list into memory
         4. Attempt to create a new asset list in without using --allowOverwrites
         5. Verify that Asset Bundler returns false
-        6. Verify that file contents of the orignally created asset list did not change from what was stored in memory
+        6. Verify that file contents of the originally created asset list did not change from what was stored in memory
         7. Attempt to create a new asset list without debug while allowing overwrites
-        8. Verify that file contents of the orignally created asset list changed from what was stored in memory
+        8. Verify that file contents of the originally created asset list changed from what was stored in memory
         """
         helper = bundler_batch_helper
         seed_list = os.path.join(workspace.paths.engine_root(), "Assets", "Engine", "SeedAssetList.seed")  # Engine seed list
@@ -919,7 +711,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                         # Extra arguments for pattern comparison
                         cmd.extend([f"--filePatternType={pattern_type}", f"--filePattern={pattern}"])
                 if workspace.project:
-                    cmd.append(f'--project-path={project_name}')
+                    cmd.append(f'--project-path={workspace.paths.project()}')
                 return cmd
             # End generate_compare_command()
 
@@ -960,7 +752,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                     output_mac_asset_list = helper.platform_file_name(last_output_arg, platform)
 
                 # Build execution command
-                cmd = generate_compare_command(platform_arg, workspace.project)
+                cmd = generate_compare_command(platform_arg, workspace.paths.project())
 
                 # Execute command
                 subprocess.check_call(cmd)
@@ -995,7 +787,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                 f"--comparisonRulesFile={rule_file}",
                 f"--comparisonType={args[1]}",
                 r"--addComparison",
-                f"--project-path={workspace.project}",
+                f"--project-path={workspace.paths.project()}",
             ]
             if args[1] == "4":
                 # If pattern comparison, append a few extra arguments
@@ -1117,7 +909,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                 "--addDefaultSeedListFiles",
                 "--platform=pc",
                 "--print",
-                f"--project-path={workspace.project}"
+                f"--project-path={workspace.paths.project()}"
             ],
             universal_newlines=True,
         )
@@ -1189,7 +981,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         # Make sure file gets deleted on teardown
         request.addfinalizer(lambda: fs.delete([bundle_result_path], True, False))
 
-        bundles_folder = os.path.join(workspace.paths.engine_root(), workspace.project, "Bundles")
+        bundles_folder = os.path.join(workspace.paths.project(), "Bundles")
         level_pak = r"levels\testdependencieslevel\level.pak"
         bundle_request_path = os.path.join(bundles_folder, "bundle.pak")
         bundle_result_path = os.path.join(bundles_folder,
@@ -1243,23 +1035,64 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
         2. Verify file was created
         3. Verify that only the expected assets are present in the created asset list
         """
-        expected_assets = [
+        expected_assets = sorted([
             "ui/canvases/lyshineexamples/animation/multiplesequences.uicanvas",
-            "ui/textures/prefab/button_normal.sprite"
-        ]
+            "ui/textures/prefab/button_disabled.tif.streamingimage",
+            "ui/textures/prefab/tooltip_sliced.tif.streamingimage",
+            "ui/textures/prefab/button_normal.tif.streamingimage"
+        ])
+        # Printing these lists out can save a step in debugging if this test fails on Jenkins.
+        logger.info(f"expected_assets: {expected_assets}")
+
+        skip_assets = sorted([
+            "ui/scripts/lyshineexamples/animation/multiplesequences.luac",
+            "ui/scripts/lyshineexamples/unloadthiscanvasbutton.luac",
+            "fonts/vera.fontfamily",
+            "fonts/vera-italic.font",
+            "fonts/vera.font",
+            "fonts/vera-bold.font",
+            "fonts/vera-bold-italic.font",
+            "fonts/vera-italic.ttf",
+            "fonts/vera.ttf",
+            "fonts/vera-bold.ttf",
+            "fonts/vera-bold-italic.ttf"
+        ])
+        logger.info(f"skip_assets: {skip_assets}")
+
+        expected_and_skip_assets = sorted(expected_assets + skip_assets)
+        # Printing both together to make it quick to compare the results in the logs for a test failure on Jenkins
+        logger.info(f"expected_and_skip_assets: {expected_and_skip_assets}")
+
+        # First, generate an asset info file without skipping, to get a list that can be used as a baseline to verify
+        # the files were actually skipped, and not just missing.
+        bundler_batch_helper.call_assetLists(
+            assetListFile=bundler_batch_helper['asset_info_file_request'],
+            addSeed="ui/canvases/lyshineexamples/animation/multiplesequences.uicanvas"
+        )
+        assert os.path.isfile(bundler_batch_helper["asset_info_file_result"])
+        assets_in_no_skip_list = []
+        for rel_path in bundler_batch_helper.get_asset_relative_paths(bundler_batch_helper["asset_info_file_result"]):
+            assets_in_no_skip_list.append(rel_path)
+        assets_in_no_skip_list = sorted(assets_in_no_skip_list)
+        logger.info(f"assets_in_no_skip_list: {assets_in_no_skip_list}")
+        assert assets_in_no_skip_list == expected_and_skip_assets
+
+        # Now generate an asset info file using the skip command, and verify the skip files are not in the list.
         bundler_batch_helper.call_assetLists(
             assetListFile=bundler_batch_helper['asset_info_file_request'],
             addSeed="ui/canvases/lyshineexamples/animation/multiplesequences.uicanvas",
-            skip="ui/textures/prefab/button_disabled.sprite,ui/scripts/lyshineexamples/animation/multiplesequences.luac,"
-                 "ui/textures/prefab/tooltip_sliced.sprite,ui/scripts/lyshineexamples/unloadthiscanvasbutton.luac,fonts/vera.fontfamily,fonts/vera-italic.font,"
-                 "fonts/vera.font,fonts/vera-bold.font,fonts/vera-bold-italic.font,fonts/vera-italic.ttf,fonts/vera.ttf,fonts/vera-bold.ttf,fonts/vera-bold-italic.ttf"
+            allowOverwrites="",
+            skip=','.join(skip_assets)
         )
+
         assert os.path.isfile(bundler_batch_helper["asset_info_file_result"])
         assets_in_list = []
         for rel_path in bundler_batch_helper.get_asset_relative_paths(bundler_batch_helper["asset_info_file_result"]):
             assets_in_list.append(rel_path)
+        assets_in_list = sorted(assets_in_list)
+        logger.info(f"assets_in_list: {assets_in_list}")
+        assert assets_in_list == expected_assets
 
-        assert sorted(assets_in_list) == sorted(expected_assets)
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
