@@ -259,7 +259,6 @@ class EditorEntity:
         :return: Component object of newly added component.
         """
         component = self.add_components([component_name])[0]
-        self.components.append(component)
         return component
 
     def add_components(self, component_names: list) -> List[EditorComponent]:
