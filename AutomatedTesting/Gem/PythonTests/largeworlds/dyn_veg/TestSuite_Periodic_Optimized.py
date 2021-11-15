@@ -16,7 +16,8 @@ from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, E
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
-    global_extra_cmdline_args = []
+
+    global_extra_cmdline_args = ["-BatchMode", "-autotest_mode", "--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
 
     class test_DynVegUtils_TempPrefabCreationWorks(EditorSharedTest):
         from .EditorScripts import DynVegUtils_TempPrefabCreationWorks as test_module
