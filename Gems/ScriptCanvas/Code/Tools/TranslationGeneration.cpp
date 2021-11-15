@@ -128,13 +128,13 @@ namespace ScriptCanvasEditorTools
                     Helpers::GetTypeNameAndDescription(argumentType, argument.m_details.m_name, argument.m_details.m_tooltip);
 
                     auto name = method->GetArgumentName(i);
-                    if (!name->empty())
+                    if (name && !name->empty())
                     {
                         argument.m_details.m_name = *name;
                     }
 
                     auto tooltip = method->GetArgumentToolTip(i);
-                    if (!tooltip->empty())
+                    if (tooltip && !tooltip->empty())
                     {
                         argument.m_details.m_tooltip = *tooltip;
                     }
@@ -153,7 +153,7 @@ namespace ScriptCanvasEditorTools
                     Helpers::GetTypeNameAndDescription(resultType, result.m_details.m_name, result.m_details.m_tooltip);
 
                     auto tooltip = method->GetArgumentToolTip(0);
-                    if (!tooltip->empty())
+                    if (tooltip && !tooltip->empty())
                     {
                         result.m_details.m_tooltip = *tooltip;
                     }
