@@ -330,8 +330,10 @@ namespace ScriptCanvasEditor::Nodes
 
         // Get the method's text data
         GraphCanvas::TranslationRequests::Details methodDetails;
+        methodDetails.m_name = details.m_name; // fallback
         key << "methods" << methodName;
         GraphCanvas::TranslationRequestBus::BroadcastResult(methodDetails, &GraphCanvas::TranslationRequests::GetDetails, key + ".details", methodDetails);
+
 
         if (methodDetails.m_subtitle.empty())
         {
@@ -390,7 +392,7 @@ namespace ScriptCanvasEditor::Nodes
                     }
 
                     if (slot.IsData())
-                    {
+                    { 
                         index++;
                     }
                 }
