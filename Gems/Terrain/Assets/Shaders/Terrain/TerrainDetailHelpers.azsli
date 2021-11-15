@@ -57,6 +57,28 @@ DetailSurface GetDefaultDetailSurface()
     return surface;
 }
 
+void WeightDetailSurface(inout DetailSurface surface, in float weight)
+{
+    surface.m_color *= weight;
+    surface.m_normal *= weight;
+    surface.m_roughness *= weight; 
+    surface.m_specularF0 *= weight;
+    surface.m_metalness *= weight; 
+    surface.m_occlusion *= weight;
+    surface.m_height *= weight;
+}
+
+void AddDetailSurface(inout DetailSurface surface, in DetailSurface surfaceToAdd)
+{
+    surface.m_color += surfaceToAdd.m_color;
+    surface.m_normal += surfaceToAdd.m_normal;
+    surface.m_roughness += surfaceToAdd.m_roughness; 
+    surface.m_specularF0 += surfaceToAdd.m_specularF0;
+    surface.m_metalness += surfaceToAdd.m_metalness; 
+    surface.m_occlusion += surfaceToAdd.m_occlusion;
+    surface.m_height += surfaceToAdd.m_height;
+}
+
 // Detail material index getters
 uint GetDetailColorIndex(TerrainSrg::DetailMaterialData materialData)
 {
@@ -171,7 +193,7 @@ float GetDetailHeight(TerrainSrg::DetailMaterialData materialData, float2 uv)
     float height = materialData.m_heightFactor;
     if ((materialData.m_flags & DetailTextureFlags::UseTextureHeight) > 0)
     {
-        height = TerrainSrg::m_detailTextures[GetDetailOcclusionIndex(materialData)].Sample(TerrainMaterialSrg::m_sampler, uv).r;
+        height = TerrainSrg::m_detailTextures[GetDetailHeightIndex(materialData)].Sample(TerrainMaterialSrg::m_sampler, uv).r;
         height = materialData.m_heightOffset + height * materialData.m_heightFactor;
     }
     return height;
@@ -225,8 +247,9 @@ void GetDebugDetailSurface(inout DetailSurface surface, uint material1, uint mat
     surface.m_height = 0.5;
 }
 
-bool GetDetailSurface(inout DetailSurface surface, float2 idUv, float2 uv)
+bool GetDetailSurface(inout DetailSurface surface, float2 idUv, float2 uv, float2 gatherWeight)
 {
+    // Gather the 4 samples of material ids and blend factors for a location in the detail material texture.
     uint4 material1 = TerrainSrg::m_detailMaterialIdImage.GatherRed(TerrainSrg::DetailSampler, idUv, 0).xyzw;
     uint4 material2 = TerrainSrg::m_detailMaterialIdImage.GatherGreen(TerrainSrg::DetailSampler, idUv, 0).xyzw;
     float4 blends = float4(TerrainSrg::m_detailMaterialIdImage.GatherBlue(TerrainSrg::DetailSampler, idUv, 0).xyzw) / 0xFF;
@@ -237,11 +260,105 @@ bool GetDetailSurface(inout DetailSurface surface, float2 idUv, float2 uv)
         return true;
     }
 
-    if (material1.x == 0xFF)
+    if (material1.x == 0xFF || material1.y == 0xFF || material1.z == 0xFF || material1.w == 0xFF)
     {
         return false;
     }
 
-    GetDetailSurfaceForMaterial(surface, material1.x, uv);
+    DetailSurface tempSurface;
+
+    if (false && material1.x == material1.y && material1.y == material1.z && material1.z == material1.w &&
+        material2.x == material2.y && material2.y == material2.z && material2.z == material2.w)
+    {
+        // Fast path for same material ids
+        GetDetailSurfaceForMaterial(surface, material1.x, uv);
+        if (material2.x != 0xFF)
+        {
+            float weight = 
+                ((1.0 - gatherWeight.x) * gatherWeight.y * blends.x) +
+                (gatherWeight.x * gatherWeight.y * blends.y) + 
+                (gatherWeight.x * (1.0 - gatherWeight.y) * blends.z) + 
+                ((1.0 - gatherWeight.x) * (1.0 - gatherWeight.y) * blends.w);
+            WeightDetailSurface(surface, weight);
+            GetDetailSurfaceForMaterial(tempSurface, material2.x, uv);
+            WeightDetailSurface(tempSurface, 1.0 - weight);
+            AddDetailSurface(surface, tempSurface);
+        }
+    }
+    else
+    {
+        // X
+        GetDetailSurfaceForMaterial(surface, material1.x, uv);
+        float weight = (1.0 - gatherWeight.x) * gatherWeight.y;
+        if (material2.x != 0xFF)
+        {
+            WeightDetailSurface(surface, weight * blends.x);
+
+            GetDetailSurfaceForMaterial(tempSurface, material2.x, uv);
+            WeightDetailSurface(tempSurface, weight * (1.0 - blends.x));
+            AddDetailSurface(surface, tempSurface);
+        }
+        else
+        {
+            WeightDetailSurface(surface, weight);
+        }
+
+        // Y
+        GetDetailSurfaceForMaterial(tempSurface, material1.y, uv);
+        weight = gatherWeight.x * gatherWeight.y;
+        if (material2.y != 0xFF)
+        {
+            WeightDetailSurface(tempSurface, weight * blends.y);
+            AddDetailSurface(surface, tempSurface);
+
+            GetDetailSurfaceForMaterial(tempSurface, material2.y, uv);
+            WeightDetailSurface(tempSurface, weight * (1.0 - blends.y));
+            AddDetailSurface(surface, tempSurface);
+        }
+        else
+        {
+            WeightDetailSurface(tempSurface, weight);
+            AddDetailSurface(surface, tempSurface);
+        }
+        
+        // Z
+        GetDetailSurfaceForMaterial(tempSurface, material1.z, uv);
+        weight = gatherWeight.x * (1.0 - gatherWeight.y);
+        if (material2.z != 0xFF)
+        {
+            WeightDetailSurface(tempSurface, weight * blends.z);
+            AddDetailSurface(surface, tempSurface);
+
+            GetDetailSurfaceForMaterial(tempSurface, material2.z, uv);
+            WeightDetailSurface(tempSurface, weight * (1.0 - blends.z));
+            AddDetailSurface(surface, tempSurface);
+        }
+        else
+        {
+            WeightDetailSurface(tempSurface, weight);
+            AddDetailSurface(surface, tempSurface);
+        }
+
+        // W
+        GetDetailSurfaceForMaterial(tempSurface, material1.w, uv);
+        weight = (1.0 - gatherWeight.x) * (1.0 - gatherWeight.y);
+        if (material2.w != 0xFF)
+        {
+            WeightDetailSurface(tempSurface, weight * blends.w);
+            AddDetailSurface(surface, tempSurface);
+
+            GetDetailSurfaceForMaterial(tempSurface, material2.w, uv);
+            WeightDetailSurface(tempSurface, weight * (1.0 - blends.w));
+            AddDetailSurface(surface, tempSurface);
+        }
+        else
+        {
+            WeightDetailSurface(tempSurface, weight);
+            AddDetailSurface(surface, tempSurface);
+        }
+    }
+
+    surface.m_normal = normalize(surface.m_normal);
+    
     return true;
 }

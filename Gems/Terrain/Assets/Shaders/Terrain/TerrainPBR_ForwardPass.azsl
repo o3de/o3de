@@ -116,8 +116,17 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
 
     if (all(detailRegionUv > TerrainSrg::m_detailHalfPixelUv) && all(detailRegionUv < 1.0 - TerrainSrg::m_detailHalfPixelUv))
     {
+        float2 textureSize;
+        TerrainSrg::m_detailMaterialIdImage.GetDimensions(textureSize.x, textureSize.y);
+        float halfPixelSize = 0.5 / (textureSize.x + 3.0);
+
         detailRegionUv += TerrainSrg::m_detailMaterialIdImageCenter - (0.5);
-        hasDetailSurface = GetDetailSurface(detailSurface, detailRegionUv, detailUv);
+        float detailPixelSize = 2.0 * TerrainSrg::m_detailHalfPixelUv;
+        //float2 gatherWeight = ((detailRegionUv + 1.0 + 0.000002 - TerrainSrg::m_detailHalfPixelUv) % (detailPixelSize)) / detailPixelSize;
+        //float2 gatherWeight = frac(textureSize * (detailRegionUv + 1.0 + 0.000002) - 0.5);
+        float2 gatherWeight = frac(textureSize * detailRegionUv + 0.5);
+        //float2 gatherWeight = fmod(textureSize * (detailRegionUv + 1.0 - TerrainSrg::m_detailHalfPixelUv), 1.0);
+        hasDetailSurface = GetDetailSurface(detailSurface, detailRegionUv, detailUv, gatherWeight);
     }
 
     if (hasDetailSurface)

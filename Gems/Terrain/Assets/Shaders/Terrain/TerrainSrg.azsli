@@ -22,8 +22,8 @@ ShaderResourceGroup TerrainSrg : SRG_Terrain
     {
         AddressU = Wrap;
         AddressV = Wrap;
-        MinFilter = Point;
-        MagFilter = Point;
+        MinFilter = Linear;
+        MagFilter = Linear;
         MipFilter = Point;
     };
 
