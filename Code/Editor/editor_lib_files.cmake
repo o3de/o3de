@@ -438,7 +438,6 @@ set(FILES
     FBXExporterDialog.h
     FileTypeUtils.h
     GridUtils.h
-    IObservable.h
     IPostRenderer.h
     ToolBox.h
     TrackViewNewSequenceDialog.h
@@ -647,11 +646,9 @@ set(FILES
     Util/GeometryUtil.cpp
     Util/GuidUtil.cpp
     Util/GuidUtil.h
-    Util/IObservable.h
     Util/Mailer.h
     Util/NamedData.cpp
     Util/NamedData.h
-    Util/Observable.h
     Util/PakFile.cpp
     Util/PakFile.h
     Util/PredefinedAspectRatios.cpp
