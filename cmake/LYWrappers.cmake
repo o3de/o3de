@@ -653,36 +653,6 @@ function(ly_add_source_properties)
 endfunction()
 
 
-#! ly_project_add_subdirectory: calls add_subdirectory() if the project name is in the project list
-#
-# This can be useful when including subdirs in the restricted folder only if the project is in the project list
-# If you give it a second parameter it will add_subdirectory using that instead, if the project is in the project list
-#
-# add_subdirectory(AutomatedTesting) if Automatedtesting is in the project list
-# EX. ly_project_add_subdirectory(AutomatedTesting)
-#
-# add_subdirectory(SamplesProject) if Automatedtesting is in the project list
-# EX. ly_project_add_subdirectory(AutomatedTesting SamplesProject)
-#
-# \arg:project_name the name of the project that may be enabled
-# \arg:binary_project_dir optional, if supplied that binary_project_dir will be added when project name is enabled.
-#
-function(ly_project_add_subdirectory project_name)
-    if(${project_name} IN_LIST LY_PROJECTS)
-       if(ARGC GREATER 1)
-           list(GET ARGN 0 subdir)
-       endif()
-       if(ARGC GREATER 2)
-           list(GET ARGN 1 binary_project_dir)
-       endif()
-       if(subdir)
-           add_subdirectory(${subdir} ${binary_project_dir})
-       else()
-           add_subdirectory(${project_name} ${binary_project_dir})
-       endif()
-    endif()
-endfunction()
-
 # given a target name, returns the "real" name of the target if its an alias.
 # this function recursively de-aliases
 function(ly_de_alias_target target_name output_variable_name)

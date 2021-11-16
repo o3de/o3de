@@ -6,7 +6,6 @@
 #
 #
 
-
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
@@ -32,6 +31,14 @@ ly_add_target(
             3rdParty::zstd
             3rdParty::lz4
 )
+
+set(LY_SEARCH_MODE_DEFINE $<$<NOT:$<STREQUAL:"${LY_ARCHIVE_FILE_SEARCH_MODE}","">>:LY_ARCHIVE_FILE_SEARCH_MODE_DEFAULT=${LY_ARCHIVE_FILE_SEARCH_MODE}>)
+
+ly_add_source_properties(
+    SOURCES
+        AzFramework/Archive/ArchiveVars.cpp
+    PROPERTY COMPILE_DEFINITIONS
+    VALUES ${LY_SEARCH_MODE_DEFINE})
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
