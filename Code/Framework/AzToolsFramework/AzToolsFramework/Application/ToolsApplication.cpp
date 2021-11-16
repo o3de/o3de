@@ -1205,15 +1205,18 @@ namespace AzToolsFramework
                 return prefabPublicInterface->GetLevelInstanceContainerEntityId();
             }
         }
-
-        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
-        AZ::SliceComponent* rootSliceComponent = nullptr;
-        AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSliceComponent, editorEntityContextId,
-            &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootSlice);
-        if (rootSliceComponent && rootSliceComponent->GetMetadataEntity())
+        else
         {
-            return rootSliceComponent->GetMetadataEntity()->GetId();
+            AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+            AZ::SliceComponent* rootSliceComponent = nullptr;
+            AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(
+                rootSliceComponent, editorEntityContextId, &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootSlice);
+            if (rootSliceComponent && rootSliceComponent->GetMetadataEntity())
+            {
+                return rootSliceComponent->GetMetadataEntity()->GetId();
+            }
         }
 
         return AZ::EntityId();
