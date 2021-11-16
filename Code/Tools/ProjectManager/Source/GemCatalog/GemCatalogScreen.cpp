@@ -363,9 +363,6 @@ namespace O3DE::ProjectManager
         {
             const QString selectedGemPath = m_gemModel->GetPath(modelIndex);
 
-            // Remove gem from gems to be added
-            GemModel::SetIsAdded(*m_gemModel, modelIndex, false);
-
             // Unregister the gem
             auto unregisterResult = PythonBindingsInterface::Get()->UnregisterGem(selectedGemPath);
             if (!unregisterResult)
@@ -391,6 +388,7 @@ namespace O3DE::ProjectManager
 
                 // Select remote gem
                 QModelIndex remoteGemIndex = m_gemModel->FindIndexByNameString(selectedGemName);
+                GemModel::SetWasPreviouslyAdded(*m_gemModel, remoteGemIndex, true);
                 QModelIndex proxyIndex = m_proxyModel->mapFromSource(remoteGemIndex);
                 m_proxyModel->GetSelectionModel()->setCurrentIndex(proxyIndex, QItemSelectionModel::ClearAndSelect);
             }
