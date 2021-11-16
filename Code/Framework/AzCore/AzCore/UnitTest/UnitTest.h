@@ -20,7 +20,6 @@
 #include <AzCore/std/typetraits/has_member_function.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Debug/TraceMessageBus.h>
-#include <AzCore/Interface/Interface.h>
 
 namespace UnitTest
 {
@@ -69,7 +68,7 @@ namespace UnitTest
             m_numAssertsFailed = 0;
             return numAssertsFailed;
         }
-        
+
         bool m_isAssertTest;
         bool m_suppressErrors = true;
         bool m_suppressWarnings = true;
@@ -121,7 +120,7 @@ namespace UnitTest
 
     // utility classes that you can derive from or contain, which suppress AZ_Asserts
     // and AZ_Errors to the below macros (processAssert, etc)
-    // If TraceBusHook or TraceBusRedirector have been started in your unit tests, 
+    // If TraceBusHook or TraceBusRedirector have been started in your unit tests,
     //  use AZ_TEST_START_TRACE_SUPPRESSION and AZ_TEST_STOP_TRACE_SUPPRESSION(numExpectedAsserts) macros to perform AZ_Assert and AZ_Error suppression
     class TraceBusRedirector
         : public AZ::Debug::TraceMessageBus::Handler
@@ -138,7 +137,7 @@ namespace UnitTest
                 GTEST_MESSAGE_AT_(file, line, message, ::testing::TestPartResult::kNonFatalFailure);
                 return true;
             }
-            
+
             return false;
         }
         bool OnAssert(const char* /*message*/) override
@@ -189,12 +188,12 @@ namespace UnitTest
         {
             if (AZStd::string_view(window) == "Memory") // We want to print out the memory leak's stack traces
             {
-                ColoredPrintf(COLOR_RED, "[  MEMORY  ] %s", message); 
+                ColoredPrintf(COLOR_RED, "[  MEMORY  ] %s", message);
             }
-            return UnitTest::TestRunner::Instance().m_suppressPrintf; 
+            return UnitTest::TestRunner::Instance().m_suppressPrintf;
         }
     };
-    
+
     class TraceBusHook
         : public AZ::Test::ITestEnvironment
         , public TraceBusRedirector
@@ -214,10 +213,10 @@ namespace UnitTest
             }
 #endif
             BusConnect();
-            
+
             m_environmentSetup = true;
         }
-        
+
         void TeardownEnvironment() override
         {
             if (m_environmentSetup)
