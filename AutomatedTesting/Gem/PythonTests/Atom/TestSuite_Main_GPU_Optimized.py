@@ -23,6 +23,8 @@ class TestAutomation(EditorTestSuite):
     # Remove -autotest_mode from global_extra_cmdline_args since we need rendering for these tests.
     global_extra_cmdline_args = ["-BatchMode"]  # Default is ["-BatchMode", "-autotest_mode"]
 
+    enable_prefab_system = False
+
     @pytest.mark.test_case_id("C34603773")
     class AtomGPU_BasicLevelSetup_SetsUpLevel(EditorSharedTest):
         use_null_renderer = False  # Default is True

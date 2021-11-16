@@ -15,6 +15,8 @@ from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, E
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
 
+    enable_prefab_system = False
+
     class test_GradientGenerators_Incompatibilities(EditorSharedTest):
         from .EditorScripts import GradientGenerators_Incompatibilities as test_module
 

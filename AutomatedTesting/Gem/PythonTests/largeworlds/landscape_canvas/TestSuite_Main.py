@@ -22,8 +22,8 @@ class TestAutomation(TestAutomationBase):
 
     def test_LandscapeCanvas_SlotConnections_UpdateComponentReferences(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import SlotConnections_UpdateComponentReferences as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_LandscapeCanvas_GradientMixer_NodeConstruction(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import GradientMixer_NodeConstruction as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)

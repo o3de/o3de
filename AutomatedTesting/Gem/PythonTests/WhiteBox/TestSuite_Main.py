@@ -24,12 +24,12 @@ from base import TestAutomationBase
 class TestAutomation(TestAutomationBase):
     def test_WhiteBox_AddComponentToEntity(self, request, workspace, editor, launcher_platform):
         from .tests import WhiteBox_AddComponentToEntity as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_WhiteBox_SetDefaultShape(self, request, workspace, editor, launcher_platform):
         from .tests import WhiteBox_SetDefaultShape as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_WhiteBox_SetInvisible(self, request, workspace, editor, launcher_platform):
         from .tests import WhiteBox_SetInvisible as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)

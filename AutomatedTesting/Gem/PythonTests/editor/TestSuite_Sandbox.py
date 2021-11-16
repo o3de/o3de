@@ -20,8 +20,8 @@ class TestAutomation(TestAutomationBase):
 
     def test_Menus_EditMenuOptions_Work(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import Menus_EditMenuOptions as test_module
-        self._run_test(request, workspace, editor, test_module, batch_mode=False)
+        self._run_test(request, workspace, editor, test_module, batch_mode=False, enable_prefab_system=False)
 
     def test_Docking_BasicDockedTools(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import Docking_BasicDockedTools as test_module
-        self._run_test(request, workspace, editor, test_module, batch_mode=False)
+        self._run_test(request, workspace, editor, test_module, batch_mode=False, enable_prefab_system=False)

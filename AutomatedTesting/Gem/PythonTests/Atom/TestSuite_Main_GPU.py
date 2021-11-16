@@ -104,6 +104,7 @@ class TestAllComponentsIndepthTests(object):
             halt_on_unexpected=True,
             cfg_args=[level],
             null_renderer=False,
+            enable_prefab_system=False,
         )
 
         similarity_threshold = 0.99
@@ -158,6 +159,7 @@ class TestAllComponentsIndepthTests(object):
             halt_on_unexpected=True,
             cfg_args=[level],
             null_renderer=False,
+            enable_prefab_system=False,
         )
 
         similarity_threshold = 0.99
@@ -205,6 +207,7 @@ class TestPerformanceBenchmarkSuite(object):
             halt_on_unexpected=True,
             cfg_args=[level],
             null_renderer=False,
+            enable_prefab_system=False,
         )
 
         aggregator = BenchmarkDataAggregator(workspace, logger, 'periodic')
@@ -242,5 +245,6 @@ class TestMaterialEditor(object):
             halt_on_unexpected=False,
             null_renderer=False,
             cfg_args=[cfg_args],
-            log_file_name="MaterialEditor.log"
+            log_file_name="MaterialEditor.log",
+            enable_prefab_system=False,
         )

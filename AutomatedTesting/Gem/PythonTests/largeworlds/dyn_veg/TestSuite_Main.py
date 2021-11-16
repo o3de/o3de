@@ -20,8 +20,8 @@ class TestAutomation(TestAutomationBase):
 
     def test_DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
 
     def test_EmptyInstanceSpawner_EmptySpawnerWorks(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import EmptyInstanceSpawner_EmptySpawnerWorks as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
