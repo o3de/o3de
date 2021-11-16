@@ -65,6 +65,7 @@ namespace O3DE::ProjectManager
         bool AddGemRepo(const QString& repoUri) override;
         bool RemoveGemRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
+        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemRepoGemInfos(const QString& repoUri) override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemReposGemInfos() override;
         AZ::Outcome<void, AZStd::string> DownloadGem(const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) override;
         void CancelDownload() override;
