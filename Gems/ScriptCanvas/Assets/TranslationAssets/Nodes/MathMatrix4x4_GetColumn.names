@@ -5,9 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetColumn",
+                "name": "Get Column",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns vector from matrix corresponding to the Column index",
+                "tooltip": "Returns vector from matrix corresponding to the Column index",
                 "subtitle": "Matrix4x4"
             },
             "slots": [
@@ -26,19 +26,19 @@
                 {
                     "key": "DataInput_Matrix4x4: Source",
                     "details": {
-                        "name": "Matrix4x4: Source"
+                        "name": "Source"
                     }
                 },
                 {
                     "key": "DataInput_Number: Column",
                     "details": {
-                        "name": "Number: Column"
+                        "name": "Column"
                     }
                 },
                 {
                     "key": "DataOutput_Result: Vector4",
                     "details": {
-                        "name": "Result: Vector4"
+                        "name": "Column"
                     }
                 }
             ]

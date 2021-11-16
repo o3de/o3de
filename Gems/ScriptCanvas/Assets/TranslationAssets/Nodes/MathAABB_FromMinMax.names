@@ -5,10 +5,10 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromMinMax",
-                "category": "Math/AABB",
+                "name": "From Min Max",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the AABB from Min and Max if Min <= Max, else returns FromPoint(max)",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
@@ -26,19 +26,19 @@
                 {
                     "key": "DataInput_Vector3: Min",
                     "details": {
-                        "name": "Vector3: Min"
+                        "name": "Min"
                     }
                 },
                 {
                     "key": "DataInput_Vector3: Max",
                     "details": {
-                        "name": "Vector3: Max"
+                        "name": "Max"
                     }
                 },
                 {
                     "key": "DataOutput_Result: AABB",
                     "details": {
-                        "name": "Result: AABB"
+                        "name": "AABB"
                     }
                 }
             ]

@@ -5,9 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromTranslation",
+                "name": "From Translation",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns a skew-symmetric cross product matrix based on supplied vector",
+                "tooltip": "Returns a skew-symmetric cross product matrix based on supplied vector",
                 "subtitle": "Matrix4x4"
             },
             "slots": [
@@ -26,13 +26,13 @@
                 {
                     "key": "DataInput_Vector3: Source",
                     "details": {
-                        "name": "Vector3: Source"
+                        "name": "Translation"
                     }
                 },
                 {
                     "key": "DataOutput_Result: Matrix4x4",
                     "details": {
-                        "name": "Result: Matrix4x4"
+                        "name": "Matrix4x4"
                     }
                 }
             ]

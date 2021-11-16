@@ -7,8 +7,7 @@
             "details": {
                 "name": "GetDiagonal",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns vector of matrix diagonal values",
-                "subtitle": "Matrix3x3"
+                "tooltip": "returns vector of matrix diagonal values"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Matrix3x3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

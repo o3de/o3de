@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ToScale",
+                "name": "To Scale",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns scale part of the transformation matrix",
-                "subtitle": "Matrix4x4"
+                "tooltip": "Returns scale part of the transformation matrix"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Matrix4x4: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Matrix4x4: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]
