@@ -35,7 +35,7 @@ namespace Multiplayer
     {
         m_networkEditorInterface = AZ::Interface<INetworking>::Get()->CreateNetworkInterface(
             AZ::Name(MpEditorInterfaceName), ProtocolType::Tcp, TrustZone::ExternalClientToServer, *this);
-        m_networkEditorInterface->SetTimeoutMs(AZ::TimeMs{ 0 }); // Disable timeouts on this network interface
+        m_networkEditorInterface->SetTimeoutMs(AZ::Time::ZeroTimeMs); // Disable timeouts on this network interface
 
         // Wait to activate the editor-server until LegacySystemInterfaceCreated so that the logging system is ready
         // Automated testing listens for these logs

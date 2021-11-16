@@ -439,13 +439,6 @@ namespace AssetValidation
 
     bool GetDefaultSeedListFiles(AZStd::vector<AZStd::string>& defaultSeedListFiles)
     {
-        const char* engineRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-
-        const char* appRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetAppRoot);
-
-
         auto settingsRegistry = AZ::SettingsRegistry::Get();
         AZ::SettingsRegistryInterface::FixedValueString gameFolder;
         auto projectKey = AZ::SettingsRegistryInterface::FixedValueString::format("%s/project_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
@@ -509,30 +502,28 @@ namespace AssetValidation
 
     AZ::Outcome<AzFramework::AssetSeedList, AZStd::string> AssetValidationSystemComponent::LoadSeedList(const char* seedPath, AZStd::string& seedListPath)
     {
-        AZStd::string absoluteSeedPath = seedPath;
+        AZ::IO::Path absoluteSeedPath = seedPath;
 
         if (AZ::StringFunc::Path::IsRelative(seedPath))
         {
-            const char* appRoot = nullptr;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(appRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
+            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
 
-            if (!appRoot)
+            if (engineRoot.empty())
             {
                 return AZ::Failure(AZStd::string("Couldn't get engine root"));
             }
 
-            absoluteSeedPath = AZStd::string::format("%s/%s", appRoot, seedPath);
+            absoluteSeedPath = (engineRoot / seedPath).String();
         }
 
-        AzFramework::StringFunc::Path::Normalize(absoluteSeedPath);
         AzFramework::AssetSeedList seedList;
 
-        if (!AZ::Utils::LoadObjectFromFileInPlace(absoluteSeedPath, seedList))
+        if (!AZ::Utils::LoadObjectFromFileInPlace(absoluteSeedPath.Native(), seedList))
         {
             return AZ::Failure(AZStd::string::format("Failed to load seed list %s", absoluteSeedPath.c_str()));
         }
 
-        seedListPath = absoluteSeedPath;
+        seedListPath = AZStd::move(absoluteSeedPath.Native());
 
         return AZ::Success(seedList);
     }

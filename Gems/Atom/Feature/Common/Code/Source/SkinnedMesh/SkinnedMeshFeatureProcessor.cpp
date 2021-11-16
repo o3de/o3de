@@ -95,13 +95,13 @@ namespace AZ
                         renderProxy.m_instance->m_model->WaitForUpload();
                     }
 
-                    //Note: we are creating pointers to the meshDataInstance cullpacket and lod packet here,
+                    //Note: we are creating pointers to the modelDataInstance cullpacket and lod packet here,
                     //and holding them until the skinnedMeshDispatchItems are dispatched. There is an assumption that the underlying
                     //data will not move during this phase.
-                    MeshDataInstance& meshDataInstance = **renderProxy.m_meshHandle;
-                    m_workgroup.m_cullPackets.push_back(&meshDataInstance.GetCullPacket());
-                    m_workgroup.m_drawListMask |= meshDataInstance.GetCullPacket().m_drawListMask;
-                    m_lodPackets.push_back(&meshDataInstance.GetLodPacket());
+                    ModelDataInstance& modelDataInstance = **renderProxy.m_meshHandle;
+                    m_workgroup.m_cullPackets.push_back(&modelDataInstance.GetCullPacket());
+                    m_workgroup.m_drawListMask |= modelDataInstance.GetCullPacket().m_drawListMask;
+                    m_lodPackets.push_back(&modelDataInstance.GetLodPacket());
                     m_potentiallyVisibleProxies.push_back(&renderProxy);
                 }
             }
@@ -187,8 +187,8 @@ namespace AZ
                     renderProxy.m_instance->m_model->WaitForUpload();
                 }
 
-                MeshDataInstance& meshDataInstance = **renderProxy.m_meshHandle;
-                const RPI::Cullable& cullable = meshDataInstance.GetCullable();
+                ModelDataInstance& modelDataInstance = **renderProxy.m_meshHandle;
+                const RPI::Cullable& cullable = modelDataInstance.GetCullable();
 
                 for (const RPI::ViewPtr& viewPtr : packet.m_views)
                 {

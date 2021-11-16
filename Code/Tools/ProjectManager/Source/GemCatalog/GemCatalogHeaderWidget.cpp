@@ -30,6 +30,7 @@ namespace O3DE::ProjectManager
         m_layout->setMargin(5);
         m_layout->setAlignment(Qt::AlignTop);
         setLayout(m_layout);
+        setMinimumHeight(400);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
 
@@ -119,6 +120,12 @@ namespace O3DE::ProjectManager
         setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
     }
 
+    CartOverlayWidget::~CartOverlayWidget()
+    {
+        // disconnect from all download controller signals
+        disconnect(m_downloadController, nullptr, this, nullptr);
+    }
+
     void CartOverlayWidget::CreateGemSection(const QString& singularTitle, const QString& pluralTitle, GetTagIndicesCallback getTagIndices)
     {
         QWidget* widget = new QWidget();
@@ -162,13 +169,13 @@ namespace O3DE::ProjectManager
 
     void CartOverlayWidget::CreateDownloadSection()
     {
-        QWidget* widget = new QWidget();
-        widget->setFixedWidth(s_width);
-        m_layout->addWidget(widget);
+        m_downloadSectionWidget = new QWidget();
+        m_downloadSectionWidget->setFixedWidth(s_width);
+        m_layout->addWidget(m_downloadSectionWidget);
 
         QVBoxLayout* layout = new QVBoxLayout();
         layout->setAlignment(Qt::AlignTop);
-        widget->setLayout(layout);
+        m_downloadSectionWidget->setLayout(layout);
 
         QLabel* titleLabel = new QLabel();
         titleLabel->setObjectName("GemCatalogCartOverlaySectionLabel");
@@ -187,88 +194,121 @@ namespace O3DE::ProjectManager
         QLabel* processingQueueLabel = new QLabel("Processing Queue");
         gemDownloadLayout->addWidget(processingQueueLabel);
 
-        QWidget* downloadingItemWidget = new QWidget();
-        downloadingItemWidget->setObjectName("GemCatalogCartOverlayGemDownloadBG");
-        gemDownloadLayout->addWidget(downloadingItemWidget);
+        m_downloadingListWidget = new QWidget();
+        m_downloadingListWidget->setObjectName("GemCatalogCartOverlayGemDownloadBG");
+        gemDownloadLayout->addWidget(m_downloadingListWidget);
         QVBoxLayout* downloadingItemLayout = new QVBoxLayout();
         downloadingItemLayout->setAlignment(Qt::AlignTop);
-        downloadingItemWidget->setLayout(downloadingItemLayout);
+        m_downloadingListWidget->setLayout(downloadingItemLayout);
 
-        auto update = [=](int downloadProgress)
+        QLabel* downloadsInProgessLabel = new QLabel("");
+        downloadsInProgessLabel->setObjectName("NumDownloadsInProgressLabel");
+        downloadingItemLayout->addWidget(downloadsInProgessLabel);
+
+        if (m_downloadController->IsDownloadQueueEmpty())
         {
-            if (m_downloadController->IsDownloadQueueEmpty())
-            {
-                widget->hide();
-            }
-            else
-            {
-                widget->setUpdatesEnabled(false);
-                // remove items
-                QLayoutItem* layoutItem = nullptr;
-                while ((layoutItem = downloadingItemLayout->takeAt(0)) != nullptr)
-                {
-                    if (layoutItem->layout())
-                    {
-                        // Gem info row
-                        QLayoutItem* rowLayoutItem = nullptr;
-                        while ((rowLayoutItem = layoutItem->layout()->takeAt(0)) != nullptr)
-                        {
-                            rowLayoutItem->widget()->deleteLater();
-                        }
-                        layoutItem->layout()->deleteLater();
-                    }
-                    if (layoutItem->widget())
-                    {
-                        layoutItem->widget()->deleteLater();
-                    }
-                }
-
-                // Setup gem download rows
-                const AZStd::vector<QString>& downloadQueue = m_downloadController->GetDownloadQueue();
-
-                QLabel* downloadsInProgessLabel = new QLabel("");
-                downloadsInProgessLabel->setText(
-                    QString("%1 %2").arg(downloadQueue.size()).arg(downloadQueue.size() == 1 ? tr("download in progress...") : tr("downloads in progress...")));
-                downloadingItemLayout->addWidget(downloadsInProgessLabel);
-
-                for (int downloadingGemNumber = 0; downloadingGemNumber < downloadQueue.size(); ++downloadingGemNumber)
-                {
-                    QHBoxLayout* nameProgressLayout = new QHBoxLayout();
-
-                    const QString& gemName = downloadQueue[downloadingGemNumber];
-                    TagWidget* newTag = new TagWidget({gemName, gemName});
-                    nameProgressLayout->addWidget(newTag);
-
-                    QLabel* progress = new QLabel(downloadingGemNumber == 0? QString("%1%").arg(downloadProgress) : tr("Queued"));
-                    nameProgressLayout->addWidget(progress);
-
-                    QSpacerItem* spacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
-                    nameProgressLayout->addSpacerItem(spacer);
-
-                    QLabel* cancelText = new QLabel(QString("<a href=\"%1\">Cancel</a>").arg(gemName));
-                    cancelText->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
-                    connect(cancelText, &QLabel::linkActivated, this, &CartOverlayWidget::OnCancelDownloadActivated);
-                    nameProgressLayout->addWidget(cancelText);
-                    downloadingItemLayout->addLayout(nameProgressLayout);
-
-                    QProgressBar* downloadProgessBar = new QProgressBar();
-                    downloadingItemLayout->addWidget(downloadProgessBar);
-                    downloadProgessBar->setValue(downloadingGemNumber == 0 ? downloadProgress : 0);
-                }
-
-                widget->setUpdatesEnabled(true);
-                widget->show();
-            }
-        };
-
-        auto downloadEnded = [=](const QString& /*gemName*/, bool /*success*/)
+            m_downloadSectionWidget->hide();
+        }
+        else
         {
-            update(0); // update the list to remove the gem that has finished
-        };
+            // Setup gem download rows for gems that are already in the queue
+            const AZStd::vector<QString>& downloadQueue = m_downloadController->GetDownloadQueue();
+
+            for (const QString& gemName : downloadQueue)
+            {
+                GemDownloadAdded(gemName);
+            }
+        }
+
         // connect to download controller data changed
-        connect(m_downloadController, &DownloadController::GemDownloadProgress, this, update);
-        connect(m_downloadController, &DownloadController::Done, this, downloadEnded);
-        update(0);
+        connect(m_downloadController, &DownloadController::GemDownloadAdded, this, &CartOverlayWidget::GemDownloadAdded);
+        connect(m_downloadController, &DownloadController::GemDownloadRemoved, this, &CartOverlayWidget::GemDownloadRemoved);
+        connect(m_downloadController, &DownloadController::GemDownloadProgress, this, &CartOverlayWidget::GemDownloadProgress);
+        connect(m_downloadController, &DownloadController::Done, this, &CartOverlayWidget::GemDownloadComplete);
+    }
+
+    void CartOverlayWidget::GemDownloadAdded(const QString& gemName)
+    {
+        // Containing widget for the current download item
+        QWidget* newGemDownloadWidget = new QWidget();
+        newGemDownloadWidget->setObjectName(gemName);
+        QVBoxLayout* downloadingGemLayout = new QVBoxLayout(newGemDownloadWidget);
+        newGemDownloadWidget->setLayout(downloadingGemLayout);
+
+        // Gem name, progress string, cancel
+        QHBoxLayout* nameProgressLayout = new QHBoxLayout(newGemDownloadWidget);
+        TagWidget* newTag = new TagWidget({gemName, gemName}, newGemDownloadWidget);
+        nameProgressLayout->addWidget(newTag);
+        QLabel* progress = new QLabel(tr("Queued"), newGemDownloadWidget);
+        progress->setObjectName("DownloadProgressLabel");
+        nameProgressLayout->addWidget(progress);
+        nameProgressLayout->addStretch();
+        QLabel* cancelText = new QLabel(tr("<a href=\"%1\">Cancel</a>").arg(gemName), newGemDownloadWidget);
+        cancelText->setTextInteractionFlags(Qt::LinksAccessibleByMouse);
+        connect(cancelText, &QLabel::linkActivated, this, &CartOverlayWidget::OnCancelDownloadActivated);
+        nameProgressLayout->addWidget(cancelText);
+        downloadingGemLayout->addLayout(nameProgressLayout);
+
+        // Progress bar
+        QProgressBar* downloadProgessBar = new QProgressBar(newGemDownloadWidget);
+        downloadProgessBar->setObjectName("DownloadProgressBar");
+        downloadingGemLayout->addWidget(downloadProgessBar);
+        downloadProgessBar->setValue(0);
+
+        m_downloadingListWidget->layout()->addWidget(newGemDownloadWidget);
+
+        const AZStd::vector<QString>& downloadQueue = m_downloadController->GetDownloadQueue();
+        QLabel* numDownloads = m_downloadingListWidget->findChild<QLabel*>("NumDownloadsInProgressLabel");
+        numDownloads->setText(QString("%1 %2")
+                                  .arg(downloadQueue.size())
+                                  .arg(downloadQueue.size() == 1 ? tr("download in progress...") : tr("downloads in progress...")));
+
+        m_downloadingListWidget->show();
+    }
+
+    void CartOverlayWidget::GemDownloadRemoved(const QString& gemName)
+    {
+        QWidget* gemToRemove = m_downloadingListWidget->findChild<QWidget*>(gemName);
+        if (gemToRemove)
+        {
+            gemToRemove->deleteLater();
+        }
+
+        if (m_downloadController->IsDownloadQueueEmpty())
+        {
+            m_downloadSectionWidget->hide();
+        }
+        else
+        {
+            size_t downloadQueueSize = m_downloadController->GetDownloadQueue().size();
+            QLabel* numDownloads = m_downloadingListWidget->findChild<QLabel*>("NumDownloadsInProgressLabel");
+            numDownloads->setText(QString("%1 %2")
+                                      .arg(downloadQueueSize)
+                                      .arg(downloadQueueSize == 1 ? tr("download in progress...") : tr("downloads in progress...")));
+        }
+    }
+
+    void CartOverlayWidget::GemDownloadProgress(const QString& gemName, int percentage)
+    {
+        QWidget* gemToUpdate = m_downloadingListWidget->findChild<QWidget*>(gemName);
+        if (gemToUpdate)
+        {
+            QLabel* progressLabel = gemToUpdate->findChild<QLabel*>("DownloadProgressLabel");
+            if (progressLabel)
+            {
+                progressLabel->setText(QString("%1%").arg(percentage));
+            }
+            QProgressBar* progressBar = gemToUpdate->findChild<QProgressBar*>("DownloadProgressBar");
+            if (progressBar)
+            {
+                progressBar->setValue(percentage);
+            }
+        }
+    }
+
+    void CartOverlayWidget::GemDownloadComplete(const QString& gemName, bool /*success*/)
+    {
+        GemDownloadRemoved(gemName); // update the list to remove the gem that has finished
     }
 
     QVector<Tag> CartOverlayWidget::GetTagsFromModelIndices(const QVector<QModelIndex>& gems) const

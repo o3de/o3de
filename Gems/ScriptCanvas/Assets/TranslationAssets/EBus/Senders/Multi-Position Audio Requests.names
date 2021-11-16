@@ -12,20 +12,20 @@
                     "key": "AddEntity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke AddEntity"
+                        "tooltip": "When signaled, this will invoke Add Entity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after AddEntity is invoked"
+                        "tooltip": "Signaled after Add Entity is invoked"
                     },
                     "details": {
-                        "name": "AddEntity"
+                        "name": "Add Entity"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
@@ -35,11 +35,11 @@
                     "key": "RemoveEntity",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke RemoveEntity"
+                        "tooltip": "When signaled, this will invoke Remove Entity"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after RemoveEntity is invoked"
+                        "tooltip": "Signaled after Remove Entity is invoked"
                     },
                     "details": {
                         "name": "RemoveEntity"
@@ -48,7 +48,7 @@
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "EntityId",
+                                "name": "Entity Id",
                                 "tooltip": "Entity Unique Id"
                             }
                         }
@@ -65,13 +65,15 @@
                         "tooltip": "Signaled after SetBehaviorType is invoked"
                     },
                     "details": {
-                        "name": "SetBehaviorType"
+                        "name": "Set Behavior Type",
+                        "tooltip": "0: Separate, 1: Blended"
                     },
                     "params": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Behavior Type",
+                                "tooltip": "0: Separate, 1: Blended"
                             }
                         }
                     ]

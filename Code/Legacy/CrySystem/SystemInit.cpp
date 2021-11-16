@@ -1099,17 +1099,6 @@ AZ_POP_DISABLE_WARNING
                                                             AzFramework::SystemCursorState::ConstrainedAndHidden);
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        // TIME
-        //////////////////////////////////////////////////////////////////////////
-        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Time initialization");
-        if (!m_Time.Init())
-        {
-            AZ_Assert(false, "Failed to initialize CTimer instance.");
-            return false;
-        }
-        m_Time.ResetTimer();
-
         // CONSOLE
         //////////////////////////////////////////////////////////////////////////
         if (!InitConsole())
@@ -1234,20 +1223,6 @@ static AZStd::string ConcatPath(const char* szPart1, const char* szPart2)
     ret += szPart2;
 
     return ret;
-}
-
-// Helper to maintain backwards compatibility with our CVar but not force our new code to
-// pull in CryCommon by routing through an environment variable
-void CmdSetAwsLogLevel(IConsoleCmdArgs* pArgs)
-{
-    static const char* const logLevelEnvVar = "sys_SetLogLevel";
-    static AZ::EnvironmentVariable<int> logVar = AZ::Environment::CreateVariable<int>(logLevelEnvVar);
-    if (pArgs->GetArgCount() > 1)
-    {
-        int logLevel = atoi(pArgs->GetArg(1));
-        *logVar = logLevel;
-        AZ_TracePrintf("AWSLogging", "Log level set to %d", *logVar);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1612,8 +1587,6 @@ void CSystem::CreateSystemVars()
     // Since the UI Canvas Editor is incomplete, we have a variable to enable it.
     // By default it is now enabled. Modify system.cfg or game.cfg to disable it
     REGISTER_INT("sys_enableCanvasEditor", 1, VF_NULL, "Enables the UI Canvas Editor");
-
-    REGISTER_COMMAND("sys_SetLogLevel", CmdSetAwsLogLevel, 0, "Set AWS log level [0 - 6].");
 }
 
 //////////////////////////////////////////////////////////////////////////

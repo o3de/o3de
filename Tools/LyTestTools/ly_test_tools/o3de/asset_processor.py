@@ -416,13 +416,8 @@ class AssetProcessor(object):
         self.restore_ap_settings()
 
     def process_exists(self):
-        try:
-            my_pid = self.get_pid()
-            if my_pid == -1:
-                return False
-            return psutil.pid_exists(my_pid)
-        except psutil.NoSuchProcess:
-            pass
+        if self._ap_proc:
+            return self._ap_proc.poll() is None
         return False
 
     def batch_process(self, timeout=DEFAULT_TIMEOUT_SECONDS, fastscan=True, capture_output=False, platforms=None,

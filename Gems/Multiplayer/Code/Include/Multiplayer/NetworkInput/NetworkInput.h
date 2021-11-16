@@ -75,7 +75,7 @@ namespace Multiplayer
         MultiplayerComponentInputVector m_componentInputs;
         ClientInputId m_inputId = ClientInputId{ 0 };
         HostFrameId m_hostFrameId = InvalidHostFrameId;
-        AZ::TimeMs m_hostTimeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_hostTimeMs = AZ::Time::ZeroTimeMs;
         float m_hostBlendFactor = 0.f;
         ConstNetworkEntityHandle m_owner;
         bool m_wasAttached = false;
