@@ -14,10 +14,12 @@
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/chrono/clocks.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/sort.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/StringFunc/StringFunc.h>
+
 #include <inttypes.h>
 
 namespace AssetProcessor
@@ -47,15 +49,9 @@ namespace AssetProcessor
             };
             
             AZStd::unordered_map<AZStd::string, StatsEntry> m_stats;
-            // utility function - pushes all keys in m_stats into a vector
-            void PushKeys(AZStd::vector<AZStd::string>& dest)
-            {
-                for (const auto& element : m_stats)
-                {
-                    dest.push_back(element.first);
-                }
-            }
-            
+            bool m_dumpMachineReadableStats = false;
+            bool m_dumpHumanReadableStats = true;
+
             // Make a friendly time string of the format nnHnnMhhS.xxxms
             AZStd::string FormatDuration(const duration& duration)
             {
@@ -89,7 +85,73 @@ namespace AssetProcessor
                 
                 return AZStd::string::format("         %03" PRId64 "ms", milliseconds);
             }
+
+            // Prints out a single stat.
+            void PrintStat(const char* name, duration milliseconds, int64_t count)
+            {
+                if (count <= 1)
+                {
+                    count = 1;
+                }
+
+                duration average(static_cast<int64_t>(static_cast<double>(milliseconds.count()) / static_cast<double>(count)));
+
+                if (m_dumpHumanReadableStats)
+                {
+                    if (count > 1)
+                    {
+                        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "    Time: %s, Count: %4" PRId64 ", Average: %s, EventName: %s\n",
+                            FormatDuration(milliseconds).c_str(),
+                            count,
+                            FormatDuration(average).c_str(),
+                            name);
+                    }
+                    else
+                    {
+                        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "    Time: %s, EventName: %s\n",
+                            FormatDuration(milliseconds).c_str(),
+                            name);
+                    }
+                }
+                if (m_dumpMachineReadableStats)
+                {
+                    // machine Readable mode prints raw milliseconds and uses a CSV-like format
+                    // note that the stat itself may contain commas, so we dont acutally separate with comma
+                    // instead we separate with :
+                    // and each "interesting line" is 'MachineReadableStat:milliseconds:count:average:name'
+                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "MachineReadableStat:%" PRId64 ":%" PRId64 ":%" PRId64 ":%s\n",
+                            milliseconds.count(),
+                            count,
+                            count > 1 ? average.count() : milliseconds.count(),
+                            name);
+                }
+            }
+            
+            // calls PrintStat on each element in the vector.
+            void PrintStatsArray(AZStd::vector<AZStd::string>& keys, int maxToPrint, const char* header)
+            {
+                if ((m_dumpHumanReadableStats)&&(header))
+                {
+                    AZ_TracePrintf(AssetProcessor::ConsoleChannel,"Top %i %s\n", maxToPrint, header);
+                }
+                   
+                auto sortByTimeDescending = [&](const AZStd::string& s1, const AZStd::string& s2)
+                {
+                    return this->m_stats[s1].m_cumulativeTime > this->m_stats[s2].m_cumulativeTime;
+                };
+        
+                AZStd::sort(keys.begin(), keys.end(), sortByTimeDescending);
+                
+                for (int idx = 0; idx < maxToPrint; ++idx)
+                {
+                    if (idx < keys.size())
+                    {
+                        PrintStat(keys[idx].c_str(), m_stats[keys[idx]].m_cumulativeTime, m_stats[keys[idx]].m_operationCount);
+                    }
+                }
+            }
         };
+
 
         void StatsCaptureImpl::BeginCaptureStat(AZStd::string_view statName)
         {
@@ -119,8 +181,6 @@ namespace AssetProcessor
 
             auto settingsRegistry = AZ::SettingsRegistry::Get();
 
-            bool dumpStatsHumanReadable = true;
-            bool dumpStatsMachineReadable = false;
             int maxCumulativeStats = 5; // default max cumulative stats to show
             int maxIndividualStats = 5; // default max individual files to show
 
@@ -128,15 +188,15 @@ namespace AssetProcessor
             {
                 AZ::u64 cumulativeStats = static_cast<AZ::u64>(maxCumulativeStats);
                 AZ::u64 individualStats = static_cast<AZ::u64>(maxIndividualStats);
-                settingsRegistry->Get(dumpStatsHumanReadable,   "/Amazon/AssetProcessor/Settings/Stats/HumanReadable");
-                settingsRegistry->Get(dumpStatsMachineReadable, "/Amazon/AssetProcessor/Settings/Stats/MachineReadable");
+                settingsRegistry->Get(m_dumpHumanReadableStats,   "/Amazon/AssetProcessor/Settings/Stats/HumanReadable");
+                settingsRegistry->Get(m_dumpMachineReadableStats, "/Amazon/AssetProcessor/Settings/Stats/MachineReadable");
                 settingsRegistry->Get(cumulativeStats,          "/Amazon/AssetProcessor/Settings/Stats/MaxCumulativeStats");
                 settingsRegistry->Get(individualStats,          "/Amazon/AssetProcessor/Settings/Stats/MaxIndividualStats");
                 maxCumulativeStats = static_cast<int>(cumulativeStats);
                 maxIndividualStats = static_cast<int>(individualStats);
             }
 
-            if ((!dumpStatsHumanReadable)&&(!dumpStatsMachineReadable))
+            if ((!m_dumpHumanReadableStats)&&(!m_dumpMachineReadableStats))
             {
                 return;
             }
@@ -151,7 +211,10 @@ namespace AssetProcessor
             // capture only existing keys as we will be expanding the stats
             // this approach avoids mutating an iterator.   
             AZStd::vector<AZStd::string> statKeys;
-            PushKeys(statKeys);
+            for (const auto& element : m_stats)
+            {
+                statKeys.push_back(element.first);
+            }
 
             for (const AZStd::string& statKey : statKeys)
             {
@@ -169,7 +232,7 @@ namespace AssetProcessor
                     // synthesize a stat to track per-builder createjobs times:
                     {
                         AZStd::string newStatKey = AZStd::string::format("CreateJobsByBuilder,%.*s", AZ_STRING_ARG(builderName));
-   
+
                         auto insertion = m_stats.insert(newStatKey);
                         StatsEntry& statToSynth = insertion.first->second;
                         statToSynth.m_cumulativeTime += statistic.m_cumulativeTime;
@@ -238,113 +301,50 @@ namespace AssetProcessor
                 }
             }
             
-            auto sortByTimeDescending = [&](const AZStd::string& s1, const AZStd::string& s2)
-            {
-                return this->m_stats[s1].m_cumulativeTime > this->m_stats[s2].m_cumulativeTime;
-            };
-            
-            auto printStat = [&](const char* name, duration milliseconds, int64_t count)
-            {
-                if (count <= 1)
-                {
-                    count = 1;
-                }
-
-                duration average(static_cast<int64_t>(static_cast<double>(milliseconds.count()) / static_cast<double>(count)));
-
-                if (dumpStatsHumanReadable)
-                {
-                    if (count > 1)
-                    {
-                        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "    Time: %s, Count: %4" PRId64 ", Average: %s, EventName: %s\n",
-                            FormatDuration(milliseconds).c_str(),
-                            count,
-                            FormatDuration(average).c_str(),
-                            name);
-                    }
-                    else
-                    {
-                        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "    Time: %s, EventName: %s\n",
-                            FormatDuration(milliseconds).c_str(),
-                            name);
-                    }
-                }
-                if (dumpStatsMachineReadable)
-                {
-                    // machine Readable mode prints raw milliseconds and uses a CSV-like format
-                    // note that the stat itself may contain commas, so we dont acutally seperate with comma
-                    // instead we seperate with :
-                    // and each "interesting line" is 'MachineReadableStat:milliseconds:count:average:name'
-                    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "MachineReadableStat:%" PRId64 ":%" PRId64 ":%" PRId64 ":%s\n",
-                            milliseconds.count(),
-                            count,
-                            count > 1 ? average.count() : milliseconds.count(),
-                            name);
-                }
-            };
-
-            // note, keys is non const, since this function also sorts it.
-            auto printStatsArray = [&](AZStd::vector<AZStd::string>& keys, int maxToPrint, const char* optionalHeader)
-            {
-                if ((dumpStatsHumanReadable)&&(optionalHeader))
-                {
-                    AZ_TracePrintf(AssetProcessor::ConsoleChannel,"Top %i %s\n", maxToPrint, optionalHeader);
-                }
-                std::sort(keys.begin(), keys.end(), sortByTimeDescending);
-                
-                for (int idx = 0; idx < maxToPrint; ++idx)
-                {
-                    if (idx < keys.size())
-                    {
-                        printStat(keys[idx].c_str(), m_stats[keys[idx]].m_cumulativeTime, m_stats[keys[idx]].m_operationCount);
-                    }
-                }
-            };
-            
             StatsEntry& gemLoadStat = m_stats["LoadingModules"];
-            printStat("LoadingGems", gemLoadStat.m_cumulativeTime, 1);
+            PrintStat("LoadingGems", gemLoadStat.m_cumulativeTime, 1);
             // analysis-related stats
 
             StatsEntry& totalScanTime = m_stats["AssetScanning"];
-            printStat("AssetScanning", totalScanTime.m_cumulativeTime, totalScanTime.m_operationCount);
+            PrintStat("AssetScanning", totalScanTime.m_cumulativeTime, totalScanTime.m_operationCount);
             StatsEntry& totalHashTime = m_stats["HashFileTotal"];
-            printStat("HashFileTotal", totalHashTime.m_cumulativeTime, totalHashTime.m_operationCount);
-            printStatsArray(allHashFiles, maxIndividualStats, "longest individual file hashes:");
-           
+            PrintStat("HashFileTotal", totalHashTime.m_cumulativeTime, totalHashTime.m_operationCount);
+            PrintStatsArray(allHashFiles, maxIndividualStats, "longest individual file hashes:");
+        
             // CreateJobs stats
             StatsEntry& totalCreateJobs = m_stats["CreateJobsTotal"];
             if (totalCreateJobs.m_operationCount)
             {
-                printStat("CreateJobsTotal", totalCreateJobs.m_cumulativeTime, totalCreateJobs.m_operationCount);
-                printStatsArray(allCreateJobs, maxIndividualStats, "longest individual CreateJobs");
-                printStatsArray(allCreateJobsByBuilder, maxCumulativeStats, "longest CreateJobs By builder");
+                PrintStat("CreateJobsTotal", totalCreateJobs.m_cumulativeTime, totalCreateJobs.m_operationCount);
+                PrintStatsArray(allCreateJobs, maxIndividualStats, "longest individual CreateJobs");
+                PrintStatsArray(allCreateJobsByBuilder, maxCumulativeStats, "longest CreateJobs By builder");
             }
             
             // ProcessJobs stats
-           StatsEntry& totalProcessJobs = m_stats["ProcessJobsTotal"];
+            StatsEntry& totalProcessJobs = m_stats["ProcessJobsTotal"];
             if (totalProcessJobs.m_operationCount)
             {
-                printStat("ProcessJobsTotal", totalProcessJobs.m_cumulativeTime, totalProcessJobs.m_operationCount);
-                printStatsArray(allProcessJobs, maxIndividualStats, "longest individual ProcessJob");
-                printStatsArray(allProcessJobsByJobKey, maxCumulativeStats, "cumulative time spent in ProcessJob by JobKey");
-                printStatsArray(allProcessJobsByPlatform, maxCumulativeStats, "cumulative time spent in ProcessJob by Platform");
+                PrintStat("ProcessJobsTotal", totalProcessJobs.m_cumulativeTime, totalProcessJobs.m_operationCount);
+                PrintStatsArray(allProcessJobs, maxIndividualStats, "longest individual ProcessJob");
+                PrintStatsArray(allProcessJobsByJobKey, maxCumulativeStats, "cumulative time spent in ProcessJob by JobKey");
+                PrintStatsArray(allProcessJobsByPlatform, maxCumulativeStats, "cumulative time spent in ProcessJob by Platform");
             }
             duration costToGenerateStats =  AZStd::chrono::high_resolution_clock::now() - startTimeStamp;
-            printStat("ComputeStatsTime", costToGenerateStats, 1);
+            PrintStat("ComputeStatsTime", costToGenerateStats, 1);
         }
 
         // Public interface:
-        static StatsCaptureImpl* g_instance = nullptr;
+        static StatsCaptureImpl* s_instance = nullptr;
 
         //! call this one time before capturing stats.
         void Initialize()
         {
-            if (g_instance)
+            if (s_instance)
             {
                 AZ_Assert(false, "An instance of StatsCaptureImpl already exists.");
                 return;
             }
-            g_instance = aznew StatsCaptureImpl();
+            s_instance = aznew StatsCaptureImpl();
         }
 
         //! Call this one time as part of shutting down.
@@ -353,28 +353,28 @@ namespace AssetProcessor
         //! to essentially be "turned off" just by not initializing it in the first place.
         void Shutdown()
         {
-            if (g_instance)
+            if (s_instance)
             {
-                delete g_instance;
-                g_instance = nullptr;
+                delete s_instance;
+                s_instance = nullptr;
             }
         }
 
         //! Start the clock running for a particular stat name.
         void BeginCaptureStat(AZStd::string_view statName)
         {
-            if (g_instance)
+            if (s_instance)
             {
-                g_instance->BeginCaptureStat(statName);
+                s_instance->BeginCaptureStat(statName);
             }
         }
 
         //! Stop the clock running for a particular stat name.
         void EndCaptureStat(AZStd::string_view statName)
         {
-            if (g_instance)
+            if (s_instance)
             {
-                g_instance->EndCaptureStat(statName);
+                s_instance->EndCaptureStat(statName);
             }
         }
 
@@ -383,9 +383,9 @@ namespace AssetProcessor
         //! is going to make a lot of assumptions about the way the data is encoded.
         void Dump()
         {
-            if (g_instance)
+            if (s_instance)
             {
-                g_instance->Dump();
+                s_instance->Dump();
             }
         }
     }

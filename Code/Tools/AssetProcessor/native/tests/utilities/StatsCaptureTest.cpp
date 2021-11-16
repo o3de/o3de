@@ -7,7 +7,7 @@
  */
 
 #include <native/tests/AssetProcessorTest.h>
-#include <native/utilities/SimpleStatsCapture.h>
+#include <native/utilities/StatsCapture.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/Settings/SettingsRegistry.h>
@@ -23,43 +23,43 @@ namespace AssetProcessor
 {
 // Its okay to talk to this system when unintialized, you can gain some perf
 // by not intializing it at all
-TEST_F(AssetProcessorTest, SimpleStatsCaptureTest_UninitializedSystemDoesNotAssert)
+TEST_F(AssetProcessorTest, StatsCaptureTest_UninitializedSystemDoesNotAssert)
 {
-    AssetProcessor::SimpleStatsCapture::BeginCaptureStat("Test");
-    AssetProcessor::SimpleStatsCapture::EndCaptureStat("Test");
-    AssetProcessor::SimpleStatsCapture::Dump();
-    AssetProcessor::SimpleStatsCapture::Shutdown();
+    AssetProcessor::StatsCapture::BeginCaptureStat("Test");
+    AssetProcessor::StatsCapture::EndCaptureStat("Test");
+    AssetProcessor::StatsCapture::Dump();
+    AssetProcessor::StatsCapture::Shutdown();
 }
 
 // Double-intiailize is an error
-TEST_F(AssetProcessorTest, SimpleStatsCaptureTest_DoubleInitializeIsAnAssert)
+TEST_F(AssetProcessorTest, StatsCaptureTest_DoubleInitializeIsAnAssert)
 {
     m_errorAbsorber->Clear();
     
-    AssetProcessor::SimpleStatsCapture::Initialize();
-    AssetProcessor::SimpleStatsCapture::Initialize();
+    AssetProcessor::StatsCapture::Initialize();
+    AssetProcessor::StatsCapture::Initialize();
     
     EXPECT_EQ(m_errorAbsorber->m_numErrorsAbsorbed, 0);
     EXPECT_EQ(m_errorAbsorber->m_numAssertsAbsorbed, 1); // not allowed to assert on this
 
-    AssetProcessor::SimpleStatsCapture::BeginCaptureStat("Test");
-    AssetProcessor::SimpleStatsCapture::Shutdown();
+    AssetProcessor::StatsCapture::BeginCaptureStat("Test");
+    AssetProcessor::StatsCapture::Shutdown();
 }
 
-class SimpleStatsCaptureOutputTest : public AssetProcessorTest, public AZ::Debug::TraceMessageBus::Handler
+class StatsCaptureOutputTest : public AssetProcessorTest, public AZ::Debug::TraceMessageBus::Handler
 {
 public:
     void SetUp() override
     {
         AssetProcessorTest::SetUp();
-        AssetProcessor::SimpleStatsCapture::Initialize();
+        AssetProcessor::StatsCapture::Initialize();
     }
     
     // dump but also capture the dump as a vector of lines:
     void Dump()
     {
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
-        AssetProcessor::SimpleStatsCapture::Dump();
+        AssetProcessor::StatsCapture::Dump();
         AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
     }
     
@@ -74,7 +74,7 @@ public:
     {
         m_gatheredMessages = {};
         
-        AssetProcessor::SimpleStatsCapture::Shutdown();
+        AssetProcessor::StatsCapture::Shutdown();
         AssetProcessorTest::TearDown();
     }
     
@@ -82,27 +82,27 @@ public:
 };
 
 // turning off machine and human readable mode, should not dump anything.
-TEST_F(SimpleStatsCaptureOutputTest, SimpleStatsCaptureTest_DisabledByRegset_DumpsNothing)
+TEST_F(StatsCaptureOutputTest, StatsCaptureTest_DisabledByRegset_DumpsNothing)
 {
     auto registry = AZ::SettingsRegistry::Get();
     ASSERT_NE(registry, nullptr);
     registry->Set("/Amazon/AssetProcessor/Settings/Stats/HumanReadable", false);
     registry->Set("/Amazon/AssetProcessor/Settings/Stats/MachineReadable", false);
-    AssetProcessor::SimpleStatsCapture::BeginCaptureStat("Test");
-    AssetProcessor::SimpleStatsCapture::EndCaptureStat("Test");
+    AssetProcessor::StatsCapture::BeginCaptureStat("Test");
+    AssetProcessor::StatsCapture::EndCaptureStat("Test");
     Dump();
     EXPECT_EQ(m_gatheredMessages.size(), 0);
 }
 
-// turning off machine and human readable mode, should not dump anything.
-TEST_F(SimpleStatsCaptureOutputTest, SimpleStatsCaptureTest_HumanReadableOnly_DumpsNoMachineReadable)
+// turning on Human Readable, turn off Machine Readable, should not output any machine readable stats.
+TEST_F(StatsCaptureOutputTest, StatsCaptureTest_HumanReadableOnly_DumpsNoMachineReadable)
 {
     auto registry = AZ::SettingsRegistry::Get();
     ASSERT_NE(registry, nullptr);
     registry->Set("/Amazon/AssetProcessor/Settings/Stats/HumanReadable", true);
     registry->Set("/Amazon/AssetProcessor/Settings/Stats/MachineReadable", false);
-    AssetProcessor::SimpleStatsCapture::BeginCaptureStat("Test");
-    AssetProcessor::SimpleStatsCapture::EndCaptureStat("Test");
+    AssetProcessor::StatsCapture::BeginCaptureStat("Test");
+    AssetProcessor::StatsCapture::EndCaptureStat("Test");
     Dump();
     EXPECT_GT(m_gatheredMessages.size(), 0);
     for (const auto& message : m_gatheredMessages)
@@ -112,15 +112,15 @@ TEST_F(SimpleStatsCaptureOutputTest, SimpleStatsCaptureTest_HumanReadableOnly_Du
     }
 }
 
-// turning off machine and human readable mode, should not dump anything.
-TEST_F(SimpleStatsCaptureOutputTest, SimpleStatsCaptureTest_MachineReadableOnly_DumpsNoHumanReadable)
+// Turn on Machine Readable, Turn off Human Readable, ensure only Machine Readable stats emitted.
+TEST_F(StatsCaptureOutputTest, StatsCaptureTest_MachineReadableOnly_DumpsNoHumanReadable)
 {
     auto registry = AZ::SettingsRegistry::Get();
     ASSERT_NE(registry, nullptr);
     registry->Set("/Amazon/AssetProcessor/Settings/Stats/HumanReadable", false);
     registry->Set("/Amazon/AssetProcessor/Settings/Stats/MachineReadable", true);
-    AssetProcessor::SimpleStatsCapture::BeginCaptureStat("Test");
-    AssetProcessor::SimpleStatsCapture::EndCaptureStat("Test");
+    AssetProcessor::StatsCapture::BeginCaptureStat("Test");
+    AssetProcessor::StatsCapture::EndCaptureStat("Test");
     Dump();
     for (const auto& message : m_gatheredMessages)
     {
@@ -131,29 +131,35 @@ TEST_F(SimpleStatsCaptureOutputTest, SimpleStatsCaptureTest_MachineReadableOnly_
 }
 
 
-// the interface for stats capture is pretty straightfoward in that it really just
-// captures and then printfs.  For us to test this, we have to capture and parse printf
-// we'll make it output in "machine reaadable" format so that it
-TEST_F(SimpleStatsCaptureOutputTest, SimpleStatsCaptureTest_Sanity)
+// The interface for StatsCapture just captures and then dumps.  
+// For us to test this, we thus have to capture and parse the dump output.
+TEST_F(StatsCaptureOutputTest, StatsCaptureTest_Sanity)
 {
     auto registry = AZ::SettingsRegistry::Get();
     ASSERT_NE(registry, nullptr);
+    
+    // Make it output in "machine raadable" format so that it is simpler to parse.
     registry->Set("/Amazon/AssetProcessor/Settings/Stats/HumanReadable", false);
     registry->Set("/Amazon/AssetProcessor/Settings/Stats/MachineReadable", true);
-    AssetProcessor::SimpleStatsCapture::BeginCaptureStat("CreateJobs,foo,mybuilder");
-    AssetProcessor::SimpleStatsCapture::EndCaptureStat("CreateJobs,foo,mybuilder");
+    AssetProcessor::StatsCapture::BeginCaptureStat("CreateJobs,foo,mybuilder");
+    AssetProcessor::StatsCapture::EndCaptureStat("CreateJobs,foo,mybuilder");
     
-    AssetProcessor::SimpleStatsCapture::BeginCaptureStat("CreateJobs,foo,mybuilder");
-    AssetProcessor::SimpleStatsCapture::EndCaptureStat("CreateJobs,foo,mybuilder");
+    // Intentionally not using sleeps in this test.  It means that the 
+    // captured duration will be likely 0 but its not worth it to slow down tests.
+    // If the durations end up 0 its going to be extremely noticable in day-to-day use.
+    AssetProcessor::StatsCapture::BeginCaptureStat("CreateJobs,foo,mybuilder");
+    AssetProcessor::StatsCapture::EndCaptureStat("CreateJobs,foo,mybuilder");
     
-    // debounce
-    AssetProcessor::SimpleStatsCapture::BeginCaptureStat("CreateJobs,foo,mybuilder");
-    AssetProcessor::SimpleStatsCapture::BeginCaptureStat("CreateJobs,foo,mybuilder");
-    AssetProcessor::SimpleStatsCapture::EndCaptureStat("CreateJobs,foo2,mybuilder2");
-    AssetProcessor::SimpleStatsCapture::EndCaptureStat("CreateJobs,foo2,mybuilder2");
+    // for the second stat, we'll double capture and double end, in order to test debounce
+    AssetProcessor::StatsCapture::BeginCaptureStat("CreateJobs,foo2,mybuilder");
+    AssetProcessor::StatsCapture::BeginCaptureStat("CreateJobs,foo2,mybuilder");
+    AssetProcessor::StatsCapture::EndCaptureStat("CreateJobs,foo2,mybuilder2");
+    AssetProcessor::StatsCapture::EndCaptureStat("CreateJobs,foo2,mybuilder2");
     
+    m_gatheredMessages.clear();
     Dump();
     EXPECT_GT(m_gatheredMessages.size(), 0);
+
     // We'll parse the machine readable stat lines here and make sure that the following is true
     // mybuilder appears
     // mybuilder appears only once but count is 2
@@ -189,7 +195,6 @@ TEST_F(SimpleStatsCaptureOutputTest, SimpleStatsCaptureTest_Sanity)
     EXPECT_TRUE(foundFoo) << "The expected token CreateJobs,foo,mybuilder did not appear in the output.";
     EXPECT_TRUE(foundFoo2) << "The expected CreateJobs.foo2.mybuilder2 did not appear in the output";
 }
-
 
 }
 

@@ -17,7 +17,7 @@
 #include <AzFramework/Asset/AssetSystemComponent.h>
 
 #include <native/resourcecompiler/RCBuilder.h>
-#include <native/utilities/SimpleStatsCapture.h>
+#include <native/utilities/StatsCapture.h>
 
 #include <QLocale>
 #include <QTranslator>
@@ -202,8 +202,8 @@ ApplicationManager::~ApplicationManager()
     }
 
     // end stats capture (dump and shutdown)
-    AssetProcessor::SimpleStatsCapture::Dump();
-    AssetProcessor::SimpleStatsCapture::Shutdown();
+    AssetProcessor::StatsCapture::Dump();
+    AssetProcessor::StatsCapture::Shutdown();
 
     qInstallMessageHandler(nullptr);
 
@@ -576,7 +576,7 @@ bool ApplicationManager::StartAZFramework()
 
 bool ApplicationManager::ActivateModules()
 {
-     AssetProcessor::SimpleStatsCapture::BeginCaptureStat("LoadingModules");
+     AssetProcessor::StatsCapture::BeginCaptureStat("LoadingModules");
 
     // we load the editor xml for our modules since it contains the list of gems we need for tools to function (not just runtime)
     connect(&m_frameworkApp, &AssetProcessorAZApplication::AssetProcessorStatus, this,
@@ -595,7 +595,7 @@ bool ApplicationManager::ActivateModules()
 
     m_frameworkApp.LoadDynamicModules();
 
-    AssetProcessor::SimpleStatsCapture::EndCaptureStat("LoadingModules");
+    AssetProcessor::StatsCapture::EndCaptureStat("LoadingModules");
     return true;
 }
 
@@ -628,7 +628,7 @@ ApplicationManager::BeforeRunStatus ApplicationManager::BeforeRun()
     }
 
     // enable stats capture from this point on
-    AssetProcessor::SimpleStatsCapture::Initialize();
+    AssetProcessor::StatsCapture::Initialize();
 
     return ApplicationManager::BeforeRunStatus::Status_Success;
 }

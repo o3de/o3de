@@ -11,7 +11,7 @@
 #include <AzCore/Math/Sha1.h>
 
 #include <native/utilities/PlatformConfiguration.h>
-#include <native/utilities/SimpleStatsCapture.h>
+#include <native/utilities/StatsCapture.h>
 #include <native/AssetManager/FileStateCache.h>
 #include <native/AssetDatabase/AssetDatabase.h>
 #include <utilities/ThreadHelper.h>
@@ -1181,7 +1181,6 @@ namespace AssetUtilities
                 return hash;
             }
         }
-
         hash = AssetBuilderSDK::GetFileHash(filePath, bytesReadOut, hashMsDelay);
         return hash;
     }
