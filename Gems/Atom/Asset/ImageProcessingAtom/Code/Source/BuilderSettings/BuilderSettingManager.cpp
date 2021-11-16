@@ -8,6 +8,7 @@
 
 
 #include "BuilderSettingManager.h"
+#include <QCoreApplication>
 #include <QDirIterator>
 #include <QFile>
 #include <QFileInfo>
@@ -238,19 +239,22 @@ namespace ImageProcessingAtom
         // Collect extra file masks from preset files
         CollectFileMasksFromPresets();
 
-        // track preset files
-        // Note, the QT signal would only works for AP but not AssetBuilder
-        // We use file time stamp to track preset file change in builder's CreateJob
-        for (auto& preset : m_presets)
+        
+        if (QCoreApplication::instance())
         {
-            m_fileWatcher.addPath(QString(preset.second.m_presetFilePath.c_str()));
+            m_fileWatcher.reset(new QFileSystemWatcher);
+            // track preset files
+            // Note, the QT signal would only works for AP but not AssetBuilder
+            // We use file time stamp to track preset file change in builder's CreateJob
+            for (auto& preset : m_presets)
+            {
+                m_fileWatcher.data()->addPath(QString(preset.second.m_presetFilePath.c_str()));
+            }
+            m_fileWatcher.data()->addPath(QString(m_defaultConfigFolder.c_str()));
+            m_fileWatcher.data()->addPath(QString(m_projectConfigFolder.c_str()));
+            QObject::connect(m_fileWatcher.data(), &QFileSystemWatcher::fileChanged, this, &BuilderSettingManager::OnFileChanged);
+            QObject::connect(m_fileWatcher.data(), &QFileSystemWatcher::directoryChanged, this, &BuilderSettingManager::OnFolderChanged);
         }
-        m_fileWatcher.addPath(QString(m_defaultConfigFolder.c_str()));
-        m_fileWatcher.addPath(QString(m_projectConfigFolder.c_str()));
-        QObject::connect(&m_fileWatcher, &QFileSystemWatcher::fileChanged,
-                this, &BuilderSettingManager::OnFileChanged);
-        QObject::connect(&m_fileWatcher, &QFileSystemWatcher::directoryChanged,
-                this, &BuilderSettingManager::OnFolderChanged);
 
         return outcome;
     }
@@ -680,7 +684,7 @@ namespace ImageProcessingAtom
 
         for (auto& preset : m_presets)
         {
-            m_fileWatcher.addPath(QString(preset.second.m_presetFilePath.c_str()));
+            m_fileWatcher.data()->addPath(QString(preset.second.m_presetFilePath.c_str()));
         }
     }
 } // namespace ImageProcessingAtom

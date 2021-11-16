@@ -15,8 +15,9 @@
 #include <AzCore/std/containers/set.h>
 #include <Atom/ImageProcessing/ImageObject.h>
 
-#include <QFileSystemWatcher>
 #include <QDateTime>
+#include <QFileSystemWatcher>
+#include <QScopedPointer>
 
 class QSettings;
 class QString;
@@ -191,7 +192,6 @@ namespace ImageProcessingAtom
         AZ::IO::FixedMaxPath m_projectConfigFolder;
 
         // File system watcher to detect preset file changes
-        QFileSystemWatcher m_fileWatcher;
-        QMetaObject::Connection m_fileChangeConnection;
+        QScopedPointer<QFileSystemWatcher> m_fileWatcher;
     };
 } // namespace ImageProcessingAtom
