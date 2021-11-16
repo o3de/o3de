@@ -1135,11 +1135,11 @@ namespace O3DE::ProjectManager
                     gemRepoInfo.m_isEnabled = false;
                 }
 
-                if (data.contains("gem_paths"))
+                if (data.contains("gems"))
                 {
-                    for (auto gemPath : data["gem_paths"])
+                    for (auto gemPath : data["gems"])
                     {
-                        gemRepoInfo.m_includedGemPaths.push_back(Py_To_String(gemPath));
+                        gemRepoInfo.m_includedGemUris.push_back(Py_To_String(gemPath));
                     }
                 }
             }

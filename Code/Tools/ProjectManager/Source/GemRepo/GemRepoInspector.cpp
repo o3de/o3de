@@ -60,8 +60,9 @@ namespace O3DE::ProjectManager
         }
 
         // Repo name and url link
-        QString repoUri = m_model->GetRepoUri(modelIndex);
         m_nameLabel->setText(m_model->GetName(modelIndex));
+
+        const QString repoUri = m_model->GetRepoUri(modelIndex);
         m_repoLinkLabel->setText(repoUri);
         m_repoLinkLabel->SetUrl(repoUri);
 
@@ -88,18 +89,7 @@ namespace O3DE::ProjectManager
         }
 
         // Included Gems
-        QVector<Tag> includedGemTags;
-        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& gemInfosResult = PythonBindingsInterface::Get()->GetGemRepoGemInfos(repoUri);
-        if (gemInfosResult.IsSuccess())
-        {
-            const QVector<GemInfo>& allRepoGemInfos = gemInfosResult.GetValue();
-            for (const GemInfo& gemInfo : allRepoGemInfos)
-            {
-                includedGemTags.append(Tag{ gemInfo.m_displayName, gemInfo.m_name });
-            }
-        }
-
-        m_includedGems->Update(tr("Included Gems"), "", includedGemTags);
+        m_includedGems->Update(tr("Included Gems"), "", m_model->GetIncludedGemTags(modelIndex));
 
         m_mainWidget->adjustSize();
         m_mainWidget->show();
