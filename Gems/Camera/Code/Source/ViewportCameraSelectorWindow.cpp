@@ -100,7 +100,10 @@ namespace Camera
         {
             // If the camera entity is not an editor camera entity, don't add it to the list.
             // This occurs when we're in simulation mode.
+
+            //We reset the m_firstEntry value so we can update m_lastActiveCamera when we remove from the cameras list
             m_firstEntry = true;
+
             bool isEditorEntity = false;
             AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
                 isEditorEntity, &AzToolsFramework::EditorEntityContextRequests::IsEditorEntity, cameraId);
@@ -121,6 +124,8 @@ namespace Camera
 
         void CameraListModel::OnCameraRemoved(const AZ::EntityId& cameraId)
         {
+            //Check it is the first time we remove a camera from the list before any other addition
+            //So we don't end up with the wrong camera ID.
             if (m_firstEntry)
             {
                 CameraSystemRequestBus::BroadcastResult(m_lastActiveCamera, &CameraSystemRequestBus::Events::GetActiveCamera);
