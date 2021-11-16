@@ -53,15 +53,8 @@ namespace AZ
             AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::Constants::HalfPi, 1, 0.1f, 1000.f, true);
             SetViewToClipMatrix(viewToClipMatrix);
 
-            if (auto rpiSystemInterface = RPISystemInterface::Get())
-            {
-                if (Data::Asset<ShaderAsset> viewSrgShaderAsset = rpiSystemInterface->GetCommonShaderAssetForSrgs();
-                    viewSrgShaderAsset.IsReady())
-                {
-                    m_shaderResourceGroup =
-                        ShaderResourceGroup::Create(viewSrgShaderAsset, rpiSystemInterface->GetViewSrgLayout()->GetName());
-                }
-            }
+            TryCreateShaderResourceGroup();
+
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             m_maskedOcclusionCulling = MaskedOcclusionCulling::Create();
             m_maskedOcclusionCulling->SetResolution(MaskedSoftwareOcclusionCullingWidth, MaskedSoftwareOcclusionCullingHeight);
@@ -429,6 +422,31 @@ namespace AZ
         MaskedOcclusionCulling* View::GetMaskedOcclusionCulling()
         {
             return m_maskedOcclusionCulling;
+        }
+
+        void View::TryCreateShaderResourceGroup()
+        {
+            if (!m_shaderResourceGroup)
+            {
+                if (auto rpiSystemInterface = RPISystemInterface::Get())
+                {
+                    if (Data::Asset<ShaderAsset> viewSrgShaderAsset = rpiSystemInterface->GetCommonShaderAssetForSrgs();
+                        viewSrgShaderAsset.IsReady())
+                    {
+                        m_shaderResourceGroup =
+                            ShaderResourceGroup::Create(viewSrgShaderAsset, rpiSystemInterface->GetViewSrgLayout()->GetName());
+                    }
+                }
+            }
+        }
+
+        void View::OnAddToRenderPipeline()
+        {
+            TryCreateShaderResourceGroup();
+            if (!m_shaderResourceGroup)
+            {
+                AZ_Error("RPI::View", false, "Shader Resource Group failed to initialize");
+            }
         }
     } // namespace RPI
 } // namespace AZ
