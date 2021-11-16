@@ -194,6 +194,11 @@ namespace ScriptCanvasEditor
         auto saveOutcome = JSRU::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(graphData, stream, nullptr, &settings);
         if (!saveOutcome.IsSuccess())
         {
+
+            Here is the allocation failure.
+
+                AZStd::string result = saveOutcome.TakeError();
+
             return AZ::Failure(AZStd::string("JSON serialization failed to save source: %s", saveOutcome.GetError().c_str()));
         }
 
