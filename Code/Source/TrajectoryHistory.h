@@ -15,13 +15,10 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 
-#include <EMotionFX/Source/DebugDraw.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+
 #include <EMotionFX/Source/Pose.h>
 #include <EMotionFX/Source/KeyTrackLinearDynamic.h>
-
-#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
-#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
-#include <Atom/RPI.Public/Scene.h>
 
 namespace EMotionFX::MotionMatching
 {
@@ -47,14 +44,8 @@ namespace EMotionFX::MotionMatching
         float GetCurrentTime() const { return m_currentTime; }
         size_t GetJointIndex() const { return m_jointIndex; }
 
-        void DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-            EMotionFX::DebugDraw::ActorInstanceData& draw,
-            const AZ::Color& color,
-            float timeStart = 0.0f) const;
-        void DebugDrawSampled(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-            EMotionFX::DebugDraw::ActorInstanceData& draw,
-            size_t numSamples,
-            const AZ::Color& color) const;
+        void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Color& color, float timeStart = 0.0f) const;
+        void DebugDrawSampled(AzFramework::DebugDisplayRequests& debugDisplay, size_t numSamples, const AZ::Color& color) const;
 
     private:
         void PrefillSamples(const Pose& pose, float timeDelta);

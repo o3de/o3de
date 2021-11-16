@@ -68,6 +68,7 @@ namespace EMotionFX::MotionMatching
         // Build the future trajectory control points.
         const size_t numFutureSamples = trajectoryFeature->GetNumFutureSamples();
         m_futureControlPoints.resize(numFutureSamples);
+
         if (mode == MODE_TARGETDRIVEN)
         {
             const AZ::Vector3 curPos = actorInstance->GetWorldSpaceTransform().m_position;
@@ -115,13 +116,13 @@ namespace EMotionFX::MotionMatching
         }
     }
 
-    void TrajectoryQuery::DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue, const AZ::Color& color) const
+    void TrajectoryQuery::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Color& color) const
     {
-        DebugDrawControlPoints(drawQueue, m_pastControlPoints, color);
-        DebugDrawControlPoints(drawQueue, m_futureControlPoints, color);
+        DebugDrawControlPoints(debugDisplay, m_pastControlPoints, color);
+        DebugDrawControlPoints(debugDisplay, m_futureControlPoints, color);
     }
 
-    void TrajectoryQuery::DebugDrawControlPoints(AZ::RPI::AuxGeomDrawPtr& drawQueue,
+    void TrajectoryQuery::DebugDrawControlPoints(AzFramework::DebugDisplayRequests& debugDisplay,
         const AZStd::vector<ControlPoint>& controlPoints,
         const AZ::Color& color)
     {
@@ -130,28 +131,25 @@ namespace EMotionFX::MotionMatching
         const size_t numControlPoints = controlPoints.size();
         if (numControlPoints > 1)
         {
+            debugDisplay.DepthTestOff();
+            debugDisplay.SetColor(color);
+
             for (size_t i = 0; i < numControlPoints - 1; ++i)
             {
                 const AZ::Vector3& posA = controlPoints[i].m_position;
                 const AZ::Vector3& posB = controlPoints[i + 1].m_position;
                 const AZ::Vector3 diff = posB - posA;
 
-                drawQueue->DrawCylinder(/*center=*/(posB + posA) * 0.5f,
+                debugDisplay.DrawSolidCylinder(/*center=*/(posB + posA) * 0.5f,
                     /*direction=*/diff.GetNormalizedSafe(),
                     /*radius=*/0.0025f,
                     /*height=*/diff.GetLength(),
-                    color,
-                    AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
-                    AZ::RPI::AuxGeomDraw::DepthTest::Off);
+                    /*drawShaded=*/false);
             }
 
             for (const ControlPoint& controlPoint : controlPoints)
             {
-                drawQueue->DrawSphere(controlPoint.m_position,
-                    markerSize,
-                    color,
-                    AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
-                    AZ::RPI::AuxGeomDraw::DepthTest::Off);
+                debugDisplay.DrawBall(controlPoint.m_position, markerSize, /*drawShaded=*/false);
             }
         }
     }

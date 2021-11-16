@@ -16,11 +16,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzCore/std/tuple.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-
-#include <EMotionFX/Source/DebugDraw.h>
-#include <EMotionFX/Source/EMotionFXConfig.h>
 
 #include <Feature.h>
 
@@ -40,19 +36,18 @@ namespace EMotionFX
             FeatureDatabase();
             virtual ~FeatureDatabase();
 
-            void RegisterFeature(Feature* frameData);
+            void RegisterFeature(Feature* feature);
             const Feature* GetFeature(size_t index) const;
             const AZStd::vector<Feature*>& GetFeatures() const;
 
             size_t GetNumFeatureTypes() const;
-            Feature* FindFeatureByType(const AZ::TypeId& frameDataTypeId) const;
+            Feature* FindFeatureByType(const AZ::TypeId& featureTypeId) const;
 
             void Clear(); // Clear the data, so you can re-initialize it with new data.
             size_t CalcMemoryUsageInBytes() const;
 
             bool ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase, size_t maxKdTreeDepth=20, size_t minFramesPerKdTreeNode=2000);
-            void DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-                EMotionFX::DebugDraw::ActorInstanceData& draw,
+            void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
                 BehaviorInstance* behaviorInstance,
                 size_t frameIndex);
 
@@ -67,7 +62,7 @@ namespace EMotionFX
             void SaveAsCsv(const AZStd::string& filename, Skeleton* skeleton);
 
         private:
-            static Feature* CreateFrameDataByType(const AZ::TypeId& typeId); // create from RTTI type
+            static Feature* CreateFeatureByType(const AZ::TypeId& typeId); // create from RTTI type
 
             AZStd::vector<Feature*> m_features; /**< This is a flat vector of all frame datas (Owner of the features). */
             AZStd::unordered_map<AZ::TypeId, Feature*> m_featuresByType; /**< The per frame additional data. (Weak ownership) */

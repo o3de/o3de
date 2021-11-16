@@ -66,8 +66,7 @@ namespace EMotionFX
 
             bool Init(const InitSettings& settings) override;
             void ExtractFeatureValues(const ExtractFrameContext& context) override;
-            void DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-                EMotionFX::DebugDraw::ActorInstanceData& draw,
+            void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
                 BehaviorInstance* behaviorInstance,
                 size_t frameIndex) override;
 
@@ -127,8 +126,7 @@ namespace EMotionFX
             Sample GetFeatureData(const FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex) const;
             void SetFeatureData(FeatureMatrix& featureMatrix, size_t frameIndex, size_t sampleIndex, const Sample& sample);
 
-            void DebugDrawTrajectory(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-                EMotionFX::DebugDraw::ActorInstanceData& draw,
+            void DebugDrawTrajectory(AzFramework::DebugDisplayRequests& debugDisplay,
                 BehaviorInstance* behaviorInstance,
                 size_t frameIndex,
                 const Transform& transform,

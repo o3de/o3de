@@ -18,7 +18,6 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/tuple.h>
 
-#include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <Frame.h>
 

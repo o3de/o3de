@@ -47,8 +47,7 @@ namespace EMotionFX
             bool Init(const InitSettings& settings) override;
 
             void ExtractFeatureValues(const ExtractFrameContext& context) override;
-            void DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-                EMotionFX::DebugDraw::ActorInstanceData& draw,
+            void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
                 BehaviorInstance* behaviorInstance,
                 size_t frameIndex) override;
 
