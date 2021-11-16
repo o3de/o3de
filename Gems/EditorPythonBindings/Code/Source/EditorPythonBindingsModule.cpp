@@ -28,7 +28,7 @@ namespace EditorPythonBindings
         EditorPythonBindingsModule()
             : AZ::Module()
         {
-            AzToolsFramework::EmbeddedPython::LoadLibPython();
+            AzToolsFramework::EmbeddedPython::LoadPythonLib();
 
             m_descriptors.insert(m_descriptors.end(), 
             {

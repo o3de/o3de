@@ -10,6 +10,7 @@
 
 #include <${Name}ModuleInterface.h>
 #include <${Name}EditorSystemComponent.h>
+#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 
 void Init${SanitizedCppName}Resources()
 {
@@ -28,6 +29,8 @@ namespace ${SanitizedCppName}
 
         ${SanitizedCppName}EditorModule()
         {
+            AzToolsFramework::EmbeddedPython::LoadPythonLib();
+            
             Init${SanitizedCppName}Resources();
 
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.

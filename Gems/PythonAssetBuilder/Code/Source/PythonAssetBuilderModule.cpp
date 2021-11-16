@@ -25,7 +25,7 @@ namespace PythonAssetBuilder
         PythonAssetBuilderModule()
             : AZ::Module()
         {
-            AzToolsFramework::EmbeddedPython::LoadLibPython();
+            AzToolsFramework::EmbeddedPython::LoadPythonLib();
 
             m_descriptors.insert(m_descriptors.end(), {
                 PythonAssetBuilderSystemComponent::CreateDescriptor(),

@@ -10,5 +10,5 @@
 
 namespace AzToolsFramework::EmbeddedPython
 {
-    void LoadLibPython() {}
+    void LoadPythonLib() {}
 }

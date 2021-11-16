@@ -20,10 +20,7 @@ namespace AzToolsFramework::EmbeddedPython
             if (!m_embeddedLibPythonHandle)
             {
                 char* err = dlerror();
-                if (err)
-                {
-                    AZ_Error("PythonLoader", false, "Failed to load 'libpython' with error: %s\n", err);
-                }
+                AZ_Error("PythonLoader", false, "Failed to load 'libpython' with error: %s\n", err ? err : "Unknown Error");
             }
         }
 
@@ -39,7 +36,7 @@ namespace AzToolsFramework::EmbeddedPython
         void* m_embeddedLibPythonHandle{ nullptr };
     };
 
-    void LoadLibPython()
+    void LoadPythonLib()
     {
         static PythonLoader embeddedPython;
     }
