@@ -1620,8 +1620,6 @@ namespace AssetBuilderSDK
         constexpr AZ::u64 HashBufferSize = 1024 * 64;
         char buffer[HashBufferSize];
 
-        constexpr bool ErrorOnReadFailure = true;
-
         if(readStream.IsOpen() && readStream.CanRead())
         {
             AZ::IO::SizeType bytesRead;

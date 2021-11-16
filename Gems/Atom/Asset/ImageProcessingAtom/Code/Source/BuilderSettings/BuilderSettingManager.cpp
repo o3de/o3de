@@ -671,7 +671,7 @@ namespace ImageProcessingAtom
         ReloadPreset(PresetName(info.baseName().toUtf8().data()));
     }
     
-    void BuilderSettingManager::OnFolderChanged(const QString &path)
+    void BuilderSettingManager::OnFolderChanged([[maybe_unused]] const QString &path)
     {
         // handles new file added or removed
         // Note: this signal only works with AP but not AssetBuilder
