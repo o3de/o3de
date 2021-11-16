@@ -363,6 +363,9 @@ namespace O3DE::ProjectManager
         {
             const QString selectedGemPath = m_gemModel->GetPath(modelIndex);
 
+            // Remove gem from gems to be added to update any dependencies
+            GemModel::SetIsAdded(*m_gemModel, modelIndex, false);
+
             // Unregister the gem
             auto unregisterResult = PythonBindingsInterface::Get()->UnregisterGem(selectedGemPath);
             if (!unregisterResult)
