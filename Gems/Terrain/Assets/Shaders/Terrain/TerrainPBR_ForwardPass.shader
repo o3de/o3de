@@ -1,6 +1,13 @@
 {
     "Source" : "./TerrainPBR_ForwardPass.azsl",
 
+    "CompilerHints" :
+    { 
+        "DisableOptimizations" : false,
+        "GenerateDebugInfo" : true,
+        "DxcAdditionalFreeArguments" : "-Gis" 
+    },
+
     "DepthStencilState" :
     {
         "Depth" :
