@@ -369,10 +369,10 @@ namespace PhysX
                         depth++;
                         if (depth > numNodes)
                         {
-                            AZ_Assert(false, "Loop detected in ragdoll configuration.");
+                            AZ_Error("PhysX Ragdoll", false, "Loop detected in hierarchy depth computation.");
                             return nodeDepths;
                         }
-                        size_t parentIndex = parentIndices[currentIndex];
+                        const size_t parentIndex = parentIndices[currentIndex];
 
                         if (parentIndex >= numNodes || nodeDepths[currentIndex].m_depth != -1)
                         {
@@ -384,7 +384,7 @@ namespace PhysX
                     }
 
                     currentIndex = nodeIndex;
-                    for (int i = depth; i >= 0 && currentIndex < numNodes; i--)
+                    for (int i = depth; i >= 0; i--)
                     {
                         nodeDepths[currentIndex] = { ancestorDepth + i, currentIndex };
                         currentIndex = parentIndices[currentIndex];

@@ -141,12 +141,12 @@ namespace PhysX
         }
     }
 
-    bool RagdollComponent::IsJointProjectionVisible()
+    bool RagdollComponent::IsJointProjectionVisible() const
     {
         return m_enableJointProjection;
     }
 
-    bool RagdollComponent::IsMaxMassRatioVisible()
+    bool RagdollComponent::IsMaxMassRatioVisible() const
     {
         return m_enableMassRatioClamping;
     }
@@ -423,9 +423,10 @@ namespace PhysX
                 });
 
             bool massesClamped = false;
-            for (const auto [depth, nodeIndex] : nodeDepths)
+            for (const auto& nodeDepth : nodeDepths)
             {
-                size_t parentIndex = ragdollConfiguration.m_parentIndices[nodeIndex];
+                const size_t nodeIndex = nodeDepth.m_index;
+                const size_t parentIndex = ragdollConfiguration.m_parentIndices[nodeIndex];
                 if (parentIndex < numNodes)
                 {
                     AzPhysics::RigidBody& nodeRigidBody = ragdoll->GetNode(nodeIndex)->GetRigidBody();
@@ -438,7 +439,7 @@ namespace PhysX
                         const float clampedMass = AZStd::clamp(originalMass, minMass, maxMass);
                         nodeRigidBody.SetMass(clampedMass);
                         massesClamped = true;
-                        if (!AZ::IsCloseMag(originalMass, 0.0f))
+                        if (!AZ::IsClose(originalMass, 0.0f))
                         {
                             // scale the inertia proportionally to how the mass was modified
                             auto pxRigidBody = static_cast<physx::PxRigidDynamic*>(nodeRigidBody.GetNativePointer());

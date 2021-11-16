@@ -103,8 +103,8 @@ namespace PhysX
         Ragdoll* GetPhysXRagdoll();
         const Ragdoll* GetPhysXRagdollConst() const;
 
-        bool IsJointProjectionVisible();
-        bool IsMaxMassRatioVisible();
+        bool IsJointProjectionVisible() const;
+        bool IsMaxMassRatioVisible() const;
 
         AzPhysics::SimulatedBodyHandle m_ragdollHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
