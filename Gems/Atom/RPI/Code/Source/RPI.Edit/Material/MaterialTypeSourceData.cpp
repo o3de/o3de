@@ -456,15 +456,15 @@ namespace AZ
                             MaterialUtils::GetImageAssetResult result = MaterialUtils::GetImageAssetReference(
                                 imageAsset, materialTypeSourceFilePath, property.m_value.GetValue<AZStd::string>());
 
-                            if (result == MaterialUtils::GetImageAssetResult::Empty || result == MaterialUtils::GetImageAssetResult::Found)
-                            {
-                                materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
-                            }
-                            else
+                            if (result == MaterialUtils::GetImageAssetResult::Missing)
                             {
                                 materialTypeAssetCreator.ReportError(
                                     "Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(),
                                     property.m_value.GetValue<AZStd::string>().data());
+                            }
+                            else
+                            {
+                                materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
                             }
                         }
                         break;

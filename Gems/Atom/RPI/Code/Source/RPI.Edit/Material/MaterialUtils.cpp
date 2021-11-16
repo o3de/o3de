@@ -39,7 +39,10 @@ namespace AZ
                 }
                 else
                 {
-                    Outcome<Data::AssetId> imageAssetId = AssetUtils::MakeAssetId(materialSourceFilePath, imageFilePath, StreamingImageAsset::GetImageAssetSubId());
+                    // We use TraceLevel::None because fallback textures are available and we'll return GetImageAssetResult::Missing below in that case.
+                    // Callers of GetImageAssetReference will be responsible for logging warnings or errors as needed.
+
+                    Outcome<Data::AssetId> imageAssetId = AssetUtils::MakeAssetId(materialSourceFilePath, imageFilePath, StreamingImageAsset::GetImageAssetSubId(), AssetUtils::TraceLevel::None);
                     
                     if (!imageAssetId.IsSuccess())
                     {
