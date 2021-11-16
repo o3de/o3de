@@ -115,7 +115,7 @@ private:
 
     void ScanFolder(const char* subfolder, bool modFolder);
     void PopulateLevels(
-        AZStd::string searchPattern, AZStd::string& folder, AZ::IO::IArchive* pPak, bool& modFolder, bool fromFileSystemOnly);
+        AZStd::string searchPattern, const AZStd::string& folder, AZ::IO::IArchive* pPak, bool& modFolder, bool fromFileSystemOnly);
     void PrepareNextLevel(const char* levelName);
     ILevel* LoadLevelInternal(const char* _levelName);
 

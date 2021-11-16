@@ -169,7 +169,7 @@ namespace AZ::IO
         size = m_archive->FGetSize(filePath, true);
         if (!size)
         {
-            return m_archive->IsFileExist(filePath, IArchive::eFileLocation_Any) ? IO::ResultCode::Success : IO::ResultCode::Error;
+            return m_archive->IsFileExist(filePath, FileSearchLocation::Any) ? IO::ResultCode::Success : IO::ResultCode::Error;
         }
 
         return IO::ResultCode::Success;
