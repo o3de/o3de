@@ -1241,6 +1241,10 @@ namespace AZ::IO
 
             m_arrZips.insert(revItZip.base(), desc);
 
+            // This lock is for m_arrZips.
+            // Unlock it now because the modification is complete, and events responding to this signal
+            // will attempt to lock the same mutex, causing the application to lock up.
+            lock.unlock();
             m_levelOpenEvent.Signal(levelDirs);
         }
 
