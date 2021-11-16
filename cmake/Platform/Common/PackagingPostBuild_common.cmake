@@ -56,13 +56,14 @@ function(ly_upload_to_url in_url in_local_path in_file_regex)
         COMMAND ${_upload_command}
         RESULT_VARIABLE _upload_result
         OUTPUT_VARIABLE _upload_output
+        ERROR_VARIABLE _upload_error
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
     if (${_upload_result} EQUAL 0)
         message(STATUS "Artifact uploading complete!")
     else()
-        message(FATAL_ERROR "An error occurred uploading to s3.\nOutput:\n${_upload_output}")
+        message(FATAL_ERROR "An error occurred uploading to s3.\nOutput:\n${_upload_output}\nError: \n${_upload_error}")
     endif()
 endfunction()
 
