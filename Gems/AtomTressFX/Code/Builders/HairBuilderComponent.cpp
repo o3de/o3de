@@ -46,14 +46,6 @@ namespace AZ
             {
                 m_hairAssetBuilder.RegisterBuilder();
                 m_hairAssetHandler.Register();
-
-                // Add asset types and extensions to AssetCatalog.
-                auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler();
-                if (assetCatalog)
-                {
-                    assetCatalog->EnableCatalogForAsset(azrtti_typeid<HairAsset>());
-                    assetCatalog->AddExtension(AMD::TFXCombinedFileExtension);
-                }
             }
 
             void HairBuilderComponent::Deactivate()
