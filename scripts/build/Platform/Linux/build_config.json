@@ -269,7 +269,7 @@
       "COMMAND_CWD": "${WORKSPACE}/${PROJECT_REPOSITORY_NAME}",
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-12 -DCMAKE_CXX_COMPILER=clang++-12 -DLY_PARALLEL_LINK_JOBS=4 -DCMAKE_MODULE_PATH=${WORKSPACE}/o3de/install/cmake",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DLY_PARALLEL_LINK_JOBS=4 -DCMAKE_MODULE_PATH=${WORKSPACE}/o3de/install/cmake",
       "CMAKE_TARGET": "all"
     }
   }
