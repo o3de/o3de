@@ -53,7 +53,6 @@ namespace ScriptCanvasEditor
             m_view->textEdit->setVerticalScrollBarPolicy(Qt::ScrollBarPolicy::ScrollBarAlwaysOn);
             connect(m_view->scanButton, &QPushButton::pressed, this, &Controller::OnButtonPressScan);
             connect(m_view->closeButton, &QPushButton::pressed, this, &Controller::OnButtonPressClose);
-            m_view->upgradeAllButton->setVisible(false);
             connect(m_view->upgradeAllButton, &QPushButton::pressed, this, &Controller::OnButtonPressUpgrade);
             m_view->progressBar->setValue(0);
             m_view->progressBar->setVisible(false);
