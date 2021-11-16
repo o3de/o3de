@@ -69,7 +69,7 @@ def disable_gem_in_project(gem_name: str = None,
         return 1
     gem_path = pathlib.Path(gem_path).resolve()
     # make sure this gem already exists if we're adding.  We can always remove a gem.
-    if not gem_path.is_dir():
+    if not gem_path.exists():
         logger.error(f'Gem Path {gem_path} does not exist.')
         return 1
 
