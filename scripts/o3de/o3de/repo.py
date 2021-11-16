@@ -9,7 +9,6 @@
 import json
 import logging
 import pathlib
-import shutil
 import urllib.parse
 import urllib.request
 import hashlib
@@ -220,7 +219,7 @@ def search_repo(manifest_json_data: dict,
         o3de_object_uris = manifest_json_data['template']
         manifest_json = 'template.json'
         json_key = 'template_name'
-        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == template_name_name else None
+        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == template_name else None
     elif isinstance(restricted_name, str) or isinstance(restricted_name, pathlib.PurePath):
         o3de_object_uris = manifest_json_data['restricted']
         manifest_json = 'restricted.json'
