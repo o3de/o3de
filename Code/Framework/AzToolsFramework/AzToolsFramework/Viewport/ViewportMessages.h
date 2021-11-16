@@ -334,6 +334,12 @@ namespace AzToolsFramework
         return entityContextId;
     }
 
+    //! Performs an intersection test against the world, if there is a hit (the ray intersects
+    //! a mesh), that position is returned, otherwise a point projected defaultDistance infront
+    //! of the camera will returned along the pick ray.
+    AZ::Vector3 CalculateWorldPosition(
+        AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, float defaultDistance);
+
     //! Maps a mouse interaction event to a ClickDetector event.
     //! @note Function only cares about up or down events, all other events are mapped to Nil (ignored).
     AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(

@@ -41,12 +41,11 @@
 // Viewport drag and drop support
 //////////////////////////////////////////////////////////////////////
 
-void QtViewport::BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const QPoint& pt)
+void QtViewport::BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const AzFramework::ViewportId viewportId, const QPoint& point)
 {
-    context.m_hitLocation = AZ::Vector3::CreateZero();
-    context.m_hitLocation = GetHitLocation(pt);
+    context.m_hitLocation =
+        AzToolsFramework::CalculateWorldPosition(viewportId, AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point), 10.0f);
 }
-
 
 void QtViewport::dragEnterEvent(QDragEnterEvent* event)
 {
@@ -66,7 +65,7 @@ void QtViewport::dragEnterEvent(QDragEnterEvent* event)
         // new bus-based way of doing it (install a listener!)
         using namespace AzQtComponents;
         ViewportDragContext context;
-        BuildDragDropContext(context, event->pos());
+        BuildDragDropContext(context, GetViewportId(), event->pos());
         DragAndDropEventsBus::Event(DragAndDropContexts::EditorViewport, &DragAndDropEvents::DragEnter, event, context);
     }
 }
@@ -89,7 +88,7 @@ void QtViewport::dragMoveEvent(QDragMoveEvent* event)
         // new bus-based way of doing it (install a listener!)
         using namespace AzQtComponents;
         ViewportDragContext context;
-        BuildDragDropContext(context, event->pos());
+        BuildDragDropContext(context, GetViewportId(), event->pos());
         DragAndDropEventsBus::Event(DragAndDropContexts::EditorViewport, &DragAndDropEvents::DragMove, event, context);
     }
 }
@@ -112,7 +111,7 @@ void QtViewport::dropEvent(QDropEvent* event)
     {
         // new bus-based way of doing it (install a listener!)
         ViewportDragContext context;
-        BuildDragDropContext(context, event->pos());
+        BuildDragDropContext(context, GetViewportId(), event->pos());
         DragAndDropEventsBus::Event(DragAndDropContexts::EditorViewport, &DragAndDropEvents::Drop, event, context);
     }
 }
@@ -1016,29 +1015,6 @@ bool QtViewport::HitTest(const QPoint& point, HitContext& hitInfo)
     }
 
     return false;
-}
-
-AZ::Vector3 QtViewport::GetHitLocation(const QPoint& point)
-{
-    Vec3 pos = Vec3(ZERO);
-    HitContext hit;
-    if (HitTest(point, hit))
-    {
-        pos = hit.raySrc + hit.rayDir * hit.dist;
-        pos = SnapToGrid(pos);
-    }
-    else
-    {
-        bool hitTerrain;
-        pos = ViewToWorld(point, &hitTerrain);
-        if (hitTerrain)
-        {
-            pos.z = GetIEditor()->GetTerrainElevation(pos.x, pos.y);
-        }
-        pos = SnapToGrid(pos);
-    }
-
-    return AZ::Vector3(pos.x, pos.y, pos.z);
 }
 
 //////////////////////////////////////////////////////////////////////////
