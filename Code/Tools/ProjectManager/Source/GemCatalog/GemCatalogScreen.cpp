@@ -363,6 +363,9 @@ namespace O3DE::ProjectManager
         {
             const QString selectedGemPath = m_gemModel->GetPath(modelIndex);
 
+            const bool wasAdded = GemModel::WasPreviouslyAdded(modelIndex);
+            const bool wasAddedDependency = GemModel::WasPreviouslyAddedDependency(modelIndex);
+
             // Remove gem from gems to be added to update any dependencies
             GemModel::SetIsAdded(*m_gemModel, modelIndex, false);
 
@@ -391,7 +394,8 @@ namespace O3DE::ProjectManager
 
                 // Select remote gem
                 QModelIndex remoteGemIndex = m_gemModel->FindIndexByNameString(selectedGemName);
-                GemModel::SetWasPreviouslyAdded(*m_gemModel, remoteGemIndex, true);
+                GemModel::SetWasPreviouslyAdded(*m_gemModel, remoteGemIndex, wasAdded);
+                GemModel::SetWasPreviouslyAddedDependency(*m_gemModel, remoteGemIndex, wasAddedDependency);
                 QModelIndex proxyIndex = m_proxyModel->mapFromSource(remoteGemIndex);
                 m_proxyModel->GetSelectionModel()->setCurrentIndex(proxyIndex, QItemSelectionModel::ClearAndSelect);
             }
