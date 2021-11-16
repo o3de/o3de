@@ -17,7 +17,8 @@
                     "DynamicDrawSystemDescriptor": {
                         "DynamicBufferPoolSize": 50331648 // 3 * 16 * 1024 * 1024 (for 3 frames)
                     }
-                }
+                },
+                "UseDebugFallbackImages": true
             }
         }
     }
