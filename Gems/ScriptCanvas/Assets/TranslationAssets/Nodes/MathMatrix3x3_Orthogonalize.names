@@ -7,8 +7,7 @@
             "details": {
                 "name": "Orthogonalize",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns an orthogonal matrix from the Source matrix",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns an orthogonal matrix from the Source matrix"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Matrix3x3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix3x3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix3x3"
+                        "name": "Result"
                     }
                 }
             ]
