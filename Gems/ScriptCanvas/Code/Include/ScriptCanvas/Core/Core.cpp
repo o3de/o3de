@@ -189,7 +189,7 @@ namespace ScriptCanvas
 
 namespace ScriptCanvasEditor
 {
-    SourceHandle::SourceHandle(const SourceHandle& data, const AZ::Uuid& id, AZStd::string_view path)
+    SourceHandle::SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path)
         : m_data(data.m_data)
         , m_id(id)
         , m_path(path)
@@ -197,7 +197,7 @@ namespace ScriptCanvasEditor
 
     }
 
-    SourceHandle::SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, AZStd::string_view path)
+    SourceHandle::SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path)
         : m_data(graph)
         , m_id(id)
         , m_path(path)
@@ -215,6 +215,12 @@ namespace ScriptCanvasEditor
         m_data = nullptr;
         m_id = AZ::Uuid::CreateNull();
         m_path.clear();
+    }
+
+    // return a SourceHandle with only the Id and Path, but without a pointer to the data
+    SourceHandle SourceHandle::Describe() const
+    {
+        return SourceHandle(nullptr, m_id, m_path);
     }
 
     GraphPtrConst SourceHandle::Get() const
@@ -249,7 +255,7 @@ namespace ScriptCanvasEditor
         return !(*this == other);
     }
 
-    const AZStd::string& SourceHandle::Path() const
+    const AZ::IO::Path& SourceHandle::Path() const
     {
         return m_path;
     }

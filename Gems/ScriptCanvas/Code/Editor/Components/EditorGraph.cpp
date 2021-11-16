@@ -3492,7 +3492,7 @@ namespace ScriptCanvasEditor
         m_focusHelper.SetActiveGraph(GetGraphCanvasGraphId());
     }
 
-    bool Graph::UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset, UpgradeRequest request, bool isVerbose)
+    bool Graph::UpgradeGraph(SourceHandle& asset, UpgradeRequest request, bool isVerbose)
     {
         m_upgradeSM.SetAsset(asset);
         m_upgradeSM.SetVerbose(isVerbose);

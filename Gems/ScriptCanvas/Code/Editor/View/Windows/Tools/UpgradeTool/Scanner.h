@@ -33,9 +33,9 @@ namespace ScriptCanvasEditor
             ScanConfiguration m_config;
             ScanResult m_result;
 
-            void FilterAsset(AZ::Data::Asset<AZ::Data::AssetData>);
-            const AZ::Data::AssetInfo& GetCurrentAsset() const;
-            AZ::Data::Asset<AZ::Data::AssetData> LoadAsset();
+            void FilterAsset(SourceHandle);
+            const SourceHandle& GetCurrentAsset() const;
+            SourceHandle LoadAsset();
             void OnSystemTick() override;
         };
     }    

@@ -675,19 +675,18 @@ namespace ScriptCanvasEditor
         RegisterState(ParseGraph);
     }
 
-    void EditorGraphUpgradeMachine::SetAsset(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
+    void EditorGraphUpgradeMachine::SetAsset(SourceHandle& asset)
     {
         if (m_asset != asset)
         {
             m_asset = asset;
-            SetDebugPrefix(asset.GetHint());
+            SetDebugPrefix(asset.Path().c_str());
         }
     }
 
     void EditorGraphUpgradeMachine::OnComplete(IState::ExitStatus exitStatus)
     {
         UpgradeNotificationsBus::Broadcast(&UpgradeNotifications::OnGraphUpgradeComplete, m_asset, exitStatus == IState::ExitStatus::Skipped);
-
         m_asset = {};
     }
 

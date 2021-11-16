@@ -1209,7 +1209,7 @@ namespace ScriptCanvasEditor
         {
             if (!m_isRestoringWorkspace)
             {
-                AZStd::string errorPath = scriptCanvasAsset.Path();
+                AZStd::string errorPath = scriptCanvasAsset.Path().c_str();
 
                 if (errorPath.empty())
                 {
@@ -1247,7 +1247,7 @@ namespace ScriptCanvasEditor
                 , fileAssetId.ToString().c_str()));
         }
 
-        AZStd::string assetPath = scriptCanvasAsset.Path();
+        AZStd::string assetPath = scriptCanvasAsset.Path().c_str();
         if (!assetPath.empty() && !m_loadingNewlySavedFile)
         {
             AddRecentFile(assetPath.c_str());
@@ -1786,7 +1786,7 @@ namespace ScriptCanvasEditor
         {
             isValidFileName = true;
             suggestedFileFilter = ScriptCanvasAssetDescription().GetExtensionImpl();
-            suggestedFilename = inMemoryAssetId.Path();
+            suggestedFilename = inMemoryAssetId.Path().c_str();
         }
         else
         {
@@ -1799,7 +1799,7 @@ namespace ScriptCanvasEditor
             }
             else
             {
-                suggestedFilename = inMemoryAssetId.Path();
+                suggestedFilename = inMemoryAssetId.Path().c_str();
             }
         }
         
@@ -1894,7 +1894,7 @@ namespace ScriptCanvasEditor
             AZ::Data::AssetId oldId = fileAssetId.Id();
             AZ::Data::AssetInfo assetInfo;
             assetInfo.m_assetId = fileAssetId.Id();
-            AZ_VerifyWarning("ScriptCanvas", AssetHelpers::GetAssetInfo(fileAssetId.Path(), assetInfo)
+            AZ_VerifyWarning("ScriptCanvas", AssetHelpers::GetAssetInfo(fileAssetId.Path().c_str(), assetInfo)
                 , "Failed to find asset info for source file just saved: %s", fileAssetId.Path().c_str());
 
             const bool assetIdHasChanged = assetInfo.m_assetId.m_guid != fileAssetId.Id();

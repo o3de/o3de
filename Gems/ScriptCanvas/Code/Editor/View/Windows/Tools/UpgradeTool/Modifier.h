@@ -26,7 +26,7 @@ namespace ScriptCanvasEditor
 
             Modifier
                 ( const ModifyConfiguration& modification
-                , WorkingAssets&& assets
+                , AZStd::vector<SourceHandle>&& assets
                 , AZStd::function<void()> onComplete);
 
             const ModificationResults& GetResult() const;
@@ -69,7 +69,7 @@ namespace ScriptCanvasEditor
             size_t m_assetIndex = 0;
             AZStd::function<void()> m_onComplete;
             // asset infos in scanned order
-            WorkingAssets m_assets;
+            AZStd::vector<SourceHandle> m_assets;
             // dependency sorted order indices into the asset vector
             AZStd::vector<size_t> m_dependencyOrderedAssetIndicies;
             // dependency indices by asset info index (only exist if graphs have them)
@@ -83,9 +83,9 @@ namespace ScriptCanvasEditor
             FileSaveResult m_fileSaveResult;
 
             void GatherDependencies();
-            const AZ::Data::AssetInfo& GetCurrentAsset() const;
+            const SourceHandle& GetCurrentAsset() const;
             AZStd::unordered_set<size_t>& GetOrCreateDependencyIndexSet();
-            AZ::Data::Asset<AZ::Data::AssetData> LoadAsset();
+            SourceHandle LoadAsset();
             void ModifyCurrentAsset();
             void ModifyNextAsset();
             void ModificationComplete(const ModificationResult& result) override;

@@ -9,18 +9,19 @@
 #pragma once
 
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Component/EntityUtils.h>
+#include <AzCore/Component/NamedEntityId.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Math/Uuid.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/any.h>
 #include <AzCore/std/hash.h>
-#include <AzCore/Component/EntityUtils.h>
-#include <AzCore/Component/NamedEntityId.h>
-#include <AzCore/Math/Uuid.h>
 #include <Core/NamedId.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 
@@ -326,15 +327,16 @@ namespace ScriptCanvasEditor
 
         SourceHandle() = default;
 
-        SourceHandle(const SourceHandle& data, const AZ::Uuid& id, AZStd::string_view path);
+        SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
 
-        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, AZStd::string_view path);
-
-        ~SourceHandle() = default;
+        SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path);
 
         bool AnyEquals(const SourceHandle& other) const;
 
         void Clear();
+
+        // return a SourceHandle with only the Id and Path, but without a pointer to the data
+        SourceHandle Describe() const;
 
         GraphPtrConst Get() const;
 
@@ -348,7 +350,7 @@ namespace ScriptCanvasEditor
 
         bool operator!=(const SourceHandle& other) const;
 
-        const AZStd::string& Path() const;
+        const AZ::IO::Path& Path() const;
 
         bool PathEquals(const SourceHandle& other) const;
 
@@ -357,7 +359,7 @@ namespace ScriptCanvasEditor
     private:
         ScriptCanvas::DataPtr m_data;
         AZ::Uuid m_id = AZ::Uuid::CreateNull();
-        AZStd::string m_path;
+        AZ::IO::Path m_path;
     };
 }
 
