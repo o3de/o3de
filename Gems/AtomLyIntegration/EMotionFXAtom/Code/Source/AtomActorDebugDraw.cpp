@@ -249,9 +249,8 @@ namespace AZ::Render
             const float cylinderSize = boneLength - boneScale - parentBoneScale;
 
             // Render the bone cylinder, the cylinder will be directed towards the node's parent and must fit between the spheres
-            auxGeom->DrawCylinder(
-                centerWorldPos, boneDirection, boneScale, cylinderSize, skeletonColor, AZ::RPI::AuxGeomDraw::DrawStyle::Solid);
-            auxGeom->DrawSphere(nodeWorldPos, boneScale, skeletonColor, AZ::RPI::AuxGeomDraw::DrawStyle::Solid);
+            auxGeom->DrawCylinder(centerWorldPos, boneDirection, boneScale, cylinderSize, skeletonColor);
+            auxGeom->DrawSphere(nodeWorldPos, boneScale, skeletonColor);
         }
     }
 
