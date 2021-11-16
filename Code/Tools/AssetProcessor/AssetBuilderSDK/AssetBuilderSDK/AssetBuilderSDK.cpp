@@ -1615,14 +1615,12 @@ namespace AssetBuilderSDK
         return m_errorsOccurred;
     }
 
-    
-    AZ::u64 GetFileHash(const char* filePath, AZ::IO::SizeType* bytesReadOut, int hashMsDelay)
-    {
-        constexpr AZ::u64 FileHashBufferSize = 1024 * 64;
-        char buffer[FileHashBufferSize];
+    AZ::u64 GetHashFromIOStream(AZ::IO::GenericStream& readStream, AZ::IO::SizeType* bytesReadOut, int hashMsDelay)
+    {        
+        constexpr AZ::u64 HashBufferSize = 1024 * 64;
+        char buffer[HashBufferSize];
 
         constexpr bool ErrorOnReadFailure = true;
-        AZ::IO::FileIOStream readStream(filePath, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary, ErrorOnReadFailure);
 
         if(readStream.IsOpen() && readStream.CanRead())
         {
@@ -1676,5 +1674,12 @@ namespace AssetBuilderSDK
             return hash;
         }
         return 0;
+    }
+
+    AZ::u64 GetFileHash(const char* filePath, AZ::IO::SizeType* bytesReadOut, int hashMsDelay)
+    {
+        constexpr bool ErrorOnReadFailure = true;
+        AZ::IO::FileIOStream readStream(filePath, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary, ErrorOnReadFailure);
+        return GetHashFromIOStream(readStream, bytesReadOut, hashMsDelay);
     }
 }
