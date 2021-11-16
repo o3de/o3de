@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromValues",
+                "name": "From Values",
                 "category": "Math/Color",
-                "tooltip": "returns a Color from the R, G, B, A inputs",
-                "subtitle": "Color"
+                "tooltip": "Returns a Color from the R, G, B, A inputs"
             },
             "slots": [
                 {
@@ -24,33 +23,33 @@
                     }
                 },
                 {
-                    "key": "DataInput_Number: R",
+                    "key": "DataInput_R",
                     "details": {
-                        "name": "Number: R"
+                        "name": "R"
                     }
                 },
                 {
-                    "key": "DataInput_Number: G",
+                    "key": "DataInput_G",
                     "details": {
-                        "name": "Number: G"
+                        "name": "G"
                     }
                 },
                 {
-                    "key": "DataInput_Number: B",
+                    "key": "DataInput_B",
                     "details": {
-                        "name": "Number: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataInput_Number: A",
+                    "key": "DataInput_A",
                     "details": {
-                        "name": "Number: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Color",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Color"
+                        "name": "Result"
                     }
                 }
             ]
