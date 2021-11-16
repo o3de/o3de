@@ -64,12 +64,14 @@ namespace Camera
         CameraListModel::CameraListModel(QWidget* myParent)
             : QAbstractListModel(myParent)
         {
+            m_lastActiveCamera = AZ::EntityId();
             m_cameraItems.push_back(AZ::EntityId());
             CameraNotificationBus::Handler::BusConnect();
         }
 
         CameraListModel::~CameraListModel()
         {
+            m_firstEntry = true;
             // set the view entity id back to Invalid, thus enabling the editor camera
             EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, AZ::EntityId());
 
@@ -98,6 +100,7 @@ namespace Camera
         {
             // If the camera entity is not an editor camera entity, don't add it to the list.
             // This occurs when we're in simulation mode.
+            m_firstEntry = true;
             bool isEditorEntity = false;
             AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
                 isEditorEntity,
@@ -111,10 +114,22 @@ namespace Camera
             beginInsertRows(QModelIndex(), rowCount(), rowCount());
             m_cameraItems.push_back(cameraId);
             endInsertRows();
+
+            if (m_lastActiveCamera.IsValid() && m_lastActiveCamera == cameraId)
+            {
+                Camera::CameraRequestBus::Event(cameraId, &Camera::CameraRequestBus::Events::MakeActiveView);
+            }
+
         }
 
         void CameraListModel::OnCameraRemoved(const AZ::EntityId& cameraId)
         {
+            if (m_firstEntry)
+            {
+                CameraSystemRequestBus::BroadcastResult(m_lastActiveCamera, &CameraSystemRequestBus::Events::GetActiveCamera);
+                m_firstEntry = false;
+            }
+
             auto cameraIt = AZStd::find_if(m_cameraItems.begin(), m_cameraItems.end(),
                 [&cameraId](const CameraListItem& entry)
                 {

@@ -58,6 +58,8 @@ namespace Camera
         private:
             AZStd::vector<CameraListItem> m_cameraItems;
             AZ::EntityId m_sequenceCameraEntityId;
+            AZ::EntityId m_lastActiveCamera;
+            bool m_firstEntry = true;
         };
 
         struct ViewportCameraSelectorWindow
