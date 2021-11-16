@@ -300,14 +300,14 @@ namespace AZ
             }
         }
 
-        bool MaterialTypeSourceData::ConvertPropertyValueToSourceDataFormat(const PropertyDefinition& propertyDefinition, MaterialPropertyValue& propertyValue) const
+        bool MaterialTypeSourceData::ConvertPropertyValueToSourceDataFormat([[maybe_unused]] const AZ::Name& propertyId, const PropertyDefinition& propertyDefinition, MaterialPropertyValue& propertyValue) const
         {
             if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Enum && propertyValue.Is<uint32_t>())
             {
                 const uint32_t index = propertyValue.GetValue<uint32_t>();
                 if (index >= propertyDefinition.m_enumValues.size())
                 {
-                    AZ_Error("Material source data", false, "Invalid value for material enum property: '%s'.", propertyDefinition.m_name.c_str());
+                    AZ_Error("Material source data", false, "Invalid value for material enum property: '%s'.", propertyId.GetCStr());
                     return false;
                 }
 
@@ -330,7 +330,7 @@ namespace AZ
                         imageAsset.GetId(), imageAsset.GetType(), platformName, imageAssetInfo, rootFilePath);
                     if (!result)
                     {
-                        AZ_Error("Material source data", false, "Image asset could not be found for property: '%s'.", propertyDefinition.m_name.c_str());
+                        AZ_Error("Material source data", false, "Image asset could not be found for property: '%s'.", propertyId.GetCStr());
                         return false;
                     }
                 }
