@@ -8,12 +8,16 @@
 
 #include <PrefabGroup/ProceduralAssetHandler.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/FileFunc/FileFunc.h>
-#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
+#include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Procedural/ProceduralPrefabAsset.h>
-#include <AzCore/Serialization/Json/JsonUtils.h>
+#include <QMenu>
 
 namespace AZ::Prefab
 {
@@ -21,6 +25,7 @@ namespace AZ::Prefab
 
     class PrefabGroupAssetHandler::AssetTypeInfoHandler final
         : public AZ::AssetTypeInfoBus::Handler
+        , protected AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR(AssetTypeInfoHandler, AZ::SystemAllocator, 0);
@@ -31,15 +36,21 @@ namespace AZ::Prefab
         const char* GetGroup() const override;
         const char* GetBrowserIcon() const override;
         void GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions) override;
+
+        // AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler
+        void AddContextMenuActions(QWidget* caller, QMenu* menu, const AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries) override;
+        bool SaveAsAuthoredPrefab(const AZ::Data::AssetId& assetId, const char* destinationFilename);
     };
 
     PrefabGroupAssetHandler::AssetTypeInfoHandler::AssetTypeInfoHandler()
     {
         AZ::AssetTypeInfoBus::Handler::BusConnect(azrtti_typeid<ProceduralPrefabAsset>());
+        AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
     }
 
     PrefabGroupAssetHandler::AssetTypeInfoHandler::~AssetTypeInfoHandler()
     {
+        AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusDisconnect();
         AZ::AssetTypeInfoBus::Handler::BusDisconnect(azrtti_typeid<ProceduralPrefabAsset>());
     }
 
@@ -66,6 +77,84 @@ namespace AZ::Prefab
     void PrefabGroupAssetHandler::AssetTypeInfoHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
     {
         extensions.push_back(PrefabGroupAssetHandler::s_Extension);
+    }
+
+    void PrefabGroupAssetHandler::AssetTypeInfoHandler::AddContextMenuActions(
+        [[maybe_unused]] QWidget* caller,
+        QMenu* menu,
+        const AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries)
+    {
+        using namespace AzToolsFramework::AssetBrowser;
+        auto entryIt = AZStd::find_if
+        (
+            entries.begin(),
+            entries.end(),
+            [](const AssetBrowserEntry* entry) -> bool
+            {
+                return entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product;
+            }
+        );
+
+        if (entryIt == entries.end())
+        {
+            return;
+        }
+        else  if ((*entryIt)->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
+        {
+            ProductAssetBrowserEntry* product = azrtti_cast<ProductAssetBrowserEntry*>(*entryIt);
+            if (product->GetAssetType() == azrtti_typeid<ProceduralPrefabAsset>())
+            {
+                AZ::Data::AssetId assetId = product->GetAssetId();
+                menu->addAction("Save as Prefab...", [assetId, this]()
+                {
+                    QString filePath = AzQtComponents::FileDialog::GetSaveFileName(nullptr, QString("Save to file"), "", QString("Prefab file (*.prefab)"));
+                    if (filePath.isEmpty())
+                    {
+                        return;
+                    }
+                    if (SaveAsAuthoredPrefab(assetId, filePath.toUtf8().data()))
+                    {
+                        AZ_Printf("Prefab", "Prefab was saved to a .prefab file %s", filePath.toUtf8().data());
+                    }
+                });
+            }
+        }
+    }
+
+    bool PrefabGroupAssetHandler::AssetTypeInfoHandler::SaveAsAuthoredPrefab(const AZ::Data::AssetId& assetId, const char* destinationFilename)
+    {
+        using namespace AzToolsFramework::Prefab;
+        using namespace AZ::Data;
+
+        auto procPrefabAsset = AssetManager::Instance().GetAsset<ProceduralPrefabAsset>(assetId, AssetLoadBehavior::Default);
+        const auto status = AssetManager::Instance().BlockUntilLoadComplete(procPrefabAsset);
+        if (status != AssetData::AssetStatus::Ready)
+        {
+            return false;
+        }
+
+        auto* prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+        if (!prefabLoaderInterface)
+        {
+            return false;
+        }
+
+        const auto templateId = procPrefabAsset.GetAs<ProceduralPrefabAsset>()->GetTemplateId();
+        AZStd::string outputJson;
+        if (prefabLoaderInterface->SaveTemplateToString(templateId, outputJson) == false)
+        {
+            return false;
+        }
+
+        const auto fileMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath | AZ::IO::OpenMode::ModeText;
+        AZ::IO::FileIOStream outputFileStream;
+        if (outputFileStream.Open(destinationFilename, fileMode) == false)
+        {
+            return false;
+        }
+
+        outputFileStream.Write(outputJson.size(), outputJson.data());
+        return true;
     }
 
     // PrefabGroupAssetHandler
