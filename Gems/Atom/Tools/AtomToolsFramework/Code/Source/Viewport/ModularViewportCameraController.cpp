@@ -295,6 +295,11 @@ namespace AtomToolsFramework
         m_storedCamera.reset();
     }
 
+    bool ModularViewportCameraControllerInstance::IsTrackingTransform() const
+    {
+        return m_storedCamera.has_value();
+    }
+
     AZ::Transform PlaceholderModularCameraViewportContextImpl::GetCameraTransform() const
     {
         return m_cameraTransform;

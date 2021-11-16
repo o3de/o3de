@@ -115,6 +115,7 @@ namespace AtomToolsFramework
         void InterpolateToTransform(const AZ::Transform& worldFromLocal) override;
         void StartTrackingTransform(const AZ::Transform& worldFromLocal) override;
         void StopTrackingTransform() override;
+        bool IsTrackingTransform() const override;
 
     private:
         //! Combine the current camera transform with any potential roll from the tracked

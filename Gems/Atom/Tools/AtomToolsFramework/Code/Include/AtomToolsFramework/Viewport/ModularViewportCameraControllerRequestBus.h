@@ -39,6 +39,9 @@ namespace AtomToolsFramework
         //! The previously stored camera transform is restored.
         virtual void StopTrackingTransform() = 0;
 
+        //! Return if the tracking transform is set.
+        virtual bool IsTrackingTransform() const = 0;
+
     protected:
         ~ModularViewportCameraControllerRequests() = default;
     };
