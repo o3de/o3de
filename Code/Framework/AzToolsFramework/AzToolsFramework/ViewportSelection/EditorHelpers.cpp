@@ -192,7 +192,7 @@ namespace AzToolsFramework
                 // we also do not want to test against icons that may not be showing as they're inside a 'closed' entity container
                 // (these icons only become visible when it is opened for editing)
                 if (!m_entityDataCache->IsVisibleEntityIconHidden(entityCacheIndex) &&
-                    !m_entityDataCache->IsVisibleEntityIndividuallySelectableInViewport(entityCacheIndex))
+                    m_entityDataCache->IsVisibleEntityIndividuallySelectableInViewport(entityCacheIndex))
                 {
                     const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
 
