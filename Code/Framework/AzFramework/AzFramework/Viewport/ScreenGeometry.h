@@ -26,7 +26,7 @@ namespace AzFramework
         AZ_TYPE_INFO(ScreenPoint, "{8472B6C2-527F-44FC-87F8-C226B1A57A97}");
         ScreenPoint() = default;
 
-        ScreenPoint(int x, int y)
+        constexpr ScreenPoint(int x, int y)
             : m_x(x)
             , m_y(y)
         {
@@ -45,7 +45,7 @@ namespace AzFramework
         AZ_TYPE_INFO(ScreenVector, "{1EAA2C62-8FDB-4A28-9FE3-1FA4F1418894}");
         ScreenVector() = default;
 
-        ScreenVector(int x, int y)
+        constexpr ScreenVector(int x, int y)
             : m_x(x)
             , m_y(y)
         {
@@ -61,7 +61,7 @@ namespace AzFramework
         AZ_TYPE_INFO(ScreenSize, "{26D28916-6E8E-44B8-83F9-C44BCDA370E2}");
         ScreenSize() = default;
 
-        ScreenSize(int width, int height)
+        constexpr ScreenSize(int width, int height)
             : m_width(width)
             , m_height(height)
         {

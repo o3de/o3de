@@ -22,7 +22,7 @@ namespace UnitTest
     {
     public:
         static inline constexpr AzFramework::ViewportId TestViewportId = 1234;
-        static inline AzFramework::ScreenSize ScreenDimensions = AzFramework::ScreenSize(1280, 720);
+        static inline constexpr AzFramework::ScreenSize ScreenDimensions = AzFramework::ScreenSize(1280, 720);
 
         static AzFramework::ScreenPoint ScreenCenter()
         {
