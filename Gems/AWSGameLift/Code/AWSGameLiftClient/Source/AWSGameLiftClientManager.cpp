@@ -33,7 +33,7 @@
 
 namespace AWSGameLift
 {
-#if defined(AWSGAMELIFT_DEV)
+#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
     AZ_CVAR(AZ::CVarFixedString, cl_gameliftLocalEndpoint, "", nullptr, AZ::ConsoleFunctorFlags::Null, "The local endpoint to test with GameLiftLocal SDK.");
 #endif
 
@@ -87,7 +87,7 @@ namespace AWSGameLift
 
         // Set up client endpoint or region
         AZStd::string localEndpoint = "";
-#if defined(AWSGAMELIFT_DEV)
+#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
         localEndpoint = static_cast<AZ::CVarFixedString>(cl_gameliftLocalEndpoint);
 #endif
         if (!localEndpoint.empty())

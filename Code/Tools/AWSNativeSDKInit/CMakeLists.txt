@@ -24,3 +24,30 @@ ly_add_target(
             3rdParty::AWSNativeSDK::Core
             AZ::AzCore
 )
+
+################################################################################
+# Tests
+################################################################################
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+    ly_add_target(
+        NAME AWSNativeSDKInit.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAMESPACE AZ
+        FILES_CMAKE
+            aws_native_sdk_init_tests_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                include
+                tests
+                source
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzCore
+                AZ::AzFramework
+                AZ::AzTest
+                AZ::AWSNativeSDKInit
+                3rdParty::AWSNativeSDK::Core
+    )
+    ly_add_googletest(
+        NAME AZ::AWSNativeSDKInit.Tests
+    )
+endif()
