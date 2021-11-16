@@ -8,11 +8,14 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
+#include <AzCore/Debug/Trace.h>
 
 #include <QtForPythonSystemComponent.h>
 
 namespace QtForPython
 {
+    void LoadPysideModules();
+
     class QtForPythonModule
         : public AZ::Module
     {
@@ -26,6 +29,9 @@ namespace QtForPython
             m_descriptors.insert(m_descriptors.end(), {
                 QtForPythonSystemComponent::CreateDescriptor(),
             });
+
+            LoadPysideModules();
+
         }
 
         /**
