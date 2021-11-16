@@ -215,7 +215,7 @@ namespace O3DE::ProjectManager
          * @param gemProgressCallback a callback function that is called with an int percentage download value
          * @return an outcome with a string error message on failure.
          */
-        virtual AZ::Outcome<void, AZStd::string> DownloadGem(const QString& gemName, std::function<void(int)> gemProgressCallback) = 0;
+        virtual AZ::Outcome<void, AZStd::string> DownloadGem(const QString& gemName, std::function<void(int, int)> gemProgressCallback) = 0;
 
         /**
         * Cancels the current download.
