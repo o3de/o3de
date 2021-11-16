@@ -10,6 +10,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzCore/IO/IOUtils.h>
+#include <AzCore/IO/Path/Path.h>
 
 namespace AZ
 {
@@ -46,6 +47,12 @@ namespace AZ
 
             AZStd::string ResolvePathReference(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
+                // Prevents "second join parameter is an absolute path" warnings in StringFunc::Path::Join below
+                if (AZ::IO::PathView{referencedSourceFilePath}.IsAbsolute())
+                {
+                    return referencedSourceFilePath;
+                }
+
                 AZStd::string normalizedReferencedPath = referencedSourceFilePath;
                 AzFramework::StringFunc::Path::Normalize(normalizedReferencedPath);
 
