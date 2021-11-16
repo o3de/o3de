@@ -8,6 +8,7 @@
 
 #include <Atom/RPI.Public/View.h>
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
+#include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -124,11 +125,47 @@ namespace UnitTest
     {
         using AzFramework::ScreenPoint;
 
-        m_view->SetCameraTransform(AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(
-            AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(160.0f)) * AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-18.0f)),
-            AZ::Vector3(-21.0f, 2.5f, 6.0f)));
+        {
+            m_view->SetCameraTransform(AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(160.0f)) * AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-18.0f)),
+                AZ::Vector3(-21.0f, 2.5f, 6.0f)));
 
-        const auto screenResult = m_viewportInteractionImpl->ViewportWorldToScreen(AZ::Vector3(-21.0f, -1.5f, 5.0f));
-        EXPECT_EQ(screenResult, ScreenPoint(420, 326));
+            const auto screenResult = m_viewportInteractionImpl->ViewportWorldToScreen(AZ::Vector3(-21.0f, -1.5f, 5.0f));
+            EXPECT_EQ(screenResult, ScreenPoint(420, 326));
+        }
+
+        {
+            m_view->SetCameraTransform(AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(175.0f)) * AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-90.0f)),
+                AZ::Vector3(-10.0f, -11.0f, 2.5f)));
+
+            const auto screenResult = m_viewportInteractionImpl->ViewportWorldToScreen(AZ::Vector3(-10.0f, -10.5f, 0.5f));
+            EXPECT_EQ(screenResult, ScreenPoint(654, 515));
+        }
+
+        {
+            m_view->SetCameraTransform(AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(
+                AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(70.0f)) * AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(65.0f)),
+                AZ::Vector3(-22.5f, -10.0f, 1.5f)));
+
+            const auto screenResult = m_viewportInteractionImpl->ViewportWorldToScreen(AZ::Vector3(-23.0f, -9.5f, 3.0f));
+            EXPECT_EQ(screenResult, ScreenPoint(754, 340));
+        }
+    }
+
+    TEST_F(ViewportInteractionImplFixture, ScreenToWorldRayGivesGivesExpectedOriginAndDirection)
+    {
+        using AzFramework::ScreenPoint;
+
+        m_view->SetCameraTransform(AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(
+            AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(34.0f)) * AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-24.0f)),
+            AZ::Vector3(-9.3f, -9.8f, 4.0f)));
+
+        const auto ray = m_viewportInteractionImpl->ViewportScreenToWorldRay(ScreenPoint(832, 226));
+
+        float unused;
+        auto intersection = AZ::Intersect::IntersectRaySphere(ray.origin, ray.direction, AZ::Vector3(-14.0f, 5.7f, 0.75f), 0.5f, unused);
+
+        EXPECT_EQ(intersection, AZ::Intersect::SphereIsectTypes::ISECT_RAY_SPHERE_ISECT);
     }
 } // namespace UnitTest
