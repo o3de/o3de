@@ -523,7 +523,9 @@ namespace O3DE::ProjectManager
             const QString& gemPath = GemModel::GetPath(modelIndex);
 
             // make sure any remote gems we added were downloaded successfully 
-            if (GemModel::GetGemOrigin(modelIndex) == GemInfo::Remote && GemModel::GetDownloadStatus(modelIndex) != GemInfo::Downloaded)
+            const GemInfo::DownloadStatus status = GemModel::GetDownloadStatus(modelIndex);
+            if (GemModel::GetGemOrigin(modelIndex) == GemInfo::Remote &&
+                !(status == GemInfo::Downloaded || status == GemInfo::DownloadSuccessful))
             {
                 QMessageBox::critical(
                     nullptr, "Cannot add gem that isn't downloaded",
