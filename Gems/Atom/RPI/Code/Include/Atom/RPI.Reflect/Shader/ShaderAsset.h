@@ -294,7 +294,7 @@ namespace AZ
             Name m_drawListName;
 
             //! Use to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
-            AZStd::sys_time_t m_shaderAssetBuildTimestamp = 0; 
+            AZ::u64 m_shaderAssetBuildTimestamp = 0;
 
 
             ///////////////////////////////////////////////////////////////////

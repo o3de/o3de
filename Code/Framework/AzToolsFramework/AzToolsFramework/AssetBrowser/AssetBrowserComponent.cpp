@@ -234,11 +234,6 @@ namespace AzToolsFramework
                     return SourceFileDetails("Icons/AssetBrowser/Lua_16.svg");
                 }
 
-                if (AzFramework::StringFunc::Equal(extension.c_str(), ".mtl"))
-                {
-                    return SourceFileDetails("Icons/AssetBrowser/Material_16.svg");
-                }
-
                 if (AzFramework::StringFunc::Equal(extension.c_str(), AzToolsFramework::SliceUtilities::GetSliceFileExtension().c_str()))
                 {
                     return SourceFileDetails("Icons/AssetBrowser/Slice_16.svg");
