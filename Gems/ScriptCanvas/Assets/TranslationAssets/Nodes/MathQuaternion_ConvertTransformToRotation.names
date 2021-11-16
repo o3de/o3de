@@ -5,9 +5,8 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ConvertTransformToRotation",
-                "category": "Math/Quaternion",
-                "subtitle": "Quaternion"
+                "name": "Convert Transform To Rotation",
+                "category": "Math/Quaternion"
             },
             "slots": [
                 {
@@ -23,15 +22,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Transform: Transform",
+                    "key": "DataInput_Transform",
                     "details": {
-                        "name": "Transform: Transform"
+                        "name": "Transform"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Quaternion",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Quaternion"
+                        "name": "Result"
                     }
                 }
             ]

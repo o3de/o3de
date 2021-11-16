@@ -7,8 +7,7 @@
             "details": {
                 "name": "Dot",
                 "category": "Math/Vector2",
-                "tooltip": "returns the vector dot product of A dot B",
-                "subtitle": "Vector2"
+                "tooltip": "Returns the vector dot product of A dot B"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector2: A",
+                    "key": "DataInput_A",
                     "details": {
-                        "name": "Vector2: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Vector2: B",
+                    "key": "DataInput_B",
                     "details": {
-                        "name": "Vector2: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

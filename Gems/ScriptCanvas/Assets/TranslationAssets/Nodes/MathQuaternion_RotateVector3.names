@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RotateVector3",
+                "name": "Rotate Vector3",
                 "category": "Math/Quaternion",
-                "tooltip": "Returns a new Vector3 that is the source vector3 rotated by the given Quaternion",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns a new Vector3 that is the source vector3 rotated by the given Quaternion"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Quaternion",
+                    "key": "DataInput_Quaternion",
                     "details": {
-                        "name": "Quaternion: Quaternion"
+                        "name": "Quaternion"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Vector",
+                    "key": "DataInput_Vector",
                     "details": {
-                        "name": "Vector3: Vector"
+                        "name": "Vector"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

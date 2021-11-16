@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RandomUnitVector3",
+                "name": "Random Unit Vector3",
                 "category": "Math/Random",
-                "tooltip": "returns a random Vector3 direction",
-                "subtitle": "Random"
+                "tooltip": "Returns a random Vector3 direction"
             },
             "slots": [
                 {
@@ -24,9 +23,9 @@
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RandomPointInArc",
+                "name": "Random Point In Arc",
                 "category": "Math/Random",
-                "tooltip": "returns a random point in the specified arc",
-                "subtitle": "Random"
+                "tooltip": "Returns a random point in the specified arc"
             },
             "slots": [
                 {
@@ -24,39 +23,39 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Origin",
+                    "key": "DataInput_Origin",
                     "details": {
-                        "name": "Vector3: Origin"
+                        "name": "Origin"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Direction",
+                    "key": "DataInput_Direction",
                     "details": {
-                        "name": "Vector3: Direction"
+                        "name": "Direction"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Normal",
+                    "key": "DataInput_Normal",
                     "details": {
-                        "name": "Vector3: Normal"
+                        "name": "Normal"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Radius",
+                    "key": "DataInput_Radius",
                     "details": {
-                        "name": "Number: Radius"
+                        "name": "Radius"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Angle",
+                    "key": "DataInput_Angle",
                     "details": {
-                        "name": "Number: Angle"
+                        "name": "Angle"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]
