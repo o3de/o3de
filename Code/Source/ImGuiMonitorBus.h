@@ -23,6 +23,9 @@ namespace EMotionFX::MotionMatching
         : public AZ::EBusTraits
     {
     public:
+        // Enable multi-threaded access by locking primitive using a mutex when connecting handlers to the EBus or executing events.
+        using MutexType = AZStd::recursive_mutex;
+
         virtual void PushPerformanceHistogramValue(const char* performanceMetricName, float value) = 0;
         virtual void PushCostHistogramValue(const char* costName, float value, const AZ::Color& color) = 0;
 

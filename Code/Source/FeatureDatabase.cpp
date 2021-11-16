@@ -72,22 +72,22 @@ namespace EMotionFX
             return m_features;
         }
 
-        void FeatureDatabase::RegisterFeature(Feature* frameData)
+        void FeatureDatabase::RegisterFeature(Feature* feature)
         {
-            // Try to see if there is a frame data with the same Id.
-            auto location = AZStd::find_if(m_featuresByType.begin(), m_featuresByType.end(), [&frameData](const auto& curEntry) -> bool {
-                return (frameData->GetId() == curEntry.second->GetId());
+            // Try to see if there is a feature with the same id.
+            auto location = AZStd::find_if(m_featuresByType.begin(), m_featuresByType.end(), [&feature](const auto& curEntry) -> bool {
+                return (feature->GetId() == curEntry.second->GetId());
             });
 
             // If we already found it.
             if (location != m_featuresByType.end())
             {
-                AZ_Assert(false, "Frame data with id '%s' has already been registered!", frameData->GetId().data);
+                AZ_Assert(false, "Feature with id '%s' has already been registered!", feature->GetId().data);
                 return;
             }
 
-            m_featuresByType.emplace(frameData->GetId(), frameData);
-            m_features.emplace_back(frameData);
+            m_featuresByType.emplace(feature->GetId(), feature);
+            m_features.emplace_back(feature);
         }
 
         bool FeatureDatabase::ExtractFeatures(ActorInstance* actorInstance, FrameDatabase* frameDatabase, size_t maxKdTreeDepth, size_t minFramesPerKdTreeNode)
@@ -226,9 +226,9 @@ namespace EMotionFX
             return m_features.size();
         }
 
-        Feature* FeatureDatabase::FindFeatureByType(const AZ::TypeId& frameDataTypeId) const
+        Feature* FeatureDatabase::FindFeatureByType(const AZ::TypeId& featureTypeId) const
         {
-            const auto result = m_featuresByType.find(frameDataTypeId);
+            const auto result = m_featuresByType.find(featureTypeId);
             if (result == m_featuresByType.end())
             {
                 return nullptr;
@@ -237,8 +237,7 @@ namespace EMotionFX
             return result->second;
         }
 
-        void FeatureDatabase::DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-            EMotionFX::DebugDraw::ActorInstanceData& draw,
+        void FeatureDatabase::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
             BehaviorInstance* behaviorInstance,
             size_t frameIndex)
         {
@@ -251,12 +250,12 @@ namespace EMotionFX
 
                 if (feature->GetDebugDrawEnabled())
                 {
-                    feature->DebugDraw(drawQueue, draw, behaviorInstance, frameIndex);
+                    feature->DebugDraw(debugDisplay, behaviorInstance, frameIndex);
                 }
             }
         }
 
-        Feature* FeatureDatabase::CreateFrameDataByType(const AZ::TypeId& typeId)
+        Feature* FeatureDatabase::CreateFeatureByType(const AZ::TypeId& typeId)
         {
             AZ::SerializeContext* context = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
@@ -273,8 +272,8 @@ namespace EMotionFX
                 return nullptr;
             }
 
-            Feature* frameDataObject = reinterpret_cast<Feature*>(classData->m_factory->Create(classData->m_name));
-            return frameDataObject;
+            Feature* featureObject = reinterpret_cast<Feature*>(classData->m_factory->Create(classData->m_name));
+            return featureObject;
         }
 
         void FeatureDatabase::SaveAsCsv(const AZStd::string& filename, Skeleton* skeleton)

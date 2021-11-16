@@ -67,8 +67,7 @@ namespace EMotionFX
             SetFeatureData(context.m_featureMatrix, context.m_frameIndex, velocity);
         }
 
-        void FeatureVelocity::DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-            [[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw,
+        void FeatureVelocity::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
             BehaviorInstance* behaviorInstance,
             size_t frameIndex)
         {
@@ -89,20 +88,20 @@ namespace EMotionFX
             const AZ::Vector3 directionWorldSpace = relativeToWorldTM.TransformVector(velocity.m_direction * velocity.m_speed * scale);
             const AZ::Vector3 arrowPosition = jointPosition + directionWorldSpace;
 
-            drawQueue->DrawCylinder(/*center=*/(arrowPosition + jointPosition) * 0.5f,
+            debugDisplay.DepthTestOff();
+            debugDisplay.SetColor(m_debugColor);
+
+            debugDisplay.DrawSolidCylinder(/*center=*/(arrowPosition + jointPosition) * 0.5f,
                 /*direction=*/(arrowPosition - jointPosition).GetNormalizedSafe(),
                 /*radius=*/0.003f,
                 /*height=*/(arrowPosition - jointPosition).GetLength(),
-                m_debugColor,
-                AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
-                AZ::RPI::AuxGeomDraw::DepthTest::Off);
+                /*drawShaded=*/false);
 
-            drawQueue->DrawCone(jointPosition + directionWorldSpace,
+            debugDisplay.DrawSolidCone(jointPosition + directionWorldSpace,
                 directionWorldSpace,
                 0.1f * scale,
-                scale * 0.5f, m_debugColor,
-                AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
-                AZ::RPI::AuxGeomDraw::DepthTest::Off);
+                scale * 0.5f,
+                /*drawShaded=*/false);
         }
 
         float FeatureVelocity::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
@@ -137,7 +136,7 @@ namespace EMotionFX
                 return;
             }
 
-            editContext->Class<FeatureVelocity>("VelocityFrameData", "Joint velocity data.")
+            editContext->Class<FeatureVelocity>("FeatureVelocity", "Joint velocity data.")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);

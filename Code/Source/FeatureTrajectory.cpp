@@ -169,8 +169,7 @@ namespace EMotionFX
             m_numFutureSamples = numFutureSamples;
         }
 
-        void FeatureTrajectory::DebugDrawTrajectory(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-            [[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw,
+        void FeatureTrajectory::DebugDrawTrajectory(AzFramework::DebugDisplayRequests& debugDisplay,
             BehaviorInstance* behaviorInstance,
             size_t frameIndex,
             const Transform& transform,
@@ -186,6 +185,9 @@ namespace EMotionFX
             constexpr float markerSize = 0.02f;
             const FeatureMatrix& featureMatrix = behaviorInstance->GetBehavior()->GetFeatures().GetFeatureMatrix();
 
+            debugDisplay.DepthTestOff();
+            debugDisplay.SetColor(color);
+
             AZ::Vector3 nextSamplePos;
             for (size_t i = 0; i < numSamples - 1; ++i)
             {
@@ -195,39 +197,31 @@ namespace EMotionFX
                 const AZ::Vector3 currentSamplePos = transform.TransformPoint(AZ::Vector3(currentSample.m_position));
                 nextSamplePos = transform.TransformPoint(AZ::Vector3(nextSample.m_position));
 
-                drawQueue->DrawCylinder(/*center=*/(nextSamplePos + currentSamplePos) * 0.5f,
+                // Line between current and next sample.
+                debugDisplay.DrawSolidCylinder(/*center=*/(nextSamplePos + currentSamplePos) * 0.5f,
                     /*direction=*/(nextSamplePos - currentSamplePos).GetNormalizedSafe(),
                     /*radius=*/0.0025f,
                     /*height=*/(nextSamplePos - currentSamplePos).GetLength(),
-                    color,
-                    AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
-                    AZ::RPI::AuxGeomDraw::DepthTest::Off);
+                    /*drawShaded=*/false);
 
-                drawQueue->DrawSphere(currentSamplePos,
-                    markerSize,
-                    color,
-                    AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
-                    AZ::RPI::AuxGeomDraw::DepthTest::Off);
+                // Sphere at the sample position.
+                debugDisplay.DrawBall(currentSamplePos, markerSize, /*drawShaded=*/false);
             }
 
-            drawQueue->DrawSphere(nextSamplePos,
-                markerSize, color,
-                AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
-                AZ::RPI::AuxGeomDraw::DepthTest::Off);
+            debugDisplay.DrawBall(nextSamplePos, markerSize, /*drawShaded=*/false);
         }
 
-        void FeatureTrajectory::DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-            EMotionFX::DebugDraw::ActorInstanceData& draw,
+        void FeatureTrajectory::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
             BehaviorInstance* behaviorInstance,
             size_t frameIndex)
         {
             const ActorInstance* actorInstance = behaviorInstance->GetActorInstance();
             const Transform transform = actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(m_nodeIndex);
 
-            DebugDrawTrajectory(drawQueue, draw, behaviorInstance, frameIndex, transform,
+            DebugDrawTrajectory(debugDisplay, behaviorInstance, frameIndex, transform,
                 m_debugColor, m_numPastSamples, AZStd::bind(&FeatureTrajectory::CalcPastFrameDataIndex, this, AZStd::placeholders::_1));
 
-            DebugDrawTrajectory(drawQueue, draw, behaviorInstance, frameIndex, transform,
+            DebugDrawTrajectory(debugDisplay, behaviorInstance, frameIndex, transform,
                 m_debugColor, m_numFutureSamples, AZStd::bind(&FeatureTrajectory::CalcFutureFrameDataIndex, this, AZStd::placeholders::_1));
         }
 
@@ -321,7 +315,7 @@ namespace EMotionFX
                 return;
             }
 
-            editContext->Class<FeatureTrajectory>("TrajectoryFrameData", "Joint past and future trajectory data.")
+            editContext->Class<FeatureTrajectory>("FeatureTrajectory", "Joint past and future trajectory data.")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);

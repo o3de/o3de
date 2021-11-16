@@ -13,7 +13,6 @@
 #include <EMotionFX/Source/Actor.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <Allocators.h>
-#include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/EventManager.h>
 #include <EMotionFX/Source/TransformData.h>
@@ -45,16 +44,7 @@ namespace EMotionFX
         {
         }
 
-        bool LocomotionBehavior::RegisterParameters(const InitSettings& settings)
-        {
-            AZ_UNUSED(settings);
-
-            // TODO: register stuff here.
-
-            return true;
-        }
-
-        bool LocomotionBehavior::RegisterFrameDatas(const InitSettings& settings)
+        bool LocomotionBehavior::RegisterFeatures(const InitSettings& settings)
         {
             // TODO: use the editor context to get the right value instead.
 
@@ -133,13 +123,12 @@ namespace EMotionFX
             return true;
         }
 
-        void LocomotionBehavior::DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-            EMotionFX::DebugDraw::ActorInstanceData& draw,
+        void LocomotionBehavior::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
             BehaviorInstance* behaviorInstance)
         {
             AZ_PROFILE_SCOPE(Animation, "LocomotionBehavior::DebugDraw");
 
-            Behavior::DebugDraw(drawQueue, draw, behaviorInstance);
+            Behavior::DebugDraw(debugDisplay, behaviorInstance);
 
             // Get the lowest cost frame index from the last search. As we're searching the feature database with a much lower
             // frequency and sample the animation onwards from this, the resulting frame index does not represent the current
@@ -155,21 +144,17 @@ namespace EMotionFX
             const size_t currentFrame = m_data.FindFrameIndex(motionInstance->GetMotion(), motionInstance->GetCurrentTime());
             if (currentFrame != InvalidIndex)
             {
-                m_features.DebugDraw(drawQueue, draw, behaviorInstance, currentFrame);
+                m_features.DebugDraw(debugDisplay, behaviorInstance, currentFrame);
             }
 
             // Draw the desired future trajectory and the sampled version of the past trajectory.
             const TrajectoryQuery& trajectoryQuery = behaviorInstance->GetTrajectoryQuery();
             const AZ::Color trajectoryQueryColor = AZ::Color::CreateFromRgba(90,219,64,255);
-            trajectoryQuery.DebugDraw(drawQueue, trajectoryQueryColor);
+            trajectoryQuery.DebugDraw(debugDisplay, trajectoryQueryColor);
 
             // Draw the trajectory history starting after the sampled version of the past trajectory.
             const TrajectoryHistory& trajectoryHistory = behaviorInstance->GetTrajectoryHistory();
-            trajectoryHistory.DebugDraw(drawQueue, draw, trajectoryQueryColor, m_rootTrajectoryData->GetPastTimeRange());
-        }
-
-        void LocomotionBehavior::OnSettingsChanged()
-        {
+            trajectoryHistory.DebugDraw(debugDisplay, trajectoryQueryColor, m_rootTrajectoryData->GetPastTimeRange());
         }
 
         size_t LocomotionBehavior::FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& inputPose, [[maybe_unused]] const Pose& previousPose, size_t currentFrameIndex, [[maybe_unused]] float timeDelta)
@@ -330,13 +315,10 @@ namespace EMotionFX
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                 ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &LocomotionBehavior::m_rootNodeIndex, "Root node", "The root node.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &LocomotionBehavior::OnSettingsChanged)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                 ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &LocomotionBehavior::m_leftFootNodeIndex, "Left foot node", "The left foot node.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &LocomotionBehavior::OnSettingsChanged)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                 ->DataElement(AZ_CRC("ActorNode", 0x35d9eb50), &LocomotionBehavior::m_rightFootNodeIndex, "Right foot node", "The right foot node.")
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &LocomotionBehavior::OnSettingsChanged)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree);
         }
     } // namespace MotionMatching

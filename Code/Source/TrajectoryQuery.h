@@ -15,12 +15,9 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 
-#include <EMotionFX/Source/DebugDraw.h>
-#include <EMotionFX/Source/Pose.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
-#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
-#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
-#include <Atom/RPI.Public/Scene.h>
+#include <EMotionFX/Source/Pose.h>
 
 #include <TrajectoryHistory.h>
 
@@ -58,13 +55,13 @@ namespace EMotionFX::MotionMatching
             float pathRadius,
             float pathSpeed);
 
-        void DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue, const AZ::Color& color) const;
+        void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Color& color) const;
 
         const AZStd::vector<ControlPoint>& GetPastControlPoints() const { return m_pastControlPoints; }
         const AZStd::vector<ControlPoint>& GetFutureControlPoints() const { return m_futureControlPoints; }
 
     private:
-        static void DebugDrawControlPoints(AZ::RPI::AuxGeomDrawPtr& drawQueue,
+        static void DebugDrawControlPoints(AzFramework::DebugDisplayRequests& debugDisplay,
             const AZStd::vector<ControlPoint>& controlPoints,
             const AZ::Color& color);
 

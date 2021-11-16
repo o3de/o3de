@@ -84,10 +84,7 @@ namespace EMotionFX::MotionMatching
         return m_keytrack.GetValueAtTime(time);
     }
 
-    void TrajectoryHistory::DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-        [[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw,
-        const AZ::Color& color,
-        float timeStart) const
+    void TrajectoryHistory::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, const AZ::Color& color, float timeStart) const
     {
         const size_t numKeyframes = m_keytrack.GetNumKeys();
         if (numKeyframes == 0)
@@ -105,6 +102,8 @@ namespace EMotionFX::MotionMatching
         const float firstTime = m_keytrack.GetFirstTime();
         const float range = adjustedLastTime - firstTime;
 
+        debugDisplay.DepthTestOff();
+
         for (size_t i = 0; i < adjustedLastKey; ++i)
         {
             const float time = m_keytrack.GetKey(i)->GetTime();
@@ -120,19 +119,18 @@ namespace EMotionFX::MotionMatching
             const float markerSize = m_debugMarkerSize * 0.7f * normalized;
 
             const AZ::Vector3 currentPosition = m_keytrack.GetKey(i)->GetValue();
-            drawQueue->DrawSphere(currentPosition,
-                markerSize,
-                finalColor,
-                AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
-                AZ::RPI::AuxGeomDraw::DepthTest::Off);
+            debugDisplay.SetColor(finalColor);
+            debugDisplay.DrawBall(currentPosition, markerSize, /*drawShaded=*/false);
         }
     }
 
-    void TrajectoryHistory::DebugDrawSampled([[maybe_unused]] AZ::RPI::AuxGeomDrawPtr& drawQueue,
-        EMotionFX::DebugDraw::ActorInstanceData& draw,
+    void TrajectoryHistory::DebugDrawSampled(AzFramework::DebugDisplayRequests& debugDisplay,
         size_t numSamples,
         const AZ::Color& color) const
     {
+        debugDisplay.DepthTestOff();
+        debugDisplay.SetColor(color);
+
         AZ::Vector3 lastPos = SampleNormalized(0.0f);
         for (size_t i = 0; i < numSamples; ++i)
         {
@@ -140,10 +138,10 @@ namespace EMotionFX::MotionMatching
             const AZ::Vector3 currentPos = SampleNormalized(sampleTime);
             if (i > 0)
             {
-                draw.DrawLine(lastPos, currentPos, color);
+                debugDisplay.DrawLine(lastPos, currentPos);
             }
 
-            draw.DrawMarker(currentPos, color, m_debugMarkerSize);
+            debugDisplay.DrawBall(currentPos, m_debugMarkerSize, /*drawShaded=*/false);
             lastPos = currentPos;
         }
     }

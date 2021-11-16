@@ -18,7 +18,6 @@
 
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/Pose.h>
-#include <EMotionFX/Source/DebugDraw.h>
 #include <Behavior.h>
 #include <TrajectoryHistory.h>
 
@@ -49,12 +48,9 @@ namespace EMotionFX
             LocomotionBehavior();
             ~LocomotionBehavior() override = default;
 
-            bool RegisterParameters(const InitSettings& settings) override;
-            bool RegisterFrameDatas(const InitSettings& settings) override;
+            bool RegisterFeatures(const InitSettings& settings) override;
 
-            void DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-                EMotionFX::DebugDraw::ActorInstanceData& draw,
-                BehaviorInstance* behaviorInstance) override;
+            void DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay, BehaviorInstance* behaviorInstance) override;
 
             size_t FindLowestCostFrameIndex(BehaviorInstance* behaviorInstance, const Pose& inputPose, const Pose& previousPose, size_t currentFrameIndex, float timeDelta) override;
 
@@ -67,8 +63,6 @@ namespace EMotionFX
             FeatureTrajectory* GetTrajectoryFeature() const override { return m_rootTrajectoryData; }
 
         private:
-            void OnSettingsChanged();
-
             FeaturePosition* m_leftFootPositionData = nullptr;
             FeaturePosition* m_rightFootPositionData = nullptr;
             FeatureVelocity* m_leftFootVelocityData = nullptr;

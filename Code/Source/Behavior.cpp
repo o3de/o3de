@@ -60,17 +60,9 @@ namespace EMotionFX
                 AZ_TracePrintf("EMotionFX", "Motion matching behavior '%s' has imported a total of %d frames (%d frames discarded) across %d motions. This is %.2f seconds (%.2f minutes) of motion data.", RTTI_GetTypeName(), totalNumFramesImported, totalNumFramesDiscarded, settings.m_motionList.size(), totalNumFramesImported / (float)settings.m_frameImportSettings.m_sampleRate, (totalNumFramesImported / (float)settings.m_frameImportSettings.m_sampleRate) / 60.0f);
             }
 
-            // Register the dynamic parameters that this behavior exposes to the user.
-            if (!RegisterParameters(settings))
+            if (!RegisterFeatures(settings))
             {
-                AZ_Error("EMotionFX", false, "Failed to register parameters inside motion matching behavior.");
-                return false;
-            }
-
-            // Register the required types of frame data.
-            if (!RegisterFrameDatas(settings))
-            {
-                AZ_Error("EMotionFX", false, "Failed to register frame datas inside motion matching behavior.");
+                AZ_Error("EMotionFX", false, "Failed to register features inside motion matching behavior.");
                 return false;
             }
 

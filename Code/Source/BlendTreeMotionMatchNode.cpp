@@ -270,12 +270,6 @@ namespace EMotionFX
             behaviorInstance->SetLowestCostSearchFrequency(m_lowestCostSearchFrequency);
             behaviorInstance->Output(outTransformPose);
 
-            // Render some debug lines.
-            if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
-            {
-                uniqueData->m_behaviorInstance->DebugDraw();
-            }
-
             // Performance metrics
             m_outputTimeInMs = m_timer.GetDeltaTimeInSeconds() * 1000.0f;
             {
@@ -284,6 +278,8 @@ namespace EMotionFX
                 ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "Post Update", m_postUpdateTimeInMs);
                 ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushPerformanceHistogramValue, "Output", m_outputTimeInMs);
             }
+
+            behaviorInstance->DebugDraw();
         }
 
         void BlendTreeMotionMatchNode::Reflect(AZ::ReflectContext* context)

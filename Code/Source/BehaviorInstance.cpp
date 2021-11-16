@@ -12,7 +12,6 @@
 
 #include <EMotionFX/Source/ActorInstance.h>
 #include <Allocators.h>
-#include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Motion.h>
 #include <EMotionFX/Source/MotionInstance.h>
@@ -20,6 +19,7 @@
 #include <Behavior.h>
 #include <BehaviorInstance.h>
 #include <Feature.h>
+#include <FeatureTrajectory.h>
 #include <KdTree.h>
 #include <EMotionFX/Source/Pose.h>
 #include <EMotionFX/Source/TransformData.h>
@@ -27,6 +27,8 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
 
 namespace EMotionFX
 {
@@ -61,6 +63,29 @@ namespace EMotionFX
         {
             AZ_Assert(settings.m_actorInstance, "The actor instance cannot be a nullptr.");
             AZ_Assert(settings.m_behavior, "The motion match data cannot be nullptr.");
+
+            // Debug display initialization.
+            const auto AddDebugDisplay = [=](AZ::s32 debugDisplayId)
+            {
+                if (debugDisplayId == -1)
+                {
+                    return;
+                }
+
+                AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+                AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, debugDisplayId);
+
+                AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+                if (debugDisplay)
+                {
+                    m_debugDisplays.emplace_back(debugDisplay);
+                }
+            };
+            // Draw the debug visualizations to the Animation Editor as well as the LY Editor viewport.
+            AZ::s32 animationEditorViewportId = -1;
+            EMStudio::ViewportPluginRequestBus::BroadcastResult(animationEditorViewportId, &EMStudio::ViewportPluginRequestBus::Events::GetViewportId);
+            AddDebugDisplay(animationEditorViewportId);
+            AddDebugDisplay(AzFramework::g_defaultSceneEntityDebugDisplayId);
 
             m_actorInstance = settings.m_actorInstance;
             m_behavior = settings.m_behavior;
@@ -102,29 +127,19 @@ namespace EMotionFX
 
         void BehaviorInstance::DebugDraw()
         {
-            if (!m_behavior)
+            if (m_behavior && !m_debugDisplays.empty())
             {
-                return;
+                for (AzFramework::DebugDisplayRequests* debugDisplay : m_debugDisplays)
+                {
+                    if (debugDisplay)
+                    {
+                        const AZ::u32 prevState = debugDisplay->GetState();
+                        m_behavior->DebugDraw(*debugDisplay, this);
+                        debugDisplay->SetState(prevState);
+                    }
+                }
             }
-
-            // Start drawing.
-            EMotionFX::DebugDraw& drawSystem = GetDebugDraw();
-            drawSystem.Lock();
-            EMotionFX::DebugDraw::ActorInstanceData* draw = drawSystem.GetActorInstanceData(m_actorInstance);
-            draw->Lock();
-
-            // Draw.
-            const AZ::RPI::Scene* defaultScene = AZ::RPI::RPISystemInterface::Get()->GetSceneByName(AZ::Name(AzFramework::Scene::MainSceneName));
-            if (AZ::RPI::AuxGeomDrawPtr drawQueue = AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(defaultScene))
-            {
-                m_behavior->DebugDraw(drawQueue, *draw, this);
-            }
-
-            // End drawing.
-            draw->Unlock();
-            drawSystem.Unlock();
         }
-
 
         void BehaviorInstance::SamplePose(MotionInstance* motionInstance, Pose& outputPose)
         {

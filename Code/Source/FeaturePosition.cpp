@@ -72,8 +72,7 @@ namespace EMotionFX
             SetFeatureData(context.m_featureMatrix, context.m_frameIndex, position);
         }
 
-        void FeaturePosition::DebugDraw(AZ::RPI::AuxGeomDrawPtr& drawQueue,
-            [[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw,
+        void FeaturePosition::DebugDraw(AzFramework::DebugDisplayRequests& debugDisplay,
             BehaviorInstance* behaviorInstance,
             size_t frameIndex)
         {
@@ -87,11 +86,9 @@ namespace EMotionFX
             const AZ::Vector3 transformedPos = relativeToWorldTM.TransformPoint(position);
 
             constexpr float markerSize = 0.03f;
-            drawQueue->DrawSphere(transformedPos,
-                markerSize,
-                m_debugColor,
-                AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
-                AZ::RPI::AuxGeomDraw::DepthTest::Off);
+            debugDisplay.DepthTestOff();
+            debugDisplay.SetColor(m_debugColor);
+            debugDisplay.DrawBall(transformedPos, markerSize, /*drawShaded=*/false);
         }
 
         float FeaturePosition::CalculateFrameCost(size_t frameIndex, const FrameCostContext& context) const
@@ -120,7 +117,7 @@ namespace EMotionFX
                 return;
             }
 
-            editContext->Class<FeaturePosition>("PositionFrameData", "Joint position data.")
+            editContext->Class<FeaturePosition>("FeaturePosition", "Joint position data.")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);

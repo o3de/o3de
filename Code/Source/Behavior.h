@@ -16,8 +16,11 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/vector.h>
 
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/Pose.h>
+
 #include <FeatureDatabase.h>
 #include <FrameDatabase.h>
 
@@ -55,11 +58,9 @@ namespace EMotionFX
             Behavior() = default;
             virtual ~Behavior() = default;
 
-            virtual bool RegisterParameters(const InitSettings& settings) = 0;
-            virtual bool RegisterFrameDatas(const InitSettings& settings) = 0;
+            virtual bool RegisterFeatures(const InitSettings& settings) = 0;
             virtual bool Init(const InitSettings& settings);
-            virtual void DebugDraw([[maybe_unused]] AZ::RPI::AuxGeomDrawPtr& drawQueue,
-                [[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw,
+            virtual void DebugDraw([[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay,
                 [[maybe_unused]] BehaviorInstance* behaviorInstance) {}
             virtual FeatureTrajectory* GetTrajectoryFeature() const = 0;
 

@@ -16,14 +16,11 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 
-#include <EMotionFX/Source/DebugDraw.h>
 #include <EMotionFX/Source/EMotionFXConfig.h>
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/Skeleton.h>
 
-#include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
-#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
-#include <Atom/RPI.Public/Scene.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
 #include <FeatureMatrix.h>
 
@@ -77,8 +74,7 @@ namespace EMotionFX
             };
             virtual void ExtractFeatureValues(const ExtractFrameContext& context) = 0;
 
-            virtual void DebugDraw([[maybe_unused]] AZ::RPI::AuxGeomDrawPtr& drawQueue,
-                [[maybe_unused]] EMotionFX::DebugDraw::ActorInstanceData& draw,
+            virtual void DebugDraw([[maybe_unused]] AzFramework::DebugDisplayRequests& debugDisplay,
                 [[maybe_unused]] BehaviorInstance* behaviorInstance,
                 [[maybe_unused]] size_t frameIndex) {}
 

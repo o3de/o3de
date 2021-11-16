@@ -110,6 +110,8 @@ namespace EMotionFX
             bool m_blending = false;
             float m_blendWeight = 1.0f;
             float m_blendProgressTime = 0.0f; // How long are we already blending? In seconds.
+
+            AZStd::vector<AzFramework::DebugDisplayRequests*> m_debugDisplays;
         };
     } // namespace MotionMatching
 } // namespace EMotionFX

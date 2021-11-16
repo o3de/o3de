@@ -182,7 +182,7 @@ namespace EMotionFX
                 return;
             }
 
-            editContext->Class<Feature>("MotionMatchFrameData", "Base class for the frame data")
+            editContext->Class<Feature>("Feature", "Base class for the frame data")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, "")
                 ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
