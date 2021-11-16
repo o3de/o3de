@@ -22,7 +22,6 @@ namespace AzToolsFramework::ViewportUi::Internal
     const static int HighlightBorderSize = 5;
     const static char* HighlightBorderColor = "#4A90E2";
     const static int HighlightBorderBackButtonMargin = 5;
-    const static char* HighlightBorderBackButtonText = "X";
 
     static void UnparentWidgets(ViewportUiElementIdInfoLookup& viewportUiElementIdInfoLookup)
     {
@@ -384,7 +383,10 @@ namespace AzToolsFramework::ViewportUi::Internal
             "border: 0px; padding-left: %dpx; padding-right: %dpx", HighlightBorderBackButtonMargin, HighlightBorderBackButtonMargin);
         m_viewportBorderBackButton.setStyleSheet(styleSheet.c_str());
         m_viewportBorderBackButton.setVisible(false);
-        m_viewportBorderBackButton.setText(HighlightBorderBackButtonText);
+        QPixmap backButtonPixmap(QString(":/stylesheet/img/UI20/toolbar/X_axis.svg"));
+        QIcon backButtonIcon(backButtonPixmap);
+        m_viewportBorderBackButton.setIcon(backButtonIcon);
+        m_viewportBorderBackButton.setIconSize(backButtonPixmap.size());
 
         // setup the handler for the back button to call the user provided callback (if any)
         QObject::connect(
