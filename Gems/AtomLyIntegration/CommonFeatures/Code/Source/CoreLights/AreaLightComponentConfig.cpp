@@ -34,6 +34,7 @@ namespace AZ
                     // Shadows
                     ->Field("Enable Shadow", &AreaLightComponentConfig::m_enableShadow)
                     ->Field("Shadow Bias", &AreaLightComponentConfig::m_bias)
+                    ->Field("Normal Shadow Bias", &AreaLightComponentConfig::m_normalShadowBias)
                     ->Field("Shadowmap Max Size", &AreaLightComponentConfig::m_shadowmapMaxSize)
                     ->Field("Shadow Filter Method", &AreaLightComponentConfig::m_shadowFilterMethod)
                     ->Field("Filtering Sample Count", &AreaLightComponentConfig::m_filteringSampleCount)

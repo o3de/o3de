@@ -32,10 +32,7 @@ if DCCSI_GDEBUG:
     DCCSI_LOGLEVEL = int(10)
 
 # set up logger with both console and file _logging
-if DCCSI_GDEBUG:
-    _LOGGER = initialize_logger(_PACKAGENAME, log_to_file=True, default_log_level=DCCSI_LOGLEVEL)
-else:
-    _LOGGER = initialize_logger(_PACKAGENAME, log_to_file=False, default_log_level=DCCSI_LOGLEVEL)
+_LOGGER = initialize_logger(_PACKAGENAME, log_to_file=DCCSI_GDEBUG, default_log_level=DCCSI_LOGLEVEL)
         
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
@@ -46,7 +43,7 @@ if DCCSI_DEV_MODE:
     APPDATA = get_datadir()  # os APPDATA
     APPDATA_WING = Path(APPDATA, f"Wing Pro {DCCSI_WING_VERSION_MAJOR}").resolve()
     if APPDATA_WING.exists():
-        site.addsitedir(pathlib.PureWindowsPath(APPDATA_WING).as_posix())
+        site.addsitedir(APPDATA_WING.resolve())
         import wingdbstub as debugger
         try:
             debugger.Ensure()
@@ -75,8 +72,7 @@ def start():
 
         try:
             _O3DE_DEV = Path(os.getenv('O3DE_DEV'))
-            _O3DE_DEV = _O3DE_DEV.resolve()
-            os.environ['O3DE_DEV'] = pathlib.PureWindowsPath(_O3DE_DEV).as_posix()
+            os.environ['O3DE_DEV'] = _O3DE_DEV.as_posix()
             _LOGGER.debug(f'O3DE_DEV is: {_O3DE_DEV}')
         except EnvironmentError as e:
             _LOGGER.error('O3DE engineroot not set or found')
@@ -86,23 +82,22 @@ def start():
             _TAG_LY_BUILD_PATH = os.getenv('TAG_LY_BUILD_PATH', 'build')
             _DEFAULT_BIN_PATH = Path(str(_O3DE_DEV), _TAG_LY_BUILD_PATH, 'bin', 'profile')
             _O3DE_BIN_PATH = Path(os.getenv('O3DE_BIN_PATH', _DEFAULT_BIN_PATH))
-            _O3DE_BIN_PATH = _O3DE_BIN_PATH.resolve()
-            os.environ['O3DE_BIN_PATH'] = pathlib.PureWindowsPath(_O3DE_BIN_PATH).as_posix()
+            os.environ['O3DE_BIN_PATH'] = _O3DE_BIN_PATH.as_posix()
             _LOGGER.debug(f'O3DE_BIN_PATH is: {_O3DE_BIN_PATH}')
-            site.addsitedir(pathlib.PureWindowsPath(_O3DE_BIN_PATH).as_posix())
+            site.addsitedir(_O3DE_BIN_PATH.resolve())
         except EnvironmentError as e:
             _LOGGER.error('O3DE bin folder not set or found')
             raise e
         
         if running_editor:
             _O3DE_DEV = Path(os.getenv('O3DE_DEV', Path(azlmbr.paths.engroot)))
-            os.environ['O3DE_DEV'] = pathlib.PureWindowsPath(_O3DE_DEV).as_posix()
+            os.environ['O3DE_DEV'] = _O3DE_DEV.as_posix()
             _LOGGER.debug(_O3DE_DEV)
         
             _O3DE_BIN_PATH = Path(str(_O3DE_DEV),Path(azlmbr.paths.executableFolder))
         
             _O3DE_BIN = Path(os.getenv('O3DE_BIN', _O3DE_BIN_PATH.resolve()))
-            os.environ['O3DE_BIN'] = pathlib.PureWindowsPath(_O3DE_BIN).as_posix()
+            os.environ['O3DE_BIN'] = _O3DE_BIN_PATH.as_posix()
         
             _LOGGER.debug(_O3DE_BIN)
         

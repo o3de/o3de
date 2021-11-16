@@ -36,6 +36,7 @@ namespace AZ
             void SetShadowFilterMethod(ShadowFilterMethod method) override;
             void SetFilteringSampleCount(uint32_t count) override;
             void SetEsmExponent(float esmExponent) override;
+            void SetNormalShadowBias(float bias) override;
 
         private:
 

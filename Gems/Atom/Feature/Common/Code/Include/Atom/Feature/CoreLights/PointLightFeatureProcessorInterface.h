@@ -74,6 +74,8 @@ namespace AZ
             virtual void SetFilteringSampleCount(LightHandle handle, uint16_t count) = 0;
             //! Sets the Esm exponent to use. Higher values produce a steeper falloff in the border areas between light and shadow.
             virtual void SetEsmExponent(LightHandle handle, float exponent) = 0;
+            //! Sets the normal shadow bias. Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            virtual void SetNormalShadowBias(LightHandle handle, float bias) = 0;
             //! Sets all of the the point data for the provided LightHandle.
             virtual void SetPointData(LightHandle handle, const PointLightData& data) = 0;
         };

@@ -25,11 +25,6 @@ SET TAG_LY_BUILD_PATH=build
 SET DCCSI_GDEBUG=True
 SET DCCSI_DEV_MODE=True
 
-:: set the your user name here for windows path
-SET TAG_USERNAME=NOT_SET
-SET DCCSI_PY_REV=rev1
-SET DCCSI_PY_PLATFORM=windows
-
 :: Set flag so we don't initialize dccsi environment twice
 SET O3DE_USER_ENV_INIT=1
 GOTO END_OF_FILE

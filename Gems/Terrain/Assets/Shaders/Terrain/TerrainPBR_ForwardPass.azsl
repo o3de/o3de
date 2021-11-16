@@ -80,26 +80,38 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     
     // ------- Macro Color / Normal -------
     float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
-    [unroll] for (uint i = 0; i < 4 && (i < ObjectSrg::m_macroMaterialCount); ++i)
+
+    // There's a bug that shows up with an NVidia GTX 1660 Super card happening on driver versions as recent as 496.49 (10/26/21) in which
+    // the IN.m_uv values will intermittently "flicker" to 0.0 after entering and exiting game mode.  
+    // (See https://github.com/o3de/o3de/issues/5014)
+    // This bug has only shown up on PCs when using the DX12 RHI.  It doesn't show up with Vulkan or when capturing frames with PIX or
+    // RenderDoc.  Our best guess is that it is a driver bug.  The workaround is to use the IN.m_uv values in a calculation prior to the 
+    // point that we actually use them for macroUv below.  The "if(any(!isnan(IN.m_uv)))" seems to be sufficient for the workaround.  The
+    // if statement will always be true, but just the act of reading these values in the if statement makes the values stable.  Removing
+    // the if statement causes the flickering to occur using the steps documented in the bug.
+    if (any(!isnan(IN.m_uv)))
     {
-        float2 macroUvMin = ObjectSrg::m_macroMaterialData[i].m_uvMin;
-        float2 macroUvMax = ObjectSrg::m_macroMaterialData[i].m_uvMax;
-        float2 macroUv = lerp(macroUvMin, macroUvMax, IN.m_uv);
-        if (macroUv.x >= 0.0 && macroUv.x <= 1.0 && macroUv.y >= 0.0 && macroUv.y <= 1.0)
+        [unroll] for (uint i = 0; i < 4 && (i < ObjectSrg::m_macroMaterialCount); ++i)
         {
-            if ((ObjectSrg::m_macroMaterialData[i].m_mapsInUse & 1) > 0)
+            float2 macroUvMin = ObjectSrg::m_macroMaterialData[i].m_uvMin;
+            float2 macroUvMax = ObjectSrg::m_macroMaterialData[i].m_uvMax;
+            float2 macroUv = lerp(macroUvMin, macroUvMax, IN.m_uv);
+            if (macroUv.x >= 0.0 && macroUv.x <= 1.0 && macroUv.y >= 0.0 && macroUv.y <= 1.0)
             {
-                macroColor = GetBaseColorInput(ObjectSrg::m_macroColorMap[i], TerrainMaterialSrg::m_sampler, macroUv, macroColor, true);
+                if ((ObjectSrg::m_macroMaterialData[i].m_mapsInUse & 1) > 0)
+                {
+                    macroColor = GetBaseColorInput(ObjectSrg::m_macroColorMap[i], TerrainMaterialSrg::m_sampler, macroUv, macroColor, true);
+                }
+                if ((ObjectSrg::m_macroMaterialData[i].m_mapsInUse & 2) > 0)
+                {
+                    bool flipX = ObjectSrg::m_macroMaterialData[i].m_flipNormalX;
+                    bool flipY = ObjectSrg::m_macroMaterialData[i].m_flipNormalY;
+                    bool factor = ObjectSrg::m_macroMaterialData[i].m_normalFactor;
+                    macroNormal = GetNormalInputTS(ObjectSrg::m_macroNormalMap[i], TerrainMaterialSrg::m_sampler, 
+                        macroUv, flipX, flipY, CreateIdentity3x3(), true, factor);
+                }
+                break;
             }
-            if ((ObjectSrg::m_macroMaterialData[i].m_mapsInUse & 2) > 0)
-            {
-                bool flipX = ObjectSrg::m_macroMaterialData[i].m_flipNormalX;
-                bool flipY = ObjectSrg::m_macroMaterialData[i].m_flipNormalY;
-                bool factor = ObjectSrg::m_macroMaterialData[i].m_normalFactor;
-                macroNormal = GetNormalInputTS(ObjectSrg::m_macroNormalMap[i], TerrainMaterialSrg::m_sampler, 
-                    macroUv, flipX, flipY, CreateIdentity3x3(), true, factor);
-            }
-            break;
         }
     }
 
