@@ -327,7 +327,7 @@ namespace Camera
         {
             return new ViewportSelectorHolder(parent);
         }
-    } // namespace Internal
+    } // namespace Camera::Internal
 
     void RegisterViewportCameraSelectorWindow()
     {
