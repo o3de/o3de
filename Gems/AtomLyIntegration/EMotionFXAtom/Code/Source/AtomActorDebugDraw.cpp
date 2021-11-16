@@ -329,15 +329,15 @@ namespace AZ::Render
                     m_auxVertices.emplace_back(position);
                     m_auxVertices.emplace_back(position + normal);
                 }
-            }
 
-            RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
-            lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
-            lineArgs.m_colors = &vertexNormalsColor;
-            lineArgs.m_colorCount = 1;
-            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
-            auxGeom->DrawLines(lineArgs);
+                RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
+                lineArgs.m_verts = m_auxVertices.data();
+                lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+                lineArgs.m_colors = &vertexNormalsColor;
+                lineArgs.m_colorCount = 1;
+                lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+                auxGeom->DrawLines(lineArgs);
+            }
         }
     }
 
