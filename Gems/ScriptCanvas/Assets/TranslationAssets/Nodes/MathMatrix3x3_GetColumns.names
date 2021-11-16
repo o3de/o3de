@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetColumns",
+                "name": "Get Columns",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns all columns from matrix",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns all columns from matrix"
             },
             "slots": [
                 {
@@ -24,27 +23,27 @@
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Matrix3x3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Column1: Vector3",
+                    "key": "DataOutput_Column1",
                     "details": {
-                        "name": "Column1: Vector3"
+                        "name": "Column 1"
                     }
                 },
                 {
-                    "key": "DataOutput_Column2: Vector3",
+                    "key": "DataOutput_Column2",
                     "details": {
-                        "name": "Column2: Vector3"
+                        "name": "Column 2"
                     }
                 },
                 {
-                    "key": "DataOutput_Column3: Vector3",
+                    "key": "DataOutput_Column3",
                     "details": {
-                        "name": "Column3: Vector3"
+                        "name": "Column 3"
                     }
                 }
             ]
