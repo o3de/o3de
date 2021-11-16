@@ -167,6 +167,7 @@ namespace AtomToolsFramework
 
     bool ConvertToExportFormat(
         const AZStd::string& exportPath,
+        [[maybe_unused]] const AZ::Name& propertyId,
         const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
         AZ::RPI::MaterialPropertyValue& propertyValue)
     {
@@ -175,7 +176,7 @@ namespace AtomToolsFramework
             const uint32_t index = propertyValue.GetValue<uint32_t>();
             if (index >= propertyDefinition.m_enumValues.size())
             {
-                AZ_Error("AtomToolsFramework", false, "Invalid value for material enum property: '%s'.", propertyDefinition.m_name.c_str());
+                AZ_Error("AtomToolsFramework", false, "Invalid value for material enum property: '%s'.", propertyId.GetCStr());
                 return false;
             }
 
