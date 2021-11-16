@@ -40,7 +40,7 @@ namespace AzFramework
         AZ::Vector2 m_viewportSize = AZ::Vector2::CreateZero(); //!< Dimensions of the viewport.
         float m_nearClip = 0.01f; //!< Near clip plane of the camera.
         float m_farClip = 100.0f; //!< Far clip plane of the camera.
-        float m_fovOrZoom = 0.0f; //!< Fov or zoom of camera depending on if it is using orthographic projection or not.
+        float m_fovOrZoom = 0.0f; //!< Vertical fov or zoom of camera depending on if it is using orthographic projection or not.
         bool m_orthographic = false; //!< Is the camera using orthographic projection or not.
     };
 

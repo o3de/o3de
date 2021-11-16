@@ -67,8 +67,8 @@ namespace AzFramework
         {
         }
 
-        int m_width; //!< X screen width.
-        int m_height; //!< Y screen height.
+        int m_width; //!< Screen size width.
+        int m_height; //!< Screen size height.
     };
 
     void ScreenGeometryReflect(AZ::ReflectContext* context);

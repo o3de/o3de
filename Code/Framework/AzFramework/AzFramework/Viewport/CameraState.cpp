@@ -14,11 +14,12 @@
 
 namespace AzFramework
 {
-    void SetCameraClippingVolume(AzFramework::CameraState& cameraState, const float nearPlane, const float farPlane, const float fovRad)
+    void SetCameraClippingVolume(
+        AzFramework::CameraState& cameraState, const float nearPlane, const float farPlane, const float verticalFovRad)
     {
         cameraState.m_nearClip = nearPlane;
         cameraState.m_farClip = farPlane;
-        cameraState.m_fovOrZoom = fovRad;
+        cameraState.m_fovOrZoom = verticalFovRad;
     }
 
     void SetCameraTransform(CameraState& cameraState, const AZ::Transform& transform)
@@ -35,7 +36,11 @@ namespace AzFramework
     }
 
     CameraState CreateCamera(
-        const AZ::Transform& transform, float nearPlane, float farPlane, float verticalFovRad, const AZ::Vector2& viewportSize)
+        const AZ::Transform& transform,
+        const float nearPlane,
+        const float farPlane,
+        const float verticalFovRad,
+        const AZ::Vector2& viewportSize)
     {
         AzFramework::CameraState cameraState;
 
