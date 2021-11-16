@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "key": "SimpleStateComponentNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Simple State",
+                "category": "Gameplay"
+            },
+            "methods": [
+                {
+                    "key": "OnStateChanged",
+                    "details": {
+                        "name": "On State Changed",
+                        "tooltip": "Notifies that the state has changed from state oldName to state newName"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Old State",
+                                "tooltip": "Name of the old state"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "New State",
+                                "tooltip": "Name of the new state"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

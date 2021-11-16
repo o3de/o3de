@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorReflectionProbeComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorReflectionProbeComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

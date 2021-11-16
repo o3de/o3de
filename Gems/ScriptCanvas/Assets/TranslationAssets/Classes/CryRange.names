@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "CryRange",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "CryRange"
+            }
+        }
+    ]
+}

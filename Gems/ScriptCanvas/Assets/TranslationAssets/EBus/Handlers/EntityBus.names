@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "EntityBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Game Entity",
+                "category": "Entity"
+            },
+            "methods": [
+                {
+                    "key": "OnEntityActivated",
+                    "details": {
+                        "name": "On Entity Activated",
+                        "tooltip": "Signals that an entity was activated"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity",
+                                "tooltip": "The ID of the entity that was activated"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnEntityDeactivated",
+                    "details": {
+                        "name": "On Entity Deactivated",
+                        "tooltip": "Signals that an entity is being deactivated"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity",
+                                "tooltip": "The ID of the entity that is being deactivated"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

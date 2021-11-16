@@ -60,7 +60,7 @@ class EditorSingleTest_WithFileOverrides(EditorSingleTest):
 class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
 
     global_extra_cmdline_args = ['-BatchMode', '-autotest_mode',
-                                 'extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]']
+                                 '--regset=/Amazon/Preferences/EnablePrefabSystem=true']
 
     @staticmethod
     def get_number_parallel_editors():

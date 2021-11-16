@@ -40,7 +40,7 @@ namespace O3DE::ProjectManager
         static QString GetPath(const QModelIndex& modelIndex);
 
         static QStringList GetIncludedGemPaths(const QModelIndex& modelIndex);
-        static QStringList GetIncludedGemNames(const QModelIndex& modelIndex);
+        static QVector<Tag> GetIncludedGemTags(const QModelIndex& modelIndex);
         static QVector<GemInfo> GetIncludedGemInfos(const QModelIndex& modelIndex);
 
         static bool IsEnabled(const QModelIndex& modelIndex);

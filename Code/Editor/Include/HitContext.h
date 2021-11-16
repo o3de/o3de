@@ -19,7 +19,6 @@ class CBaseObject;
 struct IDisplayViewport;
 class CDeepSelection;
 struct AABB;
-class CCamera;
 
 #include <QRect>
 #include <platform.h>
@@ -68,8 +67,6 @@ struct HitContext
     QRect rect;
     //! Optional limiting bounding box for hit testing.
     AABB* bounds;
-    //! Optional camera for culling perspective viewports.
-    CCamera* camera;
 
     //! Testing performed in 2D viewport.
     bool b2DViewport;
@@ -120,7 +117,6 @@ struct HitContext
         rect = QRect();
         b2DViewport = false;
         view = 0;
-        camera = 0;
         point2d = QPoint();
         axis = 0;
         distanceTolerance = 0;

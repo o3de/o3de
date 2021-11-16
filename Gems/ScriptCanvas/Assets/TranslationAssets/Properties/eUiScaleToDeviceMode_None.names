@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiScaleToDeviceMode_None",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiScaleToDeviceMode_None::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

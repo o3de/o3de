@@ -1,0 +1,196 @@
+{
+    "entries": [
+        {
+            "key": "UiOffsets",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "UI Offsets",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "SetBottom",
+                    "context": "UiOffsets",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetBottom"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetBottom is invoked"
+                    },
+                    "details": {
+                        "name": "UiOffsets::SetBottom",
+                        "category": "UI"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets",
+                                "tooltip": "The Offsets for which to set the bottom offset"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Bottom",
+                                "tooltip": "The offset from the anchors to the bottom edge of the element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetRight",
+                    "context": "UiOffsets",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetRight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetRight is invoked"
+                    },
+                    "details": {
+                        "name": "UiOffsets::SetRight",
+                        "category": "UI"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets",
+                                "tooltip": "The offsets for which to set the right offset"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Right",
+                                "tooltip": "The offset from the anchors to the right edge of the element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetOffsets",
+                    "context": "UiOffsets",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetOffsets"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetOffsets is invoked"
+                    },
+                    "details": {
+                        "name": "UiOffsets::SetOffsets",
+                        "category": "UI"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets",
+                                "tooltip": "The offsets to set"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Left",
+                                "tooltip": "The offset from the anchors to the left edge of the element"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Top",
+                                "tooltip": "The offset from the anchors to the top edge of the element"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Right",
+                                "tooltip": "The offset from the anchors to the right edge of the element"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Bottom",
+                                "tooltip": "The offset from the anchors to the bottom edge of the element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTop",
+                    "context": "UiOffsets",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTop"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTop is invoked"
+                    },
+                    "details": {
+                        "name": "UiOffsets::SetTop",
+                        "category": "UI"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets",
+                                "tooltip": "The offsets for which to set the top offset"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Top",
+                                "tooltip": "The offset from the anchors to the top edge of the element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLeft",
+                    "context": "UiOffsets",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetLeft"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetLeft is invoked"
+                    },
+                    "details": {
+                        "name": "UiOffsets::SetLeft",
+                        "category": "UI"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+                            "details": {
+                                "name": "Offsets",
+                                "tooltip": "The offsets for which to set the left offset"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Left",
+                                "tooltip": "The offset from the anchors to the left edge of the element"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

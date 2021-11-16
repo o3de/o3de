@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiFlipbookAnimationFramerateUnits_SecondsPerFrame",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiFlipbookAnimationFramerateUnits_SecondsPerFrame::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -8,13 +8,12 @@
 
 #pragma once
 
-class QAction;
+class QWidget;
 class QMenu;
+class QAction;
 
 namespace ScriptCanvasDeveloperEditor
 {
-    namespace TSGenerateAction
-    {
-        QAction* SetupTSFileAction(QMenu* mainWindow);
-    };
+    //! The Qt action for translation database options
+    QAction* TranslationDatabaseFileAction(QMenu* mainMenu, QWidget* mainWindow);
 }

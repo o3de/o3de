@@ -357,6 +357,8 @@ namespace ScriptCanvasEditor
             AZ::u32 m_alignmentTimeMS;
 
             StylingSettings m_stylingSettings;
+
+            AZ::u32 m_sceneContextMenuNodePaletteWidth = 300;
         };
     }
 }

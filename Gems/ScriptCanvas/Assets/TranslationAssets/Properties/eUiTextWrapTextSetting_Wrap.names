@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiTextWrapTextSetting_Wrap",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiTextWrapTextSetting_Wrap::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

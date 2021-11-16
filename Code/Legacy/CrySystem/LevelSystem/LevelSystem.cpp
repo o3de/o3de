@@ -19,6 +19,7 @@
 #include <CryCommon/StaticInstance.h>
 
 #include <AzCore/Debug/AssetTracking.h>
+#include <AzCore/Time/ITime.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
@@ -553,8 +554,6 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
 
     // Not remove a scope!!!
     {
-        //m_levelLoadStartTime = gEnv->pTimer->GetAsyncTime();
-
         CLevelInfo* pLevelInfo = GetLevelInfoInternal(levelName);
 
         if (!pLevelInfo)
@@ -693,7 +692,9 @@ void CLevelSystem::PrepareNextLevel(const char* levelName)
     // This work not required in-editor.
     if (!gEnv || !gEnv->IsEditor())
     {
-        m_levelLoadStartTime = gEnv->pTimer->GetAsyncTime();
+        const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+        const double timeSec = AZ::TimeMsToSecondsDouble(timeMs);
+        m_levelLoadStartTime = CTimeValue(timeSec);
 
         // Open pak file for a new level.
         pLevelInfo->OpenLevelPak();
@@ -726,7 +727,8 @@ void CLevelSystem::OnLoadingStart(const char* levelName)
         gEnv->pCryPak->RecordFileOpen(AZ::IO::IArchive::RFOM_Level);
     }
 
-    m_fLastTime = gEnv->pTimer->GetAsyncCurTime();
+    const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+    m_fLastTime = AZ::TimeMsToSeconds(timeMs);
 
     GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START, 0, 0);
 
@@ -757,7 +759,9 @@ void CLevelSystem::OnLoadingError(const char* levelName, const char* error)
 //------------------------------------------------------------------------
 void CLevelSystem::OnLoadingComplete(const char* levelName)
 {
-    CTimeValue t = gEnv->pTimer->GetAsyncTime();
+    const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+    const double timeSec = AZ::TimeMsToSecondsDouble(timeMs);
+    const CTimeValue t(timeSec);
     m_fLastLevelLoadTime = (t - m_levelLoadStartTime).GetSeconds();
 
     LogLoadingTime();
@@ -851,7 +855,7 @@ void CLevelSystem::UnloadLevel()
         gEnv->pCryPak->DisableRuntimeFileAccess(false);
     }
 
-    CTimeValue tBegin = gEnv->pTimer->GetAsyncTime();
+    const AZ::TimeMs beginTimeMs = AZ::GetRealElapsedTimeMs();
 
     // Clear level entities and prefab instances.
     EBUS_EVENT(AzFramework::GameEntityContextRequestBus, ResetGameContext);
@@ -889,8 +893,8 @@ void CLevelSystem::UnloadLevel()
 
     m_bLevelLoaded = false;
 
-    CTimeValue tUnloadTime = gEnv->pTimer->GetAsyncTime() - tBegin;
-    CryLog("UnloadLevel End: %.1f sec", tUnloadTime.GetSeconds());
+    const AZ::TimeMs unloadTimeMs = AZ::GetRealElapsedTimeMs() - beginTimeMs;
+    CryLog("UnloadLevel End: %.1f sec", AZ::TimeMsToSeconds(unloadTimeMs));
 
     // Must be sent last.
     // Cleanup all containers

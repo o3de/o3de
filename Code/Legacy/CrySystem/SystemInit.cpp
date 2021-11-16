@@ -30,7 +30,6 @@
 #define SYSTEMINIT_CPP_SECTION_17 17
 #endif
 
-#include "CryLibrary.h"
 #include "CryPath.h"
 
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
@@ -79,7 +78,6 @@
 #include <ICmdLine.h>
 #include <IProcess.h>
 #include <LyShine/ILyShine.h>
-#include <HMDBus.h>
 
 #include <AzFramework/Archive/Archive.h>
 #include "XConsole.h"
@@ -89,7 +87,6 @@
 #include "SystemEventDispatcher.h"
 #include "LevelSystem/LevelSystem.h"
 #include "LevelSystem/SpawnableLevelSystem.h"
-#include "ViewSystem/ViewSystem.h"
 #include <CrySystemBus.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobManagerBus.h>
@@ -1102,17 +1099,6 @@ AZ_POP_DISABLE_WARNING
                                                             AzFramework::SystemCursorState::ConstrainedAndHidden);
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        // TIME
-        //////////////////////////////////////////////////////////////////////////
-        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Time initialization");
-        if (!m_Time.Init())
-        {
-            AZ_Assert(false, "Failed to initialize CTimer instance.");
-            return false;
-        }
-        m_Time.ResetTimer();
-
         // CONSOLE
         //////////////////////////////////////////////////////////////////////////
         if (!InitConsole())
@@ -1147,12 +1133,6 @@ AZ_POP_DISABLE_WARNING
 
         InlineInitializationProcessing("CSystem::Init Level System");
 
-        //////////////////////////////////////////////////////////////////////////
-        // VIEW SYSTEM (must be created after m_pLevelSystem)
-        m_pViewSystem = new LegacyViewSystem::CViewSystem(this);
-
-        InlineInitializationProcessing("CSystem::Init View System");
-
         if (m_env.pLyShine)
         {
             m_env.pLyShine->PostInit();
@@ -1185,12 +1165,6 @@ AZ_POP_DISABLE_WARNING
 #endif
 
     InlineInitializationProcessing("CSystem::Init End");
-
-    if (gEnv->IsDedicated())
-    {
-        SCVarsClientConfigSink CVarsClientConfigSink;
-        LoadConfiguration("client.cfg", &CVarsClientConfigSink);
-    }
 
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);

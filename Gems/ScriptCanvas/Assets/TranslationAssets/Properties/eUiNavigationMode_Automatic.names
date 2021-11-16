@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiNavigationMode_Automatic",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiNavigationMode_Automatic::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

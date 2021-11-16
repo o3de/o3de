@@ -13,11 +13,11 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Time/ITime.h>
 
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 
 #include <IRenderer.h>
-#include <ITimer.h>
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiTransformBus.h>
 #include <LyShine/Bus/UiVisualBus.h>
@@ -745,19 +745,17 @@ void UiTextInputComponent::Update(float deltaTime)
     // update cursor blinking, only if: this component is active, and blink interval set, and there is no text selection
     if (m_isEditing && m_cursorBlinkInterval > 0.0f && m_textSelectionStartPos == m_textCursorPos)
     {
+        const AZ::TimeMs realTimeMs = AZ::GetRealElapsedTimeMs();
+        const float currentTime = AZ::TimeMsToSeconds(realTimeMs);
         if (m_cursorBlinkStartTime == 0.0f)
         {
-            m_cursorBlinkStartTime = gEnv->pTimer->GetCurrTime(ITimer::ETIMER_UI);
+            m_cursorBlinkStartTime = currentTime;
         }
-        else
+        else if (currentTime - m_cursorBlinkStartTime > m_cursorBlinkInterval *  0.5f)
         {
-            const float currentTime = gEnv->pTimer->GetCurrTime(ITimer::ETIMER_UI);
-            if (currentTime - m_cursorBlinkStartTime > m_cursorBlinkInterval *  0.5f)
-            {
-                m_textCursorColor.SetA(m_textCursorColor.GetA() ? 0.0f : 1.0f);
-                m_cursorBlinkStartTime = currentTime;
-                EBUS_EVENT_ID(m_textEntity, UiTextBus, SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
-            }
+            m_textCursorColor.SetA(m_textCursorColor.GetA() ? 0.0f : 1.0f);
+            m_cursorBlinkStartTime = currentTime;
+            EBUS_EVENT_ID(m_textEntity, UiTextBus, SetSelectionRange, m_textSelectionStartPos, m_textCursorPos, m_textCursorColor);
         }
     }
 }

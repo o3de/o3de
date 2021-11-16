@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "{78E62FB8-7CD0-5E4D-BA31-9E62867C4F6A}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "GetRight",
+                "category": "Math/Transform",
+                "tooltip": "returns the right direction vector from the specified transform scaled by a given value (O3DE uses Z up, right handed)",
+                "subtitle": "Transform"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Transform: Source",
+                    "details": {
+                        "name": "Transform: Source"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Scale",
+                    "details": {
+                        "name": "Number: Scale"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Vector3",
+                    "details": {
+                        "name": "Result: Vector3"
+                    }
+                }
+            ]
+        }
+    ]
+}

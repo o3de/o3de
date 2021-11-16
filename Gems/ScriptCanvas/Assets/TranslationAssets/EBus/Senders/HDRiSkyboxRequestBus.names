@@ -1,0 +1,58 @@
+{
+    "entries": [
+        {
+            "key": "HDRiSkyboxRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "HDRiSkyboxRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "SetExposure",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetExposure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetExposure is invoked"
+                    },
+                    "details": {
+                        "name": "SetExposure"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetExposure",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetExposure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetExposure is invoked"
+                    },
+                    "details": {
+                        "name": "GetExposure"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

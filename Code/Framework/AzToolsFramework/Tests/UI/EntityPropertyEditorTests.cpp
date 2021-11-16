@@ -36,11 +36,6 @@ namespace UnitTest
         : public ComponentApplication
     {
     public:
-        void SetExecutableFolder(const char* path)
-        {
-            m_exeDirectory = path;
-        }
-
         void SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations) override
         {
             ComponentApplication::SetSettingsRegistrySpecializations(specializations);

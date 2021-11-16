@@ -86,6 +86,45 @@ namespace AzToolsFramework::Prefab
         return AZ::Success();
     }
 
+    PrefabFocusOperationResult PrefabFocusHandler::FocusOnParentOfFocusedPrefab(
+        [[maybe_unused]] AzFramework::EntityContextId entityContextId)
+    {
+        // If only one instance is in the hierarchy, this operation is invalid
+        size_t hierarchySize = m_instanceFocusHierarchy.size();
+        if (hierarchySize <= 1)
+        {
+            return AZ::Failure(
+                AZStd::string("Prefab Focus Handler: Could not complete FocusOnParentOfFocusedPrefab operation while focusing on the root."));
+        }
+
+        // Retrieve parent of currently focused prefab.
+        InstanceOptionalReference parentInstance = m_instanceFocusHierarchy[hierarchySize - 2];
+
+        // Use container entity of parent Instance for focus operations.
+        AZ::EntityId entityId = parentInstance->get().GetContainerEntityId();
+
+        // Initialize Undo Batch object
+        ScopedUndoBatch undoBatch("Edit Prefab");
+
+        // Clear selection
+        {
+            const EntityIdList selectedEntities = EntityIdList{};
+            auto selectionUndo = aznew SelectionCommand(selectedEntities, "Clear Selection");
+            selectionUndo->SetParent(undoBatch.GetUndoBatch());
+            ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::SetSelectedEntities, selectedEntities);
+        }
+
+        // Edit Prefab
+        {
+            auto editUndo = aznew PrefabFocusUndo("Edit Prefab");
+            editUndo->Capture(entityId);
+            editUndo->SetParent(undoBatch.GetUndoBatch());
+            FocusOnPrefabInstanceOwningEntityId(entityId);
+        }
+
+        return AZ::Success();
+    }
+
     PrefabFocusOperationResult PrefabFocusHandler::FocusOnPathIndex([[maybe_unused]] AzFramework::EntityContextId entityContextId, int index)
     {
         if (index < 0 || index >= m_instanceFocusHierarchy.size())
@@ -136,20 +175,14 @@ namespace AzToolsFramework::Prefab
         m_focusedInstance = focusedInstance;
         m_focusedTemplateId = focusedInstance->get().GetTemplateId();
 
-        AZ::EntityId containerEntityId;
-
-        if (focusedInstance->get().GetParentInstance() != AZStd::nullopt)
-        {
-            containerEntityId = focusedInstance->get().GetContainerEntityId();
-        }
-        else
-        {
-            containerEntityId = AZ::EntityId();
-        }
-            
         // Focus on the descendants of the container entity in the Editor, if the interface is initialized.
         if (m_focusModeInterface)
         {
+            const AZ::EntityId containerEntityId =
+                (focusedInstance->get().GetParentInstance() != AZStd::nullopt)
+                ? focusedInstance->get().GetContainerEntityId()
+                : AZ::EntityId();
+
             m_focusModeInterface->SetFocusRoot(containerEntityId);
         }
 

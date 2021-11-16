@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "UiScrollBoxNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Scroll Box",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "OnScrollOffsetChanging",
+                    "details": {
+                        "name": "On Scroll Offset Changing",
+                        "tooltip": "Executes when the scroll offset is changing"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Scroll Offset",
+                                "tooltip": "The new scroll offset"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnScrollOffsetChanged",
+                    "details": {
+                        "name": "On Scroll Offset Changed",
+                        "tooltip": "Executes when the scroll offset has changed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Scroll Offset",
+                                "tooltip": "The new scroll offset"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

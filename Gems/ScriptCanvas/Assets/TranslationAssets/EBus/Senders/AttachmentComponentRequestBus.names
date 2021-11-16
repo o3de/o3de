@@ -1,0 +1,92 @@
+{
+    "entries": [
+        {
+            "key": "AttachmentComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "AttachmentComponentRequestBus",
+                "category": "Animation"
+            },
+            "methods": [
+                {
+                    "key": "Attach",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Attach"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Attach is invoked"
+                    },
+                    "details": {
+                        "name": "Attach",
+                        "tooltip": "Attaches the entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Target",
+                                "tooltip": "ID of entity to attach to"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Bone",
+                                "tooltip": "Name of bone on entity to attach to. If bone is not found, then attach to target entity's transform origin"
+                            }
+                        },
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Offset",
+                                "tooltip": "Attachment's offset from target"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Detach",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Detach"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Detach is invoked"
+                    },
+                    "details": {
+                        "name": "Detach",
+                        "tooltip": "Detaches the entity"
+                    }
+                },
+                {
+                    "key": "SetAttachmentOffset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Offset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Offset is invoked"
+                    },
+                    "details": {
+                        "name": "Set Offset",
+                        "tooltip": "Sets the offset of the attachment"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Offset",
+                                "tooltip": "Attachment's offset from target"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

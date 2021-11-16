@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "FillMode_Invalid",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "FillMode_Invalid::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

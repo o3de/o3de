@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DepthOfFieldComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DepthOfFieldComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

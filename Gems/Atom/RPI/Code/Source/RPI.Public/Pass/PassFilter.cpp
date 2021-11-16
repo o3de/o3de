@@ -90,13 +90,13 @@ namespace AZ
             return filter;
         }
 
-        void PassFilter::SetOwenrScene(const Scene* scene)
+        void PassFilter::SetOwnerScene(const Scene* scene)
         {
             m_ownerScene = scene;
             UpdateFilterOptions();
         }
 
-        void PassFilter::SetOwenrRenderPipeline(const RenderPipeline* renderPipeline)
+        void PassFilter::SetOwnerRenderPipeline(const RenderPipeline* renderPipeline)
         {
             m_ownerRenderPipeline = renderPipeline;
             UpdateFilterOptions();

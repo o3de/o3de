@@ -229,6 +229,7 @@ set(FILES
     Physics/Configuration/SystemConfiguration.h
     Physics/Configuration/SystemConfiguration.cpp
     Physics/HeightfieldProviderBus.h
+    Physics/HeightfieldProviderBus.cpp
     Physics/SimulatedBodies/RigidBody.h
     Physics/SimulatedBodies/RigidBody.cpp
     Physics/SimulatedBodies/StaticRigidBody.h
@@ -286,6 +287,7 @@ set(FILES
     Spawnable/RootSpawnableInterface.h
     Spawnable/Spawnable.cpp
     Spawnable/Spawnable.h
+    Spawnable/SpawnableAssetBus.h
     Spawnable/SpawnableAssetHandler.h
     Spawnable/SpawnableAssetHandler.cpp
     Spawnable/SpawnableEntitiesContainer.h

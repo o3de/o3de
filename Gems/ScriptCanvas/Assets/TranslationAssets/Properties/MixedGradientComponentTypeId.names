@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "MixedGradientComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "MixedGradientComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

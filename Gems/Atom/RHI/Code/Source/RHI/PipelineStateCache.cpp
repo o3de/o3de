@@ -41,9 +41,12 @@ namespace AZ
                     AZ_Assert(readOnlyCache.empty(), "Inactive library has pipeline states in its global entry.");
                 }
 
+#if defined(AZ_DEBUG_BUILD)
+                // the PipelineStateSet is expensive to duplicate, only do this in debug.
                 PipelineStateSet readOnlyCacheCopy = readOnlyCache;
                 AZ_Assert(AZStd::unique(readOnlyCacheCopy.begin(), readOnlyCacheCopy.end()) == readOnlyCacheCopy.end(),
                     "'%d' Duplicates existed in the read-only cache!", readOnlyCache.size() - readOnlyCacheCopy.size());
+#endif
             }
 
             m_threadLibrarySet.ForEach([this](const ThreadLibrarySet& threadLibrarySet)
