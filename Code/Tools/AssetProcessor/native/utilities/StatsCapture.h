@@ -17,7 +17,7 @@
 
 namespace AssetProcessor
 {
-    namespace SimpleStatsCapture
+    namespace StatsCapture
     {
         //! call this one time before capturing stats.
         void Initialize();

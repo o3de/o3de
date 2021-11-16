@@ -25,7 +25,7 @@
 
 #include <native/AssetManager/PathDependencyManager.h>
 #include <native/utilities/BuilderConfigurationBus.h>
-#include <native/utilities/SimpleStatsCapture.h>
+#include <native/utilities/StatsCapture.h>
 
 #include "AssetRequestHandler.h"
 
@@ -125,7 +125,7 @@ namespace AssetProcessor
         if (status == AssetProcessor::AssetScanningStatus::Started)
         {
             // capture scanning stats:
-            AssetProcessor::SimpleStatsCapture::BeginCaptureStat("AssetScanning");
+            AssetProcessor::StatsCapture::BeginCaptureStat("AssetScanning");
            
             // Ensure that the source file list is populated before a scan begins
             m_sourceFilesInDatabase.clear();
@@ -180,7 +180,7 @@ namespace AssetProcessor
                  (status == AssetProcessor::AssetScanningStatus::Stopped))
         {
             m_isCurrentlyScanning = false;
-            AssetProcessor::SimpleStatsCapture::EndCaptureStat("AssetScanning");
+            AssetProcessor::StatsCapture::EndCaptureStat("AssetScanning");
             
             // we cannot invoke this immediately - the scanner might be done, but we aren't actually ready until we've processed all remaining messages:
             QMetaObject::invokeMethod(this, "CheckMissingFiles", Qt::QueuedConnection);
@@ -222,7 +222,7 @@ namespace AssetProcessor
                 //update to in progress status
                 m_jobRunKeyToJobInfoMap[jobEntry.m_jobRunKey].m_status = JobStatus::InProgress;
                 // stats tracking.  Start accumulating time.
-                AssetProcessor::SimpleStatsCapture::BeginCaptureStat(statKey.toUtf8().constData());
+                AssetProcessor::StatsCapture::BeginCaptureStat(statKey.toUtf8().constData());
 
             }
             else //if failed or succeeded remove from the map
@@ -231,7 +231,7 @@ namespace AssetProcessor
                 // becuase sometimes jobs take a short cut from "started" -> "failed" or "started" -> "complete
                 // without going thru the RC.
                 // as such, all the code in this block should be crafted to work regardless of whether its double called.
-                AssetProcessor::SimpleStatsCapture::EndCaptureStat(statKey.toUtf8().constData());
+                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());
                 
                 m_jobRunKeyToJobInfoMap.erase(jobEntry.m_jobRunKey);
                 Q_EMIT SourceFinished(sourceUUID, legacySourceUUID);
@@ -3374,9 +3374,9 @@ namespace AssetProcessor
                 AssetUtilities::JobLogTraceListener jobLogTraceListener(logFileName, runKey, true);
                 // track the time it takes to createJobs.  We can perform analysis later to present it by extension and other stats.
                 QString statKey = QString("CreateJobs,%1,%2").arg(actualRelativePath).arg(builderInfo.m_name.c_str());
-                AssetProcessor::SimpleStatsCapture::BeginCaptureStat(statKey.toUtf8().constData());
+                AssetProcessor::StatsCapture::BeginCaptureStat(statKey.toUtf8().constData());
                 builderInfo.m_createJobFunction(createJobsRequest, createJobsResponse);
-                AssetProcessor::SimpleStatsCapture::EndCaptureStat(statKey.toUtf8().constData());
+                AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());
             }
             
             AssetProcessor::SetThreadLocalJobId(0);

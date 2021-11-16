@@ -6,7 +6,7 @@
  *
  */
 
-#include <native/utilities/SimpleStatsCapture.h>
+#include <native/utilities/StatsCapture.h>
 #include <native/assetprocessor.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
@@ -22,16 +22,16 @@
 
 namespace AssetProcessor
 {
-    namespace SimpleStatsCapture
+    namespace StatsCapture
     {
         // This class captures stats by storing them in a map of type
         // [name of stat] -> Stat struct
         // It can then analyze these stats and produce more stats from the original
         // Captures, before dumping.
-        class SimpleStatsCaptureImpl final
+        class StatsCaptureImpl final
         {
         public:
-            AZ_CLASS_ALLOCATOR(SimpleStatsCaptureImpl, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StatsCaptureImpl, AZ::SystemAllocator, 0);
 
             void BeginCaptureStat(AZStd::string_view statName);
             void EndCaptureStat(AZStd::string_view statName);
@@ -91,7 +91,7 @@ namespace AssetProcessor
             }
         };
 
-        void SimpleStatsCaptureImpl::BeginCaptureStat(AZStd::string_view statName)
+        void StatsCaptureImpl::BeginCaptureStat(AZStd::string_view statName)
         {
             StatsEntry& existingStat = m_stats[statName];
             if (existingStat.m_operationStartTime != timepoint())
@@ -102,7 +102,7 @@ namespace AssetProcessor
             existingStat.m_operationStartTime = AZStd::chrono::high_resolution_clock::now();
         }
 
-        void SimpleStatsCaptureImpl::EndCaptureStat(AZStd::string_view statName)
+        void StatsCaptureImpl::EndCaptureStat(AZStd::string_view statName)
         {
             StatsEntry& existingStat = m_stats[statName];
             if (existingStat.m_operationStartTime != timepoint())
@@ -113,7 +113,7 @@ namespace AssetProcessor
             }
         }
 
-        void SimpleStatsCaptureImpl::Dump()
+        void StatsCaptureImpl::Dump()
         {
             timepoint startTimeStamp = AZStd::chrono::high_resolution_clock::now();
 
@@ -334,17 +334,17 @@ namespace AssetProcessor
         }
 
         // Public interface:
-        static SimpleStatsCaptureImpl* g_instance = nullptr;
+        static StatsCaptureImpl* g_instance = nullptr;
 
         //! call this one time before capturing stats.
         void Initialize()
         {
             if (g_instance)
             {
-                AZ_Assert(false, "An instance of SimpleStatsCaptureImpl already exists.");
+                AZ_Assert(false, "An instance of StatsCaptureImpl already exists.");
                 return;
             }
-            g_instance = aznew SimpleStatsCaptureImpl();
+            g_instance = aznew StatsCaptureImpl();
         }
 
         //! Call this one time as part of shutting down.
