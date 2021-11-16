@@ -35,6 +35,7 @@ def DynVegUtils_TempPrefabCreationWorks():
     import azlmbr.bus as bus
     import azlmbr.math as math
 
+    from Prefab.tests import PrefabTestUtils as prefab_test_utils
     from largeworlds.large_worlds_utils import editor_dynveg_test_helper as dynveg
     from editor_python_test_tools.utils import Report, Tracer
     from editor_python_test_tools.utils import TestHelper as helper
@@ -51,8 +52,7 @@ def DynVegUtils_TempPrefabCreationWorks():
                    }
 
         # 1) Open an existing simple level
-        helper.init_idle()
-        helper.open_level("Prefab", "Base")
+        prefab_test_utils.open_base_tests_level()
 
         # 2) Create each of the Mesh asset prefabs and validate that the prefab created successfully
         for prefab_filename, asset_path in mesh_prefabs.items():
