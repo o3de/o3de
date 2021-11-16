@@ -262,7 +262,6 @@ namespace AzToolsFramework
         {
         public:
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
             //! Returns the current state of the keyboard modifier keys.
             virtual KeyboardModifiers QueryKeyboardModifiers() = 0;
@@ -286,7 +285,6 @@ namespace AzToolsFramework
         {
         public:
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
             //! Returns the current time in seconds.
             //! This interface can be overridden for the purposes of testing to simplify viewport input requests.
