@@ -61,6 +61,7 @@ namespace UnitTest
             m_isAssertTest = true;
             m_numAssertsFailed = 0;
         }
+
         int  StopAssertTests()
         {
             m_isAssertTest = false;
@@ -68,8 +69,13 @@ namespace UnitTest
             m_numAssertsFailed = 0;
             return numAssertsFailed;
         }
-
+        
         bool m_isAssertTest;
+        bool m_suppressErrors = true;
+        bool m_suppressWarnings = true;
+        bool m_suppressAsserts = true;
+        bool m_suppressOutput = true;
+        bool m_suppressPrintf = true;
         int  m_numAssertsFailed;
     };
 
@@ -125,16 +131,19 @@ namespace UnitTest
             if (UnitTest::TestRunner::Instance().m_isAssertTest)
             {
                 UnitTest::TestRunner::Instance().ProcessAssert(message, file, line, false);
+                return true;
             }
-            else
+            else if (UnitTest::TestRunner::Instance().m_suppressAsserts)
             {
                 GTEST_MESSAGE_AT_(file, line, message, ::testing::TestPartResult::kNonFatalFailure);
+                return true;
             }
-            return true;
+            
+            return false;
         }
         bool OnAssert(const char* /*message*/) override
         {
-            return true; // stop processing
+            return UnitTest::TestRunner::Instance().m_suppressAsserts; // stop processing
         }
         bool OnPreError(const char* /*window*/, const char* file, int line, const char* /*func*/, const char* message) override
         {
@@ -143,6 +152,7 @@ namespace UnitTest
                 UnitTest::TestRunner::Instance().ProcessAssert(message, file, line, false);
                 return true;
             }
+
             return false;
         }
         bool OnError(const char* /*window*/, const char* message) override
@@ -150,12 +160,15 @@ namespace UnitTest
             if (UnitTest::TestRunner::Instance().m_isAssertTest)
             {
                 UnitTest::TestRunner::Instance().ProcessAssert(message, __FILE__, __LINE__, UnitTest::AssertionExpr(false));
+                return true;
             }
-            else
+            else if (UnitTest::TestRunner::Instance().m_suppressErrors)
             {
                 GTEST_MESSAGE_(message, ::testing::TestPartResult::kNonFatalFailure);
+                return true;
             }
-            return true; // stop processing
+
+            return false;
         }
         bool OnPreWarning(const char* /*window*/, const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/) override
         {
@@ -164,12 +177,12 @@ namespace UnitTest
         }
         bool OnWarning(const char* /*window*/, const char* /*message*/) override
         {
-            return true;
+            return UnitTest::TestRunner::Instance().m_suppressWarnings;
         }
 
         bool OnOutput(const char* /*window*/, const char* /*message*/) override
         {
-            return true;
+            return UnitTest::TestRunner::Instance().m_suppressOutput;
         }
 
         bool OnPrintf(const char* window, const char* message) override
@@ -178,60 +191,13 @@ namespace UnitTest
             {
                 ColoredPrintf(COLOR_RED, "[  MEMORY  ] %s", message); 
             }
-            return true; 
+            return UnitTest::TestRunner::Instance().m_suppressPrintf; 
         }
-    };
-
-    class TraceBusHook;
-
-    // Helper class to automatically re-enable the TraceBusHook when going out of scope
-    // This is necessary because the TraceBusHook is part of the Environment which does not reset after each test run
-    // So we need to ensure the bus is always reconnected between tests
-    struct TraceBusHookUniqueDisableToken
-    {
-        TraceBusHookUniqueDisableToken() = default;
-        TraceBusHookUniqueDisableToken(TraceBusHook* traceBusHook);
-        ~TraceBusHookUniqueDisableToken();
-
-        TraceBusHookUniqueDisableToken(const TraceBusHookUniqueDisableToken&) = delete;
-        TraceBusHookUniqueDisableToken& operator=(const TraceBusHookUniqueDisableToken&) = delete;
-        TraceBusHookUniqueDisableToken(TraceBusHookUniqueDisableToken&& rhs)
-        {
-            *this = AZStd::move(rhs);
-        }
-        TraceBusHookUniqueDisableToken& operator=(TraceBusHookUniqueDisableToken&& rhs)
-        {
-            if (this != &rhs)
-            {
-                ReEnable();
-                m_traceBusHook = rhs.m_traceBusHook;
-                rhs.m_traceBusHook = nullptr;
-            }
-
-            return *this;
-        }
-        
-    private:
-        void ReEnable();
-
-        TraceBusHook* m_traceBusHook{};
-    };
-
-    struct TraceBusHookEnvironmentInterface
-    {
-        AZ_RTTI(TraceBusHookEnvironmentInterface, "{DCDC9C73-C8EB-4003-B915-FF8E5D34EF28}");
-        AZ_DISABLE_COPY_MOVE(TraceBusHookEnvironmentInterface);
-
-        TraceBusHookEnvironmentInterface() = default;
-        virtual ~TraceBusHookEnvironmentInterface() = default;
-        
-        virtual TraceBusHookUniqueDisableToken Disable() = 0;
     };
     
     class TraceBusHook
         : public AZ::Test::ITestEnvironment
         , public TraceBusRedirector
-        , TraceBusHookEnvironmentInterface
     {
     public:
         void SetupEnvironment() override
@@ -248,23 +214,14 @@ namespace UnitTest
             }
 #endif
             BusConnect();
-
-            AZ::Interface<TraceBusHookEnvironmentInterface>::Register(this);
-
+            
             m_environmentSetup = true;
         }
-
-        TraceBusHookUniqueDisableToken Disable() override
-        {
-            return TraceBusHookUniqueDisableToken(this);
-        }
-
+        
         void TeardownEnvironment() override
         {
             if (m_environmentSetup)
             {
-                AZ::Interface<TraceBusHookEnvironmentInterface>::Unregister(this);
-
                 BusDisconnect();
 
                 if (m_createdAllocator)
@@ -316,29 +273,6 @@ namespace UnitTest
         bool m_environmentSetup = false;
         bool m_createdAllocator = false;
     };
-
-    inline TraceBusHookUniqueDisableToken::TraceBusHookUniqueDisableToken(TraceBusHook* traceBusHook)
-        : m_traceBusHook(traceBusHook)
-    {
-        if (m_traceBusHook)
-        {
-            m_traceBusHook->BusDisconnect();
-        }
-    }
-
-    inline TraceBusHookUniqueDisableToken::~TraceBusHookUniqueDisableToken()
-    {
-        ReEnable();
-    }
-
-    inline void UnitTest::TraceBusHookUniqueDisableToken::ReEnable()
-    {
-        if (m_traceBusHook)
-        {
-            m_traceBusHook->BusConnect();
-            m_traceBusHook = nullptr;
-        }
-    }
 }
 
 

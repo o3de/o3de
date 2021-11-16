@@ -63,6 +63,8 @@ namespace UnitTest
         void SetUp() override;
         void TearDown() override;
 
+        static void SuppressTraceOutput(bool suppress);
+
         // Helper methods to create and destroy actual assets on the disk for true end-to-end asset loading.
         void WriteAssetToDisk(const AZStd::string& assetName, const AZStd::string& assetIdGuid);
         void DeleteAssetFromDisk(const AZStd::string& assetName);
@@ -76,7 +78,6 @@ namespace UnitTest
         AZ::JobContext* m_jobContext{ nullptr };
         IO::FileIOBase* m_prevFileIO{ nullptr };
         IO::IStreamer* m_streamer{ nullptr };
-        TraceBusHookUniqueDisableToken m_traceBusDisableToken;
         TestFileIOBase m_fileIO;
         AZStd::vector<AZStd::string> m_assetsWritten;
     };
