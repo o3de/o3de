@@ -77,7 +77,6 @@ AZ_POP_DISABLE_WARNING
 #include "ToolbarManager.h"
 #include "Core/QtEditorApplication.h"
 #include "UndoDropDown.h"
-#include "CVarMenu.h"
 #include "EditorViewportSettings.h"
 
 #include "KeyboardCustomizationSettings.h"

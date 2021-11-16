@@ -249,8 +249,6 @@ set(FILES
     CryEditPy.cpp
     CryEdit.cpp
     CryEdit.h
-    CVarMenu.cpp
-    CVarMenu.h
     EditorToolsApplication.cpp
     EditorToolsApplication.h
     EditorToolsApplicationAPI.h
