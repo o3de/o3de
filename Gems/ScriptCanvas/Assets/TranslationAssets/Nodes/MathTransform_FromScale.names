@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromScale",
+                "name": "From Scale",
                 "category": "Math/Transform",
-                "tooltip": "returns a transform which applies the specified uniform Scale, but no rotation or translation",
-                "subtitle": "Transform"
+                "tooltip": "Returns a transform which applies the specified uniform Scale, but no rotation or translation"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Number: Scale",
+                    "key": "DataInput_Scale",
                     "details": {
-                        "name": "Number: Scale"
+                        "name": "Scale"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Transform",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Transform"
+                        "name": "Result"
                     }
                 }
             ]

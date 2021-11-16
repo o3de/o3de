@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RandomColor",
+                "name": "Random Color",
                 "category": "Math/Random",
-                "tooltip": "Returns a random color [Min, Max]",
-                "subtitle": "Random"
+                "tooltip": "Returns a random color [Min, Max]"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Color: Min",
+                    "key": "DataInput_Min",
                     "details": {
-                        "name": "Color: Min"
+                        "name": "Min"
                     }
                 },
                 {
-                    "key": "DataInput_Color: Max",
+                    "key": "DataInput_Max",
                     "details": {
-                        "name": "Color: Max"
+                        "name": "Max"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Color",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Color"
+                        "name": "Result"
                     }
                 }
             ]
