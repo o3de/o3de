@@ -5,10 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
-#include <dlfcn.h>
+#pragma once
 
 #include <AzCore/Debug/Trace.h>
+#include <dlfcn.h>
 
 namespace QtForPython
 {
@@ -16,28 +16,23 @@ namespace QtForPython
     const char* s_libPyside2LibraryFile = "libpyside2.abi3.so.5.14";
     const char* s_libShibokenLibraryFile = "libshiboken2.abi3.so.5.14";
 
-    class PysideLibraries
+    class InitializeEmbeddedPyside2
     {
     public:
-        PysideLibraries()
+        InitializeEmbeddedPyside2()
         {
-            m_libPythonLibraryFile = PysideLibraries::LoadModule(s_libPythonLibraryFile);
-            m_libPyside2LibraryFile = PysideLibraries::LoadModule(s_libPyside2LibraryFile);
-            m_libShibokenLibraryFile = PysideLibraries::LoadModule(s_libShibokenLibraryFile);
+            m_libPythonLibraryFile = InitializeEmbeddedPyside2::LoadModule(s_libPythonLibraryFile);
+            m_libPyside2LibraryFile = InitializeEmbeddedPyside2::LoadModule(s_libPyside2LibraryFile);
+            m_libShibokenLibraryFile = InitializeEmbeddedPyside2::LoadModule(s_libShibokenLibraryFile);
         }
-        
-        ~PysideLibraries()
+        virtual ~InitializeEmbeddedPyside2()
         {
-            PysideLibraries::UnloadModule(m_libPythonLibraryFile);
-            PysideLibraries::UnloadModule(m_libPyside2LibraryFile);
-            PysideLibraries::UnloadModule(m_libShibokenLibraryFile);
+            InitializeEmbeddedPyside2::UnloadModule(m_libShibokenLibraryFile);
+            InitializeEmbeddedPyside2::UnloadModule(m_libPyside2LibraryFile);
+            InitializeEmbeddedPyside2::UnloadModule(m_libPythonLibraryFile);
         }
 
     private:
-        void* m_libPythonLibraryFile;
-        void* m_libPyside2LibraryFile;
-        void* m_libShibokenLibraryFile;
-
         static void* LoadModule(const char* moduleToLoad)
         {
             void* moduleHandle = dlopen(moduleToLoad, RTLD_NOW | RTLD_GLOBAL);
@@ -57,10 +52,9 @@ namespace QtForPython
                 dlclose(moduleHandle);
             }
         }
-    };
 
-    void LoadPysideModules()
-    {
-        static PysideLibraries pysideLibraries;
-    }
+        void* m_libPythonLibraryFile;
+        void* m_libPyside2LibraryFile;
+        void* m_libShibokenLibraryFile;
+    };
 } // namespace QtForPython

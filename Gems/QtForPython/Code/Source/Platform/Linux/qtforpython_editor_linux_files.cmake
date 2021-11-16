@@ -7,5 +7,5 @@
 #
 
 set(FILES
-    LoadPysideModules_linux.cpp
+    InitializeEmbeddedPyside2.h
 )

@@ -12,12 +12,13 @@
 
 #include <QtForPythonSystemComponent.h>
 
+#include "InitializeEmbeddedPyside2.h"
+
 namespace QtForPython
 {
-    void LoadPysideModules();
-
     class QtForPythonModule
         : public AZ::Module
+        , private InitializeEmbeddedPyside2
     {
     public:
         AZ_RTTI(QtForPythonModule, "{81545CD5-79FA-47CE-96F2-1A9C5D59B4B9}", AZ::Module);
@@ -25,14 +26,13 @@ namespace QtForPython
 
         QtForPythonModule()
             : AZ::Module()
+            , InitializeEmbeddedPyside2()
         {
             m_descriptors.insert(m_descriptors.end(), {
                 QtForPythonSystemComponent::CreateDescriptor(),
             });
-
-            LoadPysideModules();
-
         }
+        ~QtForPythonModule() override = default;
 
         /**
          * Add required SystemComponents to the SystemEntity.

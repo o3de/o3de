@@ -7,5 +7,5 @@
 #
 
 set(FILES
-    ../Common/Unimplemented/LoadPysideModules_unimplemented.cpp
+    InitializeEmbeddedPyside2.h
 )

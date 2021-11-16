@@ -46,6 +46,9 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         qtforpython_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/Source/Platform/${PAL_PLATFORM_NAME}
     BUILD_DEPENDENCIES
         PRIVATE
             Gem::QtForPython.Editor.Static
