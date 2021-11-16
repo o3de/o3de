@@ -32,8 +32,7 @@ namespace AZ
             {
                 Empty,             //! No image was actually requested, the path was empty
                 Found,             //! The requested asset was found
-                Missing,           //! The requested asset was not found, and a placeholder asset was used instead
-                MissingNoFallback  //! The requested asset was not found, and a placeholder asset was not found either
+                Missing            //! The requested asset was not found, and a placeholder asset was used instead
             };
 
             //! Finds an ImageAsset referenced by a material file (or a placeholder)
