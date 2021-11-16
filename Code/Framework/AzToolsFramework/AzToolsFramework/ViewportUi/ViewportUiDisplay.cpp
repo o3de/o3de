@@ -294,7 +294,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     }
 
     void ViewportUiDisplay::CreateViewportBorder(
-        const AZStd::string& borderTitle, AZStd::optional<ViewportUIBackButtonCallback> backButtonCallback)
+        const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback)
     {
         const AZStd::string styleSheet = AZStd::string::format(
             "border: %dpx solid %s; border-top: %dpx solid %s;", HighlightBorderSize, HighlightBorderColor, ViewportUiTopBorderSize,
@@ -396,7 +396,8 @@ namespace AzToolsFramework::ViewportUi::Internal
                 if (m_viewportBorderBackButtonCallback.has_value())
                 {
                     // we need to swap out the existing back button callback because it will be reset in RemoveViewportBorder()
-                    AZStd::optional<ViewportUIBackButtonCallback> backButtonCallback;
+                    // so preserve the lifetime with this temporary callback until after the call to RemoveViewportBorder()
+                    AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback;
                     m_viewportBorderBackButtonCallback.swap(backButtonCallback);
                     RemoveViewportBorder();
                     (*backButtonCallback)();

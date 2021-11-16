@@ -56,7 +56,7 @@ namespace AzToolsFramework
             // create the component mode border with the specific name for this component mode
             ViewportUi::ViewportUiRequestBus::Event(
                 ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, GetComponentModeName(),
-                []()
+                []
                 {
                     ComponentModeSystemRequestBus::Broadcast(&ComponentModeSystemRequests::EndComponentMode);
                 });

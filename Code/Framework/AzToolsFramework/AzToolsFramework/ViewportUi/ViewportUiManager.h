@@ -51,7 +51,7 @@ namespace AzToolsFramework::ViewportUi
         void RemoveTextField(TextFieldId textFieldId) override;
         void SetTextFieldVisible(TextFieldId textFieldId, bool visible) override;
         void CreateViewportBorder(
-            const AZStd::string& borderTitle, AZStd::optional<ViewportUIBackButtonCallback> backButtonCallback) override;
+            const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback) override;
         void RemoveViewportBorder() override;
         void PressButton(ClusterId clusterId, ButtonId buttonId) override;
         void PressButton(SwitcherId switcherId, ButtonId buttonId) override;

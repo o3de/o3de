@@ -90,7 +90,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         AZStd::shared_ptr<QWidget> GetViewportUiElement(ViewportUiElementId elementId);
         bool IsViewportUiElementVisible(ViewportUiElementId elementId);
 
-        void CreateViewportBorder(const AZStd::string& borderTitle, AZStd::optional<ViewportUIBackButtonCallback> backButtonCallback);
+        void CreateViewportBorder(const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback);
         void RemoveViewportBorder();
 
     private:
@@ -116,7 +116,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         ViewportUiDisplayLayout m_uiOverlayLayout; //!< The layout used for optionally anchoring Viewport UI Elements.
         QLabel m_viewportBorderText; //!< The text used for the viewport highlight border.
         QPushButton m_viewportBorderBackButton; //!< The button to return from the viewport highlight border (only displayed if callback provided).
-        AZStd::optional<ViewportUIBackButtonCallback>
+        AZStd::optional<ViewportUiBackButtonCallback>
             m_viewportBorderBackButtonCallback; //!< The optional callback for when the viewport highlight border back button is pressed.
 
         QWidget* m_renderOverlay;

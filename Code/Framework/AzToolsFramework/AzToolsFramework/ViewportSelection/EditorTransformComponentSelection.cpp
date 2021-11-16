@@ -1018,7 +1018,7 @@ namespace AzToolsFramework
     // leaves focus mode by focusing on the parent of the current perfab in the entity outliner
     static void LeaveFocusMode()
     {
-        if (auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get(); prefabFocusPublicInterface)
+        if (auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get())
         {
             prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(GetEntityContextId());
         }

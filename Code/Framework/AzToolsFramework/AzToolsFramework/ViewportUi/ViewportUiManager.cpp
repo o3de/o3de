@@ -241,7 +241,7 @@ namespace AzToolsFramework::ViewportUi
     }
 
     void ViewportUiManager::CreateViewportBorder(
-        const AZStd::string& borderTitle, AZStd::optional<ViewportUIBackButtonCallback> backButtonCallback)
+        const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback)
     {
         m_viewportUi->CreateViewportBorder(borderTitle, backButtonCallback);
     }
