@@ -13,7 +13,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <AzFramework/Archive/INestedArchive.h>
 #include <AzFramework/Archive/IArchive.h>
-
+#include <CryCommon/platform.h>
 
 struct CryPakMock
     : AZ::IO::IArchive

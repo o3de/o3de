@@ -72,6 +72,7 @@
 
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/Time/TimeSystem.h>
 
 static void PrintEntityName(const AZ::ConsoleCommandContainer& arguments)
 {
@@ -416,6 +417,7 @@ namespace AZ
 
     ComponentApplication::ComponentApplication(int argC, char** argV)
         : m_eventLogger{}
+        , m_timeSystem(AZStd::make_unique<TimeSystem>())
     {
         if (Interface<ComponentApplicationRequests>::Get() == nullptr)
         {
@@ -574,7 +576,6 @@ namespace AZ
         DestroyAllocator();
     }
 
-
     void ReportBadEngineRoot()
     {
         AZStd::string errorMessage = {"Unable to determine a valid path to the engine.\n"
@@ -677,7 +678,6 @@ namespace AZ
 
         ComponentApplicationBus::Handler::BusConnect();
 
-        m_currentTime = AZStd::chrono::system_clock::now();
         TickRequestBus::Handler::BusConnect();
 
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
@@ -1413,31 +1413,23 @@ namespace AZ
 #endif
     }
 
-    void ComponentApplication::Tick(float deltaOverride /*= -1.f*/)
+    void ComponentApplication::Tick()
     {
+        AZ_PROFILE_SCOPE(System, "Component application simulation tick");
+
         {
-            AZ_PROFILE_SCOPE(System, "Component application simulation tick");
-
-            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-
-            m_deltaTime = 0.0f;
-
-            if (now >= m_currentTime)
-            {
-                AZStd::chrono::duration<float> delta = now - m_currentTime;
-                m_deltaTime = deltaOverride >= 0.f ? deltaOverride : delta.count();
-            }
-
-            {
-                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
-                TickBus::ExecuteQueuedEvents();
-            }
-            m_currentTime = now;
-            {
-                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
-                EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(now));
-            }
+            AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
+            TickBus::ExecuteQueuedEvents();
         }
+
+        {
+            AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
+            const AZ::TimeUs deltaTimeUs = m_timeSystem->AdvanceTickDeltaTimes();
+            const float deltaTimeSeconds = AZ::TimeUsToSeconds(deltaTimeUs);
+            AZ::TickBus::Broadcast(&TickEvents::OnTick, deltaTimeSeconds, GetTimeAtCurrentTick());
+        }
+
+        m_timeSystem->ApplyTickRateLimiterIfNeeded();
     }
 
     void ComponentApplication::TickSystem()
@@ -1519,13 +1511,10 @@ namespace AZ
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Invalid;
     }
 
-    //=========================================================================
-    // GetFrameTime
-    // [1/22/2016]
-    //=========================================================================
     float ComponentApplication::GetTickDeltaTime()
     {
-        return m_deltaTime;
+        const AZ::TimeUs gameTickTime = m_timeSystem->GetSimulationTickDeltaTimeUs();
+        return AZ::TimeUsToSeconds(gameTickTime);
     }
 
     //=========================================================================
@@ -1534,7 +1523,8 @@ namespace AZ
     //=========================================================================
     ScriptTimePoint ComponentApplication::GetTimeAtCurrentTick()
     {
-        return ScriptTimePoint(m_currentTime);
+        const AZ::TimeUs lastGameTickTime = m_timeSystem->GetLastSimulationTickTime();
+        return ScriptTimePoint(AZ::TimeUsToChrono(lastGameTickTime));
     }
 
     //=========================================================================
