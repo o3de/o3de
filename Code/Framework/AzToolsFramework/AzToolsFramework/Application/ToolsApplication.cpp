@@ -1198,9 +1198,7 @@ namespace AzToolsFramework
     {
         if (IsPrefabSystemEnabled())
         {
-            auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
-
-            if (prefabPublicInterface)
+            if (auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get())
             {
                 return prefabPublicInterface->GetLevelInstanceContainerEntityId();
             }
