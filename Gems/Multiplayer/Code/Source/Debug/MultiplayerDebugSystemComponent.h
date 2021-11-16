@@ -13,11 +13,14 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Interface/Interface.h>
 #include <Debug/MultiplayerDebugPerEntityReporter.h>
+#include <Debug/MultiplayerDebugNetworkMetrics.h>
+#include <Debug/MultiplayerDebugMultiplayerMetrics.h>
 #include <Multiplayer/IMultiplayerDebug.h>
 
 #ifdef IMGUI_ENABLED
 #   include <imgui/imgui.h>
 #   include <ImGuiBus.h>
+#   include <LYImGuiUtils/HistogramContainer.h>
 #endif
 
 namespace Multiplayer
@@ -45,27 +48,30 @@ namespace Multiplayer
         void Deactivate() override;
         //! @}
 
+#ifdef IMGUI_ENABLED
         //! IMultiplayerDebug overrides
         //! @{
         void ShowEntityBandwidthDebugOverlay() override;
         void HideEntityBandwidthDebugOverlay() override;
         //! @}
 
-#ifdef IMGUI_ENABLED
         //! ImGui::ImGuiUpdateListenerBus overrides
         //! @{
         void OnImGuiMainMenuUpdate() override;
         void OnImGuiUpdate() override;
         //! @}
-#endif
     private:
         bool m_displayNetworkingStats = false;
+        AZStd::unique_ptr<MultiplayerDebugNetworkMetrics> m_networkMetrics;
+
         bool m_displayMultiplayerStats = false;
+        AZStd::unique_ptr<MultiplayerDebugMultiplayerMetrics> m_multiplayerMetrics;
 
         bool m_displayPerEntityStats = false;
         AZStd::unique_ptr<MultiplayerDebugPerEntityReporter> m_reporter;
-        
+
         bool m_displayHierarchyDebugger = false;
         AZStd::unique_ptr<MultiplayerDebugHierarchyReporter> m_hierarchyDebugger;
+#endif
     };
 }
