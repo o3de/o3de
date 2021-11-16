@@ -61,6 +61,7 @@ namespace Platform
 namespace RedirectOutput
 {
     using RedirectOutputFunc = AZStd::function<void(const char*)>;
+    AZStd::string lastPythonError;
 
     struct RedirectOutput
     {
@@ -210,6 +211,16 @@ namespace RedirectOutput
         });
 
         SetRedirection("stderr", g_redirect_stderr_saved, g_redirect_stderr, []([[maybe_unused]] const char* msg) {
+            if (lastPythonError.empty())
+            {
+                lastPythonError = msg;
+                const int lengthOfErrorPrefix = 11;
+                auto errorPrefix = lastPythonError.find("ERROR:root:");
+                if (errorPrefix != AZStd::string::npos)
+                {
+                    lastPythonError.erase(errorPrefix, lengthOfErrorPrefix);
+                }
+            }
             AZ_TracePrintf("Python", msg);
         });
 
@@ -1051,12 +1062,13 @@ namespace O3DE::ProjectManager
         return result && refreshResult;
     }
 
-    bool PythonBindings::AddGemRepo(const QString& repoUri)
+    AZ::Outcome<void, AZStd::string> PythonBindings::AddGemRepo(const QString& repoUri)
     {
         bool registrationResult = false;
         bool result = ExecuteWithLock(
             [&]
             {
+                RedirectOutput::lastPythonError.clear();
                 auto pyUri = QString_To_Py_String(repoUri);
                 auto pythonRegistrationResult = m_register.attr("register")(
                     pybind11::none(), pybind11::none(), pybind11::none(), pybind11::none(), pybind11::none(), pybind11::none(), pyUri);
@@ -1065,7 +1077,12 @@ namespace O3DE::ProjectManager
                 registrationResult = !pythonRegistrationResult.cast<bool>();
             });
 
-        return result && registrationResult;
+        if (!result || !registrationResult)
+        {
+            return AZ::Failure<AZStd::string>(AZStd::move(RedirectOutput::lastPythonError));
+        }
+
+        return AZ::Success();
     }
 
     bool PythonBindings::RemoveGemRepo(const QString& repoUri)
@@ -1225,6 +1242,7 @@ namespace O3DE::ProjectManager
         auto result = ExecuteWithLockErrorHandling(
             [&]
             {
+                RedirectOutput::lastPythonError.clear();
                 auto downloadResult = m_download.attr("download_gem")(
                     QString_To_Py_String(gemName), // gem name
                     pybind11::none(), // destination path
@@ -1248,7 +1266,7 @@ namespace O3DE::ProjectManager
         }
         else if (!downloadSucceeded)
         {
-            return AZ::Failure<AZStd::string>("Failed to download gem.");
+            return AZ::Failure<AZStd::string>(AZStd::move(RedirectOutput::lastPythonError));
         }
 
         return AZ::Success();

@@ -33,7 +33,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            emit Done(tr("Gem download failed"));
+            emit Done(gemInfoResult.GetError().c_str());
         }
     }
 

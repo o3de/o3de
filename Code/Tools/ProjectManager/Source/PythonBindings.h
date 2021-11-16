@@ -62,7 +62,7 @@ namespace O3DE::ProjectManager
         // Gem Repos
         AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri) override;
         bool RefreshAllGemRepos() override;
-        bool AddGemRepo(const QString& repoUri) override;
+        AZ::Outcome<void, AZStd::string> AddGemRepo(const QString& repoUri) override;
         bool RemoveGemRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemRepoGemsInfos() override;

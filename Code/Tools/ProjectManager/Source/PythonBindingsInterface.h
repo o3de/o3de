@@ -200,9 +200,9 @@ namespace O3DE::ProjectManager
         /**
          * Registers this gem repo with the current engine.
          * @param repoUri the absolute filesystem path or url to the gem repo.
-         * @return true on success, false on failure.
+         * @return an outcome with a string error message on failure.
          */
-        virtual bool AddGemRepo(const QString& repoUri) = 0;
+        virtual AZ::Outcome<void, AZStd::string> AddGemRepo(const QString& repoUri) = 0;
 
         /**
          * Unregisters this gem repo with the current engine.
