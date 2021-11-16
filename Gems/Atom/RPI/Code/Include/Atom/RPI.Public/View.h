@@ -92,6 +92,8 @@ namespace AZ
             const AZ::Matrix4x4& GetViewToWorldMatrix() const;
             const AZ::Matrix4x4& GetViewToClipMatrix() const;
             const AZ::Matrix4x4& GetWorldToClipMatrix() const;
+            const AZ::Matrix4x4& GetClipToWorldMatrix() const;
+
             //! Get the camera's world transform, converted from the viewToWorld matrix's native y-up to z-up
             AZ::Transform GetCameraTransform() const;
 
@@ -169,6 +171,7 @@ namespace AZ
             Matrix4x4 m_worldToViewMatrix;
             Matrix4x4 m_viewToWorldMatrix;
             Matrix4x4 m_viewToClipMatrix;
+            Matrix4x4 m_clipToWorldMatrix;
 
             // View's position in world space
             Vector3 m_position;
