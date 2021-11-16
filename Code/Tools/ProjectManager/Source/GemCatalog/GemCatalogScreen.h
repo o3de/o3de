@@ -12,20 +12,23 @@
 #include <ScreenWidget.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/UI/Notifications/ToastNotificationsView.h>
-#include <GemCatalog/GemCatalogHeaderWidget.h>
-#include <GemCatalog/GemFilterWidget.h>
-#include <GemCatalog/GemListView.h>
-#include <GemCatalog/GemInspector.h>
-#include <GemCatalog/GemModel.h>
-#include <GemCatalog/GemSortFilterProxyModel.h>
 
 #include <QSet>
 #include <QString>
-#include <QStackedWidget>
 #endif
+
+QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(GemCatalogHeaderWidget)
+    QT_FORWARD_DECLARE_CLASS(GemFilterWidget)
+    QT_FORWARD_DECLARE_CLASS(GemListView)
+    QT_FORWARD_DECLARE_CLASS(GemInspector)
+    QT_FORWARD_DECLARE_CLASS(GemModel)
+    QT_FORWARD_DECLARE_CLASS(GemSortFilterProxyModel)
+    QT_FORWARD_DECLARE_CLASS(DownloadController)
+
     class GemCatalogScreen
         : public ScreenWidget
     {

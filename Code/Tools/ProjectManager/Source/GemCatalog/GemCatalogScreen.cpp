@@ -8,6 +8,11 @@
 
 #include <GemCatalog/GemCatalogScreen.h>
 #include <PythonBindingsInterface.h>
+#include <GemCatalog/GemCatalogHeaderWidget.h>
+#include <GemCatalog/GemFilterWidget.h>
+#include <GemCatalog/GemListView.h>
+#include <GemCatalog/GemInspector.h>
+#include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemListHeaderWidget.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <GemCatalog/GemRequirementDialog.h>
@@ -28,6 +33,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QHash>
+#include <QStackedWidget>
 
 namespace O3DE::ProjectManager
 {
