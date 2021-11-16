@@ -116,8 +116,6 @@ set(FILES
     Source/Builders/LevelBuilder/LevelBuilderComponent.h
     Source/Builders/LevelBuilder/LevelBuilderWorker.cpp
     Source/Builders/LevelBuilder/LevelBuilderWorker.h
-    Source/Builders/MaterialBuilder/MaterialBuilderComponent.cpp
-    Source/Builders/MaterialBuilder/MaterialBuilderComponent.h
     Source/Builders/SliceBuilder/SliceBuilderComponent.cpp
     Source/Builders/SliceBuilder/SliceBuilderComponent.h
     Source/Builders/SliceBuilder/SliceBuilderWorker.cpp
