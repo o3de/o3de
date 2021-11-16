@@ -10,6 +10,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/bitset.h>
 #include <AzCore/Outcome/Outcome.h>
@@ -129,7 +130,8 @@ namespace AZ
             /// Remove a catalog from our delta list and rebuild the catalog from remaining items
             virtual bool RemoveDeltaCatalog(AZStd::shared_ptr<AzFramework::AssetRegistry> /*deltaCatalog*/) { return true; }
             /// Creates a manifest with the given DeltaCatalog name
-            virtual bool CreateBundleManifest(const AZStd::string& /*deltaCatalogPath*/, const AZStd::vector<AZStd::string>& /*dependentBundleNames*/, const AZStd::string& /*fileDirectory*/, int /*bundleVersion*/, const AZStd::vector<AZStd::string>& /*levelDirs*/) { return false; }
+            virtual bool CreateBundleManifest(const AZStd::string& /*deltaCatalogPath*/, const AZStd::vector<AZStd::string>& /*dependentBundleNames*/,
+                const AZStd::string& /*fileDirectory*/, int /*bundleVersion*/, const AZStd::vector<AZ::IO::Path>& /*levelDirs*/) { return false; }
             /// Creates an instance of a registry containing info for just the specified files, and writes it out to a file at the specified path
             virtual bool CreateDeltaCatalog(const AZStd::vector<AZStd::string>& /*files*/, const AZStd::string& /*filePath*/) { return false; }
 
