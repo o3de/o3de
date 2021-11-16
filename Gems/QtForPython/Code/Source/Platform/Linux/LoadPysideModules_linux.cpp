@@ -12,7 +12,6 @@
 
 namespace QtForPython
 {
-    [[maybe_unused]] const char* s_errorModule = "QtForPython";
     const char* s_libPythonLibraryFile = "libpython3.7m.so.1.0";
     const char* s_libPyside2LibraryFile = "libpyside2.abi3.so.5.14";
     const char* s_libShibokenLibraryFile = "libshiboken2.abi3.so.5.14";
@@ -26,25 +25,27 @@ namespace QtForPython
             m_libPyside2LibraryFile = PysideLibraries::LoadModule(s_libPyside2LibraryFile);
             m_libShibokenLibraryFile = PysideLibraries::LoadModule(s_libShibokenLibraryFile);
         }
+        
         ~PysideLibraries()
         {
             PysideLibraries::UnloadModule(m_libPythonLibraryFile);
             PysideLibraries::UnloadModule(m_libPyside2LibraryFile);
             PysideLibraries::UnloadModule(m_libShibokenLibraryFile);
         }
-        
+
     private:
         void* m_libPythonLibraryFile;
         void* m_libPyside2LibraryFile;
         void* m_libShibokenLibraryFile;
-        
+
         static void* LoadModule(const char* moduleToLoad)
         {
-            void* moduleHandle = dlopen(moduleToLoad, RTLD_NOW | RTLD_GLOBAL); 
+            void* moduleHandle = dlopen(moduleToLoad, RTLD_NOW | RTLD_GLOBAL);
             if (!moduleHandle)
             {
                 const char* loadError = dlerror();
-                AZ_Error(s_errorModule, false, "Unable to load python library %s for Pyside2: %s", moduleToLoad, loadError?loadError:"Unknown Error");
+                AZ_Error("QtForPython", false, "Unable to load python library %s for Pyside2: %s", moduleToLoad,
+                         loadError ? loadError : "Unknown Error");
             }
             return moduleHandle;
         }
@@ -62,4 +63,4 @@ namespace QtForPython
     {
         static PysideLibraries pysideLibraries;
     }
-}
+} // namespace QtForPython
