@@ -10,9 +10,8 @@
 set(ly_copy_template [[
 function(ly_copy source_file target_directory)
     cmake_path(APPEND full_target_directory $ENV{DESTDIR} ${CMAKE_INSTALL_PREFIX} ${target_directory})
-    file(MAKE_DIRECTORY "${full_target_directory}")
     cmake_path(GET source_file FILENAME target_filename)
-    if("${target_directory}/${target_filename}" IS_NEWER_THAN "${source_file}")
+    if("${full_target_directory}/${target_filename}" IS_NEWER_THAN "${source_file}")
         return() # already copied and potentially stripped
     endif()
     file(COPY "${source_file}" DESTINATION "${full_target_directory}" FILE_PERMISSIONS @LY_COPY_PERMISSIONS@ FOLLOW_SYMLINK_CHAIN)
