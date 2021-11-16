@@ -1020,7 +1020,6 @@ namespace AzToolsFramework
     {
         if (auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get(); prefabFocusPublicInterface)
         {
-            // Close this prefab and focus on the parent
             prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(GetEntityContextId());
         }
     }

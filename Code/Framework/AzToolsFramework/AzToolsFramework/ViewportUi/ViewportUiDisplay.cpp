@@ -319,7 +319,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_uiOverlayLayout.setContentsMargins(
             ViewportUiOverlayMargin, ViewportUiOverlayMargin + ViewportUiOverlayTopMarginPadding, ViewportUiOverlayMargin,
             ViewportUiOverlayMargin);
-
         m_viewportBorderBackButtonCallback.reset();
         m_viewportBorderBackButton.setVisible(false);
     }
@@ -386,6 +385,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_viewportBorderBackButton.setStyleSheet(styleSheet.c_str());
         m_viewportBorderBackButton.setVisible(false);
         m_viewportBorderBackButton.setText(HighlightBorderBackButtonText);
+
+        // setup the handler for the back button to call the user provided callback (if any)
         QObject::connect(
             &m_viewportBorderBackButton, &QPushButton::clicked,
             [this]()

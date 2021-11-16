@@ -115,7 +115,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         QGridLayout m_fullScreenLayout; //!< The layout which extends across the full screen.
         ViewportUiDisplayLayout m_uiOverlayLayout; //!< The layout used for optionally anchoring Viewport UI Elements.
         QLabel m_viewportBorderText; //!< The text used for the viewport highlight border.
-        QPushButton m_viewportBorderBackButton; //!< The button to return from the viewport highlight border.
+        QPushButton m_viewportBorderBackButton; //!< The button to return from the viewport highlight border (only displayed if callback provided).
         AZStd::optional<ViewportUIBackButtonCallback>
             m_viewportBorderBackButtonCallback; //!< The optional callback for when the viewport highlight border back button is pressed.
 
