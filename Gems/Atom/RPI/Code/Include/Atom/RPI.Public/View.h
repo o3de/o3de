@@ -169,7 +169,6 @@ namespace AZ
             Matrix4x4 m_worldToViewMatrix;
             Matrix4x4 m_viewToWorldMatrix;
             Matrix4x4 m_viewToClipMatrix;
-            Matrix4x4 m_clipToWorldMatrix;
 
             // View's position in world space
             Vector3 m_position;
