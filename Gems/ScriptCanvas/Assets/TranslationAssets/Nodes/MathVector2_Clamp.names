@@ -7,8 +7,7 @@
             "details": {
                 "name": "Clamp",
                 "category": "Math/Vector2",
-                "tooltip": "returns vector clamped to [min, max] and equal to source if possible",
-                "subtitle": "Vector2"
+                "tooltip": "Returns vector clamped to [min, max] and equal to source if possible"
             },
             "slots": [
                 {
@@ -24,27 +23,27 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector2: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Vector2: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Vector2: Min",
+                    "key": "DataInput_Min",
                     "details": {
-                        "name": "Vector2: Min"
+                        "name": "Min"
                     }
                 },
                 {
-                    "key": "DataInput_Vector2: Max",
+                    "key": "DataInput_Max",
                     "details": {
-                        "name": "Vector2: Max"
+                        "name": "Max"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector2",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector2"
+                        "name": "Result"
                     }
                 }
             ]

@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RandomVector4",
+                "name": "Random Vector4",
                 "category": "Math/Random",
-                "tooltip": "returns a random Vector4",
-                "subtitle": "Random"
+                "tooltip": "Returns a random Vector4"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Min",
+                    "key": "DataInput_Min",
                     "details": {
-                        "name": "Vector4: Min"
+                        "name": "Min"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Max",
+                    "key": "DataInput_Max",
                     "details": {
-                        "name": "Vector4: Max"
+                        "name": "Max"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector4",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector4"
+                        "name": "Result"
                     }
                 }
             ]

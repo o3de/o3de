@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ToPerpendicular",
+                "name": "To Perpendicular",
                 "category": "Math/Vector2",
-                "tooltip": "returns the vector (-Source.y, Source.x), a 90 degree, positive rotation",
-                "subtitle": "Vector2"
+                "tooltip": "Returns the vector (-Source.y, Source.x), a 90 degree, positive rotation"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector2: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Vector2: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector2",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector2"
+                        "name": "Result"
                     }
                 }
             ]

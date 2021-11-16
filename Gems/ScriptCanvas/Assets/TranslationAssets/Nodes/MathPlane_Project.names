@@ -7,8 +7,7 @@
             "details": {
                 "name": "Project",
                 "category": "Math/Plane",
-                "tooltip": "returns the projection of Point onto Source",
-                "subtitle": "Plane"
+                "tooltip": "Returns the projection of Point onto Source"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Plane: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Plane: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Point",
+                    "key": "DataInput_Point",
                     "details": {
-                        "name": "Vector3: Point"
+                        "name": "Point"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

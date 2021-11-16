@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "MultiplyByVector4",
+                "name": "Multiply By Vector4",
                 "category": "Math/Transform",
-                "tooltip": "returns Source post multiplied by Multiplier",
-                "subtitle": "Transform"
+                "tooltip": "Returns Source post multiplied by Multiplier"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Transform: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Transform: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Multiplier",
+                    "key": "DataInput_Multiplier",
                     "details": {
-                        "name": "Vector4: Multiplier"
+                        "name": "Multiplier"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector4",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector4"
+                        "name": "Result"
                     }
                 }
             ]

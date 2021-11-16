@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "DistanceSquared",
+                "name": "Distance Squared",
                 "category": "Math/Vector2",
-                "tooltip": "returns the distance squared from B to A, (generally faster than the actual distance if only needed for comparison)",
-                "subtitle": "Vector2"
+                "tooltip": "Returns the distance squared from B to A, (generally faster than the actual distance if only needed for comparison)"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector2: A",
+                    "key": "DataInput_A",
                     "details": {
-                        "name": "Vector2: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Vector2: B",
+                    "key": "DataInput_B",
                     "details": {
-                        "name": "Vector2: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

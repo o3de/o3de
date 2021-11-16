@@ -7,8 +7,7 @@
             "details": {
                 "name": "Transform",
                 "category": "Math/Plane",
-                "tooltip": "returns Source transformed by Transform",
-                "subtitle": "Plane"
+                "tooltip": "Returns Source transformed by Transform"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Plane: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Plane: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Transform: Transform",
+                    "key": "DataInput_Transform",
                     "details": {
-                        "name": "Transform: Transform"
+                        "name": "Transform"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Plane",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Plane"
+                        "name": "Result"
                     }
                 }
             ]
