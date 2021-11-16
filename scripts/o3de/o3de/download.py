@@ -64,11 +64,9 @@ def validate_downloaded_zip_sha256(download_uri_json_data: dict, download_zip_pa
         if key in unzipped_manifest_json_data:
             del unzipped_manifest_json_data[key]
 
-    sha256A = hashlib.sha256(json.dumps(download_uri_json_data, indent=4).encode('utf8')).hexdigest()
-    sha256B = hashlib.sha256(json.dumps(unzipped_manifest_json_data, indent=4).encode('utf8')).hexdigest()
-    if sha256A != sha256B:
-        logger.error(f'SECURITY VIOLATION: Downloaded {manifest_json_name} does not match'
-                     ' the advertised manifest json.')
+    if download_uri_json_data != unzipped_manifest_json_data:
+        logger.error(f'SECURITY VIOLATION: Downloaded {manifest_json_name} contents do not match'
+                     ' the advertised manifest json contents.')
         return 0
 
     return 1
