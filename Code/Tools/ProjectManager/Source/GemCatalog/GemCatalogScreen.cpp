@@ -51,34 +51,27 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_headerWidget);
 
         connect(m_gemModel, &GemModel::gemStatusChanged, this, &GemCatalogScreen::OnGemStatusChanged);
+        connect(m_gemModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this]{ ShowInspector(); });
         connect(m_headerWidget, &GemCatalogHeaderWidget::RefreshGems, this, &GemCatalogScreen::Refresh);
         connect(m_headerWidget, &GemCatalogHeaderWidget::OpenGemsRepo, this, &GemCatalogScreen::HandleOpenGemRepo);
         connect(m_headerWidget, &GemCatalogHeaderWidget::AddGem, this, &GemCatalogScreen::OnAddGemClicked);
+        connect(m_headerWidget, &GemCatalogHeaderWidget::UpdateGemCart, this, &GemCatalogScreen::UpdateAndShowGemCart);
         connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setMargin(0);
         vLayout->addLayout(hLayout);
 
+        m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), this);
+
         m_rightPanelStack = new QStackedWidget(this);
         m_rightPanelStack->setFixedWidth(240);
 
-        connect(m_headerWidget, &GemCatalogHeaderWidget::OverlayUpdate, this, &GemCatalogScreen::UpdateAndShowGemCart);
-
-        m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), this);
         m_gemInspector = new GemInspector(m_gemModel, this);
 
         connect(m_gemInspector, &GemInspector::TagClicked, [=](const Tag& tag) { SelectGem(tag.id); });
         connect(m_gemInspector, &GemInspector::UpdateGem, this, &GemCatalogScreen::UpdateGem);
         connect(m_gemInspector, &GemInspector::UninstallGem, this, &GemCatalogScreen::UninstallGem);
-
-        // Show the inspector if gem selection changes
-        connect(
-            m_gemModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this,
-            [this]
-            {
-                m_rightPanelStack->setCurrentIndex(RightPanelWidgetOrder::Inspector);
-            });
 
         QWidget* filterWidget = new QWidget(this);
         filterWidget->setFixedWidth(240);
@@ -318,7 +311,7 @@ namespace O3DE::ProjectManager
         m_proxyModel->GetSelectionModel()->setCurrentIndex(proxyIndex, QItemSelectionModel::ClearAndSelect);
         m_gemListView->scrollTo(proxyIndex);
 
-        m_rightPanelStack->setCurrentIndex(RightPanelWidgetOrder::Inspector);
+        ShowInspector();
     }
 
     void GemCatalogScreen::UpdateGem(const QModelIndex& modelIndex)
@@ -505,6 +498,12 @@ namespace O3DE::ProjectManager
         {
             QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve gems for %1.<br><br>Error:<br>%2").arg(projectPath, allGemInfosResult.GetError().c_str()));
         }
+    }
+
+    void GemCatalogScreen::ShowInspector()
+    {
+        m_rightPanelStack->setCurrentIndex(RightPanelWidgetOrder::Inspector);
+        m_headerWidget->GemCartShown();
     }
 
     GemCatalogScreen::EnableDisableGemsResult GemCatalogScreen::EnableDisableGemsForProject(const QString& projectPath)

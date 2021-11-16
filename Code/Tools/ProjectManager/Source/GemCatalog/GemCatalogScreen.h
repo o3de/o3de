@@ -65,6 +65,7 @@ namespace O3DE::ProjectManager
     private slots:
         void HandleOpenGemRepo();
         void UpdateAndShowGemCart(QWidget* cartWidget);
+        void ShowInspector();
 
     private:
         enum RightPanelWidgetOrder
