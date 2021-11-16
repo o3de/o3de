@@ -44,6 +44,10 @@ namespace AzFramework
         bool m_orthographic = false; //!< Is the camera using orthographic projection or not.
     };
 
+    //! Create a camera at the given transform, specifying the near and far clip planes as well as the fov with a specific viewport size.
+    CameraState CreateCamera(
+        const AZ::Transform& transform, float nearPlane, float farPlane, float verticalFovRad, const AZ::Vector2& viewportSize);
+
     //! Create a camera at the given transform with a specific viewport size.
     //! @note The near/far clip planes and fov are sensible default values - please
     //! use SetCameraClippingVolume to override them.
@@ -60,7 +64,7 @@ namespace AzFramework
     CameraState CreateCameraFromWorldFromViewMatrix(const AZ::Matrix4x4& worldFromView, const AZ::Vector2& viewportSize);
 
     //! Override the default near/far clipping planes and fov of the camera.
-    void SetCameraClippingVolume(CameraState& cameraState, float nearPlane, float farPlane, float fovRad);
+    void SetCameraClippingVolume(CameraState& cameraState, float nearPlane, float farPlane, float verticalFovRad);
 
     //! Override the default near/far clipping planes and fov of the camera by inferring them the specified right handed transform into clip space.
     void SetCameraClippingVolumeFromPerspectiveFovMatrixRH(CameraState& cameraState, const AZ::Matrix4x4& clipFromView);

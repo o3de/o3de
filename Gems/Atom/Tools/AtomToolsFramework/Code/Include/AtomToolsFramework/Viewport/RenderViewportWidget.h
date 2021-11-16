@@ -21,6 +21,7 @@
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
+#include <AtomToolsFramework/Viewport/ViewportInteractionImpl.h>
 
 namespace AtomToolsFramework
 {
@@ -30,8 +31,8 @@ namespace AtomToolsFramework
     //! @see AZ::RPI::ViewportContext for Atom's API for setting up 
     class RenderViewportWidget
         : public QWidget
-        , public AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler
         , public AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler
+        , public AzToolsFramework::ViewportInteraction::ViewportInteractionRequests
         , public AzFramework::WindowRequestBus::Handler
         , protected AzFramework::InputChannelEventListener
         , protected AZ::TickBus::Handler
@@ -90,7 +91,7 @@ namespace AtomToolsFramework
         //! Input processing is enabled by default.
         void SetInputProcessingEnabled(bool enabled);
 
-        // AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler overrides ...
+        // ViewportInteractionRequests overrides ...
         AzFramework::CameraState GetCameraState() override;
         AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) override;
         AZ::Vector3 ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition) override;
@@ -149,5 +150,7 @@ namespace AtomToolsFramework
         AZ::ScriptTimePoint m_time;
         // Maps our internal Qt events into AzFramework InputChannels for our ViewportControllerList.
         AzToolsFramework::QtEventToAzInputMapper* m_inputChannelMapper = nullptr;
+        // Implementation of ViewportInteractionRequests (handles viewport picking operations).
+        AZStd::unique_ptr<ViewportInteractionImpl> m_viewportInteractionImpl;
     };
 } //namespace AtomToolsFramework

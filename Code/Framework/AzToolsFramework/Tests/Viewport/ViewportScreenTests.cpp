@@ -35,6 +35,7 @@ namespace UnitTest
         const auto worldResult = AzFramework::ScreenToWorld(screenPoint, cameraState);
         return AzFramework::WorldToScreen(worldResult, cameraState);
     }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
     // ScreenPoint tests
     TEST(ViewportScreen, WorldToScreenAndScreenToWorldReturnsTheSameValueIdentityCameraOffsetFromOrigin)
@@ -102,8 +103,8 @@ namespace UnitTest
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // NDC tests
-    TEST(ViewportScreen, WorldToScreenNDCAndScreenNDCToWorldReturnsTheSameValueIdentityCameraOffsetFromOrigin)
+    // Ndc tests
+    TEST(ViewportScreen, WorldToScreenNdcAndScreenNdcToWorldReturnsTheSameValueIdentityCameraOffsetFromOrigin)
     {
         using NdcPoint = AZ::Vector2;
 
@@ -136,7 +137,7 @@ namespace UnitTest
         }
     }
 
-    TEST(ViewportScreen, WorldToScreenNDCAndScreenNDCToWorldReturnsTheSameValueOrientatedCamera)
+    TEST(ViewportScreen, WorldToScreenNdcAndScreenNdcToWorldReturnsTheSameValueOrientatedCamera)
     {
         using NdcPoint = AZ::Vector2;
 
@@ -153,7 +154,7 @@ namespace UnitTest
 
     // note: nearClip is 0.1 - the world space value returned will be aligned to the near clip
     // plane of the camera so use that to confirm the mapping to/from is correct
-    TEST(ViewportScreen, ScreenNDCToWorldReturnsPositionOnNearClipPlaneInWorldSpace)
+    TEST(ViewportScreen, ScreenNdcToWorldReturnsPositionOnNearClipPlaneInWorldSpace)
     {
         using NdcPoint = AZ::Vector2;
 

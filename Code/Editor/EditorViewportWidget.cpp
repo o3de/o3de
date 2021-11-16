@@ -1632,16 +1632,15 @@ void EditorViewportWidget::RenderSelectedRegion()
 Vec3 EditorViewportWidget::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nFlags) const
 {
     Vec3 out(0, 0, 0);
-    float x, y, z;
+    float x, y;
 
-    ProjectToScreen(wp.x, wp.y, wp.z, &x, &y, &z);
-    if (_finite(x) && _finite(y) && _finite(z))
+    ProjectToScreen(wp.x, wp.y, wp.z, &x, &y);
+    if (_finite(x) && _finite(y))
     {
         out.x = (x / 100) * m_rcClient.width();
         out.y = (y / 100) * m_rcClient.height();
         out.x /= static_cast<float>(QHighDpiScaling::factor(windowHandle()->screen()));
         out.y /= static_cast<float>(QHighDpiScaling::factor(windowHandle()->screen()));
-        out.z = z;
     }
     return out;
 }
@@ -1650,24 +1649,6 @@ Vec3 EditorViewportWidget::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nF
 QPoint EditorViewportWidget::WorldToView(const Vec3& wp) const
 {
     return AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(m_renderViewport->ViewportWorldToScreen(LYVec3ToAZVec3(wp)));
-}
-//////////////////////////////////////////////////////////////////////////
-QPoint EditorViewportWidget::WorldToViewParticleEditor(const Vec3& wp, int width, int height) const
-{
-    QPoint p;
-    float x, y, z;
-
-    ProjectToScreen(wp.x, wp.y, wp.z, &x, &y, &z);
-    if (_finite(x) || _finite(y))
-    {
-        p.rx() = static_cast<int>((x / 100) * width);
-        p.ry() = static_cast<int>((y / 100) * height);
-    }
-    else
-    {
-        QPoint(0, 0);
-    }
-    return p;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1740,12 +1721,11 @@ void EditorViewportWidget::UnProjectFromScreen(float sx, float sy, float* px, fl
     *pz = wp.GetZ();
 }
 
-void EditorViewportWidget::ProjectToScreen(float ptx, float pty, float ptz, float* sx, float* sy, float* sz) const
+void EditorViewportWidget::ProjectToScreen(float ptx, float pty, float ptz, float* sx, float* sy) const
 {
     AzFramework::ScreenPoint screenPosition = m_renderViewport->ViewportWorldToScreen(AZ::Vector3{ptx, pty, ptz});
     *sx = static_cast<float>(screenPosition.m_x);
     *sy = static_cast<float>(screenPosition.m_y);
-    *sz = 0.f;
 }
 
 //////////////////////////////////////////////////////////////////////////

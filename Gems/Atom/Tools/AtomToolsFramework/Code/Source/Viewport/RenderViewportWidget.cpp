@@ -75,7 +75,11 @@ namespace AtomToolsFramework
         m_defaultCamera = AZ::RPI::View::CreateView(cameraName, AZ::RPI::View::UsageFlags::UsageCamera);
         AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->PushView(m_viewportContext->GetName(), m_defaultCamera);
 
-        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(GetId());
+        m_viewportInteractionImpl = AZStd::make_unique<ViewportInteractionImpl>(m_defaultCamera);
+        m_viewportInteractionImpl->m_deviceScalingFactorFn = [this] { return aznumeric_cast<float>(devicePixelRatioF()); };
+        m_viewportInteractionImpl->m_screenSizeFn = [this] { return AzFramework::ScreenSize(width(), height()); };
+        m_viewportInteractionImpl->Connect(id);
+
         AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusConnect(GetId());
         AzFramework::InputChannelEventListener::Connect();
         AZ::TickBus::Handler::BusConnect();
@@ -107,7 +111,7 @@ namespace AtomToolsFramework
         AZ::TickBus::Handler::BusDisconnect();
         AzFramework::InputChannelEventListener::Disconnect();
         AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusDisconnect();
-        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusDisconnect();
+        m_viewportInteractionImpl->Disconnect();
     }
 
     void RenderViewportWidget::LockRenderTargetSize(uint32_t width, uint32_t height)
@@ -278,46 +282,23 @@ namespace AtomToolsFramework
 
     AzFramework::CameraState RenderViewportWidget::GetCameraState()
     {
-        AZ::RPI::ViewPtr currentView = m_viewportContext->GetDefaultView();
-        if (currentView == nullptr)
-        {
-            return {};
-        }
-
-        // Build camera state from Atom camera transforms
-        AzFramework::CameraState cameraState = AzFramework::CreateCameraFromWorldFromViewMatrix(
-            currentView->GetViewToWorldMatrix(), AZ::Vector2{ aznumeric_cast<float>(width()), aznumeric_cast<float>(height()) });
-        AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, currentView->GetViewToClipMatrix());
-
-        // Convert from Z-up
-        AZStd::swap(cameraState.m_forward, cameraState.m_up);
-        cameraState.m_forward = -cameraState.m_forward;
-
-        return cameraState;
+        return m_viewportInteractionImpl->GetCameraState();
     }
 
     AzFramework::ScreenPoint RenderViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
     {
-        return AzFramework::WorldToScreen(
-            worldPosition, m_viewportContext->GetCameraViewMatrix(), m_viewportContext->GetCameraProjectionMatrix(),
-            AZ::Vector2(aznumeric_cast<float>(width()), aznumeric_cast<float>(height())));
+        return m_viewportInteractionImpl->ViewportWorldToScreen(worldPosition);
     }
 
     AZ::Vector3 RenderViewportWidget::ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition)
     {
-        return AzFramework::ScreenToWorld(
-            screenPosition, m_viewportContext->GetCameraViewMatrix().GetInverseFast(),
-            m_viewportContext->GetCameraProjectionMatrix().GetInverseFull(),
-            AZ::Vector2(aznumeric_cast<float>(width()), aznumeric_cast<float>(height())));
+        return m_viewportInteractionImpl->ViewportScreenToWorld(screenPosition);
     }
 
     AzToolsFramework::ViewportInteraction::ProjectedViewportRay RenderViewportWidget::ViewportScreenToWorldRay(
         const AzFramework::ScreenPoint& screenPosition)
     {
-        const AzFramework::CameraState cameraState = GetCameraState();
-        const AZ::Vector3 rayOrigin = AzFramework::ScreenToWorld(screenPosition, cameraState);
-        const AZ::Vector3 rayDirection = (rayOrigin - cameraState.m_position).GetNormalized();
-        return AzToolsFramework::ViewportInteraction::ProjectedViewportRay{rayOrigin, rayDirection};
+        return m_viewportInteractionImpl->ViewportScreenToWorldRay(screenPosition);
     }
 
     float RenderViewportWidget::DeviceScalingFactor()
