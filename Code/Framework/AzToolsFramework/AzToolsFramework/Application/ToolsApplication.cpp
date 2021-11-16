@@ -1196,6 +1196,16 @@ namespace AzToolsFramework
 
     AZ::EntityId ToolsApplication::GetCurrentLevelEntityId()
     {
+        if (IsPrefabSystemEnabled())
+        {
+            auto prefabPublicInterface = AZ::Interface<Prefab::PrefabPublicInterface>::Get();
+
+            if (prefabPublicInterface)
+            {
+                return prefabPublicInterface->GetLevelInstanceContainerEntityId();
+            }
+        }
+
         AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
         AZ::SliceComponent* rootSliceComponent = nullptr;
