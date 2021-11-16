@@ -1188,7 +1188,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gemRepos));
     }
 
-    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetAllGemRepoGemsInfos()
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetAllGemReposGemInfos()
     {
         QVector<GemInfo> gemInfos;
         AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(

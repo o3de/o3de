@@ -221,7 +221,7 @@ namespace O3DE::ProjectManager
          * Gathers all gem infos for all gems registered from repos.
          * @return A list of gem infos.
          */
-        virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemRepoGemsInfos() = 0;
+        virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemReposGemInfos() = 0;
 
         /**
          * Downloads and registers a Gem.
