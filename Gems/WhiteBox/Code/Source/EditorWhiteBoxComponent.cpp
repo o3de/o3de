@@ -265,6 +265,7 @@ namespace WhiteBox
     {
         incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
         incompatible.push_back(AZ_CRC_CE("MeshService"));
+        incompatible.push_back(AZ_CRC_CE("WhiteBoxService"));
     }
 
     EditorWhiteBoxComponent::EditorWhiteBoxComponent() = default;
