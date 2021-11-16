@@ -6,39 +6,29 @@
  *
  */
 
-#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
+#include <AzToolsFramework/API/PythonLoader.h>
+#include <AzCore/Debug/Trace.h>
 #include <dlfcn.h>
 
 namespace AzToolsFramework::EmbeddedPython
 {
-    class PythonLoader
+    PythonLoader::PythonLoader()
     {
-    public:
-        PythonLoader()
+        constexpr char libPythonName[] = "libpython3.7m.so.1.0";
+        if (m_embeddedLibPythonHandle = dlopen(libPythonName, RTLD_NOW | RTLD_GLOBAL);
+            m_embeddedLibPythonHandle == nullptr)
         {
-            m_embeddedLibPythonHandle = dlopen("libpython3.7m.so.1.0", RTLD_NOW | RTLD_GLOBAL);
-            if (!m_embeddedLibPythonHandle)
-            {
-                char* err = dlerror();
-                AZ_Error("PythonLoader", false, "Failed to load 'libpython' with error: %s\n", err ? err : "Unknown Error");
-            }
+            char* err = dlerror();
+            AZ_Error("PythonLoader", false, "Failed to load %s with error: %s\n", libPythonName, err ? err : "Unknown Error");
         }
-
-        ~PythonLoader() //override
-        {
-            if (m_embeddedLibPythonHandle)
-            {
-                dlclose(m_embeddedLibPythonHandle);
-            }
-        }
-
-    private:
-        void* m_embeddedLibPythonHandle{ nullptr };
-    };
-
-    void LoadPythonLib()
-    {
-        static PythonLoader embeddedPython;
     }
 
+    PythonLoader::~PythonLoader()
+    {
+        if (m_embeddedLibPythonHandle)
+        {
+            dlclose(m_embeddedLibPythonHandle);
+        }
+    }
+    
 } // namespace AzToolsFramework::EmbeddedPython

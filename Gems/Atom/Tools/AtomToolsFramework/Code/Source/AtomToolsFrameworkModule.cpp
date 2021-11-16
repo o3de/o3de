@@ -12,14 +12,10 @@
 #include <Window/AtomToolsMainWindowSystemComponent.h>
 #include <PreviewRenderer/PreviewRendererSystemComponent.h>
 
-#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
-
 namespace AtomToolsFramework
 {
     AtomToolsFrameworkModule::AtomToolsFrameworkModule()
     {
-        AzToolsFramework::EmbeddedPython::LoadPythonLib();
-
         m_descriptors.insert(m_descriptors.end(), {
                 AtomToolsFrameworkSystemComponent::CreateDescriptor(),
                 AtomToolsDocumentSystemComponent::CreateDescriptor(),

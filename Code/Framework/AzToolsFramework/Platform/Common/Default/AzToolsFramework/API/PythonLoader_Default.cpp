@@ -6,9 +6,15 @@
 *
 */
 
-#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
+#include <AzToolsFramework/API/PythonLoader.h>
 
 namespace AzToolsFramework::EmbeddedPython
 {
-    void LoadPythonLib() {}
+    PythonLoader::PythonLoader()
+    {
+    }
+
+    PythonLoader::~PythonLoader()
+    {
+    }
 }

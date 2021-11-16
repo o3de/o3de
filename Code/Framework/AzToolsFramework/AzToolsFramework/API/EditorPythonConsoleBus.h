@@ -18,13 +18,6 @@ namespace AZ
 
 namespace AzToolsFramework
 {
-    // When using embedded Python, some platforms need to explicitly load the python library.
-    // For any modules that depend on 3rdParty::Python, this should be called.
-    namespace EmbeddedPython
-    {
-        void LoadPythonLib();
-    }
-
     //! Interface into the Python virtual machine's data
     class EditorPythonConsoleInterface
     {
