@@ -156,7 +156,7 @@ namespace AZ
                         propertyValue = AZ::RPI::MaterialPropertyValue::FromAny(propertyOverrideItr->second);
                     }
 
-                    if (!editData.m_materialTypeSourceData.ConvertPropertyValueToSourceDataFormat(propertyDefinition, propertyValue))
+                    if (!editData.m_materialTypeSourceData.ConvertPropertyValueToSourceDataFormat(propertyId.GetFullName(), propertyDefinition, propertyValue))
                     {
                         AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Failed to export: %s", path.c_str());
                         result = false;

@@ -211,7 +211,7 @@ namespace AZ
 
             //! Convert the property value into the format that will be stored in the source data
             //! This is primarily needed to support conversions of special types like enums and images
-            bool ConvertPropertyValueToSourceDataFormat(const PropertyDefinition& propertyDefinition, MaterialPropertyValue& propertyValue) const;
+            bool ConvertPropertyValueToSourceDataFormat(const AZ::Name& propertyId, const PropertyDefinition& propertyDefinition, MaterialPropertyValue& propertyValue) const;
 
             Outcome<Data::Asset<MaterialTypeAsset>> CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath = "", bool elevateWarnings = true) const;
             

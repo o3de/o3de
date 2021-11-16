@@ -43,18 +43,9 @@ namespace AZ
                     
                     if (!imageAssetId.IsSuccess())
                     {
-                        constexpr static char ErrorMissingTexture[] = "textures/defaults/missing.png";
-                        imageAssetId = AssetUtils::MakeAssetId(ErrorMissingTexture, StreamingImageAsset::GetImageAssetSubId());
-                        
-                        if (imageAssetId.IsSuccess())
-                        {
-                            imageAsset = Data::Asset<ImageAsset>{imageAssetId.GetValue(), azrtti_typeid<StreamingImageAsset>(), imageFilePath};
-                            return GetImageAssetResult::Missing;
-                        }
-                        else
-                        {
-                            return GetImageAssetResult::MissingNoFallback;
-                        }
+                        static const Uuid InvalidAssetPlaceholderId = "{BADA55E7-1A1D-4940-B655-9D08679BD62F}";
+                        imageAsset = Data::Asset<ImageAsset>{InvalidAssetPlaceholderId, azrtti_typeid<StreamingImageAsset>(), imageFilePath};
+                        return GetImageAssetResult::Missing;
                     }
                     
                     imageAsset = Data::Asset<ImageAsset>{imageAssetId.GetValue(), azrtti_typeid<StreamingImageAsset>(), imageFilePath};
