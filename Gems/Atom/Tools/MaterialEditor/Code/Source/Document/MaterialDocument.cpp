@@ -468,37 +468,6 @@ namespace MaterialEditor
     {
         return AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), AZ::RPI::MaterialSourceData::Extension);
     }
-    
-    AZStd::vector<AZStd::string> MaterialDocument::GetDataWarnings() const
-    {
-        AZStd::vector<AZStd::string> warnings;
-
-        for (auto& [propertyName, dynamicProperty] : m_properties)
-        {
-            AZ::RPI::MaterialPropertyValue propertyValue = AtomToolsFramework::ConvertToRuntimeType(dynamicProperty.GetValue());
-            if (propertyValue.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
-            {
-                auto isSameAsset = [&propertyValue](const char* path)
-                {
-                    AZ::Data::AssetId assetId = propertyValue.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>().GetId();
-                    AZ::Data::AssetId otherAssetId;
-                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(otherAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, path, AZ::Data::AssetType{}, false);
-                    return assetId == otherAssetId;
-                };
-
-                if (isSameAsset(AZ::RPI::DefaultImageAssetPaths::DefaultFallback) ||
-                    isSameAsset(AZ::RPI::DefaultImageAssetPaths::Missing) ||
-                    isSameAsset(AZ::RPI::DefaultImageAssetPaths::Processing) ||
-                    isSameAsset(AZ::RPI::DefaultImageAssetPaths::ProcessingFailed)
-                    )
-                {
-                    warnings.push_back(AZStd::string::format("%s is using a placeholder image asset.", propertyName.GetCStr()));
-                }
-            }
-        }
-
-        return warnings;
-    }
 
     bool MaterialDocument::CanUndo() const
     {

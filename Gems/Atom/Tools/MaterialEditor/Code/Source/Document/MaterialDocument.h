@@ -55,7 +55,6 @@ namespace MaterialEditor
         bool IsOpen() const override;
         bool IsModified() const override;
         bool IsSavable() const override;
-        AZStd::vector<AZStd::string> GetDataWarnings() const override;
         bool CanUndo() const override;
         bool CanRedo() const override;
         bool Undo() override;
