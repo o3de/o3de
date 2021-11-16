@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromTransform",
+                "name": "From Transform",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns a matrix using the supplied transform",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns a matrix using the supplied transform"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Transform: Transform",
+                    "key": "DataInput_Transform",
                     "details": {
-                        "name": "Transform: Transform"
+                        "name": "Transform"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix3x3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix3x3"
+                        "name": "Result"
                     }
                 }
             ]
