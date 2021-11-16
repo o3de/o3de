@@ -28,6 +28,7 @@
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Visibility/BoundsBus.h>
+#include <AzFramework/Render/IntersectorInterface.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorEntityAPI.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
@@ -99,6 +100,14 @@
 #ifdef CreateDirectory
 #undef CreateDirectory
 #endif
+
+AZ_CVAR(
+    float,
+    ed_defaultEntityPlacementDistance,
+    10.0f,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "The default distance to place an entity from the camera if no intersection is found");
 
 //////////////////////////////////////////////////////////////////////////
 // Gathers all selected entities, culling any that have an ancestor in the selection.
@@ -1394,13 +1403,37 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
 {
     AZ::Vector3 worldPosition = AZ::Vector3::CreateZero();
 
-    CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
     // If we don't have a viewport active to aid in placement, the object
     // will be created at the origin.
-    if (view)
+    if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport())
     {
-        const QPoint viewPoint(static_cast<int>(m_contextMenuViewPoint.GetX()), static_cast<int>(m_contextMenuViewPoint.GetY()));
-        worldPosition = view->GetHitLocation(viewPoint);
+        const auto viewportId = view->GetViewportId();
+        using AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
+        AzToolsFramework::ViewportInteraction::ProjectedViewportRay viewportRay{};
+        ViewportInteractionRequestBus::EventResult(
+            viewportRay, viewportId, &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay,
+            AzFramework::ScreenPointFromVector2(m_contextMenuViewPoint));
+
+        const float RayDistance = 1000.0f;
+        AzFramework::RenderGeometry::RayRequest ray;
+        ray.m_startWorldPosition = viewportRay.origin;
+        ray.m_endWorldPosition = viewportRay.origin + viewportRay.direction * RayDistance;
+        ray.m_onlyVisible = true;
+
+        AzFramework::RenderGeometry::RayResult renderGeometryIntersectionResult;
+        AzFramework::RenderGeometry::IntersectorBus::EventResult(
+            renderGeometryIntersectionResult, AzToolsFramework::GetEntityContextId(),
+            &AzFramework::RenderGeometry::IntersectorBus::Events::RayIntersect, ray);
+
+        // attempt a ray intersection with any visible mesh and return the intersection position if successful
+        if (renderGeometryIntersectionResult)
+        {
+            worldPosition = renderGeometryIntersectionResult.m_worldPosition;
+        }
+        else
+        {
+            worldPosition = viewportRay.origin + viewportRay.direction * ed_defaultEntityPlacementDistance;
+        }
     }
 
     CreateNewEntityAtPosition(worldPosition);
