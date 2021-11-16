@@ -385,6 +385,13 @@ namespace ImageProcessingAtom
             }
             return true;
         }
+
+        bool NeedAlphaChannel(EAlphaContent alphaContent)
+        {
+             return (alphaContent == EAlphaContent::eAlphaContent_OnlyBlack
+                        || alphaContent == EAlphaContent::eAlphaContent_OnlyBlackAndWhite
+                        || alphaContent == EAlphaContent::eAlphaContent_Greyscale);
+        }
     }
 
 } // namespace ImageProcessingAtom

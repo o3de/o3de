@@ -1,0 +1,56 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{5D9ECB52-4CD9-4CB8-80E3-10CAE5EFB8A2}",
+            "Name": "AlbedoWithGenericAlpha",
+            "RGB_Weight": "CIEXYZ",
+            "PixelFormat": "ASTC_4x4",
+            "MipMapSetting": {
+                "MipGenType": "Box"
+            }
+        },
+        "PlatformsPresets": {
+            "android": {
+                "UUID": "{5D9ECB52-4CD9-4CB8-80E3-10CAE5EFB8A2}",
+                "Name": "AlbedoWithGenericAlpha",
+                "RGB_Weight": "CIEXYZ",
+                "PixelFormat": "ASTC_6x6",
+                "MaxTextureSize": 2048,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "ios": {
+                "UUID": "{5D9ECB52-4CD9-4CB8-80E3-10CAE5EFB8A2}",
+                "Name": "AlbedoWithGenericAlpha",
+                "RGB_Weight": "CIEXYZ",
+                "PixelFormat": "ASTC_6x6",
+                "MaxTextureSize": 2048,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "mac": {
+                "UUID": "{5D9ECB52-4CD9-4CB8-80E3-10CAE5EFB8A2}",
+                "Name": "AlbedoWithGenericAlpha",
+                "RGB_Weight": "CIEXYZ",
+                "PixelFormat": "BC3",
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "provo": {
+                "UUID": "{5D9ECB52-4CD9-4CB8-80E3-10CAE5EFB8A2}",
+                "Name": "AlbedoWithGenericAlpha",
+                "RGB_Weight": "CIEXYZ",
+                "PixelFormat": "BC3",
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            }
+        }
+    }
+}
