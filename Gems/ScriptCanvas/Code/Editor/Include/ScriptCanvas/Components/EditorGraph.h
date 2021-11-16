@@ -237,7 +237,7 @@ namespace ScriptCanvasEditor
             IfOutOfDate,
             Forced
         };
-        bool UpgradeGraph(const AZ::Data::Asset<AZ::Data::AssetData>& asset, UpgradeRequest request, bool isVerbose = true);
+        bool UpgradeGraph(SourceHandle& asset, UpgradeRequest request, bool isVerbose = true);
         void ConnectGraphCanvasBuses();
         void DisconnectGraphCanvasBuses();
         ///////

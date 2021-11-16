@@ -35,6 +35,8 @@ namespace Ui
 
 namespace ScriptCanvasEditor
 {
+    // class SourceHandle;
+
     //! A tool that collects and upgrades all Script Canvas graphs in the asset catalog
     class UpgradeHelper
         : public AzQtComponents::StyledDialog
@@ -51,6 +53,6 @@ namespace ScriptCanvasEditor
 
         AZStd::unique_ptr<Ui::UpgradeHelper> m_ui;
 
-        void OpenGraph(AZ::Data::AssetId assetId);
+        void OpenGraph(const SourceHandle& assetId);
     };
 }

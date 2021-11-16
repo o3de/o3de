@@ -65,36 +65,36 @@ namespace ScriptCanvasEditor
 
             void AddLogEntries();
             void EnableAllUpgradeButtons();
-            QList<QTableWidgetItem*> FindTableItems(const AZ::Data::AssetInfo& assetInfo);
+            QList<QTableWidgetItem*> FindTableItems(const SourceHandle& assetInfo);
 
             void OnButtonPressClose();
             void OnButtonPressScan();
             void OnButtonPressUpgrade();
-            void OnButtonPressUpgradeImplementation(const AZ::Data::AssetInfo& assetInfo);
-            void OnButtonPressUpgradeSingle(const AZ::Data::AssetInfo& assetInfo);
+            void OnButtonPressUpgradeImplementation(const SourceHandle& assetInfo);
+            void OnButtonPressUpgradeSingle(const SourceHandle& assetInfo);
 
-            void OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>&, bool skipped) override;
+            void OnGraphUpgradeComplete(SourceHandle&, bool skipped) override;
                         
             void OnScanBegin(size_t assetCount) override;
             void OnScanComplete(const ScanResult& result) override;
-            void OnScanFilteredGraph(const AZ::Data::AssetInfo& info) override;
-            void OnScanLoadFailure(const AZ::Data::AssetInfo& info) override;
-            void OnScanUnFilteredGraph(const AZ::Data::AssetInfo& info) override;
+            void OnScanFilteredGraph(const SourceHandle& info) override;
+            void OnScanLoadFailure(const SourceHandle& info) override;
+            void OnScanUnFilteredGraph(const SourceHandle& info) override;
             enum class Filtered { No, Yes };
-            void OnScannedGraph(const AZ::Data::AssetInfo& info, Filtered filtered);
-            void OnScannedGraphResult(const AZ::Data::AssetInfo& info);
+            void OnScannedGraph(const SourceHandle& info, Filtered filtered);
+            void OnScannedGraphResult(const SourceHandle& info);
 
             // for single operation UI updates, just check the assets size, or note it on the request
-            void OnUpgradeBegin(const ModifyConfiguration& config, const WorkingAssets& assets) override;
+            void OnUpgradeBegin(const ModifyConfiguration& config, const AZStd::vector<SourceHandle>& assets) override;
             void OnUpgradeComplete(const ModificationResults& results) override;
-            void OnUpgradeDependenciesGathered(const AZ::Data::AssetInfo& info, Result result) override;
-            void OnUpgradeDependencySortBegin(const ModifyConfiguration& config, const WorkingAssets& assets) override;
+            void OnUpgradeDependenciesGathered(const SourceHandle& info, Result result) override;
+            void OnUpgradeDependencySortBegin(const ModifyConfiguration& config, const AZStd::vector<SourceHandle>& assets) override;
             void OnUpgradeDependencySortEnd
                 ( const ModifyConfiguration& config
-                , const WorkingAssets& assets
+                , const AZStd::vector<SourceHandle>& assets
                 , const AZStd::vector<size_t>& sortedOrder) override;
-            void OnUpgradeModificationBegin(const ModifyConfiguration& config, const AZ::Data::AssetInfo& info) override;
-            void OnUpgradeModificationEnd(const ModifyConfiguration& config, const AZ::Data::AssetInfo& info, ModificationResult result) override;
+            void OnUpgradeModificationBegin(const ModifyConfiguration& config, const SourceHandle& info) override;
+            void OnUpgradeModificationEnd(const ModifyConfiguration& config, const SourceHandle& info, ModificationResult result) override;
 
             void SetLoggingPreferences();
             void SetSpinnerIsBusy(bool isBusy);

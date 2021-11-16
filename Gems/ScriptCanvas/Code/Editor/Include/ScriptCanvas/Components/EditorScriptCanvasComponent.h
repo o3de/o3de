@@ -37,6 +37,7 @@ namespace ScriptCanvasEditor
         , private EditorScriptCanvasComponentLoggingBus::Handler
         , private EditorScriptCanvasComponentRequestBus::Handler
         , private AssetTrackerNotificationBus::Handler
+        , private AzToolsFramework::AssetSystemBus::Handler
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
 
     {
@@ -44,6 +45,7 @@ namespace ScriptCanvasEditor
         AZ_COMPONENT(EditorScriptCanvasComponent, "{C28E2D29-0746-451D-A639-7F113ECF5D72}", AzToolsFramework::Components::EditorComponentBase);
 
         EditorScriptCanvasComponent();
+        // EditorScriptCanvasComponent(AZ::Data::Asset<ScriptCanvasAsset> asset);
         EditorScriptCanvasComponent(AZ::Data::Asset<ScriptCanvasAsset> asset);
         ~EditorScriptCanvasComponent() override;
 

@@ -6,16 +6,13 @@
  *
  */
 
+#include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/LogTraits.h>
 #include <Editor/View/Windows/Tools/UpgradeTool/Modifier.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+#include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Core/Graph.h>
-
-namespace ModifierCpp
-{
-
-}
 
 namespace ScriptCanvasEditor
 {
@@ -23,7 +20,7 @@ namespace ScriptCanvasEditor
     {
         Modifier::Modifier
             ( const ModifyConfiguration& modification
-            , WorkingAssets&& assets
+            , AZStd::vector<SourceHandle>&& assets
             , AZStd::function<void()> onComplete)
             : m_state(State::GatheringDependencies)
             , m_config(modification)
@@ -35,11 +32,11 @@ namespace ScriptCanvasEditor
             AZ::SystemTickBus::Handler::BusConnect();
         }
 
-        const AZ::Data::AssetInfo& Modifier::GetCurrentAsset() const
+        const SourceHandle& Modifier::GetCurrentAsset() const
         {
             return m_state == State::GatheringDependencies
-                ? m_assets[m_assetIndex].info
-                : m_assets[m_dependencyOrderedAssetIndicies[m_assetIndex]].info;
+                ? m_assets[m_assetIndex]
+                : m_assets[m_dependencyOrderedAssetIndicies[m_assetIndex]];
         }
 
         AZStd::unordered_set<size_t>& Modifier::GetOrCreateDependencyIndexSet()
@@ -66,13 +63,9 @@ namespace ScriptCanvasEditor
 
             bool anyFailures = false;
             auto asset = LoadAsset();
-
-            if (asset
-            && asset.GetAs<ScriptCanvasAsset>()
-            && asset.GetAs<ScriptCanvasAsset>()->GetScriptCanvasGraph()
-            && asset.GetAs<ScriptCanvasAsset>()->GetScriptCanvasGraph()->GetGraphData())
+            if (asset.Get() && asset.Mod()->GetGraphData())
             {
-                auto graphData = asset.GetAs<ScriptCanvasAsset>()->GetScriptCanvasGraph()->GetGraphData();
+                auto graphData = asset.Mod()->GetGraphData();
 
                 auto dependencyGrabber = [this]
                     ( void* instancePointer
@@ -107,15 +100,15 @@ namespace ScriptCanvasEditor
                     , nullptr))
                 {
                     anyFailures = true;
-                    VE_LOG("Modifier: ERROR - Failed to gather dependencies from graph data: %s"
-                        , GetCurrentAsset().m_relativePath.c_str())
+                        VE_LOG("Modifier: ERROR - Failed to gather dependencies from graph data: %s"
+                        , GetCurrentAsset().Path().c_str())
                 }
             }
             else
             {
                 anyFailures = true;
                 VE_LOG("Modifier: ERROR - Failed to load asset %s for modification, even though it scanned properly"
-                    , GetCurrentAsset().m_relativePath.c_str());
+                    , GetCurrentAsset().Path().c_str());
             }
             
             ModelNotificationsBus::Broadcast
@@ -127,18 +120,12 @@ namespace ScriptCanvasEditor
             AZ::Data::AssetManager::Instance().DispatchEvents();
         }
 
-        AZ::Data::Asset<AZ::Data::AssetData> Modifier::LoadAsset()
+        SourceHandle Modifier::LoadAsset()
         {
-            AZ::Data::Asset<AZ::Data::AssetData> asset = AZ::Data::AssetManager::Instance().GetAsset
-                ( GetCurrentAsset().m_assetId
-                , azrtti_typeid<ScriptCanvasAsset>()
-                , AZ::Data::AssetLoadBehavior::PreLoad);
-
-            asset.BlockUntilLoadComplete();
-
-            if (asset.IsReady())
+            auto outcome = LoadFromFile(GetCurrentAsset().Path().c_str());
+            if (outcome.IsSuccess())
             {
-                return asset;
+                return outcome.TakeValue();
             }
             else
             {
@@ -163,11 +150,11 @@ namespace ScriptCanvasEditor
         void Modifier::ModifyCurrentAsset()
         {
             m_result = {};
-            m_result.assetInfo = GetCurrentAsset();
+            m_result.asset = GetCurrentAsset();
 
             ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnUpgradeModificationBegin, m_config, GetCurrentAsset());
 
-            if (auto asset = LoadAsset())
+            if (auto asset = LoadAsset(); asset.IsValid())
             {
                 ModificationNotificationsBus::Handler::BusConnect();
                 m_modifyState = ModifyState::InProgress;
@@ -199,7 +186,7 @@ namespace ScriptCanvasEditor
 
         void Modifier::ReportModificationSuccess()
         {
-            m_results.m_successes.push_back(m_result.assetInfo);
+            m_results.m_successes.push_back(m_result.asset);
             ModifyNextAsset();
         }
 
@@ -227,7 +214,7 @@ namespace ScriptCanvasEditor
             {
                 VE_LOG
                     ( "Temporary file not removed for %s: %s"
-                    , m_result.assetInfo.m_relativePath.c_str()
+                    , m_result.asset.Path().c_str()
                     , result.tempFileRemovalError.c_str());
             }
 
@@ -287,7 +274,7 @@ namespace ScriptCanvasEditor
 
                     for (size_t index = 0; index != m_assets.size(); ++index)
                     {
-                        m_assetInfoIndexById.insert({ m_assets[index].info.m_assetId.m_guid, index });
+                        m_assetInfoIndexById.insert({ m_assets[index].Id(), index });
                     }
                 }
                 else
@@ -380,10 +367,10 @@ namespace ScriptCanvasEditor
             if (markedTemporary.contains(index))
             {
                 AZ_Error
-                (ScriptCanvas::k_VersionExplorerWindow.data()
+                    (ScriptCanvas::k_VersionExplorerWindow.data()
                     , false
                     , "Modifier: Dependency sort has failed during, circular dependency detected for Asset: %s"
-                    , modifier->GetCurrentAsset().m_relativePath.c_str());
+                    , modifier->GetCurrentAsset().Path().c_str());
                 return;
             }
 

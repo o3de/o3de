@@ -26,6 +26,8 @@
 #include <ScriptCanvas/Variable/VariableCore.h>
 #include <AzCore/Interface/Interface.h>
 
+#include <ScriptCanvas/Core/Core.h>
+
 namespace GraphCanvas
 {
     class GraphCanvasTreeItem;
@@ -223,7 +225,7 @@ namespace ScriptCanvasEditor
         virtual void OnUpgradeStart() {}
         virtual void OnUpgradeCancelled() {}
 
-        virtual void OnGraphUpgradeComplete(AZ::Data::Asset<AZ::Data::AssetData>&, bool skipped = false) { (void)skipped; }
+        virtual void OnGraphUpgradeComplete(SourceHandle&, bool skipped = false) { (void)skipped; }
     };
 
     using UpgradeNotificationsBus = AZ::EBus<UpgradeNotifications>;
