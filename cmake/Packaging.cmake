@@ -108,9 +108,10 @@ ly_install(FILES ${LY_CMAKE_PACKAGE_DOWNLOAD_PATH}
 
 # Set common CPACK variables to all platforms/generators
 set(CPACK_STRIP_FILES TRUE) # always strip symbols on packaging
-set(CPACK_PACKAGE_CHECKSUM MD5) # Generate checksum file
+set(CPACK_PACKAGE_CHECKSUM SHA256) # Generate checksum file
 set(CPACK_PRE_BUILD_SCRIPTS ${pal_dir}/PackagingPreBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
 set(CPACK_POST_BUILD_SCRIPTS ${pal_dir}/PackagingPostBuild_${PAL_HOST_PLATFORM_NAME_LOWERCASE}.cmake)
+set(CPACK_LY_PYTHON_CMD ${LY_PYTHON_CMD})
 
 # IMPORTANT: required to be included AFTER setting all property overrides
 include(CPack REQUIRED)
@@ -198,7 +199,7 @@ if(LY_INSTALLER_DOWNLOAD_URL)
     # this will set the following variables: CPACK_DOWNLOAD_SITE, CPACK_DOWNLOAD_ALL, and CPACK_UPLOAD_DIRECTORY (local)
     cpack_configure_downloads(
         ${LY_INSTALLER_DOWNLOAD_URL}
-        UPLOAD_DIRECTORY ${CMAKE_BINARY_DIR}/_CPack_Uploads # to match the _CPack_Packages directory
+        UPLOAD_DIRECTORY ${CMAKE_BINARY_DIR}/CPackUploads # to match the _CPack_Packages directory
         ALL
     )
 endif()

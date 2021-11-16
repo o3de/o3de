@@ -36,10 +36,10 @@ function(ly_upload_to_url in_url in_local_path in_file_regex)
 
     set(_extra_args [[{"ACL":"bucket-owner-full-control"}]])
 
-    file(TO_NATIVE_PATH "${LY_ROOT_FOLDER}/python/python.cmd" _python_cmd)
     file(TO_NATIVE_PATH "${LY_ROOT_FOLDER}/scripts/build/tools/upload_to_s3.py" _upload_script)
+
     set(_upload_command
-        ${_python_cmd} -s
+        ${CPACK_LY_PYTHON_CMD} -s
         -u ${_upload_script}
         --base_dir ${in_local_path}
         --file_regex="${in_file_regex}"
@@ -64,7 +64,7 @@ function(ly_upload_to_url in_url in_local_path in_file_regex)
     if (${_upload_result} EQUAL 0)
         message(STATUS "Artifact uploading complete!")
     else()
-        message(FATAL_ERROR "An error occurred uploading to s3.\nOutput:\n${_upload_output}\nError: \n${_upload_error}")
+        message(FATAL_ERROR "An error occurred uploading to s3.\n  Output: ${_upload_output}\n\  Error: ${_upload_error}")
     endif()
 endfunction()
 
