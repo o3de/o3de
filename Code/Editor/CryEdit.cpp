@@ -4181,6 +4181,8 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
             "\nThis could be because of incorrectly configured components, or missing required gems."
             "\nSee other errors for more details.");
 
+        AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyEditorInitialized);
+
         if (didCryEditStart)
         {
             app->EnableOnIdle();
