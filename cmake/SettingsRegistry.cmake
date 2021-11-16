@@ -44,6 +44,13 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
     if(NOT TARGET ${ly_TARGET})
         return() # Nothing to do
     endif()
+    # Internally we use a third parameter to pass the list of targets that we have traversed. This is 
+    # used to detect runtime cycles
+    if("${ARGC}" STREQUAL "3")
+        set(ly_CYCLE_DETECTION_TARGETS ${ARGV2})
+    else()
+        set(ly_CYCLE_DETECTION_TARGETS "")
+    endif()
 
     # Optimize the search by caching gem load dependencies
     get_property(are_dependencies_cached GLOBAL PROPERTY LY_GEM_LOAD_DEPENDENCIES_${ly_TARGET} SET)
@@ -54,6 +61,21 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
         return()
     endif()
 
+    # detect cycles
+    if(ly_TARGET IN_LIST ly_CYCLE_DETECTION_TARGETS)
+        unset(dependency_cycle_loop)
+        foreach(item IN LISTS ly_CYCLE_DETECTION_TARGETS)
+            string(APPEND dependency_cycle_loop ${item})
+            if(item STREQUAL ly_TARGET)
+                string(APPEND dependency_cycle_loop "*")
+            endif()
+            string(APPEND dependency_cycle_loop " --> ")
+        endforeach()
+        string(APPEND dependency_cycle_loop " ${ly_TARGET}*")
+        message(FATAL_ERROR "Runtime dependency detected: ${dependency_cycle_loop}")
+    endif()
+
+    list(APPEND ly_CYCLE_DETECTION_TARGETS ${ly_TARGET})
     unset(all_gem_load_dependencies)
 
     # For load dependencies, we want to copy over the dependency and traverse them
@@ -69,7 +91,7 @@ function(ly_get_gem_load_dependencies ly_GEM_LOAD_DEPENDENCIES ly_TARGET)
             # and recurse into its manually added dependencies
             if (is_gem_target)
                 unset(dependencies)
-                ly_get_gem_load_dependencies(dependencies ${dealias_load_dependency})
+                ly_get_gem_load_dependencies(dependencies ${dealias_load_dependency} "${ly_CYCLE_DETECTION_TARGETS}")
                 list(APPEND all_gem_load_dependencies ${dependencies})
                 list(APPEND all_gem_load_dependencies ${dealias_load_dependency})
             endif()
