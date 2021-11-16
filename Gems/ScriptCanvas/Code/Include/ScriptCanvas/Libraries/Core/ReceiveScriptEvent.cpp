@@ -204,7 +204,7 @@ namespace ScriptCanvas
 
                     DataSlotConfiguration slotConfiguration;
 
-                    slotConfiguration.m_name = AZStd::string::format("Result: %s", argumentTypeName.c_str());
+                    slotConfiguration.m_name = argumentTypeName;
 
                     slotConfiguration.SetConnectionType(ConnectionType::Input);
                     slotConfiguration.ConfigureDatum(AZStd::move(Datum(inputType, Datum::eOriginality::Copy, nullptr, AZ::Uuid::CreateNull())));

@@ -5,10 +5,10 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ToSphere",
-                "category": "Math/AABB",
+                "name": "To Sphere",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the center and radius of smallest sphere that contains Source",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {

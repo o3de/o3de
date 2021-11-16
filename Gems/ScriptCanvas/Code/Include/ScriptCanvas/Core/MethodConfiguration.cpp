@@ -56,7 +56,7 @@ namespace ScriptCanvas
             {
                 const Data::Type outputType = (unpackedTypes.size() == 1 && AZ::BehaviorContextHelper::IsStringParameter(*result)) ? Data::Type::String() : Data::FromAZType(unpackedTypes[resultIndex]);
 
-                AZStd::string resultSlotName(AZStd::string::format("Result: %s", Data::GetName(outputType).data()));
+                AZStd::string resultSlotName(Data::GetName(outputType).data());
 
                 AZStd::string className = outputConfig.config.m_className ? *outputConfig.config.m_className : "";
                 if (className.empty())

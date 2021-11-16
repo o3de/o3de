@@ -6,9 +6,9 @@
             "variant": "",
             "details": {
                 "name": "Expand",
-                "category": "Math/AABB",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the Source expanded in each axis by the absolute value of each axis in Delta",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
@@ -26,19 +26,19 @@
                 {
                     "key": "DataInput_AABB: Source",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
                     "key": "DataInput_Vector3: Delta",
                     "details": {
-                        "name": "Vector3: Delta"
+                        "name": "Delta"
                     }
                 },
                 {
                     "key": "DataOutput_Result: AABB",
                     "details": {
-                        "name": "Result: AABB"
+                        "name": "AABB"
                     }
                 }
             ]
