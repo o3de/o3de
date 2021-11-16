@@ -546,7 +546,6 @@ set(FILES
     LevelInfo.h
     ProcessInfo.cpp
     ProcessInfo.h
-    Report.h
     TrackView/AtomOutputFrameCapture.cpp
     TrackView/AtomOutputFrameCapture.h
     TrackView/TrackViewDialog.qrc
