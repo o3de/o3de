@@ -26,14 +26,14 @@ namespace O3DE::ProjectManager
         return m_selectionModel;
     }
 
-    void GemModel::AddGem(const GemInfo& gemInfo)
+    QModelIndex GemModel::AddGem(const GemInfo& gemInfo)
     {
         if (FindIndexByNameString(gemInfo.m_name).isValid())
         {
             // do not add gems with duplicate names
             // this can happen by mistake or when a gem repo has a gem with the same name as a local gem
             AZ_TracePrintf("GemModel", "Ignoring duplicate gem: %s", gemInfo.m_name.toUtf8().constData());
-            return;
+            return QModelIndex();
         }
 
         QStandardItem* item = new QStandardItem();
@@ -67,6 +67,22 @@ namespace O3DE::ProjectManager
 
         const QModelIndex modelIndex = index(rowCount()-1, 0);
         m_nameToIndexMap[gemInfo.m_name] = modelIndex;
+
+        return modelIndex;
+    }
+
+    void GemModel::RemoveGem(const QModelIndex& modelIndex)
+    {
+        removeRow(modelIndex.row());
+    }
+
+    void GemModel::RemoveGem(const QString& gemName)
+    {
+        auto nameFind = m_nameToIndexMap.find(gemName);
+        if (nameFind != m_nameToIndexMap.end())
+        {
+            removeRow(nameFind->row());
+        }
     }
 
     void GemModel::Clear()
@@ -391,11 +407,11 @@ namespace O3DE::ProjectManager
         // Select a valid row if currently selected row was removed
         if (selectedRowRemoved)
         {
-            for (const QModelIndex& index :  m_nameToIndexMap)
+            for (const QModelIndex& index : m_nameToIndexMap)
             {
                 if (index.isValid())
                 {
-                    GetSelectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
+                    GetSelectionModel()->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
                     break;
                 }
             }

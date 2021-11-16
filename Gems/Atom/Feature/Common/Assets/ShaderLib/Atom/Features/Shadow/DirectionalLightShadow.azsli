@@ -166,7 +166,7 @@ float DirectionalLightShadow::GetThickness(uint lightIndex, float3 shadowCoords[
 bool2 DirectionalLightShadow::IsShadowed(float3 shadowCoord, uint indexOfCascade)
 {
     static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
-    static const float DepthMargin = 0.01; // avoiding artifact when near depth bounds.
+    static const float DepthMargin = 1e-8; // avoiding artifact when near depth bounds.
 
     // size is the shadowap's width and height.
     const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
@@ -210,8 +210,8 @@ float DirectionalLightShadow::GetVisibilityFromLightNoFilter()
 
 float DirectionalLightShadow::GetVisibilityFromLightPcf()
 {   
-    static const float DepthMargin = 0.01; // avoiding artifact when near depth bounds.
     static const float PixelMargin = 1.5; // avoiding artifact between cascade levels.
+    static const float DepthMargin = 1e-8; // avoiding artifact when near depth bounds.
 
     const uint size = ViewSrg::m_directionalLightShadows[m_lightIndex].m_shadowmapSize;
     const uint cascadeCount = ViewSrg::m_directionalLightShadows[m_lightIndex].m_cascadeCount;

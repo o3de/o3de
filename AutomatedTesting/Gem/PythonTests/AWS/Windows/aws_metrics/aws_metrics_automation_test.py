@@ -14,6 +14,7 @@ from datetime import datetime
 import ly_test_tools.log.log_monitor
 
 from AWS.common import constants
+from AWS.common.resource_mappings import AWS_RESOURCE_MAPPINGS_ACCOUNT_ID_KEY
 from .aws_metrics_custom_thread import AWSMetricsThread
 
 # fixture imports
@@ -161,6 +162,59 @@ class TestAWSMetricsWindows(object):
         """
         Verify that the metrics events are sent to CloudWatch and S3 for analytics.
         """
+        # Start Kinesis analytics application on a separate thread to avoid blocking the test.
+        kinesis_analytics_application_thread = AWSMetricsThread(target=update_kinesis_analytics_application_status,
+                                                                args=(aws_metrics_utils, resource_mappings, True))
+        kinesis_analytics_application_thread.start()
+
+        log_monitor = setup(launcher, asset_processor)
+
+        # Kinesis analytics application needs to be in the running state before we start the game launcher.
+        kinesis_analytics_application_thread.join()
+        launcher.args = ['+LoadLevel', level]
+        launcher.args.extend(['-rhi=null'])
+        start_time = datetime.utcnow()
+        with launcher.start(launch_ap=False):
+            monitor_metrics_submission(log_monitor)
+
+            # Verify that real-time analytics metrics are delivered to CloudWatch.
+            aws_metrics_utils.verify_cloud_watch_delivery(
+                AWS_METRICS_FEATURE_NAME,
+                'TotalLogins',
+                [],
+                start_time)
+            logger.info('Real-time metrics are sent to CloudWatch.')
+
+        # Run time-consuming operations on separate threads to avoid blocking the test.
+        operational_threads = list()
+        operational_threads.append(
+            AWSMetricsThread(target=query_metrics_from_s3,
+                             args=(aws_metrics_utils, resource_mappings)))
+        operational_threads.append(
+            AWSMetricsThread(target=verify_operational_metrics,
+                             args=(aws_metrics_utils, resource_mappings, start_time)))
+        operational_threads.append(
+            AWSMetricsThread(target=update_kinesis_analytics_application_status,
+                             args=(aws_metrics_utils, resource_mappings, False)))
+        for thread in operational_threads:
+            thread.start()
+        for thread in operational_threads:
+            thread.join()
+
+    @pytest.mark.parametrize('level', ['AWS/Metrics'])
+    def test_realtime_and_batch_analytics_no_global_accountid(self,
+                                                            level: str,
+                                                            launcher: pytest.fixture,
+                                                            asset_processor: pytest.fixture,
+                                                            workspace: pytest.fixture,
+                                                            aws_utils: pytest.fixture,
+                                                            resource_mappings: pytest.fixture,
+                                                            aws_metrics_utils: pytest.fixture):
+        """
+        Verify that the metrics events are sent to CloudWatch and S3 for analytics.
+        """
+        # Remove top-level account ID from resource mappings
+        resource_mappings.clear_select_keys([AWS_RESOURCE_MAPPINGS_ACCOUNT_ID_KEY])
         # Start Kinesis analytics application on a separate thread to avoid blocking the test.
         kinesis_analytics_application_thread = AWSMetricsThread(target=update_kinesis_analytics_application_status,
                                                                 args=(aws_metrics_utils, resource_mappings, True))

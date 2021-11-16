@@ -341,6 +341,9 @@ namespace AZ
             //! This draws bounding boxes of cascades.
             void DrawCascadeBoundingBoxes(LightHandle handle);
 
+            float GetShadowmapSizeFromCameraView(const LightHandle handle, const RPI::View* cameraView) const;
+            void SnapAabbToPixelIncrements(const float invShadowmapSize, Vector3& orthoMin, Vector3& orthoMax);
+
             IndexedDataVector<ShadowProperty> m_shadowProperties;
             // [GFX TODO][ATOM-2012] shadow for multiple directional lights
             LightHandle m_shadowingLightHandle;
