@@ -322,7 +322,7 @@ namespace AZ
                                     MaterialUtils::GetImageAssetResult result = MaterialUtils::GetImageAssetReference(
                                         imageAsset, materialSourceFilePath, property.second.m_value.GetValue<AZStd::string>());
                                     
-                                    if (result == MaterialUtils::GetImageAssetResult::Missing || result == MaterialUtils::GetImageAssetResult::MissingNoFallback)
+                                    if (result == MaterialUtils::GetImageAssetResult::Missing)
                                     {
                                         materialAssetCreator.ReportWarning(
                                             "Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(),
