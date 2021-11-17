@@ -31,9 +31,9 @@
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Material/Material.h>
-#include <atom/RPI.Public/Pass/PassFilter.h>
-#include <atom/RPI.Public/Pass/PassSystemInterface.h>
-#include <atom/RPI.Public/Pass/RasterPass.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <Atom/RPI.Public/Pass/RasterPass.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
@@ -1635,7 +1635,7 @@ namespace Terrain
     void TerrainFeatureProcessor::CacheForwardPass()
     {
         auto rasterPassFilter = AZ::RPI::PassFilter::CreateWithPassClass<AZ::RPI::RasterPass>();
-        rasterPassFilter.SetOwenrScene(GetParentScene());
+        rasterPassFilter.SetOwnerScene(GetParentScene());
         AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get();
         AZ::RHI::DrawListTag forwardTag = rhiSystem->GetDrawListTagRegistry()->AcquireTag(AZ::Name("forward"));
         AZ::RPI::PassSystemInterface::Get()->ForEachPass(rasterPassFilter,
