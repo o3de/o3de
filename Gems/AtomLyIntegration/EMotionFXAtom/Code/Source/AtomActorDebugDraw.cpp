@@ -49,8 +49,14 @@ namespace AZ::Render
             RenderAABB(instance, renderActorSettings.m_staticAABBColor);
         }
 
-        // Render skeleton
+        // Render simple line skeleton
         if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_LINESKELETON])
+        {
+            RenderLineSkeleton(instance, renderActorSettings.m_lineSkeletonColor);
+        }
+
+        // Render advance skeleton
+        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_SKELETON])
         {
             RenderSkeleton(instance, renderActorSettings.m_skeletonColor);
         }
@@ -110,6 +116,29 @@ namespace AZ::Render
         return aabbRadius * 0.01f;
     }
 
+    float AtomActorDebugDraw::CalculateBoneScale(EMotionFX::ActorInstance* actorInstance, EMotionFX::Node* node)
+    {
+        // Get the transform data
+        EMotionFX::TransformData* transformData = actorInstance->GetTransformData();
+        const EMotionFX::Pose* pose = transformData->GetCurrentPose();
+
+        const size_t nodeIndex = node->GetNodeIndex();
+        const size_t parentIndex = node->GetParentIndex();
+        const AZ::Vector3 nodeWorldPos = pose->GetWorldSpaceTransform(nodeIndex).m_position;
+
+        if (parentIndex != InvalidIndex)
+        {
+            const AZ::Vector3 parentWorldPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
+            const AZ::Vector3 bone = parentWorldPos - nodeWorldPos;
+            const float boneLength = bone.GetLengthEstimate();
+
+            // 10% of the bone length is the sphere size
+            return boneLength * 0.1f;
+        }
+
+        return 0.0f;
+    }
+
     void AtomActorDebugDraw::PrepareForMesh(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM)
     {
         // Check if we have already prepared for the given mesh
@@ -145,7 +174,7 @@ namespace AZ::Render
         auxGeom->DrawAabb(aabb, aabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
     }
 
-    void AtomActorDebugDraw::RenderSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor)
+    void AtomActorDebugDraw::RenderLineSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor)
     {
         RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
 
@@ -187,6 +216,42 @@ namespace AZ::Render
         lineArgs.m_colorCount = 1;
         lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
         auxGeom->DrawLines(lineArgs);
+    }
+
+    void AtomActorDebugDraw::RenderSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor)
+    {
+        RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
+
+        const EMotionFX::TransformData* transformData = instance->GetTransformData();
+        const EMotionFX::Skeleton* skeleton = instance->GetActor()->GetSkeleton();
+        const EMotionFX::Pose* pose = transformData->GetCurrentPose();
+        const size_t numEnabled = instance->GetNumEnabledNodes();
+        for (size_t i = 0; i < numEnabled; ++i)
+        {
+            EMotionFX::Node* joint = skeleton->GetNode(instance->GetEnabledNode(i));
+            const size_t jointIndex = joint->GetNodeIndex();
+            const size_t parentIndex = joint->GetParentIndex();
+
+            // check if this node has a parent and is a bone, if not skip it
+            if (parentIndex == InvalidIndex)
+            {
+                continue;
+            }
+
+            const AZ::Vector3 nodeWorldPos = pose->GetWorldSpaceTransform(jointIndex).m_position;
+            const AZ::Vector3 parentWorldPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
+            const AZ::Vector3 bone = parentWorldPos - nodeWorldPos;
+            const AZ::Vector3 boneDirection = bone.GetNormalizedEstimate();
+            const AZ::Vector3 centerWorldPos = bone / 2 + nodeWorldPos;
+            const float boneLength = bone.GetLengthEstimate();
+            const float boneScale = CalculateBoneScale(instance, joint);
+            const float parentBoneScale = CalculateBoneScale(instance, skeleton->GetNode(parentIndex));
+            const float cylinderSize = boneLength - boneScale - parentBoneScale;
+
+            // Render the bone cylinder, the cylinder will be directed towards the node's parent and must fit between the spheres
+            auxGeom->DrawCylinder(centerWorldPos, boneDirection, boneScale, cylinderSize, skeletonColor);
+            auxGeom->DrawSphere(nodeWorldPos, boneScale, skeletonColor);
+        }
     }
 
     void AtomActorDebugDraw::RenderEMFXDebugDraw(EMotionFX::ActorInstance* instance)
