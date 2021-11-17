@@ -62,15 +62,6 @@ namespace MaterialEditor
         //! Get set of lighting preset names
         virtual MaterialViewportPresetNameSet GetLightingPresetNames() const = 0;
 
-        //! Set lighting preset preview image
-        //! @param preset used to set preview image
-        //! @param preview image
-        virtual void SetLightingPresetPreview(AZ::Render::LightingPresetPtr preset, const QImage& image) = 0;
-
-        //! Get lighting preset preview image
-        //! @param preset used to find preview image
-        virtual QImage GetLightingPresetPreview(AZ::Render::LightingPresetPtr preset) const = 0;
-
         //! Get model preset last save path
         //! @param preset to lookup last save path
         virtual AZStd::string GetLightingPresetLastSavePath(AZ::Render::LightingPresetPtr preset) const = 0;
@@ -107,15 +98,6 @@ namespace MaterialEditor
 
         //! Get set of model preset names
         virtual MaterialViewportPresetNameSet GetModelPresetNames() const = 0;
-
-        //! Set model preset preview image
-        //! @param preset used to set preview image
-        //! @param preview image
-        virtual void SetModelPresetPreview(AZ::Render::ModelPresetPtr preset, const QImage& image) = 0;
-
-        //! Get model preset preview image
-        //! @param preset used to find preview image
-        virtual QImage GetModelPresetPreview(AZ::Render::ModelPresetPtr preset) const = 0;
 
         //! Get model preset last save path
         //! @param preset to lookup last save path
