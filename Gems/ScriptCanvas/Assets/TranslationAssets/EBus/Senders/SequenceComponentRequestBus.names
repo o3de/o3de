@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "SequenceComponentRequestBus",
+                "name": "Sequence",
                 "category": "Animation"
             },
             "methods": [
@@ -13,20 +13,21 @@
                     "key": "GetPlaySpeed",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Play Speed"
+                        "tooltip": "When signaled, this will invoke GetPlaySpeed"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Play Speed is invoked"
+                        "tooltip": "Signaled after GetPlaySpeed is invoked"
                     },
                     "details": {
-                        "name": "Get Play Speed"
+                        "name": "Get Play Speed",
+                        "tooltip": "Returns the current play back speed as a multiplier (1.0 is normal speed, less is slower, more is faster)"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Play Speed"
                             }
                         }
                     ]
@@ -42,13 +43,14 @@
                         "tooltip": "Signaled after Jump To Time is invoked"
                     },
                     "details": {
-                        "name": "Jump To Time"
+                        "name": "Jump To Time",
+                        "tooltip": "Move the Playhead to the given time"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Time"
                             }
                         }
                     ]
@@ -64,7 +66,8 @@
                         "tooltip": "Signaled after Resume is invoked"
                     },
                     "details": {
-                        "name": "Resume"
+                        "name": "Resume",
+                        "tooltip": "Resume the sequence. Resume essentially 'unpauses' a sequence. It must have been playing before the pause for playback to start again"
                     }
                 },
                 {
@@ -78,7 +81,8 @@
                         "tooltip": "Signaled after Jump To End is invoked"
                     },
                     "details": {
-                        "name": "Jump To End"
+                        "name": "Jump To End",
+                        "tooltip": "Move the Playhead to the end of the sequence"
                     }
                 },
                 {
@@ -92,13 +96,14 @@
                         "tooltip": "Signaled after Get Current Play Time is invoked"
                     },
                     "details": {
-                        "name": "Get Current Play Time"
+                        "name": "Get Current Play Time",
+                        "tooltip": " Returns the current play time in seconds"
                     },
                     "results": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Play Time"
                             }
                         }
                     ]
@@ -114,33 +119,35 @@
                         "tooltip": "Signaled after Pause is invoked"
                     },
                     "details": {
-                        "name": "Pause"
+                        "name": "Pause",
+                        "tooltip": "Pause the sequence. Sequence must be playing for pause to have an effect. Pausing leaves the play time at its current position"
                     }
                 },
                 {
                     "key": "PlayBetweenTimes",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Play Between Times"
+                        "tooltip": "When signaled, this will invoke PlayBetweenTimes"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Play Between Times is invoked"
+                        "tooltip": "Signaled after PlayBetweenTimes is invoked"
                     },
                     "details": {
-                        "name": "Play Between Times"
+                        "name": "PlayBetweenTimes",
+                        "tooltip": "Play sequence between the start to end times, outside of which the sequence behaves according to its 'Out of Range' time setting"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Start Time"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "End Time"
                             }
                         }
                     ]
@@ -156,7 +163,8 @@
                         "tooltip": "Signaled after Stop is invoked"
                     },
                     "details": {
-                        "name": "Stop"
+                        "name": "Stop",
+                        "tooltip": "Pause the sequence. Sequence must be playing for pause to have an effect. Pausing leaves the play time at its current position"
                     }
                 },
                 {
@@ -170,7 +178,8 @@
                         "tooltip": "Signaled after Jump To Beginning is invoked"
                     },
                     "details": {
-                        "name": "Jump To Beginning"
+                        "name": "Jump To Beginning",
+                        "tooltip": "Move the Playhead to the beginning of the sequence"
                     }
                 },
                 {
@@ -184,27 +193,29 @@
                         "tooltip": "Signaled after Play is invoked"
                     },
                     "details": {
-                        "name": "Play"
+                        "name": "Play",
+                        "tooltip": "Play sequence from the start to end times set the sequence"
                     }
                 },
                 {
                     "key": "SetPlaySpeed",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Set Play Speed"
+                        "tooltip": "When signaled, this will invoke SetPlaySpeed"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Set Play Speed is invoked"
+                        "tooltip": "Signaled after SetPlaySpeed is invoked"
                     },
                     "details": {
-                        "name": "Set Play Speed"
+                        "name": "SetPlaySpeed",
+                        "tooltip": "Set the play speed"
                     },
                     "params": [
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "float"
+                                "name": "Play Speed"
                             }
                         }
                     ]

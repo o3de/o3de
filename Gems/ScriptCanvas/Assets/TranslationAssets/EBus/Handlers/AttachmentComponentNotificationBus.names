@@ -12,15 +12,14 @@
                 {
                     "key": "OnAttached",
                     "details": {
-                        "name": "On Attached",
-                        "tooltip": "Notifies when the entity is attached"
+                        "name": "On Attached"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "Target",
-                                "tooltip": "ID of the target being attached to"
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
@@ -28,15 +27,14 @@
                 {
                     "key": "OnDetached",
                     "details": {
-                        "name": "On Detached",
-                        "tooltip": "Notifies when the entity is detached"
+                        "name": "On Detached"
                     },
                     "params": [
                         {
                             "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
                             "details": {
-                                "name": "Target",
-                                "tooltip": "ID of the target being detached from"
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
                             }
                         }
                     ]
