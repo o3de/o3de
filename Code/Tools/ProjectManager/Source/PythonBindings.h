@@ -72,6 +72,9 @@ namespace O3DE::ProjectManager
         void CancelDownload() override;
         bool IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated) override;
 
+        void AddErrorString(AZStd::string errorString) override;
+        void ClearErrorStrings() override;
+
     private:
         AZ_DISABLE_COPY_MOVE(PythonBindings);
 
@@ -104,5 +107,6 @@ namespace O3DE::ProjectManager
         pybind11::handle m_pathlib;
 
         bool m_requestCancelDownload = false;
+        AZStd::vector<AZStd::string> m_pythonErrorStrings;
     };
 }

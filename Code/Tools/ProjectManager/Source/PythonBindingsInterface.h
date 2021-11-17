@@ -252,6 +252,17 @@ namespace O3DE::ProjectManager
          * @return true if update is avaliable, false if not.
          */
         virtual bool IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated) = 0;
+
+        /**
+         * Add an error string to be returned when the current python call is complete.
+         * @param The error string to be displayed.
+         */
+        virtual void AddErrorString(AZStd::string errorString) = 0;
+
+        /**
+         * Clears the current list of error strings.
+         */
+        virtual void ClearErrorStrings() = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;

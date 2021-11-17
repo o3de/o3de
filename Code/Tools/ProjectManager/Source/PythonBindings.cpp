@@ -62,7 +62,6 @@ namespace Platform
 namespace RedirectOutput
 {
     using RedirectOutputFunc = AZStd::function<void(const char*)>;
-    AZStd::vector<AZStd::string> pythonErrorStrings;
 
     struct RedirectOutput
     {
@@ -220,7 +219,7 @@ namespace RedirectOutput
             {
                 lastPythonError.erase(errorPrefix, lengthOfErrorPrefix);
             }
-            pythonErrorStrings.push_back(lastPythonError);
+            O3DE::ProjectManager::PythonBindingsInterface::Get()->AddErrorString(lastPythonError);
 
             AZ_TracePrintf("Python", msg);
         });
@@ -388,7 +387,7 @@ namespace O3DE::ProjectManager
         pybind11::gil_scoped_release release;
         pybind11::gil_scoped_acquire acquire;
 
-        RedirectOutput::pythonErrorStrings.clear();
+        ClearErrorStrings();
 
         try
         {
@@ -1325,9 +1324,20 @@ namespace O3DE::ProjectManager
 
     AZStd::pair<AZStd::string, AZStd::string> PythonBindings::GetSimpleDetailedErrorPair()
     {
-        AZStd::string detailedString = RedirectOutput::pythonErrorStrings.size() == 1 ? "" : AZStd::accumulate(
-                  RedirectOutput::pythonErrorStrings.begin(), RedirectOutput::pythonErrorStrings.end(), AZStd::string(""));
+        AZStd::string detailedString = m_pythonErrorStrings.size() == 1
+            ? ""
+            : AZStd::accumulate(m_pythonErrorStrings.begin(), m_pythonErrorStrings.end(), AZStd::string(""));
 
-        return AZStd::pair<AZStd::string, AZStd::string>(RedirectOutput::pythonErrorStrings.front(), detailedString);
+        return AZStd::pair<AZStd::string, AZStd::string>(m_pythonErrorStrings.front(), detailedString);
+    }
+
+    void PythonBindings::AddErrorString(AZStd::string errorString)
+    {
+        m_pythonErrorStrings.push_back(errorString);
+    }
+
+    void PythonBindings::ClearErrorStrings()
+    {
+        m_pythonErrorStrings.clear();
     }
 }
