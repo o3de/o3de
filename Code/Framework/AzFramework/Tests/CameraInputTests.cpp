@@ -104,8 +104,8 @@ namespace UnitTest
         AZStd::shared_ptr<AzFramework::OrbitCameraInput> m_orbitCamera;
         AZ::Vector3 m_pivot = AZ::Vector3::CreateZero();
 
-        //! This is approximately Pi/2 * 1000 - this can be used to rotate the camera 90 degrees (pitch or yaw based
-        //! on vertical or horizontal motion) as the rotate speed function is set to be 1/1000.
+        // this is approximately Pi/2 * 1000 - this can be used to rotate the camera 90 degrees (pitch or yaw based
+        // on vertical or horizontal motion) as the rotate speed function is set to be 1/1000.
         inline static const int PixelMotionDelta90Degrees = 1570;
         inline static const int PixelMotionDelta135Degrees = 2356;
     };

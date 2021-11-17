@@ -113,7 +113,7 @@ namespace AtomToolsFramework
 
         // ModularViewportCameraControllerRequestBus overrides ...
         bool InterpolateToTransform(const AZ::Transform& worldFromLocal) override;
-        bool Interpolating() const override;
+        bool IsInterpolating() const override;
         void StartTrackingTransform(const AZ::Transform& worldFromLocal) override;
         void StopTrackingTransform() override;
         bool IsTrackingTransform() const override;

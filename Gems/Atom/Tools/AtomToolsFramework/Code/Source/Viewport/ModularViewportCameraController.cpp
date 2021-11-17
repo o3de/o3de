@@ -235,7 +235,10 @@ namespace AtomToolsFramework
                 return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);
             };
 
-            m_cameraAnimation.m_time = AZ::GetClamp(m_cameraAnimation.m_time + event.m_deltaTime.count(), 0.0f, 1.0f);
+            m_cameraAnimation.m_time = AZ::GetClamp(
+                m_cameraAnimation.m_time +
+                    (event.m_deltaTime.count() / ModularViewportCameraControllerRequests::InterpolateToTransformDuration),
+                0.0f, 1.0f);
 
             const auto& [transformStart, transformEnd, animationTime] = m_cameraAnimation;
 
@@ -265,7 +268,7 @@ namespace AtomToolsFramework
 
     bool ModularViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal)
     {
-        if (m_cameraMode != CameraMode::Animation)
+        if (!IsInterpolating())
         {
             m_cameraMode = CameraMode::Animation;
             m_cameraAnimation = CameraAnimation{ CombinedCameraTransform(), worldFromLocal, 0.0f };
@@ -276,7 +279,7 @@ namespace AtomToolsFramework
         return false;
     }
 
-    bool ModularViewportCameraControllerInstance::Interpolating() const
+    bool ModularViewportCameraControllerInstance::IsInterpolating() const
     {
         return m_cameraMode == CameraMode::Animation;
     }
