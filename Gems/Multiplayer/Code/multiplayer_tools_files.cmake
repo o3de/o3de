@@ -10,6 +10,6 @@ set(FILES
     Include/Multiplayer/IMultiplayerTools.h
     Source/Pipeline/NetworkPrefabProcessor.cpp
     Source/Pipeline/NetworkPrefabProcessor.h
-    Source/MultiplayerToolsModule.h
-    Source/MultiplayerToolsModule.cpp
+    Source/MultiplayerToolsSystemComponent.cpp
+    Source/MultiplayerToolsSystemComponent.h
 )

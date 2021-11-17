@@ -6,7 +6,7 @@
  *
  */
 
-#include <MultiplayerToolsModule.h>
+#include <MultiplayerToolsSystemComponent.h>
 #include <Pipeline/NetworkPrefabProcessor.h>
 
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -39,22 +39,4 @@ namespace Multiplayer
     {
         m_didProcessNetPrefabs = didProcessNetPrefabs;
     }
-
-    MultiplayerToolsModule::MultiplayerToolsModule()
-        : AZ::Module()
-    {
-        m_descriptors.insert(m_descriptors.end(), {
-            MultiplayerToolsSystemComponent::CreateDescriptor(),
-        });
-    }
-
-    AZ::ComponentTypeList MultiplayerToolsModule::GetRequiredSystemComponents() const
-    {
-        return AZ::ComponentTypeList
-        {
-            azrtti_typeid<MultiplayerToolsSystemComponent>(),
-        };
-    }
 } // namespace Multiplayer
-
-AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Tools, Multiplayer::MultiplayerToolsModule);

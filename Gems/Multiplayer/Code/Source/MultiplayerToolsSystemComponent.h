@@ -37,19 +37,5 @@ namespace Multiplayer
 
         bool m_didProcessNetPrefabs = false;
     };
-
-    class MultiplayerToolsModule
-        : public AZ::Module
-    {
-    public:
-
-        AZ_RTTI(MultiplayerToolsModule, "{3F726172-21FC-48FA-8CFA-7D87EBA07E55}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(MultiplayerToolsModule, AZ::SystemAllocator, 0);
-
-        MultiplayerToolsModule();
-        ~MultiplayerToolsModule() override = default;
-
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
-    };
 } // namespace Multiplayer
 

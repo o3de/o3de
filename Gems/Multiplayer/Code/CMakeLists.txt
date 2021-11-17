@@ -86,51 +86,11 @@ ly_create_alias(NAME Multiplayer.Servers NAMESPACE Gem TARGETS Gem::Multiplayer 
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME Multiplayer.Builders.Static STATIC
-        NAMESPACE Gem
-        FILES_CMAKE
-            multiplayer_tools_files.cmake
-        COMPILE_DEFINITIONS
-            PUBLIC
-                MULTIPLAYER_TOOLS
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                .
-                Source
-                ${pal_source_dir}
-            PUBLIC
-                Include
-        BUILD_DEPENDENCIES
-            PUBLIC
-                AZ::AzToolsFramework
-                Gem::Multiplayer.Static
-    )
-
-    # by naming this target Multiplayer.Builders it ensures that it is loaded
-    # in any pipeline tools (Like Asset Processor, AssetBuilder, etc)
-    ly_add_target(
-        NAME Multiplayer.Builders GEM_MODULE
-        NAMESPACE Gem
-        FILES_CMAKE
-            multiplayer_tools_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Source
-                .
-            PUBLIC
-                Include
-        BUILD_DEPENDENCIES
-            PRIVATE
-                Gem::Multiplayer.Builders.Static
-        RUNTIME_DEPENDENCIES
-            Gem::Multiplayer.Editor
-    )
-
-    ly_add_target(
         NAME Multiplayer.Editor GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
             multiplayer_editor_shared_files.cmake
+            multiplayer_tools_files.cmake
         COMPILE_DEFINITIONS
             PUBLIC
                 MULTIPLAYER_EDITOR
@@ -154,7 +114,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Multiplayer.Static
                 Gem::Multiplayer.Builders
     )
-
+    
+    ly_create_alias(NAME Multiplayer.Builders  NAMESPACE Gem TARGETS Gem::Multiplayer.Editor)
     # use the Multiplayer.Editor module in tools like the Editor:  Such tools also get the visual debug view:
     ly_create_alias(NAME Multiplayer.Tools     NAMESPACE Gem TARGETS Gem::Multiplayer.Editor Gem::Multiplayer.Debug Gem::Multiplayer.Builders)
 endif()
@@ -197,6 +158,7 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAMESPACE Gem
             FILES_CMAKE
                 multiplayer_tools_tests_files.cmake
+                multiplayer_tools_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
@@ -206,8 +168,10 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     AZ::AzTestShared
+                    AZ::AzToolsFramework
                     AZ::AzToolsFrameworkTestCommon
-                    Gem::Multiplayer.Builders.Static
+                    AZ::AzNetworking
+                    Gem::Multiplayer.Static
         )
         ly_add_googletest(
             NAME Gem::Multiplayer.Builders.Tests
