@@ -25,6 +25,9 @@
 #include <MaskedOcclusionCulling/MaskedOcclusionCulling.h>
 #endif
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AZ
 {
     namespace RPI
@@ -445,8 +448,11 @@ namespace AZ
             TryCreateShaderResourceGroup();
             if (!m_shaderResourceGroup)
             {
-                AZ_Error("RPI::View", false, "Shader Resource Group failed to initialize");
+                AZ_Warning("RPI::View", false, "Shader Resource Group failed to initialize");
             }
         }
     } // namespace RPI
 } // namespace AZ
+
+#pragma optimize("", on)
+#pragma inline_depth()
