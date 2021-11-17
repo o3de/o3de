@@ -1,0 +1,72 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{D7B4BEA6-6427-4295-B61B-62776D0056DE}",
+            "Name": "Displacement",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "PixelFormat": "BC4",
+            "DiscardAlpha": true,
+            "IsPowerOf2": true,
+            "MipMapSetting": {
+                "MipGenType": "Box"
+            }
+        },
+        "PlatformsPresets": {
+            "android": {
+                "UUID": "{D7B4BEA6-6427-4295-B61B-62776D0056DE}",
+                "Name": "Displacement",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "ASTC_4x4",
+                "MaxTextureSize": 2048,
+                "DiscardAlpha": true,
+                "IsPowerOf2": true,
+                "SizeReduceLevel": 3,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "ios": {
+                "UUID": "{D7B4BEA6-6427-4295-B61B-62776D0056DE}",
+                "Name": "Displacement",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "ASTC_4x4",
+                "MaxTextureSize": 2048,
+                "DiscardAlpha": true,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "mac": {
+                "UUID": "{D7B4BEA6-6427-4295-B61B-62776D0056DE}",
+                "Name": "Displacement",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "BC4",
+                "DiscardAlpha": true,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "provo": {
+                "UUID": "{D7B4BEA6-6427-4295-B61B-62776D0056DE}",
+                "Name": "Displacement",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "BC4",
+                "DiscardAlpha": true,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            }
+        }
+    }
+}

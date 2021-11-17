@@ -38,7 +38,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiManager.h>
 
-#include<Tests/BoundsTestComponent.h>
+#include <Tests/BoundsTestComponent.h>
 
 namespace AZ
 {
@@ -493,12 +493,8 @@ namespace UnitTest
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Then
-        AzToolsFramework::EntityIdList selectedEntities;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            selectedEntities, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetSelectedEntities);
-
-        AzToolsFramework::EntityIdList expectedSelectedEntities = { entity4, entity5, entity6 };
-
+        const AzToolsFramework::EntityIdList selectedEntities = SelectedEntities();
+        const AzToolsFramework::EntityIdList expectedSelectedEntities = { entity4, entity5, entity6 };
         EXPECT_THAT(selectedEntities, UnorderedElementsAreArray(expectedSelectedEntities));
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
@@ -527,12 +523,8 @@ namespace UnitTest
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Then
-        AzToolsFramework::EntityIdList selectedEntities;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            selectedEntities, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetSelectedEntities);
-
-        AzToolsFramework::EntityIdList expectedSelectedEntities = { m_entityId1, entity2, entity3, entity4 };
-
+        const AzToolsFramework::EntityIdList selectedEntities = SelectedEntities();
+        const AzToolsFramework::EntityIdList expectedSelectedEntities = { m_entityId1, entity2, entity3, entity4 };
         EXPECT_THAT(selectedEntities, UnorderedElementsAreArray(expectedSelectedEntities));
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
@@ -944,6 +936,42 @@ namespace UnitTest
         using ::testing::UnorderedElementsAre;
         auto selectedEntitiesAfter = SelectedEntities();
         EXPECT_THAT(selectedEntitiesAfter, UnorderedElementsAre(m_entityId1));
+    }
+
+    TEST_F(
+        EditorTransformComponentSelectionViewportPickingManipulatorTestFixture, BoundsBetweenCameraAndNearClipPlaneDoesNotIntersectMouseRay)
+    {
+        // move camera to 10 units along the y-axis
+        AzFramework::SetCameraTransform(m_cameraState, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.0f)));
+
+        // send a very narrow bounds for entity1
+        AZ::Entity* entity1 = AzToolsFramework::GetEntityById(m_entityId1);
+        auto* boundTestComponent = entity1->FindComponent<BoundsTestComponent>();
+        boundTestComponent->m_localBounds =
+            AZ::Aabb::CreateFromMinMax(AZ::Vector3(-0.5f, -0.0025f, -0.5f), AZ::Vector3(0.5f, 0.0025f, 0.5f));
+
+        // move entity1 in front of the camera between it and the near clip plane
+        AZ::TransformBus::Event(
+            m_entityId1, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(10.05f)));
+        // move entity2 behind entity1
+        AZ::TransformBus::Event(
+            m_entityId2, &AZ::TransformBus::Events::SetWorldTM, AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisY(15.0f)));
+
+        const auto entity2ScreenPosition = AzFramework::WorldToScreen(AzToolsFramework::GetWorldTranslation(m_entityId2), m_cameraState);
+
+        // click the entity in the viewport
+        m_actionDispatcher->SetStickySelect(true)
+            ->CameraState(m_cameraState)
+            ->MousePosition(entity2ScreenPosition)
+            ->CameraState(m_cameraState)
+            ->MouseLButtonDown()
+            ->MouseLButtonUp();
+
+        // ensure entity1 is not selected as it is before the near clip plane
+        using ::testing::UnorderedElementsAreArray;
+        const AzToolsFramework::EntityIdList selectedEntities = SelectedEntities();
+        const AzToolsFramework::EntityIdList expectedSelectedEntities = { m_entityId2 };
+        EXPECT_THAT(selectedEntities, UnorderedElementsAreArray(expectedSelectedEntities));
     }
 
     class EditorTransformComponentSelectionViewportPickingManipulatorTestFixtureParam

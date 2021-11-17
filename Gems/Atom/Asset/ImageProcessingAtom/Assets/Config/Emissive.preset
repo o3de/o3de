@@ -1,0 +1,46 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{07041D83-E0C3-4726-8735-CA0FE550C9A0}",
+            "Name": "Emissive",
+            "RGB_Weight": "CIEXYZ",
+            "PixelFormat": "BC7",
+            "DiscardAlpha": true
+        },
+        "PlatformsPresets": {
+            "android": {
+                "UUID": "{07041D83-E0C3-4726-8735-CA0FE550C9A0}",
+                "Name": "Emissive",
+                "RGB_Weight": "CIEXYZ",
+                "PixelFormat": "ASTC_6x6",
+                "MaxTextureSize": 2048,
+                "DiscardAlpha": true
+            },
+            "ios": {
+                "UUID": "{07041D83-E0C3-4726-8735-CA0FE550C9A0}",
+                "Name": "Emissive",
+                "RGB_Weight": "CIEXYZ",
+                "PixelFormat": "ASTC_6x6",
+                "MaxTextureSize": 2048,
+                "DiscardAlpha": true
+            },
+            "mac": {
+                "UUID": "{07041D83-E0C3-4726-8735-CA0FE550C9A0}",
+                "Name": "Emissive",
+                "RGB_Weight": "CIEXYZ",
+                "PixelFormat": "BC7",
+                "DiscardAlpha": true
+            },
+            "provo": {
+                "UUID": "{07041D83-E0C3-4726-8735-CA0FE550C9A0}",
+                "Name": "Emissive",
+                "RGB_Weight": "CIEXYZ",
+                "PixelFormat": "BC7",
+                "DiscardAlpha": true
+            }
+        }
+    }
+}

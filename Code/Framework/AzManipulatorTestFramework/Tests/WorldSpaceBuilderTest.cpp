@@ -140,8 +140,8 @@ namespace UnitTest
         // given a left mouse down ray in world space
         // consume the mouse move event
         state.m_actionDispatcher->CameraState(m_cameraState)
-            ->MouseLButtonDown()
             ->MousePosition(AzManipulatorTestFramework::GetCameraStateViewportCenter(m_cameraState))
+            ->MouseLButtonDown()
             ->ExpectTrue(state.m_linearManipulator->PerformingAction())
             ->ExpectManipulatorBeingInteracted()
             ->MouseLButtonUp()

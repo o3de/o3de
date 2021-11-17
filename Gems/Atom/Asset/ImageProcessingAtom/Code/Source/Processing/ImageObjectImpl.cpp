@@ -183,10 +183,9 @@ namespace ImageProcessingAtom
             return EAlphaContent::eAlphaContent_Absent;
         }
 
-        //if it's compressed format, return indeterminate. if user really want to know the content, they may convert the format to ARGB8 first
         if (!CPixelFormats::GetInstance().IsPixelFormatUncompressed(m_pixelFormat))
         {
-            AZ_Assert(false, "the function only works right with uncompressed formats. convert to uncompressed format if you get accurate result");
+            AZ_TracePrintf("Image processing", "GetAlphaContent() was called for compressed format\n");
             return EAlphaContent::eAlphaContent_Indeterminate;
         }
 
