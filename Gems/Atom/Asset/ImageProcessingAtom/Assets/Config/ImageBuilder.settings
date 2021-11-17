@@ -106,20 +106,21 @@
             "_em": [ "Emissive" ],
             "_emit": [ "Emissive" ],
             // displacement
-            "_displ": [ "Emissive" ],
-            "_disp": [ "Emissive" ],
-            "_dsp": [ "Emissive" ],
-            "_d": [ "Emissive" ],
-            "_dm": [ "Emissive" ],
-            "_displacement": [ "Emissive" ],
-            "_height": [ "Emissive" ],
-            "_hm": [ "Emissive" ],
-            "_ht": [ "Emissive" ],
-            "_h": [ "Emissive" ],
+            "_displ": [ "Displacement" ],
+            "_disp": [ "Displacement" ],
+            "_dsp": [ "Displacement" ],
+            "_d": [ "Displacement" ],
+            "_dm": [ "Displacement" ],
+            "_displacement": [ "Displacement" ],
+            "_height": [ "Displacement" ],
+            "_hm": [ "Displacement" ],
+            "_ht": [ "Displacement" ],
+            "_h": [ "Displacement" ],
             // cubemap
             "_ibldiffusecm": [ "IBLDiffuse" ],
             "_iblskyboxcm": [ "IBLSkybox" ],
             "_iblspecularcm": [ "IBLSpecular" ],
+            "_iblspecularcm64": [ "IBLSpecularVeryLow" ],
             "_iblspecularcm128": [ "IBLSpecularLow" ],
             "_iblspecularcm256": [ "IBLSpecular" ],
             "_iblspecularcm512": [ "IBLSpecularHigh" ],
@@ -133,7 +134,10 @@
             // lut
             "_lut": [ "LUT_RG8" ],
             "_lutr32f": [ "LUT_R32F" ],
+            "_lutrgba8": [ "LUT_RGBA8" ],
             "_lutrgba16": [ "LUT_RGBA16" ],
+            "_lutrgba16f": [ "LUT_RGBA16F" ],
+            "_lutrg16": [ "LUT_RG16" ],
             "_lutrg32f": [ "LUT_RG32F" ],
             "_lutrgba32f": [ "LUT_RGBA32F" ],
             // layer mask
@@ -142,7 +146,7 @@
             // decal
             "_decal": [ "Decal_AlbedoWithOpacity" ],
             // ui
-            "_ui": [ "UserInterface_Lossless" ]
+            "_ui": [ "UserInterface_Compressed","UserInterface_Lossless" ]
         },
         "DefaultPreset": "Albedo",
         "DefaultPresetAlpha": "AlbedoWithGenericAlpha"

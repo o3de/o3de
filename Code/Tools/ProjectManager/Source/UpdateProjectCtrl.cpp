@@ -97,6 +97,17 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::UpdateProject;
     }
 
+    bool UpdateProjectCtrl::ContainsScreen(ProjectManagerScreen screen)
+    {
+        // Do not include GemRepos because we don't want to advertise jumping to it from all other screens here
+        return screen == GetScreenEnum() || screen == ProjectManagerScreen::GemCatalog;
+    }
+
+    void UpdateProjectCtrl::GoToScreen(ProjectManagerScreen screen)
+    {
+        OnChangeScreenRequest(screen);
+    }
+
     // Called when pressing "Edit Project Settings..."
     void UpdateProjectCtrl::NotifyCurrentScreen()
     {
@@ -115,6 +126,16 @@ namespace O3DE::ProjectManager
         if (screen == ProjectManagerScreen::GemRepos)
         {
             m_stack->setCurrentWidget(m_gemRepoScreen);
+            Update();
+        }
+        else if (screen == ProjectManagerScreen::GemCatalog)
+        {
+            m_stack->setCurrentWidget(m_gemCatalogScreen);
+            Update();
+        }
+        else if (screen == ProjectManagerScreen::UpdateProjectSettings)
+        {
+            m_stack->setCurrentWidget(m_updateSettingsScreen);
             Update();
         }
         else
