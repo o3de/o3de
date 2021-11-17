@@ -585,7 +585,7 @@ namespace AZ
                         // will load the assets but won't/can't create a circular preload dependency chain
                         if (*thisAsset == rootAssetId)
                         {
-                            AZ_Error("AssetContainer", false, "Circular preload dependency found - %s has a preload"
+                            AZ_Error("AssetContainer", false, "Circular preload dependency found - %s has a preload "
                                 "dependency back to root %s\n",
                                 thisListPair->first.ToString<AZStd::string>().c_str(),
                                 rootAssetId.ToString<AZStd::string>().c_str());
@@ -594,7 +594,7 @@ namespace AZ
                         }
                         else if (*thisAsset == thisListPair->first)
                         {
-                            AZ_Error("AssetContainer", false, "Circular preload dependency found - Root asset %s has a preload"
+                            AZ_Error("AssetContainer", false, "Circular preload dependency found - Root asset %s has a preload "
                                 "dependency on %s which depends back back to itself\n",
                                 rootAssetId.ToString<AZStd::string>().c_str(),
                                 thisListPair->first.ToString<AZStd::string>().c_str());
@@ -603,7 +603,7 @@ namespace AZ
                         }
                         else if (m_preloadWaitList.count(thisListPair->first) && m_preloadWaitList[thisListPair->first].count(*thisAsset))
                         {
-                            AZ_Error("AssetContainer", false, "Circular dependency found - Root asset %s has a preload"
+                            AZ_Error("AssetContainer", false, "Circular dependency found - Root asset %s has a preload "
                                 "dependency on %s which has a circular dependency with %s\n",
                                 rootAssetId.ToString<AZStd::string>().c_str(),
                                 thisListPair->first.ToString<AZStd::string>().c_str(),
