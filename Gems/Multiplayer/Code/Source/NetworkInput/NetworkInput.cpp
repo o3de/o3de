@@ -94,12 +94,12 @@ namespace Multiplayer
         }
     }
 
-    AZStd::vector<MultiplayerComponentInputDetail> NetworkInput::GetComponentInputDeltaLogs() const
+    AZStd::vector<MultiplayerAuditingElement> NetworkInput::GetComponentInputDeltaLogs() const
     {
-        AZStd::vector<MultiplayerComponentInputDetail> logs;
+        AZStd::vector<MultiplayerAuditingElement> logs;
         for (uint16_t i = 0; i < m_componentInputs.size(); ++i)
         {
-            MultiplayerComponentInputDetail log = m_componentInputs[i].get()->GetInputDeltaLog();
+            MultiplayerAuditingElement log = m_componentInputs[i].get()->GetInputDeltaLog();
             if (!log.elements.empty())
             {
                 logs.push_back(log);

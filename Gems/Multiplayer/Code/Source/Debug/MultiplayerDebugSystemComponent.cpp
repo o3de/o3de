@@ -17,6 +17,8 @@ void OnDebugEntities_ShowBandwidth_Changed(const bool& showBandwidth);
 
 AZ_CVAR(bool, net_DebugEntities_ShowBandwidth, false, &OnDebugEntities_ShowBandwidth_Changed, AZ::ConsoleFunctorFlags::Null,
     "If true, prints bandwidth values over entities that use a considerable amount of network traffic");
+AZ_CVAR(uint16_t, net_DebutAuditTrail_HistorySize, 20, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Length of networking debug Audit Trail");
 
 namespace Multiplayer
 {
@@ -72,14 +74,9 @@ namespace Multiplayer
             ClientInputId inputId,
             HostFrameId frameId,
             AZStd::string name,
-            AZStd::vector<MultiplayerComponentInputDetail> entryDetails)
+            AZStd::vector<MultiplayerAuditingElement> entryDetails)
     {
-        if (m_auditTrail != nullptr)
-        {
-            return;
-        }
-
-        while (m_auditTrailElems.size() > 20)
+        while (m_auditTrailElems.size() >= net_DebutAuditTrail_HistorySize)
         {
             m_auditTrailElems.pop_back();
         }
@@ -90,6 +87,14 @@ namespace Multiplayer
         elem.name = name;
         elem.children = entryDetails;
         m_auditTrailElems.push_front(elem);
+    }
+
+    void MultiplayerDebugSystemComponent::CommitAuditTrail()
+    {
+        if (m_auditTrail == nullptr)
+        {
+            m_committedAuditTrail = m_auditTrailElems;
+        }
     }
 
 #ifdef IMGUI_ENABLED
@@ -534,7 +539,7 @@ namespace Multiplayer
 
                 if (m_auditTrail)
                 {
-                    m_auditTrail->OnImGuiUpdate(m_auditTrailElems);
+                    m_auditTrail->OnImGuiUpdate(m_committedAuditTrail);
                 }
             }
         }

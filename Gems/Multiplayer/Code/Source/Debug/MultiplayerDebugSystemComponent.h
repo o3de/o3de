@@ -54,7 +54,8 @@ namespace Multiplayer
             ClientInputId inputId,
             HostFrameId frameId,
             AZStd::string name,
-            AZStd::vector<MultiplayerComponentInputDetail> entryDetails) override;
+            AZStd::vector<MultiplayerAuditingElement> entryDetails) override;
+        void CommitAuditTrail() override;
         //! @}
 
 #ifdef IMGUI_ENABLED
@@ -78,5 +79,6 @@ namespace Multiplayer
         AZStd::unique_ptr<MultiplayerDebugAuditTrail> m_auditTrail;
 
         AZStd::deque<AuditTrailInput> m_auditTrailElems;
+        AZStd::deque<AuditTrailInput> m_committedAuditTrail;
     };
 }

@@ -47,7 +47,7 @@ namespace Multiplayer
         if (ImGui::BeginTable("", 4, flags))
         {
             ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
+            ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 60.0f);
             ImGui::TableSetupColumn("Input ID", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
             ImGui::TableSetupColumn("HostFrame", ImGuiTableColumnFlags_WidthFixed, TEXT_BASE_WIDTH * 12.0f);
             ImGui::TableHeadersRow();
@@ -68,24 +68,34 @@ namespace Multiplayer
                     {
                         ImGui::TableNextRow();
                         ImGui::TableNextColumn();
-                        if (ImGui::TreeNodeEx(child.name.c_str(), treeFlags))
+                        if (child.elements.size() > 0)
                         {
-                            ImGui::TableNextColumn();
-                            ImGui::TableNextColumn();
-                            ImGui::TableNextColumn();
-                            for (const auto& childElem : child.elements)
+                            if (ImGui::TreeNodeEx(child.name.c_str(), treeFlags))
                             {
-                                ImGui::TableNextRow();
-                                ImGui::TableNextColumn();
-                                ImGui::TreeNodeEx(
-                                    childElem.first.c_str(),
-                                    (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth));
-                                ImGui::TableNextColumn();
-                                ImGui::Text("%s", childElem.second.c_str());
                                 ImGui::TableNextColumn();
                                 ImGui::TableNextColumn();
+                                ImGui::TableNextColumn();
+                                for (const auto& childElem : child.elements)
+                                {
+                                    ImGui::TableNextRow();
+                                    ImGui::TableNextColumn();
+                                    ImGui::TreeNodeEx(
+                                        childElem.first.c_str(),
+                                        (ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_SpanFullWidth));
+                                    ImGui::TableNextColumn();
+                                    ImGui::Text("%s", childElem.second.c_str());
+                                    ImGui::TableNextColumn();
+                                    ImGui::TableNextColumn();
+                                }
+                                ImGui::TreePop();
                             }
-                            ImGui::TreePop();
+                        }
+                        else
+                        {
+                            ImGui::Text(child.name.c_str());
+                            ImGui::TableNextColumn();
+                            ImGui::TableNextColumn();
+                            ImGui::TableNextColumn();
                         }
                     }
                     ImGui::TreePop();

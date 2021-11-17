@@ -34,7 +34,7 @@ namespace Multiplayer
     AZ_CVAR(AZ::TimeMs, sv_MinCorrectionTimeMs, AZ::TimeMs{ 100 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum time to wait between sending out corrections in order to avoid flooding corrections on high-latency connections");
     AZ_CVAR(AZ::TimeMs, sv_InputUpdateTimeMs, AZ::TimeMs{ 5 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum time between component updates");
 
-    void PrintCorrectionDifferences(const AzNetworking::StringifySerializer& client, const AzNetworking::StringifySerializer& server)
+    void PrintCorrectionDifferences(const AzNetworking::StringifySerializer& client, const AzNetworking::StringifySerializer& server, MultiplayerAuditingElement* detail = nullptr)
     {
         const auto& clientMap = client.GetValueMap();
         const auto& serverMap = server.GetValueMap();
@@ -50,7 +50,12 @@ namespace Multiplayer
 
         if (differences.empty())
         {
-            AZLOG_ERROR("The hash mismatched, but no differences were found.")
+            AZLOG_ERROR("The hash mismatched, but no differences were found.");
+            if (detail)
+            {
+                AZStd::pair<AZStd::string, AZStd::string> element("The hash mismatched, but no differences were found.", "");
+                detail->elements.push_back(element);
+            }
         }
 
         for (auto iter = differences.begin(); iter != differences.end(); ++iter)
@@ -64,6 +69,13 @@ namespace Multiplayer
             }
 
             AZLOG_ERROR("    %s Server=%s Client=%s", iter->first.c_str(), serverValueIter->second.c_str(), clientValueIter->second.c_str());
+            if (detail)
+            {
+                AZStd::pair<AZStd::string, AZStd::string> element(
+                    iter->first.c_str(),
+                    AZStd::string::format("Server=%s Client=%s", serverValueIter->second.c_str(), clientValueIter->second.c_str()));
+                detail->elements.push_back(element);
+            }
         }
     }
 
@@ -201,7 +213,7 @@ namespace Multiplayer
                 else
                 {
                     //TODO: Add to Audit Trail here (server)
-                    AZStd::vector<MultiplayerComponentInputDetail> inputLogs = input.GetComponentInputDeltaLogs();
+                    AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
                     if (!inputLogs.empty())
                     {
                         AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
@@ -352,7 +364,13 @@ namespace Multiplayer
                 // Read out state values
                 AzNetworking::StringifySerializer serverValues;
                 SerializeEntityCorrection(serverValues);
-                PrintCorrectionDifferences(*iter->second, serverValues);
+                MultiplayerAuditingElement detail;
+                PrintCorrectionDifferences(*iter->second, serverValues, &detail);
+                detail.name = AZStd::string::format("Autonomous Desync - Correcting clientInputId=%d from index=%d",
+                    aznumeric_cast<int32_t>(inputId), startReplayIndex);
+                AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
+                    inputId, startReplayInput.GetHostFrameId(), GetEntity()->GetName().c_str(), { detail });
+                AZ::Interface<IMultiplayerDebug>::Get()->CommitAuditTrail();
             }
             else
             {
@@ -513,7 +531,7 @@ namespace Multiplayer
                 m_predictiveStateHistory.emplace(m_clientInputId, AZStd::move(inputHistory));
 
                 // TODO: Add to audit trail per input here (client)
-                AZStd::vector<MultiplayerComponentInputDetail> inputLogs = input.GetComponentInputDeltaLogs();
+                AZStd::vector<MultiplayerAuditingElement> inputLogs = input.GetComponentInputDeltaLogs();
                 if (!inputLogs.empty())
                 {
                     AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(

@@ -20,7 +20,7 @@ namespace Multiplayer
         ClientInputId inputId;
         HostFrameId hostFrameId;
         AZStd::string name;
-        AZStd::vector<MultiplayerComponentInputDetail> children;
+        AZStd::vector<MultiplayerAuditingElement> children;
     };
 
     /**
