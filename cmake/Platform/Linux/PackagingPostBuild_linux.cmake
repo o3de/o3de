@@ -28,16 +28,17 @@ if(CPACK_UPLOAD_URL)
     # to a special "Latest" folder under the branch in place of the commit date/hash
     if(CPACK_AUTO_GEN_TAG)
 
-        set(latest_deb_package "${CPACK_UPLOAD_DIRECTORY}/CPackUploads/${CPACK_PACKAGE_NAME}_latest.deb")
-        file(COPY_FILE ${CPACK_UPLOAD_DIRECTORY}/CPackUploads/${CPACK_PACKAGE_FILE_NAME}.deb
-            DESTINATION ${latest_deb_package}
+        set(latest_deb_package "${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_NAME}_latest.deb")
+        file(COPY_FILE 
+            ${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb
+            ${latest_deb_package}
         )
         ly_upload_to_latest(${CPACK_UPLOAD_URL} ${latest_deb_package})
         
         # replace the name fo the binary inside the generated checksum
-        file(READ "${CPACK_UPLOAD_DIRECTORY}/CPackUploads/${CPACK_PACKAGE_FILE_NAME}.deb.sha256" _checksum_contents)
-        string(REPLACE "_${CPACK_PACKAGE_VERSION}" "" non_versioned_checksum_contents ${_checksum_contents})
-        set(latest_hash_file "${CPACK_UPLOAD_DIRECTORY}/CPackUploads/${CPACK_PACKAGE_NAME}_latest.deb.sha256")
+        file(READ "${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256" _checksum_contents)
+        string(REPLACE "_${CPACK_PACKAGE_VERSION}" "" non_versioned_checksum_contents "${_checksum_contents}")
+        set(latest_hash_file "${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_NAME}_latest.deb.sha256")
         file(WRITE "${latest_hash_file}" "${non_versioned_checksum_contents}")
         ly_upload_to_latest(${CPACK_UPLOAD_URL} "${latest_hash_file}")
     endif()

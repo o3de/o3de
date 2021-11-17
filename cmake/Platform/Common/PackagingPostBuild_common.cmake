@@ -52,7 +52,6 @@ function(ly_upload_to_url in_url in_local_path in_file_regex)
         list(APPEND _upload_command --profile ${CPACK_AWS_PROFILE})
     endif()
 
-    message("Upload command ${_upload_command}")
     execute_process(
         COMMAND ${_upload_command}
         RESULT_VARIABLE _upload_result
