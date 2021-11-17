@@ -687,6 +687,30 @@ namespace PhysX
             [[maybe_unused]] const AZ::Vector3& colliderScale,
             [[maybe_unused]] const bool forceUniformScaling) const
         {
+            const float minXBounds = -(heightfieldShapeConfig.GetNumColumns() * heightfieldShapeConfig.GetGridResolution().GetX()) / 2.0f;
+            const float minYBounds = -(heightfieldShapeConfig.GetNumRows() * heightfieldShapeConfig.GetGridResolution().GetY()) / 2.0f;
+
+            for (int xIndex = 0; xIndex < heightfieldShapeConfig.GetNumColumns() - 1; xIndex++)
+            {
+                for (int yIndex = 0; yIndex < heightfieldShapeConfig.GetNumRows() - 1; yIndex++)
+                {
+                    const int index0 = yIndex * heightfieldShapeConfig.GetNumColumns() + xIndex;
+                    const int index1 = yIndex * heightfieldShapeConfig.GetNumColumns() + xIndex + 1;
+                    const int index2 = (yIndex + 1) * heightfieldShapeConfig.GetNumColumns() + xIndex + 1;
+                    const int index3 = (yIndex + 1) * heightfieldShapeConfig.GetNumColumns() + xIndex;
+
+                    const float x0 = minXBounds + heightfieldShapeConfig.GetGridResolution().GetX() * xIndex;
+                    const float x1 = minXBounds + heightfieldShapeConfig.GetGridResolution().GetX() * (xIndex + 1);
+                    const float y0 = minYBounds + heightfieldShapeConfig.GetGridResolution().GetY() * (yIndex + 1);
+                    const float y1 = minYBounds + heightfieldShapeConfig.GetGridResolution().GetY() * yIndex;
+                    
+                    debugDisplay.DrawWireQuad(
+                        AZ::Vector3(x0, y0, heightfieldShapeConfig.GetSamples()[index0].m_height),
+                        AZ::Vector3(x1, y0, heightfieldShapeConfig.GetSamples()[index1].m_height),
+                        AZ::Vector3(x1, y1, heightfieldShapeConfig.GetSamples()[index2].m_height),
+                        AZ::Vector3(x0, y1, heightfieldShapeConfig.GetSamples()[index3].m_height));
+                }
+            }
         }
 
         AZ::Transform Collider::GetColliderLocalTransform(
