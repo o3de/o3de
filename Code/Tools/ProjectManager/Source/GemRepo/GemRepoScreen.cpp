@@ -104,12 +104,12 @@ namespace O3DE::ProjectManager
                 QString failureMessage = tr("Failed to add gem repo: %1.").arg(repoUri);
                 if (!addGemRepoResult.GetError().second.empty())
                 {
-                    QMessageBox gemDownloadError;
-                    gemDownloadError.setIcon(QMessageBox::Critical);
-                    gemDownloadError.setWindowTitle(failureMessage);
-                    gemDownloadError.setText(addGemRepoResult.GetError().first.c_str());
-                    gemDownloadError.setDetailedText(addGemRepoResult.GetError().second.c_str());
-                    gemDownloadError.exec();
+                    QMessageBox addRepoError;
+                    addRepoError.setIcon(QMessageBox::Critical);
+                    addRepoError.setWindowTitle(failureMessage);
+                    addRepoError.setText(addGemRepoResult.GetError().first.c_str());
+                    addRepoError.setDetailedText(addGemRepoResult.GetError().second.c_str());
+                    addRepoError.exec();
                 }
                 else
                 {
