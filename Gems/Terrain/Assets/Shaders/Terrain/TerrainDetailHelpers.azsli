@@ -80,6 +80,7 @@ void AddDetailSurface(inout DetailSurface surface, in DetailSurface surfaceToAdd
 }
 
 // Detail material index getters
+
 uint GetDetailColorIndex(TerrainSrg::DetailMaterialData materialData)
 {
     return materialData.m_colorNormalImageIndices & 0x0000FFFF;
@@ -215,6 +216,7 @@ void GetDetailSurfaceForMaterial(inout DetailSurface surface, uint materialId, f
     surface.m_height = GetDetailHeight(detailMaterialData, uv, uvDdx, uvDdy);
 }
 
+// Debugs the detail material by choosing a random color per material ID and rendering it without blending.
 void GetDebugDetailSurface(inout DetailSurface surface, uint material1, uint material2, float blend, float2 idUv)
 {
     float3 material1Color = float3(0.1, 0.1, 0.1);
@@ -250,11 +252,10 @@ void GetDebugDetailSurface(inout DetailSurface surface, uint material1, uint mat
     surface.m_height = 0.5;
 }
 
-void BlendDetailMaterial(
-    inout DetailSurface surface,
-    inout DetailSurface tempSurface,
-    uint material1, uint material2, float blend, float2 detailUv, float weight)
+//Blend a single detail material sample (with two possible material ids) onto a DetailSurface.
+void BlendDetailMaterial(inout DetailSurface surface, uint material1, uint material2, float blend, float2 detailUv, float weight)
 {
+    DetailSurface tempSurface;
     GetDetailSurfaceForMaterial(tempSurface, material1, detailUv);
     if (material2 != 0xFF)
     {
@@ -272,6 +273,13 @@ void BlendDetailMaterial(
     }
 }
 
+/*
+Populates a DetailSurface with material data gathered form the 4 nearest samples to detailMaterialIdUv. The weight
+of each detail material's contribution is calculated based on the distance to the center point for that sample (for
+instance, if detailMaterialIdUv falls perfectly inbetween all 4 samples, then each sample will be weighed at 25%).
+Each sample can have two different detail materials defined with a blend value to determine their relative contribution.
+The detailUv is used for samping the textures of each detail material.
+*/
 bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdUv, float2 detailUv)
 {
     float2 textureSize;
@@ -280,9 +288,11 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdUv, fl
     float2 detailMaterialIdCoord = detailMaterialIdUv * textureSize + 0.5;
     float2 detailMaterailIdUv = detailMaterialIdCoord;
     float2 gatherWeight = frac(detailMaterialIdCoord);
+
+    // Adjust the gather weight for better interpolation. This helps avoid diamond-shaped artifacts in binlinear filtering.
     gatherWeight = 3.0 * gatherWeight * gatherWeight - 2.0 * gatherWeight * gatherWeight * gatherWeight;
 
-    // Using Load() instead of gather because of precision issues with uvs.
+    // Using Load() to gather the nearest 4 samples (Gather4() isn't used because of precision issues with uvs).
     uint4 s1 = TerrainSrg::m_detailMaterialIdImage.Load(int3((detailMaterialIdCoord + int2(0, 1) + textureSize) % textureSize, 0));
     uint4 s2 = TerrainSrg::m_detailMaterialIdImage.Load(int3((detailMaterialIdCoord + int2(1, 1) + textureSize) % textureSize, 0));
     uint4 s3 = TerrainSrg::m_detailMaterialIdImage.Load(int3((detailMaterialIdCoord + int2(1, 0) + textureSize) % textureSize, 0));
@@ -291,8 +301,8 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdUv, fl
     uint4 material1 = uint4(s1.x, s2.x, s3.x, s4.x);
     uint4 material2 = uint4(s1.y, s2.y, s3.y, s4.y);
     
-    const float maxBlendAmount = 0xFF;
     // convert integer of 0-255 to float of 0-1.
+    const float maxBlendAmount = 0xFF;
     float4 blends = float4(s1.z, s2.z, s3.z, s4.z) / maxBlendAmount;
     
     if (o_debugDetailMaterialIds)
@@ -302,20 +312,19 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdUv, fl
         return true;
     }
 
-    if (material1.x == 0xFF || material1.y == 0xFF || material1.z == 0xFF || material1.w == 0xFF)
+    // If any sample has no materials, give up.
+    if (any(material1 == 0xFF))
     {
         return false;
     }
 
-    DetailSurface tempSurface;
-
-    if (material1.x == material1.y && material1.y == material1.z && material1.z == material1.w &&
-        material2.x == material2.y && material2.y == material2.z && material2.z == material2.w)
+    if (all(material1.x == material1.yzw) && all(material2.x == material2.yzw))
     {
         // Fast path for same material ids
         GetDetailSurfaceForMaterial(surface, material1.x, detailUv);
         if (material2.x != 0xFF)
         {
+            DetailSurface tempSurface;
             float weight = 
                 ((1.0 - gatherWeight.x) * gatherWeight.y * blends.x) +
                 (gatherWeight.x * gatherWeight.y * blends.y) + 
@@ -333,19 +342,19 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdUv, fl
 
         // X
         float weight = (1.0 - gatherWeight.x) * gatherWeight.y;
-        BlendDetailMaterial(surface, tempSurface, material1.x, material2.x, blends.x, detailUv, weight);
+        BlendDetailMaterial(surface, material1.x, material2.x, blends.x, detailUv, weight);
 
         // Y
         weight = gatherWeight.x * gatherWeight.y;
-        BlendDetailMaterial(surface, tempSurface, material1.y, material2.y, blends.y, detailUv, weight);
+        BlendDetailMaterial(surface, material1.y, material2.y, blends.y, detailUv, weight);
         
         // Z
         weight = gatherWeight.x * (1.0 - gatherWeight.y);
-        BlendDetailMaterial(surface, tempSurface, material1.z, material2.z, blends.z, detailUv, weight);
+        BlendDetailMaterial(surface, material1.z, material2.z, blends.z, detailUv, weight);
 
         // W
         weight = (1.0 - gatherWeight.x) * (1.0 - gatherWeight.y);
-        BlendDetailMaterial(surface, tempSurface, material1.w, material2.w, blends.w, detailUv, weight);
+        BlendDetailMaterial(surface, material1.w, material2.w, blends.w, detailUv, weight);
     }
 
     surface.m_normal = normalize(surface.m_normal);
