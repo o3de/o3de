@@ -90,7 +90,7 @@ namespace AZ
 
     using AttributePtr = AZStd::shared_ptr<Attribute>;
     using AttributeSharedPair = AZStd::pair<AttributeId, AttributePtr>;
-    template <typename ContainerType, typename T>
+    template <typename T, typename ContainerType = AttributeContainerType<T>>
     AttributePtr CreateModuleAttribute(T&& attrValue);
 
     /**
@@ -2543,7 +2543,7 @@ namespace AZ
     /// associated with current module
     /// @param attrValue value to store within the attribute
     /// @param ContainerType second parameter which is used for function parameter deduction
-    template <typename ContainerType, typename T>
+    template <typename T, typename ContainerType>
     AttributePtr CreateModuleAttribute(T&& attrValue)
     {
         IAllocatorAllocate& moduleAllocator = GetCurrentSerializeContextModule().GetAllocator();
