@@ -205,9 +205,9 @@ namespace ScriptCanvasEditor
 
     bool SourceHandle::AnyEquals(const SourceHandle& other) const
     {
-        return m_data == other.m_data
-            || m_id == other.m_id
-            || m_path == other.m_path;
+        return m_data && m_data == other.m_data
+            || !m_id.IsNull() && m_id == other.m_id
+            || !m_path.empty() &&  m_path == other.m_path;
     }
 
     void SourceHandle::Clear()

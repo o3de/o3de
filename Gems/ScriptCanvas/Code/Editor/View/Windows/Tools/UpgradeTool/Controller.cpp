@@ -165,7 +165,7 @@ namespace ScriptCanvasEditor
             {
                 int result = QMessageBox::No;
                 QMessageBox mb
-                (QMessageBox::Warning
+                    ( QMessageBox::Warning
                     , QObject::tr("Failed to Save Upgraded File")
                     , QObject::tr("The upgraded file could not be saved because the file is read only.\n"
                         "Do you want to make it writeable and overwrite it?")
