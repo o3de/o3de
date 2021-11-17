@@ -58,7 +58,7 @@ namespace AZ::Render
             RenderLineSkeleton(instance, renderActorSettings.m_lineSkeletonColor);
         }
 
-        // Render advance skeleton
+        // Render advanced skeleton
         if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_SKELETON])
         {
             RenderSkeleton(instance, renderActorSettings.m_skeletonColor);
@@ -66,7 +66,7 @@ namespace AZ::Render
 
         if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_NODENAMES])
         {
-            RenderJointNames(instance, viewport, renderActorSettings.m_nodeNameColor);
+            RenderJointNames(instance, viewport, renderActorSettings.m_jointNameColor);
         }
 
         // Render internal EMFX debug lines.
@@ -587,7 +587,7 @@ namespace AZ::Render
         const size_t numEnabledNodes = actorInstance->GetNumEnabledNodes();
 
         m_drawParams.m_drawViewportId = viewportContext->GetId();
-        auto viewportSize = viewportContext->GetViewportSize();
+        AzFramework::WindowSize viewportSize = viewportContext->GetViewportSize();
         m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), 0.0f, 1.0f) +
             TopRightBorderPadding * viewportContext->GetDpiScalingFactor();
         m_drawParams.m_color = jointNameColor;
