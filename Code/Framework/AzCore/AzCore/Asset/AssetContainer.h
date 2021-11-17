@@ -24,8 +24,8 @@ namespace AZ
 
         // AssetContainer loads an asset and all of its dependencies as a collection which is parallellized as much as possible.
         // With the container, the data will all load in parallel.  Dependent asset loads will still obey the expected rules
-        // where PreLoad assets will emit OnAssetReady before the parent does, and QueueLoad assets will emit OnAssetReady in 
-        // no guaranteed order.  However, the OnAssetContainerReady signals will not emit until all PreLoad and QueueLoad assets 
+        // where PreLoad assets will emit OnAssetReady before the parent does, and QueueLoad assets will emit OnAssetReady in
+        // no guaranteed order.  However, the OnAssetContainerReady signals will not emit until all PreLoad and QueueLoad assets
         // are ready.  NoLoad dependencies are not loaded by default but can be loaded along with their dependencies using the
         // same rules as above by using the LoadAll dependency rule.
         class AssetContainer :
@@ -36,7 +36,7 @@ namespace AZ
             AZ_CLASS_ALLOCATOR(AssetContainer, SystemAllocator, 0);
 
             AssetContainer() = default;
-            
+
             AssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams);
             ~AssetContainer();
 
@@ -81,6 +81,10 @@ namespace AZ
             // AssetLoadBus
             void OnAssetDataLoaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
         protected:
+
+            virtual AZStd::vector<AZStd::pair<AssetInfo, Asset<AssetData>>> CreateAndQueueDependentAssets(
+                const AZStd::vector<AssetInfo>& dependencyInfoList, const AssetLoadParameters& loadParamsCopyWithNoLoadingFilter);
+
             // Waiting assets are those which have not yet signalled ready.  In the case of PreLoad dependencies the data may have completed the load cycle but
             // the Assets aren't considered "Ready" yet if there are PreLoad dependencies still loading and will still be in the list until the point that asset and
             // All of its preload dependencies have been loaded, when it signals OnAssetReady
@@ -97,7 +101,7 @@ namespace AZ
             void AddDependency(Asset<AssetData>&& addDependency);
 
             // Add a "graph section" to our list of dependencies.  This checks the catalog for all Pre and Queue load assets which are dependents of the requested asset and kicks off loads
-            // NoLoads which are encounted are placed in another list and can be loaded on demand with the LoadDependency call.  
+            // NoLoads which are encounted are placed in another list and can be loaded on demand with the LoadDependency call.
             void AddDependentAssets(Asset<AssetData> rootAsset, const AssetLoadParameters& loadParams);
 
             // If "PreLoad" assets are found in the graph these are cached and tracked with both OnAssetReady and OnAssetDataLoaded messages.
@@ -117,7 +121,7 @@ namespace AZ
             // duringInit if we're coming from the checkReady method - containers that start ready don't need to signal
             void HandleReadyAsset(AZ::Data::Asset<AZ::Data::AssetData> asset);
 
-            // Optimization to save the lookup in the dependencies map 
+            // Optimization to save the lookup in the dependencies map
             AssetInternal::WeakAsset<AssetData> m_rootAsset;
 
             // The root asset id is stored here semi-redundantly on initialization so that we can still refer to it even if the
@@ -136,7 +140,7 @@ namespace AZ
             AZStd::atomic_bool m_finalNotificationSent{false};
 
             mutable AZStd::recursive_mutex m_preloadMutex;
-            // AssetId -> List of assets it is still waiting on 
+            // AssetId -> List of assets it is still waiting on
             PreloadAssetListType m_preloadList;
 
             // AssetId -> List of assets waiting on it
