@@ -14,6 +14,9 @@
 // Qt
 #include <QPainter>
 
+// AzCore
+#include <AzCore/Console/IConsole.h>
+
 // AzQtComponents
 #include <AzQtComponents/DragAndDrop/ViewportDragAndDrop.h>
 
@@ -33,19 +36,32 @@
 #include "GameEngine.h"
 #include "Settings.h"
 
-
 #ifdef LoadCursor
 #undef LoadCursor
 #endif
+
+AZ_CVAR(
+    float,
+    ed_defaultEntityPlacementDistance,
+    10.0f,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "The default distance to place an entity from the camera if no intersection is found");
+
+float GetDefaultEntityPlacementDistance()
+{
+    return ed_defaultEntityPlacementDistance;
+}
 
 //////////////////////////////////////////////////////////////////////
 // Viewport drag and drop support
 //////////////////////////////////////////////////////////////////////
 
-void QtViewport::BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const AzFramework::ViewportId viewportId, const QPoint& point)
+void QtViewport::BuildDragDropContext(
+    AzQtComponents::ViewportDragContext& context, const AzFramework::ViewportId viewportId, const QPoint& point)
 {
-    context.m_hitLocation =
-        AzToolsFramework::CalculateWorldPosition(viewportId, AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point), ed_defaultEntityPlacementDistance);
+    context.m_hitLocation = AzToolsFramework::CalculateWorldPosition(
+        viewportId, AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point), GetDefaultEntityPlacementDistance());
 }
 
 void QtViewport::dragEnterEvent(QDragEnterEvent* event)

@@ -99,14 +99,6 @@
 #undef CreateDirectory
 #endif
 
-AZ_CVAR(
-    float,
-    ed_defaultEntityPlacementDistance,
-    10.0f,
-    nullptr,
-    AZ::ConsoleFunctorFlags::Null,
-    "The default distance to place an entity from the camera if no intersection is found");
-
 //////////////////////////////////////////////////////////////////////////
 // Gathers all selected entities, culling any that have an ancestor in the selection.
 void GetSelectedEntitiesSetWithFlattenedHierarchy(AzToolsFramework::EntityIdSet& out)
@@ -1406,7 +1398,7 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
     if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport())
     {
         worldPosition = AzToolsFramework::CalculateWorldPosition(
-            view->GetViewportId(), AzFramework::ScreenPointFromVector2(m_contextMenuViewPoint), ed_defaultEntityPlacementDistance);
+            view->GetViewportId(), AzFramework::ScreenPointFromVector2(m_contextMenuViewPoint), GetDefaultEntityPlacementDistance());
     }
 
     CreateNewEntityAtPosition(worldPosition);

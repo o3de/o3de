@@ -6,9 +6,7 @@
  *
  */
 
-
 // Description : interface for the CViewport class.
-
 
 #pragma once
 
@@ -88,6 +86,9 @@ enum EStdCursor
 
     STD_CURSOR_LAST,
 };
+
+//! The default distance an entity is placed from the camera if there is no intersection
+SANDBOX_API float GetDefaultEntityPlacementDistance();
 
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 class SANDBOX_API CViewport

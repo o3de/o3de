@@ -10,7 +10,6 @@
 #define CRYINCLUDE_COMPONENTENTITYEDITORPLUGIN_SANDBOXINTEGRATION_H
 
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Console/IConsole.h>
 #include <AzCore/Slice/SliceBus.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Math/Uuid.h>
@@ -39,8 +38,6 @@
 
 #include <QApplication>
 #include <QPointer>
-
-AZ_CVAR_EXTERNED(float, ed_defaultEntityPlacementDistance);
 
 /**
 * Integration of ToolsApplication behavior and Cry undo/redo and selection systems
