@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiDynamicContentDBColorType_Free",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiDynamicContentDBColorType_Free::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

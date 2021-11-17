@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "MaterialPropertyGroupVisibility_Hidden",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "MaterialPropertyGroupVisibility_Hidden::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

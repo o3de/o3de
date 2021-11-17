@@ -1,0 +1,45 @@
+{
+    "entries": [
+        {
+            "key": "set_viewport_size",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "set_viewport_size",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke set_viewport_size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after set_viewport_size is invoked"
+                    },
+                    "details": {
+                        "name": "set_viewport_size",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

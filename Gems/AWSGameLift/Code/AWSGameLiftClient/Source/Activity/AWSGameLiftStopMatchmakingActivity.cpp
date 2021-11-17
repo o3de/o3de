@@ -7,9 +7,11 @@
  */
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 #include <Activity/AWSGameLiftStopMatchmakingActivity.h>
 #include <AWSGameLiftSessionConstants.h>
+#include <Request/IAWSGameLiftInternalRequests.h>
 
 #include <aws/core/utils/Outcome.h>
 #include <aws/gamelift/model/StopMatchmakingRequest.h>
@@ -32,13 +34,19 @@ namespace AWSGameLift
             return request;
         }
 
-        void StopMatchmaking(const Aws::GameLift::GameLiftClient& gameliftClient,
-            const AWSGameLiftStopMatchmakingRequest& stopMatchmakingRequest)
+        void StopMatchmaking(const AWSGameLiftStopMatchmakingRequest& stopMatchmakingRequest)
         {
+            auto gameliftClient = AZ::Interface<IAWSGameLiftInternalRequests>::Get()->GetGameLiftClient();
+            if (!gameliftClient)
+            {
+                AZ_Error(AWSGameLiftStopMatchmakingActivityName, false, AWSGameLiftClientMissingErrorMessage);
+                return;
+            }
+
             AZ_TracePrintf(AWSGameLiftStopMatchmakingActivityName, "Requesting StopMatchmaking against Amazon GameLift service ...");
 
             Aws::GameLift::Model::StopMatchmakingRequest request = BuildAWSGameLiftStopMatchmakingRequest(stopMatchmakingRequest);
-            auto stopMatchmakingOutcome = gameliftClient.StopMatchmaking(request);
+            auto stopMatchmakingOutcome = gameliftClient->StopMatchmaking(request);
 
             if (stopMatchmakingOutcome.IsSuccess())
             {

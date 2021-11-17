@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DisplaySettings_SerializableFlagsMask",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DisplaySettings_SerializableFlagsMask::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

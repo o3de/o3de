@@ -51,6 +51,7 @@ namespace AZ
         JobManagerBus::Handler::BusConnect();
 
         JobManagerDesc desc;
+        desc.m_jobManagerName = "Default JobManager";
         JobManagerThreadDesc threadDesc;
 
         int numberOfWorkerThreads = m_numberOfWorkerThreads;

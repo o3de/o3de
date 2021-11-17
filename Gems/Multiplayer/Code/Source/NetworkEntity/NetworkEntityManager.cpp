@@ -123,7 +123,7 @@ namespace Multiplayer
                 AZ_Assert(entityHandle.GetNetBindComponent(), "No NetBindComponent found on networked entity");
             }
             m_removeList.push_back(entityHandle.GetNetEntityId());
-            m_removeEntitiesEvent.Enqueue(AZ::TimeMs{ 0 });
+            m_removeEntitiesEvent.Enqueue(AZ::Time::ZeroTimeMs);
         }
     }
 
@@ -231,35 +231,9 @@ namespace Multiplayer
     {
         for (NetEntityId exitingId : entitiesNotInDomain)
         {
-            bool safeToExit = true;
             NetworkEntityHandle entityHandle = m_networkEntityTracker.Get(exitingId);
 
-            // We need special handling for the NetworkHierarchy as well, since related entities need to be migrated together
-            NetworkHierarchyRootComponentController* hierarchyRootController = entityHandle.FindController<NetworkHierarchyRootComponentController>();
-            NetworkHierarchyChildComponentController* hierarchyChildController = entityHandle.FindController<NetworkHierarchyChildComponentController>();
-
-            // Find the root entity
-            AZ::Entity* hierarchyRootEntity = nullptr;
-            if (hierarchyRootController)
-            {
-                hierarchyRootEntity = hierarchyRootController->GetParent().GetHierarchicalRoot();
-            }
-            else if (hierarchyChildController)
-            {
-                hierarchyRootEntity = hierarchyChildController->GetParent().GetHierarchicalRoot();
-            }
-
-            if (hierarchyRootEntity)
-            {
-                NetEntityId rootNetId = GetNetEntityIdById(hierarchyRootEntity->GetId());
-                ConstNetworkEntityHandle rootEntityHandle = GetEntity(rootNetId);
-
-                // Check if the root entity is still tracked by this authority
-                if (rootEntityHandle.Exists() && rootEntityHandle.GetNetBindComponent()->HasController())
-                {
-                    safeToExit = false;
-                }
-            }
+            bool safeToExit = IsHierarchySafeToExit(entityHandle, entitiesNotInDomain);;
 
             // Validate that we aren't already planning to remove this entity
             if (safeToExit)
@@ -305,7 +279,13 @@ namespace Multiplayer
         {
             AZ::Entity* entity = it->second;
             NetBindComponent* netBindComponent = m_networkEntityTracker.GetNetBindComponent(entity);
+
             AZ::Aabb entityBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(entity->GetId());
+            if (!entityBounds.IsValid())
+            {
+                continue;
+            }
+
             entityBounds.Expand(AZ::Vector3(0.01f));
             if ((netBindComponent != nullptr) && netBindComponent->GetNetEntityRole() == NetEntityRole::Authority)
             {
@@ -630,4 +610,40 @@ namespace Multiplayer
                 netEntity->GetName().c_str());
         }
     }
+
+    bool NetworkEntityManager::IsHierarchySafeToExit(NetworkEntityHandle& entityHandle, const NetEntityIdSet& entitiesNotInDomain)
+    {
+        bool safeToExit = true;
+
+        // We also need special handling for the NetworkHierarchy as well, since related entities need to be migrated together
+        NetworkHierarchyRootComponentController* hierarchyRootController = entityHandle.FindController<NetworkHierarchyRootComponentController>();
+        NetworkHierarchyChildComponentController* hierarchyChildController = entityHandle.FindController<NetworkHierarchyChildComponentController>();
+
+        AZStd::vector<AZ::Entity*> hierarchicalEntities; 
+
+        // Get the entities in this hierarchy
+        if (hierarchyRootController)
+        {
+            hierarchicalEntities = hierarchyRootController->GetParent().GetHierarchicalEntities();
+        }
+        else if (hierarchyChildController)
+        {
+            hierarchicalEntities = hierarchyChildController->GetParent().GetHierarchicalEntities();
+        }
+
+        // Check if *all* entities in the hierarchy are ready to migrate.
+        // If any are still "in domain", keep the whole hierarchy within the current authority for now
+        for (AZ::Entity* entity : hierarchicalEntities)
+        {
+            NetEntityId netEntityId = GetNetEntityIdById(entity->GetId());
+            if (netEntityId != InvalidNetEntityId && !entitiesNotInDomain.contains(netEntityId))
+            {
+                safeToExit = false;
+                break;
+            }
+        }
+
+        return safeToExit;
+    }
+
 }

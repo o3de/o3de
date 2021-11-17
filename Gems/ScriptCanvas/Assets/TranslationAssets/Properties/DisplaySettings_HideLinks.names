@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DisplaySettings_HideLinks",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DisplaySettings_HideLinks::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

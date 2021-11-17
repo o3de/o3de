@@ -1,0 +1,193 @@
+{
+    "entries": [
+        {
+            "key": "ActorComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Actor",
+                "category": "Animation"
+            },
+            "methods": [
+                {
+                    "key": "GetRenderCharacter",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Render Character"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Render Character is invoked"
+                    },
+                    "details": {
+                        "name": "Get Render Character"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DetachFromEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Detach From Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Detach From Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Detach From Entity"
+                    }
+                },
+                {
+                    "key": "GetRenderActorVisible",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Render Actor Visible"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Render Actor Visible is invoked"
+                    },
+                    "details": {
+                        "name": "Get Render Actor Visible"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Visible"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "AttachToEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Attach To Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Attach To Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Attach To Entity",
+                        "category": "Actor Animation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Attachment Type",
+                                "tooltip": "0: Actor, 1: Skin"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetRenderCharacter",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Render Character"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Render Character is invoked"
+                    },
+                    "details": {
+                        "name": "Set Render Character"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Enable"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetJointTransform",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Joint Transform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Joint Transform is invoked"
+                    },
+                    "details": {
+                        "name": "Get Joint Transform"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Joint Index"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Space",
+                                "tooltip": "0: Local, 1: Model, 2: World"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetJointIndexByName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Joint Index By Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Joint Index By Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Joint Index By Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Name"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Joint Index"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

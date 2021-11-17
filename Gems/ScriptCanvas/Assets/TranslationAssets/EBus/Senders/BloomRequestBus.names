@@ -1,0 +1,1422 @@
+{
+    "entries": [
+        {
+            "key": "BloomRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "BloomRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "GetTintStage0Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTintStage0Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTintStage0Override is invoked"
+                    },
+                    "details": {
+                        "name": "GetTintStage0Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTintStage0Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTintStage0Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTintStage0Override is invoked"
+                    },
+                    "details": {
+                        "name": "SetTintStage0Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTintStage1",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTintStage1"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTintStage1 is invoked"
+                    },
+                    "details": {
+                        "name": "SetTintStage1"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTintStage0",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTintStage0"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTintStage0 is invoked"
+                    },
+                    "details": {
+                        "name": "SetTintStage0"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetKernelSizeStage3Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetKernelSizeStage3Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetKernelSizeStage3Override is invoked"
+                    },
+                    "details": {
+                        "name": "GetKernelSizeStage3Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTintStage3Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTintStage3Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTintStage3Override is invoked"
+                    },
+                    "details": {
+                        "name": "GetTintStage3Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetKernelSizeScaleOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetKernelSizeScaleOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetKernelSizeScaleOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetKernelSizeScaleOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetKernelSizeStage2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetKernelSizeStage2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetKernelSizeStage2 is invoked"
+                    },
+                    "details": {
+                        "name": "SetKernelSizeStage2"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetKernelSizeStage4",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetKernelSizeStage4"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetKernelSizeStage4 is invoked"
+                    },
+                    "details": {
+                        "name": "GetKernelSizeStage4"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTintStage0",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTintStage0"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTintStage0 is invoked"
+                    },
+                    "details": {
+                        "name": "GetTintStage0"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTintStage4Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTintStage4Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTintStage4Override is invoked"
+                    },
+                    "details": {
+                        "name": "SetTintStage4Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetKernelSizeScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetKernelSizeScale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetKernelSizeScale is invoked"
+                    },
+                    "details": {
+                        "name": "GetKernelSizeScale"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetKernelSizeStage2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetKernelSizeStage2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetKernelSizeStage2 is invoked"
+                    },
+                    "details": {
+                        "name": "GetKernelSizeStage2"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTintStage1Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTintStage1Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTintStage1Override is invoked"
+                    },
+                    "details": {
+                        "name": "SetTintStage1Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTintStage3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTintStage3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTintStage3 is invoked"
+                    },
+                    "details": {
+                        "name": "SetTintStage3"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEnabledOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEnabledOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEnabledOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetEnabledOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTintStage3Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTintStage3Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTintStage3Override is invoked"
+                    },
+                    "details": {
+                        "name": "SetTintStage3Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEnabledOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEnabledOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEnabledOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetEnabledOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetKernelSizeStage0",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetKernelSizeStage0"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetKernelSizeStage0 is invoked"
+                    },
+                    "details": {
+                        "name": "SetKernelSizeStage0"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetKernelSizeStage0Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetKernelSizeStage0Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetKernelSizeStage0Override is invoked"
+                    },
+                    "details": {
+                        "name": "GetKernelSizeStage0Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetKernelSizeStage4Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetKernelSizeStage4Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetKernelSizeStage4Override is invoked"
+                    },
+                    "details": {
+                        "name": "SetKernelSizeStage4Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTintStage2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTintStage2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTintStage2 is invoked"
+                    },
+                    "details": {
+                        "name": "GetTintStage2"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTintStage4Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTintStage4Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTintStage4Override is invoked"
+                    },
+                    "details": {
+                        "name": "GetTintStage4Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetKernelSizeStage0Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetKernelSizeStage0Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetKernelSizeStage0Override is invoked"
+                    },
+                    "details": {
+                        "name": "SetKernelSizeStage0Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetKernelSizeStage4Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetKernelSizeStage4Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetKernelSizeStage4Override is invoked"
+                    },
+                    "details": {
+                        "name": "GetKernelSizeStage4Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTintStage2Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTintStage2Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTintStage2Override is invoked"
+                    },
+                    "details": {
+                        "name": "GetTintStage2Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTintStage3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTintStage3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTintStage3 is invoked"
+                    },
+                    "details": {
+                        "name": "GetTintStage3"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetKernelSizeScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetKernelSizeScale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetKernelSizeScale is invoked"
+                    },
+                    "details": {
+                        "name": "SetKernelSizeScale"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIntensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetIntensity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetIntensity is invoked"
+                    },
+                    "details": {
+                        "name": "GetIntensity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetBicubicEnabledOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetBicubicEnabledOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetBicubicEnabledOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetBicubicEnabledOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetKernelSizeStage4",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetKernelSizeStage4"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetKernelSizeStage4 is invoked"
+                    },
+                    "details": {
+                        "name": "SetKernelSizeStage4"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetBicubicEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetBicubicEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetBicubicEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "SetBicubicEnabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetKernelSizeStage1Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetKernelSizeStage1Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetKernelSizeStage1Override is invoked"
+                    },
+                    "details": {
+                        "name": "GetKernelSizeStage1Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetThresholdOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetThresholdOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetThresholdOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetThresholdOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIntensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetIntensity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetIntensity is invoked"
+                    },
+                    "details": {
+                        "name": "SetIntensity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetBicubicEnabledOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetBicubicEnabledOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetBicubicEnabledOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetBicubicEnabledOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetKernelSizeStage1",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetKernelSizeStage1"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetKernelSizeStage1 is invoked"
+                    },
+                    "details": {
+                        "name": "GetKernelSizeStage1"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetKernelSizeStage2Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetKernelSizeStage2Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetKernelSizeStage2Override is invoked"
+                    },
+                    "details": {
+                        "name": "GetKernelSizeStage2Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTintStage4",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTintStage4"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTintStage4 is invoked"
+                    },
+                    "details": {
+                        "name": "SetTintStage4"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetKernelSizeStage1",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetKernelSizeStage1"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetKernelSizeStage1 is invoked"
+                    },
+                    "details": {
+                        "name": "SetKernelSizeStage1"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetThresholdOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetThresholdOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetThresholdOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetThresholdOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTintStage1",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTintStage1"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTintStage1 is invoked"
+                    },
+                    "details": {
+                        "name": "GetTintStage1"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetKnee",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetKnee"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetKnee is invoked"
+                    },
+                    "details": {
+                        "name": "GetKnee"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetThreshold",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetThreshold"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetThreshold is invoked"
+                    },
+                    "details": {
+                        "name": "SetThreshold"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetIntensityOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetIntensityOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetIntensityOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetIntensityOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "GetEnabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetKernelSizeStage1Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetKernelSizeStage1Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetKernelSizeStage1Override is invoked"
+                    },
+                    "details": {
+                        "name": "SetKernelSizeStage1Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetKernelSizeStage0",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetKernelSizeStage0"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetKernelSizeStage0 is invoked"
+                    },
+                    "details": {
+                        "name": "GetKernelSizeStage0"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTintStage2Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTintStage2Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTintStage2Override is invoked"
+                    },
+                    "details": {
+                        "name": "SetTintStage2Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTintStage4",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTintStage4"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTintStage4 is invoked"
+                    },
+                    "details": {
+                        "name": "GetTintStage4"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetKernelSizeScaleOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetKernelSizeScaleOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetKernelSizeScaleOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetKernelSizeScaleOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetKernelSizeStage2Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetKernelSizeStage2Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetKernelSizeStage2Override is invoked"
+                    },
+                    "details": {
+                        "name": "SetKernelSizeStage2Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetKernelSizeStage3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetKernelSizeStage3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetKernelSizeStage3 is invoked"
+                    },
+                    "details": {
+                        "name": "GetKernelSizeStage3"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTintStage1Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTintStage1Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTintStage1Override is invoked"
+                    },
+                    "details": {
+                        "name": "GetTintStage1Override"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTintStage2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTintStage2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTintStage2 is invoked"
+                    },
+                    "details": {
+                        "name": "SetTintStage2"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetKneeOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetKneeOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetKneeOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetKneeOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetKnee",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetKnee"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetKnee is invoked"
+                    },
+                    "details": {
+                        "name": "SetKnee"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIntensityOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetIntensityOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetIntensityOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetIntensityOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "SetEnabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetThreshold",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetThreshold"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetThreshold is invoked"
+                    },
+                    "details": {
+                        "name": "GetThreshold"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetKernelSizeStage3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetKernelSizeStage3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetKernelSizeStage3 is invoked"
+                    },
+                    "details": {
+                        "name": "SetKernelSizeStage3"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetKernelSizeStage3Override",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetKernelSizeStage3Override"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetKernelSizeStage3Override is invoked"
+                    },
+                    "details": {
+                        "name": "SetKernelSizeStage3Override"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetKneeOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetKneeOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetKneeOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetKneeOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetBicubicEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetBicubicEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetBicubicEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "GetBicubicEnabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "StencilOp_Decrement",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "StencilOp_Decrement::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

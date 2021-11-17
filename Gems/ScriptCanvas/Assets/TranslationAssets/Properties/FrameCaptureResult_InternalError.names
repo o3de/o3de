@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "FrameCaptureResult_InternalError",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "FrameCaptureResult_InternalError::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

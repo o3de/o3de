@@ -87,6 +87,19 @@ namespace EMStudio
                     // Send the reset camera event.
                     AnimViewportRequestBus::Broadcast(&AnimViewportRequestBus::Events::ResetCamera);
                 });
+
+            cameraMenu->addSeparator();
+            m_followCharacterAction = cameraMenu->addAction("Follow Character");
+            m_followCharacterAction->setCheckable(true);
+            m_followCharacterAction->setChecked(false);
+            connect(m_followCharacterAction, &QAction::triggered, this,
+                [this]()
+                {
+                    AnimViewportRequestBus::Broadcast(
+                        &AnimViewportRequestBus::Events::SetFollowCharacter, m_followCharacterAction->isChecked());
+                    ;
+                });
+
             cameraButton->setMenu(cameraMenu);
             cameraButton->setText("Camera Option");
             cameraButton->setPopupMode(QToolButton::InstantPopup);

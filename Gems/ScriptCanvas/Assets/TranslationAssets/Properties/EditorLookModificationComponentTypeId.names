@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorLookModificationComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorLookModificationComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

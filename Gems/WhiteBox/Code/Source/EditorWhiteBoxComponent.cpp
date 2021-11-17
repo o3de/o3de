@@ -92,7 +92,7 @@ namespace WhiteBox
         };
 
         const auto faceHandles = Api::MeshFaceHandles(whiteBox);
-        for (const auto faceHandle : faceHandles)
+        for (const auto& faceHandle : faceHandles)
         {
             faceData.push_back(createWhiteBoxFaceFromHandle(faceHandle));
         }
@@ -817,7 +817,7 @@ namespace WhiteBox
 
         debugDisplay.DepthTestOn();
 
-        for (const auto faceHandle : Api::MeshFaceHandles(whiteBoxMesh))
+        for (const auto& faceHandle : Api::MeshFaceHandles(whiteBoxMesh))
         {
             const auto faceHalfedgeHandles = Api::FaceHalfedgeHandles(whiteBoxMesh, faceHandle);
 
@@ -832,7 +832,7 @@ namespace WhiteBox
                     }) /
                 3.0f;
 
-            for (const auto halfedgeHandle : faceHalfedgeHandles)
+            for (const auto& halfedgeHandle : faceHalfedgeHandles)
             {
                 const Api::VertexHandle vertexHandleAtTip =
                     Api::HalfedgeVertexHandleAtTip(whiteBoxMesh, halfedgeHandle);
@@ -887,7 +887,7 @@ namespace WhiteBox
 
         if (cl_whiteBoxDebugEdgeHandles)
         {
-            for (const auto edgeHandle : Api::MeshEdgeHandles(whiteBoxMesh))
+            for (const auto& edgeHandle : Api::MeshEdgeHandles(whiteBoxMesh))
             {
                 const AZ::Vector3 localEdgeMidpoint = Api::EdgeMidpoint(whiteBoxMesh, edgeHandle);
                 const AZ::Vector3 worldEdgeMidpoint = worldFromLocal.TransformPoint(localEdgeMidpoint);

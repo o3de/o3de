@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "SystemConfigSpec_VeryHigh",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "SystemConfigSpec_VeryHigh::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

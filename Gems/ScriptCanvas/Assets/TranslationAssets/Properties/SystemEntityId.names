@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "SystemEntityId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "SystemEntityId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

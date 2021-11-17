@@ -139,9 +139,8 @@ namespace PhysX
             else if (auto* shapeColliderPairList = AZStd::get_if<AZStd::vector<AzPhysics::ShapeColliderPair>>(&shapeData))
             {
                 bool shapeAdded = false;
-                if (!shapeColliderPairList->empty())
+                for (const auto& shapeColliderConfigs : *shapeColliderPairList)
                 {
-                    const auto& shapeColliderConfigs = shapeColliderPairList->front();
                     auto shapePtr = AZStd::make_shared<Shape>(*(shapeColliderConfigs.first), *(shapeColliderConfigs.second));
                     AZStd::visit([shapePtr, &shapeAdded](auto&& body)
                         {
@@ -151,8 +150,8 @@ namespace PhysX
                                 shapeAdded = true;
                             }
                         }, simulatedBody);
-                    return shapeAdded;
                 }
+                return shapeAdded;
             }
             else if (auto* shape = AZStd::get_if<AZStd::shared_ptr<Physics::Shape>>(&shapeData))
             {

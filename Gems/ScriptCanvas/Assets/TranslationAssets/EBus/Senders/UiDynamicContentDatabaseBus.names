@@ -1,0 +1,199 @@
+{
+    "entries": [
+        {
+            "key": "UiDynamicContentDatabaseBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiDynamicContentDatabaseBus",
+                "category": "UI/LyShine Examples"
+            },
+            "methods": [
+                {
+                    "key": "Refresh",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Refresh"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Refresh is invoked"
+                    },
+                    "details": {
+                        "name": "Refresh",
+                        "tooltip": "Refreshes the database with new content"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Color Type",
+                                "tooltip": "The color type (0=Free, 1=Paid)"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Pathname",
+                                "tooltip": "The pathname to a json file containing color data"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColorPrice",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Color Price"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Color Price is invoked"
+                    },
+                    "details": {
+                        "name": "Get Color Price",
+                        "tooltip": "Gets the price of a color"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Color Type",
+                                "tooltip": "The color type (0=Free, 1=Paid)"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Color Index",
+                                "tooltip": "The index of the color"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string",
+                                "tooltip": "The color type (0=Free, 1=Paid)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColorName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Color Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Color Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Color Name",
+                        "tooltip": "Gets the name of a color"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Color Type",
+                                "tooltip": "The color type (0=Free, 1=Paid)"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Color Index",
+                                "tooltip": "The index of the color"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string",
+                                "tooltip": "The color type (0=Free, 1=Paid)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Color is invoked"
+                    },
+                    "details": {
+                        "name": "Get Color",
+                        "tooltip": "Gets the color value of a color"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Color Type",
+                                "tooltip": "The color type (0=Free, 1=Paid)"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Color index",
+                                "tooltip": "The index of the color"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color",
+                                "tooltip": "The color type (0=Free, 1=Paid)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetNumColors",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Number Of Colors"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Number Of Colors is invoked"
+                    },
+                    "details": {
+                        "name": "Get Number Of Colors",
+                        "tooltip": "Gets the number of colors in the database"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Color Type",
+                                "tooltip": "The color type (0=Free, 1=Paid)"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int",
+                                "tooltip": "The color type (0=Free, 1=Paid)"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

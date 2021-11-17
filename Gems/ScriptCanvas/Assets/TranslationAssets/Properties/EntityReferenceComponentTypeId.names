@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EntityReferenceComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EntityReferenceComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

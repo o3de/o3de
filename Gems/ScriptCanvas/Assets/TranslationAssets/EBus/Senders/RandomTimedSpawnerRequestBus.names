@@ -1,0 +1,210 @@
+{
+    "entries": [
+        {
+            "key": "RandomTimedSpawnerRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "RandomTimedSpawnerRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "SetSpawnDelay",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSpawnDelay"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSpawnDelay is invoked"
+                    },
+                    "details": {
+                        "name": "SetSpawnDelay"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSpawnDelay",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSpawnDelay"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSpawnDelay is invoked"
+                    },
+                    "details": {
+                        "name": "GetSpawnDelay"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSpawnDelayVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSpawnDelayVariation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSpawnDelayVariation is invoked"
+                    },
+                    "details": {
+                        "name": "SetSpawnDelayVariation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetRandomDistribution",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetRandomDistribution"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetRandomDistribution is invoked"
+                    },
+                    "details": {
+                        "name": "SetRandomDistribution"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "IsEnabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Disable",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Disable"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Disable is invoked"
+                    },
+                    "details": {
+                        "name": "Disable"
+                    }
+                },
+                {
+                    "key": "Toggle",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Toggle"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Toggle is invoked"
+                    },
+                    "details": {
+                        "name": "Toggle"
+                    }
+                },
+                {
+                    "key": "GetRandomDistribution",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetRandomDistribution"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetRandomDistribution is invoked"
+                    },
+                    "details": {
+                        "name": "GetRandomDistribution"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Enable",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Enable"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Enable is invoked"
+                    },
+                    "details": {
+                        "name": "Enable"
+                    }
+                },
+                {
+                    "key": "GetSpawnDelayVariation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSpawnDelayVariation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSpawnDelayVariation is invoked"
+                    },
+                    "details": {
+                        "name": "GetSpawnDelayVariation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

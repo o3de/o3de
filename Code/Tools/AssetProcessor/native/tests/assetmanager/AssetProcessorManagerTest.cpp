@@ -243,9 +243,7 @@ void AssetProcessorManagerTest::SetUp()
     ASSERT_TRUE(m_mockApplicationManager->RegisterAssetRecognizerAsBuilder(rec));
     m_mockApplicationManager->BusConnect();
 
-    AZ_Printf("UnitTest", "Allocating APM\n")
     m_assetProcessorManager.reset(new AssetProcessorManager_Test(m_config.get()));
-    AZ_Printf("UnitTest", "APM ready\n");
     m_errorAbsorber->Clear();
 
     m_isIdling = false;
@@ -4468,9 +4466,7 @@ AssetBuilderSDK::AssetBuilderDesc MockBuilderInfoHandler::CreateBuilderDesc(cons
 
 void FingerprintTest::SetUp()
 {
-    AZ_Printf("FingerprintTest", "SetUp start\n");
     AssetProcessorManagerTest::SetUp();
-    AZ_Printf("FingerprintTest", "SetUp self\n");
 
     // We don't want the mock application manager to provide builder descriptors, mockBuilderInfoHandler will provide our own
     m_mockApplicationManager->BusDisconnect();
@@ -4489,23 +4485,18 @@ void FingerprintTest::SetUp()
     });
 
     ASSERT_TRUE(UnitTestUtils::CreateDummyFile(m_absolutePath, ""));
-    AZ_Printf("FingerprintTest", "SetUp end\n");
 }
 
 void FingerprintTest::TearDown()
 {
-    AZ_Printf("FingerprintTest", "TearDown start\n");
     m_jobResults = AZStd::vector<AssetProcessor::JobDetails>{};
     m_mockBuilderInfoHandler = {};
 
-    AZ_Printf("FingerprintTest", "TearDown parent\n");
     AssetProcessorManagerTest::TearDown();
-    AZ_Printf("FingerprintTest", "TearDown end\n");
 }
 
 void FingerprintTest::RunFingerprintTest(QString builderFingerprint, QString jobFingerprint, bool expectedResult)
 {
-    AZ_Printf("FingerprintTest", "Fingerprint Test Start\n");
     m_mockBuilderInfoHandler.m_builderDesc.m_analysisFingerprint = builderFingerprint.toUtf8().data();
     m_mockBuilderInfoHandler.m_jobFingerprint = jobFingerprint;
     QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, m_absolutePath));
@@ -4514,7 +4505,6 @@ void FingerprintTest::RunFingerprintTest(QString builderFingerprint, QString job
     ASSERT_EQ(m_mockBuilderInfoHandler.m_createJobsCount, 1);
     ASSERT_EQ(m_jobResults.size(), 1);
     ASSERT_EQ(m_jobResults[0].m_autoFail, expectedResult);
-    AZ_Printf("FingerprintTest", "Fingerprint Test End\n");
 }
 
 TEST_F(FingerprintTest, FingerprintChecking_JobFingerprint_NoBuilderFingerprint)

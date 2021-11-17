@@ -454,10 +454,10 @@ namespace AtomToolsFramework
         return false;
     }
 
-    void AtomToolsApplication::Tick(float deltaOverride)
+    void AtomToolsApplication::Tick()
     {
         TickSystem();
-        Base::Tick(deltaOverride);
+        Base::Tick();
 
         if (WasExitMainLoopRequested())
         {

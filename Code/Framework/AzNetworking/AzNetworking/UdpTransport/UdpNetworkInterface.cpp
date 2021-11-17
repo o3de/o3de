@@ -736,7 +736,7 @@ namespace AzNetworking
             udpConnection->SendUnreliablePacket(CorePackets::HeartbeatPacket(true));
             ++udpConnection->m_timeoutCounter;
         }
-        else if (net_UdpTimeoutConnections && (GetTimeoutMs() > AZ::TimeMs{ 0 }))
+        else if (net_UdpTimeoutConnections && (GetTimeoutMs() > AZ::Time::ZeroTimeMs))
         {
             udpConnection->Disconnect(DisconnectReason::Timeout, TerminationEndpoint::Local);
             return TimeoutResult::Delete;

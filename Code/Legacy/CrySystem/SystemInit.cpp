@@ -30,7 +30,6 @@
 #define SYSTEMINIT_CPP_SECTION_17 17
 #endif
 
-#include "CryLibrary.h"
 #include "CryPath.h"
 
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
@@ -79,7 +78,6 @@
 #include <ICmdLine.h>
 #include <IProcess.h>
 #include <LyShine/ILyShine.h>
-#include <HMDBus.h>
 
 #include <AzFramework/Archive/Archive.h>
 #include "XConsole.h"
@@ -89,7 +87,6 @@
 #include "SystemEventDispatcher.h"
 #include "LevelSystem/LevelSystem.h"
 #include "LevelSystem/SpawnableLevelSystem.h"
-#include "ViewSystem/ViewSystem.h"
 #include <CrySystemBus.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobManagerBus.h>
@@ -1064,17 +1061,6 @@ AZ_POP_DISABLE_WARNING
                                                             AzFramework::SystemCursorState::ConstrainedAndHidden);
         }
 
-        //////////////////////////////////////////////////////////////////////////
-        // TIME
-        //////////////////////////////////////////////////////////////////////////
-        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Time initialization");
-        if (!m_Time.Init())
-        {
-            AZ_Assert(false, "Failed to initialize CTimer instance.");
-            return false;
-        }
-        m_Time.ResetTimer();
-
         // CONSOLE
         //////////////////////////////////////////////////////////////////////////
         if (!InitConsole())
@@ -1109,12 +1095,6 @@ AZ_POP_DISABLE_WARNING
 
         InlineInitializationProcessing("CSystem::Init Level System");
 
-        //////////////////////////////////////////////////////////////////////////
-        // VIEW SYSTEM (must be created after m_pLevelSystem)
-        m_pViewSystem = new LegacyViewSystem::CViewSystem(this);
-
-        InlineInitializationProcessing("CSystem::Init View System");
-
         if (m_env.pLyShine)
         {
             m_env.pLyShine->PostInit();
@@ -1147,12 +1127,6 @@ AZ_POP_DISABLE_WARNING
 #endif
 
     InlineInitializationProcessing("CSystem::Init End");
-
-    if (gEnv->IsDedicated())
-    {
-        SCVarsClientConfigSink CVarsClientConfigSink;
-        LoadConfiguration("client.cfg", &CVarsClientConfigSink);
-    }
 
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
@@ -1211,20 +1185,6 @@ static AZStd::string ConcatPath(const char* szPart1, const char* szPart2)
     ret += szPart2;
 
     return ret;
-}
-
-// Helper to maintain backwards compatibility with our CVar but not force our new code to
-// pull in CryCommon by routing through an environment variable
-void CmdSetAwsLogLevel(IConsoleCmdArgs* pArgs)
-{
-    static const char* const logLevelEnvVar = "sys_SetLogLevel";
-    static AZ::EnvironmentVariable<int> logVar = AZ::Environment::CreateVariable<int>(logLevelEnvVar);
-    if (pArgs->GetArgCount() > 1)
-    {
-        int logLevel = atoi(pArgs->GetArg(1));
-        *logVar = logLevel;
-        AZ_TracePrintf("AWSLogging", "Log level set to %d", *logVar);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1589,8 +1549,6 @@ void CSystem::CreateSystemVars()
     // Since the UI Canvas Editor is incomplete, we have a variable to enable it.
     // By default it is now enabled. Modify system.cfg or game.cfg to disable it
     REGISTER_INT("sys_enableCanvasEditor", 1, VF_NULL, "Enables the UI Canvas Editor");
-
-    REGISTER_COMMAND("sys_SetLogLevel", CmdSetAwsLogLevel, 0, "Set AWS log level [0 - 6].");
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DefaultLodOverride",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DefaultLodOverride::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

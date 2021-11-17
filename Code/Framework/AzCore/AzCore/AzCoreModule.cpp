@@ -19,7 +19,6 @@
 #include <AzCore/Slice/SliceSystemComponent.h>
 #include <AzCore/Slice/SliceMetadataInfoComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
-#include <AzCore/Time/TimeSystemComponent.h>
 #include <AzCore/Console/LoggerSystemComponent.h>
 #include <AzCore/EBus/EventSchedulerSystemComponent.h>
 #include <AzCore/Task/TaskGraphSystemComponent.h>
@@ -40,7 +39,6 @@ namespace AZ
             SliceComponent::CreateDescriptor(),
             SliceSystemComponent::CreateDescriptor(),
             SliceMetadataInfoComponent::CreateDescriptor(),
-            TimeSystemComponent::CreateDescriptor(),
             LoggerSystemComponent::CreateDescriptor(),
             EventSchedulerSystemComponent::CreateDescriptor(),
             TaskGraphSystemComponent::CreateDescriptor(),
@@ -59,7 +57,6 @@ namespace AZ
     {
         return AZ::ComponentTypeList
         {
-            azrtti_typeid<TimeSystemComponent>(),
             azrtti_typeid<LoggerSystemComponent>(),
             azrtti_typeid<EventSchedulerSystemComponent>(),
             azrtti_typeid<TaskGraphSystemComponent>(),

@@ -8,7 +8,6 @@
 
 #include "LyShineTest.h"
 #include <Mocks/ISystemMock.h>
-#include <Mocks/ITextureMock.h>
 #include <Sprite.h>
 
 namespace UnitTest
@@ -32,7 +31,8 @@ namespace UnitTest
                 modules.emplace_back(new LyShine::LyShineModule);
             };
 
-            m_systemEntity = m_application.Create(appDesc, appStartup);
+            m_application = aznew AZ::ComponentApplication();
+            m_systemEntity = m_application->Create(appDesc, appStartup);
             m_systemEntity->Init();
             m_systemEntity->Activate();
         }

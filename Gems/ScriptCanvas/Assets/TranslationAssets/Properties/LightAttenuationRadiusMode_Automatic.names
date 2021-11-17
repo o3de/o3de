@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "LightAttenuationRadiusMode_Automatic",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "LightAttenuationRadiusMode_Automatic::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiScrollBoxSnapMode_Grid",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiScrollBoxSnapMode_Grid::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

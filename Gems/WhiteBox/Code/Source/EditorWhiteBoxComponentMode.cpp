@@ -25,8 +25,6 @@ namespace WhiteBox
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorWhiteBoxComponentMode, AZ::SystemAllocator, 0)
 
-    static const int DefaultWidgetBottomMargin = 5;
-
     // helper function to return what modifier keys move us to restore mode
     static bool RestoreModifier(AzToolsFramework::ViewportInteraction::KeyboardModifiers modifiers)
     {
@@ -410,7 +408,7 @@ namespace WhiteBox
         }();
 
         // all edges that are valid to interact with at this time
-        for (const auto edgeHandle : edgeHandles)
+        for (const auto& edgeHandle : edgeHandles)
         {
             const auto edge = Api::EdgeVertexPositions(*whiteBox, edgeHandle);
             m_intersectionAndRenderData->m_whiteBoxIntersectionData.m_edgeBounds.emplace_back(
@@ -418,14 +416,14 @@ namespace WhiteBox
         }
 
         // handle drawing 'user' and 'mesh' edges slightly differently
-        for (const auto edgeHandle : edgeHandlesPair.m_user)
+        for (const auto& edgeHandle : edgeHandlesPair.m_user)
         {
             const auto edge = Api::EdgeVertexPositions(*whiteBox, edgeHandle);
             m_intersectionAndRenderData->m_whiteBoxEdgeRenderData.m_bounds.m_user.emplace_back(
                 EdgeBoundWithHandle{EdgeBound{edge[0], edge[1], cl_whiteBoxEdgeSelectionWidth}, edgeHandle});
         }
 
-        for (const auto edgeHandle : edgeHandlesPair.m_mesh)
+        for (const auto& edgeHandle : edgeHandlesPair.m_mesh)
         {
             const auto edge = Api::EdgeVertexPositions(*whiteBox, edgeHandle);
             m_intersectionAndRenderData->m_whiteBoxEdgeRenderData.m_bounds.m_mesh.emplace_back(

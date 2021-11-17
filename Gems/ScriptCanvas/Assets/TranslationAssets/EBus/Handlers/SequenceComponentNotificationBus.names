@@ -1,0 +1,103 @@
+{
+    "entries": [
+        {
+            "key": "SequenceComponentNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Sequence",
+                "category": "Animation"
+            },
+            "methods": [
+                {
+                    "key": "OnStart",
+                    "details": {
+                        "name": "On Start"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnStop",
+                    "details": {
+                        "name": "On Stop"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnPause",
+                    "details": {
+                        "name": "On Pause"
+                    }
+                },
+                {
+                    "key": "OnResume",
+                    "details": {
+                        "name": "On Resume"
+                    }
+                },
+                {
+                    "key": "OnAbort",
+                    "details": {
+                        "name": "On Abort"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnUpdate",
+                    "details": {
+                        "name": "On Update"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnTrackEventTriggered",
+                    "details": {
+                        "name": "On Track Event Triggered"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

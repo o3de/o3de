@@ -178,20 +178,13 @@ namespace EMStudio
         if (!m_actorEntities.empty())
         {
             // Find the actor instance and calculate the center from aabb.
-            AZ::Vector3 actorCenter = AZ::Vector3::CreateZero();
             EMotionFX::Integration::ActorComponent* actorComponent =
                 m_actorEntities[0]->FindComponent<EMotionFX::Integration::ActorComponent>();
             EMotionFX::ActorInstance* actorInstance = actorComponent->GetActorInstance();
             if (actorInstance)
             {
-                actorCenter += actorInstance->GetAabb().GetCenter();
+                result = actorInstance->GetAabb().GetCenter();
             }
-            
-            // Just return the position of the first entity.
-            AZ::Transform worldTransform;
-            AZ::TransformBus::EventResult(worldTransform, m_actorEntities[0]->GetId(), &AZ::TransformBus::Events::GetWorldTM);
-            result = worldTransform.GetTranslation();
-            result += actorCenter;
         }
 
         return result;

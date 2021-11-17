@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "TransformRefreshType_All",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "TransformRefreshType_All::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}
