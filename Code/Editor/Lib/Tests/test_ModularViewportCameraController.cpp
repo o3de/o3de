@@ -146,6 +146,17 @@ namespace UnitTest
             controller->SetCameraPropsBuilderCallback(
                 [](AzFramework::CameraProps& cameraProps)
                 {
+                    // note: rotateSmoothness is also used for roll (not related to camera input directly)
+                    cameraProps.m_rotateSmoothnessFn = []
+                    {
+                        return 5.0f;
+                    };
+
+                    cameraProps.m_translateSmoothnessFn = []
+                    {
+                        return 5.0f;
+                    };
+
                     cameraProps.m_rotateSmoothingEnabledFn = []
                     {
                         return false;
