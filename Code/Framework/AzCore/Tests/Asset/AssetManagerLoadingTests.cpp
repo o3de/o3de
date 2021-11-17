@@ -2568,7 +2568,7 @@ namespace UnitTest
     TEST_F(AssetJobsMultithreadedTest, DISABLED_ParallelDeepAssetReferences)
 #else
     // temporarily disabled until sporadic failures can be root caused
-    TEST_F(AssetJobsMultithreadedTest, DISABLED_ParallelDeepAssetReferences)
+    TEST_F(AssetJobsMultithreadedTest, ParallelDeepAssetReferences)
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         ParallelDeepAssetReferences();
