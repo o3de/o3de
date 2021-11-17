@@ -250,7 +250,6 @@ void GetDebugDetailSurface(inout DetailSurface surface, uint material1, uint mat
     surface.m_height = 0.5;
 }
 
-
 void BlendDetailMaterial(
     inout DetailSurface surface,
     inout DetailSurface tempSurface,
