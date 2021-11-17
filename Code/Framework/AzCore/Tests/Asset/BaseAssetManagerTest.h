@@ -21,6 +21,7 @@
 #include <Tests/SerializeContextFixture.h>
 #include <Tests/TestCatalog.h>
 #include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
+#include <Streamer/IStreamerMock.h>
 
 namespace UnitTest
 {
@@ -101,7 +102,7 @@ namespace UnitTest
         MemoryStreamerWrapper();
         ~MemoryStreamerWrapper() = default;
 
-        ReadRequest* GetReadRequest(FileRequestHandle request);
+        ReadRequest* GetReadRequest(IO::FileRequestHandle request);
 
         template<typename TObject>
         bool WriteMemoryFile(const AZStd::string& filePath, TObject* object, AZ::SerializeContext* context)
