@@ -124,14 +124,13 @@ namespace AZ
         const TimeUs currentTimeUs = static_cast<TimeUs>(AZStd::GetTimeNowMicroSecond());
 
         //real time
-        m_realTickDeltaTimeUs = currentTimeUs - m_lastRealTickTimeUs;
-        m_lastRealTickTimeUs = currentTimeUs;
+        m_realTickDeltaTimeUs = currentTimeUs - m_lastSimulationTickTimeUs;
 
         //game time
         if (m_simulationTickDeltaOverride > AZ::Time::ZeroTimeUs)
         {
             m_simulationTickDeltaTimeUs = m_simulationTickDeltaOverride;
-            m_lastSimulationTickTimeUs = m_simulationTickDeltaTimeUs;
+            m_lastSimulationTickTimeUs = currentTimeUs;
             return m_simulationTickDeltaTimeUs;
         }
 
