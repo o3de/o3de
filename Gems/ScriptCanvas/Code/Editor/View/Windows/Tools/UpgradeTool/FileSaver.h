@@ -33,6 +33,9 @@ namespace ScriptCanvasEditor
             void Save(const SourceHandle& source);
 
         private:
+            AZStd::mutex m_mutex;
+
+            bool m_sourceFileReleased = false;
             SourceHandle m_source;
             AZStd::function<void(const FileSaveResult& result)> m_onComplete;
             AZStd::function<bool()> m_onReadOnlyFile;

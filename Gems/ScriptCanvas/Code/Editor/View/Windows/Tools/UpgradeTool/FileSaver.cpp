@@ -221,10 +221,16 @@ namespace ScriptCanvasEditor
             {
                 auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
                 AZ::IO::FileRequestPtr flushRequest = streamer->FlushCache(source.Path().c_str());
-                streamer->SetRequestCompleteCallback(flushRequest, [this, source]([[maybe_unused]] AZ::IO::FileRequestHandle request)
+                streamer->SetRequestCompleteCallback(flushRequest, [this]([[maybe_unused]] AZ::IO::FileRequestHandle request)
                 {
-                    this->OnSourceFileReleased(source);
+                    AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
+                    if (!m_sourceFileReleased)
+                    {
+                        m_sourceFileReleased = true;
+                        AZ::SystemTickBus::QueueFunction([this]() { this->OnSourceFileReleased(m_source); });
+                    }
                 });
+
                 streamer->QueueRequest(flushRequest);
             }
         }

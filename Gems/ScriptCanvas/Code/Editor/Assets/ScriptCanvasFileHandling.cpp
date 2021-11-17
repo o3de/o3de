@@ -175,7 +175,7 @@ namespace ScriptCanvasEditor
         auto saveTarget = graphData->ModGraph();
         if (!saveTarget || !saveTarget->GetGraphData())
         {
-            return AZ::Failure(AZStd::string("source save container failed to return graph data"));
+            return AZ::Failure(AZStd::string("source save container failed to return serializable graph data"));
         }
 
         AZ::JsonSerializerSettings settings;
@@ -194,12 +194,8 @@ namespace ScriptCanvasEditor
         auto saveOutcome = JSRU::SaveObjectToStream<ScriptCanvas::ScriptCanvasData>(graphData, stream, nullptr, &settings);
         if (!saveOutcome.IsSuccess())
         {
-
-            Here is the allocation failure.
-
-                AZStd::string result = saveOutcome.TakeError();
-
-            return AZ::Failure(AZStd::string("JSON serialization failed to save source: %s", saveOutcome.GetError().c_str()));
+            AZStd::string result = saveOutcome.TakeError();
+            return AZ::Failure(AZStd::string("JSON serialization failed to save source: %s", result.c_str()));
         }
 
         return AZ::Success();

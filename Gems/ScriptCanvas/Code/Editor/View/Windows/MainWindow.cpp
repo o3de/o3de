@@ -1409,7 +1409,7 @@ namespace ScriptCanvasEditor
         AZ::Outcome<ScriptCanvasEditor::SourceHandle, AZStd::string> outcome = LoadFromFile(fullPath);
         if (!outcome.IsSuccess())
         {
-            QMessageBox::warning(this, "Invalid Source File", QString("'%1' is not a valid file path.").arg(fullPath), QMessageBox::Ok);
+            QMessageBox::warning(this, "Invalid Source File", QString("'%1' failed to load properly.").arg(fullPath), QMessageBox::Ok);
             m_errorFilePath = fullPath;
             AZ_Warning("ScriptCanvas", false, "Unable to open file as a ScriptCanvas graph: %s", fullPath);
             return;
