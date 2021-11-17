@@ -881,6 +881,7 @@ namespace ScriptCanvasEditor
 
     void NodePaletteModel::RepopulateModel()
     {
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         ClearRegistry();
 
         PopulateNodePaletteModel((*this));
