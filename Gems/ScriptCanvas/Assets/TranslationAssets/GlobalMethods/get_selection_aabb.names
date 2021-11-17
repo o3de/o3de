@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "get_selection_aabb",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "get_selection_aabb",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke get_selection_aabb"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after get_selection_aabb is invoked"
+                    },
+                    "details": {
+                        "name": "get_selection_aabb",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

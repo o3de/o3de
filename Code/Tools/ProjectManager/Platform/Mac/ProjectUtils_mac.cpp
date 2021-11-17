@@ -11,6 +11,9 @@
 #include <QStandardPaths>
 #include <QDir>
 
+#include <AzCore/Utils/Utils.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+
 namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
@@ -103,6 +106,41 @@ namespace O3DE::ProjectManager
                 {},
                 QProcessEnvironment::systemEnvironment(),
                 QObject::tr("Running get_python script..."));
+        }
+
+        AZ::IO::FixedMaxPath GetEditorDirectory()
+        {
+            AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
+            AZ::IO::FixedMaxPath editorPath{ executableDirectory };
+            editorPath /= "../../../Editor.app/Contents/MacOS";
+            editorPath = editorPath.LexicallyNormal();
+            if (!AZ::IO::SystemFile::IsDirectory(editorPath.c_str()))
+            {
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    if (AZ::IO::FixedMaxPath installedBinariesPath;
+                        settingsRegistry->Get(installedBinariesPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_InstalledBinaryFolder))
+                    {
+                        if (AZ::IO::FixedMaxPath engineRootFolder;
+                            settingsRegistry->Get(engineRootFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
+                        {
+                            editorPath = engineRootFolder / installedBinariesPath / "Editor.app/Contents/MacOS";
+                        }
+                    }
+                }
+
+                if (!AZ::IO::SystemFile::IsDirectory(editorPath.c_str()))
+                {
+                    AZ_Error("ProjectManager", false, "Unable to find the Editor app bundle!");
+                }
+            }
+
+            return editorPath;
+        }
+
+        AZ::Outcome<QString, QString> CreateDesktopShortcut([[maybe_unused]] const QString& filename, [[maybe_unused]] const QString& targetPath, [[maybe_unused]] const QStringList& arguments)
+        {
+            return AZ::Failure(QObject::tr("Creating desktop shortcuts functionality not implemented for this platform yet."));
         }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

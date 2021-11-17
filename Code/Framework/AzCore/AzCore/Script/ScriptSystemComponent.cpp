@@ -88,6 +88,8 @@ void ScriptSystemComponent::Activate()
 
     AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension, "lua");
     AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension, "luac");
+    AZ::Data::AssetCatalogRequestBus::Broadcast(
+        &AZ::Data::AssetCatalogRequests::EnableCatalogForAsset, AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid());
 
     if (Data::AssetManager::Instance().IsReady())
     {

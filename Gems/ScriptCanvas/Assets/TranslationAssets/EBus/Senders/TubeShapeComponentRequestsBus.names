@@ -1,0 +1,146 @@
+{
+    "entries": [
+        {
+            "key": "TubeShapeComponentRequestsBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "TubeShapeComponentRequestsBus"
+            },
+            "methods": [
+                {
+                    "key": "GetVariableRadius",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetVariableRadius"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetVariableRadius is invoked"
+                    },
+                    "details": {
+                        "name": "GetVariableRadius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetVariableRadius",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetVariableRadius"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetVariableRadius is invoked"
+                    },
+                    "details": {
+                        "name": "SetVariableRadius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetRadius",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetRadius"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetRadius is invoked"
+                    },
+                    "details": {
+                        "name": "SetRadius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetRadius",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetRadius"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetRadius is invoked"
+                    },
+                    "details": {
+                        "name": "GetRadius"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTotalRadius",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTotalRadius"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTotalRadius is invoked"
+                    },
+                    "details": {
+                        "name": "GetTotalRadius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{865BA2EC-43C5-4E1F-9B6F-2D63F6DC2E70}",
+                            "details": {
+                                "name": "SplineAddress"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

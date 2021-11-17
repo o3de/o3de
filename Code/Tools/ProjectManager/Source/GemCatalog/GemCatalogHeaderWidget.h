@@ -24,6 +24,7 @@ QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QHBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QHideEvent)
 QT_FORWARD_DECLARE_CLASS(QMoveEvent)
+QT_FORWARD_DECLARE_CLASS(QMovie)
 
 namespace O3DE::ProjectManager
 {
@@ -34,9 +35,15 @@ namespace O3DE::ProjectManager
 
     public:
         CartOverlayWidget(GemModel* gemModel, DownloadController* downloadController, QWidget* parent = nullptr);
+        ~CartOverlayWidget();
+
+    public slots:
+        void GemDownloadAdded(const QString& gemName);
+        void GemDownloadRemoved(const QString& gemName);
+        void GemDownloadProgress(const QString& gemName, int bytesDownloaded, int totalBytes);
 
     private:
-        QStringList ConvertFromModelIndices(const QVector<QModelIndex>& gems) const;
+        QVector<Tag> GetTagsFromModelIndices(const QVector<QModelIndex>& gems) const;
 
         using GetTagIndicesCallback = AZStd::function<QVector<QModelIndex>()>;
         void CreateGemSection(const QString& singularTitle, const QString& pluralTitle, GetTagIndicesCallback getTagIndices);
@@ -46,6 +53,9 @@ namespace O3DE::ProjectManager
         QVBoxLayout* m_layout = nullptr;
         GemModel* m_gemModel = nullptr;
         DownloadController* m_downloadController = nullptr;
+
+        QWidget* m_downloadSectionWidget = nullptr;
+        QWidget* m_downloadingListWidget = nullptr;
 
         inline constexpr static int s_width = 240;
     };
@@ -86,12 +96,22 @@ namespace O3DE::ProjectManager
 
         void ReinitForProject();
 
+    public slots:
+        void GemDownloadAdded(const QString& gemName);
+        void GemDownloadRemoved(const QString& gemName);
+
     signals:
         void AddGem();
         void OpenGemsRepo();
+        void RefreshGems();
         
     private:
         AzQtComponents::SearchLineEdit* m_filterLineEdit = nullptr;
         inline constexpr static int s_height = 60;
+        DownloadController* m_downloadController = nullptr;
+        QLabel* m_downloadSpinner = nullptr;
+        QLabel* m_downloadLabel = nullptr;
+        QMovie* m_downloadSpinnerMovie = nullptr;
+        CartButton* m_cartButton = nullptr;
     };
 } // namespace O3DE::ProjectManager

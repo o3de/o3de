@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "set_active_viewport",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "set_active_viewport",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke set_active_viewport"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after set_active_viewport is invoked"
+                    },
+                    "details": {
+                        "name": "set_active_viewport",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

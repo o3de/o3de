@@ -39,53 +39,58 @@ namespace AzFramework
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
-        //! \param[in] name Name of the input channel (will be ignored if exceeds MAX_NAME_LENGTH)
+        //! \param[in] name Name of the input channel (will be truncated if exceeds MAX_NAME_LENGTH)
         explicit constexpr InputChannelId(AZStd::string_view name = "")
-            : m_name(name)
-            , m_crc32(name)
+            : m_name(name.substr(0, MAX_NAME_LENGTH))
+            , m_crc32(name.substr(0, MAX_NAME_LENGTH))
         {
         }
 
-        constexpr InputChannelId(const InputChannelId& other) = default;
-        constexpr InputChannelId(InputChannelId&& other) = default;
-        constexpr InputChannelId& operator=(const InputChannelId& other)
-        {
-            m_name = other.m_name;
-            m_crc32 = other.m_crc32;
-            return *this;
-        }
-        constexpr InputChannelId& operator=(InputChannelId&& other)
-        {
-            m_name = AZStd::move(other.m_name);
-            m_crc32 = AZStd::move(other.m_crc32);
-            other.m_crc32 = 0;
-            return *this;
-        }
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        // Default copying and moving
+        AZ_DEFAULT_COPY_MOVE(InputChannelId);
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Default destructor
         ~InputChannelId() = default;
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Access to the input channel's name
         //! \return Name of the input channel
-        const char* GetName() const;
+        constexpr const char* GetName() const
+        {
+            return m_name.c_str();
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Access to the crc32 of the input channel's name
         //! \return crc32 of the input channel name
-        const AZ::Crc32& GetNameCrc32() const;
+        constexpr const AZ::Crc32& GetNameCrc32() const
+        {
+            return m_crc32;
+        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////
-        ///@{
         //! Equality comparison operator
         //! \param[in] other Another instance of the class to compare for equality
-        bool operator==(const InputChannelId& other) const;
-        bool operator!=(const InputChannelId& other) const;
-        ///@}
+        constexpr bool operator==(const InputChannelId& other) const
+        {
+            return m_crc32 == other.m_crc32;
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        //! Inequality comparison operator
+        //! \param[in] other Another instance of the class to compare for inequality
+        constexpr bool operator!=(const InputChannelId& other) const
+        {
+            return !(*this == other);
+        }
 
     private:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Variables
         AZStd::fixed_string<MAX_NAME_LENGTH> m_name; //!< Name of the input channel
-        AZ::Crc32 m_crc32;                  //!< Crc32 of the input channel
+        AZ::Crc32 m_crc32; //!< Crc32 of the input channel name
     };
 } // namespace AzFramework
 

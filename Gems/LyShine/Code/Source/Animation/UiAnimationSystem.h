@@ -12,6 +12,7 @@
 #include <LyShine/Animation/IUiAnimation.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/map.h>
+#include <AzCore/Time/ITime.h>
 
 struct PlayingUIAnimSequence
 {
@@ -164,7 +165,7 @@ private:
 
     IUiAnimationCallback* m_pCallback;
 
-    CTimeValue m_lastUpdateTime;
+    AZ::TimeUs m_lastUpdateTime;
 
     using Sequences = AZStd::vector<AZStd::intrusive_ptr<IUiAnimSequence> >;
     Sequences m_sequences;

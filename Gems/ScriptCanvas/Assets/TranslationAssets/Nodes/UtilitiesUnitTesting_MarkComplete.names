@@ -1,0 +1,35 @@
+{
+    "entries": [
+        {
+            "key": "{DC0BCFE9-3066-4232-AA68-AAFB206C917F}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Mark Complete",
+                "category": "Utilities/Unit Testing",
+                "tooltip": "reports that the graph completed to the unit testing framework"
+            },
+            "slots": [
+                {
+                    "key": "DataInput_Report",
+                    "details": {
+                        "name": "Report"
+                    }
+                },
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                }
+            ]
+        }
+    ]
+}

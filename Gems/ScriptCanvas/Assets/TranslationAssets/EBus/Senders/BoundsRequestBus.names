@@ -1,0 +1,58 @@
+{
+    "entries": [
+        {
+            "key": "BoundsRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "BoundsRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "GetWorldBounds",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetWorldBounds"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetWorldBounds is invoked"
+                    },
+                    "details": {
+                        "name": "GetWorldBounds"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetLocalBounds",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetLocalBounds"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetLocalBounds is invoked"
+                    },
+                    "details": {
+                        "name": "GetLocalBounds"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "Aabb"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

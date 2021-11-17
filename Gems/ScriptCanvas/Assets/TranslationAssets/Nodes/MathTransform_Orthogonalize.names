@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "key": "{0CF20F04-C784-546B-80FB-0A705BB3D25A}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Orthogonalize",
+                "category": "Math/Transform",
+                "tooltip": "Returns an orthogonal matrix if the Source is almost orthogonal"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

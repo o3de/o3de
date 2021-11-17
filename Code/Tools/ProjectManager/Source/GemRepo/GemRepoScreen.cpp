@@ -52,6 +52,11 @@ namespace O3DE::ProjectManager
         Reinit();
     }
 
+    void GemRepoScreen::NotifyCurrentScreen()
+    {
+        Reinit();
+    }
+
     void GemRepoScreen::Reinit()
     {
         m_gemRepoModel->clear();
@@ -70,7 +75,7 @@ namespace O3DE::ProjectManager
         // Select the first entry after everything got correctly sized
         QTimer::singleShot(200, [=]{
             QModelIndex firstModelIndex = m_gemRepoListView->model()->index(0,0);
-            m_gemRepoListView->selectionModel()->select(firstModelIndex, QItemSelectionModel::ClearAndSelect);
+            m_gemRepoListView->selectionModel()->setCurrentIndex(firstModelIndex, QItemSelectionModel::ClearAndSelect);
         });
     }
 
@@ -91,6 +96,7 @@ namespace O3DE::ProjectManager
             if (addGemRepoResult)
             {
                 Reinit();
+                emit OnRefresh();
             }
             else
             {
@@ -116,6 +122,7 @@ namespace O3DE::ProjectManager
             if (removeGemRepoResult)
             {
                 Reinit();
+                emit OnRefresh();
             }
             else
             {
@@ -130,6 +137,7 @@ namespace O3DE::ProjectManager
     {
         bool refreshResult = PythonBindingsInterface::Get()->RefreshAllGemRepos();
         Reinit();
+        emit OnRefresh();
 
         if (!refreshResult)
         {
@@ -146,6 +154,7 @@ namespace O3DE::ProjectManager
         if (refreshResult.IsSuccess())
         {
             Reinit();
+            emit OnRefresh();
         }
         else
         {
@@ -289,23 +298,22 @@ namespace O3DE::ProjectManager
         m_gemRepoHeaderTable->setObjectName("gemRepoHeaderTable");
         m_gemRepoListHeader = m_gemRepoHeaderTable->horizontalHeader();
         m_gemRepoListHeader->setObjectName("gemRepoListHeader");
+        m_gemRepoListHeader->setDefaultAlignment(Qt::AlignLeft);
         m_gemRepoListHeader->setSectionResizeMode(QHeaderView::ResizeMode::Fixed);
 
         // Insert columns so the header labels will show up
         m_gemRepoHeaderTable->insertColumn(0);
         m_gemRepoHeaderTable->insertColumn(1);
         m_gemRepoHeaderTable->insertColumn(2);
-        m_gemRepoHeaderTable->insertColumn(3);
-        m_gemRepoHeaderTable->setHorizontalHeaderLabels({ tr("Enabled"), tr("Repository Name"), tr("Creator"), tr("Updated") });
+        m_gemRepoHeaderTable->setHorizontalHeaderLabels({ tr("Repository Name"), tr("Creator"), tr("Updated") });
 
-        const int headerExtraMargin = 10;
-        m_gemRepoListHeader->resizeSection(0, GemRepoItemDelegate::s_buttonWidth + GemRepoItemDelegate::s_buttonSpacing - 3);
-        m_gemRepoListHeader->resizeSection(1, GemRepoItemDelegate::s_nameMaxWidth + GemRepoItemDelegate::s_contentSpacing - headerExtraMargin);
-        m_gemRepoListHeader->resizeSection(2, GemRepoItemDelegate::s_creatorMaxWidth + GemRepoItemDelegate::s_contentSpacing - headerExtraMargin);
-        m_gemRepoListHeader->resizeSection(3, GemRepoItemDelegate::s_updatedMaxWidth + GemRepoItemDelegate::s_contentSpacing - headerExtraMargin);
+        const int headerExtraMargin = 18;
+        m_gemRepoListHeader->resizeSection(0, GemRepoItemDelegate::s_nameMaxWidth + GemRepoItemDelegate::s_contentSpacing + headerExtraMargin);
+        m_gemRepoListHeader->resizeSection(1, GemRepoItemDelegate::s_creatorMaxWidth + GemRepoItemDelegate::s_contentSpacing);
+        m_gemRepoListHeader->resizeSection(2, GemRepoItemDelegate::s_updatedMaxWidth + GemRepoItemDelegate::s_contentSpacing);
 
         // Required to set stylesheet in code as it will not be respected if set in qss
-        m_gemRepoHeaderTable->horizontalHeader()->setStyleSheet("QHeaderView::section { background-color:transparent; color:white; font-size:12px; text-align:left; border-style:none; }");
+        m_gemRepoHeaderTable->horizontalHeader()->setStyleSheet("QHeaderView::section { background-color:transparent; color:white; font-size:12px; border-style:none; }");
         middleVLayout->addWidget(m_gemRepoHeaderTable);
 
         m_gemRepoListView = new GemRepoListView(m_gemRepoModel, m_gemRepoModel->GetSelectionModel(), this);

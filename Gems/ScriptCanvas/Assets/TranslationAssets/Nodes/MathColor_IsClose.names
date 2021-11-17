@@ -1,0 +1,53 @@
+{
+    "entries": [
+        {
+            "key": "{629BABFE-B9D2-5D29-BCC1-3E5CBDD7CAA4}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Is Close",
+                "category": "Math/Color",
+                "tooltip": "Returns true if A is within Tolerance of B, else false",
+                "subtitle": "Color"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Color: A",
+                    "details": {
+                        "name": "First"
+                    }
+                },
+                {
+                    "key": "DataInput_Color: B",
+                    "details": {
+                        "name": "Second"
+                    }
+                },
+                {
+                    "key": "DataInput_Number: Tolerance",
+                    "details": {
+                        "name": "Tolerance"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result: Boolean",
+                    "details": {
+                        "name": "Is Close"
+                    }
+                }
+            ]
+        }
+    ]
+}

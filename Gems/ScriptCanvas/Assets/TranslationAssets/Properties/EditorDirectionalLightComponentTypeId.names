@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorDirectionalLightComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorDirectionalLightComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "UiSliderNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Slider",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "OnSliderValueChanging",
+                    "details": {
+                        "name": "On Slider Value Changing",
+                        "tooltip": "Executes when the slider value is changing"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Slider Value",
+                                "tooltip": "The new slider value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnSliderValueChanged",
+                    "details": {
+                        "name": "On Slider Value Changed",
+                        "tooltip": "Executes when the slider value has finished changing"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Slider Value",
+                                "tooltip": "The new slider value"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

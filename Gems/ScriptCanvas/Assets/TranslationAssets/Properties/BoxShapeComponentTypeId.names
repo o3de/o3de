@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "BoxShapeComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "BoxShapeComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

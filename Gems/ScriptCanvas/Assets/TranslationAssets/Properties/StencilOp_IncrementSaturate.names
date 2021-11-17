@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "StencilOp_IncrementSaturate",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "StencilOp_IncrementSaturate::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

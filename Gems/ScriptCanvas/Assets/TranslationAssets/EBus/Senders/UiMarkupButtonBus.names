@@ -1,0 +1,109 @@
+{
+    "entries": [
+        {
+            "key": "UiMarkupButtonBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiMarkupButtonBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "GetLinkColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Link Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Link Color is invoked"
+                    },
+                    "details": {
+                        "name": "Get Link Color",
+                        "tooltip": "Gets the normal color of the clickable links"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLinkColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Link Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Link Color is invoked"
+                    },
+                    "details": {
+                        "name": "Set Link Color",
+                        "tooltip": "Sets the normal color of the clickable links"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color",
+                                "tooltip": "The normal color for the clickable links"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetLinkHoverColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Link Hover Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Link Hover Color is invoked"
+                    },
+                    "details": {
+                        "name": "Get Link Hover Color",
+                        "tooltip": "Gets the hovered color of the clickable links"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLinkHoverColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Link Hover Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Link Hover Color is invoked"
+                    },
+                    "details": {
+                        "name": "Set Link Hover Color",
+                        "tooltip": "Sets the hovered color of the clickable links"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color",
+                                "tooltip": "The hovered color for the clickable links"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -11,4 +11,5 @@ set(FILES
     Source/${Name}ModuleInterface.h
     Source/${Name}EditorSystemComponent.cpp
     Source/${Name}EditorSystemComponent.h
+    Source/${Name}.qrc
 )

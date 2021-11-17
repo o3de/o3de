@@ -79,11 +79,6 @@ namespace Multiplayer
         }
     }
 
-    inline double ConvertTimeMsToSeconds(AZ::TimeMs value)
-    {
-        return static_cast<double>(static_cast<AZ::TimeMs>(value)) / 1000.0;
-    }
-
     void LocalPredictionPlayerInputComponent::LocalPredictionPlayerInputComponent::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -175,7 +170,7 @@ namespace Multiplayer
         }
 
         const AZ::TimeMs currentTimeMs = AZ::GetElapsedTimeMs();
-        const double clientInputRateSec = ConvertTimeMsToSeconds(cl_InputRateMs);
+        const double clientInputRateSec = AZ::TimeMsToSecondsDouble(cl_InputRateMs);
         m_lastInputReceivedTimeMs = currentTimeMs;
 
         // Keep track of last inputs received, also allows us to update frame ids
@@ -292,7 +287,7 @@ namespace Multiplayer
             return;
         }
 
-        const double clientInputRateSec = ConvertTimeMsToSeconds(cl_InputRateMs);
+        const double clientInputRateSec = AZ::TimeMsToSecondsDouble(cl_InputRateMs);
 
         // Copy array so we can modify input ids
         NetworkInputMigrationVector inputArrayCopy = inputArray;
@@ -377,8 +372,15 @@ namespace Multiplayer
                 AZLOG_INFO("Received correction that is too old to diff, increase cl_PredictiveStateHistorySize");
             }
 #endif
-        }
+		}
 
+        const uint32_t inputHistorySize = static_cast<uint32_t>(m_inputHistory.Size());
+        const uint32_t historicalDelta = aznumeric_cast<uint32_t>(m_clientInputId - inputId); // Do not replay the move we just corrected, that was already processed by the server
+
+        // If this correction is for a move outside our input history window, just start replaying from the oldest move we have available
+        const uint32_t startReplayIndex = (inputHistorySize > historicalDelta) ? (inputHistorySize - historicalDelta) : 0;
+
+        const double clientInputRateSec = AZ::TimeMsToSecondsDouble(cl_InputRateMs);
         for (uint32_t replayIndex = startReplayIndex; replayIndex < inputHistorySize; ++replayIndex)
         {
             // Reprocess the input for this frame
@@ -459,9 +461,9 @@ namespace Multiplayer
 
     void LocalPredictionPlayerInputComponentController::UpdateAutonomous(AZ::TimeMs deltaTimeMs)
     {
-        const double deltaTime = ConvertTimeMsToSeconds(deltaTimeMs);
-        const double clientInputRateSec = ConvertTimeMsToSeconds(cl_InputRateMs);
-        const double maxRewindHistory = ConvertTimeMsToSeconds(cl_MaxRewindHistoryMs);
+        const double deltaTime = AZ::TimeMsToSecondsDouble(deltaTimeMs);
+        const double clientInputRateSec = AZ::TimeMsToSecondsDouble(cl_InputRateMs);
+        const double maxRewindHistory = AZ::TimeMsToSecondsDouble(cl_MaxRewindHistoryMs);
 
 #ifndef AZ_RELEASE_BUILD
         m_moveAccumulator += deltaTime * cl_DebugHackTimeMultiplier;

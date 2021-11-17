@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "BlendOp_Subtract",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "BlendOp_Subtract::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

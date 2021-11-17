@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "JsonPatch",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "JsonPatch::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

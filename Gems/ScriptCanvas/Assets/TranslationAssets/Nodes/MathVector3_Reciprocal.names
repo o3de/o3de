@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "key": "{E90663EA-FFD1-5908-8530-3C21BD6A9A62}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Reciprocal",
+                "category": "Math/Vector3",
+                "tooltip": "Returns the vector (1/x, 1/y, 1/z) with elements from Source"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

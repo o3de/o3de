@@ -608,7 +608,7 @@ bool CObjectManager::AddObject(CBaseObject* obj)
         if (CEntityObject* entityObj = qobject_cast<CEntityObject*>(obj))
         {
             CEntityObject::EAttachmentType attachType = entityObj->GetAttachType();
-            if (attachType == CEntityObject::EAttachmentType::eAT_GeomCacheNode || attachType == CEntityObject::EAttachmentType::eAT_CharacterBone)
+            if (attachType == CEntityObject::EAttachmentType::eAT_CharacterBone)
             {
                 m_animatedAttachedEntities.insert(entityObj);
             }
@@ -1488,11 +1488,7 @@ bool CObjectManager::HitTestObject(CBaseObject* obj, HitContext& hc)
     if (!bSelectionHelperHit)
     {
         // Fast checking.
-        if (hc.camera && !obj->IsInCameraView(*hc.camera))
-        {
-            return false;
-        }
-        else if (hc.bounds && !obj->IntersectRectBounds(*hc.bounds))
+        if (hc.bounds && !obj->IntersectRectBounds(*hc.bounds))
         {
             return false;
         }

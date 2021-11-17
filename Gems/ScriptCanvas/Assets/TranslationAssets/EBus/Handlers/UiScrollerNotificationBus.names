@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "UiScrollerNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Scroller",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "OnScrollerValueChanging",
+                    "details": {
+                        "name": "On Scroller Value Changing",
+                        "tooltip": "Executes when the scroller value is changing"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Scroller Value",
+                                "tooltip": "The new scroller value [0-1]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnScrollerValueChanged",
+                    "details": {
+                        "name": "On Scroller Value Changed",
+                        "tooltip": "Executes when the scroller value has changed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Scroller Value",
+                                "tooltip": "The new scroller value [0-1]"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

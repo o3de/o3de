@@ -69,17 +69,13 @@ class ViewEditController(QObject):
         json_dict: Dict[str, any] = \
             json_utils.convert_resources_to_json_dict(self._proxy_model.get_resources(), self._config_file_json_source)
 
-        configuration: Configuration = self._configuration_manager.configuration
-        if json_dict.get(json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME) == \
-                json_utils.RESOURCE_MAPPING_ACCOUNTID_TEMPLATE_VALUE:
-            json_dict[json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME] = configuration.account_id
-
         if json_dict == self._config_file_json_source:
             # skip because no difference found against existing json file
             return True
 
         # try to write in memory json content into json file
         try:
+            configuration: Configuration = self._configuration_manager.configuration
             config_file_full_path: str = file_utils.join_path(configuration.config_directory, config_file_name)
             json_utils.write_into_json_file(config_file_full_path, json_dict)
             self._config_file_json_source = json_dict

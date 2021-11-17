@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DitherGradientComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DitherGradientComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

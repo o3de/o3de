@@ -1,0 +1,62 @@
+{
+    "entries": [
+        {
+            "key": "UiImageSequenceBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiImageSequenceBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "GetImageType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Image Type"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Image Type is invoked"
+                    },
+                    "details": {
+                        "name": "Get Image Type",
+                        "tooltip": "Gets the image type of the image sequence"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetImageType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Image Type"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Image Type is invoked"
+                    },
+                    "details": {
+                        "name": "Set Image Type",
+                        "tooltip": "Sets the image type of the image sequence"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Image Type",
+                                "tooltip": "The image type (0 = Stretched, 1 = Fixed, 2 = Stretched To Fit, 3 = Stretched To Fill)"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,52 @@
+{
+    "entries": [
+        {
+            "key": "BlendShapeDataFace",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "BlendShapeDataFace"
+            },
+            "methods": [
+                {
+                    "key": "GetVertexIndex",
+                    "context": "BlendShapeDataFace",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetVertexIndex"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetVertexIndex is invoked"
+                    },
+                    "details": {
+                        "name": "BlendShapeDataFace::GetVertexIndex",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C972EC9A-3A5C-47CD-9A92-ECB4C0C0451C}",
+                            "details": {
+                                "name": "const SceneAPI::DataTypes::IBlendShapeData::Face&"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

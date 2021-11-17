@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ShadowFilterMethod_ESM",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ShadowFilterMethod_ESM::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

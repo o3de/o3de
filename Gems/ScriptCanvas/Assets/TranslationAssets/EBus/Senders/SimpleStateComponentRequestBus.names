@@ -1,0 +1,169 @@
+{
+    "entries": [
+        {
+            "key": "SimpleStateComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "SimpleStateComponentRequestBus",
+                "category": "Gameplay"
+            },
+            "methods": [
+                {
+                    "key": "GetNumStates",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get State Count"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get State Count is invoked"
+                    },
+                    "details": {
+                        "name": "Get State Count",
+                        "tooltip": "Returns the number of states"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetToLastState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set To Last"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set To Last is invoked"
+                    },
+                    "details": {
+                        "name": "Set To Last",
+                        "tooltip": "Sets to the last state in the state list"
+                    }
+                },
+                {
+                    "key": "SetToPreviousState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set To Previous"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set To Previous is invoked"
+                    },
+                    "details": {
+                        "name": "Set To Previous",
+                        "tooltip": "Sets to the previous state in the state list from the current state"
+                    }
+                },
+                {
+                    "key": "SetToFirstState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set To First"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set To First is invoked"
+                    },
+                    "details": {
+                        "name": "Set To First",
+                        "tooltip": "Sets to the first state in the state list"
+                    }
+                },
+                {
+                    "key": "SetToNextState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set To Next"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set To Next is invoked"
+                    },
+                    "details": {
+                        "name": "Set To Next",
+                        "tooltip": "Sets to the next state in the state list from the current state"
+                    }
+                },
+                {
+                    "key": "SetStateByIndex",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set State by Index"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set State by Index is invoked"
+                    },
+                    "details": {
+                        "name": "Set State by Index",
+                        "tooltip": "Sets the state by index"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Index",
+                                "tooltip": "State index"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set State is invoked"
+                    },
+                    "details": {
+                        "name": "Set State",
+                        "tooltip": "Sets the state by name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Name",
+                                "tooltip": "State name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCurrentState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Current State"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Current State is invoked"
+                    },
+                    "details": {
+                        "name": "Get Current State",
+                        "tooltip": "Gets the current state name"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "key": "{BC6D613C-CBE5-5B01-9207-16D0B158799D}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "From Matrix3x3",
+                "category": "Math/Transform",
+                "tooltip": "Returns a transform with from 3x3 matrix and with the translation set to zero"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

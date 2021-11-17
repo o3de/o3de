@@ -1,0 +1,52 @@
+{
+    "entries": [
+        {
+            "key": "{F14339D1-DB1C-584F-A91E-2D10D29255DF}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Clamp",
+                "category": "Math/Vector3",
+                "tooltip": "Returns vector clamped to [min, max] and equal to source if possible"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "key": "DataInput_Min",
+                    "details": {
+                        "name": "Min"
+                    }
+                },
+                {
+                    "key": "DataInput_Max",
+                    "details": {
+                        "name": "Max"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

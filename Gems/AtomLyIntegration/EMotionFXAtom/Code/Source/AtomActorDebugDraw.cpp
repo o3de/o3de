@@ -11,6 +11,7 @@
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Integration/Rendering/RenderActorInstance.h>
+#include <Integration/Rendering/RenderActorSettings.h>
 
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/DebugDraw.h>
@@ -40,16 +41,24 @@ namespace AZ::Render
             return;
         }
 
+        const AZ::Render::RenderActorSettings& renderActorSettings = EMotionFX::GetRenderActorSettings();
+
         // Render aabb
         if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_AABB])
         {
-            RenderAABB(instance);
+            RenderAABB(instance, renderActorSettings.m_staticAABBColor);
         }
 
-        // Render skeleton
+        // Render simple line skeleton
         if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_LINESKELETON])
         {
-            RenderSkeleton(instance);
+            RenderLineSkeleton(instance, renderActorSettings.m_lineSkeletonColor);
+        }
+
+        // Render advance skeleton
+        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_SKELETON])
+        {
+            RenderSkeleton(instance, renderActorSettings.m_skeletonColor);
         }
 
         // Render internal EMFX debug lines.
@@ -70,6 +79,7 @@ namespace AZ::Render
             const EMotionFX::Pose* pose = instance->GetTransformData()->GetCurrentPose();
             const size_t geomLODLevel = instance->GetLODLevel();
             const size_t numEnabled = instance->GetNumEnabledNodes();
+            const float scaleMultiplier = CalculateScaleMultiplier(instance);
             for (size_t i = 0; i < numEnabled; ++i)
             {
                 EMotionFX::Node* node = instance->GetActor()->GetSkeleton()->GetNode(instance->GetEnabledNode(i));
@@ -83,17 +93,50 @@ namespace AZ::Render
                     continue;
                 }
 
-                RenderNormals(mesh, globalTM, renderVertexNormals, renderFaceNormals);
+                RenderNormals(mesh, globalTM, renderVertexNormals, renderFaceNormals, renderActorSettings.m_vertexNormalsScale,
+                    renderActorSettings.m_faceNormalsScale, scaleMultiplier, renderActorSettings.m_vertexNormalsColor, renderActorSettings.m_faceNormalsColor);
                 if (renderTangents)
                 {
-                    RenderTangents(mesh, globalTM);
+                    RenderTangents(mesh, globalTM, renderActorSettings.m_tangentsScale, scaleMultiplier,
+                        renderActorSettings.m_tangentsColor, renderActorSettings.m_mirroredBitangentsColor, renderActorSettings.m_bitangentsColor);
                 }
                 if (renderWireframe)
                 {
-                    RenderWireframe(mesh, globalTM);
+                    RenderWireframe(mesh, globalTM, renderActorSettings.m_wireframeScale, scaleMultiplier, renderActorSettings.m_wireframeColor);
                 }
             }
         }
+    }
+
+    float AtomActorDebugDraw::CalculateScaleMultiplier(EMotionFX::ActorInstance* instance) const
+    {
+        const AZ::Aabb aabb = instance->GetAabb();
+        const float aabbRadius = aabb.GetExtents().GetLength() * 0.5f;
+        // Scale the multiplier down to 1% of the character size, that looks pretty nice on most of the models.
+        return aabbRadius * 0.01f;
+    }
+
+    float AtomActorDebugDraw::CalculateBoneScale(EMotionFX::ActorInstance* actorInstance, EMotionFX::Node* node)
+    {
+        // Get the transform data
+        EMotionFX::TransformData* transformData = actorInstance->GetTransformData();
+        const EMotionFX::Pose* pose = transformData->GetCurrentPose();
+
+        const size_t nodeIndex = node->GetNodeIndex();
+        const size_t parentIndex = node->GetParentIndex();
+        const AZ::Vector3 nodeWorldPos = pose->GetWorldSpaceTransform(nodeIndex).m_position;
+
+        if (parentIndex != InvalidIndex)
+        {
+            const AZ::Vector3 parentWorldPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
+            const AZ::Vector3 bone = parentWorldPos - nodeWorldPos;
+            const float boneLength = bone.GetLengthEstimate();
+
+            // 10% of the bone length is the sphere size
+            return boneLength * 0.1f;
+        }
+
+        return 0.0f;
     }
 
     void AtomActorDebugDraw::PrepareForMesh(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM)
@@ -124,14 +167,14 @@ namespace AZ::Render
         }
     }
 
-    void AtomActorDebugDraw::RenderAABB(EMotionFX::ActorInstance* instance)
+    void AtomActorDebugDraw::RenderAABB(EMotionFX::ActorInstance* instance, const AZ::Color& aabbColor)
     {
         RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
         const AZ::Aabb& aabb = instance->GetAabb();
-        auxGeom->DrawAabb(aabb, AZ::Color(0.0f, 1.0f, 1.0f, 1.0f), RPI::AuxGeomDraw::DrawStyle::Line);
+        auxGeom->DrawAabb(aabb, aabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
     }
 
-    void AtomActorDebugDraw::RenderSkeleton(EMotionFX::ActorInstance* instance)
+    void AtomActorDebugDraw::RenderLineSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor)
     {
         RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
 
@@ -166,7 +209,6 @@ namespace AZ::Render
             m_auxVertices.emplace_back(bonePos);
         }
 
-        const AZ::Color skeletonColor(0.604f, 0.804f, 0.196f, 1.0f);
         RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
         lineArgs.m_verts = m_auxVertices.data();
         lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
@@ -174,6 +216,42 @@ namespace AZ::Render
         lineArgs.m_colorCount = 1;
         lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
         auxGeom->DrawLines(lineArgs);
+    }
+
+    void AtomActorDebugDraw::RenderSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor)
+    {
+        RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
+
+        const EMotionFX::TransformData* transformData = instance->GetTransformData();
+        const EMotionFX::Skeleton* skeleton = instance->GetActor()->GetSkeleton();
+        const EMotionFX::Pose* pose = transformData->GetCurrentPose();
+        const size_t numEnabled = instance->GetNumEnabledNodes();
+        for (size_t i = 0; i < numEnabled; ++i)
+        {
+            EMotionFX::Node* joint = skeleton->GetNode(instance->GetEnabledNode(i));
+            const size_t jointIndex = joint->GetNodeIndex();
+            const size_t parentIndex = joint->GetParentIndex();
+
+            // check if this node has a parent and is a bone, if not skip it
+            if (parentIndex == InvalidIndex)
+            {
+                continue;
+            }
+
+            const AZ::Vector3 nodeWorldPos = pose->GetWorldSpaceTransform(jointIndex).m_position;
+            const AZ::Vector3 parentWorldPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
+            const AZ::Vector3 bone = parentWorldPos - nodeWorldPos;
+            const AZ::Vector3 boneDirection = bone.GetNormalizedEstimate();
+            const AZ::Vector3 centerWorldPos = bone / 2 + nodeWorldPos;
+            const float boneLength = bone.GetLengthEstimate();
+            const float boneScale = CalculateBoneScale(instance, joint);
+            const float parentBoneScale = CalculateBoneScale(instance, skeleton->GetNode(parentIndex));
+            const float cylinderSize = boneLength - boneScale - parentBoneScale;
+
+            // Render the bone cylinder, the cylinder will be directed towards the node's parent and must fit between the spheres
+            auxGeom->DrawCylinder(centerWorldPos, boneDirection, boneScale, cylinderSize, skeletonColor);
+            auxGeom->DrawSphere(nodeWorldPos, boneScale, skeletonColor);
+        }
     }
 
     void AtomActorDebugDraw::RenderEMFXDebugDraw(EMotionFX::ActorInstance* instance)
@@ -218,7 +296,16 @@ namespace AZ::Render
         auxGeom->DrawLines(lineArgs);
     }
 
-    void AtomActorDebugDraw::RenderNormals(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, bool vertexNormals, bool faceNormals)
+    void AtomActorDebugDraw::RenderNormals(
+        EMotionFX::Mesh* mesh,
+        const AZ::Transform& worldTM,
+        bool vertexNormals,
+        bool faceNormals,
+        float vertexNormalsScale,
+        float faceNormalsScale,
+        float scaleMultiplier,
+        const AZ::Color& vertexNormalsColor,
+        const AZ::Color& faceNormalsColor)
     {
         if (!mesh)
         {
@@ -235,12 +322,6 @@ namespace AZ::Render
         {
             return;
         }
-
-        // TODO: Move line color to a render setting.
-        const float faceNormalsScale = 0.01f;
-        const AZ::Color colorFaceNormals = AZ::Colors::Lime;
-        const float vertexNormalsScale = 0.01f;
-        const AZ::Color colorVertexNormals = AZ::Colors::Orange;
 
         PrepareForMesh(mesh, worldTM);
 
@@ -277,14 +358,14 @@ namespace AZ::Render
                     const AZ::Vector3 normalPos = (posA + posB + posC) * (1.0f / 3.0f);
 
                     m_auxVertices.emplace_back(normalPos);
-                    m_auxVertices.emplace_back(normalPos + (normalDir * faceNormalsScale));
+                    m_auxVertices.emplace_back(normalPos + (normalDir * faceNormalsScale * scaleMultiplier));
                 }
             }
 
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
             lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
-            lineArgs.m_colors = &colorFaceNormals;
+            lineArgs.m_colors = &faceNormalsColor;
             lineArgs.m_colorCount = 1;
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
             auxGeom->DrawLines(lineArgs);
@@ -307,24 +388,32 @@ namespace AZ::Render
                 {
                     const uint32 vertexIndex = j + startVertex;
                     const AZ::Vector3& position = m_worldSpacePositions[vertexIndex];
-                    const AZ::Vector3 normal = worldTM.TransformVector(normals[vertexIndex]).GetNormalizedSafe() * vertexNormalsScale;
+                    const AZ::Vector3 normal = worldTM.TransformVector(normals[vertexIndex]).GetNormalizedSafe() *
+                        vertexNormalsScale * scaleMultiplier;
 
                     m_auxVertices.emplace_back(position);
                     m_auxVertices.emplace_back(position + normal);
                 }
-            }
 
-            RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
-            lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
-            lineArgs.m_colors = &colorVertexNormals;
-            lineArgs.m_colorCount = 1;
-            lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
-            auxGeom->DrawLines(lineArgs);
+                RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
+                lineArgs.m_verts = m_auxVertices.data();
+                lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+                lineArgs.m_colors = &vertexNormalsColor;
+                lineArgs.m_colorCount = 1;
+                lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
+                auxGeom->DrawLines(lineArgs);
+            }
         }
     }
 
-    void AtomActorDebugDraw::RenderTangents(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM)
+    void AtomActorDebugDraw::RenderTangents(
+        EMotionFX::Mesh* mesh,
+        const AZ::Transform& worldTM,
+        float tangentsScale,
+        float scaleMultiplier,
+        const AZ::Color& tangentsColor,
+        const AZ::Color& mirroredBitangentsColor,
+        const AZ::Color& bitangentsColor)
     {
         if (!mesh)
         {
@@ -336,12 +425,6 @@ namespace AZ::Render
         {
             return;
         }
-
-        // TODO: Move line color to a render setting.
-        const AZ::Color colorTangents = AZ::Colors::Red;
-        const AZ::Color mirroredBitangentColor = AZ::Colors::Yellow;
-        const AZ::Color colorBitangents = AZ::Colors::White;
-        const float scale = 0.01f;
 
         // Get the tangents and check if this mesh actually has tangents
         AZ::Vector4* tangents = static_cast<AZ::Vector4*>(mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_TANGENTS));
@@ -380,23 +463,23 @@ namespace AZ::Render
             bitangent = (worldTM.TransformVector(bitangent)).GetNormalizedSafe();
 
             m_auxVertices.emplace_back(m_worldSpacePositions[i]);
-            m_auxColors.emplace_back(colorTangents);
-            m_auxVertices.emplace_back(m_worldSpacePositions[i] + (tangent * scale));
-            m_auxColors.emplace_back(colorTangents);
+            m_auxColors.emplace_back(tangentsColor);
+            m_auxVertices.emplace_back(m_worldSpacePositions[i] + (tangent * tangentsScale * scaleMultiplier));
+            m_auxColors.emplace_back(tangentsColor);
 
             if (tangents[i].GetW() < 0.0f)
             {
                 m_auxVertices.emplace_back(m_worldSpacePositions[i]);
-                m_auxColors.emplace_back(mirroredBitangentColor);
-                m_auxVertices.emplace_back(m_worldSpacePositions[i] + (bitangent * scale));
-                m_auxColors.emplace_back(mirroredBitangentColor);
+                m_auxColors.emplace_back(mirroredBitangentsColor);
+                m_auxVertices.emplace_back(m_worldSpacePositions[i] + (bitangent * tangentsScale * scaleMultiplier));
+                m_auxColors.emplace_back(mirroredBitangentsColor);
             }
             else
             {
                 m_auxVertices.emplace_back(m_worldSpacePositions[i]);
-                m_auxColors.emplace_back(colorBitangents);
-                m_auxVertices.emplace_back(m_worldSpacePositions[i] + (bitangent * scale));
-                m_auxColors.emplace_back(colorBitangents);
+                m_auxColors.emplace_back(bitangentsColor);
+                m_auxVertices.emplace_back(m_worldSpacePositions[i] + (bitangent * tangentsScale * scaleMultiplier));
+                m_auxColors.emplace_back(bitangentsColor);
             }
         }
 
@@ -409,7 +492,8 @@ namespace AZ::Render
         auxGeom->DrawLines(lineArgs);
     }
 
-    void AtomActorDebugDraw::RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM)
+    void AtomActorDebugDraw::RenderWireframe(
+        EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float wireframeScale, float scaleMultiplier, const AZ::Color& wireframeColor)
     {
         // Check if the mesh is valid and skip the node in case it's not
         if (!mesh)
@@ -425,10 +509,7 @@ namespace AZ::Render
 
         PrepareForMesh(mesh, worldTM);
 
-        const float scale = 0.01f;
-
         const AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
-        const AZ::Color vertexColor = AZ::Color(0.8f, 0.24f, 0.88f, 1.0f);
 
         const size_t numSubMeshes = mesh->GetNumSubMeshes();
         for (uint32 subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
@@ -448,9 +529,9 @@ namespace AZ::Render
                 const uint32 indexB = indices[triangleStartIndex + 1] + startVertex;
                 const uint32 indexC = indices[triangleStartIndex + 2] + startVertex;
 
-                const AZ::Vector3 posA = m_worldSpacePositions[indexA] + normals[indexA] * scale;
-                const AZ::Vector3 posB = m_worldSpacePositions[indexB] + normals[indexB] * scale;
-                const AZ::Vector3 posC = m_worldSpacePositions[indexC] + normals[indexC] * scale;
+                const AZ::Vector3 posA = m_worldSpacePositions[indexA] + normals[indexA] * wireframeScale * scaleMultiplier;
+                const AZ::Vector3 posB = m_worldSpacePositions[indexB] + normals[indexB] * wireframeScale * scaleMultiplier;
+                const AZ::Vector3 posC = m_worldSpacePositions[indexC] + normals[indexC] * wireframeScale * scaleMultiplier;
 
                 m_auxVertices.emplace_back(posA);
                 m_auxVertices.emplace_back(posB);
@@ -465,7 +546,7 @@ namespace AZ::Render
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
             lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
-            lineArgs.m_colors = &vertexColor;
+            lineArgs.m_colors = &wireframeColor;
             lineArgs.m_colorCount = 1;
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
             auxGeom->DrawLines(lineArgs);

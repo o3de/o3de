@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ShadowFilterMethod_None",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ShadowFilterMethod_None::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

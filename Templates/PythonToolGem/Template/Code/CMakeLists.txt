@@ -26,6 +26,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME ${Name}.Editor.Static STATIC
         NAMESPACE Gem
+        AUTORCC
         FILES_CMAKE
             ${NameLower}_editor_files.cmake
         INCLUDE_DIRECTORIES
@@ -52,6 +53,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 Gem::${Name}.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::QtForPython.Editor
     )
 
     # By default, we will specify that the above target ${Name} would be used by
