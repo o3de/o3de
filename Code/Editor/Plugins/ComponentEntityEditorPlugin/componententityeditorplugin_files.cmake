@@ -25,8 +25,6 @@ set(FILES
     UI/ComponentPalette/ComponentDataModel.h
     UI/ComponentPalette/ComponentDataModel.cpp
     UI/ComponentPalette/ComponentPaletteSettings.h
-    UI/ComponentPalette/FilteredComponentList.h
-    UI/ComponentPalette/FilteredComponentList.cpp
     UI/Outliner/OutlinerDisplayOptionsMenu.h
     UI/Outliner/OutlinerDisplayOptionsMenu.cpp
     UI/Outliner/OutlinerTreeView.hxx
