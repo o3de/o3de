@@ -99,6 +99,7 @@ namespace O3DE::ProjectManager
 
     bool UpdateProjectCtrl::ContainsScreen(ProjectManagerScreen screen)
     {
+        // Do not include GemRepos because we don't want to advertise jumping to it from all other screens here
         return screen == GetScreenEnum() || screen == ProjectManagerScreen::GemCatalog;
     }
 
