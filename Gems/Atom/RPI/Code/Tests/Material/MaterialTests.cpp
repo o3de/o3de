@@ -908,17 +908,6 @@ namespace UnitTest
 
     TEST_F(MaterialTests, TestMaterialPropertyValueAsAny)
     {
-        auto checkRoundTrip = [](const AZ::RPI::MaterialPropertyValue &original)
-        {
-            AZ::RPI::MaterialPropertyValue convertedValue = MaterialPropertyValue::FromAny(MaterialPropertyValue::ToAny(original));
-            EXPECT_EQ(original, convertedValue);
-
-            if (original.Is<Data::Asset<ImageAsset>>())
-            {
-                EXPECT_EQ(original.GetValue<Data::Asset<ImageAsset>>().GetHint(), convertedValue.GetValue<Data::Asset<ImageAsset>>().GetHint());
-            }
-        };
-        
         CheckPropertyValueRoundTrip(true);
         CheckPropertyValueRoundTrip(false);
         CheckPropertyValueRoundTrip(7);
