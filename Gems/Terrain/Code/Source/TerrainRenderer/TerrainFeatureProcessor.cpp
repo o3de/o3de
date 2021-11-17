@@ -362,7 +362,7 @@ namespace Terrain
 
         uint16_t detailMaterialId = CreateOrUpdateDetailMaterial(material);
         materialRegion.m_materialsForSurfaces.push_back({ surfaceTag, detailMaterialId });
-        ++m_detailMaterials.GetData(detailMaterialId).refCount;
+        m_detailMaterials.GetData(detailMaterialId).refCount++;
         m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
     }
 
@@ -394,7 +394,7 @@ namespace Terrain
                 {
                     m_detailImageViews.at(imageIndex) = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Magenta)->GetImageView();
                     m_detailImageViewFreeList.push_back(imageIndex);
-                    m_detailImagesUpdated = true;
+                    m_detailImagesNeedUpdate = true;
                 }
             }
 
@@ -516,6 +516,7 @@ namespace Terrain
             const auto index = getIndex(indexName);
             if (index.IsValid())
             {
+                // GetValue<T>() expects the actaul type, not a reference type, so the reference needs to be removed.
                 using TypeRefRemoved = AZStd::remove_cvref_t<decltype(ref)>;
                 ref = material->GetPropertyValue(index).GetValue<TypeRefRemoved>();
             }
@@ -555,13 +556,13 @@ namespace Terrain
                     }
                 }
                 m_detailImageViews.at(imageIndex) = ref->GetImageView();
-                m_detailImagesUpdated = true;
+                m_detailImagesNeedUpdate = true;
             }
             else if (imageIndex != InvalidDetailImageIndex)
             {
                 m_detailImageViews.at(imageIndex) = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Magenta)->GetImageView();
                 m_detailImageViewFreeList.push_back(imageIndex);
-                m_detailImagesUpdated = true;
+                m_detailImagesNeedUpdate = true;
                 imageIndex = InvalidDetailImageIndex;
             }
         };
@@ -927,7 +928,7 @@ namespace Terrain
             
             // World size changed, so the whole height map needs updating.
             m_dirtyRegion = worldBounds;
-            m_imagesSetOnSrgs = false;
+            m_imagesNeedUpdate = true;
         }
         
         int32_t xStart = aznumeric_cast<int32_t>(AZStd::ceilf(m_dirtyRegion.GetMin().GetX() / queryResolution));
@@ -1225,7 +1226,7 @@ namespace Terrain
                 }
             }
 
-            if (m_dirtyDetailRegion.IsValid() || !cameraPosition.IsClose(m_previousCameraPosition) || m_detailImagesUpdated)
+            if (m_dirtyDetailRegion.IsValid() || !cameraPosition.IsClose(m_previousCameraPosition) || m_detailImagesNeedUpdate)
             {
                 int32_t newDetailTexturePosX = aznumeric_cast<int32_t>(AZStd::roundf(cameraPosition.GetX() / DetailTextureScale));
                 int32_t newDetailTexturePosY = aznumeric_cast<int32_t>(AZStd::roundf(cameraPosition.GetY() / DetailTextureScale));
@@ -1362,7 +1363,7 @@ namespace Terrain
                 AZStd::array_view<const AZ::RHI::ImageView*> imageViews(m_detailImageViews.data(), m_detailImageViews.size());
                 [[maybe_unused]] bool result = m_terrainSrg->SetImageViewUnboundedArray(m_detailTexturesIndex, imageViews);
                 AZ_Error(TerrainFPName, result, "Failed to set image view unbounded array into shader resource group.");
-                m_detailImagesUpdated = false;
+                m_detailImagesNeedUpdate = false;
             }
         }
 
@@ -1405,9 +1406,9 @@ namespace Terrain
             }
         }
 
-        if (m_detailTextureImage && m_areaData.m_heightmapImage && !m_imagesSetOnSrgs)
+        if (m_detailTextureImage && m_areaData.m_heightmapImage && m_imagesNeedUpdate)
         {
-            m_imagesSetOnSrgs = true;
+            m_imagesNeedUpdate = false;
             for (auto& view : process.m_views)
             {
                 auto viewSrg = view->GetShaderResourceGroup();
@@ -1565,8 +1566,8 @@ namespace Terrain
                 drawPacket.Update(*GetParentScene());
             }
         }
-        m_imagesSetOnSrgs = false;
-        m_detailImagesUpdated = true;
+        m_imagesNeedUpdate = true;
+        m_detailImagesNeedUpdate = true;
     }
 
     void TerrainFeatureProcessor::SetWorldSize([[maybe_unused]] AZ::Vector2 sizeInMeters)

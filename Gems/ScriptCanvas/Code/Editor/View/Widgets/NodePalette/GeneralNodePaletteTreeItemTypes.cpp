@@ -94,15 +94,6 @@ namespace ScriptCanvasEditor
         SetName(details.m_name.c_str());
         SetToolTip(details.m_tooltip.c_str());
 
-        if (propertyStatus == ScriptCanvas::PropertyStatus::Getter)
-        {
-            SetName(AZStd::string::format("Get %s", GetName().toUtf8().data()).data());
-        }
-        else if (propertyStatus == ScriptCanvas::PropertyStatus::Setter)
-        {
-            SetName(AZStd::string::format("Set %s", GetName().toUtf8().data()).data());
-        }
-
         SetTitlePalette("MethodNodeTitlePalette");
     }
 
@@ -160,13 +151,14 @@ namespace ScriptCanvasEditor
         : DraggableNodePaletteTreeItem(nodeModelInformation.m_methodName, ScriptCanvasEditor::AssetEditorId)
         , m_methodName{ nodeModelInformation.m_methodName }
     {
-        SetToolTip(QString::fromUtf8(nodeModelInformation.m_displayName.data(),
-            aznumeric_cast<int>(nodeModelInformation.m_displayName.size())));
-
         SetToolTip(QString::fromUtf8(nodeModelInformation.m_toolTip.data(),
             aznumeric_cast<int>(nodeModelInformation.m_toolTip.size())));
 
         SetTitlePalette("MethodNodeTitlePalette");
+        if (!nodeModelInformation.m_displayName.empty())
+        {
+            SetName(nodeModelInformation.m_displayName.c_str());
+        }
     }
 
     GraphCanvas::GraphCanvasMimeEvent* GlobalMethodEventPaletteTreeItem::CreateMimeEvent() const
@@ -178,6 +170,27 @@ namespace ScriptCanvasEditor
     const AZStd::string& GlobalMethodEventPaletteTreeItem::GetMethodName() const
     {
         return m_methodName;
+    }
+
+    AZ::IO::Path GlobalMethodEventPaletteTreeItem::GetTranslationDataPath() const
+    {
+        AZStd::string propertyName = m_methodName;
+        AZ::StringFunc::Replace(propertyName, "::Getter", "");
+        AZ::StringFunc::Replace(propertyName, "::Setter", "");
+
+        AZStd::string filename = GraphCanvas::TranslationKey::Sanitize(propertyName);
+
+        return AZ::IO::Path("Properties") / filename;
+    }
+
+    void GlobalMethodEventPaletteTreeItem::GenerateTranslationData()
+    {
+        AZStd::string propertyName = m_methodName;
+        AZ::StringFunc::Replace(propertyName, "::Getter", "");
+        AZ::StringFunc::Replace(propertyName, "::Setter", "");
+
+        ScriptCanvasEditorTools::TranslationGeneration translation;
+        translation.TranslateBehaviorProperty(propertyName);
     }
 
     //////////////////////////////

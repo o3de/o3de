@@ -59,14 +59,26 @@ namespace AZ
             m_swapChainBarrier.m_isValid = true;
         }
 
+        void SwapChain::ProcessRecreation()
+        {
+            if (m_pendingRecreation)
+            {
+                ShutdownImages();
+                InvalidateNativeSwapChain();
+                CreateSwapchain();
+                InitImages();
+
+                m_pendingRecreation = false;
+            }
+        }
+
         void SwapChain::SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval)
         {
             if (GetDescriptor().m_verticalSyncInterval == 0 || previousVsyncInterval == 0)
             {
                 // The presentation mode may change when transitioning to or from a vsynced presentation mode
                 // In this case, the swapchain must be recreated.
-                InvalidateNativeSwapChain();
-                CreateSwapchain();
+                m_pendingRecreation = true;
             }
         }
 
@@ -231,8 +243,7 @@ namespace AZ
                 // VK_SUBOPTIMAL_KHR is treated as success, but we better update the surface info as well.
                 if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
                 {
-                    InvalidateNativeSwapChain();
-                    CreateSwapchain();
+                    m_pendingRecreation = true;
                 }
                 else
                 {
@@ -246,18 +257,16 @@ namespace AZ
                 }
             };
 
-            m_presentationQueue->QueueCommand(AZStd::move(presentCommand));
-
             uint32_t acquiredImageIndex = GetCurrentImageIndex();
             RHI::ResultCode result = AcquireNewImage(&acquiredImageIndex);
             if (result == RHI::ResultCode::Fail)
             {
-                InvalidateNativeSwapChain();
-                CreateSwapchain();
+                m_pendingRecreation = true;
                 return 0;
             }
             else
             {
+                m_presentationQueue->QueueCommand(AZStd::move(presentCommand));
                 return acquiredImageIndex;
             }
         }

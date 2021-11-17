@@ -23,7 +23,7 @@ namespace AWSGameLift
         Aws::GameLift::Model::StartMatchmakingRequest BuildAWSGameLiftStartMatchmakingRequest(const AWSGameLiftStartMatchmakingRequest& startMatchmakingRequest);
 
         // Create StartMatchmakingRequest and make a StartMatchmaking call through GameLift client
-        AZStd::string StartMatchmaking(const Aws::GameLift::GameLiftClient& gameliftClient, const AWSGameLiftStartMatchmakingRequest& startMatchmakingRequest);
+        AZStd::string StartMatchmaking(const AWSGameLiftStartMatchmakingRequest& startMatchmakingRequest);
 
         // Validate StartMatchmakingRequest and check required request parameters
         bool ValidateStartMatchmakingRequest(const AzFramework::StartMatchmakingRequest& startMatchmakingRequest);

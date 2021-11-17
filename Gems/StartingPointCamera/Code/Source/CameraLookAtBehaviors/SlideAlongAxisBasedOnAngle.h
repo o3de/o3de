@@ -43,8 +43,10 @@ namespace Camera
         // Reflected data
         RelativeAxisType m_axisToSlideAlong = ForwardBackward;
         EulerAngleType m_angleTypeToChangeFor = Pitch;
-        VectorComponentType m_vectorComponentToIgnore = None;
         float m_maximumPositiveSlideDistance = 0.0f;
         float m_maximumNegativeSlideDistance = 0.0f;
+        bool m_ignoreX = false;
+        bool m_ignoreY = false;
+        bool m_ignoreZ = false;
     };
 } // namespace Camera

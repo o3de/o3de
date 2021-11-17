@@ -13,5 +13,8 @@
         "${Name}"
     ],
     "icon_path": "preview.png",
-    "requirements": ""
+    "requirements": "",
+    "dependencies": [
+        "QtForPython"
+    ]
 }

@@ -378,7 +378,7 @@ class AbstractResourceLocator(object):
     def editor_log(self):
         """
         Return path to the project's editor log dir using the builds project and platform
-        :return: path to editor.log
+        :return: path to Editor.log
         """
         raise NotImplementedError(
             "editor_log() is not implemented on the base AbstractResourceLocator() class. "

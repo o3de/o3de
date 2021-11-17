@@ -221,7 +221,6 @@ namespace O3DE::ProjectManager
         ResetGemStatusFilter();
         ResetGemOriginFilter();
         ResetTypeFilter();
-        ResetPlatformFilter();
         ResetFeatureFilter();
     }
 

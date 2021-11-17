@@ -7,11 +7,13 @@
  */
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 #include <Activity/AWSGameLiftActivityUtils.h>
 #include <Activity/AWSGameLiftStartMatchmakingActivity.h>
 #include <AWSGameLiftPlayer.h>
 #include <AWSGameLiftSessionConstants.h>
+#include <Request/IAWSGameLiftInternalRequests.h>
 
 #include <aws/core/utils/Outcome.h>
 #include <aws/gamelift/model/StartMatchmakingRequest.h>
@@ -78,14 +80,21 @@ namespace AWSGameLift
         }
 
         AZStd::string StartMatchmaking(
-            const Aws::GameLift::GameLiftClient& gameliftClient,
             const AWSGameLiftStartMatchmakingRequest& startMatchmakingRequest)
         {
+            AZStd::string result = "";
+
+            auto gameliftClient = AZ::Interface<IAWSGameLiftInternalRequests>::Get()->GetGameLiftClient();
+            if (!gameliftClient)
+            {
+                AZ_Error(AWSGameLiftStartMatchmakingActivityName, false, AWSGameLiftClientMissingErrorMessage);
+                return result;
+            }
+
             AZ_TracePrintf(AWSGameLiftStartMatchmakingActivityName, "Requesting StartMatchmaking against Amazon GameLift service ...");
 
-            AZStd::string result = "";
             Aws::GameLift::Model::StartMatchmakingRequest request = BuildAWSGameLiftStartMatchmakingRequest(startMatchmakingRequest);
-            auto startMatchmakingOutcome = gameliftClient.StartMatchmaking(request);
+            auto startMatchmakingOutcome = gameliftClient->StartMatchmaking(request);
             if (startMatchmakingOutcome.IsSuccess())
             {
                 result = AZStd::string(startMatchmakingOutcome.GetResult().GetMatchmakingTicket().GetTicketId().c_str());

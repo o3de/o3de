@@ -106,8 +106,7 @@ def run():
         components=["HDRi Skybox", "Global Skylight (IBL)"],
         parent_id=default_level.id
     )
-    global_skylight_image_asset_path = os.path.join(
-        "LightingPresets", "greenwich_park_02_4k_iblskyboxcm_iblspecular.exr.streamingimage")
+    global_skylight_image_asset_path = os.path.join("LightingPresets", "default_iblskyboxcm.exr.streamingimage")
     global_skylight_image_asset = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", global_skylight_image_asset_path, math.Uuid(), False)
     global_skylight.get_set_test(0, "Controller|Configuration|Cubemap Texture", global_skylight_image_asset)

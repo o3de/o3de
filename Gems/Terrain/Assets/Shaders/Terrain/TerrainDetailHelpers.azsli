@@ -265,7 +265,10 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdUv, fl
 
     uint4 material1 = uint4(s1.x, s2.x, s3.x, s4.x);
     uint4 material2 = uint4(s1.y, s2.y, s3.y, s4.y);
-    float4 blends = float4(s1.z, s2.z, s3.z, s4.z) / 0xFF;
+    
+    const float maxBlendAmount = 0xFF;
+    // convert integer of 0-255 to float of 0-1.
+    float4 blends = float4(s1.z, s2.z, s3.z, s4.z) / maxBlendAmount;
     
     if (o_debugDetailMaterialIds)
     {

@@ -21,7 +21,6 @@
 #include <Atom/RPI.Public/Shader/ShaderSystemInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/IndexedDataVector.h>
-#include <Atom/Feature/Utils/MultiIndexedDataVector.h>
 #include <Atom/Feature/Utils/SparseVector.h>
 
 namespace AZ::RPI
@@ -358,7 +357,7 @@ namespace Terrain
         AZ::Data::Instance<AZ::RPI::AttachmentImage> m_detailTextureImage;
         AZ::RPI::ShaderSystemInterface::GlobalShaderOptionUpdatedEvent::Handler m_handleGlobalShaderOptionUpdate;
         bool m_forceRebuildDrawPackets{ false };
-        bool m_imagesSetOnSrgs{ false };
+        bool m_imagesNeedUpdate{ false };
 
         AZStd::vector<SectorData> m_sectorData;
 
@@ -371,6 +370,6 @@ namespace Terrain
 
         AZStd::vector<const AZ::RHI::ImageView*> m_detailImageViews;
         AZStd::vector<uint16_t> m_detailImageViewFreeList;
-        bool m_detailImagesUpdated{ false };
+        bool m_detailImagesNeedUpdate{ false };
     };
 }

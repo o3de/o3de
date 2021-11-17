@@ -90,6 +90,13 @@ namespace O3DE::ProjectManager
         m_projectPath = projectPath;
         m_gemModel->Clear();
         m_gemsToRegisterWithProject.clear();
+
+        if (m_filterWidget)
+        {
+            // disconnect so we don't update the status filter for every gem we add
+            disconnect(m_gemModel, &GemModel::dataChanged, m_filterWidget, &GemFilterWidget::ResetGemStatusFilter);
+        }
+
         FillModel(projectPath);
 
         m_proxyModel->ResetFilters();
@@ -251,6 +258,7 @@ namespace O3DE::ProjectManager
                 if (added && GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded)
                 {
                     m_downloadController->AddGemDownload(GemModel::GetName(modelIndex));
+                    GemModel::SetDownloadStatus(*m_proxyModel, m_proxyModel->mapFromSource(modelIndex), GemInfo::DownloadStatus::Downloading);
                 }
             }
 

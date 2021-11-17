@@ -13,7 +13,6 @@
 #include "AnimationContext.h"
 
 #include <LyShine/Animation/IUiAnimation.h>
-#include "ITimer.h"
 #include "GameEngine.h"
 
 #include "Objects/SelectionGroup.h"
@@ -28,6 +27,27 @@
 
 #include "IPostRenderer.h"
 #include "UiEditorAnimationBus.h"
+
+#include <AzCore/Time/ITime.h>
+
+namespace Internal
+{
+    float GetFrameDeltaTime()
+    {
+        const AZ::TimeUs frameDeltaTimeMs = AZ::GetSimulationTickDeltaTimeUs();
+        return AZ::TimeUsToSeconds(frameDeltaTimeMs);
+    }
+
+    float GetFrameRate()
+    {
+        const float deltaTime = GetFrameDeltaTime();
+        if (AZ::IsClose(deltaTime, 0.0f))
+        {
+            return 0.0f;
+        }
+        return 1.0f / deltaTime;
+    }
+}
 
 //////////////////////////////////////////////////////////////////////////
 // Animation Callback.
@@ -380,17 +400,15 @@ void CUiAnimationContext::Update()
         return;
     }
 
-    ITimer* pTimer = GetIEditor()->GetSystem()->GetITimer();
-
     AnimateActiveSequence();
 
-    float dt = pTimer->GetFrameTime();
-    m_currTime += dt * m_fTimeScale;
+    const float frameDeltaTime = Internal::GetFrameDeltaTime();
+    m_currTime += frameDeltaTime * m_fTimeScale;
 
     if (!m_recording)
     {
-        GetUiAnimationSystem()->PreUpdate(dt);
-        GetUiAnimationSystem()->PostUpdate(dt);
+        GetUiAnimationSystem()->PreUpdate(frameDeltaTime);
+        GetUiAnimationSystem()->PostUpdate(frameDeltaTime);
     }
 
     if (m_currTime > m_timeMarker.end)
@@ -444,7 +462,7 @@ void CUiAnimationContext::OnPostRender()
     {
         SUiAnimContext ac;
         ac.dt = 0;
-        ac.fps = GetIEditor()->GetSystem()->GetITimer()->GetFrameRate();
+        ac.fps = Internal::GetFrameRate();
         ac.time = m_currTime;
         ac.bSingleFrame = true;
         ac.bForcePlay = true;
@@ -586,7 +604,7 @@ void CUiAnimationContext::AnimateActiveSequence()
 
     SUiAnimContext ac;
     ac.dt = 0;
-    ac.fps = GetIEditor()->GetSystem()->GetITimer()->GetFrameRate();
+    ac.fps = Internal::GetFrameRate();
     ac.time = m_currTime;
     ac.bSingleFrame = true;
     ac.bForcePlay = true;

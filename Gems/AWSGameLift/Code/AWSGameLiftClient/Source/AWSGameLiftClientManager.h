@@ -175,14 +175,5 @@ namespace AWSGameLift
         bool JoinSession(const AzFramework::JoinSessionRequest& joinSessionRequest) override;
         AzFramework::SearchSessionsResponse SearchSessions(const AzFramework::SearchSessionsRequest& searchSessionsRequest) const override;
         void LeaveSession() override;
-
-    private:
-        void AcceptMatchHelper(const AWSGameLiftAcceptMatchRequest& createSessionRequest);
-        AZStd::string CreateSessionHelper(const AWSGameLiftCreateSessionRequest& createSessionRequest);
-        AZStd::string CreateSessionOnQueueHelper(const AWSGameLiftCreateSessionOnQueueRequest& createSessionOnQueueRequest);
-        bool JoinSessionHelper(const AWSGameLiftJoinSessionRequest& joinSessionRequest);
-        AzFramework::SearchSessionsResponse SearchSessionsHelper(const AWSGameLiftSearchSessionsRequest& searchSessionsRequest) const;
-        AZStd::string StartMatchmakingHelper(const AWSGameLiftStartMatchmakingRequest& startMatchmakingRequest);
-        void StopMatchmakingHelper(const AWSGameLiftStopMatchmakingRequest& stopMatchmakingRequest);
     };
 } // namespace AWSGameLift

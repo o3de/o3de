@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AudioTriggerComponentRequestBus",
+                "name": "Audio Trigger",
                 "category": "Audio"
             },
             "methods": [
@@ -13,20 +13,21 @@
                     "key": "SetObstructionType",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetObstructionType"
+                        "tooltip": "When signaled, this will invoke Set Obstruction Type"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetObstructionType is invoked"
+                        "tooltip": "Signaled after Set Obstruction Type is invoked"
                     },
                     "details": {
-                        "name": "SetObstructionType"
+                        "name": "Set Obstruction Type"
                     },
                     "params": [
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "unsigned int"
+                                "name": "Obstruction Type",
+                                "tooltip": "0: Ignore, 1: Single Ray, 2: Multi Ray"
                             }
                         }
                     ]
