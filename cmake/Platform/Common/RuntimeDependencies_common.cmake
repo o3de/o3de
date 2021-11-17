@@ -272,7 +272,7 @@ function(ly_delayed_generate_runtime_dependencies)
         endforeach()
 
         # Generate the output file, note the STAMP_OUTPUT_FILE need to match with the one defined in LYWrappers.cmake
-        set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${target}_$<CONFIG>.stamp)
+        set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${target}.stamp)
         set(target_file_dir "$<TARGET_FILE_DIR:${target}>")
         set(target_file "$<TARGET_FILE:${target}>")
         ly_file_read(${LY_RUNTIME_DEPENDENCIES_TEMPLATE} template_file)
