@@ -337,13 +337,22 @@ namespace UnitTest
             [this](const char* path, u64& size)
             {
                 AZStd::scoped_lock lock(m_streamerWrapper->m_mutex);
-                auto itr = m_streamerWrapper->m_virtualFiles.find(path);
+
+                AZStd::string_view pathWithoutFolder = path;
+                if (AZ::StringFunc::StartsWith(path, GetTestFolderPath()))
+                {
+                    pathWithoutFolder = AZ::StringFunc::LStrip(pathWithoutFolder, GetTestFolderPath().c_str());
+                }
+
+                auto itr = m_streamerWrapper->m_virtualFiles.find(pathWithoutFolder);
 
                 if (itr != m_streamerWrapper->m_virtualFiles.end())
                 {
                     size = itr->second.size();
                     return ResultCode::Success;
                 }
+
+                AZ_Error("DisklessAssetManagerBase", false, "Failed to find virtual file %.*s", pathWithoutFolder.size(), pathWithoutFolder.data());
 
                 return ResultCode::Error;
             });
