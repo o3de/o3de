@@ -10,6 +10,7 @@
 
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
@@ -17,7 +18,9 @@ namespace AtomToolsFramework
 {
     //! A concrete implementation of the ViewportInteractionRequestBus.
     //! Primarily concerned with picking (screen to world and world to screen transformations).
-    class ViewportInteractionImpl : public AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler
+    class ViewportInteractionImpl
+        : public AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler
+        , private AZ::RPI::ViewportContextIdNotificationBus::Handler
     {
     public:
         explicit ViewportInteractionImpl(AZ::RPI::ViewPtr viewPtr);
@@ -37,6 +40,9 @@ namespace AtomToolsFramework
         AZStd::function<float()> m_deviceScalingFactorFn; //! Callback to determine the device scaling factor.
 
     private:
+        // ViewportContextIdNotificationBus overrides ...
+        void OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view) override;
+
         AZ::RPI::ViewPtr m_viewPtr;
     };
 } // namespace AtomToolsFramework
