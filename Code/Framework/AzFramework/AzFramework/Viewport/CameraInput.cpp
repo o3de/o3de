@@ -313,6 +313,11 @@ namespace AzFramework
         {
             return false;
         };
+
+        m_constrainPitch = []() constexpr
+        {
+            return true;
+        };
     }
 
     bool RotateCameraInput::HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, [[maybe_unused]] const float scrollDelta)
@@ -334,7 +339,10 @@ namespace AzFramework
         nextCamera.m_yaw -= float(cursorDelta.m_x) * rotateSpeed * Invert(m_invertYawFn());
 
         nextCamera.m_yaw = WrapYawRotation(nextCamera.m_yaw);
-        nextCamera.m_pitch = ClampPitchRotation(nextCamera.m_pitch);
+        if (m_constrainPitch())
+        {
+            nextCamera.m_pitch = ClampPitchRotation(nextCamera.m_pitch);
+        }
 
         return nextCamera;
     }
@@ -748,14 +756,14 @@ namespace AzFramework
 
     Camera SmoothCamera(const Camera& currentCamera, const Camera& targetCamera, const CameraProps& cameraProps, const float deltaTime)
     {
-        const auto clamp_rotation = [](const float angle)
+        const auto clampRotation = [](const float angle)
         {
             return AZStd::fmod(angle + AZ::Constants::TwoPi, AZ::Constants::TwoPi);
         };
 
         // keep yaw in 0 - 360 range
-        float targetYaw = clamp_rotation(targetCamera.m_yaw);
-        const float currentYaw = clamp_rotation(currentCamera.m_yaw);
+        float targetYaw = clampRotation(targetCamera.m_yaw);
+        const float currentYaw = clampRotation(currentCamera.m_yaw);
 
         // return the sign of the float input (-1, 0, 1)
         const auto sign = [](const float value)
@@ -764,8 +772,7 @@ namespace AzFramework
         };
 
         // ensure smooth transition when moving across 0 - 360 boundary
-        const float yawDelta = targetYaw - currentYaw;
-        if (AZStd::abs(yawDelta) >= AZ::Constants::Pi)
+        if (const float yawDelta = targetYaw - currentYaw; AZStd::abs(yawDelta) >= AZ::Constants::Pi)
         {
             targetYaw -= AZ::Constants::TwoPi * sign(yawDelta);
         }

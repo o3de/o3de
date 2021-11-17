@@ -74,7 +74,7 @@ namespace UnitTest
     class ModularViewportCameraControllerFixture : public AllocatorsTestFixture
     {
     public:
-        static const AzFramework::ViewportId TestViewportId;
+        static inline constexpr AzFramework::ViewportId TestViewportId = 1234;
 
         void SetUp() override
         {
@@ -219,8 +219,6 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
         AZStd::unique_ptr<SandboxEditor::EditorModularViewportCameraComposer> m_editorModularViewportCameraComposer;
     };
-
-    const AzFramework::ViewportId ModularViewportCameraControllerFixture::TestViewportId = AzFramework::ViewportId(0);
 
     TEST_F(ModularViewportCameraControllerFixture, MouseMovementDoesNotAccumulateExcessiveDriftInModularViewportCameraWithVaryingDeltaTime)
     {
