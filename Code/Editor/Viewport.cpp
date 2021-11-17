@@ -22,6 +22,7 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 // Editor
+#include "Editor/Plugins/ComponentEntityEditorPlugin/SandboxIntegration.h"
 #include "ViewManager.h"
 #include "Include/ITransformManipulator.h"
 #include "Include/HitContext.h"
@@ -44,7 +45,7 @@
 void QtViewport::BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const AzFramework::ViewportId viewportId, const QPoint& point)
 {
     context.m_hitLocation =
-        AzToolsFramework::CalculateWorldPosition(viewportId, AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point), 10.0f);
+        AzToolsFramework::CalculateWorldPosition(viewportId, AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point), ed_defaultEntityPlacementDistance);
 }
 
 void QtViewport::dragEnterEvent(QDragEnterEvent* event)
