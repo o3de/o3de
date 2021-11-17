@@ -25,8 +25,6 @@ set(FILES
     UI/ComponentPalette/ComponentDataModel.h
     UI/ComponentPalette/ComponentDataModel.cpp
     UI/ComponentPalette/ComponentPaletteSettings.h
-    UI/ComponentPalette/ComponentPaletteWindow.h
-    UI/ComponentPalette/ComponentPaletteWindow.cpp
     UI/ComponentPalette/FavoriteComponentList.h
     UI/ComponentPalette/FavoriteComponentList.cpp
     UI/ComponentPalette/FilteredComponentList.h
