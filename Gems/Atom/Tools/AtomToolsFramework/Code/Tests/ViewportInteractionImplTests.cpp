@@ -15,6 +15,7 @@
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <Tests/Utils/Printers.h>
 
 namespace UnitTest
 {
