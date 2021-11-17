@@ -18,7 +18,7 @@ namespace UnitTest
     using namespace AZ;
     using namespace AZ::Render;
 
-    class IndexedDataVectorTests
+    class MultiIndexedDataVectorTests
         : public ::testing::Test
     {
     public:
@@ -58,7 +58,7 @@ namespace UnitTest
         void* m_memBlock = nullptr;
     };
 
-    TEST_F(IndexedDataVectorTests, TestInsert)
+    TEST_F(MultiIndexedDataVectorTests, TestInsert)
     {
         enum Types
         {
@@ -87,7 +87,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(IndexedDataVectorTests, TestSize)
+    TEST_F(MultiIndexedDataVectorTests, TestSize)
     {
         enum Types
         {
@@ -110,7 +110,7 @@ namespace UnitTest
         EXPECT_EQ(0, myVec.GetDataVector<IntType>().size());
     }
 
-    TEST_F(IndexedDataVectorTests, TestErase)
+    TEST_F(MultiIndexedDataVectorTests, TestErase)
     {
         enum Types
         {
@@ -153,7 +153,7 @@ namespace UnitTest
         }
     }
 
-    TEST_F(IndexedDataVectorTests, TestManyTypes)
+    TEST_F(MultiIndexedDataVectorTests, TestManyTypes)
     {
         enum Types
         {
@@ -235,14 +235,14 @@ namespace UnitTest
         }
     }
 
-    TEST_F(IndexedDataVectorTests, GetIndexForDataSimple)
+    TEST_F(MultiIndexedDataVectorTests, GetIndexForDataSimple)
     {
         AZStd::vector<uint16_t> indices;
         MultiIndexedDataVector<int32_t, float> myVec = CreateTestVector(indices);
         CheckIndexedData(myVec, indices);
     }
 
-    TEST_F(IndexedDataVectorTests, GetIndexForDataComplex)
+    TEST_F(MultiIndexedDataVectorTests, GetIndexForDataComplex)
     {
         enum Types
         {
@@ -277,7 +277,7 @@ namespace UnitTest
         CheckIndexedData(myVec, indices);
     }
 
-    TEST_F(IndexedDataVectorTests, ForEach)
+    TEST_F(MultiIndexedDataVectorTests, ForEach)
     {
         enum Types
         {
