@@ -38,7 +38,7 @@ namespace UnitTest
         AzFramework::ViewportControllerListPtr m_controllerList;
         AZStd::unique_ptr<AZ::Entity> m_entity;
 
-        static const AzFramework::ViewportId TestViewportId;
+        static inline constexpr AzFramework::ViewportId TestViewportId = 2345;
 
         void SetUp() override
         {
@@ -76,8 +76,6 @@ namespace UnitTest
             m_editorLibHandle = {};
         }
     };
-
-    const AzFramework::ViewportId EditorCameraFixture::TestViewportId = AzFramework::ViewportId(1337);
 
     TEST_F(EditorCameraFixture, ModularViewportCameraControllerReferenceFrameUpdatedWhenViewportEntityisChanged)
     {
@@ -182,6 +180,73 @@ namespace UnitTest
 
         // Then
         EXPECT_THAT(finalTransform, IsClose(transformToInterpolateTo));
+    }
+
+    TEST_F(EditorCameraFixture, BeginningCameraInterpolationReturnsTrue)
+    {
+        // Given/When
+        bool interpolationBegan = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            interpolationBegan, TestViewportId,
+            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)));
+
+        // Then
+        EXPECT_THAT(interpolationBegan, ::testing::IsTrue());
+    }
+
+    TEST_F(EditorCameraFixture, CameraInterpolationDoesNotBeginDuringAnExistingInterpolation)
+    {
+        // Given/When
+        bool initialInterpolationBegan = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            initialInterpolationBegan, TestViewportId,
+            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)));
+
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(0.5f), AZ::ScriptTimePoint() });
+
+        bool nextInterpolationBegan = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            nextInterpolationBegan, TestViewportId,
+            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)));
+
+        bool interpolating = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            interpolating, TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::Interpolating);
+
+        // Then
+        EXPECT_THAT(initialInterpolationBegan, ::testing::IsTrue());
+        EXPECT_THAT(nextInterpolationBegan, ::testing::IsFalse());
+        EXPECT_THAT(interpolating, ::testing::IsTrue());
+    }
+
+    TEST_F(EditorCameraFixture, CameraInterpolationCanBeginAfterAnInterpolationCompletes)
+    {
+        // Given/When
+        bool initialInterpolationBegan = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            initialInterpolationBegan, TestViewportId,
+            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)));
+
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(1.5f), AZ::ScriptTimePoint() });
+
+        bool interpolating = true;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            interpolating, TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::Interpolating);
+
+        bool nextInterpolationBegan = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            nextInterpolationBegan, TestViewportId,
+            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)));
+
+        // Then
+        EXPECT_THAT(initialInterpolationBegan, ::testing::IsTrue());
+        EXPECT_THAT(interpolating, ::testing::IsFalse());
+        EXPECT_THAT(nextInterpolationBegan, ::testing::IsTrue());
     }
 } // namespace UnitTest
 

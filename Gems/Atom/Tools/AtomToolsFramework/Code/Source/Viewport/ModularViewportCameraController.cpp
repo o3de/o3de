@@ -263,13 +263,22 @@ namespace AtomToolsFramework
         m_updatingTransformInternally = false;
     }
 
-    void ModularViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal)
+    bool ModularViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal)
     {
         if (m_cameraMode != CameraMode::Animation)
         {
             m_cameraMode = CameraMode::Animation;
             m_cameraAnimation = CameraAnimation{ CombinedCameraTransform(), worldFromLocal, 0.0f };
+
+            return true;
         }
+
+        return false;
+    }
+
+    bool ModularViewportCameraControllerInstance::Interpolating() const
+    {
+        return m_cameraMode == CameraMode::Animation;
     }
 
     void ModularViewportCameraControllerInstance::StartTrackingTransform(const AZ::Transform& worldFromLocal)
