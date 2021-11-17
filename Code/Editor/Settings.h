@@ -267,7 +267,7 @@ struct SANDBOX_API SEditorSettings
 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SEditorSettings();
     ~SEditorSettings() = default;
-    void    Save();
+    void    Save(bool isEditorClosing = false);
     void    Load();
     void    LoadCloudSettings();
 
