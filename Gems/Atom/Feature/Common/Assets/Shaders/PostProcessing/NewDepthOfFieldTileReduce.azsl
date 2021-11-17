@@ -77,6 +77,9 @@ void MainCS(uint3 group_thread_id : SV_GroupThreadID, uint3 group_id : SV_GroupI
     InterlockedMin( LDS_MIN_COC[0], LDS_MIN_COC[group_thread_id.x] );
     InterlockedMax( LDS_MAX_COC[0], LDS_MAX_COC[group_thread_id.x] );
 
+    // Sync LDS
+    GroupMemoryBarrierWithGroupSync();
+
     // Each group write to just one pixel. If we're the last thread in the group, write out
     if(group_thread_id.x == 0)
     {
