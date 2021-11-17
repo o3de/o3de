@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsZero",
+                "name": "Is Zero",
                 "category": "Math/Vector3",
-                "tooltip": "returns true if A is within tolerance of the zero vector, else false",
-                "subtitle": "Vector3"
+                "tooltip": "Returns true if A is within tolerance of the zero vector, else false"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Vector3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Tolerance",
+                    "key": "DataInput_Tolerance",
                     "details": {
-                        "name": "Number: Tolerance"
+                        "name": "Tolerance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

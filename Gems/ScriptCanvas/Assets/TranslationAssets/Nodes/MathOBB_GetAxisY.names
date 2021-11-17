@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetAxisY",
-                "category": "Math/OBB",
-                "tooltip": "returns the Y-Axis of Source",
-                "subtitle": "OBB"
+                "name": "Get Axis Y",
+                "category": "Math/Oriented Bounding Box",
+                "tooltip": "Returns the Y-Axis of Source"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_OBB: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "OBB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

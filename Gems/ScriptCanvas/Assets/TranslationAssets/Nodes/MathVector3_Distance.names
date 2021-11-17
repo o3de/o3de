@@ -7,8 +7,7 @@
             "details": {
                 "name": "Distance",
                 "category": "Math/Vector3",
-                "tooltip": "returns the distance from B to A, that is the magnitude of the vector (A - B)",
-                "subtitle": "Vector3"
+                "tooltip": "Returns the distance from B to A, that is the magnitude of the vector (A - B)"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: A",
+                    "key": "DataInput_A",
                     "details": {
-                        "name": "Vector3: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: B",
+                    "key": "DataInput_B",
                     "details": {
-                        "name": "Vector3: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

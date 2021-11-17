@@ -5,10 +5,10 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromCenterHalfExtents",
-                "category": "Math/AABB",
+                "name": "From Center Half Extents",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the AABB with Min = Center - HalfExtents, Max = Center + HalfExtents",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
@@ -26,19 +26,19 @@
                 {
                     "key": "DataInput_Vector3: Center",
                     "details": {
-                        "name": "Vector3: Center"
+                        "name": "Center"
                     }
                 },
                 {
                     "key": "DataInput_Vector3: HalfExtents",
                     "details": {
-                        "name": "Vector3: HalfExtents"
+                        "name": "Half Extents"
                     }
                 },
                 {
                     "key": "DataOutput_Result: AABB",
                     "details": {
-                        "name": "Result: AABB"
+                        "name": "AABB"
                     }
                 }
             ]

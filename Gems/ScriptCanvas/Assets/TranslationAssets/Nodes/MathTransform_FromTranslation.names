@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromTranslation",
+                "name": "From Translation",
                 "category": "Math/Transform",
-                "tooltip": "returns a translation matrix and the rotation set to zero",
-                "subtitle": "Transform"
+                "tooltip": "Returns a translation matrix and the rotation set to zero"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Translation",
+                    "key": "DataInput_Translation",
                     "details": {
-                        "name": "Vector3: Translation"
+                        "name": "Translation"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Transform",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Transform"
+                        "name": "Result"
                     }
                 }
             ]

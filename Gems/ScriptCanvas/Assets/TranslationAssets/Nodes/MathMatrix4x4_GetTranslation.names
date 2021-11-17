@@ -7,8 +7,7 @@
             "details": {
                 "name": "GetTranslation",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns translation vector from the matrix",
-                "subtitle": "Matrix4x4"
+                "tooltip": "returns translation vector from the matrix"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Matrix4x4: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Matrix4x4: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

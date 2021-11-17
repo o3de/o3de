@@ -105,7 +105,7 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
     origin_uri = downloadable_object_data['originuri']
     parsed_uri = urllib.parse.urlparse(origin_uri)
 
-    download_zip_result = utils.download_zip_file(parsed_uri, download_zip_path, download_progress_callback)
+    download_zip_result = utils.download_zip_file(parsed_uri, download_zip_path, force_overwrite, download_progress_callback)
     if download_zip_result != 0:
         return download_zip_result
 

@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "LinearToGamma",
+                "name": "Linear To Gamma",
                 "category": "Math/Color",
-                "tooltip": "returns Source converted from linear to gamma corrected space",
-                "subtitle": "Color"
+                "tooltip": "Returns Source converted from linear to gamma corrected space"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Color: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Color: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Color",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Color"
+                        "name": "Result"
                     }
                 }
             ]

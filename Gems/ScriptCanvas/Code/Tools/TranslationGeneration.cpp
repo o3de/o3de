@@ -128,13 +128,13 @@ namespace ScriptCanvasEditorTools
                     Helpers::GetTypeNameAndDescription(argumentType, argument.m_details.m_name, argument.m_details.m_tooltip);
 
                     auto name = method->GetArgumentName(i);
-                    if (!name->empty())
+                    if (name && !name->empty())
                     {
                         argument.m_details.m_name = *name;
                     }
 
                     auto tooltip = method->GetArgumentToolTip(i);
-                    if (!tooltip->empty())
+                    if (tooltip && !tooltip->empty())
                     {
                         argument.m_details.m_tooltip = *tooltip;
                     }
@@ -153,7 +153,7 @@ namespace ScriptCanvasEditorTools
                     Helpers::GetTypeNameAndDescription(resultType, result.m_details.m_name, result.m_details.m_tooltip);
 
                     auto tooltip = method->GetArgumentToolTip(0);
-                    if (!tooltip->empty())
+                    if (tooltip && !tooltip->empty())
                     {
                         result.m_details.m_tooltip = *tooltip;
                     }
@@ -859,10 +859,14 @@ namespace ScriptCanvasEditorTools
 
         if (behaviorProperty->m_getter)
         {
+            AZStd::string cleanName = behaviorProperty->m_name;
+            AZ::StringFunc::Replace(cleanName, "::Getter", "");
+
             Method method;
 
-            auto methodName = behaviorProperty->m_getter->m_name;
-            method.m_key = behaviorProperty->m_name;
+            AZStd::string methodName = "Get";
+            methodName.append(cleanName);
+            method.m_key = methodName;
             method.m_details.m_name = methodName;
             method.m_details.m_tooltip = behaviorProperty->m_getter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
 
@@ -874,10 +878,15 @@ namespace ScriptCanvasEditorTools
 
         if (behaviorProperty->m_setter)
         {
+            AZStd::string cleanName = behaviorProperty->m_name;
+            AZ::StringFunc::Replace(cleanName, "::Setter", "");
+
             Method method;
 
-            auto methodName = behaviorProperty->m_setter->m_name;
-            method.m_key = behaviorProperty->m_name;
+            AZStd::string methodName = "Set";
+            methodName.append(cleanName);
+
+            method.m_key = methodName;
             method.m_details.m_name = methodName;
             method.m_details.m_tooltip = behaviorProperty->m_setter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
 

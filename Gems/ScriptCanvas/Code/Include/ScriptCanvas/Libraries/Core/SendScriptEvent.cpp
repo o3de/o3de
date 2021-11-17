@@ -272,7 +272,7 @@ namespace ScriptCanvas
 
                             Data::Type outputType(AZ::BehaviorContextHelper::IsStringParameter(*result) ? Data::Type::String() : Data::FromAZType(result->m_typeId));
                             // multiple outs will need out value names
-                            const AZStd::string resultSlotName(AZStd::string::format("Result: %s", Data::GetName(outputType).c_str()));
+                            const AZStd::string resultSlotName(Data::GetName(outputType));
 
                             DataSlotConfiguration slotConfiguration;
 
@@ -343,7 +343,7 @@ namespace ScriptCanvas
                         {
                             Data::Type outputType(AZ::BehaviorContextHelper::IsStringParameter(*result) ? Data::Type::String() : Data::FromAZType(result->m_typeId));
                             // multiple outs will need out value names
-                            const AZStd::string resultSlotName(AZStd::string::format("Result: %s", Data::GetName(outputType).c_str()));
+                            const AZStd::string resultSlotName(Data::GetName(outputType));
 
                             Slot* slot = GetSlotByName(resultSlotName);
 

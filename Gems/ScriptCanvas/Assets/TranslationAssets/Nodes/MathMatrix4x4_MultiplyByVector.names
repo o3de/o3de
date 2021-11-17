@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "MultiplyByVector",
+                "name": "Multiply By Vector",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns vector created by right left multiplying matrix by supplied vector",
-                "subtitle": "Matrix4x4"
+                "tooltip": "Returns vector created by right left multiplying matrix by supplied vector"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Matrix4x4: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Matrix4x4: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Vector",
+                    "key": "DataInput_Vector",
                     "details": {
-                        "name": "Vector4: Vector"
+                        "name": "Vector"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector4",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector4"
+                        "name": "Result"
                     }
                 }
             ]

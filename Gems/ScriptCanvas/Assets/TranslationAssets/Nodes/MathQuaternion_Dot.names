@@ -7,8 +7,7 @@
             "details": {
                 "name": "Dot",
                 "category": "Math/Quaternion",
-                "tooltip": "returns the Dot product of A and B",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns the Dot product of A and B"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: A",
+                    "key": "DataInput_A",
                     "details": {
-                        "name": "Quaternion: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: B",
+                    "key": "DataInput_B",
                     "details": {
-                        "name": "Quaternion: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]
