@@ -65,4 +65,14 @@ namespace AZ
     protected:
         AZStd::string_view GetMessage() const override;
     };
+
+    class JsonBitsetSerializer : public JsonUnsupportedTypesSerializer
+    {
+    public:
+        AZ_RTTI(JsonBitsetSerializer, "{10CE969D-D69E-4B3F-8593-069736F8F705}", JsonUnsupportedTypesSerializer);
+        AZ_CLASS_ALLOCATOR_DECL;
+
+    protected:
+        AZStd::string_view GetMessage() const override;
+    };
 } // namespace AZ

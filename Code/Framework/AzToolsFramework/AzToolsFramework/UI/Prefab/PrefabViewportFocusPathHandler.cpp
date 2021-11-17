@@ -64,6 +64,9 @@ namespace AzToolsFramework::Prefab
         );
 
         m_backButton->setToolTip("Up one level (-)");
+
+        // Currently hide this button until we can correctly disable/enable it based on context.
+        m_backButton->hide();
     }
 
     void PrefabViewportFocusPathHandler::OnPrefabFocusChanged()

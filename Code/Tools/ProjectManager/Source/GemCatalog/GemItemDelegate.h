@@ -97,6 +97,8 @@ namespace O3DE::ProjectManager
 
         QPixmap m_unknownStatusPixmap;
         QPixmap m_notDownloadedPixmap;
+        QPixmap m_downloadSuccessfulPixmap;
+        QPixmap m_downloadFailedPixmap;
         QMovie* m_downloadingMovie = nullptr;
     };
 } // namespace O3DE::ProjectManager

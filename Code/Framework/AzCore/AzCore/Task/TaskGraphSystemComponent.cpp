@@ -30,8 +30,13 @@ namespace AZ
 
         if (Interface<TaskGraphActiveInterface>::Get() == nullptr)
         {
+        #if (AZ_TRAIT_THREAD_NUM_TASK_GRAPH_WORKER_THREADS)
+            const uint32_t numberOfWorkerThreads = AZ_TRAIT_THREAD_NUM_TASK_GRAPH_WORKER_THREADS;
+        #else
+            const uint32_t numberOfWorkerThreads = Threading::CalcNumWorkerThreads(cl_taskGraphThreadsConcurrencyRatio, cl_taskGraphThreadsMinNumber, cl_taskGraphThreadsNumReserved);
+        #endif // (AZ_TRAIT_THREAD_NUM_TASK_GRAPH_WORKER_THREADS)
             Interface<TaskGraphActiveInterface>::Register(this); // small window that another thread can try to use taskgraph between this line and the set instance.
-            m_taskExecutor = aznew TaskExecutor(Threading::CalcNumWorkerThreads(cl_taskGraphThreadsConcurrencyRatio, cl_taskGraphThreadsMinNumber, cl_taskGraphThreadsNumReserved));
+            m_taskExecutor = aznew TaskExecutor(numberOfWorkerThreads);
             TaskExecutor::SetInstance(m_taskExecutor);
         }
     }
