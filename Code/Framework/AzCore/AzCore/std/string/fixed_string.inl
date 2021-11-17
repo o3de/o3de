@@ -11,7 +11,7 @@
 #include <stdarg.h>
 #include <cstring>
 
-#include <AzCore/std/typetraits/is_integral.h>
+#include <AzCore/std/algorithm.h>
 
 #include <AzCore/std/string/fixed_string_Platform.inl>
 
@@ -1678,6 +1678,26 @@ namespace AZStd
         const basic_fixed_string<Element, MaxElementCount, Traits>& rhs)
     {
         return !operator<(lhs, rhs);
+    }
+
+    template<class Element, size_t MaxElementCount, class Traits, class U>
+    inline constexpr auto erase(basic_fixed_string<Element, MaxElementCount, Traits>& container, const U& element)
+        -> typename basic_fixed_string<Element, MaxElementCount, Traits>::size_type
+    {
+        auto iter = AZStd::remove(container.begin(), container.end(), element);
+        auto removedCount = AZStd::distance(iter, container.end());
+        container.erase(iter, container.end());
+        return removedCount;
+    }
+
+    template<class Element, size_t MaxElementCount, class Traits, class Predicate>
+    inline constexpr auto erase_if(basic_fixed_string<Element, MaxElementCount, Traits>& container, Predicate predicate)
+        -> typename basic_fixed_string<Element, MaxElementCount, Traits>::size_type
+    {
+        auto iter = AZStd::remove_if(container.begin(), container.end(), predicate);
+        auto removedCount = AZStd::distance(iter, container.end());
+        container.erase(iter, container.end());
+        return removedCount;
     }
 
     template<class Element, size_t MaxElementCount, class Traits>

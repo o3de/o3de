@@ -1233,6 +1233,14 @@ namespace AZStd
         right.swap(AZStd::forward<this_type>(left));
     }
 
+    template<class T, class Allocator, AZStd::size_t NumElementsPerBlock, AZStd::size_t MinMapSize, class U>
+    decltype(auto) erase(deque<T, Allocator, NumElementsPerBlock, MinMapSize>& container, const U& value)
+    {
+        auto iter = AZStd::remove(container.begin(), container.end(), value);
+        auto removedCount = AZStd::distance(iter, container.end());
+        container.erase(iter, container.end());
+        return removedCount;
+    }
     template<class T, class Allocator, AZStd::size_t NumElementsPerBlock, AZStd::size_t MinMapSize, class Predicate>
     decltype(auto) erase_if(deque<T, Allocator, NumElementsPerBlock, MinMapSize>& container, Predicate predicate)
     {

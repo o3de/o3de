@@ -2376,17 +2376,52 @@ namespace UnitTest
         static_assert(AZStd::wildcard_match_case(filter1, blahValue));
     }
 
-    TEST_F(String, StringEraseIf_Succeeds)
+    TEST_F(String, StringCXX20Erase_Succeeds)
     {
-
         AZStd::string eraseIfTest = "ABC CBA";
-        auto eraseCount = AZStd::erase_if(eraseIfTest, [](AZStd::string::value_type ch)
-            {
-                return ch == 'C';
-            });
+        auto erasePredicate = [](AZStd::string::value_type ch)
+        {
+            return ch == 'C';
+        };
+        auto eraseCount = AZStd::erase_if(eraseIfTest, erasePredicate);
         EXPECT_EQ(2, eraseCount);
         EXPECT_EQ(5, eraseIfTest.size());
         EXPECT_STREQ("AB BA", eraseIfTest.c_str());
+
+        // Now erase the letter 'A';
+        eraseCount = AZStd::erase(eraseIfTest, 'A');
+        EXPECT_EQ(2, eraseCount);
+        EXPECT_EQ(3, eraseIfTest.size());
+        EXPECT_EQ("B B", eraseIfTest);
+    }
+
+    TEST_F(String, FixedStringCXX20Erase_Succeeds)
+    {
+        // Erase 'l' from the phrase "Hello" World"
+        constexpr auto eraseTest = [](const char* testString) constexpr
+        {
+            AZStd::fixed_string<16> testResult{ testString };
+            AZStd::erase(testResult, 'l');
+            return testResult;
+        }("HelloWorld");
+
+        static_assert(eraseTest == "HeoWord");
+        EXPECT_EQ("HeoWord", eraseTest);
+
+        // Use erase_if to erase both 'H' and 'e' from the remaining eraseTest string
+        constexpr auto eraseIfTest = [](AZStd::string_view testString) constexpr
+        {
+            AZStd::fixed_string<16> testResult{ testString };
+            auto erasePredicate = [](char ch)
+            {
+                return ch == 'H' || ch == 'e';
+            };
+            AZStd::erase_if(testResult, erasePredicate);
+            return testResult;
+        }(eraseTest);
+
+        static_assert(eraseIfTest == "oWord");
+        EXPECT_EQ("oWord", eraseIfTest);
     }
 
     template <typename StringType>
