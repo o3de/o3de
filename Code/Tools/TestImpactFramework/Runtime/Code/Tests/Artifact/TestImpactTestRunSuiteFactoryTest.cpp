@@ -615,16 +615,17 @@ namespace UnitTest
             "    <testcase classname=\"AutomatedTesting.Gem.PythonTests.Atom.TestSuite_Main.TestMaterialEditorBasicTests\" "
             "file=\"AutomatedTesting\\Gem\\PythonTests\\Atom\\TestSuite_Main.py\" line=\"284\" "
             "name=\"test_MaterialEditorBasicTests[windows-MaterialEditor-windows_generic-AutomatedTesting]\" time=\"175.259\">\n"
-            "      <failure message=\\\"AssertionError: Did not get idle state from AP, message was instead: error_[WinError 10054] An \"\n"
-            "            \"existing connection was forcibly closed by the remote host\\\">Some failure message</failure>\n"
+            "      <failure message=\"AssertionError: Did not get idle state from AP, message was instead: error_[WinError 10054] An existing connection was forcibly closed by the remote host\">Some failure message</failure>\n"
             "    </testcase>\n"
             "    <testcase classname=\"AutomatedTesting.Gem.PythonTests.Atom.TestSuite_Main.TestMaterialEditorBasicTests\" "
             "file=\"AutomatedTesting\\Gem\\PythonTests\\Atom\\TestSuite_Main.py\" line=\"284\" "
             "name=\"test_Dummy[windows-MaterialEditor-windows_generic-AutomatedTesting]\" time=\"175.259\">\n"
-            "      <error message=\\\"Hello\\\">Some error message</failure>\n"
+            "      <error message=\"Hello\">Some error message</error>\n"
             "    </testcase>\n"
             "  </testsuite>\n"
             "</testsuites>";
+
+        AZ_Printf("Here\n", rawRun.c_str());
 
         const AZStd::vector<TestImpact::TestRunSuite> suites = TestImpact::PyTest::TestRunSuitesFactory(rawRun);
     }

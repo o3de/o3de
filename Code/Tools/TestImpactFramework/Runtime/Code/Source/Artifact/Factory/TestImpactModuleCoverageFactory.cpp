@@ -137,4 +137,29 @@ namespace TestImpact
             return modules;
         }
     } // namespace Cobertura
+
+    namespace PythonCoverage
+    {
+        AZStd::vector<ModuleCoverage> ModuleCoveragesFactory(const AZStd::string& coverageData)
+        {
+            AZStd::vector<ModuleCoverage> modules;
+
+            size_t start;
+            size_t end = 0;
+            const char delim = '\n';
+
+            // Each line contains the name of a module binray
+            while ((start = coverageData.find_first_not_of(delim, end)) != AZStd::string::npos)
+            {
+                end = coverageData.find(delim, start);
+
+                // Python test coverage consists only of module coverage, no soruce or line coverage
+                ModuleCoverage moduleCoverage;
+                moduleCoverage.m_path = coverageData.substr(start, end - start);
+                modules.emplace_back(AZStd::move(moduleCoverage));
+            }
+
+            return modules;
+        }
+    } // namespace JUinit
 } // namespace TestImpact

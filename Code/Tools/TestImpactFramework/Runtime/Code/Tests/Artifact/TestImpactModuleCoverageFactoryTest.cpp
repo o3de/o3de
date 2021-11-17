@@ -563,4 +563,14 @@ namespace UnitTest
         // Expect the generated suite data to match that of the raw coverage text
         EXPECT_TRUE(coverage == expectedCoverage);
     }
+
+    TEST(PythonCoverageModuleCoveragesFactory, ParseTestTargetSourceCoverageD_ReturnsValidSourceCoverage)
+    {
+        const AZStd::string rawCoverage =
+            "SurfaceData.Editor.dll\n"
+            "Vegetation.Editor.dll\n"
+            "LmbrCentral.Editor.dll\n";
+
+        const AZStd::vector<TestImpact::ModuleCoverage> coverage = TestImpact::PythonCoverage::ModuleCoveragesFactory(rawCoverage);
+    }
 } // namespace UnitTest

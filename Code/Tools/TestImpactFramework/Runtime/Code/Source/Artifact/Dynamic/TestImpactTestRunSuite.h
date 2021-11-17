@@ -25,7 +25,7 @@ namespace TestImpact
     //! Status of test as to whether or not it was ran.
     enum class TestRunStatus : bool
     {
-        NotRun, //!< The test was not run (typically because the test run was aborted by the client or runner before the test could run).
+        NotRun, //!< The test was not run (test run was disabled or aborted by the runner before the test could run).
         Run //!< The test was run (see TestRunResult for the result of this test).
     };
 
@@ -33,7 +33,7 @@ namespace TestImpact
     struct TestRunCase
         : public TestCase
     {
-        AZStd::optional<TestRunResult> m_result;
+        AZStd::optional<TestRunResult> m_result; //!< Empty if test was run but failed to complete (i.e. crashed).
         AZStd::chrono::milliseconds m_duration = AZStd::chrono::milliseconds{0}; //! Duration this test took to run.
         TestRunStatus m_status = TestRunStatus::NotRun;
     };

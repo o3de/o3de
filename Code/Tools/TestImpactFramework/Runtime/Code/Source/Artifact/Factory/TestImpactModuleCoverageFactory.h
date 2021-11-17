@@ -19,4 +19,12 @@ namespace TestImpact
         //! @return The constructed list of module coverage artifacts.
         AZStd::vector<ModuleCoverage> ModuleCoveragesFactory(const AZStd::string& coverageData);
     } // namespace Cobertura
+
+    namespace PythonCoverage
+    {
+        //! Constructs a list of module coverage artifacts from the specified coverage data.
+        //! @param coverageData The raw coverage data in XML format.
+        //! @return The constructed list of module coverage artifacts.
+        AZStd::vector<ModuleCoverage> ModuleCoveragesFactory(const AZStd::string& coverageData);
+    } // namespace JUnit
 } // namespace TestImpact
