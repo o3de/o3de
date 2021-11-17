@@ -25,7 +25,7 @@ set(package_dependencies
     libxcb-xinput0                          # For Qt plugins at runtime
     libfontconfig1-dev                      # For Qt plugins at runtime
     libcurl4-openssl-dev                    # For HttpRequestor
-    libsdl2-dev                             # for WWise/Audio
+    # libsdl2-dev                             # for WWise/Audio
     libxcb-xkb-dev                          # For xcb keyboard input
     libxkbcommon-x11-dev                    # For xcb keyboard input
     libxkbcommon-dev                        # For xcb keyboard input
