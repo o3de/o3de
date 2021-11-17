@@ -5,7 +5,8 @@
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "AWS Cognito User Management"
+                "name": "AWS Cognito User Management",
+                "category": "AWS Client Auth"
             },
             "methods": [
                 {

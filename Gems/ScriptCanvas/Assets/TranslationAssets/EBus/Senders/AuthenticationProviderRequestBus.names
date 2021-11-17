@@ -5,7 +5,8 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AWS Authentication Provider"
+                "name": "AWS Authentication Provider",
+                "category": "AWS Client Auth"
             },
             "methods": [
                 {
