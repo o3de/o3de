@@ -605,6 +605,13 @@ bool OutlinerListModel::setData(const QModelIndex& index, const QVariant& value,
 
                     if (oldName != newName)
                     {
+                        QRegExp rx("[_a-zA-Z0-9-\\s]+");
+                        if (!rx.exactMatch(newName.c_str()))
+                        {
+                            QMessageBox::information(NULL, "Title", "Special characters are not allowed", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+                            newName = oldName;
+                        }
+
                         AzToolsFramework::ScopedUndoBatch undo("Rename Entity");
 
                         entity->SetName(newName);

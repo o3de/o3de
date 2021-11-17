@@ -589,6 +589,10 @@ namespace AzToolsFramework
             this,
             SLOT(OnEntityNameChanged()));
 
+        QRegExp rx("[_a-zA-Z0-9-\\s]+");
+        QValidator* validator = new QRegExpValidator(rx, this);
+        m_gui->m_entityNameEditor->setValidator(validator);
+
         connect(m_gui->m_statusComboBox,
             SIGNAL(currentIndexChanged(int)),
             this,
