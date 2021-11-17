@@ -453,7 +453,7 @@ namespace AZ
             TryCreateShaderResourceGroup();
             if (!m_shaderResourceGroup)
             {
-                AZ_Warning("RPI::View", false, "Shader Resource Group failed to initialize");
+                AZ_Error("RPI::View", false, "Shader Resource Group failed to initialize");
             }
         }
     } // namespace RPI
