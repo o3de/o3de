@@ -347,6 +347,7 @@ namespace AzFramework
         AZStd::function<float()> m_rotateSpeedFn;
         AZStd::function<bool()> m_invertPitchFn;
         AZStd::function<bool()> m_invertYawFn;
+        AZStd::function<bool()> m_constrainPitch;
 
     private:
         InputChannelId m_rotateChannelId; //!< Input channel to begin the rotate camera input.

@@ -265,8 +265,11 @@ namespace AtomToolsFramework
 
     void ModularViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal)
     {
-        m_cameraMode = CameraMode::Animation;
-        m_cameraAnimation = CameraAnimation{ CombinedCameraTransform(), worldFromLocal, 0.0f };
+        if (m_cameraMode != CameraMode::Animation)
+        {
+            m_cameraMode = CameraMode::Animation;
+            m_cameraAnimation = CameraAnimation{ CombinedCameraTransform(), worldFromLocal, 0.0f };
+        }
     }
 
     void ModularViewportCameraControllerInstance::StartTrackingTransform(const AZ::Transform& worldFromLocal)
