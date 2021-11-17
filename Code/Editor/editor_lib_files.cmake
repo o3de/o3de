@@ -452,8 +452,6 @@ set(FILES
     Objects/DisplayContextShared.inl
     Objects/SelectionGroup.cpp
     Objects/SelectionGroup.h
-    Objects/SubObjSelection.cpp
-    Objects/SubObjSelection.h
     Objects/ObjectLoader.cpp
     Objects/ObjectLoader.h
     Objects/ObjectManager.cpp
