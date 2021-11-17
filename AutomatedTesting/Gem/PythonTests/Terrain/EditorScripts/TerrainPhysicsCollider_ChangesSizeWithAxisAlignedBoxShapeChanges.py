@@ -18,7 +18,7 @@ class Tests():
 def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
     """
     Summary:
-    Test aspects of the TerrainHeightGradientList through the BehaviorContext and the Property Tree.
+    Test aspects of the Terrain Physics Heightfield Collider through the BehaviorContext and the Property Tree.
 
     Test Steps:
     Expected Behavior:
