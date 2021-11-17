@@ -63,34 +63,34 @@ namespace GraphCanvas
         void ResetSourceSlotFilter();
         void FilterForSourceSlot(const GraphId& graphId, const AZ::EntityId& sourceSlotId);
 
-    protected slots:
+    protected Q_SLOTS:
         virtual void SetupDisplay();
         virtual void HandleContextMenuSelection();
 
     protected:
+
         virtual void OnRefreshActions(const GraphId& graphId, const AZ::EntityId& targetMemberId);
 
         void keyPressEvent(QKeyEvent* keyEvent) override;
 
-        NodePaletteWidget* m_nodePalette = nullptr;
-
-    private:
-    
         void ConstructMenu();
         void AddUnprocessedActions(AZStd::vector<QAction*>& actions);
     
-        bool m_finalized;
-        bool m_isToolBarMenu;
+        NodePaletteWidget* m_nodePalette = nullptr;
+
+        bool    m_finalized;
+        bool    m_isToolBarMenu;
+        AZ::u32   m_userNodePaletteWidth = 300;
 
         EditorId                                m_editorId;
 
-        AZStd::vector< ActionGroupId >          m_actionGroupOrdering;
-        AZStd::unordered_set< ActionGroupId >   m_actionGroups;
+        AZStd::vector<ActionGroupId>          m_actionGroupOrdering;
+        AZStd::unordered_set<ActionGroupId>   m_actionGroups;
 
         AZStd::vector<QAction*> m_unprocessedFrontActions;
         AZStd::vector<QAction*> m_unprocessedActions;
         AZStd::vector<QAction*> m_unprocessedBackActions;
 
-        AZStd::unordered_map< AZStd::string, QMenu* > m_subMenuMap;
+        AZStd::unordered_map<AZStd::string, QMenu*> m_subMenuMap;
     };
 }

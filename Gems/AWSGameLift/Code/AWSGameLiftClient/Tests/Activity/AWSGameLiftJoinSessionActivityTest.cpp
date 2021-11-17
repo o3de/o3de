@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzFramework/Session/ISessionHandlingRequests.h>
+
 #include <AWSGameLiftClientFixture.h>
 #include <Activity/AWSGameLiftJoinSessionActivity.h>
 

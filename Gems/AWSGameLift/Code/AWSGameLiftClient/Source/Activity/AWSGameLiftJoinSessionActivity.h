@@ -36,7 +36,6 @@ namespace AWSGameLift
 
         // Create CreatePlayerSessionRequest and make a CreatePlayerSession call through GameLift client
         Aws::GameLift::Model::CreatePlayerSessionOutcome CreatePlayerSession(
-            const Aws::GameLift::GameLiftClient& gameliftClient,
             const AWSGameLiftJoinSessionRequest& joinSessionRequest);
 
         // Request to setup networking connection for player
