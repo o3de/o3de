@@ -165,4 +165,225 @@ namespace UnitTest
 
         EXPECT_FALSE(AssetManager::Instance().HasActiveJobsOrStreamerRequests());
     }
+
+    MemoryStreamerWrapper::MemoryStreamerWrapper()
+    {
+        using ::testing::_;
+        using ::testing::NiceMock;
+        using ::testing::Return;
+
+        ON_CALL(m_mockStreamer, SuspendProcessing()).WillByDefault([this]()
+        {
+            m_suspended = true;
+        });
+
+        ON_CALL(m_mockStreamer, ResumeProcessing()).WillByDefault([this]()
+        {
+            AZStd::unique_lock lock(m_mutex);
+
+            m_suspended = false;
+
+            while (!m_processingQueue.empty())
+            {
+                FileRequestHandle requestHandle = m_processingQueue.front();
+                m_processingQueue.pop();
+
+                const auto& onCompleteCallback = GetReadRequest(requestHandle)->m_callback;
+
+                if (onCompleteCallback)
+                {
+                    onCompleteCallback(requestHandle);
+                }
+            }
+        });
+
+        ON_CALL(m_mockStreamer, Read(_, ::testing::An<IStreamerTypes::RequestMemoryAllocator&>(), _, _, _, _))
+            .WillByDefault(
+            [this](
+            [[maybe_unused]] AZStd::string_view relativePath, IStreamerTypes::RequestMemoryAllocator& allocator, size_t size,
+            AZStd::chrono::microseconds deadline, IStreamerTypes::Priority priority, [[maybe_unused]] size_t offset)
+            {
+                AZStd::unique_lock lock(m_mutex);
+
+                ReadRequest request;
+
+                // Save off the requested deadline and priority
+                request.m_deadline = deadline;
+                request.m_priority = priority;
+                request.m_data = allocator.Allocate(size, size, 8);
+
+                auto iterator = m_virtualFiles.find(relativePath);
+
+                if (iterator == m_virtualFiles.end())
+                {
+                    AZ_Assert(false, "Failed to find file %.*s", relativePath.size(), relativePath.data());
+                }
+
+                const auto& virtualFile = iterator->second;
+
+                AZ_Assert(
+                    virtualFile.size() == size, "Streamer read request size did not match size of saved file: %.*s", relativePath.size(),
+                    relativePath.data());
+                AZ_Assert(size > 0, "Size is zero %.*s", relativePath.size(), relativePath.data());
+
+                memcpy(request.m_data.m_address, virtualFile.data(), size);
+
+                // Create a real file request result and return it
+                request.m_request = m_context.GetNewExternalRequest();
+
+                m_readRequests.push_back(request);
+
+                return request.m_request;
+            });
+
+        ON_CALL(m_mockStreamer, SetRequestCompleteCallback(_, _))
+            .WillByDefault([this](FileRequestPtr& request, AZ::IO::IStreamer::OnCompleteCallback callback) -> FileRequestPtr&
+            {
+                // Save off the callback just so that we can call it when the request is "done"
+                AZStd::unique_lock lock(m_mutex);
+                ReadRequest* readRequest = GetReadRequest(request);
+                readRequest->m_callback = callback;
+
+                return request;
+            });
+
+        ON_CALL(m_mockStreamer, QueueRequest(_))
+            .WillByDefault([this](const auto& fileRequest)
+            {
+                if (!m_suspended)
+                {
+                    decltype(ReadRequest::m_callback) onCompleteCallback;
+
+                    AZStd::unique_lock lock(m_mutex);
+                    ReadRequest* readRequest = GetReadRequest(fileRequest);
+                    onCompleteCallback = readRequest->m_callback;
+
+                    if (onCompleteCallback)
+                    {
+                        onCompleteCallback(fileRequest);
+                        
+                        m_readRequests.erase(readRequest);
+                    }
+                }
+                else
+                {
+                    AZStd::unique_lock lock(m_mutex);
+
+                    m_processingQueue.push(fileRequest);
+                }
+            });
+
+        ON_CALL(m_mockStreamer, GetRequestStatus(_))
+            .WillByDefault([this]([[maybe_unused]] FileRequestHandle request)
+            {
+                // Return whatever request status has been set in this class
+                return IO::IStreamerTypes::RequestStatus::Completed;
+            });
+
+        ON_CALL(m_mockStreamer, GetReadRequestResult(_, _, _, _))
+            .WillByDefault([this](
+            [[maybe_unused]] FileRequestHandle request, void*& buffer, AZ::u64& numBytesRead,
+            IStreamerTypes::ClaimMemory claimMemory)
+            {
+                // Make sure the requestor plans to free the data buffer we allocated.
+                EXPECT_EQ(claimMemory, IStreamerTypes::ClaimMemory::Yes);
+
+                AZStd::unique_lock lock(m_mutex);
+
+                ReadRequest* readRequest = GetReadRequest(request);
+
+                // Provide valid data buffer results.
+                numBytesRead = readRequest->m_data.m_size;
+                buffer = readRequest->m_data.m_address;
+
+                return true;
+            });
+
+        ON_CALL(m_mockStreamer, RescheduleRequest(_, _, _))
+            .WillByDefault([this](IO::FileRequestPtr target, AZStd::chrono::microseconds newDeadline, IO::IStreamerTypes::Priority newPriority)
+            {
+                AZStd::unique_lock lock(m_mutex);
+                ReadRequest* readRequest = GetReadRequest(target);
+
+                readRequest->m_deadline = newDeadline;
+                readRequest->m_priority = newPriority;
+
+                return target;
+            });
+    }
+
+    ReadRequest* MemoryStreamerWrapper::GetReadRequest(FileRequestHandle request)
+    {
+        auto itr = AZStd::find_if(
+            m_readRequests.begin(), m_readRequests.end(),
+            [request](const ReadRequest& searchItem) -> bool
+            {
+                return (searchItem.m_request == request);
+            });
+
+        return itr;
+    }
+
+    void DisklessAssetManagerBase::SetUp()
+    {
+        using ::testing::_;
+        using ::testing::NiceMock;
+        using ::testing::Return;
+
+        BaseAssetManagerTest::SetUp();
+
+        ON_CALL(m_fileIO, Size(::testing::Matcher<const char*>(::testing::_), _))
+            .WillByDefault(
+            [this](const char* path, u64& size)
+            {
+                AZStd::scoped_lock lock(m_streamerWrapper->m_mutex);
+                auto itr = m_streamerWrapper->m_virtualFiles.find(path);
+
+                if (itr != m_streamerWrapper->m_virtualFiles.end())
+                {
+                    size = itr->second.size();
+                    return ResultCode::Success;
+                }
+
+                return ResultCode::Error;
+            });
+
+        m_prevFileIO = IO::FileIOBase::GetInstance();
+        IO::FileIOBase::SetInstance(nullptr);
+        IO::FileIOBase::SetInstance(&m_fileIO);
+    }
+
+    void DisklessAssetManagerBase::TearDown()
+    {
+        IO::FileIOBase::SetInstance(nullptr);
+        IO::FileIOBase::SetInstance(m_prevFileIO);
+
+        BaseAssetManagerTest::TearDown();
+    }
+
+    IO::IStreamer* DisklessAssetManagerBase::CreateStreamer()
+    {
+        m_streamerWrapper = AZStd::make_unique<MemoryStreamerWrapper>();
+
+        return &(m_streamerWrapper->m_mockStreamer);
+    }
+
+    void DisklessAssetManagerBase::DestroyStreamer(IO::IStreamer*)
+    {
+        m_streamerWrapper = nullptr;
+    }
+
+    void DisklessAssetManagerBase::WriteAssetToDisk(const AZStd::string& assetName, const AZStd::string&)
+    {
+        AZStd::string assetFileName = GetTestFolderPath() + assetName;
+
+        AssetWithCustomData asset;
+
+        EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile(assetFileName, &asset, m_serializeContext));
+    }
+
+    void DisklessAssetManagerBase::DeleteAssetFromDisk(const AZStd::string&)
+    {
+
+    }
 }
