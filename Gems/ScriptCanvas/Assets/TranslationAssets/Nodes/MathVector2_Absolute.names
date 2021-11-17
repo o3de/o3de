@@ -7,8 +7,7 @@
             "details": {
                 "name": "Absolute",
                 "category": "Math/Vector2",
-                "tooltip": "returns a vector with the absolute values of the elements of the source",
-                "subtitle": "Vector2"
+                "tooltip": "Returns a vector with the absolute values of the elements of the source"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector2: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Vector2: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector2",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector2"
+                        "name": "Result"
                     }
                 }
             ]

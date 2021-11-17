@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromCrossProduct",
+                "name": "From Cross Product",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns a skew-symmetric cross product matrix based on supplied vector",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns a skew-symmetric cross product matrix based on supplied vector"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Vector3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix3x3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix3x3"
+                        "name": "Result"
                     }
                 }
             ]

@@ -5,8 +5,7 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "UI Anchors",
-                "category": "UI"
+                "name": "UiAnchors"
             },
             "methods": [
                 {
@@ -22,21 +21,19 @@
                     },
                     "details": {
                         "name": "UiAnchors::SetBottom",
-                        "category": "UI"
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors",
-                                "tooltip": "The anchors for which to set the bottom anchor"
+                                "name": "Anchors*"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Bottom",
-                                "tooltip": "The bottom anchor [0-1]"
+                                "name": "float"
                             }
                         }
                     ]
@@ -54,21 +51,19 @@
                     },
                     "details": {
                         "name": "UiAnchors::SetRight",
-                        "category": "UI"
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors",
-                                "tooltip": "The anchors for which to set the right anchor"
+                                "name": "Anchors*"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Right",
-                                "tooltip": "The right anchor [0-1]"
+                                "name": "float"
                             }
                         }
                     ]
@@ -86,21 +81,19 @@
                     },
                     "details": {
                         "name": "UiAnchors::SetTop",
-                        "category": "UI"
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors",
-                                "tooltip": "The anchors for which to set the top anchor"
+                                "name": "Anchors*"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Top",
-                                "tooltip": "The top anchor [0-1]"
+                                "name": "float"
                             }
                         }
                     ]
@@ -118,21 +111,19 @@
                     },
                     "details": {
                         "name": "UiAnchors::SetLeft",
-                        "category": "UI"
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors",
-                                "tooltip": "The anchors for which to set the left anchor"
+                                "name": "Anchors*"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Left",
-                                "tooltip": "The left anchor [0-1]"
+                                "name": "float"
                             }
                         }
                     ]
@@ -150,42 +141,205 @@
                     },
                     "details": {
                         "name": "UiAnchors::SetAnchors",
-                        "category": "UI"
+                        "category": "Other"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors",
-                                "tooltip": "The anchors to set"
+                                "name": "Anchors*"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Left",
-                                "tooltip": "The left anchor [0-1]"
+                                "name": "float"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Top",
-                                "tooltip": "The top anchor [0-1]"
+                                "name": "float"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Right",
-                                "tooltip": "The right anchor [0-1]"
+                                "name": "float"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Bottom",
-                                "tooltip": "The bottom anchor [0-1]"
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "left",
+                    "details": {
+                        "name": "UiAnchors::left::Getter"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "left",
+                    "details": {
+                        "name": "UiAnchors::left::Setter"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors*"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "const float&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "top",
+                    "details": {
+                        "name": "UiAnchors::top::Getter"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "top",
+                    "details": {
+                        "name": "UiAnchors::top::Setter"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors*"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "const float&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "right",
+                    "details": {
+                        "name": "UiAnchors::right::Getter"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "right",
+                    "details": {
+                        "name": "UiAnchors::right::Setter"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors*"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "const float&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "bottom",
+                    "details": {
+                        "name": "UiAnchors::bottom::Getter"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float&"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "bottom",
+                    "details": {
+                        "name": "UiAnchors::bottom::Setter"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": "Anchors*"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "const float&"
                             }
                         }
                     ]

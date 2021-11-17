@@ -7,8 +7,7 @@
             "details": {
                 "name": "Orthogonalize",
                 "category": "Math/Transform",
-                "tooltip": "returns an orthogonal matrix if the Source is almost orthogonal",
-                "subtitle": "Transform"
+                "tooltip": "Returns an orthogonal matrix if the Source is almost orthogonal"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Transform: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Transform: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Transform",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Transform"
+                        "name": "Result"
                     }
                 }
             ]

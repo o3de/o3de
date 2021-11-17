@@ -5,7 +5,7 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GammaToLinear",
+                "name": "Gamma To Linear",
                 "category": "Math/Color",
                 "tooltip": "returns Source converted from gamma corrected to linear space",
                 "subtitle": "Color"
@@ -26,13 +26,13 @@
                 {
                     "key": "DataInput_Color: Source",
                     "details": {
-                        "name": "Color: Source"
+                        "name": "Source"
                     }
                 },
                 {
                     "key": "DataOutput_Result: Color",
                     "details": {
-                        "name": "Result: Color"
+                        "name": "Result"
                     }
                 }
             ]

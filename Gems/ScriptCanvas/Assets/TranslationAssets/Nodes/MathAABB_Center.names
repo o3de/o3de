@@ -6,9 +6,9 @@
             "variant": "",
             "details": {
                 "name": "Center",
-                "category": "Math/AABB",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the center of Source",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
@@ -26,13 +26,13 @@
                 {
                     "key": "DataInput_AABB: Source",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
                     "key": "DataOutput_Result: Vector3",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Center"
                     }
                 }
             ]
