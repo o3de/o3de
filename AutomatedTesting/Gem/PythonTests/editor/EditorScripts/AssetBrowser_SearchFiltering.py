@@ -62,7 +62,7 @@ def AssetBrowser_SearchFiltering():
         from editor_python_test_tools.utils import Report
         from editor_python_test_tools.utils import TestHelper as helper
 
-        def verify_files_appeared(model, allowed_asset_extentions, parent_index=QtCore.QModelIndex()):
+        def verify_files_appeared(model, allowed_asset_extensions, parent_index=QtCore.QModelIndex()):
             indexes = [parent_index]
             while len(indexes) > 0:
                 parent_index = indexes.pop(0)
@@ -71,7 +71,7 @@ def AssetBrowser_SearchFiltering():
                     cur_data = cur_index.data(Qt.DisplayRole)
                     if (
                         "." in cur_data
-                        and (cur_data.lower().split(".")[-1] not in allowed_asset_extentions)
+                        and (cur_data.lower().split(".")[-1] not in allowed_asset_extensions)
                         and not cur_data[-1] == ")"
                     ):
                         Report.info(f"Incorrect file found: {cur_data}")
@@ -94,16 +94,21 @@ def AssetBrowser_SearchFiltering():
             Report.info("Asset Browser is already open")
         editor_window = pyside_utils.get_editor_main_window()
         app = QtWidgets.QApplication.instance()
-        
-        # 3) Type the name of an asset in the search bar and make sure only one asset is filtered in Asset browser
+
+        # 3) Type the name of an asset in the search bar and make sure it is filtered to and selectable
         asset_browser = editor_window.findChild(QtWidgets.QDockWidget, "Asset Browser")
         search_bar = asset_browser.findChild(QtWidgets.QLineEdit, "textSearch")
         search_bar.setText("cedar.fbx")
         asset_browser_tree = asset_browser.findChild(QtWidgets.QTreeView, "m_assetBrowserTreeViewWidget")
-        model_index = pyside_utils.find_child_by_pattern(asset_browser_tree, "cedar.fbx")
-        pyside_utils.item_view_index_mouse_click(asset_browser_tree, model_index)
+        asset_browser_table = asset_browser.findChild(QtWidgets.QTreeView, "m_assetBrowserTableViewWidget")
+        found = await pyside_utils.wait_for_condition(lambda: pyside_utils.find_child_by_pattern(asset_browser_table, "cedar.fbx"), 5.0)
+        if found:
+            model_index = pyside_utils.find_child_by_pattern(asset_browser_table, "cedar.fbx")
+        else:
+            Report.result(Tests.asset_filtered, found)
+        pyside_utils.item_view_index_mouse_click(asset_browser_table, model_index)
         is_filtered = await pyside_utils.wait_for_condition(
-            lambda: asset_browser_tree.indexBelow(asset_browser_tree.currentIndex()) == QtCore.QModelIndex(), 5.0)
+            lambda: asset_browser_table.currentIndex() == model_index, 5.0)
         Report.result(Tests.asset_filtered, is_filtered)
 
         # 4) Click the "X" in the search bar.
