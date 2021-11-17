@@ -37,7 +37,7 @@ if(CPACK_UPLOAD_URL)
         
         # replace the name fo the binary inside the generated checksum
         file(READ "${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256" _checksum_contents)
-        string(REPLACE "_${CPACK_PACKAGE_VERSION}" "" non_versioned_checksum_contents "${_checksum_contents}")
+        string(REPLACE "_${CPACK_PACKAGE_VERSION}" "_latest" non_versioned_checksum_contents "${_checksum_contents}")
         set(latest_hash_file "${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_NAME}_latest.deb.sha256")
         file(WRITE "${latest_hash_file}" "${non_versioned_checksum_contents}")
         ly_upload_to_latest(${CPACK_UPLOAD_URL} "${latest_hash_file}")
