@@ -10,8 +10,10 @@
 
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Math/Color.h>
+#include <AzFramework/Font/FontInterface.h>
 #include <Integration/Rendering/RenderFlag.h>
 #include <Integration/Rendering/RenderActorInstance.h>
+#include <Atom/RPI.Public/ViewportContext.h>
 
 namespace EMotionFX
 {
@@ -60,14 +62,21 @@ namespace AZ::Render
             const AZ::Color& tangentsColor, const AZ::Color& mirroredBitangentsColor, const AZ::Color& bitangentsColor);
         void RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float wireframeScale, float scaleMultiplier,
             const AZ::Color& wireframeColor);
+        void RenderJointNames(EMotionFX::ActorInstance* actorInstance, RPI::ViewportContextPtr viewportContext, const AZ::Color& jointNameColor);
 
         EMotionFX::Mesh* m_currentMesh = nullptr; /**< A pointer to the mesh whose world space positions are in the pre-calculated positions buffer.
                                            NULL in case we haven't pre-calculated any positions yet. */
         AZStd::vector<AZ::Vector3> m_worldSpacePositions; /**< The buffer used to store world space positions for rendering normals
                                                           tangents and the wireframe. */
 
+        static constexpr float BaseFontSize = 0.7f;
+        const Vector3 TopRightBorderPadding = AZ::Vector3(-40.0f, 22.0f, 0.0f);
+
         RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
         AZStd::vector<AZ::Vector3> m_auxVertices;
         AZStd::vector<AZ::Color> m_auxColors;
+
+        AzFramework::TextDrawParameters m_drawParams;
+        AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;
     };
 }
