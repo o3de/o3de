@@ -692,10 +692,10 @@ namespace UnitTest
         });
 
         // Missing image reference
-        expectError([](MaterialSourceData& materialSourceData)
+        expectWarning([](MaterialSourceData& materialSourceData)
         {
             AddProperty(materialSourceData, "general", "MyImage", AZStd::string("doesNotExist.streamingimage"));
-        }, 3); // Expect a 3rd error because AssetUtils reports its own assertion failure
+        });
     }
 
 
