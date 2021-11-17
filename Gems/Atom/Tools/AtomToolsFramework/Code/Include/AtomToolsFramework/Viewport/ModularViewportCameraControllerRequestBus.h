@@ -31,15 +31,16 @@ namespace AtomToolsFramework
         //! @param worldFromLocal The transform of where the camera should end up.
         virtual void InterpolateToTransform(const AZ::Transform& worldFromLocal) = 0;
 
-        //! Return the current reference frame.
-        //! @note If a reference frame has not been set or a frame has been cleared, this is just the identity.
-        virtual AZ::Transform GetReferenceFrame() const = 0;
+        //! Start tracking a transform.
+        //! Store the current camera transform and move to the next camera transform.
+        virtual void StartTrackingTransform(const AZ::Transform& worldFromLocal) = 0;
 
-        //! Set a new reference frame other than the identity for the camera controller.
-        virtual void SetReferenceFrame(const AZ::Transform& worldFromLocal) = 0;
+        //! Stop tracking the set transform.
+        //! The previously stored camera transform is restored.
+        virtual void StopTrackingTransform() = 0;
 
-        //! Clear the current reference frame to restore the identity.
-        virtual void ClearReferenceFrame() = 0;
+        //! Return if the tracking transform is set.
+        virtual bool IsTrackingTransform() const = 0;
 
     protected:
         ~ModularViewportCameraControllerRequests() = default;
