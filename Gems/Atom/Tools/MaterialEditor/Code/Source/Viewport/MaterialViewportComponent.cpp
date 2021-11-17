@@ -6,61 +6,26 @@
  *
  */
 
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Jobs/JobFunction.h>
-
-#include <AzFramework/Asset/AssetSystemBus.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/IO/LocalFileIO.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-
-#include <Viewport/MaterialViewportComponent.h>
-#include <Atom/Viewport/MaterialViewportNotificationBus.h>
-#include <Atom/Viewport/MaterialViewportSettings.h>
-
-#include <Atom/ImageProcessing/ImageObject.h>
-#include <Atom/ImageProcessing/ImageProcessingBus.h>
-
-#include <AzCore/Serialization/Json/JsonUtils.h>
-
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <Atom/RPI.Reflect/System/AnyAsset.h>
+#include <Atom/Viewport/MaterialViewportNotificationBus.h>
+#include <Atom/Viewport/MaterialViewportSettings.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
+#include <AzFramework/IO/LocalFileIO.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <Viewport/MaterialViewportComponent.h>
 
 namespace MaterialEditor
 {
-    using LoadImageAsyncCallback = AZStd::function<void(const QImage&)>;
-    void LoadImageAsync(const AZStd::string& path, LoadImageAsyncCallback callback)
-    {
-        AZ::Job* job = AZ::CreateJobFunction([path, callback]() {
-            ImageProcessingAtom::IImageObjectPtr imageObject;
-            ImageProcessingAtom::ImageProcessingRequestBus::BroadcastResult(imageObject, &ImageProcessingAtom::ImageProcessingRequests::LoadImagePreview, path);
-
-            if (imageObject)
-            {
-                AZ::u8* imageBuf = nullptr;
-                AZ::u32 pitch = 0;
-                AZ::u32 mip = 0;
-                imageObject->GetImagePointer(mip, imageBuf, pitch);
-                const AZ::u32 width = imageObject->GetWidth(mip);
-                const AZ::u32 height = imageObject->GetHeight(mip);
-
-                QImage image(imageBuf, width, height, pitch, QImage::Format_RGBA8888);
-
-                if (callback)
-                {
-                    callback(image);
-                }
-            }
-            }, true);
-        job->Start();
-    }
-
     MaterialViewportComponent::MaterialViewportComponent()
     {
     }
@@ -162,12 +127,6 @@ namespace MaterialEditor
         m_viewportSettings =
             AZ::UserSettings::CreateFind<MaterialViewportSettings>(AZ::Crc32("MaterialViewportSettings"), AZ::UserSettings::CT_GLOBAL);
 
-        m_lightingPresetPreviewImageDefault = QImage(180, 90, QImage::Format::Format_RGBA8888);
-        m_lightingPresetPreviewImageDefault.fill(Qt::GlobalColor::black);
-
-        m_modelPresetPreviewImageDefault = QImage(90, 90, QImage::Format::Format_RGBA8888);
-        m_modelPresetPreviewImageDefault.fill(Qt::GlobalColor::black);
-
         MaterialViewportRequestBus::Handler::BusConnect();
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
     }
@@ -177,12 +136,10 @@ namespace MaterialEditor
         AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         MaterialViewportRequestBus::Handler::BusDisconnect();
 
-        m_lightingPresetPreviewImages.clear();
         m_lightingPresetVector.clear();
         m_lightingPresetLastSavePathMap.clear();
         m_lightingPresetSelection.reset();
 
-        m_modelPresetPreviewImages.clear();
         m_modelPresetVector.clear();
         m_modelPresetLastSavePathMap.clear();
         m_modelPresetSelection.reset();
@@ -286,14 +243,6 @@ namespace MaterialEditor
             SelectLightingPreset(presetPtr);
         }
 
-        const auto& imagePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(presetPtr->m_skyboxImageAsset.GetId());
-        LoadImageAsync(imagePath, [presetPtr](const QImage& image) {
-            QImage imageScaled = image.scaled(180, 90, Qt::AspectRatioMode::KeepAspectRatio);
-            AZ::TickBus::QueueFunction([presetPtr, imageScaled]() {
-                MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SetLightingPresetPreview, presetPtr, imageScaled);
-                });
-            });
-
         return presetPtr;
     }
 
@@ -353,17 +302,6 @@ namespace MaterialEditor
         return names;
     }
 
-    void MaterialViewportComponent::SetLightingPresetPreview(AZ::Render::LightingPresetPtr preset, const QImage& image)
-    {
-        m_lightingPresetPreviewImages[preset] = image;
-    }
-
-    QImage MaterialViewportComponent::GetLightingPresetPreview(AZ::Render::LightingPresetPtr preset) const
-    {
-        auto imageItr = m_lightingPresetPreviewImages.find(preset);
-        return imageItr != m_lightingPresetPreviewImages.end() ? imageItr->second : m_lightingPresetPreviewImageDefault;
-    }
-
     AZStd::string MaterialViewportComponent::GetLightingPresetLastSavePath(AZ::Render::LightingPresetPtr preset) const
     {
         auto pathItr = m_lightingPresetLastSavePathMap.find(preset);
@@ -381,14 +319,6 @@ namespace MaterialEditor
         {
             SelectModelPreset(presetPtr);
         }
-
-        const auto& imagePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(presetPtr->m_previewImageAsset.GetId());
-        LoadImageAsync(imagePath, [presetPtr](const QImage& image) {
-            QImage imageScaled = image.scaled(90, 90, Qt::AspectRatioMode::KeepAspectRatio);
-            AZ::TickBus::QueueFunction([presetPtr, imageScaled]() {
-                MaterialViewportRequestBus::Broadcast(&MaterialViewportRequestBus::Events::SetModelPresetPreview, presetPtr, imageScaled);
-                });
-            });
 
         return presetPtr;
     }
@@ -447,17 +377,6 @@ namespace MaterialEditor
             }
         }
         return names;
-    }
-
-    void MaterialViewportComponent::SetModelPresetPreview(AZ::Render::ModelPresetPtr preset, const QImage& image)
-    {
-        m_modelPresetPreviewImages[preset] = image;
-    }
-
-    QImage MaterialViewportComponent::GetModelPresetPreview(AZ::Render::ModelPresetPtr preset) const
-    {
-        auto imageItr = m_modelPresetPreviewImages.find(preset);
-        return imageItr != m_modelPresetPreviewImages.end() ? imageItr->second : m_modelPresetPreviewImageDefault;
     }
 
     AZStd::string MaterialViewportComponent::GetModelPresetLastSavePath(AZ::Render::ModelPresetPtr preset) const
