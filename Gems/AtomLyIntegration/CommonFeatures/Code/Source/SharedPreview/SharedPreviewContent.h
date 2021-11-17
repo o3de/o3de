@@ -51,7 +51,7 @@ namespace AZ
             static constexpr float NearDist = 0.001f;
             static constexpr float FarDist = 100.0f;
             static constexpr float FieldOfView = Constants::HalfPi;
-            static constexpr float CameraRotationAngle = Constants::QuarterPi / 2.0f;
+            static constexpr float CameraRotationAngle = Constants::QuarterPi / 3.0f;
 
             RPI::ScenePtr m_scene;
             RPI::ViewPtr m_view;

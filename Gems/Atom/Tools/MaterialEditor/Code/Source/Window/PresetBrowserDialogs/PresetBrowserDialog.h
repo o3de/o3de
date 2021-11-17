@@ -9,12 +9,12 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/vector.h>
-
 #include <QDialog>
 #endif
 
-#include <Source/Window/PresetBrowserDialogs/ui_PresetBrowserDialog.h>
+#include <Window/PresetBrowserDialogs/ui_PresetBrowserDialog.h>
 
 class QImage;
 class QListWidgetItem;
@@ -32,7 +32,7 @@ namespace MaterialEditor
 
 protected:
         void SetupPresetList();
-        QListWidgetItem* CreateListItem(const QString& title, const QImage& image);
+        QListWidgetItem* CreateListItem(const QString& title, const AZ::Data::AssetId& assetId, const QSize& size);
 
         void SetupSearchWidget();
         void SetupDialogButtons();
