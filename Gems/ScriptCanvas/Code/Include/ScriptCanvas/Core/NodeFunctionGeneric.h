@@ -256,7 +256,6 @@ namespace ScriptCanvas
         {
             DataSlotConfiguration slotConfiguration;
 
-            //slotConfiguration.m_name = AZStd::string::format("%s: %s", Data::Traits<ArgType>::GetName().data(), t_Traits::GetArgName(Index));
             slotConfiguration.m_name = t_Traits::GetArgName(Index);
             slotConfiguration.ConfigureDatum(AZStd::move(Datum(Data::FromAZType(Data::Traits<ArgType>::GetAZType()), Datum::eOriginality::Copy)));
 
