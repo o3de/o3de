@@ -6,4 +6,6 @@
 #
 #
 
-set(PAL_TRAIT_BUILD_QTFORPYTHON_SUPPORTED TRUE)
+set(FILES
+    InitializeEmbeddedPyside2.h
+)
