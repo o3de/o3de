@@ -22,7 +22,6 @@
 #include <ISystem.h>
 #include <ILog.h>
 #include <IConsole.h>
-#include <ITimer.h>
 #include <IRenderer.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -97,7 +96,7 @@ UiAnimationSystem::UiAnimationSystem()
     m_pCallback = NULL;
     m_bPaused = false;
     m_sequenceStopBehavior = eSSB_GotoEndTime;
-    m_lastUpdateTime.SetValue(0);
+    m_lastUpdateTime = AZ::Time::ZeroTimeUs;
 
     m_nextSequenceId = 1;
 }
@@ -793,7 +792,7 @@ void UiAnimationSystem::UpdateInternal(const float deltaTime, const bool bPreUpd
     }
 
     // don't update more than once if dt==0.0
-    CTimeValue curTime = gEnv->pTimer->GetFrameStartTime();
+    const AZ::TimeUs curTime = AZ::GetElapsedTimeUs();
     if (deltaTime == 0.0f && curTime == m_lastUpdateTime && !gEnv->IsEditor())
     {
         return;

@@ -140,13 +140,13 @@ def Docking_BasicDockedTools():
 
         # 2.5,6) Send a console command.
         console_line_edit = console.findChild(QtWidgets.QLineEdit, "lineEdit")
-        console_line_edit.setText("t_Scale 2")
+        console_line_edit.setText("t_simulationTickScale 2")
         QtTest.QTest.keyClick(console_line_edit, QtCore.Qt.Key_Enter)
-        general.get_cvar("t_Scale")
-        Report.result(Tests.docked_console_works, general.get_cvar("t_Scale") == "2")
+        general.get_cvar("t_simulationTickScale")
+        Report.result(Tests.docked_console_works, general.get_cvar("t_simulationTickScale") == "2")
 
         # Reset the altered cvar
-        console_line_edit.setText("t_Scale 1")
+        console_line_edit.setText("t_simulationTickScale 1")
         QtTest.QTest.keyClick(console_line_edit, QtCore.Qt.Key_Enter)
 
     run_test()

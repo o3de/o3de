@@ -89,7 +89,6 @@ inline int RoundToClosestMB(size_t memSize)
 #include <IRenderer.h>
 #include <CryFile.h>
 #include <ISystem.h>
-#include <ITimer.h>
 #include <IXml.h>
 #include <ICmdLine.h>
 #include <IConsole.h>

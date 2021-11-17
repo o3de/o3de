@@ -23,7 +23,7 @@ namespace AWSGameLift
         Aws::GameLift::Model::AcceptMatchRequest BuildAWSGameLiftAcceptMatchRequest(const AWSGameLiftAcceptMatchRequest& AcceptMatchRequest);
 
         // Create AcceptMatchRequest and make a AcceptMatch call through GameLift client
-        void AcceptMatch(const Aws::GameLift::GameLiftClient& gameliftClient, const AWSGameLiftAcceptMatchRequest& AcceptMatchRequest);
+        void AcceptMatch(const AWSGameLiftAcceptMatchRequest& AcceptMatchRequest);
 
         // Validate AcceptMatchRequest and check required request parameters
         bool ValidateAcceptMatchRequest(const AzFramework::AcceptMatchRequest& AcceptMatchRequest);

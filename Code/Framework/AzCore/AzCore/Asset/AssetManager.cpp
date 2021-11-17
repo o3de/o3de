@@ -1675,9 +1675,13 @@ namespace AZ::Data
             // they will trigger a ReleaseAsset call sometime after the AssetManager has begun to shut down, which can lead to
             // race conditions.
 
+            // Make sure the streamer request is removed first before the asset is released
+            // If the asset is released first it could lead to a race condition where another thread starts loading the asset
+            // again and attempts to add a new streamer request with the same ID before the old one has been removed, causing
+            // that load request to fail
+            RemoveActiveStreamerRequest(assetId);
             weakAsset = {};
             loadingAsset.Reset();
-            RemoveActiveStreamerRequest(assetId);
         };
 
         auto&& [deadline, priority] = GetEffectiveDeadlineAndPriority(*handler, asset.GetType(), loadParams);
