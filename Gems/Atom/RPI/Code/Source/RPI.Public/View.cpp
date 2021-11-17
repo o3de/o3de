@@ -125,6 +125,7 @@ namespace AZ
 
             m_worldToViewMatrix = worldToView;
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
+            m_clipToWorldMatrix = m_worldToClipMatrix.GetInverseFull();
 
             m_onWorldToViewMatrixChange.Signal(m_worldToViewMatrix);
             m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
@@ -162,6 +163,7 @@ namespace AZ
             m_worldToViewMatrix = m_viewToWorldMatrix.GetInverseFast();
 
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
+            m_clipToWorldMatrix = m_worldToClipMatrix.GetInverseFull();
 
             // Only signal an update when there is a change, otherwise this might block
             // user input from changing the value.
@@ -177,6 +179,7 @@ namespace AZ
             m_viewToClipMatrix = viewToClip;
 
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
+            m_clipToWorldMatrix = m_worldToClipMatrix.GetInverseFull();
 
             // Update z depth constant simultaneously
             // zNear -> n, zFar -> f
@@ -225,6 +228,11 @@ namespace AZ
         const AZ::Matrix4x4& View::GetWorldToClipMatrix() const
         {
             return m_worldToClipMatrix;
+        }
+
+        const AZ::Matrix4x4& View::GetClipToWorldMatrix() const
+        {
+            return m_clipToWorldMatrix;
         }
 
         bool View::HasDrawListTag(RHI::DrawListTag drawListTag)
