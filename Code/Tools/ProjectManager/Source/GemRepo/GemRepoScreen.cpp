@@ -92,7 +92,8 @@ namespace O3DE::ProjectManager
                 return;
             }
 
-            AZ::Outcome<void, AZStd::string> addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUri);
+            AZ::Outcome < void,
+                AZStd::pair<AZStd::string, AZStd::string>> addGemRepoResult = PythonBindingsInterface::Get()->AddGemRepo(repoUri);
             if (addGemRepoResult.IsSuccess())
             {
                 Reinit();
@@ -101,7 +102,20 @@ namespace O3DE::ProjectManager
             else
             {
                 QString failureMessage = tr("Failed to add gem repo: %1.").arg(repoUri);
-                QMessageBox::critical(this, failureMessage, addGemRepoResult.GetError().c_str());
+                if (!addGemRepoResult.GetError().second.empty())
+                {
+                    QMessageBox gemDownloadError;
+                    gemDownloadError.setIcon(QMessageBox::Critical);
+                    gemDownloadError.setWindowTitle(failureMessage);
+                    gemDownloadError.setText(addGemRepoResult.GetError().first.c_str());
+                    gemDownloadError.setDetailedText(addGemRepoResult.GetError().second.c_str());
+                    gemDownloadError.exec();
+                }
+                else
+                {
+                    QMessageBox::critical(this, failureMessage, addGemRepoResult.GetError().first.c_str());
+                }
+
                 AZ_Error("Project Manager", false, failureMessage.toUtf8());
             }
         }

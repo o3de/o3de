@@ -62,11 +62,12 @@ namespace O3DE::ProjectManager
         // Gem Repos
         AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri) override;
         bool RefreshAllGemRepos() override;
-        AZ::Outcome<void, AZStd::string> AddGemRepo(const QString& repoUri) override;
+        AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> AddGemRepo(const QString& repoUri) override;
         bool RemoveGemRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemRepoGemsInfos() override;
-        AZ::Outcome<void, AZStd::string> DownloadGem(const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) override;
+        AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> DownloadGem(
+            const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) override;
         void CancelDownload() override;
         bool IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated) override;
 
@@ -82,6 +83,7 @@ namespace O3DE::ProjectManager
         AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
         bool RegisterThisEngine();
         bool StopPython();
+        AZStd::pair<AZStd::string, AZStd::string> GetSimpleDetailedErrorPair();
 
 
         bool m_pythonStarted = false;

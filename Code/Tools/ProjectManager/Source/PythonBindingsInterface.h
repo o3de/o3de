@@ -200,9 +200,9 @@ namespace O3DE::ProjectManager
         /**
          * Registers this gem repo with the current engine.
          * @param repoUri the absolute filesystem path or url to the gem repo.
-         * @return an outcome with a string error message on failure.
+         * @return an outcome with a pair of string error and detailed messages on failure.
          */
-        virtual AZ::Outcome<void, AZStd::string> AddGemRepo(const QString& repoUri) = 0;
+        virtual AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> AddGemRepo(const QString& repoUri) = 0;
 
         /**
          * Unregisters this gem repo with the current engine.
@@ -228,9 +228,9 @@ namespace O3DE::ProjectManager
          * @param gemName the name of the Gem to download.
          * @param gemProgressCallback a callback function that is called with an int percentage download value.
          * @param force should we forcibly overwrite the old version of the gem.
-         * @return an outcome with a string error message on failure.
+         * @return an outcome with a pair of string error and detailed messages on failure.
          */
-        virtual AZ::Outcome<void, AZStd::string> DownloadGem(
+        virtual AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> DownloadGem(
             const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) = 0;
 
         /**

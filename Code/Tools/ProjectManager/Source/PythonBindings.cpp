@@ -23,6 +23,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <QDir>
@@ -61,7 +62,7 @@ namespace Platform
 namespace RedirectOutput
 {
     using RedirectOutputFunc = AZStd::function<void(const char*)>;
-    AZStd::string lastPythonError;
+    AZStd::vector<AZStd::string> pythonErrorStrings;
 
     struct RedirectOutput
     {
@@ -211,16 +212,16 @@ namespace RedirectOutput
         });
 
         SetRedirection("stderr", g_redirect_stderr_saved, g_redirect_stderr, []([[maybe_unused]] const char* msg) {
-            if (lastPythonError.empty())
+            AZStd::string lastPythonError = msg;
+            constexpr const char* pythonErrorPrefix = "ERROR:root:";
+            constexpr size_t lengthOfErrorPrefix = AZStd::char_traits<char>::length(pythonErrorPrefix);
+            auto errorPrefix = lastPythonError.find(pythonErrorPrefix);
+            if (errorPrefix != AZStd::string::npos)
             {
-                lastPythonError = msg;
-                const int lengthOfErrorPrefix = 11;
-                auto errorPrefix = lastPythonError.find("ERROR:root:");
-                if (errorPrefix != AZStd::string::npos)
-                {
-                    lastPythonError.erase(errorPrefix, lengthOfErrorPrefix);
-                }
+                lastPythonError.erase(errorPrefix, lengthOfErrorPrefix);
             }
+            pythonErrorStrings.push_back(lastPythonError);
+
             AZ_TracePrintf("Python", msg);
         });
 
@@ -386,6 +387,8 @@ namespace O3DE::ProjectManager
         AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
         pybind11::gil_scoped_release release;
         pybind11::gil_scoped_acquire acquire;
+
+        RedirectOutput::pythonErrorStrings.clear();
 
         try
         {
@@ -1062,13 +1065,12 @@ namespace O3DE::ProjectManager
         return result && refreshResult;
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::AddGemRepo(const QString& repoUri)
+    AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> PythonBindings::AddGemRepo(const QString& repoUri)
     {
         bool registrationResult = false;
         bool result = ExecuteWithLock(
             [&]
             {
-                RedirectOutput::lastPythonError.clear();
                 auto pyUri = QString_To_Py_String(repoUri);
                 auto pythonRegistrationResult = m_register.attr("register")(
                     pybind11::none(), pybind11::none(), pybind11::none(), pybind11::none(), pybind11::none(), pybind11::none(), pyUri);
@@ -1079,7 +1081,7 @@ namespace O3DE::ProjectManager
 
         if (!result || !registrationResult)
         {
-            return AZ::Failure<AZStd::string>(AZStd::move(RedirectOutput::lastPythonError));
+            return AZ::Failure<AZStd::pair<AZStd::string, AZStd::string>>(GetSimpleDetailedErrorPair());
         }
 
         return AZ::Success();
@@ -1232,7 +1234,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gemInfos));
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::DownloadGem(
+    AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> PythonBindings::DownloadGem(
         const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force)
     {
         // This process is currently limited to download a single gem at a time.
@@ -1242,7 +1244,6 @@ namespace O3DE::ProjectManager
         auto result = ExecuteWithLockErrorHandling(
             [&]
             {
-                RedirectOutput::lastPythonError.clear();
                 auto downloadResult = m_download.attr("download_gem")(
                     QString_To_Py_String(gemName), // gem name
                     pybind11::none(), // destination path
@@ -1262,11 +1263,12 @@ namespace O3DE::ProjectManager
 
         if (!result.IsSuccess())
         {
-            return result;
+            AZStd::pair<AZStd::string, AZStd::string> pythonRunError(result.GetError(), result.GetError());
+            return AZ::Failure<AZStd::pair<AZStd::string, AZStd::string>>(AZStd::move(pythonRunError));
         }
         else if (!downloadSucceeded)
         {
-            return AZ::Failure<AZStd::string>(AZStd::move(RedirectOutput::lastPythonError));
+            return AZ::Failure<AZStd::pair<AZStd::string, AZStd::string>>(GetSimpleDetailedErrorPair());
         }
 
         return AZ::Success();
@@ -1291,5 +1293,13 @@ namespace O3DE::ProjectManager
             });
 
         return result && updateAvaliableResult;
+    }
+
+    AZStd::pair<AZStd::string, AZStd::string> PythonBindings::GetSimpleDetailedErrorPair()
+    {
+        AZStd::string detailedString = RedirectOutput::pythonErrorStrings.size() == 1 ? "" : AZStd::accumulate(
+                  RedirectOutput::pythonErrorStrings.begin(), RedirectOutput::pythonErrorStrings.end(), AZStd::string(""));
+
+        return AZStd::pair<AZStd::string, AZStd::string>(RedirectOutput::pythonErrorStrings.front(), detailedString);
     }
 }

@@ -24,16 +24,16 @@ namespace O3DE::ProjectManager
         {
             emit UpdateProgress(bytesDownloaded, totalBytes);
         };
-        AZ::Outcome<void, AZStd::string> gemInfoResult =
+        AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> gemInfoResult =
             PythonBindingsInterface::Get()->DownloadGem(m_gemName, gemDownloadProgress, /*force*/true);
 
         if (gemInfoResult.IsSuccess())
         {
-            emit Done("");
+            emit Done("", "");
         }
         else
         {
-            emit Done(gemInfoResult.GetError().c_str());
+            emit Done(gemInfoResult.GetError().first.c_str(), gemInfoResult.GetError().second.c_str());
         }
     }
 
