@@ -188,20 +188,26 @@ namespace AtomToolsFramework
         if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Image)
         {
             AZStd::string imagePath;
+            AZ::Data::AssetId imageAssetId;
 
             if (propertyValue.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
             {
                 const auto& imageAsset = propertyValue.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>();
-                imagePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(imageAsset.GetId());
+                imageAssetId = imageAsset.GetId();
             }
 
             if (propertyValue.Is<AZ::Data::Instance<AZ::RPI::Image>>())
             {
                 const auto& image = propertyValue.GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
-                imagePath = image ? AZ::RPI::AssetUtils::GetSourcePathByAssetId(image->GetAssetId()) : "";
+                if (image)
+                {
+                    imageAssetId = image->GetAssetId();
+                }
             }
+            
+            imagePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(imageAssetId);
 
-            if (imagePath.empty())
+            if (imageAssetId.IsValid() && imagePath.empty())
             {
                 AZ_Error("AtomToolsFramework", false, "Image asset could not be found for property: '%s'.", propertyId.GetCStr());
                 return false;
