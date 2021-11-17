@@ -625,23 +625,6 @@ namespace UnitTest
         // We use local functions to easily start a new MaterialAssetCreator for each test case because
         // the AssetCreator would just skip subsequent operations after the first failure is detected.
 
-        auto expectError = [](AZStd::function<void(MaterialSourceData& materialSourceData)> setOneBadInput, [[maybe_unused]] uint32_t expectedAsserts = 2)
-        {
-            MaterialSourceData sourceData;
-
-            sourceData.m_materialType = "@exefolder@/Temp/test.materialtype";
-
-            AddPropertyGroup(sourceData, "general");
-
-            setOneBadInput(sourceData);
-
-            AZ_TEST_START_ASSERTTEST;
-            auto materialAssetOutcome = sourceData.CreateMaterialAsset(Uuid::CreateRandom(), "", false);
-            AZ_TEST_STOP_ASSERTTEST(expectedAsserts); // Usually one for the initial error, and one for when End() is called
-
-            EXPECT_FALSE(materialAssetOutcome.IsSuccess());
-        };
-
         auto expectWarning = [](AZStd::function<void(MaterialSourceData& materialSourceData)> setOneBadInput, [[maybe_unused]] uint32_t expectedAsserts = 1)
         {
             MaterialSourceData sourceData;
