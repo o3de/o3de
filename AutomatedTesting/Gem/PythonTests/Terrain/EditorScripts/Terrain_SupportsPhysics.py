@@ -7,8 +7,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 #fmt: off
 class Tests():
-    create_test_entity1                         = ("Entity1 created successfully",    "Failed to create Entity1")
-    create_test_entity2                         = ("Entity2 created successfully",    "Failed to create Entity2")
+    create_terrain_spawner_entity               = ("Terrain_spawner_entity created successfully", "Failed to create terrain_spawner_entity")
+    create_height_provider_entity               = ("Height_provider_entity created successfully", "Failed to create height_provider_entity")
     create_test_ball                            = ("Ball created successfully",    "Failed to create Ball")
     box_dimensions_changed                      = ("Aabb dimensions changed successfully", "Failed change Aabb dimensions")
     shape_changed                               = ("Shape changed successfully", "Failed Shape change")
@@ -30,15 +30,15 @@ def Terrain_SupportsPhysics():
 
     Test Steps:
      1) Load the base level
-     2) Create 2 test entities, one parent at 521.0, 512.0, 50.0 and one child at the default position
-        and add the required components
+     2) Create 2 test entities, one parent at 512.0, 512.0, 50.0 and one child at the default position and add the required components
+     2a) Create a ball at 600.0, 600.0, 46.0 - This position is bot too high over the heighfield so will collide in a reasonable time
      3) Start the Tracer to catch any errors and warnings
      4) Change the Axis Aligned Box Shape dimensions
      5) Set the Vegetation Shape reference to TestEntity1
      6) Set the FastNoise gradient frequency to 0.01
      7) Set the Gradient List to TestEntity2
      8) Set the PhysX Collider to Sphere mode
-     9) DIsable and Enable the Terrain Gradient List so that it is recognised
+     9) Disable and Enable the Terrain Gradient List so that it is recognised
      10) Enter game mode and test if the ball hits the heightfield within 3 seconds
      11) Verify there are no errors and warnings in the logs
 
@@ -70,16 +70,17 @@ def Terrain_SupportsPhysics():
     hydra.add_level_component("Terrain World")
     hydra.add_level_component("Terrain World Renderer")
 
-    # 2) Create 2 test entities, one parent at 521.0, 512.0, 50.0 and one child at the default position
+    # 2) Create 2 test entities, one parent at 512.0, 512.0, 50.0 and one child at the default position and add the required components
     entity1_components_to_add = ["Axis Aligned Box Shape", "Terrain Layer Spawner", "Terrain Height Gradient List", "Terrain Physics Heightfield Collider", "PhysX Heightfield Collider"]
     entity2_components_to_add = ["Vegetation Reference Shape", "Gradient Transform Modifier", "FastNoise Gradient"]
     ball_components_to_add = ["Sphere Shape", "PhysX Collider", "PhysX Rigid Body"]
-    test_entity1 = hydra.Entity("TestEntity1")
-    test_entity1.create_entity(azmath.Vector3(512.0, 512.0, 46.0), entity1_components_to_add)
-    Report.result(Tests.create_test_entity1, test_entity1.id.IsValid())
-    test_entity2 = hydra.Entity("TestEntity2")
-    test_entity2.create_entity(azmath.Vector3(0.0, 0.0, 0.0), entity2_components_to_add,test_entity1.id)
-    Report.result(Tests.create_test_entity2, test_entity2.id.IsValid())
+    terrain_spawner_entity = hydra.Entity("TestEntity1")
+    terrain_spawner_entity.create_entity(azmath.Vector3(512.0, 512.0, 50.0), entity1_components_to_add)
+    Report.result(Tests.create_terrain_spawner_entity, terrain_spawner_entity.id.IsValid())
+    height_provider_entity = hydra.Entity("TestEntity2")
+    height_provider_entity.create_entity(azmath.Vector3(0.0, 0.0, 0.0), entity2_components_to_add,terrain_spawner_entity.id)
+    Report.result(Tests.create_height_provider_entity, height_provider_entity.id.IsValid())
+    # 2a) Create a ball at 600.0, 600.0, 46.0 - This position is bot too high over the heighfield so will collide in a reasonable time
     ball = hydra.Entity("Ball")
     ball.create_entity(azmath.Vector3(600.0, 600.0, 46.0), ball_components_to_add)
     Report.result(Tests.create_test_ball, ball.id.IsValid())
@@ -90,26 +91,26 @@ def Terrain_SupportsPhysics():
     with Tracer() as section_tracer:
         # 4) Change the Axis Aligned Box Shape dimensions
         box_dimensions = azmath.Vector3(SET_BOX_X_SIZE, SET_BOX_Y_SIZE, SET_BOX_Z_SIZE)
-        test_entity1.get_set_test(0, "Axis Aligned Box Shape|Box Configuration|Dimensions", box_dimensions)
-        box_shape_dimensions = hydra.get_component_property_value(test_entity1.components[0], "Axis Aligned Box Shape|Box Configuration|Dimensions")
+        terrain_spawner_entity.get_set_test(0, "Axis Aligned Box Shape|Box Configuration|Dimensions", box_dimensions)
+        box_shape_dimensions = hydra.get_component_property_value(terrain_spawner_entity.components[0], "Axis Aligned Box Shape|Box Configuration|Dimensions")
         Report.result(Tests.box_dimensions_changed, box_dimensions == box_shape_dimensions)
         
         # 5) Set the Vegetaion Shape reference to TestEntity1
-        test_entity2.get_set_test(0, "Configuration|Shape Entity Id", test_entity1.id)
-        entityId = hydra.get_component_property_value(test_entity2.components[0], "Configuration|Shape Entity Id")
-        Report.result(Tests.shape_changed, entityId == test_entity1.id)
+        height_provider_entity.get_set_test(0, "Configuration|Shape Entity Id", terrain_spawner_entity.id)
+        entityId = hydra.get_component_property_value(height_provider_entity.components[0], "Configuration|Shape Entity Id")
+        Report.result(Tests.shape_changed, entityId == terrain_spawner_entity.id)
 
         # 6) Set the FastNoise Gradient frequency to 0.01
         Frequency = 0.01
-        test_entity2.get_set_test(2, "Configuration|Frequency", Frequency)
-        FrequencyVal = hydra.get_component_property_value(test_entity2.components[2], "Configuration|Frequency")
+        height_provider_entity.get_set_test(2, "Configuration|Frequency", Frequency)
+        FrequencyVal = hydra.get_component_property_value(height_provider_entity.components[2], "Configuration|Frequency")
         Report.result(Tests.frequency_changed, math.isclose(Frequency, FrequencyVal, abs_tol = 0.00001))
 
         # 7) Set the Gradient List to TestEntity2
-        pte = hydra.get_property_tree(test_entity1.components[2])
-        pte.add_container_item("Configuration|Gradient Entities", 0, test_entity2.id)
+        pte = hydra.get_property_tree(terrain_spawner_entity.components[2])
+        pte.add_container_item("Configuration|Gradient Entities", 0, height_provider_entity.id)
         checkID = pte.get_container_item("Configuration|Gradient Entities", 0)
-        Report.result(Tests.entity_added, checkID.GetValue() == test_entity2.id)
+        Report.result(Tests.entity_added, checkID.GetValue() == height_provider_entity.id)
 
         # 8) Set the PhysX Collider to Sphere mode
         shape = 0
@@ -117,8 +118,8 @@ def Terrain_SupportsPhysics():
         setShape = hydra.get_component_property_value(ball.components[1], "Shape Configuration|Shape")
         Report.result(Tests.shape_set, shape == setShape)
 
-        # 9) DIsable and Enable the Terrain Gradient List so that it is recognised
-        editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [test_entity1.components[2]])
+        # 9) Disable and Enable the Terrain Gradient List so that it is recognised
+        editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [terrain_spawner_entity.components[2]])
 
         general.enter_game_mode()
 
