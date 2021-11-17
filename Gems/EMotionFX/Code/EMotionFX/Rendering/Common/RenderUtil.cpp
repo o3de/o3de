@@ -10,6 +10,7 @@
 #include "RenderUtil.h"
 #include <MCore/Source/Algorithms.h>
 #include <MCore/Source/Compare.h>
+#include <MCore/Source/FastMath.h>
 #include <EMotionFX/Source/SkinningInfoVertexAttributeLayer.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/ActorManager.h>
@@ -652,7 +653,7 @@ namespace MCommon
 
 
     // render the advanced skeleton
-    void RenderUtil::RenderSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<size_t>& boneList, const AZStd::unordered_set<size_t>* visibleJointIndices, const AZStd::unordered_set<size_t>* selectedJointIndices, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor)
+    void RenderUtil::RenderSkeleton(EMotionFX::ActorInstance* actorInstance, [[maybe_unused]]const AZStd::vector<size_t>& boneList, const AZStd::unordered_set<size_t>* visibleJointIndices, const AZStd::unordered_set<size_t>* selectedJointIndices, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor)
     {
         // check if our render util supports rendering meshes, if not render the fallback skeleton using lines only
         if (GetIsMeshRenderingSupported() == false)
@@ -677,7 +678,7 @@ namespace MCommon
             const size_t parentIndex = joint->GetParentIndex();
 
             // check if this node has a parent and is a bone, if not skip it
-            if (parentIndex == InvalidIndex || AZStd::find(begin(boneList), end(boneList), jointIndex) == end(boneList))
+            if (parentIndex == InvalidIndex)
             {
                 continue;
             }
@@ -944,15 +945,15 @@ namespace MCommon
     void RenderUtil::RenderCylinder(float baseRadius, float topRadius, float length, const AZ::Vector3& position, const AZ::Vector3& direction, const MCore::RGBAColor& color)
     {
         AZ::Transform worldTM;
-
+        AZ::Vector3 axis = AZ::Vector3(-1.0f, 0.0f, 0.0f).Cross(direction);
         // rotate the cylinder to the desired direction
-        if (MCore::Compare<AZ::Vector3>::CheckIfIsClose(direction, AZ::Vector3(1.0f, 0.0f, 0.0f), MCore::Math::epsilon) == false)
+        if ((MCore::Compare<AZ::Vector3>::CheckIfIsClose(direction, AZ::Vector3(1.0f, 0.0f, 0.0f), MCore::Math::epsilon) == false) && (MCore::Math::Abs(axis.GetLengthSq()) >= 0.00001f))
         {
-            worldTM = MCore::GetRotationMatrixAxisAngle(AZ::Vector3(-1.0f, 0.0f, 0.0f).Cross(direction), MCore::Math::ACos(direction.Dot(AZ::Vector3(-1.0f, 0.0f, 0.0f))));
+            worldTM = MCore::GetRotationMatrixAxisAngle(axis, MCore::Math::ACos(direction.Dot(AZ::Vector3(-1.0f, 0.0f, 0.0f))));
         }
         else
         {
-            worldTM = AZ::Transform::CreateFromQuaternion(MCore::AzEulerAnglesToAzQuat(0.0f, 0.0f, MCore::Math::DegreesToRadians(180.0f)));
+            worldTM = AZ::Transform::CreateFromQuaternion(MCore::AzEulerAnglesToAzQuat(MCore::Math::DegreesToRadians(180.0f), 0.0f, MCore::Math::DegreesToRadians(180.0f)));
         }
 
         // set the cylinder to the given position
