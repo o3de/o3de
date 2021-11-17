@@ -178,6 +178,10 @@ namespace AZ
                     pipelineViews.m_views.resize(1);
                 }
                 ViewPtr previousView = pipelineViews.m_views[0];
+                if (view)
+                {
+                    view->OnAddToRenderPipeline();
+                }
                 pipelineViews.m_views[0] = view;
 
                 if (previousView)
@@ -238,6 +242,7 @@ namespace AZ
                     pipelineViews.m_type = PipelineViewType::Transient;
                 }
                 view->SetPassesByDrawList(&pipelineViews.m_passesByDrawList);
+                view->OnAddToRenderPipeline();
                 pipelineViews.m_views.push_back(view);
             }
         }

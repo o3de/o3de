@@ -171,7 +171,7 @@ namespace ImageProcessingAtomEditor
         if (!preset)
         {
             AZ_Warning("Texture Editor", false, "Cannot find preset %s! Will assign a suggested one for the texture.", presetName.GetCStr());
-            presetName = BuilderSettingManager::Instance()->GetSuggestedPreset(m_fullPath, m_img);
+            presetName = BuilderSettingManager::Instance()->GetSuggestedPreset(m_fullPath);
 
             for (auto& settingIter : m_settingsMap)
             {

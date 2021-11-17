@@ -9,6 +9,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
 
+#include <AzToolsFramework/API/PythonLoader.h>
+
 #include <PythonSystemComponent.h>
 #include <PythonReflectionComponent.h>
 #include <PythonMarshalComponent.h>
@@ -18,6 +20,7 @@ namespace EditorPythonBindings
 {
     class EditorPythonBindingsModule
         : public AZ::Module
+        , public AzToolsFramework::EmbeddedPython::PythonLoader
     {
     public:
         AZ_RTTI(EditorPythonBindingsModule, "{851B9E35-4FD5-49B1-8207-E40D4BBA36CC}", AZ::Module);

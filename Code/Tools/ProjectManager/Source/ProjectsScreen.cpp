@@ -14,6 +14,7 @@
 #include <ProjectUtils.h>
 #include <ProjectBuilderController.h>
 #include <ScreensCtrl.h>
+#include <ProjectManagerSettings.h>
 
 #include <AzQtComponents/Components/FlowLayout.h>
 #include <AzCore/Platform.h>
@@ -22,6 +23,7 @@
 #include <AzFramework/Process/ProcessCommon.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -181,6 +183,7 @@ namespace O3DE::ProjectManager
 
         connect(projectButton, &ProjectButton::OpenProject, this, &ProjectsScreen::HandleOpenProject);
         connect(projectButton, &ProjectButton::EditProject, this, &ProjectsScreen::HandleEditProject);
+        connect(projectButton, &ProjectButton::EditProjectGems, this, &ProjectsScreen::HandleEditProjectGems);
         connect(projectButton, &ProjectButton::CopyProject, this, &ProjectsScreen::HandleCopyProject);
         connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsScreen::HandleRemoveProject);
         connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsScreen::HandleDeleteProject);
@@ -269,17 +272,36 @@ namespace O3DE::ProjectManager
             // Add any missing project buttons and restore buttons to default state
             for (const ProjectInfo& project : projectsVector)
             {
+                ProjectButton* currentButton = nullptr;
                 if (!m_projectButtons.contains(QDir::toNativeSeparators(project.m_path)))
                 {
-                    m_projectButtons.insert(QDir::toNativeSeparators(project.m_path), CreateProjectButton(project));
+                    currentButton = CreateProjectButton(project);
+                    m_projectButtons.insert(QDir::toNativeSeparators(project.m_path), currentButton);
                 }
                 else
                 {
                     auto projectButtonIter = m_projectButtons.find(QDir::toNativeSeparators(project.m_path));
                     if (projectButtonIter != m_projectButtons.end())
                     {
-                        projectButtonIter.value()->RestoreDefaultState();
-                        m_projectsFlowLayout->addWidget(projectButtonIter.value());
+                        currentButton = projectButtonIter.value();
+                        currentButton->RestoreDefaultState();
+                        m_projectsFlowLayout->addWidget(currentButton);
+                    }
+                }
+
+                // Check whether project manager has successfully built the project
+                if (currentButton)
+                {
+                    auto settingsRegistry = AZ::SettingsRegistry::Get();
+                    bool projectBuiltSuccessfully = false;
+                    if (settingsRegistry)
+                    {
+                        QString settingsKey = GetProjectBuiltSuccessfullyKey(project.m_projectName);
+                        settingsRegistry->Get(projectBuiltSuccessfully, settingsKey.toStdString().c_str());
+                    }
+                    if (!projectBuiltSuccessfully)
+                    {
+                        currentButton->ShowBuildRequired();
                     }
                 }
             }
@@ -446,6 +468,14 @@ namespace O3DE::ProjectManager
         {
             emit NotifyCurrentProject(projectPath);
             emit ChangeScreenRequest(ProjectManagerScreen::UpdateProject);
+        }
+    }
+    void ProjectsScreen::HandleEditProjectGems(const QString& projectPath)
+    {
+        if (!WarnIfInBuildQueue(projectPath))
+        {
+            emit NotifyCurrentProject(projectPath);
+            emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
         }
     }
     void ProjectsScreen::HandleCopyProject(const ProjectInfo& projectInfo)

@@ -27,6 +27,7 @@
 #include <AzToolsFramework/Manipulators/ScaleManipulators.h>
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
@@ -409,7 +410,7 @@ namespace AzToolsFramework
             const AzFramework::CameraState cameraState = GetCameraState(viewportId);
             for (size_t entityCacheIndex = 0; entityCacheIndex < entityDataCache.VisibleEntityDataCount(); ++entityCacheIndex)
             {
-                if (!entityDataCache.IsVisibleEntitySelectableInViewport(entityCacheIndex))
+                if (!entityDataCache.IsVisibleEntityIndividuallySelectableInViewport(entityCacheIndex))
                 {
                     continue;
                 }
@@ -983,7 +984,7 @@ namespace AzToolsFramework
     {
         if (auto entityIndex = entityDataCache.GetVisibleEntityIndexFromId(entityId))
         {
-            if (entityDataCache.IsVisibleEntitySelectableInViewport(*entityIndex))
+            if (entityDataCache.IsVisibleEntityIndividuallySelectableInViewport(*entityIndex))
             {
                 return *entityIndex;
             }
@@ -1012,6 +1013,15 @@ namespace AzToolsFramework
     {
         EditorTransformChangeNotificationBus::Broadcast(&EditorTransformChangeNotifications::OnEntityTransformChanged, entitiyIds);
         ToolsApplicationNotificationBus::Broadcast(&ToolsApplicationNotificationBus::Events::InvalidatePropertyDisplay, Refresh_Values);
+    }
+
+    // leaves focus mode by focusing on the parent of the current perfab in the entity outliner
+    static void LeaveFocusMode()
+    {
+        if (auto prefabFocusPublicInterface = AZ::Interface<Prefab::PrefabFocusPublicInterface>::Get())
+        {
+            prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(GetEntityContextId());
+        }
     }
 
     EditorTransformComponentSelection::EditorTransformComponentSelection(const EditorVisibleEntityDataCache* entityDataCache)
@@ -3674,7 +3684,8 @@ namespace AzToolsFramework
         case ViewportEditorMode::Focus:
             {
                 ViewportUi::ViewportUiRequestBus::Event(
-                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, "Focus Mode");
+                    ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, "Focus Mode",
+                    LeaveFocusMode);
             }
             break;
         case ViewportEditorMode::Default:
@@ -3703,12 +3714,14 @@ namespace AzToolsFramework
                 if (editorModeState.IsModeActive(ViewportEditorMode::Focus))
                 {
                     ViewportUi::ViewportUiRequestBus::Event(
-                        ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, "Focus Mode");
+                        ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder, "Focus Mode",
+                        LeaveFocusMode);
                 }
             }
             break;
         case ViewportEditorMode::Focus:
             {
+                
                 ViewportUi::ViewportUiRequestBus::Event(
                     ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveViewportBorder);
             }

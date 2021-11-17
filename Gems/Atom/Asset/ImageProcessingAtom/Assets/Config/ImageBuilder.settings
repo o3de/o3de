@@ -1,0 +1,154 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "BuilderSettingManager",
+    "ClassData": {
+        "BuildSettings": {
+            "android": {
+                "GlossScale": 16.0,
+                "GlossBias": 0.0,
+                "Streaming": false,
+                "Enable": true
+            },
+            "ios": {
+                "GlossScale": 16.0,
+                "GlossBias": 0.0,
+                "Streaming": false,
+                "Enable": true
+            },
+            "mac": {
+                "GlossScale": 16.0,
+                "GlossBias": 0.0,
+                "Streaming": false,
+                "Enable": true
+            },
+            "pc": {
+                "GlossScale": 16.0,
+                "GlossBias": 0.0,
+                "Streaming": false,
+                "Enable": true
+            },
+            "linux": {
+                "GlossScale": 16.0,
+                "GlossBias": 0.0,
+                "Streaming": false,
+                "Enable": true
+            },
+            "provo": {
+                "GlossScale": 16.0,
+                "GlossBias": 0.0,
+                "Streaming": false,
+                "Enable": false
+            }
+        },
+        "PresetsByFileMask": {
+            // albedo
+            "_basecolor": [ "Albedo", "AlbedoWithGenericAlpha", "AlbedoWithCoverage" ],
+            "_diff": [ "Albedo", "AlbedoWithGenericAlpha", "AlbedoWithCoverage" ],
+            "_diffuse": [ "Albedo", "AlbedoWithGenericAlpha", "AlbedoWithCoverage" ],
+            "_color": [ "Albedo", "AlbedoWithGenericAlpha", "AlbedoWithCoverage" ],
+            "_col": [ "Albedo", "AlbedoWithGenericAlpha", "AlbedoWithCoverage" ],
+            "_albedo": [ "Albedo", "AlbedoWithGenericAlpha", "AlbedoWithCoverage" ],
+            "_alb": [ "Albedo", "AlbedoWithGenericAlpha", "AlbedoWithCoverage" ],
+            "_bc": [ "Albedo", "AlbedoWithGenericAlpha", "AlbedoWithCoverage" ],
+            // normals
+            "_ddn": [ "Normals" ],
+            "_normal": [ "Normals" ],
+            "_normalmap": [ "Normals" ],
+            "_normals": [ "Normals" ],
+            "_norm": [ "Normals" ],
+            "_nor": [ "Normals" ],
+            "_nrm": [ "Normals" ],
+            "_nm": [ "Normals" ],
+            "_n": [ "Normals" ],
+            "_ddna": [ "NormalsWithSmoothness" ],
+            "_normala": [ "NormalsWithSmoothness" ],
+            "_nrma": [ "NormalsWithSmoothness" ],
+            "_nma": [ "NormalsWithSmoothness" ],
+            "_na": [ "NormalsWithSmoothness" ],
+            // refelctance
+            "_spec": [ "Reflectance" ],
+            "_specular": [ "Reflectance" ],
+            "_metallic": [ "Reflectance" ],
+            "_refl": [ "Reflectance" ],
+            "_ref": [ "Reflectance" ],
+            "_rf": [ "Reflectance" ],
+            "_gloss": [ "Reflectance" ],
+            "_g": [ "Reflectance" ],
+            "_f0": [ "Reflectance" ],
+            "_specf0": [ "Reflectance" ],
+            "_metal": [ "Reflectance" ],
+            "_mtl": [ "Reflectance" ],
+            "_m": [ "Reflectance" ],
+            "_mt": [ "Reflectance" ],
+            "_metalness": [ "Reflectance" ],
+            "_rough": [ "Reflectance" ],
+            "_roughness": [ "Reflectance" ],
+            // opacity
+            "_sss": [ "Opacity" ],
+            "_trans": [ "Opacity" ],
+            "_opac": [ "Opacity" ],
+            "_opacity": [ "Opacity" ],
+            "_o": [ "Opacity" ],
+            "_op": [ "Opacity" ],
+            "_mask": [ "Opacity", "Greyscale" ],
+            "_msk": [ "Opacity" ],
+            "_blend": [ "Opacity" ],
+            // AO
+            "_ao": [ "AmbientOcclusion" ],
+            "_ambocc": [ "AmbientOcclusion" ],
+            "_amb": [ "AmbientOcclusion" ],
+            "_ambientocclusion": [ "AmbientOcclusion" ],
+            // emissive
+            "_emissive": [ "Emissive" ],
+            "_e": [ "Emissive" ],
+            "_glow": [ "Emissive" ],
+            "_em": [ "Emissive" ],
+            "_emit": [ "Emissive" ],
+            // displacement
+            "_displ": [ "Displacement" ],
+            "_disp": [ "Displacement" ],
+            "_dsp": [ "Displacement" ],
+            "_d": [ "Displacement" ],
+            "_dm": [ "Displacement" ],
+            "_displacement": [ "Displacement" ],
+            "_height": [ "Displacement" ],
+            "_hm": [ "Displacement" ],
+            "_ht": [ "Displacement" ],
+            "_h": [ "Displacement" ],
+            // cubemap
+            "_ibldiffusecm": [ "IBLDiffuse" ],
+            "_iblskyboxcm": [ "IBLSkybox" ],
+            "_iblspecularcm": [ "IBLSpecular" ],
+            "_iblspecularcm64": [ "IBLSpecularVeryLow" ],
+            "_iblspecularcm128": [ "IBLSpecularLow" ],
+            "_iblspecularcm256": [ "IBLSpecular" ],
+            "_iblspecularcm512": [ "IBLSpecularHigh" ],
+            "_iblspecularcm1024": [ "IBLSpecularVeryHigh" ],
+            "_skyboxcm": [ "Skybox" ],
+            "_ccm": [ "ConvolvedCubemap" ],
+            "_convolvedcubemap": [ "ConvolvedCubemap" ],
+            "_iblglobalcm": [ "IBLGlobal" ],
+            "_cubemap": [ "IBLGlobal" ],
+            "_cm": [ "IBLGlobal" ],
+            // lut
+            "_lut": [ "LUT_RG8" ],
+            "_lutr32f": [ "LUT_R32F" ],
+            "_lutrgba8": [ "LUT_RGBA8" ],
+            "_lutrgba16": [ "LUT_RGBA16" ],
+            "_lutrgba16f": [ "LUT_RGBA16F" ],
+            "_lutrg16": [ "LUT_RG16" ],
+            "_lutrg32f": [ "LUT_RG32F" ],
+            "_lutrgba32f": [ "LUT_RGBA32F" ],
+            // layer mask
+            "_layers": [ "LayerMask" ],
+            "_rgbmask": [ "LayerMask" ],
+            // decal
+            "_decal": [ "Decal_AlbedoWithOpacity" ],
+            // ui
+            "_ui": [ "UserInterface_Compressed","UserInterface_Lossless" ]
+        },
+        "DefaultPreset": "Albedo",
+        "DefaultPresetAlpha": "AlbedoWithGenericAlpha"
+    }
+}

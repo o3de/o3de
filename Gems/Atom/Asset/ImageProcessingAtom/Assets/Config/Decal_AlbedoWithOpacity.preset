@@ -1,0 +1,66 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{E06B5087-2640-49B6-B9BA-D40048162B90}",
+            "Name": "Decal_AlbedoWithOpacity",
+            "PixelFormat": "BC7t",
+            "IsPowerOf2": true,
+            "MipMapSetting": {
+                "MipGenType": "Box"
+            },
+            // Decal Texture Arrays need all mips available immediately for packing. 
+            "NumberResidentMips": 255
+        },
+        "PlatformsPresets": {
+            "android": {
+                "UUID": "{E06B5087-2640-49B6-B9BA-D40048162B90}",
+                "Name": "Decal_AlbedoWithOpacity",
+                "PixelFormat": "ASTC_4x4",
+                "MaxTextureSize": 2048,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                },
+                // Decal Texture Arrays need all mips available immediately for packing. 
+                "NumberResidentMips": 255
+            },
+            "ios": {
+                "UUID": "{E06B5087-2640-49B6-B9BA-D40048162B90}",
+                "Name": "Decal_AlbedoWithOpacity",
+                "PixelFormat": "ASTC_4x4",
+                "MaxTextureSize": 2048,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                },
+                // Decal Texture Arrays need all mips available immediately for packing. 
+                "NumberResidentMips": 255                       
+            },
+            "mac": {
+                "UUID": "{E06B5087-2640-49B6-B9BA-D40048162B90}",
+                "Name": "Decal_AlbedoWithOpacity",
+                "PixelFormat": "BC3",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                },
+                // Decal Texture Arrays need all mips available immediately for packing. 
+                "NumberResidentMips": 255                              
+            },
+            "provo": {
+                "UUID": "{E06B5087-2640-49B6-B9BA-D40048162B90}",
+                "Name": "Decal_AlbedoWithOpacity",
+                "PixelFormat": "BC7t",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                },
+                // Decal Texture Arrays need all mips available immediately for packing. 
+                "NumberResidentMips": 255
+            }
+        }
+    }
+}

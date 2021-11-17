@@ -547,13 +547,6 @@ QPoint Q2DViewport::WorldToView(const Vec3& wp) const
     QPoint p = QPoint(static_cast<int>(sp.x), static_cast<int>(sp.y));
     return p;
 }
-//////////////////////////////////////////////////////////////////////////
-QPoint Q2DViewport::WorldToViewParticleEditor(const Vec3& wp, [[maybe_unused]] int width, [[maybe_unused]] int height) const //Eric@conffx implement for the children class of IDisplayViewport
-{
-    Vec3 sp = m_screenTM.TransformPoint(wp);
-    QPoint p = QPoint(static_cast<int>(sp.x), static_cast<int>(sp.y));
-    return p;
-}
 
 //////////////////////////////////////////////////////////////////////////
 Vec3    Q2DViewport::ViewToWorld(const QPoint& vp, [[maybe_unused]] bool* collideWithTerrain, [[maybe_unused]] bool onlyTerrain, [[maybe_unused]] bool bSkipVegetation, [[maybe_unused]] bool bTestRenderMesh, [[maybe_unused]] bool* collideWithObject) const

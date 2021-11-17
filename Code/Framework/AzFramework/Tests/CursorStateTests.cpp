@@ -8,12 +8,13 @@
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Viewport/CursorState.h>
+#include <Tests/Utils/Printers.h>
 
 namespace UnitTest
 {
     using AzFramework::CursorState;
-    using AzFramework::ScreenVector;
     using AzFramework::ScreenPoint;
+    using AzFramework::ScreenVector;
 
     class CursorStateFixture : public ::testing::Test
     {

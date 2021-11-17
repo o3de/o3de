@@ -1,0 +1,71 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{F3D5E572-A3CF-435A-A2AB-75D2B6907847}",
+            "Name": "Opacity",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "PixelFormat": "BC4",
+            "Swizzle": "rrr1",
+            "IsPowerOf2": true,
+            "MipMapSetting": {
+                "MipGenType": "Box"
+            }
+        },
+        "PlatformsPresets": {
+            "android": {
+                "UUID": "{F3D5E572-A3CF-435A-A2AB-75D2B6907847}",
+                "Name": "Opacity",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "ASTC_4x4",
+                "Swizzle": "rrr1",
+                "MaxTextureSize": 2048,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "ios": {
+                "UUID": "{F3D5E572-A3CF-435A-A2AB-75D2B6907847}",
+                "Name": "Opacity",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "ASTC_4x4",
+                "Swizzle": "rrr1",
+                "MaxTextureSize": 2048,
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "mac": {
+                "UUID": "{F3D5E572-A3CF-435A-A2AB-75D2B6907847}",
+                "Name": "Opacity",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "BC4",
+                "Swizzle": "rrr1",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "provo": {
+                "UUID": "{F3D5E572-A3CF-435A-A2AB-75D2B6907847}",
+                "Name": "Opacity",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "BC4",
+                "Swizzle": "rrr1",
+                "IsPowerOf2": true,
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            }
+        }
+    }
+}

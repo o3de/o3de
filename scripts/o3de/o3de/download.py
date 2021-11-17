@@ -48,26 +48,25 @@ def validate_downloaded_zip_sha256(download_uri_json_data: dict, download_zip_pa
                     ' We cannot verify this is the actually the advertised object!!!')
         return 1
     else:
-        sha256B = hashlib.sha256(download_zip_path.open('rb').read()).hexdigest()
-        if sha256A != sha256B:
-            logger.error(f'SECURITY VIOLATION: Downloaded zip sha256 {sha256B} does not match'
-                         f' the advertised "sha256":{sha256A} in the f{manifest_json_name}.')
-            return 0
+        with download_zip_path.open('rb') as f:
+            sha256B = hashlib.sha256(f.read()).hexdigest()
+            if sha256A != sha256B:
+                logger.error(f'SECURITY VIOLATION: Downloaded zip sha256 {sha256B} does not match'
+                            f' the advertised "sha256":{sha256A} in the f{manifest_json_name}.')
+                return 0
 
     unzipped_manifest_json_data = unzip_manifest_json_data(download_zip_path, manifest_json_name)
 
-    # remove the sha256 if present in the advertised downloadable manifest json
-    # then compare it to the json in the zip, they should now be identical
-    try:
-        del download_uri_json_data['sha256']
-    except KeyError as e:
-        pass
+    # do not include the data we know will not match/exist
+    for key in ['sha256','repo_name']:
+        if key in download_uri_json_data:
+            del download_uri_json_data[key]
+        if key in unzipped_manifest_json_data:
+            del unzipped_manifest_json_data[key]
 
-    sha256A = hashlib.sha256(json.dumps(download_uri_json_data, indent=4).encode('utf8')).hexdigest()
-    sha256B = hashlib.sha256(json.dumps(unzipped_manifest_json_data, indent=4).encode('utf8')).hexdigest()
-    if sha256A != sha256B:
-        logger.error('SECURITY VIOLATION: Downloaded manifest json does not match'
-                     ' the advertised manifest json.')
+    if download_uri_json_data != unzipped_manifest_json_data:
+        logger.error(f'SECURITY VIOLATION: Downloaded {manifest_json_name} contents do not match'
+                     ' the advertised manifest json contents.')
         return 0
 
     return 1
@@ -102,7 +101,7 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
         logger.error(f'Downloadable o3de object {object_name} not found.')
         return 1
 
-    origin_uri = downloadable_object_data['originuri']
+    origin_uri = downloadable_object_data['origin_uri']
     parsed_uri = urllib.parse.urlparse(origin_uri)
 
     download_zip_result = utils.download_zip_file(parsed_uri, download_zip_path, force_overwrite, download_progress_callback)

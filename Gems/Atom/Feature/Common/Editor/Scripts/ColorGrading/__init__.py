@@ -163,6 +163,7 @@ _LOGGER.debug('Invoking __init__.py for {0}.'.format({_PACKAGENAME}))
 # -------------------------------------------------------------------------
 
 
+# -------------------------------------------------------------------------
 def get_datadir() -> pathlib.Path:
     """
     persistent application data.

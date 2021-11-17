@@ -35,7 +35,7 @@ namespace O3DE::ProjectManager
         previewExtrasLayout->setContentsMargins(50, 0, 0, 0);
 
         QLabel* projectPreviewLabel = new QLabel(tr("Select an image (PNG). Minimum %1 x %2 pixels.")
-                           .arg(QString::number(ProjectPreviewImageWidth), QString::number(ProjectPreviewImageHeight)));
+            .arg(QString::number(ProjectPreviewImageWidth), QString::number(ProjectPreviewImageHeight)));
         projectPreviewLabel->setObjectName("projectPreviewLabel");
         previewExtrasLayout->addWidget(projectPreviewLabel);
 
