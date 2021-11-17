@@ -165,7 +165,7 @@ class TestAutomationBase:
                     for line in f.readlines():
                         error_str += f"|{log_basename}| {line}"                        
             except Exception as ex:
-                error_str += "-- No log available --"
+                error_str += f"-- No log available ({ex})--"
 
             pytest.fail(error_str)     
         

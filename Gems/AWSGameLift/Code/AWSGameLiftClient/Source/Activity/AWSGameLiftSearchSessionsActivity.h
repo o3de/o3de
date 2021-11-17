@@ -10,9 +10,7 @@
 
 #include <Request/AWSGameLiftSearchSessionsRequest.h>
 
-#include <aws/core/utils/Outcome.h>
 #include <aws/gamelift/GameLiftClient.h>
-#include <aws/gamelift/model/SearchGameSessionsRequest.h>
 
 namespace AWSGameLift
 {
@@ -28,7 +26,6 @@ namespace AWSGameLift
 
         // Create SearchGameSessionsRequest and make a SeachGameSessions call through GameLift client
         AzFramework::SearchSessionsResponse SearchSessions(
-            const Aws::GameLift::GameLiftClient& gameliftClient,
             const AWSGameLiftSearchSessionsRequest& searchSessionsRequest);
 
         // Convert from Aws::GameLift::Model::SearchGameSessionsResult to AzFramework::SearchSessionsResponse.

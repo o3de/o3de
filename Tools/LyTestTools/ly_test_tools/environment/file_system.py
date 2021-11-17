@@ -219,7 +219,8 @@ def unlock_file(file_name):
     :return: True if unlock succeeded, else False
     """
     if not os.access(file_name, os.W_OK):
-        os.chmod(file_name, stat.S_IWRITE)
+        file_stat = os.stat(file_name)
+        os.chmod(file_name, file_stat.st_mode | stat.S_IWRITE)
         logger.warning(f'Clearing write lock for file {file_name}.')
         return True
     else:
@@ -235,7 +236,8 @@ def lock_file(file_name):
     :return: True if lock succeeded, else False
     """
     if os.access(file_name, os.W_OK):
-        os.chmod(file_name, stat.S_IREAD)
+        file_stat = os.stat(file_name)
+        os.chmod(file_name, file_stat.st_mode & (~stat.S_IWRITE))
         logger.warning(f'Write locking file {file_name}')
         return True
     else:

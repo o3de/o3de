@@ -20,7 +20,6 @@ set(FILES
     SystemEventDispatcher.cpp
     SystemInit.cpp
     SystemWin32.cpp
-    Timer.cpp
     XConsole.cpp
     XConsoleVariable.cpp
     AZCrySystemInitLogSink.h
@@ -36,7 +35,6 @@ set(FILES
     CrySystem_precompiled.h
     System.h
     SystemEventDispatcher.h
-    Timer.h
     XConsole.h
     XConsoleVariable.h
     XML/SerializeXMLReader.cpp

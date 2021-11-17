@@ -20,10 +20,12 @@ namespace Camera
         if (serializeContext)
         {
             serializeContext->Class<SlideAlongAxisBasedOnAngle>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("Axis to slide along", &SlideAlongAxisBasedOnAngle::m_axisToSlideAlong)
                 ->Field("Angle Type", &SlideAlongAxisBasedOnAngle::m_angleTypeToChangeFor)
-                ->Field("Vector Component To Ignore", &SlideAlongAxisBasedOnAngle::m_vectorComponentToIgnore)
+                ->Field("Ignore X Component", &SlideAlongAxisBasedOnAngle::m_ignoreX)
+                ->Field("Ignore Y Component", &SlideAlongAxisBasedOnAngle::m_ignoreY)
+                ->Field("Ignore Z Component", &SlideAlongAxisBasedOnAngle::m_ignoreZ)
                 ->Field("Max Positive Slide Distance", &SlideAlongAxisBasedOnAngle::m_maximumPositiveSlideDistance)
                 ->Field("Max Negative Slide Distance", &SlideAlongAxisBasedOnAngle::m_maximumNegativeSlideDistance);
 
@@ -40,15 +42,16 @@ namespace Camera
                         ->EnumAttribute(EulerAngleType::Pitch, "Pitch")
                         ->EnumAttribute(EulerAngleType::Roll, "Roll")
                         ->EnumAttribute(EulerAngleType::Yaw, "Yaw")
-                    ->DataElement(AZ::Edit::UIHandlers::ComboBox, &SlideAlongAxisBasedOnAngle::m_vectorComponentToIgnore, "Vector Component To Ignore", "The Vector Component To Ignore")
-                        ->EnumAttribute(VectorComponentType::None, "None")
-                        ->EnumAttribute(VectorComponentType::X_Component, "X")
-                        ->EnumAttribute(VectorComponentType::Y_Component, "Y")
-                        ->EnumAttribute(VectorComponentType::Z_Component, "Z")
                     ->DataElement(0, &SlideAlongAxisBasedOnAngle::m_maximumPositiveSlideDistance, "Max Positive Slide Distance", "The maximum distance to slide in the positive")
                         ->Attribute(AZ::Edit::Attributes::Suffix, "m")
                     ->DataElement(0, &SlideAlongAxisBasedOnAngle::m_maximumNegativeSlideDistance, "Max Negative Slide Distance", "The maximum distance to slide in the negative")
-                        ->Attribute(AZ::Edit::Attributes::Suffix, "m");
+                        ->Attribute(AZ::Edit::Attributes::Suffix, "m")
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Vector Components To Ignore")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                        ->DataElement(0, &SlideAlongAxisBasedOnAngle::m_ignoreX, "X", "When active, the X Component will be ignored.")
+                        ->DataElement(0, &SlideAlongAxisBasedOnAngle::m_ignoreY, "Y", "When active, the Y Component will be ignored.")
+                        ->DataElement(0, &SlideAlongAxisBasedOnAngle::m_ignoreZ, "Z", "When active, the Z Component will be ignored.")
+                    ;
             }
         }
     }
@@ -60,7 +63,7 @@ namespace Camera
         float slideScale = currentPositionOnRange > 0.0f ? m_maximumPositiveSlideDistance : m_maximumNegativeSlideDistance;
 
         AZ::Vector3 basis = outLookAtTargetTransform.GetBasis(m_axisToSlideAlong);
-        MaskComponentFromNormalizedVector(basis, m_vectorComponentToIgnore);
+        MaskComponentFromNormalizedVector(basis, m_ignoreX, m_ignoreY, m_ignoreZ);
 
         outLookAtTargetTransform.SetTranslation(outLookAtTargetTransform.GetTranslation() + basis * currentPositionOnRange * slideScale);
     }

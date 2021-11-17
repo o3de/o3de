@@ -47,7 +47,6 @@ struct IConsole;
 struct IRemoteConsole;
 struct IRenderer;
 struct IProcess;
-struct ITimer;
 struct ICryFont;
 struct IMovieSystem;
 namespace Audio
@@ -610,7 +609,6 @@ struct SSystemGlobalEnvironment
 {
     AZ::IO::IArchive*          pCryPak;
     AZ::IO::FileIOBase*        pFileIO;
-    ITimer*                    pTimer;
     ICryFont*                  pCryFont;
     ::IConsole*                  pConsole;
     ISystem*                   pSystem = nullptr;
@@ -830,8 +828,6 @@ struct ISystem
     virtual ::IConsole* GetIConsole() = 0;
     virtual IRemoteConsole* GetIRemoteConsole() = 0;
     virtual ISystemEventDispatcher* GetISystemEventDispatcher() = 0;
-
-    virtual ITimer* GetITimer() = 0;
 
     // Arguments:
     //   bValue - Set to true when running on a cheat protected server or a client that is connected to it (not used in singleplayer).

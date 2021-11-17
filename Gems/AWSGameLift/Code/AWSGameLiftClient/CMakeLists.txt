@@ -6,8 +6,6 @@
 #
 #
 
-set(awsgameliftclient_compile_definition $<IF:$<CONFIG:release>,AWSGAMELIFT_RELEASE,AWSGAMELIFT_DEV>)
-
 ly_add_target(
     NAME AWSGameLift.Client.Static STATIC
     NAMESPACE Gem

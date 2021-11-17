@@ -10,6 +10,7 @@
 #include "IGestureRecognizer.h"
 
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Time/ITime.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Gestures
@@ -83,7 +84,7 @@ namespace Gestures
 
         Config m_config;
 
-        int64 m_timeOfLastEvent;
+        AZ::TimeMs m_timeOfLastEvent;
         ScreenPosition m_positionOfFirstEvent;
         ScreenPosition m_positionOfLastEvent;
 

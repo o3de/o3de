@@ -39,6 +39,8 @@ namespace AZ
             bool IsCubeMapReferenced(const AZStd::string& relativePath) override;
             bool IsValidProbeHandle(const ReflectionProbeHandle& probe) const override { return (probe.get() != nullptr); }
             void ShowProbeVisualization(const ReflectionProbeHandle& probe, bool showVisualization) override;
+            void SetRenderExposure(const ReflectionProbeHandle& probe, float renderExposure) override;
+            void SetBakeExposure(const ReflectionProbeHandle& probe, float bakeExposure) override;
 
             // FeatureProcessor overrides
             void Activate() override;
