@@ -16,6 +16,7 @@
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <Tests/Utils/Printers.h>
+#include <Atom/RPI.Public/../../../Tests/Mocks/MockRPISystemInterface.h> // TODO: fix include path
 
 namespace UnitTest
 {
@@ -33,6 +34,8 @@ namespace UnitTest
 
         void SetUp() override
         {
+            AZ::Interface<AZ::RPI::RPISystemInterface>::Register(&m_rpiSystemInterface);
+
             AZ::NameDictionary::Create();
 
             m_view = AZ::RPI::View::CreateView(AZ::Name("TestView"), AZ::RPI::View::UsageCamera);
@@ -65,10 +68,13 @@ namespace UnitTest
             m_view.reset();
 
             AZ::NameDictionary::Destroy();
+
+            AZ::Interface<AZ::RPI::RPISystemInterface>::Unregister(&m_rpiSystemInterface);
         }
 
         AZ::RPI::ViewPtr m_view;
         AZStd::unique_ptr<AtomToolsFramework::ViewportInteractionImpl> m_viewportInteractionImpl;
+        testing::NiceMock<AZ::RPI::MockRPISystemInterface> m_rpiSystemInterface;
     };
 
     // transform a point from screen space to world space, and then from world space back to screen space
