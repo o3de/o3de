@@ -5,7 +5,8 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Authentication Tokens"
+                "name": "Authentication Tokens",
+                "category": "AWS Client Auth"
             },
             "methods": [
                 {

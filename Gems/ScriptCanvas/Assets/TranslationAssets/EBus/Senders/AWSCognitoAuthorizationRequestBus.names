@@ -5,7 +5,8 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "AWS Cognito Authorization"
+                "name": "AWS Cognito Authorization",
+                "category": "AWS Client Auth"
             },
             "methods": [
                 {
