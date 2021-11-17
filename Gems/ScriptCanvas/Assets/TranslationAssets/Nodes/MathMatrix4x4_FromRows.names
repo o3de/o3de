@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromRows",
+                "name": "From Rows",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns a matrix from three row",
-                "subtitle": "Matrix4x4"
+                "tooltip": "Returns a matrix from three row"
             },
             "slots": [
                 {
@@ -24,33 +23,33 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Row1",
+                    "key": "DataInput_Row1",
                     "details": {
-                        "name": "Vector4: Row1"
+                        "name": "Row 1"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Row2",
+                    "key": "DataInput_Row2",
                     "details": {
-                        "name": "Vector4: Row2"
+                        "name": "Row 2"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Row3",
+                    "key": "DataInput_Row3",
                     "details": {
-                        "name": "Vector4: Row3"
+                        "name": "Row 3"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: Row4",
+                    "key": "DataInput_Row4",
                     "details": {
-                        "name": "Vector4: Row4"
+                        "name": "Row 4"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix4x4",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix4x4"
+                        "name": "Result"
                     }
                 }
             ]

@@ -506,6 +506,8 @@ namespace ScriptCanvas
 #if defined(AZ_PROFILE_BUILD) || defined(AZ_DEBUG_BUILD)
             Execution::InitializeFromLuaStackFunctions(const_cast<Grammar::DebugSymbolMap&>(runtimeData.m_debugMap));
 #endif
+            AZ_WarningOnce("ScriptCanvas", !runtimeData.m_areStaticsInitialized, "ScriptCanvas runtime data already initalized");
+
             if (runtimeData.RequiresStaticInitialization())
             {
                 AZ::ScriptLoadResult result{};

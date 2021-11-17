@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RotationYDegrees",
+                "name": "Rotation Y (Degrees)",
                 "category": "Math/Quaternion",
-                "tooltip": "creates a rotation of Degrees around the y-axis",
-                "subtitle": "Quaternion"
+                "tooltip": "Creates a rotation of Degrees around the y-axis"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Number: Degrees",
+                    "key": "DataInput_Degrees",
                     "details": {
-                        "name": "Number: Degrees"
+                        "name": "Degrees"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Quaternion",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Quaternion"
+                        "name": "Result"
                     }
                 }
             ]

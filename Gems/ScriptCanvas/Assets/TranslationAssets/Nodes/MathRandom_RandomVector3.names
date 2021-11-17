@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RandomVector3",
+                "name": "Random Vector3",
                 "category": "Math/Random",
-                "tooltip": "returns a random Vector3",
-                "subtitle": "Random"
+                "tooltip": "Returns a random Vector3"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Min",
+                    "key": "DataInput_Min",
                     "details": {
-                        "name": "Vector3: Min"
+                        "name": "Min"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Max",
+                    "key": "DataInput_Max",
                     "details": {
-                        "name": "Vector3: Max"
+                        "name": "Max"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

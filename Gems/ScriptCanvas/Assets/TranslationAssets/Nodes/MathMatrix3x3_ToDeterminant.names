@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ToDeterminant",
+                "name": "To Determinant",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns determinant of Matrix",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns determinant of Matrix"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Matrix3x3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Determinant: Number",
+                    "key": "DataOutput_Determinant",
                     "details": {
-                        "name": "Determinant: Number"
+                        "name": "Determinant"
                     }
                 }
             ]

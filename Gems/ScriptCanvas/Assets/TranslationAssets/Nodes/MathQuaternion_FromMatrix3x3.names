@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromMatrix3x3",
+                "name": "From Matrix3x3",
                 "category": "Math/Quaternion",
-                "tooltip": "returns a rotation created from the 3x3 matrix source",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns a rotation created from the 3x3 matrix source"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Matrix3x3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Quaternion",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Quaternion"
+                        "name": "Result"
                     }
                 }
             ]

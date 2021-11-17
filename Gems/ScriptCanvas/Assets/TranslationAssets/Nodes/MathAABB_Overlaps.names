@@ -6,9 +6,9 @@
             "variant": "",
             "details": {
                 "name": "Overlaps",
-                "category": "Math/AABB",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns true if A overlaps B, else false",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {

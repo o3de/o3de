@@ -6,9 +6,8 @@
             "variant": "",
             "details": {
                 "name": "Duration",
-                "category": "Nodeables",
-                "tooltip": "Triggers a signal every frame during the specified duration.",
-                "subtitle": "Nodeables"
+                "category": "Timing",
+                "tooltip": "Triggers a signal every frame during the specified duration."
             },
             "slots": [
                 {

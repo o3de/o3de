@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsClose",
+                "name": "Is Close",
                 "category": "Math/Quaternion",
-                "tooltip": "returns true if A and B are within Tolerance of each other",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns true if A and B are within Tolerance of each other"
             },
             "slots": [
                 {
@@ -24,27 +23,27 @@
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: A",
+                    "key": "DataInput_A",
                     "details": {
-                        "name": "Quaternion: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: B",
+                    "key": "DataInput_B",
                     "details": {
-                        "name": "Quaternion: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Tolerance",
+                    "key": "DataInput_Tolerance",
                     "details": {
-                        "name": "Number: Tolerance"
+                        "name": "Tolerance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

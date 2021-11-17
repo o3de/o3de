@@ -7,8 +7,7 @@
             "details": {
                 "name": "Angle",
                 "category": "Math/Vector2",
-                "tooltip": "returns a unit length vector from an angle in radians",
-                "subtitle": "Vector2"
+                "tooltip": "Returns a unit length vector from an angle in radians"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Number: Angle",
+                    "key": "DataInput_Angle",
                     "details": {
-                        "name": "Number: Angle"
+                        "name": "Angle"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector2",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector2"
+                        "name": "Result"
                     }
                 }
             ]

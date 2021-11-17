@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <PreviewRenderer/PreviewRendererSystemComponent.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
 
 namespace AtomToolsFramework
 {
@@ -53,10 +54,15 @@ namespace AtomToolsFramework
         AZ::TickBus::QueueFunction(
             [this]()
             {
-                if (!m_previewRenderer)
+                // Only create a preview renderer if the RPI interface is fully initialized.  Otherwise the constructor will leave things
+                // in a bad state that can lead to crashing.
+                if (AZ::RPI::RPISystemInterface::Get()->IsInitialized())
                 {
-                    m_previewRenderer.reset(aznew AtomToolsFramework::PreviewRenderer(
-                        "PreviewRendererSystemComponent Preview Scene", "PreviewRendererSystemComponent Preview Pipeline"));
+                    if (!m_previewRenderer)
+                    {
+                        m_previewRenderer.reset(aznew AtomToolsFramework::PreviewRenderer(
+                            "PreviewRendererSystemComponent Preview Scene", "PreviewRendererSystemComponent Preview Pipeline"));
+                    }
                 }
             });
     }

@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsNormalized",
+                "name": "Is Normalized",
                 "category": "Math/Vector2",
-                "tooltip": "returns true if the length of the source is within tolerance of 1.0, else false",
-                "subtitle": "Vector2"
+                "tooltip": "Returns true if the length of the source is within tolerance of 1.0, else false"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector2: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Vector2: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Tolerance",
+                    "key": "DataInput_Tolerance",
                     "details": {
-                        "name": "Number: Tolerance"
+                        "name": "Tolerance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

@@ -7,8 +7,7 @@
             "details": {
                 "name": "For Each",
                 "category": "Containers",
-                "tooltip": "Node for iterating through a container",
-                "subtitle": "Containers"
+                "tooltip": "Node for iterating through a container"
             },
             "slots": [
                 {

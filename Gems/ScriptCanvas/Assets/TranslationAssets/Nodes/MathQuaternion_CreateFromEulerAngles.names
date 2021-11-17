@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "CreateFromEulerAngles",
+                "name": "Create From Euler Angles",
                 "category": "Math/Quaternion",
-                "tooltip": "Returns a new Quaternion initialized with the specified Angles",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns a new Quaternion initialized with the specified Angles"
             },
             "slots": [
                 {
@@ -24,27 +23,27 @@
                     }
                 },
                 {
-                    "key": "DataInput_Number: Pitch",
+                    "key": "DataInput_Pitch",
                     "details": {
-                        "name": "Number: Pitch"
+                        "name": "Pitch"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Roll",
+                    "key": "DataInput_Roll",
                     "details": {
-                        "name": "Number: Roll"
+                        "name": "Roll"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Yaw",
+                    "key": "DataInput_Yaw",
                     "details": {
-                        "name": "Number: Yaw"
+                        "name": "Yaw"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Quaternion",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Quaternion"
+                        "name": "Result"
                     }
                 }
             ]

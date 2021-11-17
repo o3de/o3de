@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsFinite",
-                "category": "Math/OBB",
-                "tooltip": "returns true if every element in Source is finite, is false",
-                "subtitle": "OBB"
+                "name": "Is Finite",
+                "category": "Math/Oriented Bounding Box",
+                "tooltip": "Returns true if every element in Source is finite, is false"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_OBB: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "OBB: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

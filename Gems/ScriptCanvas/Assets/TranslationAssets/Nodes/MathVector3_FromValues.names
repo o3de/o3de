@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromValues",
+                "name": "From Values",
                 "category": "Math/Vector3",
-                "tooltip": "returns a vector from elements",
-                "subtitle": "Vector3"
+                "tooltip": "Returns a vector from elements"
             },
             "slots": [
                 {
@@ -24,27 +23,27 @@
                     }
                 },
                 {
-                    "key": "DataInput_Number: X",
+                    "key": "DataInput_X",
                     "details": {
-                        "name": "Number: X"
+                        "name": "X"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Y",
+                    "key": "DataInput_Y",
                     "details": {
-                        "name": "Number: Y"
+                        "name": "Y"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Z",
+                    "key": "DataInput_Z",
                     "details": {
-                        "name": "Number: Z"
+                        "name": "Z"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

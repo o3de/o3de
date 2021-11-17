@@ -6,9 +6,9 @@
             "variant": "",
             "details": {
                 "name": "Extents",
-                "category": "Math/AABB",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the Vector3(Source.Width, Source.Height, Source.Depth)",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
@@ -24,15 +24,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_AABB: Source",
+                    "key": "Source",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
                     "key": "DataOutput_Result: Vector3",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Extents"
                     }
                 }
             ]

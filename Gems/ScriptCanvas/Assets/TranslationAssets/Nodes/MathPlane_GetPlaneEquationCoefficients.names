@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetPlaneEquationCoefficients",
+                "name": "Get Plane Equation Coefficients",
                 "category": "Math/Plane",
-                "tooltip": "returns Source's coefficient's (A, B, C, D) in the equation Ax + By + Cz + D = 0",
-                "subtitle": "Plane"
+                "tooltip": "Returns Source's coefficient's (A, B, C, D) in the equation Ax + By + Cz + D = 0"
             },
             "slots": [
                 {
@@ -24,33 +23,33 @@
                     }
                 },
                 {
-                    "key": "DataInput_Plane: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Plane: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_A: Number",
+                    "key": "DataOutput_A",
                     "details": {
-                        "name": "A: Number"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataOutput_B: Number",
+                    "key": "DataOutput_B",
                     "details": {
-                        "name": "B: Number"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataOutput_C: Number",
+                    "key": "DataOutput_C",
                     "details": {
-                        "name": "C: Number"
+                        "name": "C"
                     }
                 },
                 {
-                    "key": "DataOutput_D: Number",
+                    "key": "DataOutput_D",
                     "details": {
-                        "name": "D: Number"
+                        "name": "D"
                     }
                 }
             ]

@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "DirectionTo",
+                "name": "Direction To",
                 "category": "Math/Vector4",
-                "tooltip": "Returns a direction vector between two points and the distance between them, by default the direction will be normalized, but it may be optionally scaled using the Scale parameter if different from 1.0",
-                "subtitle": "Vector4"
+                "tooltip": "Returns a direction vector between two points and the distance between them, by default the direction will be normalized, but it may be optionally scaled using the Scale parameter if different from 1.0"
             },
             "slots": [
                 {
@@ -24,33 +23,27 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: From",
+                    "key": "DataInput_From",
                     "details": {
-                        "name": "Vector4: From"
+                        "name": "From"
                     }
                 },
                 {
-                    "key": "DataInput_Vector4: To",
+                    "key": "DataInput_To",
                     "details": {
-                        "name": "Vector4: To"
+                        "name": "To"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Scale",
+                    "key": "DataInput_Scale",
                     "details": {
-                        "name": "Number: Scale"
+                        "name": "Scale"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector4",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector4"
-                    }
-                },
-                {
-                    "key": "DataOutput_Result: Number",
-                    "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

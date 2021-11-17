@@ -37,9 +37,12 @@ namespace AZ::Render
 
     private:
 
+        float CalculateBoneScale(EMotionFX::ActorInstance* actorInstance, EMotionFX::Node* node);
         float CalculateScaleMultiplier(EMotionFX::ActorInstance* instance) const;
         void PrepareForMesh(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM);
+
         void RenderAABB(EMotionFX::ActorInstance* instance, const AZ::Color& aabbColor);
+        void RenderLineSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor);
         void RenderSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor);
         void RenderEMFXDebugDraw(EMotionFX::ActorInstance* instance);
         void RenderNormals(

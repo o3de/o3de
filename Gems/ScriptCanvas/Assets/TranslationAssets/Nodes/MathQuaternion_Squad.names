@@ -7,8 +7,7 @@
             "details": {
                 "name": "Squad",
                 "category": "Math/Quaternion",
-                "tooltip": "returns the quadratic interpolation, that is: Squad(From, To, In, Out, T) = Slerp(Slerp(From, Out, T), Slerp(To, In, T), 2(1 - T)T)",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns the quadratic interpolation, that is: Squad(From, To, In, Out, T) = Slerp(Slerp(From, Out, T), Slerp(To, In, T), 2(1 - T)T)"
             },
             "slots": [
                 {
@@ -24,39 +23,39 @@
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: From",
+                    "key": "DataInput_From",
                     "details": {
-                        "name": "Quaternion: From"
+                        "name": "From"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: To",
+                    "key": "DataInput_To",
                     "details": {
-                        "name": "Quaternion: To"
+                        "name": "To"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: In",
+                    "key": "DataInput_In",
                     "details": {
-                        "name": "Quaternion: In"
+                        "name": "In"
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Out",
+                    "key": "DataInput_Out",
                     "details": {
-                        "name": "Quaternion: Out"
+                        "name": "Out"
                     }
                 },
                 {
-                    "key": "DataInput_Number: T",
+                    "key": "DataInput_T",
                     "details": {
-                        "name": "Number: T"
+                        "name": "T"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Quaternion",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Quaternion"
+                        "name": "Result"
                     }
                 }
             ]

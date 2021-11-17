@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "BuildTangentBasis",
+                "name": "Build Tangent Basis",
                 "category": "Math/Vector3",
-                "tooltip": "returns a tangent basis from the normal",
-                "subtitle": "Vector3"
+                "tooltip": "Returns a tangent basis from the normal"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Normal",
+                    "key": "DataInput_Normal",
                     "details": {
-                        "name": "Vector3: Normal"
+                        "name": "Normal"
                     }
                 },
                 {
-                    "key": "DataOutput_Tangent: Vector3",
+                    "key": "DataOutput_Tangent",
                     "details": {
-                        "name": "Tangent: Vector3"
+                        "name": "Tangent"
                     }
                 },
                 {
-                    "key": "DataOutput_Bitangent: Vector3",
+                    "key": "DataOutput_Bitangent",
                     "details": {
-                        "name": "Bitangent: Vector3"
+                        "name": "Bitangent"
                     }
                 }
             ]
