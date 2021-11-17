@@ -344,6 +344,55 @@ namespace PhysX
                 bool isAcceleration = true;
                 return physx::PxD6JointDrive(stiffness, damping, forceLimit, isAcceleration);
             }
+
+            AZStd::vector<DepthData> ComputeHierarchyDepths(const AZStd::vector<size_t>& parentIndices)
+            {
+                const size_t numNodes = parentIndices.size();
+                AZStd::vector<DepthData> nodeDepths(numNodes);
+                for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
+                {
+                    nodeDepths[nodeIndex] = { -1, nodeIndex };
+                }
+
+                for (size_t nodeIndex = 0; nodeIndex < numNodes; nodeIndex++)
+                {
+                    if (nodeDepths[nodeIndex].m_depth != -1)
+                    {
+                        continue;
+                    }
+                    int depth = -1; // initial depth value for this node
+                    int ancestorDepth = 0; // the depth of the first ancestor we find when iteratively visiting parents
+                    bool ancestorFound = false; // whether we have found either an ancestor which already has a depth value, or the root
+                    size_t currentIndex = nodeIndex;
+                    while (!ancestorFound)
+                    {
+                        depth++;
+                        if (depth > numNodes)
+                        {
+                            AZ_Error("PhysX Ragdoll", false, "Loop detected in hierarchy depth computation.");
+                            return nodeDepths;
+                        }
+                        const size_t parentIndex = parentIndices[currentIndex];
+
+                        if (parentIndex >= numNodes || nodeDepths[currentIndex].m_depth != -1)
+                        {
+                            ancestorFound = true;
+                            ancestorDepth = (nodeDepths[currentIndex].m_depth != -1) ? nodeDepths[currentIndex].m_depth : 0;
+                        }
+
+                        currentIndex = parentIndex;
+                    }
+
+                    currentIndex = nodeIndex;
+                    for (int i = depth; i >= 0; i--)
+                    {
+                        nodeDepths[currentIndex] = { ancestorDepth + i, currentIndex };
+                        currentIndex = parentIndices[currentIndex];
+                    }
+                }
+
+                return nodeDepths;
+            }
         } // namespace Characters
     } // namespace Utils
 } // namespace PhysX

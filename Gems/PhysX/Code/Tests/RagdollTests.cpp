@@ -367,4 +367,19 @@ namespace PhysX
         float minZ = ragdoll->GetAabb().GetMin().GetZ();
         EXPECT_NEAR(minZ, 0.0f, 0.05f);
     }
+
+    TEST(ComputeHierarchyDepthsTest, DepthValuesCorrect)
+    {
+        AZStd::vector<size_t> parentIndices =
+            { 3, 5, AZStd::numeric_limits<size_t>::max(), 1, 2, 9, 7, 4, 0, 6, 11, 12, 5, 14, 15, 16, 5, 18, 19, 4, 21, 22, 4 };
+
+        const AZStd::vector<Utils::Characters::DepthData> nodeDepths = Utils::Characters::ComputeHierarchyDepths(parentIndices);
+
+        std::vector<int> expectedDepths = { 8, 6, 0, 7, 1, 5, 3, 2, 9, 4, 8, 7, 6, 9, 8, 7, 6, 4, 3, 2, 4, 3, 2 };
+
+        for (size_t i = 0; i < parentIndices.size(); i++)
+        {
+            EXPECT_EQ(nodeDepths[i].m_depth, expectedDepths[i]);
+        }
+    }
 } // namespace PhysX
