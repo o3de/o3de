@@ -1,0 +1,80 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#ifndef AZ_COLLECTING_PARTIAL_SRGS
+#error Do not include this file directly. Include the main .srgi file instead.
+#endif
+
+partial ShaderResourceGroup ViewSrg
+{
+    Sampler HeightmapSampler
+    {
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+
+    Sampler DetailSampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+    };
+
+    struct DetailMaterialData
+    {
+        // Uv
+        row_major float3x4 m_uvTransform;
+
+        float3 m_baseColor;
+
+        // Factor / Scale / Bias for input textures
+        float m_baseColorFactor;
+
+        float m_normalFactor;
+        float m_metalFactor;
+        float m_roughnessScale;
+        float m_roughnessBias;
+
+        float m_specularF0Factor;
+        float m_occlusionFactor;
+        float m_heightFactor;
+        float m_heightOffset;
+
+        float m_heightBlendFactor;
+
+        // Flags
+        uint m_flags; // see DetailTextureFlags
+
+        // Image indices
+        uint m_colorNormalImageIndices;
+        uint m_roughnessMetalnessImageIndices;
+
+        uint m_specularF0OcclusionImageIndices;
+        uint m_heightImageIndex; // only first 16 bits used
+
+        // 16 byte aligned
+        uint2 m_padding;
+    };
+
+    Texture2D m_heightmapImage;
+    Texture2D<uint4> m_detailMaterialIdImage;
+    StructuredBuffer<DetailMaterialData> m_detailMaterialData;
+    
+    Texture2D m_detailTextures[]; // bindless array of all textures for detail materials
+
+    float2 m_detailMaterialIdImageCenter;
+    float m_detailHalfPixelUv;
+    
+    float4 m_detailAabb;
+}
