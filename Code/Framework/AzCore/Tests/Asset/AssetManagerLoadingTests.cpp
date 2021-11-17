@@ -2339,8 +2339,8 @@ namespace UnitTest
                 EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset1.txt", &a, &context));
             }
 
-            const size_t numThreads = 4;
-            AZStd::atomic_int threadCount(numThreads);
+            constexpr size_t NumThreads = 4;
+            AZStd::atomic_int threadCount(NumThreads);
             AZStd::condition_variable cv;
             AZStd::vector<AZStd::thread> threads;
             AZStd::atomic_bool keepDispatching(true);
@@ -2355,7 +2355,7 @@ namespace UnitTest
 
             AZStd::thread dispatchThread(dispatch);
 
-            for (size_t threadIdx = 0; threadIdx < numThreads; ++threadIdx)
+            for (size_t threadIdx = 0; threadIdx < NumThreads; ++threadIdx)
             {
                 threads.emplace_back([&threadCount, &db, &cv]()
                     {
