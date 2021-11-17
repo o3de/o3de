@@ -211,22 +211,15 @@ namespace UnitTest
                 request.m_deadline = deadline;
                 request.m_priority = priority;
                 request.m_data = allocator.Allocate(size, size, 8);
-
-                auto iterator = m_virtualFiles.find(relativePath);
-
-                if (iterator == m_virtualFiles.end())
-                {
-                    AZ_Assert(false, "Failed to find file %.*s", relativePath.size(), relativePath.data());
-                }
-
-                const auto& virtualFile = iterator->second;
+                
+                const auto* virtualFile = FindFile(relativePath);
 
                 AZ_Assert(
-                    virtualFile.size() == size, "Streamer read request size did not match size of saved file: %.*s", relativePath.size(),
+                    virtualFile->size() == size, "Streamer read request size did not match size of saved file: %.*s", relativePath.size(),
                     relativePath.data());
                 AZ_Assert(size > 0, "Size is zero %.*s", relativePath.size(), relativePath.data());
 
-                memcpy(request.m_data.m_address, virtualFile.data(), size);
+                memcpy(request.m_data.m_address, virtualFile->data(), size);
 
                 // Create a real file request result and return it
                 request.m_request = m_context.GetNewExternalRequest();
@@ -324,6 +317,38 @@ namespace UnitTest
         return itr;
     }
 
+    AZStd::vector<char>* MemoryStreamerWrapper::FindFile(AZStd::string_view path)
+    {
+        auto itr = m_virtualFiles.find(path);
+            
+        if (itr == m_virtualFiles.end())
+        {
+            // Path didn't work as-is, does it have the test folder prefixed? If so try removing it
+            if (AZ::StringFunc::StartsWith(path, GetTestFolderPath()))
+            {
+                AZStd::string_view pathWithoutFolder = path;
+
+                pathWithoutFolder = AZ::StringFunc::LStrip(pathWithoutFolder, GetTestFolderPath().c_str());
+                itr = m_virtualFiles.find(pathWithoutFolder);
+            }
+            else // Path isn't prefixed, so try adding it
+            {
+                itr = m_virtualFiles.find(GetTestFolderPath().append(path));
+            }
+        }
+
+        if (itr != m_virtualFiles.end())
+        {
+            return &itr->second;
+        }
+
+        // Currently no test expects a file not to exist so we assert to make it easy to quickly find where something went wrong
+        // If we ever need to test for a non-existent file this assert should just be conditionally disabled for that specific test
+        AZ_Assert(false, "Failed to find virtual file %*.s", path.size(), path.data())
+
+        return nullptr;
+    }
+
     void DisklessAssetManagerBase::SetUp()
     {
         using ::testing::_;
@@ -338,21 +363,15 @@ namespace UnitTest
             {
                 AZStd::scoped_lock lock(m_streamerWrapper->m_mutex);
 
-                AZStd::string_view pathWithoutFolder = path;
-                if (AZ::StringFunc::StartsWith(path, GetTestFolderPath()))
-                {
-                    pathWithoutFolder = AZ::StringFunc::LStrip(pathWithoutFolder, GetTestFolderPath().c_str());
-                }
+                const auto* file = m_streamerWrapper->FindFile(path);
 
-                auto itr = m_streamerWrapper->m_virtualFiles.find(pathWithoutFolder);
-
-                if (itr != m_streamerWrapper->m_virtualFiles.end())
+                if (file)
                 {
-                    size = itr->second.size();
+                    size = file->size();
                     return ResultCode::Success;
                 }
 
-                AZ_Error("DisklessAssetManagerBase", false, "Failed to find virtual file %.*s", pathWithoutFolder.size(), pathWithoutFolder.data());
+                AZ_Error("DisklessAssetManagerBase", false, "Failed to find virtual file %.*s", path);
 
                 return ResultCode::Error;
             });

@@ -113,6 +113,8 @@ namespace UnitTest
             return AZ::Utils::SaveObjectToStream(stream, DataStream::StreamType::ST_XML, object, context);
         }
 
+        AZStd::vector<char>* FindFile(AZStd::string_view path);
+
         ::testing::NiceMock<StreamerMock> m_mockStreamer;
         IO::StreamerContext m_context;
         AZStd::atomic_bool m_suspended{ false };
