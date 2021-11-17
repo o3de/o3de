@@ -132,16 +132,21 @@ namespace AZ
             //! Returns the masked occlusion culling interface
             MaskedOcclusionCulling* GetMaskedOcclusionCulling();
 
+            //! This is called by RenderPipeline when this view is added to the pipeline.
+            void OnAddToRenderPipeline();
+
         private:
             View() = delete;
             View(const AZ::Name& name, UsageFlags usage);
-
 
             //! Sorts the finalized draw lists in this view
             void SortFinalizedDrawLists();
 
             //! Sorts a drawList using the sort function from a pass with the corresponding drawListTag
             void SortDrawList(RHI::DrawList& drawList, RHI::DrawListTag tag);
+
+            //! Attempt to create a shader resource group.
+            void TryCreateShaderResourceGroup();
 
             AZ::Name m_name;
             UsageFlags m_usageFlags;

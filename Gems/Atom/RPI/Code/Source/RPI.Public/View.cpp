@@ -47,18 +47,14 @@ namespace AZ
         {
             AZ_Assert(!name.IsEmpty(), "invalid name");
 
-            // Set default matrixes. 
+            // Set default matrices 
             SetWorldToViewMatrix(AZ::Matrix4x4::CreateIdentity());
             AZ::Matrix4x4 viewToClipMatrix;
             AZ::MakePerspectiveFovMatrixRH(viewToClipMatrix, AZ::Constants::HalfPi, 1, 0.1f, 1000.f, true);
             SetViewToClipMatrix(viewToClipMatrix);
 
-            Data::Asset<ShaderAsset> viewSrgShaderAsset = RPISystemInterface::Get()->GetCommonShaderAssetForSrgs();
+            TryCreateShaderResourceGroup();
 
-            if (viewSrgShaderAsset.IsReady())
-            {
-                m_shaderResourceGroup = ShaderResourceGroup::Create(viewSrgShaderAsset, RPISystemInterface::Get()->GetViewSrgLayout()->GetName());
-            }
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             m_maskedOcclusionCulling = MaskedOcclusionCulling::Create();
             m_maskedOcclusionCulling->SetResolution(MaskedSoftwareOcclusionCullingWidth, MaskedSoftwareOcclusionCullingHeight);
@@ -369,16 +365,19 @@ namespace AZ
         {
             if (m_clipSpaceOffset.IsZero())
             {
-                Matrix4x4 worldToClipPrevMatrix = m_viewToClipPrevMatrix * m_worldToViewPrevMatrix;
-                m_shaderResourceGroup->SetConstant(m_worldToClipPrevMatrixConstantIndex, worldToClipPrevMatrix);
-                m_shaderResourceGroup->SetConstant(m_viewProjectionMatrixConstantIndex, m_worldToClipMatrix);
-                m_shaderResourceGroup->SetConstant(m_projectionMatrixConstantIndex, m_viewToClipMatrix);
-                m_shaderResourceGroup->SetConstant(m_clipToWorldMatrixConstantIndex, m_clipToWorldMatrix);
-                m_shaderResourceGroup->SetConstant(m_projectionMatrixInverseConstantIndex, m_viewToClipMatrix.GetInverseFull());
+                if (m_shaderResourceGroup)
+                {
+                    Matrix4x4 worldToClipPrevMatrix = m_viewToClipPrevMatrix * m_worldToViewPrevMatrix;
+                    m_shaderResourceGroup->SetConstant(m_worldToClipPrevMatrixConstantIndex, worldToClipPrevMatrix);
+                    m_shaderResourceGroup->SetConstant(m_viewProjectionMatrixConstantIndex, m_worldToClipMatrix);
+                    m_shaderResourceGroup->SetConstant(m_projectionMatrixConstantIndex, m_viewToClipMatrix);
+                    m_shaderResourceGroup->SetConstant(m_clipToWorldMatrixConstantIndex, m_clipToWorldMatrix);
+                    m_shaderResourceGroup->SetConstant(m_projectionMatrixInverseConstantIndex, m_viewToClipMatrix.GetInverseFull());
+                }
             }
             else
             {
-                // Offset the current and previous frame clip matricies
+                // Offset the current and previous frame clip matrices
                 Matrix4x4 offsetViewToClipMatrix = m_viewToClipMatrix;
                 offsetViewToClipMatrix.SetElement(0, 2, m_clipSpaceOffset.GetX());
                 offsetViewToClipMatrix.SetElement(1, 2, m_clipSpaceOffset.GetY());
@@ -387,27 +386,33 @@ namespace AZ
                 offsetViewToClipPrevMatrix.SetElement(0, 2, m_clipSpaceOffset.GetX());
                 offsetViewToClipPrevMatrix.SetElement(1, 2, m_clipSpaceOffset.GetY());
 
-                // Build other matricies dependent on the view to clip matricies
+                // Build other matrices dependent on the view to clip matrices
                 Matrix4x4 offsetWorldToClipMatrix = offsetViewToClipMatrix * m_worldToViewMatrix;
                 Matrix4x4 offsetWorldToClipPrevMatrix = offsetViewToClipPrevMatrix * m_worldToViewPrevMatrix;
             
                 Matrix4x4 offsetClipToViewMatrix = offsetViewToClipMatrix.GetInverseFull();
                 Matrix4x4 offsetClipToWorldMatrix = m_viewToWorldMatrix * offsetClipToViewMatrix;
-                    
-                m_shaderResourceGroup->SetConstant(m_worldToClipPrevMatrixConstantIndex, offsetWorldToClipPrevMatrix);
-                m_shaderResourceGroup->SetConstant(m_viewProjectionMatrixConstantIndex, offsetWorldToClipMatrix);
-                m_shaderResourceGroup->SetConstant(m_projectionMatrixConstantIndex, offsetViewToClipMatrix);
-                m_shaderResourceGroup->SetConstant(m_clipToWorldMatrixConstantIndex, offsetClipToWorldMatrix);
-                m_shaderResourceGroup->SetConstant(m_projectionMatrixInverseConstantIndex, offsetViewToClipMatrix.GetInverseFull());
+
+                if (m_shaderResourceGroup)
+                {
+                    m_shaderResourceGroup->SetConstant(m_worldToClipPrevMatrixConstantIndex, offsetWorldToClipPrevMatrix);
+                    m_shaderResourceGroup->SetConstant(m_viewProjectionMatrixConstantIndex, offsetWorldToClipMatrix);
+                    m_shaderResourceGroup->SetConstant(m_projectionMatrixConstantIndex, offsetViewToClipMatrix);
+                    m_shaderResourceGroup->SetConstant(m_clipToWorldMatrixConstantIndex, offsetClipToWorldMatrix);
+                    m_shaderResourceGroup->SetConstant(m_projectionMatrixInverseConstantIndex, offsetViewToClipMatrix.GetInverseFull());
+                }
             }
 
-            m_shaderResourceGroup->SetConstant(m_worldPositionConstantIndex, m_position);
-            m_shaderResourceGroup->SetConstant(m_viewMatrixConstantIndex, m_worldToViewMatrix);
-            m_shaderResourceGroup->SetConstant(m_viewMatrixInverseConstantIndex, m_worldToViewMatrix.GetInverseFull());
-            m_shaderResourceGroup->SetConstant(m_zConstantsConstantIndex, m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ);
-            m_shaderResourceGroup->SetConstant(m_unprojectionConstantsIndex, m_unprojectionConstants);
+            if (m_shaderResourceGroup)
+            {
+                m_shaderResourceGroup->SetConstant(m_worldPositionConstantIndex, m_position);
+                m_shaderResourceGroup->SetConstant(m_viewMatrixConstantIndex, m_worldToViewMatrix);
+                m_shaderResourceGroup->SetConstant(m_viewMatrixInverseConstantIndex, m_worldToViewMatrix.GetInverseFull());
+                m_shaderResourceGroup->SetConstant(m_zConstantsConstantIndex, m_nearZ_farZ_farZTimesNearZ_farZMinusNearZ);
+                m_shaderResourceGroup->SetConstant(m_unprojectionConstantsIndex, m_unprojectionConstants);
 
-            m_shaderResourceGroup->Compile();
+                m_shaderResourceGroup->Compile();
+            }
 
             m_viewToClipPrevMatrix = m_viewToClipMatrix;
             m_worldToViewPrevMatrix = m_worldToViewMatrix;
@@ -425,6 +430,31 @@ namespace AZ
         MaskedOcclusionCulling* View::GetMaskedOcclusionCulling()
         {
             return m_maskedOcclusionCulling;
+        }
+
+        void View::TryCreateShaderResourceGroup()
+        {
+            if (!m_shaderResourceGroup)
+            {
+                if (auto rpiSystemInterface = RPISystemInterface::Get())
+                {
+                    if (Data::Asset<ShaderAsset> viewSrgShaderAsset = rpiSystemInterface->GetCommonShaderAssetForSrgs();
+                        viewSrgShaderAsset.IsReady())
+                    {
+                        m_shaderResourceGroup =
+                            ShaderResourceGroup::Create(viewSrgShaderAsset, rpiSystemInterface->GetViewSrgLayout()->GetName());
+                    }
+                }
+            }
+        }
+
+        void View::OnAddToRenderPipeline()
+        {
+            TryCreateShaderResourceGroup();
+            if (!m_shaderResourceGroup)
+            {
+                AZ_Warning("RPI::View", false, "Shader Resource Group failed to initialize");
+            }
         }
     } // namespace RPI
 } // namespace AZ

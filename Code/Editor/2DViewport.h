@@ -50,8 +50,6 @@ public:
     //! Map world space position to viewport position.
     QPoint     WorldToView(const Vec3& wp) const override;
 
-    QPoint WorldToViewParticleEditor(const Vec3& wp, int width, int height) const override; //Eric@conffx
-
     //! Map viewport position to world space position.
     Vec3        ViewToWorld(const QPoint& vp, bool* collideWithTerrain = nullptr, bool onlyTerrain = false, bool bSkipVegetation = false, bool bTestRenderMesh = false, bool* collideWithObject = nullptr) const override;
     //! Map viewport position to world space ray from camera.
