@@ -178,10 +178,7 @@ namespace AZ
                     pipelineViews.m_views.resize(1);
                 }
                 ViewPtr previousView = pipelineViews.m_views[0];
-                if (view)
-                {
-                    view->OnAddToRenderPipeline();
-                }
+                view->OnAddToRenderPipeline();
                 pipelineViews.m_views[0] = view;
 
                 if (previousView)
