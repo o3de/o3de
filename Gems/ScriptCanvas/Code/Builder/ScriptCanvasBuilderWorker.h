@@ -37,6 +37,7 @@ namespace ScriptCanvasEditor
 {
     class Graph;
     class ScriptCanvasAsset;
+    class SourceHandle;
 }
 
 namespace ScriptCanvasBuilder
@@ -125,13 +126,13 @@ namespace ScriptCanvasBuilder
         }
     };
 
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& asset);
+    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const ScriptCanvasEditor::SourceHandle& asset);
 
     AZ::Outcome<ScriptCanvas::GraphData, AZStd::string> CompileGraphData(AZ::Entity* scriptCanvasEntity);
 
     AZ::Outcome<ScriptCanvas::VariableData, AZStd::string> CompileVariableData(AZ::Entity* scriptCanvasEntity);
 
-    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(AZ::Entity* buildEntity, AZ::Data::AssetId scriptAssetId, AZStd::string_view rawLuaFilePath);
+    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const ScriptCanvasEditor::SourceHandle& editAsset, AZStd::string_view rawLuaFilePath);
 
     int GetBuilderVersion();
 

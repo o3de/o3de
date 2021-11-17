@@ -29,6 +29,7 @@
 #include <ScriptCanvas/Results/ErrorText.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
 #include <Source/Components/SceneComponent.h>
+#include <ScriptCanvas/Core/Core.h>
 
 namespace ScriptCanvasBuilder
 {
@@ -77,17 +78,17 @@ namespace ScriptCanvasBuilder
         return ScriptCanvas::Translation::ParseGraph(request);
     }
 
-    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(AZ::Entity* buildEntity, AZ::Data::AssetId scriptAssetId, AZStd::string_view rawLuaFilePath)
+    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> CreateLuaAsset(const ScriptCanvasEditor::SourceHandle& editAsset, AZStd::string_view rawLuaFilePath)
     {
         AZStd::string fullPath(rawLuaFilePath);
         AZStd::string fileNameOnly;
         AzFramework::StringFunc::Path::GetFullFileName(rawLuaFilePath.data(), fileNameOnly);
         AzFramework::StringFunc::Path::Normalize(fullPath);
 
-        auto sourceGraph = PrepareSourceGraph(buildEntity);
+        auto sourceGraph = PrepareSourceGraph(editAsset.Mod()->GetEntity());
 
         ScriptCanvas::Grammar::Request request;
-        request.scriptAssetId = scriptAssetId;
+        request.scriptAssetId = editAsset.Id();
         request.graph = sourceGraph;
         request.name = fileNameOnly;
         request.rawSaveDebugOutput = ScriptCanvas::Grammar::g_saveRawTranslationOuputToFile;
@@ -117,7 +118,7 @@ namespace ScriptCanvasBuilder
 
         auto& translation = translationResult.m_translations.find(ScriptCanvas::Translation::TargetFlags::Lua)->second;
         AZ::Data::Asset<AZ::ScriptAsset> asset;
-        scriptAssetId.m_subId = AZ::ScriptAsset::CompiledAssetSubId;
+        AZ::Data::AssetId scriptAssetId(editAsset.Id(), AZ::ScriptAsset::CompiledAssetSubId);
         asset.Create(scriptAssetId);
         auto writeStream = asset.Get()->CreateWriteStream();
 
@@ -144,12 +145,12 @@ namespace ScriptCanvasBuilder
         return AZ::Success(result);
     }
 
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset)
+    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> CreateRuntimeAsset(const ScriptCanvasEditor::SourceHandle& editAsset)
     {
         // Flush asset manager events to ensure no asset references are held by closures queued on Ebuses.
         AZ::Data::AssetManager::Instance().DispatchEvents();
 
-        auto runtimeAssetId = editAsset.GetId();
+        AZ::Data::AssetId runtimeAssetId = editAsset.Id();
         runtimeAssetId.m_subId = AZ_CRC("RuntimeData", 0x163310ae);
         AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
         runtimeAsset.Create(runtimeAssetId);

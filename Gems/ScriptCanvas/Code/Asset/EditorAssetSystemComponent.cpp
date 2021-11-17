@@ -64,7 +64,6 @@ namespace ScriptCanvasEditor
 
     void EditorAssetSystemComponent::Activate()
     {
-        // m_editorAssetRegistry.Register<ScriptCanvasAsset, ScriptCanvasAssetHandler, ScriptCanvasAssetDescription>();
         m_editorAssetRegistry.Register<ScriptCanvas::SubgraphInterfaceAsset, ScriptCanvas::SubgraphInterfaceAssetHandler, ScriptCanvas::SubgraphInterfaceAssetDescription>();
 
         AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
@@ -98,28 +97,14 @@ namespace ScriptCanvasEditor
         return false;
     }
 
-    AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> EditorAssetSystemComponent::LoadAsset(AZStd::string_view graphPath)
-    {
-        auto outcome = ScriptCanvasBuilder::LoadEditorAsset(graphPath, AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
-
-        if (outcome.IsSuccess())
-        {
-            return outcome.GetValue();
-        }
-        else
-        {
-            return {};
-        }
-    }
-
-    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> EditorAssetSystemComponent::CreateRuntimeAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset)
+    AZ::Outcome<AZ::Data::Asset<ScriptCanvas::RuntimeAsset>, AZStd::string> EditorAssetSystemComponent::CreateRuntimeAsset(const SourceHandle& editAsset)
     {
         return ScriptCanvasBuilder::CreateRuntimeAsset(editAsset);
     }
 
-    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> EditorAssetSystemComponent::CreateLuaAsset(const AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset>& editAsset, AZStd::string_view graphPathForRawLuaFile)
+    AZ::Outcome<ScriptCanvas::Translation::LuaAssetResult, AZStd::string> EditorAssetSystemComponent::CreateLuaAsset(const SourceHandle& editAsset, AZStd::string_view graphPathForRawLuaFile)
     {
-        return ScriptCanvasBuilder::CreateLuaAsset(editAsset->GetScriptCanvasEntity(), editAsset->GetId(), graphPathForRawLuaFile);
+        return ScriptCanvasBuilder::CreateLuaAsset(editAsset, graphPathForRawLuaFile);
     }
 
     void EditorAssetSystemComponent::AddSourceFileOpeners([[maybe_unused]] const char* fullSourceFileName, [[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)

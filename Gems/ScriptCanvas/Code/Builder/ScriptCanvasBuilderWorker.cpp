@@ -29,6 +29,7 @@
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 #include <ScriptCanvas/Results/ErrorText.h>
 #include <ScriptCanvas/Utils/BehaviorContextUtils.h>
+#include <ScriptCanvas/Core/Core.h>
 
 namespace ScriptCanvasBuilder
 {
