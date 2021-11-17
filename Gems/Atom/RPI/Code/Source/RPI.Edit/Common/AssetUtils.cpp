@@ -47,8 +47,8 @@ namespace AZ
 
             AZStd::string ResolvePathReference(const AZStd::string& originatingSourceFilePath, const AZStd::string& referencedSourceFilePath)
             {
-                // Prevents "second join parameter is an absolute path" warnings in StringFunc::Path::Join below
-                if (AZ::IO::PathView{referencedSourceFilePath}.IsAbsolute())
+                // The IsAbsolute part prevents "second join parameter is an absolute path" warnings in StringFunc::Path::Join below
+                if (referencedSourceFilePath.empty() || AZ::IO::PathView{referencedSourceFilePath}.IsAbsolute())
                 {
                     return referencedSourceFilePath;
                 }
