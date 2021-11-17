@@ -37,20 +37,20 @@ namespace AzFramework
         // of files within the AssetBundle in order to update the Asset Registry at runtime when
         // loading the bundle
         const AZStd::string& GetCatalogName() const { return m_catalogName; }
-        AZStd::vector<AZStd::string> GetDependentBundleNames() const { return m_depedendentBundleNames;  }
+        AZStd::vector<AZStd::string> GetDependentBundleNames() const { return m_dependentBundleNames;  }
         const AZStd::vector<AZ::IO::Path>& GetLevelDirectories() const;
         int GetBundleVersion() const { return m_bundleVersion; }
         void SetCatalogName(const AZStd::string& catalogName) { m_catalogName = catalogName; }
         void SetBundleVersion(int bundleVersion) { m_bundleVersion = bundleVersion; }
-        void SetDependentBundleNames(const AZStd::vector<AZStd::string>& dependentBundleNames) { m_depedendentBundleNames = dependentBundleNames; }
+        void SetDependentBundleNames(const AZStd::vector<AZStd::string>& dependentBundleNames) { m_dependentBundleNames = dependentBundleNames; }
         void SetLevelsDirectory(const AZStd::vector<AZ::IO::Path>& levelDirs);
 
         static const char s_manifestFileName[];
         static const int CurrentBundleVersion;
         
-    private: 
+    private:
         AZStd::string m_catalogName;
-        AZStd::vector<AZStd::string> m_depedendentBundleNames;
+        AZStd::vector<AZStd::string> m_dependentBundleNames;
         AZStd::vector<AZ::IO::Path> m_levelDirs;
         int m_bundleVersion = CurrentBundleVersion;
     };
