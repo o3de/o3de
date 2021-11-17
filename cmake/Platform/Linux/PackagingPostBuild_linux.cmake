@@ -9,8 +9,6 @@
 file(REAL_PATH "${CPACK_SOURCE_DIR}/.." LY_ROOT_FOLDER)
 include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingPostBuild_common.cmake)
 
-# TODO: copy public key to ${CPACK_TOPLEVEL_DIRECTORY}
-
 if(CPACK_UPLOAD_URL)
 
     # use the internal default path if somehow not specified from cpack_configure_downloads
@@ -18,10 +16,12 @@ if(CPACK_UPLOAD_URL)
         set(CPACK_UPLOAD_DIRECTORY ${CPACK_PACKAGE_DIRECTORY}/CPackUploads)
     endif()
 
+    # TODO: copy gpg file to CPACK_UPLOAD_DIRECTORY
+
     ly_upload_to_url(
         ${CPACK_UPLOAD_URL}
         ${CPACK_UPLOAD_DIRECTORY}
-        ".*(deb|asc|.sha256)$"
+        ".*(.deb|.gpg|.sha256)$"
     )
 
     # for auto tagged builds, we will also upload a second copy of just the boostrapper
@@ -34,6 +34,8 @@ if(CPACK_UPLOAD_URL)
             ${latest_deb_package}
         )
         ly_upload_to_latest(${CPACK_UPLOAD_URL} ${latest_deb_package})
+
+        # TODO: upload gpg file to latest
         
         # replace the name fo the binary inside the generated checksum
         file(READ "${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256" _checksum_contents)
