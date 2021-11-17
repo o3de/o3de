@@ -15,8 +15,8 @@
 #include <UpdateProjectCtrl.h>
 #include <UpdateProjectSettingsScreen.h>
 #include <ProjectUtils.h>
+#include <DownloadController.h>
 #include <ProjectManagerSettings.h>
-
 #include <AzCore/Settings/SettingsRegistry.h>
 
 #include <QDialogButtonBox>
