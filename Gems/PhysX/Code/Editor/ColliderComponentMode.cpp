@@ -237,9 +237,9 @@ namespace PhysX
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster, AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
         // create and register the buttons
-        m_dimensionsModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Scale");
         m_offsetModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Move");
         m_rotationModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Rotate");
+        m_dimensionsModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Scale");
 
         const auto onButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId) {
             if (buttonId == m_dimensionsModeButtonId)
