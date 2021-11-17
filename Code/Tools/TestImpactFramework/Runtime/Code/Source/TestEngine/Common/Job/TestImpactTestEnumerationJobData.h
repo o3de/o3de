@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <TestEngine/Common/Job/TestImpactRegularTestRunJobData.h>
+#include <TestEngine/Common/Job/TestImpactTestRunJobData.h>
 
 #include <AzCore/std/optional.h>
 

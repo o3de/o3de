@@ -13,7 +13,7 @@
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <TestEngine/TestImpactTestEngineException.h>
 #include <TestEngine/Common/Run/TestImpactRegularTestRunner.h>
-#include <TestEngine/Common/Job/TestImpactRegularTestRunJobData.h>
+#include <TestEngine/Common/Job/TestImpactTestRunJobData.h>
 #include <TestEngine/Native/Job/TestImpactNativeTestRunJobData.h>
 
 namespace TestImpact

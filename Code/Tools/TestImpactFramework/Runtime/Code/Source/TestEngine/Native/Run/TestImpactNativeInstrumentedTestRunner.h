@@ -14,15 +14,15 @@
 #include <TestEngine/TestImpactTestEngineException.h>
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
 #include <TestEngine/Common/Run/TestImpactInstrumentedTestRunner.h>
-#include <TestEngine/Common/Job/TestImpactInstrumentedTestRunJobData.h>
+#include <TestEngine/Common/Job/TestImpactTestRunAndCoverageJobData.h>
 #include <TestEngine/Native/Job/TestImpactNativeTestRunJobData.h>
 
 namespace TestImpact
 {
     class NativeInstrumentedTestRunJobData
-        : public NativeTestRunJobData<InstrumentedTestRunJobData>
+        : public NativeTestRunJobData<TestRunJobDataWithCoverageArtifact>
     {
-        using NativeTestRunJobData<InstrumentedTestRunJobData>::NativeTestRunJobData;
+        using NativeTestRunJobData<TestRunJobDataWithCoverageArtifact>::NativeTestRunJobData;
     };
 
     class NativeInstrumentedTestRunner

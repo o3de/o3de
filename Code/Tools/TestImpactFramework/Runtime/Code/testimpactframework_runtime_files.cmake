@@ -90,12 +90,12 @@ set(FILES
     Source/TestEngine/Common/TestImpactErrorCodeChecker.cpp
     Source/TestEngine/Common/TestImpactErrorCodeChecker.h
     Source/TestEngine/Common/Job/TestImpactTestJobRunner.h
-    Source/TestEngine/Common/Job/TestImpactInstrumentedTestRunJobData.cpp
-    Source/TestEngine/Common/Job/TestImpactInstrumentedTestRunJobData.h
+    Source/TestEngine/Common/Job/TestImpactTestRunAndcoverageJobData.cpp
+    Source/TestEngine/Common/Job/TestImpactTestRunAndcoverageJobData.h
     Source/TestEngine/Common/Job/TestImpactTestEnumerationJobData.cpp
     Source/TestEngine/Common/Job/TestImpactTestEnumerationJobData.h
-    Source/TestEngine/Common/Job/TestImpactRegularTestRunJobData.cpp
-    Source/TestEngine/Common/Job/TestImpactRegularTestRunJobData.h
+    Source/TestEngine/Common/Job/TestImpactTestRunJobData.cpp
+    Source/TestEngine/Common/Job/TestImpactTestRunJobData.h
     Source/TestEngine/Common/Enumeration/TestImpactTestEnumerator.h
     Source/TestEngine/Common/Enumeration/TestImpactTestEnumeration.h
     Source/TestEngine/Common/Enumeration/TestImpactTestEnumerationSerializer.cpp

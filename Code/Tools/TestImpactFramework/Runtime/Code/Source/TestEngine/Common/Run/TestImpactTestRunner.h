@@ -9,7 +9,7 @@
 #pragma once
 
 #include <TestEngine/Common/Job/TestImpactTestJobRunner.h>
-#include <TestEngine/Common/Job/TestImpactRegularTestRunJobData.h>
+#include <TestEngine/Common/Job/TestImpactTestRunJobData.h>
 
 namespace TestImpact
 {

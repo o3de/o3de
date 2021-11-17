@@ -8,16 +8,16 @@
 
 #pragma once
 
-#include <TestEngine/Common/Job/TestImpactRegularTestRunJobData.h>
+#include <TestEngine/Common/Job/TestImpactTestRunJobData.h>
 
 namespace TestImpact
 {
-    //! Per-job data for instrumented test runs.
-    class InstrumentedTestRunJobData
+    //! Per-job data for test runs that also produce coverage artifacts.
+    class TestRunJobDataWithCoverageArtifact
         : public TestRunJobData
     {
     public:
-        InstrumentedTestRunJobData(const RepoPath& resultsArtifact, const RepoPath& coverageArtifact);
+        TestRunJobDataWithCoverageArtifact(const RepoPath& resultsArtifact, const RepoPath& coverageArtifact);
 
         //! Returns the path to the coverage artifact produced by the test target.
         const RepoPath& GetCoverageArtifactPath() const;
