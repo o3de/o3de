@@ -8,6 +8,7 @@
 
 #include <GemRepo/GemRepoInspector.h>
 #include <GemRepo/GemRepoItemDelegate.h>
+#include <PythonBindingsInterface.h>
 
 #include <QFrame>
 #include <QLabel>
@@ -60,8 +61,10 @@ namespace O3DE::ProjectManager
 
         // Repo name and url link
         m_nameLabel->setText(m_model->GetName(modelIndex));
-        m_repoLinkLabel->setText(m_model->GetRepoUri(modelIndex));
-        m_repoLinkLabel->SetUrl(m_model->GetRepoUri(modelIndex));
+
+        const QString repoUri = m_model->GetRepoUri(modelIndex);
+        m_repoLinkLabel->setText(repoUri);
+        m_repoLinkLabel->SetUrl(repoUri);
 
         // Repo summary
         m_summaryLabel->setText(m_model->GetSummary(modelIndex));

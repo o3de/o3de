@@ -37,7 +37,7 @@ namespace O3DE::ProjectManager
         QString m_additionalInfo = "";
         QString m_directoryLink = "";
         QString m_repoUri = "";
-        QStringList m_includedGemPaths = {};
+        QStringList m_includedGemUris = {};
         QDateTime m_lastUpdated;
     };
 } // namespace O3DE::ProjectManager
