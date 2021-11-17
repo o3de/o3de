@@ -859,10 +859,14 @@ namespace ScriptCanvasEditorTools
 
         if (behaviorProperty->m_getter)
         {
+            AZStd::string cleanName = behaviorProperty->m_name;
+            AZ::StringFunc::Replace(cleanName, "::Getter", "");
+
             Method method;
 
-            auto methodName = behaviorProperty->m_getter->m_name;
-            method.m_key = behaviorProperty->m_name;
+            AZStd::string methodName = "Get";
+            methodName.append(cleanName);
+            method.m_key = methodName;
             method.m_details.m_name = methodName;
             method.m_details.m_tooltip = behaviorProperty->m_getter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
 
@@ -874,10 +878,15 @@ namespace ScriptCanvasEditorTools
 
         if (behaviorProperty->m_setter)
         {
+            AZStd::string cleanName = behaviorProperty->m_name;
+            AZ::StringFunc::Replace(cleanName, "::Setter", "");
+
             Method method;
 
-            auto methodName = behaviorProperty->m_setter->m_name;
-            method.m_key = behaviorProperty->m_name;
+            AZStd::string methodName = "Set";
+            methodName.append(cleanName);
+
+            method.m_key = methodName;
             method.m_details.m_name = methodName;
             method.m_details.m_tooltip = behaviorProperty->m_setter->m_debugDescription ? behaviorProperty->m_getter->m_debugDescription : "";
 
