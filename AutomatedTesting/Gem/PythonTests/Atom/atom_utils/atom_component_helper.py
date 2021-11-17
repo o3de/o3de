@@ -150,8 +150,7 @@ def create_basic_atom_level(level_name):
         entity_position=default_position,
         components=["HDRi Skybox", "Global Skylight (IBL)"],
         parent_id=default_level.id)
-    global_skylight_asset_path = os.path.join(
-        "LightingPresets", "greenwich_park_02_4k_iblskyboxcm_iblspecular.exr.streamingimage")
+    global_skylight_asset_path = os.path.join("LightingPresets", "default_iblskyboxcm.exr.streamingimage")
     global_skylight_asset_value = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", global_skylight_asset_path, math.Uuid(), False)
     global_skylight.get_set_test(0, "Controller|Configuration|Cubemap Texture", global_skylight_asset_value)

@@ -10,6 +10,7 @@
 
 #include <AzCore/Math/Frustum.h>
 #include <AzCore/Math/Matrix4x4.h>
+#include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/VectorConversions.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -112,9 +113,8 @@ namespace AzFramework
         const AZ::Matrix4x4& cameraProjection,
         const AZ::Vector2& viewportSize)
     {
-        const auto ndcNormalizedPosition = WorldToScreenNdc(worldPosition, cameraView, cameraProjection);
         // scale ndc position by screen dimensions to return screen position
-        return ScreenPointFromNdc(AZ::Vector3ToVector2(ndcNormalizedPosition), viewportSize);
+        return ScreenPointFromNdc(AZ::Vector3ToVector2(WorldToScreenNdc(worldPosition, cameraView, cameraProjection)), viewportSize);
     }
 
     ScreenPoint WorldToScreen(const AZ::Vector3& worldPosition, const CameraState& cameraState)
@@ -144,9 +144,7 @@ namespace AzFramework
         const AZ::Matrix4x4& inverseCameraProjection,
         const AZ::Vector2& viewportSize)
     {
-        const auto normalizedScreenPosition = NdcFromScreenPoint(screenPosition, viewportSize);
-
-        return ScreenNdcToWorld(normalizedScreenPosition, inverseCameraView, inverseCameraProjection);
+        return ScreenNdcToWorld(NdcFromScreenPoint(screenPosition, viewportSize), inverseCameraView, inverseCameraProjection);
     }
 
     AZ::Vector3 ScreenToWorld(const ScreenPoint& screenPosition, const CameraState& cameraState)

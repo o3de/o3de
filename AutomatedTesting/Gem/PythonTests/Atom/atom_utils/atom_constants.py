@@ -55,11 +55,13 @@ class AtomComponentProperties:
     def camera(property: str = 'name') -> str:
         """
         Camera component properties.
+          - 'Field of view': Sets the value for the camera's FOV (Field of View) in degrees, i.e. 60.0
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Camera',
+            'Field of view': 'Controller|Configuration|Field of view'
         }
         return properties[property]
 
@@ -198,11 +200,13 @@ class AtomComponentProperties:
     def grid(property: str = 'name') -> str:
         """
         Grid component properties.
+          - 'Secondary Grid Spacing': The spacing value for the secondary grid, i.e. 1.0
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Grid',
+            'Secondary Grid Spacing': 'Controller|Configuration|Secondary Grid Spacing',
         }
         return properties[property]
 
@@ -225,11 +229,13 @@ class AtomComponentProperties:
     def hdri_skybox(property: str = 'name') -> str:
         """
         HDRi Skybox component properties.
+          - 'Cubemap Texture': Asset.id for the cubemap texture to set.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'HDRi Skybox',
+            'Cubemap Texture': 'Controller|Configuration|Cubemap Texture',
         }
         return properties[property]
 
@@ -268,12 +274,14 @@ class AtomComponentProperties:
         Material component properties. Requires one of Actor OR Mesh component.
           - 'requires' a list of component names as strings required by this component.
             Only one of these is required at a time for this component.\n
+          - 'Material Asset': the material Asset.id of the material.
         :param property: From the last element of the property tree path. Default 'name' for component name string.
         :return: Full property path OR component name if no property specified.
         """
         properties = {
             'name': 'Material',
             'requires': [AtomComponentProperties.actor(), AtomComponentProperties.mesh()],
+            'Material Asset': 'Default Material|Material Asset',
         }
         return properties[property]
 

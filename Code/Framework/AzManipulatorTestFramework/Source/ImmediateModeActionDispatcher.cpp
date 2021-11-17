@@ -69,8 +69,6 @@ namespace AzManipulatorTestFramework
     void ImmediateModeActionDispatcher::CameraStateImpl(const AzFramework::CameraState& cameraState)
     {
         m_viewportManipulatorInteraction.GetViewportInteraction().SetCameraState(cameraState);
-        GetMouseInteractionEvent()->m_mouseInteraction.m_mousePick.m_rayOrigin = cameraState.m_position;
-        GetMouseInteractionEvent()->m_mouseInteraction.m_mousePick.m_rayDirection = cameraState.m_forward;
     }
 
     void ImmediateModeActionDispatcher::MouseLButtonDownImpl()

@@ -927,6 +927,9 @@ namespace AzToolsFramework
         /// Notify that the MainWindow has been fully initialized
         virtual void NotifyMainWindowInitialized(QMainWindow* /*mainWindow*/) {}
 
+        /// Notify that the Editor has been fully initialized
+        virtual void NotifyEditorInitialized() {}
+
         /// Signal that an asset should be highlighted / selected
         virtual void SelectAsset(const QString& /* assetPath */) {}
     };

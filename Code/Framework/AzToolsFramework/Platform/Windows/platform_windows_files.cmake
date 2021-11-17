@@ -7,4 +7,5 @@
 #
 
 set(FILES
+    ../Common/Default/AzToolsFramework/API/PythonLoader_Default.cpp
 )

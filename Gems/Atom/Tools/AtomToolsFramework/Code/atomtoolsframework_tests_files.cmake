@@ -8,4 +8,5 @@
 
 set(FILES
     Tests/AtomToolsFrameworkTest.cpp
+    Tests/ViewportInteractionImplTests.cpp
 )

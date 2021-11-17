@@ -409,7 +409,7 @@ namespace AzToolsFramework
             const AzFramework::CameraState cameraState = GetCameraState(viewportId);
             for (size_t entityCacheIndex = 0; entityCacheIndex < entityDataCache.VisibleEntityDataCount(); ++entityCacheIndex)
             {
-                if (!entityDataCache.IsVisibleEntitySelectableInViewport(entityCacheIndex))
+                if (!entityDataCache.IsVisibleEntityIndividuallySelectableInViewport(entityCacheIndex))
                 {
                     continue;
                 }
@@ -983,7 +983,7 @@ namespace AzToolsFramework
     {
         if (auto entityIndex = entityDataCache.GetVisibleEntityIndexFromId(entityId))
         {
-            if (entityDataCache.IsVisibleEntitySelectableInViewport(*entityIndex))
+            if (entityDataCache.IsVisibleEntityIndividuallySelectableInViewport(*entityIndex))
             {
                 return *entityIndex;
             }

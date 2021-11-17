@@ -103,7 +103,8 @@ namespace PhysX
         Ragdoll* GetPhysXRagdoll();
         const Ragdoll* GetPhysXRagdollConst() const;
 
-        bool IsJointProjectionVisible();
+        bool IsJointProjectionVisible() const;
+        bool IsMaxMassRatioVisible() const;
 
         AzPhysics::SimulatedBodyHandle m_ragdollHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
@@ -119,5 +120,9 @@ namespace PhysX
         float m_jointProjectionLinearTolerance = 1e-3f;
         /// Angular joint error (in degrees) above which projection will be applied.
         float m_jointProjectionAngularToleranceDegrees = 1.0f;
+        /// Allows ragdoll node mass values to be overridden to avoid unstable mass ratios.
+        bool m_enableMassRatioClamping = false;
+        /// If mass ratio clamping is enabled, masses will be clamped to within this ratio.
+        float m_maxMassRatio = 2.0f;
     };
 } // namespace PhysX

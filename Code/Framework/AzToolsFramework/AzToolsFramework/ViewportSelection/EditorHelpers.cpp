@@ -148,7 +148,6 @@ namespace AzToolsFramework
         return false;
     }
 
-
     EditorHelpers::EditorHelpers(const EditorVisibleEntityDataCache* entityDataCache)
         : m_entityDataCache(entityDataCache)
     {
@@ -190,7 +189,10 @@ namespace AzToolsFramework
             if (helpersVisible)
             {
                 // some components choose to hide their icons (e.g. meshes)
-                if (!m_entityDataCache->IsVisibleEntityIconHidden(entityCacheIndex))
+                // we also do not want to test against icons that may not be showing as they're inside a 'closed' entity container
+                // (these icons only become visible when it is opened for editing)
+                if (!m_entityDataCache->IsVisibleEntityIconHidden(entityCacheIndex) &&
+                    m_entityDataCache->IsVisibleEntityIndividuallySelectableInViewport(entityCacheIndex))
                 {
                     const AZ::Vector3& entityPosition = m_entityDataCache->GetVisibleEntityPosition(entityCacheIndex);
 
@@ -235,7 +237,7 @@ namespace AzToolsFramework
                     viewportId, &ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetOverrideCursor,
                     ViewportInteraction::CursorStyleOverride::Forbidden);
             }
-                
+
             if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
                     mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down ||
                 mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::DoubleClick)
