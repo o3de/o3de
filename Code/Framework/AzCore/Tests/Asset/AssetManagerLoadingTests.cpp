@@ -2299,6 +2299,8 @@ namespace UnitTest
             {
                 auto result = AssetContainer::CreateAndQueueDependentAssets(dependencyInfoList, loadParamsCopyWithNoLoadingFilter);
 
+                // Sleep for a long enough time to allow asset loads to complete and start triggering AssetReady events
+                // This forces the race condition to occur
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(500));
 
                 return result;
