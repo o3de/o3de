@@ -51,13 +51,21 @@ namespace MaterialEditor
 
     QListWidgetItem* PresetBrowserDialog::CreateListItem(const QString& title, const AZ::Data::AssetId& assetId, const QSize& size)
     {
+        const int itemBorder = aznumeric_cast<int>(
+            AtomToolsFramework::GetSettingOrDefault<AZ::u64>("/O3DE/Atom/MaterialEditor/PresetBrowserDialog/ItemBorder", 4));
+        const int itemSpacing = aznumeric_cast<int>(
+            AtomToolsFramework::GetSettingOrDefault<AZ::u64>("/O3DE/Atom/MaterialEditor/PresetBrowserDialog/ItemSpacing", 10));
+        const int headerHeight = aznumeric_cast<int>(
+            AtomToolsFramework::GetSettingOrDefault<AZ::u64>("/O3DE/Atom/MaterialEditor/PresetBrowserDialog/HeaderHeight", 15));
+
         const QSize gridSize = m_ui->m_presetList->gridSize();
-        m_ui->m_presetList->setGridSize(
-            QSize(AZStd::max(gridSize.width(), size.width() + 10), AZStd::max(gridSize.height(), size.height() + 10 + 15)));
+        m_ui->m_presetList->setGridSize(QSize(
+            AZStd::max(gridSize.width(), size.width() + itemSpacing),
+            AZStd::max(gridSize.height(), size.height() + itemSpacing + headerHeight)));
 
         QListWidgetItem* item = new QListWidgetItem(m_ui->m_presetList);
         item->setData(Qt::UserRole, title);
-        item->setSizeHint(size + QSize(4, 19));
+        item->setSizeHint(size + QSize(itemBorder, itemBorder + headerHeight));
         m_ui->m_presetList->addItem(item);
 
         QWidget* itemWidget = new QWidget(m_ui->m_presetList);
@@ -67,7 +75,7 @@ namespace MaterialEditor
 
         AzQtComponents::ElidingLabel* header = new AzQtComponents::ElidingLabel(itemWidget);
         header->setText(title);
-        header->setFixedSize(QSize(size.width(), 15));
+        header->setFixedSize(QSize(size.width(), headerHeight));
         header->setMargin(0);
         header->setStyleSheet("background-color: rgb(35, 35, 35)");
         AzQtComponents::Text::addPrimaryStyle(header);

@@ -6,61 +6,26 @@
  *
  */
 
-#include <AzCore/Component/TickBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Jobs/JobFunction.h>
-
-#include <AzFramework/Asset/AssetSystemBus.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/IO/LocalFileIO.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-
-#include <Viewport/MaterialViewportComponent.h>
-#include <Atom/Viewport/MaterialViewportNotificationBus.h>
-#include <Atom/Viewport/MaterialViewportSettings.h>
-
-#include <Atom/ImageProcessing/ImageObject.h>
-#include <Atom/ImageProcessing/ImageProcessingBus.h>
-
-#include <AzCore/Serialization/Json/JsonUtils.h>
-
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/RPI.Reflect/System/AnyAsset.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <Atom/RPI.Reflect/System/AnyAsset.h>
+#include <Atom/Viewport/MaterialViewportNotificationBus.h>
+#include <Atom/Viewport/MaterialViewportSettings.h>
+#include <AzCore/Component/TickBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/Asset/AssetSystemBus.h>
+#include <AzFramework/IO/LocalFileIO.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <Viewport/MaterialViewportComponent.h>
 
 namespace MaterialEditor
 {
-    using LoadImageAsyncCallback = AZStd::function<void(const QImage&)>;
-    void LoadImageAsync(const AZStd::string& path, LoadImageAsyncCallback callback)
-    {
-        AZ::Job* job = AZ::CreateJobFunction([path, callback]() {
-            ImageProcessingAtom::IImageObjectPtr imageObject;
-            ImageProcessingAtom::ImageProcessingRequestBus::BroadcastResult(imageObject, &ImageProcessingAtom::ImageProcessingRequests::LoadImagePreview, path);
-
-            if (imageObject)
-            {
-                AZ::u8* imageBuf = nullptr;
-                AZ::u32 pitch = 0;
-                AZ::u32 mip = 0;
-                imageObject->GetImagePointer(mip, imageBuf, pitch);
-                const AZ::u32 width = imageObject->GetWidth(mip);
-                const AZ::u32 height = imageObject->GetHeight(mip);
-
-                QImage image(imageBuf, width, height, pitch, QImage::Format_RGBA8888);
-
-                if (callback)
-                {
-                    callback(image);
-                }
-            }
-            }, true);
-        job->Start();
-    }
-
     MaterialViewportComponent::MaterialViewportComponent()
     {
     }
