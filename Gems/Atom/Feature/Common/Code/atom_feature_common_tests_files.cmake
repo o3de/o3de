@@ -10,6 +10,7 @@ set(FILES
     Mocks/MockMeshFeatureProcessor.h
     Tests/CommonTest.cpp
     Tests/CoreLights/ShadowmapAtlasTest.cpp
+    Tests/IndexedDataVectorTests.cpp
     Tests/MultiIndexedDataVectorTests.cpp
     Tests/IndexableListTests.cpp
     Tests/SparseVectorTests.cpp

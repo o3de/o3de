@@ -19,43 +19,18 @@ namespace UnitTest
     using namespace AZ::Render;
 
     class MultiIndexedDataVectorTests
-        : public ::testing::Test
+        : public UnitTest::AllocatorsTestFixture
     {
     public:
         void SetUp() override
         {
-            CreateAllocator();
+            UnitTest::AllocatorsTestFixture::SetUp();
         }
 
         void TearDown() override
         {
-            DestroyAllocator();
+            UnitTest::AllocatorsTestFixture::TearDown();
         }
-        
-    private:
-
-        void CreateAllocator()
-        {
-            static constexpr size_t NumMBToAllocate = 1;
-            SystemAllocator::Descriptor desc;
-            desc.m_heap.m_numFixedMemoryBlocks = 1;
-            desc.m_heap.m_fixedMemoryBlocksByteSize[0] = NumMBToAllocate * 1024 * 1024;
-            m_memBlock = AZ_OS_MALLOC(
-                desc.m_heap.m_fixedMemoryBlocksByteSize[0],
-                desc.m_heap.m_memoryBlockAlignment);
-            desc.m_heap.m_fixedMemoryBlocks[0] = m_memBlock;
-
-            AllocatorInstance<AZ::SystemAllocator>::Create(desc);
-        }
-
-        void DestroyAllocator()
-        {
-            AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            AZ_OS_FREE(m_memBlock);
-            m_memBlock = nullptr;
-        }
-
-        void* m_memBlock = nullptr;
     };
 
     TEST_F(MultiIndexedDataVectorTests, TestInsert)
