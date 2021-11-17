@@ -250,6 +250,29 @@ void GetDebugDetailSurface(inout DetailSurface surface, uint material1, uint mat
     surface.m_height = 0.5;
 }
 
+
+void BlendDetailMaterial(
+    inout DetailSurface surface,
+    inout DetailSurface tempSurface,
+    uint material1, uint material2, float blend, float2 detailUv, float weight)
+{
+    GetDetailSurfaceForMaterial(tempSurface, material1, detailUv);
+    if (material2 != 0xFF)
+    {
+        WeightDetailSurface(tempSurface, weight * blend);
+        AddDetailSurface(surface, tempSurface);
+
+        GetDetailSurfaceForMaterial(tempSurface, material2, detailUv);
+        WeightDetailSurface(tempSurface, weight * (1.0 - blend));
+        AddDetailSurface(surface, tempSurface);
+    }
+    else
+    {
+        WeightDetailSurface(tempSurface, weight);
+        AddDetailSurface(surface, tempSurface);
+    }
+}
+
 bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdUv, float2 detailUv)
 {
     float2 textureSize;
@@ -307,75 +330,23 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdUv, fl
     }
     else
     {
-        // X
-        GetDetailSurfaceForMaterial(surface, material1.x, detailUv);
-        float weight = (1.0 - gatherWeight.x) * gatherWeight.y;
-        if (material2.x != 0xFF)
-        {
-            WeightDetailSurface(surface, weight * blends.x);
+        surface = (DetailSurface)0;
 
-            GetDetailSurfaceForMaterial(tempSurface, material2.x, detailUv);
-            WeightDetailSurface(tempSurface, weight * (1.0 - blends.x));
-            AddDetailSurface(surface, tempSurface);
-        }
-        else
-        {
-            WeightDetailSurface(surface, weight);
-        }
+        // X
+        float weight = (1.0 - gatherWeight.x) * gatherWeight.y;
+        BlendDetailMaterial(surface, tempSurface, material1.x, material2.x, blends.x, detailUv, weight);
 
         // Y
-        GetDetailSurfaceForMaterial(tempSurface, material1.y, detailUv);
         weight = gatherWeight.x * gatherWeight.y;
-        if (material2.y != 0xFF)
-        {
-            WeightDetailSurface(tempSurface, weight * blends.y);
-            AddDetailSurface(surface, tempSurface);
-
-            GetDetailSurfaceForMaterial(tempSurface, material2.y, detailUv);
-            WeightDetailSurface(tempSurface, weight * (1.0 - blends.y));
-            AddDetailSurface(surface, tempSurface);
-        }
-        else
-        {
-            WeightDetailSurface(tempSurface, weight);
-            AddDetailSurface(surface, tempSurface);
-        }
+        BlendDetailMaterial(surface, tempSurface, material1.y, material2.y, blends.y, detailUv, weight);
         
         // Z
-        GetDetailSurfaceForMaterial(tempSurface, material1.z, detailUv);
         weight = gatherWeight.x * (1.0 - gatherWeight.y);
-        if (material2.z != 0xFF)
-        {
-            WeightDetailSurface(tempSurface, weight * blends.z);
-            AddDetailSurface(surface, tempSurface);
-
-            GetDetailSurfaceForMaterial(tempSurface, material2.z, detailUv);
-            WeightDetailSurface(tempSurface, weight * (1.0 - blends.z));
-            AddDetailSurface(surface, tempSurface);
-        }
-        else
-        {
-            WeightDetailSurface(tempSurface, weight);
-            AddDetailSurface(surface, tempSurface);
-        }
+        BlendDetailMaterial(surface, tempSurface, material1.z, material2.z, blends.z, detailUv, weight);
 
         // W
-        GetDetailSurfaceForMaterial(tempSurface, material1.w, detailUv);
         weight = (1.0 - gatherWeight.x) * (1.0 - gatherWeight.y);
-        if (material2.w != 0xFF)
-        {
-            WeightDetailSurface(tempSurface, weight * blends.w);
-            AddDetailSurface(surface, tempSurface);
-
-            GetDetailSurfaceForMaterial(tempSurface, material2.w, detailUv);
-            WeightDetailSurface(tempSurface, weight * (1.0 - blends.w));
-            AddDetailSurface(surface, tempSurface);
-        }
-        else
-        {
-            WeightDetailSurface(tempSurface, weight);
-            AddDetailSurface(surface, tempSurface);
-        }
+        BlendDetailMaterial(surface, tempSurface, material1.w, material2.w, blends.w, detailUv, weight);
     }
 
     surface.m_normal = normalize(surface.m_normal);

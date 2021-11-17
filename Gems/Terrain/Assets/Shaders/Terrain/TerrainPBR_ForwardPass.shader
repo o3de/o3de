@@ -4,8 +4,7 @@
     "CompilerHints" :
     { 
         "DisableOptimizations" : false,
-        "GenerateDebugInfo" : true,
-        "DxcAdditionalFreeArguments" : "-Gis" 
+        "GenerateDebugInfo" : false
     },
 
     "DepthStencilState" :
