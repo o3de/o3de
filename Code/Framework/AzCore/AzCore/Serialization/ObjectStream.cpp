@@ -1050,7 +1050,7 @@ namespace AZ
                 }
                 m_xmlNode = next;
 
-                Uuid specializedId;
+                Uuid specializedId = Uuid::CreateNull();
                 // now parse the node
                 rapidxml::xml_attribute<char>* attr = m_xmlNode->first_attribute();
                 while (attr)
