@@ -179,6 +179,18 @@ def get_o3de_engine_root(check_stub='engine.json'):
 
 
 # -------------------------------------------------------------------------
+def get_o3de_build_path(root_directory=get_o3de_engine_root(),
+                        marker='CMakeCache.txt'):
+    """Returns a PAth for the O3DE\build root"""
+    for root, dirs, files in os.walk(root_directory):
+        if marker in files:
+            return Path(root)
+    else:
+        return None
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 # settings.setenv()  # doing this will add the additional DYNACONF_ envars
 def get_dccsi_config(dccsi_dirpath=return_stub_dir()):
     """Convenience method to set and retreive settings directly from module."""
@@ -314,6 +326,11 @@ if __name__ == '__main__':
     _LOGGER.info("# {0} #".format('-' * 72))
     _LOGGER.info('~ config_utils.py ... Running script as __main__')
     _LOGGER.info("# {0} #".format('-' * 72))
+    
+    
+    _DCCSI_GDEBUG = True
+    _DCCSI_LOGLEVEL = int(10)
+    _LOGGER.setLevel(_DCCSI_LOGLEVEL)
 
     _LOGGER.info('Current Work dir: {0}'.format(os.getcwd()))
 
@@ -321,15 +338,18 @@ if __name__ == '__main__':
 
     _LOGGER.info('DCCSIG_PATH: {}'.format(return_stub_dir('dccsi_stub')))
 
-    _config = get_dccsi_config()
-    _LOGGER.info('DCCSI_CONFIG_PATH: {}'.format(_config))
-
-    _LOGGER.info('O3DE_DEV: {}'.format(get_o3de_engine_root(check_stub='engine.json')))
+    _LOGGER.info('O3DE_DEV: {}'.format(get_o3de_engine_root(check_stub='engine.json').resolve()))
+    
+    _LOGGER.info('O3DE_BUILD_PATH: {}'.format(get_o3de_build_path(get_o3de_engine_root(check_stub='engine.json').resolve(),
+                                                                  'CMakeCache.txt')))    
 
     # new o3de version
     _LOGGER.info('O3DE_PROJECT: {}'.format(get_check_global_project()))
 
     _LOGGER.info('DCCSI_PYTHON_LIB_PATH: {}'.format(bootstrap_dccsi_py_libs(return_stub_dir('dccsi_stub'))))
+
+    _config = get_dccsi_config()
+    _LOGGER.info('DCCSI_CONFIG_PATH: {}'.format(_config))
 
     # custom prompt
     sys.ps1 = "[azpy]>>"
