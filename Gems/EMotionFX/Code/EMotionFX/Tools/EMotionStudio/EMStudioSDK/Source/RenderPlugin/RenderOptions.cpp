@@ -1083,7 +1083,7 @@ namespace EMStudio
         settings.m_selectedClothColliderColor = m_selectedClothColliderColor;
         settings.m_simulatedObjectColliderColor = m_simulatedObjectColliderColor;
         settings.m_selectedSimulatedObjectColliderColor = m_selectedSimulatedObjectColliderColor;
-        settings.m_nodeNameColor = m_nodeNameColor;
+        settings.m_jointNameColor = m_nodeNameColor;
     }
 
     void RenderOptions::OnGridUnitSizeChangedCallback() const
