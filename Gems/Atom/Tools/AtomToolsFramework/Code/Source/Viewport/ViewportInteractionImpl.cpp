@@ -19,10 +19,12 @@ namespace AtomToolsFramework
     void ViewportInteractionImpl::Connect(const AzFramework::ViewportId viewportId)
     {
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(viewportId);
+        AZ::RPI::ViewportContextIdNotificationBus::Handler::BusConnect(viewportId);
     }
 
     void ViewportInteractionImpl::Disconnect()
     {
+        AZ::RPI::ViewportContextIdNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusDisconnect();
     }
 
@@ -57,5 +59,10 @@ namespace AtomToolsFramework
     float ViewportInteractionImpl::DeviceScalingFactor()
     {
         return m_deviceScalingFactorFn();
+    }
+
+    void ViewportInteractionImpl::OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view)
+    {
+        m_viewPtr = AZStd::move(view);
     }
 } // namespace AtomToolsFramework

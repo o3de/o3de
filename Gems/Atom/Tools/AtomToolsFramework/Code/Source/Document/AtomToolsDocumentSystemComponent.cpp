@@ -495,8 +495,6 @@ namespace AtomToolsFramework
             return AZ::Uuid::CreateNull();
         }
 
-        traceRecorder.GetDump().clear();
-
         bool openResult = false;
         AtomToolsDocumentRequestBus::EventResult(openResult, documentId, &AtomToolsDocumentRequestBus::Events::Open, requestedPath);
         if (!openResult)
@@ -506,6 +504,12 @@ namespace AtomToolsFramework
                 QString("Failed to open: \n%1\n\n%2").arg(requestedPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsDocumentSystemRequestBus::Events::DestroyDocument, documentId);
             return AZ::Uuid::CreateNull();
+        }
+        else if (traceRecorder.GetWarningCount(true) > 0)
+        {
+            QMessageBox::warning(
+                QApplication::activeWindow(), QString("Document opened with warnings"),
+                QString("Warnings encountered: \n%1\n\n%2").arg(requestedPath.c_str()).arg(traceRecorder.GetDump().c_str()));
         }
 
         return documentId;

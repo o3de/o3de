@@ -519,7 +519,7 @@ MainWindow* MainWindow::instance()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    gSettings.Save();
+    gSettings.Save(true);
 
     AzFramework::SystemCursorState currentCursorState;
     bool isInGameMode = false;
