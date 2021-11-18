@@ -120,7 +120,7 @@ namespace O3DE::ProjectManager
     {
         QString repoUri = GetRepoUri(modelIndex);
 
-        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& gemInfosResult = PythonBindingsInterface::Get()->GetGemRepoGemInfos(repoUri);
+        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& gemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForRepo(repoUri);
         if (gemInfosResult.IsSuccess())
         {
             return gemInfosResult.GetValue();

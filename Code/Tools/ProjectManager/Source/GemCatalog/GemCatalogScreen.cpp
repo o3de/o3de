@@ -188,7 +188,7 @@ namespace O3DE::ProjectManager
         }
 
         // add all the gem repos into the hash
-        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetAllGemReposGemInfos();
+        const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForAllRepos();
         if (allRepoGemInfosResult.IsSuccess())
         {
             const QVector<GemInfo>& allRepoGemInfos = allRepoGemInfosResult.GetValue();
@@ -440,7 +440,7 @@ namespace O3DE::ProjectManager
                 m_gemModel->AddGem(gemInfo);
             }
 
-            const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetAllGemReposGemInfos();
+            const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForAllRepos();
             if (allRepoGemInfosResult.IsSuccess())
             {
                 const QVector<GemInfo>& allRepoGemInfos = allRepoGemInfosResult.GetValue();

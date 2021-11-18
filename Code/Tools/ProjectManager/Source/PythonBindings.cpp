@@ -1188,7 +1188,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gemRepos));
     }
 
-    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetGemRepoGemInfos(const QString& repoUri)
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetGemInfosForRepo(const QString& repoUri)
     {
         QVector<GemInfo> gemInfos;
         AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(
@@ -1216,7 +1216,7 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gemInfos));
     }
 
-    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetAllGemReposGemInfos()
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetGemInfosForAllRepos()
     {
         QVector<GemInfo> gemInfos;
         AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(

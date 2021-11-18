@@ -203,6 +203,7 @@ namespace O3DE::ProjectManager
 
             QMenu* menu = new QMenu(this);
             menu->addAction(tr("Edit Project Settings..."), this, [this]() { emit EditProject(m_projectInfo.m_path); });
+            menu->addAction(tr("Configure Gems..."), this, [this]() { emit EditProjectGems(m_projectInfo.m_path); });
             menu->addAction(tr("Build"), this, [this]() { emit BuildProject(m_projectInfo); });
             menu->addAction(tr("Open CMake GUI..."), this, [this]() { emit OpenCMakeGUI(m_projectInfo); });
             menu->addSeparator();
