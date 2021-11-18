@@ -53,11 +53,6 @@ namespace Editor
     class EditorQtApplication;
 }
 
-namespace WinWidget
-{
-    class WinWidgetManager;
-}
-
 namespace AssetDatabase
 {
     class AssetDatabaseLocationListener;
@@ -221,9 +216,6 @@ public:
     bool CloseView(const char* sViewClassName) override;
     bool SetViewFocus(const char* sViewClassName) override;
 
-    QWidget* OpenWinWidget(WinWidgetId openId) override;
-    WinWidget::WinWidgetManager* GetWinWidgetManager() const override;
-
     // close ALL panels related to classId, used when unloading plugins.
     void CloseView(const GUID& classId) override;
     bool SelectColor(QColor &color, QWidget *parent = 0) override;
@@ -370,7 +362,6 @@ protected:
     QString m_levelNameBuffer;
 
     IAWSResourceManager* m_awsResourceManager;
-    std::unique_ptr<WinWidget::WinWidgetManager> m_winWidgetManager;
 
     //! True if the editor is in material edit mode. Fast preview of materials.
     //! In this mode only very limited functionality is available.

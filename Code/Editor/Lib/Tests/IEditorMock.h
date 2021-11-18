@@ -128,8 +128,6 @@ public:
     MOCK_METHOD1(CloseView, bool(const char* ));
     MOCK_METHOD1(SetViewFocus, bool(const char* ));
     MOCK_METHOD1(CloseView, void(const GUID& ));
-    MOCK_METHOD1(OpenWinWidget, QWidget* (WinWidgetId ));
-    MOCK_CONST_METHOD0(GetWinWidgetManager, WinWidget::WinWidgetManager* ());
     MOCK_METHOD2(SelectColor, bool(QColor &, QWidget *));
     MOCK_METHOD0(GetUndoManager, class CUndoManager* ());
     MOCK_METHOD0(BeginUndo, void());

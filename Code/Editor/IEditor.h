@@ -66,11 +66,6 @@ struct SEditorSettings;
 class CGameExporter;
 class IAWSResourceManager;
 
-namespace WinWidget
-{
-    class WinWidgetManager;
-}
-
 struct ISystem;
 struct IRenderer;
 struct AABB;
@@ -585,10 +580,6 @@ struct IEditor
     virtual bool CloseView(const char* sViewClassName) = 0;
     virtual bool SetViewFocus(const char* sViewClassName) = 0;
     virtual void CloseView(const GUID& classId) = 0; // close ALL panels related to classId, used when unloading plugins.
-
-    // We want to open a view object but not wrap it in a view pane)
-    virtual QWidget* OpenWinWidget(WinWidgetId openId) = 0;
-    virtual WinWidget::WinWidgetManager* GetWinWidgetManager() const = 0;
 
     //! Opens standard color selection dialog.
     //! Initialized with the color specified in color parameter.
