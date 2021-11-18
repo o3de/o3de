@@ -9,6 +9,9 @@
 file(REAL_PATH "${CPACK_SOURCE_DIR}/.." LY_ROOT_FOLDER)
 include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingPostBuild_common.cmake)
 
+file(${CPACK_PACKAGE_CHECKSUM} ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb file_checksum)
+file(WRITE ${CPACK_TOPLEVEL_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256 "${file_checksum}  ${CPACK_PACKAGE_FILE_NAME}.deb")
+
 if(CPACK_UPLOAD_URL)
 
     # use the internal default path if somehow not specified from cpack_configure_downloads
@@ -51,11 +54,9 @@ if(CPACK_UPLOAD_URL)
 
         # TODO: upload gpg file to latest
         
-        # replace the name fo the binary inside the generated checksum
-        file(READ "${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_FILE_NAME}.deb.sha256" _checksum_contents)
-        string(REPLACE "_${CPACK_PACKAGE_VERSION}" "_latest" non_versioned_checksum_contents "${_checksum_contents}")
+        # Generate a checksum file for latest and upload it
         set(latest_hash_file "${CPACK_UPLOAD_DIRECTORY}/${CPACK_PACKAGE_NAME}_latest.deb.sha256")
-        file(WRITE "${latest_hash_file}" "${non_versioned_checksum_contents}")
+        file(WRITE "${latest_hash_file}" "${file_checksum}  ${CPACK_PACKAGE_NAME}_latest.deb")
         ly_upload_to_latest(${CPACK_UPLOAD_URL} "${latest_hash_file}")
     endif()
 endif()
