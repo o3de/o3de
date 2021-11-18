@@ -11,6 +11,7 @@
 #include <Editor/EditorJointConfiguration.h>
 #include <Source/EditorColliderComponent.h>
 #include <Source/EditorRigidBodyComponent.h>
+#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 
 namespace
 {
@@ -213,7 +214,7 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorJointConfig>()
-                ->Version(4, &EditorJointConfig::VersionConverter)
+                ->Version(5, &EditorJointConfig::VersionConverter)
                 ->Field("Local Position", &EditorJointConfig::m_localPosition)
                 ->Field("Local Rotation", &EditorJointConfig::m_localRotation)
                 ->Field("Parent Entity", &EditorJointConfig::m_leadEntity)
@@ -228,6 +229,12 @@ namespace PhysX
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
+                editContext->Enum<EditorJointConfig::DisplaySetupState>("Joint Display Setup State", "Options for displaying joint setup.")
+                    ->Value("Never", EditorJointConfig::DisplaySetupState::Never)
+                    ->Value("Selected", EditorJointConfig::DisplaySetupState::Selected)
+                    ->Value("Always", EditorJointConfig::DisplaySetupState::Always)
+                    ;
+
                 editContext->Class<PhysX::EditorJointConfig>(
                     "PhysX Joint Configuration", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
@@ -244,8 +251,11 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorJointConfig::ValidateLeadEntityId)
                     ->DataElement(0, &PhysX::EditorJointConfig::m_selfCollide, "Lead-Follower Collide"
                         , "When active, the lead and follower pair will collide with each other.")
-                    ->DataElement(0, &PhysX::EditorJointConfig::m_displayJointSetup, "Display Setup in Viewport"
-                        , "Display joint setup in the viewport.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox, &PhysX::EditorJointConfig::m_displayJointSetup, "Display Setup in Viewport"
+                        , "Never = Not shown."
+                        "Select = Show setup display when entity is selected."
+                        "Always = Always show setup display.")
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &EditorJointConfig::IsInComponentMode)
                     ->DataElement(0, &PhysX::EditorJointConfig::m_selectLeadOnSnap, "Select Lead on Snap"
                         , "Select lead entity on snap to position in component mode.")
@@ -306,6 +316,23 @@ namespace PhysX
             m_followerEntity);
     }
 
+    bool EditorJointConfig::ShowSetupDisplay() const
+    {
+        switch(m_displayJointSetup)
+        {
+        case DisplaySetupState::Always:
+            return true;
+        case DisplaySetupState::Selected:
+            {
+                bool showSetup = false;
+                AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+                    showSetup, m_followerEntity, &AzToolsFramework::EditorEntityInfoRequests::IsSelected);
+                return showSetup;
+            }
+        }
+        return false;
+    }
+
     bool EditorJointConfig::IsInComponentMode() const
     {
         return m_inComponentMode;
@@ -342,6 +369,31 @@ namespace PhysX
                 classElement.AddElementWithData(context, "Local Rotation", localRotationQuat.GetEulerDegrees());
             }
         }
+
+        // convert m_displayJointSetup from a bool to the enum with the option Never,Selected,Always show joint setup helpers.
+        if (classElement.GetVersion() <= 4)
+        {
+            // get the current bool setting and remove it.
+            bool oldSetting = false;
+            const int displayJointSetupIndex = classElement.FindElement(AZ_CRC_CE("Display Debug"));
+            if (displayJointSetupIndex >= 0)
+            {
+                AZ::SerializeContext::DataElementNode& elementNode = classElement.GetSubElement(displayJointSetupIndex);
+                elementNode.GetData<bool>(oldSetting);
+                classElement.RemoveElement(displayJointSetupIndex);
+            }
+
+            //if the old setting was on set it to 'Selected'. otherwise 'Never'
+            if (oldSetting)
+            {
+                classElement.AddElementWithData(context, "Display Debug", EditorJointConfig::DisplaySetupState::Selected);
+            }
+            else
+            {
+                classElement.AddElementWithData(context, "Display Debug", EditorJointConfig::DisplaySetupState::Never);
+            }
+        }
+
 
         return result;
     }

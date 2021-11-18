@@ -455,7 +455,7 @@ def get_json_data_file(object_json: pathlib.Path,
         try:
             object_json_data = json.load(f)
         except json.JSONDecodeError as e:
-            logger.warn(f'{object_json} failed to load: {e}')
+            logger.warning(f'{object_json} failed to load: {e}')
         else:
             return object_json_data
 
@@ -596,7 +596,7 @@ def get_registered(engine_name: str = None,
                 try:
                     engine_json_data = json.load(f)
                 except json.JSONDecodeError as e:
-                    logger.warn(f'{engine_json} failed to load: {str(e)}')
+                    logger.warning(f'{engine_json} failed to load: {str(e)}')
                 else:
                     this_engines_name = engine_json_data['engine_name']
                     if this_engines_name == engine_name:
@@ -611,7 +611,7 @@ def get_registered(engine_name: str = None,
                 try:
                     project_json_data = json.load(f)
                 except json.JSONDecodeError as e:
-                    logger.warn(f'{project_json} failed to load: {str(e)}')
+                    logger.warning(f'{project_json} failed to load: {str(e)}')
                 else:
                     this_projects_name = project_json_data['project_name']
                     if this_projects_name == project_name:
@@ -626,7 +626,7 @@ def get_registered(engine_name: str = None,
                 try:
                     gem_json_data = json.load(f)
                 except json.JSONDecodeError as e:
-                    logger.warn(f'{gem_json} failed to load: {str(e)}')
+                    logger.warning(f'{gem_json} failed to load: {str(e)}')
                 else:
                     this_gems_name = gem_json_data['gem_name']
                     if this_gems_name == gem_name:
@@ -641,7 +641,7 @@ def get_registered(engine_name: str = None,
                 try:
                     template_json_data = json.load(f)
                 except json.JSONDecodeError as e:
-                    logger.warn(f'{template_path} failed to load: {str(e)}')
+                    logger.warning(f'{template_path} failed to load: {str(e)}')
                 else:
                     this_templates_name = template_json_data['template_name']
                     if this_templates_name == template_name:
@@ -656,7 +656,7 @@ def get_registered(engine_name: str = None,
                 try:
                     restricted_json_data = json.load(f)
                 except json.JSONDecodeError as e:
-                    logger.warn(f'{restricted_json} failed to load: {str(e)}')
+                    logger.warning(f'{restricted_json} failed to load: {str(e)}')
                 else:
                     this_restricted_name = restricted_json_data['restricted_name']
                     if this_restricted_name == restricted_name:
@@ -689,7 +689,7 @@ def get_registered(engine_name: str = None,
                     try:
                         repo_json_data = json.load(f)
                     except json.JSONDecodeError as e:
-                        logger.warn(f'{cache_file} failed to load: {str(e)}')
+                        logger.warning(f'{cache_file} failed to load: {str(e)}')
                     else:
                         this_repos_name = repo_json_data['repo_name']
                         if this_repos_name == repo_name:

@@ -485,12 +485,12 @@ def register_repo(json_data: dict,
             json_data['repos'].remove(repo_uri)
 
     if remove:
-        logger.warn(f'Removing repo uri {repo_uri}.')
+        logger.warning(f'Removing repo uri {repo_uri}.')
         return 0
     repo_sha256 = hashlib.sha256(url.encode())
     cache_file = manifest.get_o3de_cache_folder() / str(repo_sha256.hexdigest() + '.json')
 
-    result = utils.download_file(parsed_uri, cache_file)
+    result = utils.download_file(parsed_uri, cache_file, True)
     if result == 0:
         json_data.setdefault('repos', []).insert(0, repo_uri)
 
@@ -689,7 +689,7 @@ def remove_invalid_o3de_projects(manifest_path: pathlib.Path = None) -> int:
 
     for project in json_data.get('projects', []):
         if not validation.valid_o3de_project_json(pathlib.Path(project).resolve() / 'project.json'):
-            logger.warn(f"Project path {project} is invalid.")
+            logger.warning(f"Project path {project} is invalid.")
             # Attempt to unregister all invalid projects even if previous projects failed to unregister
             # but combine the result codes of each command.
             result = register(project_path=pathlib.Path(project), remove=True) or result
@@ -699,7 +699,7 @@ def remove_invalid_o3de_projects(manifest_path: pathlib.Path = None) -> int:
 def remove_invalid_o3de_objects() -> None:
     for engine_path in manifest.get_engines():
         if not validation.valid_o3de_engine_json(pathlib.Path(engine_path).resolve() / 'engine.json'):
-            logger.warn(f"Engine path {engine_path} is invalid.")
+            logger.warning(f"Engine path {engine_path} is invalid.")
             register(engine_path=engine_path, remove=True)
 
     remove_invalid_o3de_projects()
@@ -707,17 +707,17 @@ def remove_invalid_o3de_objects() -> None:
     for external in manifest.get_external_subdirectories():
         external = pathlib.Path(external).resolve()
         if not external.is_dir():
-            logger.warn(f"External subdirectory {external} is invalid.")
+            logger.warning(f"External subdirectory {external} is invalid.")
             register(engine_path=engine_path, external_subdir_path=external, remove=True)
 
     for template in manifest.get_templates():
         if not validation.valid_o3de_template_json(pathlib.Path(template).resolve() / 'template.json'):
-            logger.warn(f"Template path {template} is invalid.")
+            logger.warning(f"Template path {template} is invalid.")
             register(template_path=template, remove=True)
 
     for restricted in manifest.get_restricted():
         if not validation.valid_o3de_restricted_json(pathlib.Path(restricted).resolve() / 'restricted.json'):
-            logger.warn(f"Restricted path {restricted} is invalid.")
+            logger.warning(f"Restricted path {restricted} is invalid.")
             register(restricted_path=restricted, remove=True)
 
     json_data = manifest.load_o3de_manifest()
@@ -725,7 +725,7 @@ def remove_invalid_o3de_objects() -> None:
     if not default_engines_folder.is_dir():
         new_default_engines_folder = manifest.get_o3de_folder() / 'Engines'
         new_default_engines_folder.mkdir(parents=True, exist_ok=True)
-        logger.warn(
+        logger.warning(
             f"Default engines folder {default_engines_folder} is invalid. Set default {new_default_engines_folder}")
         register(default_engines_folder=new_default_engines_folder.as_posix())
 
@@ -733,7 +733,7 @@ def remove_invalid_o3de_objects() -> None:
     if not default_projects_folder.is_dir():
         new_default_projects_folder = manifest.get_o3de_folder() / 'Projects'
         new_default_projects_folder.mkdir(parents=True, exist_ok=True)
-        logger.warn(
+        logger.warning(
             f"Default projects folder {default_projects_folder} is invalid. Set default {new_default_projects_folder}")
         register(default_projects_folder=new_default_projects_folder.as_posix())
 
@@ -741,7 +741,7 @@ def remove_invalid_o3de_objects() -> None:
     if not default_gems_folder.is_dir():
         new_default_gems_folder = manifest.get_o3de_folder() / 'Gems'
         new_default_gems_folder.mkdir(parents=True, exist_ok=True)
-        logger.warn(f"Default gems folder {default_gems_folder} is invalid."
+        logger.warning(f"Default gems folder {default_gems_folder} is invalid."
                     f" Set default {new_default_gems_folder}")
         register(default_gems_folder=new_default_gems_folder.as_posix())
 
@@ -749,7 +749,7 @@ def remove_invalid_o3de_objects() -> None:
     if not default_templates_folder.is_dir():
         new_default_templates_folder = manifest.get_o3de_folder() / 'Templates'
         new_default_templates_folder.mkdir(parents=True, exist_ok=True)
-        logger.warn(
+        logger.warning(
             f"Default templates folder {default_templates_folder} is invalid."
             f" Set default {new_default_templates_folder}")
         register(default_templates_folder=new_default_templates_folder.as_posix())
@@ -758,7 +758,7 @@ def remove_invalid_o3de_objects() -> None:
     if not default_restricted_folder.is_dir():
         default_restricted_folder = manifest.get_o3de_folder() / 'Restricted'
         default_restricted_folder.mkdir(parents=True, exist_ok=True)
-        logger.warn(
+        logger.warning(
             f"Default restricted folder {default_restricted_folder} is invalid."
             f" Set default {default_restricted_folder}")
         register(default_restricted_folder=default_restricted_folder.as_posix())
@@ -767,7 +767,7 @@ def remove_invalid_o3de_objects() -> None:
     if not default_third_party_folder.is_dir():
         default_third_party_folder = manifest.get_o3de_folder() / '3rdParty'
         default_third_party_folder.mkdir(parents=True, exist_ok=True)
-        logger.warn(
+        logger.warning(
             f"Default 3rd Party folder {default_third_party_folder} is invalid."
             f" Set default {default_third_party_folder}")
         register(default_third_party_folder=default_third_party_folder.as_posix())

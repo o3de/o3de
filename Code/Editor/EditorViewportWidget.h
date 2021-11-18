@@ -273,7 +273,8 @@ private:
 
     bool CheckRespondToInput() const;
 
-    void BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const QPoint& pt) override;
+    void BuildDragDropContext(
+        AzQtComponents::ViewportDragContext& context, AzFramework::ViewportId viewportId, const QPoint& point) override;
 
     void SetAsActiveViewport();
     void PushDisableRendering();

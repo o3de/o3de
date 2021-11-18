@@ -23,6 +23,7 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
                           repo_set: set) -> int:
     file_name = pathlib.Path(file_name).resolve()
     if not validation.valid_o3de_repo_json(file_name):
+        logger.error(f'Repository JSON {file_name} could not be loaded or is missing required values')
         return 1
     cache_folder = manifest.get_o3de_cache_folder()
 
@@ -113,7 +114,7 @@ def get_gem_json_paths_from_cached_repo(repo_uri: str) -> set:
 
     file_name = pathlib.Path(cache_filename).resolve()
     if not file_name.is_file():
-        logger.error(f'Could not find cached repo json file for {repo_uri}')
+        logger.error(f'Could not find cached repository json file for {repo_uri}. Try refreshing the repository.')
         return gem_set
 
     with file_name.open('r') as f:
@@ -138,7 +139,7 @@ def get_gem_json_paths_from_cached_repo(repo_uri: str) -> set:
                 if cache_gem_json_filepath.is_file():
                     gem_set.add(cache_gem_json_filepath)
                 else:
-                    logger.warn(f'Could not find cached gem json file {cache_gem_json_filepath} for {o3de_object_uri} in repo {repo_uri}')
+                    logger.warning(f'Could not find cached gem json file {cache_gem_json_filepath} for {o3de_object_uri} in repo {repo_uri}')
 
     return gem_set
 
@@ -166,6 +167,7 @@ def refresh_repo(repo_uri: str,
 
     download_file_result = utils.download_file(parsed_uri, cache_file, True)
     if download_file_result != 0:
+        logger.error(f'Repo json {repo_uri} could not download.')
         return download_file_result
 
     if not validation.valid_o3de_repo_json(cache_file):
@@ -256,7 +258,7 @@ def search_o3de_object(manifest_json, o3de_object_uris, search_func):
                 try:
                     manifest_json_data = json.load(f)
                 except json.JSONDecodeError as e:
-                    logger.warn(f'{cache_file} failed to load: {str(e)}')
+                    logger.warning(f'{cache_file} failed to load: {str(e)}')
                 else:
                     result_json_data = search_func(manifest_json_data)
                     if result_json_data:
