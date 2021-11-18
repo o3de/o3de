@@ -1135,11 +1135,11 @@ namespace O3DE::ProjectManager
                     gemRepoInfo.m_isEnabled = false;
                 }
 
-                if (data.contains("gem_paths"))
+                if (data.contains("gems"))
                 {
-                    for (auto gemPath : data["gem_paths"])
+                    for (auto gemPath : data["gems"])
                     {
-                        gemRepoInfo.m_includedGemPaths.push_back(Py_To_String(gemPath));
+                        gemRepoInfo.m_includedGemUris.push_back(Py_To_String(gemPath));
                     }
                 }
             }
@@ -1188,7 +1188,35 @@ namespace O3DE::ProjectManager
         return AZ::Success(AZStd::move(gemRepos));
     }
 
-    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetAllGemRepoGemsInfos()
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetGemRepoGemInfos(const QString& repoUri)
+    {
+        QVector<GemInfo> gemInfos;
+        AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(
+            [&]
+            {
+                auto pyUri = QString_To_Py_String(repoUri);
+                auto gemPaths = m_repo.attr("get_gem_json_paths_from_cached_repo")(pyUri);
+
+                if (pybind11::isinstance<pybind11::set>(gemPaths))
+                {
+                    for (auto path : gemPaths)
+                    {
+                        GemInfo gemInfo = GemInfoFromPath(path, pybind11::none());
+                        gemInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
+                        gemInfos.push_back(gemInfo);
+                    }
+                }
+            });
+
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure(result.GetError());
+        }
+
+        return AZ::Success(AZStd::move(gemInfos));
+    }
+
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetAllGemReposGemInfos()
     {
         QVector<GemInfo> gemInfos;
         AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(
