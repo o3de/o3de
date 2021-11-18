@@ -34,6 +34,9 @@
 #include <QUndoGroup>
 #include <QScrollBar>
 
+#include <AzCore/base.h>
+#include <AzCore/IO/Path/Path.h>
+
 #define UICANVASEDITOR_SETTINGS_EDIT_MODE_STATE_KEY     (QString("Edit Mode State") + " " + FileHelpers::GetAbsoluteGameDir())
 #define UICANVASEDITOR_SETTINGS_EDIT_MODE_GEOM_KEY      (QString("Edit Mode Geometry") + " " + FileHelpers::GetAbsoluteGameDir())
 #define UICANVASEDITOR_SETTINGS_PREVIEW_MODE_STATE_KEY  (QString("Preview Mode State") + " " + FileHelpers::GetAbsoluteGameDir())
@@ -697,14 +700,25 @@ bool EditorWindow::SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceA
         else if (recentFiles.size() > 0)
         {
             dir = Path::GetPath(recentFiles.front());
-            dir.append(canvasMetadata.m_canvasDisplayName.c_str());
         }
         // Else go to the default canvas directory
         else
         {
             dir = FileHelpers::GetAbsoluteDir(UICANVASEDITOR_CANVAS_DIRECTORY);
-            dir.append(canvasMetadata.m_canvasDisplayName.c_str());
         }
+
+        // Make sure the directory exists. If not, walk up the directory path until we find one that does
+        // so that we will have a consistent 'starting folder' in the 'AzQtComponents::FileDialog::GetSaveFileName' call
+        // across different platforms. 
+        AZ::IO::BasicPath<AZStd::string> dirPath(dir.toUtf8().constData());
+        QDir validDirCheck(dirPath.c_str());
+        while (!validDirCheck.exists() && (dirPath.HasParentPath()))
+        {
+            dirPath = dirPath.ParentPath();
+            validDirCheck = QDir(dirPath.c_str());
+        }
+        // Append the default filename
+        dirPath /= canvasMetadata.m_canvasDisplayName;
 
         QString filename = AzQtComponents::FileDialog::GetSaveFileName(nullptr,
             QString(),
