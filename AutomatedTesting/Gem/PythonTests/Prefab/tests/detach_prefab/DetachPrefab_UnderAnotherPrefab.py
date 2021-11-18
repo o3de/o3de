@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-def PrefabBasicWorkflow_CreateReparentAndDetachPrefab():
+def DetachPrefab_UnderAnotherPrefab():
 
     CAR_PREFAB_FILE_NAME = 'car_prefab'
     WHEEL_PREFAB_FILE_NAME = 'wheel_prefab'
@@ -18,7 +18,7 @@ def PrefabBasicWorkflow_CreateReparentAndDetachPrefab():
         from editor_python_test_tools.editor_entity_utils import EditorEntity
         from editor_python_test_tools.prefab_utils import Prefab
 
-        import PrefabTestUtils as prefab_test_utils
+        import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
         prefab_test_utils.open_base_tests_level()
 
@@ -48,4 +48,4 @@ def PrefabBasicWorkflow_CreateReparentAndDetachPrefab():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(PrefabBasicWorkflow_CreateReparentAndDetachPrefab)
+    Report.start_test(DetachPrefab_UnderAnotherPrefab)
