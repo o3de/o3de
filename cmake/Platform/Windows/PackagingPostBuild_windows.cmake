@@ -135,10 +135,10 @@ if(NOT CPACK_UPLOAD_DIRECTORY)
     set(CPACK_UPLOAD_DIRECTORY ${CPACK_PACKAGE_DIRECTORY}/CPackUploads)
 endif()
 
-# copy the artifacts intended to be uploaded to a remote server into the folder specified
-# through cpack_configure_downloads.  this mimics the same process cpack does natively for
+# Copy the artifacts intended to be uploaded to a remote server into the folder specified
+# through CPACK_UPLOAD_DIRECTORY. This mimics the same process cpack does natively for
 # some other frameworks that have built-in online installer support.
-message(STATUS "Copying installer artifacts to upload directory...")
+message(STATUS "Copying packaging artifacts to upload directory...")
 file(REMOVE_RECURSE ${CPACK_UPLOAD_DIRECTORY})
 file(GLOB _artifacts 
     "${_cpack_wix_out_dir}/*.msi" 

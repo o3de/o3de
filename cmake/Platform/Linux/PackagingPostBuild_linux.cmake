@@ -16,6 +16,20 @@ if(CPACK_UPLOAD_URL)
         set(CPACK_UPLOAD_DIRECTORY ${CPACK_PACKAGE_DIRECTORY}/CPackUploads)
     endif()
 
+    # Copy the artifacts intended to be uploaded to a remote server into the folder specified
+    # through CPACK_UPLOAD_DIRECTORY. This mimics the same process cpack does natively for
+    # some other frameworks that have built-in online installer support.
+    message(STATUS "Copying packaging artifacts to upload directory...")
+    file(REMOVE_RECURSE ${CPACK_UPLOAD_DIRECTORY})
+    file(GLOB _artifacts 
+        "${CPACK_TOPLEVEL_DIRECTORY}/*.deb" 
+        "${CPACK_TOPLEVEL_DIRECTORY}/*.sha256"
+    )
+    file(COPY ${_artifacts}
+        DESTINATION ${CPACK_UPLOAD_DIRECTORY}
+    )
+    message(STATUS "Artifacts copied to ${CPACK_UPLOAD_DIRECTORY}")
+
     # TODO: copy gpg file to CPACK_UPLOAD_DIRECTORY
 
     ly_upload_to_url(
