@@ -8,6 +8,7 @@
 #include "EditorCommon.h"
 #include "CanvasHelpers.h"
 #include "AssetDropHelpers.h"
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/sort.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -34,8 +35,6 @@
 #include <QUndoGroup>
 #include <QScrollBar>
 
-#include <AzCore/base.h>
-#include <AzCore/IO/Path/Path.h>
 
 #define UICANVASEDITOR_SETTINGS_EDIT_MODE_STATE_KEY     (QString("Edit Mode State") + " " + FileHelpers::GetAbsoluteGameDir())
 #define UICANVASEDITOR_SETTINGS_EDIT_MODE_GEOM_KEY      (QString("Edit Mode Geometry") + " " + FileHelpers::GetAbsoluteGameDir())
