@@ -570,7 +570,7 @@ function(ly_setup_runtime_dependencies)
             ly_install(CODE
 "function(ly_copy source_file target_directory)
     cmake_path(GET source_file FILENAME target_filename)
-    cmake_path(APPEND full_target_directory \"\$ENV{DESTDIR}\" \"\${CMAKE_INSTALL_PREFIX}\" \"\${target_directory}\")
+    cmake_path(APPEND full_target_directory \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\" \"\${target_directory}\")
     cmake_path(APPEND target_file \"\${full_target_directory}\" \"\${target_filename}\")
     file(SIZE \"\${source_file}\" source_file_size)
     if(EXISTS \"\${target_file}\")
@@ -581,6 +581,7 @@ function(ly_setup_runtime_dependencies)
     if((NOT source_file_size EQUAL target_file_size) OR \"\${source_file}\" IS_NEWER_THAN \"\${target_file}\")
         message(STATUS \"Copying \${source_file} to \${full_target_directory}...\")
         file(COPY \"\${source_file}\" DESTINATION \"\${full_target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS} FOLLOW_SYMLINK_CHAIN)
+        file(TOUCH_NOCREATE \"${target_file}\")
     endif()
 endfunction()"
                 COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
