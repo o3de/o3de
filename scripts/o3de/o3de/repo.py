@@ -139,7 +139,7 @@ def get_gem_json_paths_from_cached_repo(repo_uri: str) -> set:
                 if cache_gem_json_filepath.is_file():
                     gem_set.add(cache_gem_json_filepath)
                 else:
-                    logger.warn(f'Could not find cached gem json file {cache_gem_json_filepath} for {o3de_object_uri} in repo {repo_uri}')
+                    logger.warning(f'Could not find cached gem json file {cache_gem_json_filepath} for {o3de_object_uri} in repo {repo_uri}')
 
     return gem_set
 
@@ -258,7 +258,7 @@ def search_o3de_object(manifest_json, o3de_object_uris, search_func):
                 try:
                     manifest_json_data = json.load(f)
                 except json.JSONDecodeError as e:
-                    logger.warn(f'{cache_file} failed to load: {str(e)}')
+                    logger.warning(f'{cache_file} failed to load: {str(e)}')
                 else:
                     result_json_data = search_func(manifest_json_data)
                     if result_json_data:

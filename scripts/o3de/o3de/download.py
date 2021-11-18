@@ -44,7 +44,7 @@ def validate_downloaded_zip_sha256(download_uri_json_data: dict, download_zip_pa
     try:
         sha256A = download_uri_json_data['sha256']
     except KeyError as e:
-        logger.warn('SECURITY WARNING: The advertised o3de object you downloaded has no "sha256"!!! Be VERY careful!!!'
+        logger.warning('SECURITY WARNING: The advertised o3de object you downloaded has no "sha256"!!! Be VERY careful!!!'
                     ' We cannot verify this is the actually the advertised object!!!')
         return 1
     else:
@@ -236,13 +236,13 @@ def is_o3de_object_update_available(object_name: str, downloadable_kwarg_key, lo
     try:
         repo_copy_updated_string = downloadable_object_data['last_updated']
     except KeyError:
-        logger.warn(f'last_updated field not found for {object_name}.')
+        logger.warning(f'last_updated field not found for {object_name}.')
         return False
 
     try:
         local_last_updated_time = datetime.fromisoformat(local_last_updated)
     except ValueError:
-        logger.warn(f'last_updated field has incorrect format for local copy of {downloadable_kwarg_key} {object_name}.')
+        logger.warning(f'last_updated field has incorrect format for local copy of {downloadable_kwarg_key} {object_name}.')
         # Possible that an earlier version did not have this field so still want to check against cached downloadable version
         local_last_updated_time = datetime.min
 
