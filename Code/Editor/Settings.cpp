@@ -471,7 +471,7 @@ void SEditorSettings::LoadValue(const char* sSection, const char* sKey, ESystemC
 }
 
 //////////////////////////////////////////////////////////////////////////
-void SEditorSettings::Save()
+void SEditorSettings::Save(bool isEditorClosing)
 {
     QString strStringPlaceholder;
 
@@ -638,14 +638,16 @@ void SEditorSettings::Save()
     // --- Settings Registry values
 
     // Prefab System UI
-    AzFramework::ApplicationRequests::Bus::Broadcast(
-        &AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
+    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
 
     AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
         AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
     prefabLoaderInterface->SetSaveAllPrefabsPreference(levelSaveSettings.saveAllPrefabsPreference);
 
-    SaveSettingsRegistryFile();
+    if (!isEditorClosing)
+    {
+        SaveSettingsRegistryFile();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////

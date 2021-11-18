@@ -1,7 +1,7 @@
 {
     "Amazon": {
         "Preferences": {
-            "EnablePrefabSystem": false
+            "EnablePrefabSystem": true
         }
     }
 }
