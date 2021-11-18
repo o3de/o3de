@@ -8,7 +8,7 @@
             "Name": "Reflectance",
             "SourceColor": "Linear",
             "DestColor": "Linear",
-            "PixelFormat": "BC1",
+            "PixelFormat": "BC4",
             "IsPowerOf2": true,
             "MipMapSetting": {
                 "MipGenType": "Box"
@@ -21,6 +21,7 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "PixelFormat": "ASTC_6x6",
+                "Swizzle": "rrr1",
                 "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
@@ -33,6 +34,7 @@
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
                 "PixelFormat": "ASTC_6x6",
+                "Swizzle": "rrr1",
                 "MaxTextureSize": 2048,
                 "IsPowerOf2": true,
                 "MipMapSetting": {
@@ -44,7 +46,7 @@
                 "Name": "Reflectance",
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
-                "PixelFormat": "BC1",
+                "PixelFormat": "BC4",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
@@ -55,7 +57,7 @@
                 "Name": "Reflectance",
                 "SourceColor": "Linear",
                 "DestColor": "Linear",
-                "PixelFormat": "BC1",
+                "PixelFormat": "BC4",
                 "IsPowerOf2": true,
                 "MipMapSetting": {
                     "MipGenType": "Box"
