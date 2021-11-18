@@ -47,9 +47,9 @@ namespace O3DE::ProjectManager
             return tr("Missing");
         }
 
-        virtual bool ContainsScreen([[maybe_unused]] ProjectManagerScreen screen)
+        virtual bool ContainsScreen(ProjectManagerScreen screen)
         {
-            return false;
+            return GetScreenEnum() == screen;
         }
         virtual void GoToScreen([[maybe_unused]] ProjectManagerScreen screen)
         {
@@ -58,7 +58,6 @@ namespace O3DE::ProjectManager
         //! Notify this screen it is the current screen 
         virtual void NotifyCurrentScreen()
         {
-
         }
 
     signals:

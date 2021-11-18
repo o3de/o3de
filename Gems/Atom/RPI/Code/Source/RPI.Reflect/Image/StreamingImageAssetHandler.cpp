@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 
@@ -52,7 +53,7 @@ namespace AZ
                 missingAssetStatus, &AzFramework::AssetSystem::AssetSystemRequests::GetAssetStatusById, asset.GetId().m_guid);
 
             // Determine which fallback image to use
-            const char* relativePath = "textures/defaults/defaultfallback.png.streamingimage";
+            const char* relativePath = DefaultImageAssetPaths::DefaultFallback;
 
             bool useDebugFallbackImages = true;
             if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
@@ -66,15 +67,15 @@ namespace AZ
                 {
                 case AzFramework::AssetSystem::AssetStatus::AssetStatus_Queued:
                 case AzFramework::AssetSystem::AssetStatus::AssetStatus_Compiling:
-                    relativePath = "textures/defaults/processing.png.streamingimage";
+                    relativePath = DefaultImageAssetPaths::Processing;
                     break;
                 case AzFramework::AssetSystem::AssetStatus::AssetStatus_Failed:
-                    relativePath = "textures/defaults/processingfailed.png.streamingimage";
+                    relativePath = DefaultImageAssetPaths::ProcessingFailed;
                     break;
                 case AzFramework::AssetSystem::AssetStatus::AssetStatus_Missing:
                 case AzFramework::AssetSystem::AssetStatus::AssetStatus_Unknown:
                 case AzFramework::AssetSystem::AssetStatus::AssetStatus_Compiled:
-                    relativePath = "textures/defaults/missing.png.streamingimage";
+                    relativePath = DefaultImageAssetPaths::Missing;
                     break;
                 }
             }

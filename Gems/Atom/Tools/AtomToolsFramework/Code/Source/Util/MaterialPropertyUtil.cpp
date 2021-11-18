@@ -167,6 +167,7 @@ namespace AtomToolsFramework
 
     bool ConvertToExportFormat(
         const AZStd::string& exportPath,
+        [[maybe_unused]] const AZ::Name& propertyId,
         const AZ::RPI::MaterialTypeSourceData::PropertyDefinition& propertyDefinition,
         AZ::RPI::MaterialPropertyValue& propertyValue)
     {
@@ -175,7 +176,7 @@ namespace AtomToolsFramework
             const uint32_t index = propertyValue.GetValue<uint32_t>();
             if (index >= propertyDefinition.m_enumValues.size())
             {
-                AZ_Error("AtomToolsFramework", false, "Invalid value for material enum property: '%s'.", propertyDefinition.m_name.c_str());
+                AZ_Error("AtomToolsFramework", false, "Invalid value for material enum property: '%s'.", propertyId.GetCStr());
                 return false;
             }
 
@@ -186,18 +187,33 @@ namespace AtomToolsFramework
         // Image asset references must be converted from asset IDs to a relative source file path
         if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Image)
         {
+            AZStd::string imagePath;
+            AZ::Data::AssetId imageAssetId;
+
             if (propertyValue.Is<AZ::Data::Asset<AZ::RPI::ImageAsset>>())
             {
                 const auto& imageAsset = propertyValue.GetValue<AZ::Data::Asset<AZ::RPI::ImageAsset>>();
-                const auto& imagePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(imageAsset.GetId());
-                propertyValue = GetExteralReferencePath(exportPath, imagePath);
-                return true;
+                imageAssetId = imageAsset.GetId();
             }
 
             if (propertyValue.Is<AZ::Data::Instance<AZ::RPI::Image>>())
             {
                 const auto& image = propertyValue.GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
-                const auto& imagePath = image ? AZ::RPI::AssetUtils::GetSourcePathByAssetId(image->GetAssetId()) : "";
+                if (image)
+                {
+                    imageAssetId = image->GetAssetId();
+                }
+            }
+            
+            imagePath = AZ::RPI::AssetUtils::GetSourcePathByAssetId(imageAssetId);
+
+            if (imageAssetId.IsValid() && imagePath.empty())
+            {
+                AZ_Error("AtomToolsFramework", false, "Image asset could not be found for property: '%s'.", propertyId.GetCStr());
+                return false;
+            }
+            else
+            {
                 propertyValue = GetExteralReferencePath(exportPath, imagePath);
                 return true;
             }

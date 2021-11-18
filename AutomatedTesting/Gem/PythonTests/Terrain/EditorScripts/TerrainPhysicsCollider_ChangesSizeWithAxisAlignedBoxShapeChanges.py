@@ -12,13 +12,12 @@ class Tests():
     add_terrain_collider                    = ("Terrain Physics Heightfield Collider component added", "Failed to add a Terrain Physics Heightfield Collider component")
     box_dimensions_changed                  = ("Aabb dimensions changed successfully", "Failed change Aabb dimensions")
     configuration_changed                   = ("Terrain size changed successfully", "Failed terrain size change")
-    no_errors_and_warnings_found            = ("No errors and warnings found",   "Found errors and warnings")
 #fmt: on
 
 def TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges():
     """
     Summary:
-    Test aspects of the TerrainHeightGradientList through the BehaviorContext and the Property Tree.
+    Test aspects of the Terrain Physics Heightfield Collider through the BehaviorContext and the Property Tree.
 
     Test Steps:
     Expected Behavior:

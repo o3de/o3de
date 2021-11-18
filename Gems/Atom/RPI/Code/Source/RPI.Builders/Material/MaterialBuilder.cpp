@@ -63,11 +63,21 @@ namespace AZ
         {
             BusDisconnect();
         }
+        
+        bool MaterialBuilder::ReportMaterialAssetWarningsAsErrors() const
+        {
+            bool warningsAsErrors = false;
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                settingsRegistry->Get(warningsAsErrors, "/O3DE/Atom/RPI/MaterialBuilder/WarningsAsErrors");
+            }
+            return warningsAsErrors;
+        }
 
         //! Adds all relevant dependencies for a referenced source file, considering that the path might be relative to the original file location or a full asset path.
         //! This will usually include multiple source dependencies and a single job dependency, but will include only source dependencies if the file is not found.
         //! Note the AssetBuilderSDK::JobDependency::m_platformIdentifier will not be set by this function. The calling code must set this value before passing back
-        //! to the AssetBuilderSDK::CreateJobsResponse. If isOrderedOnceForMaterialTypes is true and the dependency is a materialtype file, the job dependency type
+        //! to the AssetBuilderSDK::CreateJobsResponse. If isOrderedOnceForMaterialTypes is true and the dependency is a .materialtype file, the job dependency type
         //! will be set to JobDependencyType::OrderOnce.
         void AddPossibleDependencies(AZStd::string_view currentFilePath,
             AZStd::string_view referencedParentPath,
@@ -277,8 +287,8 @@ namespace AZ
 
             return materialTypeAssetOutcome.GetValue();
         }
-
-        AZ::Data::Asset<MaterialAsset> CreateMaterialAsset(AZStd::string_view materialSourceFilePath, const rapidjson::Value& json)
+        
+        AZ::Data::Asset<MaterialAsset> MaterialBuilder::CreateMaterialAsset(AZStd::string_view materialSourceFilePath, const rapidjson::Value& json) const
         {
             auto material = LoadSourceData<MaterialSourceData>(json, materialSourceFilePath);
 
@@ -292,7 +302,7 @@ namespace AZ
                 return {};
             }
 
-            auto materialAssetOutcome = material.GetValue().CreateMaterialAsset(Uuid::CreateRandom(), materialSourceFilePath, true);
+            auto materialAssetOutcome = material.GetValue().CreateMaterialAsset(Uuid::CreateRandom(), materialSourceFilePath, ReportMaterialAssetWarningsAsErrors());
             if (!materialAssetOutcome.IsSuccess())
             {
                 return {};
