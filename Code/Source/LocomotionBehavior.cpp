@@ -57,9 +57,9 @@ namespace EMotionFX
             m_rootTrajectoryData->SetRelativeToNodeIndex(m_rootNodeIndex);
             m_rootTrajectoryData->SetDebugDrawColor(AZ::Color::CreateFromRgba(157,78,221,255));
             m_rootTrajectoryData->SetNumFutureSamplesPerFrame(6);
-            m_rootTrajectoryData->SetNumPastSamplesPerFrame(6);
-            m_rootTrajectoryData->SetFutureTimeRange(1.0f);
-            m_rootTrajectoryData->SetPastTimeRange(1.0f);
+            m_rootTrajectoryData->SetNumPastSamplesPerFrame(4);
+            m_rootTrajectoryData->SetFutureTimeRange(1.2f);
+            m_rootTrajectoryData->SetPastTimeRange(0.7f);
             m_rootTrajectoryData->SetDebugDrawEnabled(true);
             m_features.RegisterFeature(m_rootTrajectoryData);
             //----------------------------------------------------------------------------------------------------------
@@ -120,6 +120,23 @@ namespace EMotionFX
             m_features.AddKdTreeFeature(m_rightFootVelocityData);
             //----------------------------------------------------------------------------------------------------------
 
+            //----------------------------------------------------------------------------------------------------------
+            // Grab the pelvis velocity
+            const Node* pelvisNode = settings.m_actorInstance->GetActor()->GetSkeleton()->FindNodeByNameNoCase("C_pelvis_JNT");
+            m_pelvisNodeIndex = pelvisNode ? pelvisNode->GetNodeIndex() : MCORE_INVALIDINDEX32;
+            if (!pelvisNode)
+            {
+                return false;
+            }
+            m_pelvisVelocityData = aznew FeatureVelocity();
+            m_pelvisVelocityData->SetNodeIndex(m_pelvisNodeIndex);
+            m_pelvisVelocityData->SetRelativeToNodeIndex(m_rootNodeIndex);
+            m_pelvisVelocityData->SetDebugDrawColor(AZ::Color::CreateFromRgba(185,255,175,255));
+            m_pelvisVelocityData->SetDebugDrawEnabled(true);
+            m_features.RegisterFeature(m_pelvisVelocityData);
+            m_features.AddKdTreeFeature(m_pelvisVelocityData);
+            //----------------------------------------------------------------------------------------------------------
+
             return true;
         }
 
@@ -172,8 +189,10 @@ namespace EMotionFX
             FeatureTrajectory::FrameCostContext rootTrajectoryContext(m_features.GetFeatureMatrix());
             FeatureVelocity::FrameCostContext leftFootVelocityContext(m_features.GetFeatureMatrix());
             FeatureVelocity::FrameCostContext rightFootVelocityContext(m_features.GetFeatureMatrix());
+            FeatureVelocity::FrameCostContext pelvisVelocityContext(m_features.GetFeatureMatrix());
             Feature::CalculateVelocity(m_leftFootNodeIndex, m_rootNodeIndex, motionInstance, leftFootVelocityContext.m_direction, leftFootVelocityContext.m_speed);
             Feature::CalculateVelocity(m_rightFootNodeIndex, m_rootNodeIndex, motionInstance, rightFootVelocityContext.m_direction, rightFootVelocityContext.m_speed); // TODO: group this with left foot for faster performance
+            Feature::CalculateVelocity(m_pelvisNodeIndex, m_rootNodeIndex, motionInstance, pelvisVelocityContext.m_direction, pelvisVelocityContext.m_speed);
             rootTrajectoryContext.m_pose = &inputPose;
             rootTrajectoryContext.m_facingDirectionRelative = AZ::Vector3(0.0f, 1.0f, 0.0f);
             rootTrajectoryContext.m_trajectoryQuery = &behaviorInstance->GetTrajectoryQuery();
@@ -201,6 +220,10 @@ namespace EMotionFX
                 m_rightFootVelocityData->FillQueryFeatureValues(startOffset, queryFeatureValues, rightFootVelocityContext);
                 startOffset += m_leftFootVelocityData->GetNumDimensions();
 
+                // Pelvis velocity.
+                m_pelvisVelocityData->FillQueryFeatureValues(startOffset, queryFeatureValues, pelvisVelocityContext);
+                startOffset += m_pelvisVelocityData->GetNumDimensions();
+
                 AZ_Assert(startOffset == queryFeatureValues.size(), "Frame float vector is not the expected size.");
 
                 // Find our nearest frames.
@@ -215,6 +238,7 @@ namespace EMotionFX
             float minRightFootPositionCost = 0.0f;
             float minLeftFootVelocityCost = 0.0f;
             float minRightFootVelocityCost = 0.0f;
+            float minPelvisVelocityCost = 0.0f;
             float minTrajectoryPastCost = 0.0f;
             float minTrajectoryFutureCost = 0.0f;
 
@@ -232,6 +256,7 @@ namespace EMotionFX
                 
                 const float leftFootVelocityCost = m_leftFootVelocityData->CalculateFrameCost(frameIndex, leftFootVelocityContext);
                 const float rightFootVelocityCost = m_rightFootVelocityData->CalculateFrameCost(frameIndex, rightFootVelocityContext);
+                const float pelvisVelocityCost = m_pelvisVelocityData->CalculateFrameCost(frameIndex, pelvisVelocityContext);
             
                 const float trajectoryPastCost = m_rootTrajectoryData->CalculatePastFrameCost(frameIndex, rootTrajectoryContext);
                 const float trajectoryFutureCost = m_rootTrajectoryData->CalculateFutureFrameCost(frameIndex, rootTrajectoryContext);
@@ -239,6 +264,7 @@ namespace EMotionFX
                 float totalCost =
                     m_factorWeights.m_footPositionFactor * leftFootPositionCost + m_factorWeights.m_footPositionFactor * rightFootPositionCost + // foot position
                     m_factorWeights.m_footVelocityFactor * leftFootVelocityCost + m_factorWeights.m_footVelocityFactor * rightFootVelocityCost + // foot velocity
+                    pelvisVelocityCost + // pelvis velocity
                     m_factorWeights.m_rootPastFactor * trajectoryPastCost + m_factorWeights.m_rootFutureFactor * trajectoryFutureCost; // trajectory
 
                 if (frame.GetSourceMotion() != currentFrame.GetSourceMotion())
@@ -256,6 +282,7 @@ namespace EMotionFX
                     minRightFootPositionCost = rightFootPositionCost;
                     minLeftFootVelocityCost = leftFootVelocityCost;
                     minRightFootVelocityCost = rightFootVelocityCost;
+                    minPelvisVelocityCost = pelvisVelocityCost;
                     minTrajectoryPastCost = trajectoryPastCost;
                     minTrajectoryFutureCost = trajectoryFutureCost;
                 }
@@ -268,6 +295,7 @@ namespace EMotionFX
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Right Foot Position Cost", minRightFootPositionCost, m_rightFootPositionData->GetDebugDrawColor());
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Left Foot Velocity Cost", minLeftFootVelocityCost, m_leftFootVelocityData->GetDebugDrawColor());
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Right Foot Velocity Cost", minRightFootVelocityCost, m_rightFootVelocityData->GetDebugDrawColor());
+            ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Pelvis Velocity Cost", minPelvisVelocityCost, m_pelvisVelocityData->GetDebugDrawColor());
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Trajectory Past Cost", minTrajectoryPastCost, m_rootTrajectoryData->GetDebugDrawColor());
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Trajectory Future Cost", minTrajectoryFutureCost, m_rootTrajectoryData->GetDebugDrawColor());
             ImGuiMonitorRequestBus::Broadcast(&ImGuiMonitorRequests::PushCostHistogramValue, "Total Cost", minCost, AZ::Color::CreateFromRgba(202,255,191,255));
