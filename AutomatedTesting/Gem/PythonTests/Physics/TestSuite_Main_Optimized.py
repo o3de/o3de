@@ -53,7 +53,7 @@ class EditorSingleTest_WithFileOverrides(EditorSingleTest):
         for f in original_file_list:
             fm._restore_file(f, file_list[f])
 
-# @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
+@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -72,7 +72,7 @@ class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
     class C4982802_PhysXColliderShape_CanBeSelected(EditorSharedTest):
         from .tests.collider import Collider_CapsuleShapeEditing as test_module
 
-# @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
+@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
