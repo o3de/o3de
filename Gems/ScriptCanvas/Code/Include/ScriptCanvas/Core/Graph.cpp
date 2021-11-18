@@ -89,7 +89,7 @@ namespace ScriptCanvas
         }
 
         return true;
-    }s
+    }
 
     Graph::Graph(const ScriptCanvasId& scriptCanvasId)
         : m_scriptCanvasId(scriptCanvasId)
