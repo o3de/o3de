@@ -168,7 +168,9 @@ namespace AzToolsFramework
 
         bool IsCorrectMimeData(const QMimeData* pData, AZ::Data::AssetId* pAssetId = nullptr, AZ::Data::AssetType* pAssetType = nullptr) const;
         void ClearErrorButton();
-        void UpdateErrorButton(const AZStd::string& errorLog);
+        void UpdateErrorButton();
+        void UpdateErrorButtonWithLog(const AZStd::string& errorLog);
+        void UpdateErrorButtonWithMessage(const AZStd::string& message);
         virtual const AZStd::string GetFolderSelection() const { return AZStd::string(); }
         virtual void SetFolderSelection(const AZStd::string& /* folderPath */) {}
         virtual void ClearAssetInternal();

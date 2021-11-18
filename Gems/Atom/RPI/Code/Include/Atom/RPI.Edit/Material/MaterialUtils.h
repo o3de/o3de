@@ -28,7 +28,18 @@ namespace AZ
 
         namespace MaterialUtils
         {
-            Outcome<Data::Asset<ImageAsset>> GetImageAssetReference(AZStd::string_view materialSourceFilePath, const AZStd::string imageFilePath);
+            enum class GetImageAssetResult
+            {
+                Empty,             //! No image was actually requested, the path was empty
+                Found,             //! The requested asset was found
+                Missing            //! The requested asset was not found, and a placeholder asset was used instead
+            };
+
+            //! Finds an ImageAsset referenced by a material file (or a placeholder)
+            //! @param imageAsset the resulting ImageAsset
+            //! @param materialSourceFilePath the full path to a material source file that is referenfing an image file
+            //! @param imageFilePath the path to an image source file, which could be relative to the asset root or relative to the material file
+            GetImageAssetResult GetImageAssetReference(Data::Asset<ImageAsset>& imageAsset, AZStd::string_view materialSourceFilePath, const AZStd::string imageFilePath);
 
             //! Resolve an enum to a uint32_t given its name and definition array (in MaterialPropertyDescriptor).
             //! @param propertyDescriptor it contains the definition of all enum names in an array.

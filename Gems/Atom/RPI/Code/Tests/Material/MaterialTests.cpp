@@ -888,4 +888,43 @@ namespace UnitTest
         EXPECT_EQ(indexFromOldName, indexFromNewName);
     }
 
+    template<typename T>
+    void CheckPropertyValueRoundTrip(const T& value)
+    {
+        AZ::RPI::MaterialPropertyValue materialPropertyValue{value};
+        AZStd::any anyValue{value};
+        AZ::RPI::MaterialPropertyValue materialPropertyValueFromAny = MaterialPropertyValue::FromAny(anyValue);
+        AZ::RPI::MaterialPropertyValue materialPropertyValueFromRoundTrip = MaterialPropertyValue::FromAny(MaterialPropertyValue::ToAny(materialPropertyValue));
+        
+        EXPECT_EQ(materialPropertyValue, materialPropertyValueFromAny);
+        EXPECT_EQ(materialPropertyValue, materialPropertyValueFromRoundTrip);
+
+        if (materialPropertyValue.Is<Data::Asset<ImageAsset>>())
+        {
+            EXPECT_EQ(materialPropertyValue.GetValue<Data::Asset<ImageAsset>>().GetHint(), materialPropertyValueFromAny.GetValue<Data::Asset<ImageAsset>>().GetHint());
+            EXPECT_EQ(materialPropertyValue.GetValue<Data::Asset<ImageAsset>>().GetHint(), materialPropertyValueFromRoundTrip.GetValue<Data::Asset<ImageAsset>>().GetHint());
+        }
+    }
+
+    TEST_F(MaterialTests, TestMaterialPropertyValueAsAny)
+    {
+        CheckPropertyValueRoundTrip(true);
+        CheckPropertyValueRoundTrip(false);
+        CheckPropertyValueRoundTrip(7);
+        CheckPropertyValueRoundTrip(8u);
+        CheckPropertyValueRoundTrip(9.0f);
+        CheckPropertyValueRoundTrip(AZ::Vector2(1.0f, 2.0f));
+        CheckPropertyValueRoundTrip(AZ::Vector3(1.0f, 2.0f, 3.0f));
+        CheckPropertyValueRoundTrip(AZ::Vector4(1.0f, 2.0f, 3.0f, 4.0f));
+        CheckPropertyValueRoundTrip(AZ::Color(1.0f, 2.0f, 3.0f, 4.0f));
+        CheckPropertyValueRoundTrip(Data::Asset<Data::AssetData>{});
+        CheckPropertyValueRoundTrip(Data::Asset<ImageAsset>{});
+        CheckPropertyValueRoundTrip(Data::Asset<StreamingImageAsset>{});
+        CheckPropertyValueRoundTrip(Data::Asset<Data::AssetData>{Uuid::CreateRandom(), azrtti_typeid<AZ::RPI::StreamingImageAsset>(), "TestAssetPath.png"});
+        CheckPropertyValueRoundTrip(Data::Asset<ImageAsset>{Uuid::CreateRandom(), azrtti_typeid<AZ::RPI::StreamingImageAsset>(), "TestAssetPath.png"});
+        CheckPropertyValueRoundTrip(Data::Asset<StreamingImageAsset>{Uuid::CreateRandom(), azrtti_typeid<AZ::RPI::StreamingImageAsset>(), "TestAssetPath.png"});
+        CheckPropertyValueRoundTrip(m_testImageAsset);
+        CheckPropertyValueRoundTrip(Data::Instance<Image>{m_testImage});
+        CheckPropertyValueRoundTrip(AZStd::string{"hello"});
+    }
 }
