@@ -1,91 +1,97 @@
 {
     "entries": [
         {
-            "key": "WindRequestsBus",
+            "key": "ForceWorldSpaceRequestBus",
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "Wind"
+                "name": "Force World Space"
             },
             "methods": [
                 {
-                    "key": "GetGlobalWind",
+                    "key": "SetDirection",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Global Wind"
+                        "tooltip": "When signaled, this will invoke Set Direction"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Global Wind is invoked"
+                        "tooltip": "Signaled after Set Direction is invoked"
                     },
                     "details": {
-                        "name": "Get Global Wind"
-                    },
-                    "results": [
-                        {
-                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
-                            "details": {
-                                "name": "Global Wind Direction"
-                            }
-                        }
-                    ]
-                },
-                {
-                    "key": "GetWindAtPosition",
-                    "entry": {
-                        "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Wind At Position"
-                    },
-                    "exit": {
-                        "name": "Out",
-                        "tooltip": "Signaled after Get Wind At Position is invoked"
-                    },
-                    "details": {
-                        "name": "Get Wind At Position"
+                        "name": "Set Direction"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Position"
-                            }
-                        }
-                    ],
-                    "results": [
-                        {
-                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
-                            "details": {
-                                "name": "Wind Direction"
+                                "name": "Direction"
                             }
                         }
                     ]
                 },
                 {
-                    "key": "GetWindInsideAabb",
+                    "key": "GetDirection",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Get Wind Inside AABB"
+                        "tooltip": "When signaled, this will invoke Get Direction"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Get Wind Inside AABB is invoked"
+                        "tooltip": "Signaled after Get Direction is invoked"
                     },
                     "details": {
-                        "name": "Get Wind Inside AABB"
+                        "name": "Get Direction"
                     },
-                    "params": [
-                        {
-                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
-                            "details": {
-                                "name": "AABB"
-                            }
-                        }
-                    ],
                     "results": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Wind Direction"
+                                "name": "Direction"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetMagnitude",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Magnitude"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Magnitude is invoked"
+                    },
+                    "details": {
+                        "name": "Set Magnitude"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Magnitude"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetMagnitude",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Magnitude"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Magnitude is invoked"
+                    },
+                    "details": {
+                        "name": "Get Magnitude"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Magnitude"
                             }
                         }
                     ]
