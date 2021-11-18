@@ -19,7 +19,9 @@ from ly_test_tools.o3de.editor_test import EditorTestSuite, EditorSingleTest
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
-    #global_extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
 
     class test_AxisAlignedBoxShape_ConfigurationWorks(EditorSingleTest):
         from .EditorScripts import TerrainPhysicsCollider_ChangesSizeWithAxisAlignedBoxShapeChanges as test_module
+
+    class test_Terrain_SupportsPhysics(EditorSingleTest):
+        from .EditorScripts import Terrain_SupportsPhysics as test_module
