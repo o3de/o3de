@@ -327,7 +327,7 @@ namespace AZ
 
         while (!localNotifierQueue.empty())
         {
-            for (SignalNotifierArgs notifierArgs : localNotifierQueue)
+            for (const SignalNotifierArgs& notifierArgs : localNotifierQueue)
             {
                 localNotifierEvent.Signal(notifierArgs.m_jsonPath, notifierArgs.m_type);
             }

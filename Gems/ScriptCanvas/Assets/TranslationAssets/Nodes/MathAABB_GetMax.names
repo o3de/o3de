@@ -5,10 +5,10 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetMax",
-                "category": "Math/AABB",
+                "name": "Get Max",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the Vector3 that is the max value on each axis of Source",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
@@ -26,13 +26,13 @@
                 {
                     "key": "DataInput_AABB: Source",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
                     "key": "DataOutput_Result: Vector3",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Max"
                     }
                 }
             ]

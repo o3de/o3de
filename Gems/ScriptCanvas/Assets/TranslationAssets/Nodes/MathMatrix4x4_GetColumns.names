@@ -5,9 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetColumns",
+                "name": "Get Columns",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns all columns from matrix",
+                "tooltip": "Returns all columns from matrix",
                 "subtitle": "Matrix4x4"
             },
             "slots": [
@@ -26,31 +26,31 @@
                 {
                     "key": "DataInput_Matrix4x4: Source",
                     "details": {
-                        "name": "Matrix4x4: Source"
+                        "name": "Source"
                     }
                 },
                 {
                     "key": "DataOutput_Column1: Vector4",
                     "details": {
-                        "name": "Column1: Vector4"
+                        "name": "Column 1"
                     }
                 },
                 {
                     "key": "DataOutput_Column2: Vector4",
                     "details": {
-                        "name": "Column2: Vector4"
+                        "name": "Column 2"
                     }
                 },
                 {
                     "key": "DataOutput_Column3: Vector4",
                     "details": {
-                        "name": "Column3: Vector4"
+                        "name": "Column 3"
                     }
                 },
                 {
                     "key": "DataOutput_Column4: Vector4",
                     "details": {
-                        "name": "Column4: Vector4"
+                        "name": "Column 4"
                     }
                 }
             ]

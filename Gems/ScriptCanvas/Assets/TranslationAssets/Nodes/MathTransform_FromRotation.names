@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromRotation",
+                "name": "From Rotation",
                 "category": "Math/Transform",
-                "tooltip": "returns a transform from the rotation and with the translation set to zero",
-                "subtitle": "Transform"
+                "tooltip": "Returns a transform from the rotation and with the translation set to zero"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Quaternion: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Transform",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Transform"
+                        "name": "Result"
                     }
                 }
             ]

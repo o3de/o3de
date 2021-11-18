@@ -10,69 +10,64 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/parallel/thread.h> /// this_thread sleep_for.
 
-namespace AZ
+namespace AZ::IO
 {
-    namespace IO
-    {      
-        int TranslateOpenModeToSystemFileMode(const char* path, OpenMode mode)
+    int TranslateOpenModeToSystemFileMode(const char* path, OpenMode mode)
+    {
+        int systemFileMode = 0;
+        bool read = AnyFlag(mode & OpenMode::ModeRead) || AnyFlag(mode & OpenMode::ModeUpdate);
+        bool write = AnyFlag(mode & OpenMode::ModeWrite) || AnyFlag(mode & OpenMode::ModeUpdate) || AnyFlag(mode & OpenMode::ModeAppend);
+        if (write)
         {
-            int systemFileMode = 0;
-            bool read = AnyFlag(mode & OpenMode::ModeRead) || AnyFlag(mode & OpenMode::ModeUpdate);
-            bool write = AnyFlag(mode & OpenMode::ModeWrite) || AnyFlag(mode & OpenMode::ModeUpdate) || AnyFlag(mode & OpenMode::ModeAppend);
-            if (write)
+            // If writing the file, create the file in all cases (except r+)
+            if (!SystemFile::Exists(path) && !(AnyFlag(mode & OpenMode::ModeRead) && AnyFlag(mode & OpenMode::ModeUpdate)))
             {
-                // If writing the file, create the file in all cases (except r+)
-                if (!SystemFile::Exists(path) && !(AnyFlag(mode & OpenMode::ModeRead) && AnyFlag(mode & OpenMode::ModeUpdate)))
-                {
-                    // LocalFileIO creates by default
-                    systemFileMode |= SystemFile::SF_OPEN_CREATE;
-                }
-
-                if (AnyFlag(mode & OpenMode::ModeCreatePath))
-                {
-                    systemFileMode |= SystemFile::SF_OPEN_CREATE_PATH;
-                }
-
-                // If appending, append.
-                if (AnyFlag(mode & OpenMode::ModeAppend))
-                {
-                    systemFileMode |= SystemFile::SF_OPEN_APPEND;
-                }
-                // If writing and not appending, empty the file
-                else if (AnyFlag(mode & OpenMode::ModeWrite))
-                {
-                    systemFileMode |= SystemFile::SF_OPEN_TRUNCATE;
-                }
-
-                // If reading, set read/write, otherwise just write
-                if (read)
-                {
-                    systemFileMode |= SystemFile::SF_OPEN_READ_WRITE;
-                }
-                else
-                {
-                    systemFileMode |= SystemFile::SF_OPEN_WRITE_ONLY;
-                }
-            }
-            else if (read)
-            {
-                systemFileMode |= SystemFile::SF_OPEN_READ_ONLY;
+                // LocalFileIO creates by default
+                systemFileMode |= SystemFile::SF_OPEN_CREATE;
             }
 
-            return systemFileMode;
+            if (AnyFlag(mode & OpenMode::ModeCreatePath))
+            {
+                systemFileMode |= SystemFile::SF_OPEN_CREATE_PATH;
+            }
+
+            // If appending, append.
+            if (AnyFlag(mode & OpenMode::ModeAppend))
+            {
+                systemFileMode |= SystemFile::SF_OPEN_APPEND;
+            }
+            // If writing and not appending, empty the file
+            else if (AnyFlag(mode & OpenMode::ModeWrite))
+            {
+                systemFileMode |= SystemFile::SF_OPEN_TRUNCATE;
+            }
+
+            // If reading, set read/write, otherwise just write
+            if (read)
+            {
+                systemFileMode |= SystemFile::SF_OPEN_READ_WRITE;
+            }
+            else
+            {
+                systemFileMode |= SystemFile::SF_OPEN_WRITE_ONLY;
+            }
+        }
+        else if (read)
+        {
+            systemFileMode |= SystemFile::SF_OPEN_READ_ONLY;
         }
 
-        bool RetryOpenStream(FileIOStream& stream, int numRetries, int delayBetweenRetry)
+        return systemFileMode;
+    }
+
+    bool RetryOpenStream(FileIOStream& stream, int numRetries, int delayBetweenRetry)
+    {
+        while ((!stream.IsOpen()) && (numRetries > 0))
         {
-            while ((!stream.IsOpen()) && (numRetries > 0))
-            {
-                numRetries--;
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(delayBetweenRetry));
-                stream.ReOpen();
-            }
-            return stream.IsOpen();
+            numRetries--;
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(delayBetweenRetry));
+            stream.ReOpen();
         }
-    }   // namespace IO
-}   // namespace AZ
-
-
+        return stream.IsOpen();
+    }
+} // namespace AZ::IO

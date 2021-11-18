@@ -94,10 +94,18 @@ namespace O3DE::ProjectManager
         /**
          * Registers the gem to the specified project, or to the o3de_manifest.json if no project path is given
          * @param gemPath the path to the gem
-         * @param projectPath the path to the project. If empty, will register the external path in o3de_manifest.json 
+         * @param projectPath the path to the project. If empty, will register the external path in o3de_manifest.json
          * @return An outcome with the success flag as well as an error message in case of a failure.
          */
         virtual AZ::Outcome<void, AZStd::string> RegisterGem(const QString& gemPath, const QString& projectPath = {}) = 0;
+
+        /**
+         * Unregisters the gem from the specified project, or from the o3de_manifest.json if no project path is given
+         * @param gemPath the path to the gem
+         * @param projectPath the path to the project. If empty, will unregister the external path in o3de_manifest.json
+         * @return An outcome with the success flag as well as an error message in case of a failure.
+         */
+        virtual AZ::Outcome<void, AZStd::string> UnregisterGem(const QString& gemPath, const QString& projectPath = {}) = 0;
 
 
         // Projects 
@@ -210,23 +218,33 @@ namespace O3DE::ProjectManager
         virtual AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() = 0;
 
         /**
-         * Downloads and registers a Gem.
-         * @param gemName the name of the Gem to download
-         * @param gemProgressCallback a callback function that is called with an int percentage download value
-         * @return an outcome with a string error message on failure.
-         */
-        virtual AZ::Outcome<void, AZStd::string> DownloadGem(const QString& gemName, std::function<void(int)> gemProgressCallback) = 0;
-
-        /**
-        * Cancels the current download.
-        */
-        virtual void CancelDownload() = 0;
-
-        /**
          * Gathers all gem infos for all gems registered from repos.
          * @return A list of gem infos.
          */
         virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemRepoGemsInfos() = 0;
+
+        /**
+         * Downloads and registers a Gem.
+         * @param gemName the name of the Gem to download.
+         * @param gemProgressCallback a callback function that is called with an int percentage download value.
+         * @param force should we forcibly overwrite the old version of the gem.
+         * @return an outcome with a string error message on failure.
+         */
+        virtual AZ::Outcome<void, AZStd::string> DownloadGem(
+            const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) = 0;
+
+        /**
+         * Cancels the current download.
+         */
+        virtual void CancelDownload() = 0;
+
+        /**
+         * Checks if there is an update avaliable for a gem on a repo.
+         * @param gemName the name of the gem to check.
+         * @param lastUpdated last time the gem was update.
+         * @return true if update is avaliable, false if not.
+         */
+        virtual bool IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated) = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;

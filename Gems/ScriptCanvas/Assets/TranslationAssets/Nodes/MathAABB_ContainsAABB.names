@@ -5,10 +5,10 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ContainsAABB",
-                "category": "Math/AABB",
+                "name": "Contains Axis Aligned Bounding Box",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns true if Source contains all of the bounds of Candidate, else false",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
@@ -26,19 +26,19 @@
                 {
                     "key": "DataInput_AABB: Source",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
                     "key": "DataInput_AABB: Candidate",
                     "details": {
-                        "name": "AABB: Candidate"
+                        "name": "Candidate"
                     }
                 },
                 {
                     "key": "DataOutput_Result: Boolean",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Contains"
                     }
                 }
             ]

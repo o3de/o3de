@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromCoefficients",
+                "name": "From Coefficients",
                 "category": "Math/Plane",
-                "tooltip": "returns the plane that satisfies the equation Ax + By + Cz + D = 0",
-                "subtitle": "Plane"
+                "tooltip": "Returns the plane that satisfies the equation Ax + By + Cz + D = 0"
             },
             "slots": [
                 {
@@ -24,33 +23,33 @@
                     }
                 },
                 {
-                    "key": "DataInput_Number: A",
+                    "key": "DataInput_A",
                     "details": {
-                        "name": "Number: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Number: B",
+                    "key": "DataInput_B",
                     "details": {
-                        "name": "Number: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataInput_Number: C",
+                    "key": "DataInput_C",
                     "details": {
-                        "name": "Number: C"
+                        "name": "C"
                     }
                 },
                 {
-                    "key": "DataInput_Number: D",
+                    "key": "DataInput_D",
                     "details": {
-                        "name": "Number: D"
+                        "name": "D"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Plane",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Plane"
+                        "name": "Result"
                     }
                 }
             ]

@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "LengthReciprocal",
+                "name": "Length Reciprocal",
                 "category": "Math/Quaternion",
-                "tooltip": "returns the reciprocal length of Source",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns the reciprocal length of Source"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Quaternion: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

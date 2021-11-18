@@ -24,6 +24,7 @@ QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QHBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QHideEvent)
 QT_FORWARD_DECLARE_CLASS(QMoveEvent)
+QT_FORWARD_DECLARE_CLASS(QMovie)
 
 namespace O3DE::ProjectManager
 {
@@ -39,8 +40,7 @@ namespace O3DE::ProjectManager
     public slots:
         void GemDownloadAdded(const QString& gemName);
         void GemDownloadRemoved(const QString& gemName);
-        void GemDownloadProgress(const QString& gemName, int percentage);
-        void GemDownloadComplete(const QString& gemName, bool success);
+        void GemDownloadProgress(const QString& gemName, int bytesDownloaded, int totalBytes);
 
     private:
         QVector<Tag> GetTagsFromModelIndices(const QVector<QModelIndex>& gems) const;
@@ -96,12 +96,22 @@ namespace O3DE::ProjectManager
 
         void ReinitForProject();
 
+    public slots:
+        void GemDownloadAdded(const QString& gemName);
+        void GemDownloadRemoved(const QString& gemName);
+
     signals:
         void AddGem();
         void OpenGemsRepo();
+        void RefreshGems();
         
     private:
         AzQtComponents::SearchLineEdit* m_filterLineEdit = nullptr;
         inline constexpr static int s_height = 60;
+        DownloadController* m_downloadController = nullptr;
+        QLabel* m_downloadSpinner = nullptr;
+        QLabel* m_downloadLabel = nullptr;
+        QMovie* m_downloadSpinnerMovie = nullptr;
+        CartButton* m_cartButton = nullptr;
     };
 } // namespace O3DE::ProjectManager

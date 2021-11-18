@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetNormal",
+                "name": "Get Normal",
                 "category": "Math/Plane",
-                "tooltip": "returns the surface normal of Source",
-                "subtitle": "Plane"
+                "tooltip": "Returns the surface normal of Source"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Plane: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Plane: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

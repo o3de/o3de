@@ -7,8 +7,7 @@
             "details": {
                 "name": "Negate",
                 "category": "Math/Vector2",
-                "tooltip": "returns the vector Source with each element multiplied by -1",
-                "subtitle": "Vector2"
+                "tooltip": "Returns the vector Source with each element multiplied by -1"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector2: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Vector2: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector2",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector2"
+                        "name": "Result"
                     }
                 }
             ]

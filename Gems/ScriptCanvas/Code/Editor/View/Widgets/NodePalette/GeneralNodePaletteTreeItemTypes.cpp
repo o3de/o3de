@@ -83,7 +83,16 @@ namespace ScriptCanvasEditor
         , m_propertyStatus(propertyStatus)
     {
         GraphCanvas::TranslationKey key;
-        key << "BehaviorClass" << className << "methods" << methodName << "details";
+
+
+        AZStd::string updatedMethodName;
+        if (propertyStatus != ScriptCanvas::PropertyStatus::None)
+        {
+            updatedMethodName = (propertyStatus == ScriptCanvas::PropertyStatus::Getter) ? "Get" : "Set";
+        }
+        updatedMethodName.append(methodName);
+
+        key << "BehaviorClass" << className << "methods" << updatedMethodName << "details";
 
         GraphCanvas::TranslationRequests::Details details;
         details.m_name = methodName;
@@ -93,15 +102,6 @@ namespace ScriptCanvasEditor
 
         SetName(details.m_name.c_str());
         SetToolTip(details.m_tooltip.c_str());
-
-        if (propertyStatus == ScriptCanvas::PropertyStatus::Getter)
-        {
-            SetName(AZStd::string::format("Get %s", GetName().toUtf8().data()).data());
-        }
-        else if (propertyStatus == ScriptCanvas::PropertyStatus::Setter)
-        {
-            SetName(AZStd::string::format("Set %s", GetName().toUtf8().data()).data());
-        }
 
         SetTitlePalette("MethodNodeTitlePalette");
     }
@@ -160,13 +160,14 @@ namespace ScriptCanvasEditor
         : DraggableNodePaletteTreeItem(nodeModelInformation.m_methodName, ScriptCanvasEditor::AssetEditorId)
         , m_methodName{ nodeModelInformation.m_methodName }
     {
-        SetToolTip(QString::fromUtf8(nodeModelInformation.m_displayName.data(),
-            aznumeric_cast<int>(nodeModelInformation.m_displayName.size())));
-
         SetToolTip(QString::fromUtf8(nodeModelInformation.m_toolTip.data(),
             aznumeric_cast<int>(nodeModelInformation.m_toolTip.size())));
 
         SetTitlePalette("MethodNodeTitlePalette");
+        if (!nodeModelInformation.m_displayName.empty())
+        {
+            SetName(nodeModelInformation.m_displayName.c_str());
+        }
     }
 
     GraphCanvas::GraphCanvasMimeEvent* GlobalMethodEventPaletteTreeItem::CreateMimeEvent() const

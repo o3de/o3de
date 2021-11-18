@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromColumns",
+                "name": "From Columns",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns a rotation matrix based on angle around Z axis",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns a rotation matrix based on angle around Z axis"
             },
             "slots": [
                 {
@@ -24,27 +23,27 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Column1",
+                    "key": "DataInput_Column1",
                     "details": {
-                        "name": "Vector3: Column1"
+                        "name": "Column 1"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Column2",
+                    "key": "DataInput_Column2",
                     "details": {
-                        "name": "Vector3: Column2"
+                        "name": "Column 2"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Column3",
+                    "key": "DataInput_Column3",
                     "details": {
-                        "name": "Vector3: Column3"
+                        "name": "Column 3"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix3x3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix3x3"
+                        "name": "Result"
                     }
                 }
             ]

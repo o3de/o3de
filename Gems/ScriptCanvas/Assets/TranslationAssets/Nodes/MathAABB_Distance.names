@@ -6,9 +6,9 @@
             "variant": "",
             "details": {
                 "name": "Distance",
-                "category": "Math/AABB",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the shortest distance from Point to Source, or zero of Point is contained in Source",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
@@ -26,19 +26,19 @@
                 {
                     "key": "DataInput_AABB: Source",
                     "details": {
-                        "name": "AABB: Source"
+                        "name": "Source"
                     }
                 },
                 {
                     "key": "DataInput_Vector3: Point",
                     "details": {
-                        "name": "Vector3: Point"
+                        "name": "Point"
                     }
                 },
                 {
                     "key": "DataOutput_Result: Number",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Distance"
                     }
                 }
             ]

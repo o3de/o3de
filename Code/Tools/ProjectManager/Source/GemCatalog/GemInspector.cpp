@@ -14,6 +14,7 @@
 #include <QSpacerItem>
 #include <QVBoxLayout>
 #include <QIcon>
+#include <QPushButton>
 
 namespace O3DE::ProjectManager
 {
@@ -70,6 +71,8 @@ namespace O3DE::ProjectManager
 
     void GemInspector::Update(const QModelIndex& modelIndex)
     {
+        m_curModelIndex = modelIndex;
+
         if (!modelIndex.isValid())
         {
             m_mainWidget->hide();
@@ -122,6 +125,20 @@ namespace O3DE::ProjectManager
         m_lastUpdatedLabel->setText(tr("Last Updated: %1").arg(m_model->GetLastUpdated(modelIndex)));
         const int binarySize = m_model->GetBinarySizeInKB(modelIndex);
         m_binarySizeLabel->setText(tr("Binary Size:  %1").arg(binarySize ? tr("%1 KB").arg(binarySize) : tr("Unknown")));
+
+        // Update and Uninstall buttons
+        if (m_model->GetGemOrigin(modelIndex) == GemInfo::Remote &&
+            (m_model->GetDownloadStatus(modelIndex) == GemInfo::Downloaded ||
+             m_model->GetDownloadStatus(modelIndex) == GemInfo::DownloadSuccessful))
+        {
+            m_updateGemButton->show();
+            m_uninstallGemButton->show();
+        }
+        else
+        {
+            m_updateGemButton->hide();
+            m_uninstallGemButton->hide();
+        }
 
         m_mainWidget->adjustSize();
         m_mainWidget->show();
@@ -223,7 +240,7 @@ namespace O3DE::ProjectManager
 
         // Depending gems
         m_dependingGems = new GemsSubWidget();
-        connect(m_dependingGems, &GemsSubWidget::TagClicked, this, [=](const Tag& tag){ emit TagClicked(tag); });
+        connect(m_dependingGems, &GemsSubWidget::TagClicked, this, [this](const Tag& tag){ emit TagClicked(tag); });
         m_mainLayout->addWidget(m_dependingGems);
         m_mainLayout->addSpacing(20);
 
@@ -234,5 +251,20 @@ namespace O3DE::ProjectManager
         m_versionLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
         m_lastUpdatedLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
         m_binarySizeLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
+
+        m_mainLayout->addSpacing(20);
+
+        // Update and Uninstall buttons
+        m_updateGemButton = new QPushButton(tr("Update Gem"));
+        m_updateGemButton->setObjectName("gemCatalogUpdateGemButton");
+        m_mainLayout->addWidget(m_updateGemButton);
+        connect(m_updateGemButton, &QPushButton::clicked, this , [this]{ emit UpdateGem(m_curModelIndex); });
+
+        m_mainLayout->addSpacing(10);
+
+        m_uninstallGemButton = new QPushButton(tr("Uninstall Gem"));
+        m_uninstallGemButton->setObjectName("gemCatalogUninstallGemButton");
+        m_mainLayout->addWidget(m_uninstallGemButton);
+        connect(m_uninstallGemButton, &QPushButton::clicked, this , [this]{ emit UninstallGem(m_curModelIndex); });
     }
 } // namespace O3DE::ProjectManager

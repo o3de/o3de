@@ -6,9 +6,9 @@
             "variant": "",
             "details": {
                 "name": "Translate",
-                "category": "Math/AABB",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the Source with each point added with Translation",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {

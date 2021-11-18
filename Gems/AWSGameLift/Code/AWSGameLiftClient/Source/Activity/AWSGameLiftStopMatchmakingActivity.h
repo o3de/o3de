@@ -23,7 +23,7 @@ namespace AWSGameLift
         Aws::GameLift::Model::StopMatchmakingRequest BuildAWSGameLiftStopMatchmakingRequest(const AWSGameLiftStopMatchmakingRequest& stopMatchmakingRequest);
 
         // Create StopMatchmakingRequest and make a StopMatchmaking call through GameLift client
-        void StopMatchmaking(const Aws::GameLift::GameLiftClient& gameliftClient, const AWSGameLiftStopMatchmakingRequest& stopMatchmakingRequest);
+        void StopMatchmaking(const AWSGameLiftStopMatchmakingRequest& stopMatchmakingRequest);
 
         // Validate StopMatchmakingRequest and check required request parameters
         bool ValidateStopMatchmakingRequest(const AzFramework::StopMatchmakingRequest& stopMatchmakingRequest);

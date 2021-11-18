@@ -43,6 +43,6 @@ ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-linux              
 ly_associate_package(PACKAGE_NAME azslc-1.7.34-rev1-linux                           TARGETS azslc                       PACKAGE_HASH 6d7dc671936c34ff70d2632196107ca1b8b2b41acdd021bfbc69a9fd56215c22)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev5-linux                            TARGETS ZLIB                        PACKAGE_HASH 9be5ea85722fc27a8645a9c8a812669d107c68e6baa2ca0740872eaeb6a8b0fc)
 ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-linux                     TARGETS squish-ccr                  PACKAGE_HASH 85fecafbddc6a41a27c5f59ed4a5dfb123a94cb4666782cf26e63c0a4724c530)
-ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev1-linux                       TARGETS astc-encoder                PACKAGE_HASH 2ba97a06474d609945f0ab4419af1f6bbffdd294ca6b869f5fcebec75c573c0f)
+ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev2-linux                       TARGETS astc-encoder                PACKAGE_HASH 71549d1ca9e4d48391b92a89ea23656d3393810e6777879f6f8a9def2db1610c)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-linux                    TARGETS ISPCTexComp                 PACKAGE_HASH 065fd12abe4247dde247330313763cf816c3375c221da030bdec35024947f259)
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-linux                        TARGETS lz4                         PACKAGE_HASH 5de3dbd3e2a3537c6555d759b3c5bb98e5456cf85c74ff6d046f809b7087290d)

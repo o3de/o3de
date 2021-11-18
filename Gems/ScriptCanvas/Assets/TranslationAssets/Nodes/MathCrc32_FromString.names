@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromString",
+                "name": "From String",
                 "category": "Math/Crc32",
-                "tooltip": "returns a Crc32 from the string",
-                "subtitle": "Crc32"
+                "tooltip": "Returns a Crc32 from the string"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_String: Value",
+                    "key": "DataInput_Value",
                     "details": {
-                        "name": "String: Value"
+                        "name": "Text"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: CRC",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: CRC"
+                        "name": "Result"
                     }
                 }
             ]

@@ -525,6 +525,7 @@ namespace ScriptCanvas
 
         void SignalDeserialized();
 
+        virtual AZStd::string GetNodeTypeName() const;
         virtual AZStd::string GetDebugName() const;
         virtual AZStd::string GetNodeName() const;
 
@@ -1093,7 +1094,7 @@ protected:
             {
                 DataSlotConfiguration slotConfiguration;
 
-                slotConfiguration.m_name = AZStd::string::format("%s: %s", t_Traits::GetResultName(0), Data::GetName(Data::FromAZType<AZStd::decay_t<ResultType>>()).data());
+                slotConfiguration.m_name = t_Traits::GetResultName(0);
                 slotConfiguration.SetType(Data::FromAZType<AZStd::decay_t<ResultType>>());
                 slotConfiguration.SetConnectionType(ConnectionType::Output);
 
@@ -1115,7 +1116,7 @@ protected:
             {
                 DataSlotConfiguration slotConfiguration;
 
-                slotConfiguration.m_name = AZStd::string::format("%s: %s", t_Traits::GetResultName(Index), Data::GetName(Data::FromAZType<AZStd::decay_t<AZStd::tuple_element_t<Index, ResultType>>>()).data());
+                slotConfiguration.m_name = t_Traits::GetResultName(Index);
                 slotConfiguration.SetType(Data::FromAZType<AZStd::decay_t<AZStd::tuple_element_t<Index, ResultType>>>());
 
                 slotConfiguration.SetConnectionType(connectionType);                

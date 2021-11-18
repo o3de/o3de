@@ -36,7 +36,7 @@ namespace AZ
     class DataNode
     {
     public:
-        typedef AZStd::list<DataNode>   ChildDataNodes;
+        using ChildDataNodes = AZStd::list<DataNode>;
 
         DataNode()
         {
@@ -148,25 +148,28 @@ namespace AZ
         m_root.Reset();
         m_currentNode = nullptr;
 
-        if (m_context && rootClassPtr)
+        if (!m_context || !rootClassPtr)
         {
-            SerializeContext::EnumerateInstanceCallContext callContext(
-                AZStd::bind(&DataNodeTree::BeginNode, this, AZStd::placeholders::_1, AZStd::placeholders::_2, AZStd::placeholders::_3),
-                AZStd::bind(&DataNodeTree::EndNode, this),
-                m_context,
-                SerializeContext::ENUM_ACCESS_FOR_READ,
-                nullptr
-            );
-
-            m_context->EnumerateInstanceConst(
-                &callContext,
-                rootClassPtr,
-                rootClassId,
-                nullptr,
-                nullptr
-            );
+            return;
         }
+        SerializeContext::EnumerateInstanceCallContext callContext(
+            [this](void* instancePointer, const SerializeContext::ClassData* classData, const SerializeContext::ClassElement* classElement)->bool
+            {
+                return BeginNode(instancePointer, classData, classElement);
+            },
+            [this]()->bool { return EndNode(); },
+            m_context,
+            SerializeContext::ENUM_ACCESS_FOR_READ,
+            nullptr
+        );
 
+        m_context->EnumerateInstanceConst(
+            &callContext,
+            rootClassPtr,
+            rootClassId,
+            nullptr,
+            nullptr
+        );
         m_currentNode = nullptr;
     }
 

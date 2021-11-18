@@ -20,44 +20,42 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/containers/array.h>
 
-using namespace AZ;
-
 #if !defined(RELEASE) && !defined(AZCORE_MEMORY_ENABLE_OVERRIDES)
 #   define AZCORE_MEMORY_ENABLE_OVERRIDES
 #endif
 
-namespace AZ
+namespace AZ::Internal
 {
-    namespace Internal
+    struct AMStringHasher
     {
-        struct AMStringHasher
+        using is_transparent = void;
+        template<typename ConvertibleToStringView>
+        size_t operator()(const ConvertibleToStringView& key)
         {
-            using is_transparent = void;
-            template<typename ConvertibleToStringView>
-            size_t operator()(const ConvertibleToStringView& key)
-            {
-                return AZStd::hash<AZStd::string_view>{}(key);
-            }
-        };
-        using AMString = AZStd::basic_string<char, AZStd::char_traits<char>, AZStdIAllocator>;
-        using AllocatorNameMap = AZStd::unordered_map<AMString, IAllocator*, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator>;
-        using AllocatorRemappings = AZStd::unordered_map<AMString, AMString, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator>;
+            return AZStd::hash<AZStd::string_view>{}(key);
+        }
+    };
+    using AMString = AZStd::basic_string<char, AZStd::char_traits<char>, AZStdIAllocator>;
+    using AllocatorNameMap = AZStd::unordered_map<AMString, IAllocator*, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator>;
+    using AllocatorRemappings = AZStd::unordered_map<AMString, AMString, AMStringHasher, AZStd::equal_to<>, AZStdIAllocator>;
 
-        // For allocators that are created before we have an environment, we keep some module-local data for them so that we can register them 
-        // properly once the environment is attached.
-        struct PreEnvironmentAttachData
-        {
-            static const int MAX_UNREGISTERED_ALLOCATORS = 8;
-            AZStd::mutex m_mutex;
-            MallocSchema m_mallocSchema;
-            IAllocator* m_unregisteredAllocators[MAX_UNREGISTERED_ALLOCATORS];
-            int m_unregisteredAllocatorCount = 0;
-        };
+    // For allocators that are created before we have an environment, we keep some module-local data for them so that we can register them
+    // properly once the environment is attached.
+    struct PreEnvironmentAttachData
+    {
+        static const int MAX_UNREGISTERED_ALLOCATORS = 8;
+        AZStd::mutex m_mutex;
+        MallocSchema m_mallocSchema;
+        IAllocator* m_unregisteredAllocators[MAX_UNREGISTERED_ALLOCATORS];
+        int m_unregisteredAllocatorCount = 0;
+    };
 
-    }
 }
 
-struct AZ::AllocatorManager::InternalData
+namespace AZ
+{
+
+struct AllocatorManager::InternalData
 {
     explicit InternalData(const AZStdIAllocator& alloc)
         : m_allocatorMap(alloc)
@@ -69,13 +67,13 @@ struct AZ::AllocatorManager::InternalData
     Internal::AllocatorRemappings m_remappingsReverse;
 };
 
-static AZ::EnvironmentVariable<AllocatorManager> s_allocManager = nullptr;
+static EnvironmentVariable<AllocatorManager> s_allocManager = nullptr;
 static AllocatorManager* s_allocManagerDebug = nullptr;  // For easier viewing in crash dumps
 
 /// Returns a module-local instance of data to use for allocators that are created before the environment is attached.
-static AZ::Internal::PreEnvironmentAttachData& GetPreEnvironmentAttachData()
+static Internal::PreEnvironmentAttachData& GetPreEnvironmentAttachData()
 {
-    static AZ::Internal::PreEnvironmentAttachData s_data;
+    static Internal::PreEnvironmentAttachData s_data;
 
     return s_data;
 }
@@ -131,7 +129,7 @@ AllocatorManager& AllocatorManager::Instance()
     if (!s_allocManager)
     {
         AZ_Assert(Environment::IsReady(), "Environment must be ready before calling Instance()");
-        s_allocManager = AZ::Environment::CreateVariable<AllocatorManager>(AZ_CRC("AZ::AllocatorManager::s_allocManager", 0x6bdd908c));
+        s_allocManager = Environment::CreateVariable<AllocatorManager>(AZ_CRC_CE("AZ::AllocatorManager::s_allocManager"));
 
         // Register any allocators that were created in this module before we attached to the environment
         auto& data = GetPreEnvironmentAttachData();
@@ -156,9 +154,9 @@ AllocatorManager& AllocatorManager::Instance()
 
 //////////////////////////////////////////////////////////////////////////
 // Create malloc schema using custom AZ_OS_MALLOC allocator.
-AZ::MallocSchema* AllocatorManager::CreateMallocSchema()
+MallocSchema* AllocatorManager::CreateMallocSchema()
 {
-    return static_cast<AZ::MallocSchema*>(new(AZ_OS_MALLOC(sizeof(AZ::MallocSchema), alignof(AZ::MallocSchema))) AZ::MallocSchema());
+    return static_cast<MallocSchema*>(new(AZ_OS_MALLOC(sizeof(MallocSchema), alignof(MallocSchema))) MallocSchema());
 }
 
 
@@ -168,7 +166,7 @@ AZ::MallocSchema* AllocatorManager::CreateMallocSchema()
 //=========================================================================
 AllocatorManager::AllocatorManager()
     : m_profilingRefcount(0)
-    , m_mallocSchema(CreateMallocSchema(), [](AZ::MallocSchema* schema)
+    , m_mallocSchema(CreateMallocSchema(), [](MallocSchema* schema)
     {
         if (schema)
         {
@@ -182,7 +180,7 @@ AllocatorManager::AllocatorManager()
     m_numAllocators = 0;
     m_isAllocatorLeaking = false;
     m_configurationFinalized = false;
-    m_defaultTrackingRecordMode = AZ::Debug::AllocationRecords::RECORD_NO_RECORDS;
+    m_defaultTrackingRecordMode = Debug::AllocationRecords::RECORD_NO_RECORDS;
     m_data = new (m_mallocSchema->Allocate(sizeof(InternalData), AZStd::alignment_of<InternalData>::value, 0)) InternalData(AZStdIAllocator(m_mallocSchema.get()));
 }
 
@@ -411,12 +409,12 @@ AllocatorManager::RemoveOutOfMemoryListener()
 // [9/16/2011]
 //=========================================================================
 void
-AllocatorManager::SetTrackingMode(AZ::Debug::AllocationRecords::Mode mode)
+AllocatorManager::SetTrackingMode(Debug::AllocationRecords::Mode mode)
 {
     AZStd::lock_guard<AZStd::mutex> lock(m_allocatorListMutex);
     for (int i = 0; i < m_numAllocators; ++i)
     {
-        AZ::Debug::AllocationRecords* records = m_allocators[i]->GetRecords();
+        Debug::AllocationRecords* records = m_allocators[i]->GetRecords();
         if (records)
         {
             records->SetMode(mode);
@@ -595,31 +593,31 @@ void AllocatorManager::GetAllocatorStats(size_t& allocatedBytes, size_t& capacit
 
     AZStd::lock_guard<AZStd::mutex> lock(m_allocatorListMutex);
     const int allocatorCount = GetNumAllocators();
-    AZStd::unordered_map<AZ::IAllocatorAllocate*, AZ::IAllocator*> existingAllocators;
-    AZStd::unordered_map<AZ::IAllocatorAllocate*, AZ::IAllocator*> sourcesToAllocators;
+    AZStd::unordered_map<IAllocatorAllocate*, IAllocator*> existingAllocators;
+    AZStd::unordered_map<IAllocatorAllocate*, IAllocator*> sourcesToAllocators;
 
     // Build a mapping of original allocator sources to their allocators
     for (int i = 0; i < allocatorCount; ++i)
     {
-        AZ::IAllocator* allocator = GetAllocator(i);
+        IAllocator* allocator = GetAllocator(i);
         sourcesToAllocators.emplace(allocator->GetOriginalAllocationSource(), allocator);
     }
 
     for (int i = 0; i < allocatorCount; ++i)
     {
-        AZ::IAllocator* allocator = GetAllocator(i);
-        AZ::IAllocatorAllocate* source = allocator->GetAllocationSource();
-        AZ::IAllocatorAllocate* originalSource = allocator->GetOriginalAllocationSource();
-        AZ::IAllocatorAllocate* schema = allocator->GetSchema();
-        AZ::IAllocator* alias = (source != originalSource) ? sourcesToAllocators[source] : nullptr;
+        IAllocator* allocator = GetAllocator(i);
+        IAllocatorAllocate* source = allocator->GetAllocationSource();
+        IAllocatorAllocate* originalSource = allocator->GetOriginalAllocationSource();
+        IAllocatorAllocate* schema = allocator->GetSchema();
+        IAllocator* alias = (source != originalSource) ? sourcesToAllocators[source] : nullptr;
 
         if (schema && !alias)
         {
             // Check to see if this allocator's source maps to another allocator
             // Need to check both the schema and the allocator itself, as either one might be used as the alias depending on how it's implemented
-            AZStd::array<AZ::IAllocatorAllocate*, 2> checkAllocators = { { schema, allocator->GetAllocationSource() } };
+            AZStd::array<IAllocatorAllocate*, 2> checkAllocators = { { schema, allocator->GetAllocationSource() } };
 
-            for (AZ::IAllocatorAllocate* check : checkAllocators)
+            for (IAllocatorAllocate* check : checkAllocators)
             {
                 auto existing = existingAllocators.emplace(check, allocator);
 
@@ -631,7 +629,7 @@ void AllocatorManager::GetAllocatorStats(size_t& allocatedBytes, size_t& capacit
             }
         }
 
-        static const AZ::IAllocator* OS_ALLOCATOR = &AZ::AllocatorInstance<AZ::OSAllocator>::GetAllocator();
+        static const IAllocator* OS_ALLOCATOR = &AllocatorInstance<OSAllocator>::GetAllocator();
         size_t sourceAllocatedBytes = source->NumAllocatedBytes();
         size_t sourceCapacityBytes = source->Capacity();
 
@@ -742,3 +740,5 @@ AllocatorManager::DebugBreak(void* address, const Debug::AllocationInfo& info)
         }
     }
 }
+
+} // namespace AZ

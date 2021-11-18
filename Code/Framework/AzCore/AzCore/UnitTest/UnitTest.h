@@ -60,6 +60,7 @@ namespace UnitTest
             m_isAssertTest = true;
             m_numAssertsFailed = 0;
         }
+
         int  StopAssertTests()
         {
             m_isAssertTest = false;
@@ -69,6 +70,11 @@ namespace UnitTest
         }
 
         bool m_isAssertTest;
+        bool m_suppressErrors = true;
+        bool m_suppressWarnings = true;
+        bool m_suppressAsserts = true;
+        bool m_suppressOutput = true;
+        bool m_suppressPrintf = true;
         int  m_numAssertsFailed;
     };
 
@@ -114,7 +120,7 @@ namespace UnitTest
 
     // utility classes that you can derive from or contain, which suppress AZ_Asserts
     // and AZ_Errors to the below macros (processAssert, etc)
-    // If TraceBusHook or TraceBusRedirector have been started in your unit tests, 
+    // If TraceBusHook or TraceBusRedirector have been started in your unit tests,
     //  use AZ_TEST_START_TRACE_SUPPRESSION and AZ_TEST_STOP_TRACE_SUPPRESSION(numExpectedAsserts) macros to perform AZ_Assert and AZ_Error suppression
     class TraceBusRedirector
         : public AZ::Debug::TraceMessageBus::Handler
@@ -124,16 +130,19 @@ namespace UnitTest
             if (UnitTest::TestRunner::Instance().m_isAssertTest)
             {
                 UnitTest::TestRunner::Instance().ProcessAssert(message, file, line, false);
+                return true;
             }
-            else
+            else if (UnitTest::TestRunner::Instance().m_suppressAsserts)
             {
                 GTEST_MESSAGE_AT_(file, line, message, ::testing::TestPartResult::kNonFatalFailure);
+                return true;
             }
-            return true;
+
+            return false;
         }
         bool OnAssert(const char* /*message*/) override
         {
-            return true; // stop processing
+            return UnitTest::TestRunner::Instance().m_suppressAsserts; // stop processing
         }
         bool OnPreError(const char* /*window*/, const char* file, int line, const char* /*func*/, const char* message) override
         {
@@ -142,6 +151,7 @@ namespace UnitTest
                 UnitTest::TestRunner::Instance().ProcessAssert(message, file, line, false);
                 return true;
             }
+
             return false;
         }
         bool OnError(const char* /*window*/, const char* message) override
@@ -149,12 +159,15 @@ namespace UnitTest
             if (UnitTest::TestRunner::Instance().m_isAssertTest)
             {
                 UnitTest::TestRunner::Instance().ProcessAssert(message, __FILE__, __LINE__, UnitTest::AssertionExpr(false));
+                return true;
             }
-            else
+            else if (UnitTest::TestRunner::Instance().m_suppressErrors)
             {
                 GTEST_MESSAGE_(message, ::testing::TestPartResult::kNonFatalFailure);
+                return true;
             }
-            return true; // stop processing
+
+            return false;
         }
         bool OnPreWarning(const char* /*window*/, const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/) override
         {
@@ -163,21 +176,21 @@ namespace UnitTest
         }
         bool OnWarning(const char* /*window*/, const char* /*message*/) override
         {
-            return true;
+            return UnitTest::TestRunner::Instance().m_suppressWarnings;
         }
 
         bool OnOutput(const char* /*window*/, const char* /*message*/) override
         {
-            return true;
+            return UnitTest::TestRunner::Instance().m_suppressOutput;
         }
 
         bool OnPrintf(const char* window, const char* message) override
         {
             if (AZStd::string_view(window) == "Memory") // We want to print out the memory leak's stack traces
             {
-                ColoredPrintf(COLOR_RED, "[  MEMORY  ] %s", message); 
+                ColoredPrintf(COLOR_RED, "[  MEMORY  ] %s", message);
             }
-            return true; 
+            return UnitTest::TestRunner::Instance().m_suppressPrintf;
         }
     };
 
@@ -259,7 +272,6 @@ namespace UnitTest
         bool m_environmentSetup = false;
         bool m_createdAllocator = false;
     };
-
 }
 
 

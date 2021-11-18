@@ -92,7 +92,7 @@ namespace AZ
         /////////////////////////////////////////////////////////////////////
         // Methods for all shader variant types
 
-        void ShaderVariantAssetCreator::SetBuildTimestamp(AZStd::sys_time_t buildTimestamp)
+        void ShaderVariantAssetCreator::SetBuildTimestamp(AZ::u64 buildTimestamp)
         {
             if (ValidateIsReady())
             {

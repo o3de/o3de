@@ -121,6 +121,18 @@ namespace
             SortEntityChildrenRecursively(childId, comparer);
         }
     }
+
+    QModelIndex nextIndexForTree(bool direction, OutlinerTreeView *tree, QModelIndex current)
+    {
+        if (direction)
+        {
+            return tree->indexAbove(current);
+        }
+        else
+        {
+            return tree->indexBelow(current);
+        }
+    }
 }
 
 OutlinerWidget::OutlinerWidget(QWidget* pParent, Qt::WindowFlags flags)
@@ -891,9 +903,7 @@ void OutlinerWidget::DoSelectSliceRootNextToSelection(bool isTraversalUpwards)
         return;
     }
 
-    AZStd::function<QModelIndex(QModelIndex)> getNextIdxFunction =
-        AZStd::bind(isTraversalUpwards ? &QTreeView::indexAbove : &QTreeView::indexBelow, treeView, AZStd::placeholders::_1);
-    QModelIndex nextIdx = getNextIdxFunction(currentIdx);
+    QModelIndex nextIdx = nextIndexForTree(isTraversalUpwards,treeView,currentIdx);
     bool foundSliceRoot = false;
 
     while (nextIdx.isValid() && !foundSliceRoot)
@@ -904,7 +914,7 @@ void OutlinerWidget::DoSelectSliceRootNextToSelection(bool isTraversalUpwards)
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
             foundSliceRoot, &AzToolsFramework::ToolsApplicationRequests::IsSliceRootEntity, currentEntityId);
 
-        nextIdx = getNextIdxFunction(currentIdx);
+        nextIdx = nextIndexForTree(isTraversalUpwards, treeView, currentIdx);
     }
 
     if (foundSliceRoot)
@@ -934,13 +944,10 @@ void OutlinerWidget::DoSelectEdgeSliceRoot(bool shouldSelectTopMostSlice)
     }
 
     QModelIndex currentIdx;
-    AZStd::function<QModelIndex(QModelIndex)> getNextIdxFunction;
+
     if (shouldSelectTopMostSlice)
     {
         currentIdx = itemModel->index(0, OutlinerListModel::ColumnName);
-
-        getNextIdxFunction =
-            AZStd::bind(&QTreeView::indexBelow, treeView, AZStd::placeholders::_1);
     }
     else
     {
@@ -949,9 +956,6 @@ void OutlinerWidget::DoSelectEdgeSliceRoot(bool shouldSelectTopMostSlice)
         {
             currentIdx = itemModel->index(itemModel->rowCount(currentIdx) - 1, OutlinerListModel::ColumnName, currentIdx);
         }
-
-        getNextIdxFunction =
-            AZStd::bind(&QTreeView::indexAbove, treeView, AZStd::placeholders::_1);
     }
 
     QModelIndex nextIdx = currentIdx;
@@ -964,7 +968,7 @@ void OutlinerWidget::DoSelectEdgeSliceRoot(bool shouldSelectTopMostSlice)
 
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
             foundSliceRoot, &AzToolsFramework::ToolsApplicationRequests::IsSliceRootEntity, currentEntityId);
-        nextIdx = getNextIdxFunction(currentIdx);
+        nextIdx = nextIndexForTree(shouldSelectTopMostSlice,treeView,currentIdx);
     } while (nextIdx.isValid() && !foundSliceRoot);
 
     if (foundSliceRoot)
@@ -1416,7 +1420,10 @@ void OutlinerWidget::SortContent()
     }
     m_entitiesToSort.clear();
 
-    auto comparer = AZStd::bind(&CompareEntitiesForSorting, AZStd::placeholders::_1, AZStd::placeholders::_2, m_sortMode);
+    auto comparer = [sortMode = m_sortMode](AZ::EntityId left, AZ::EntityId right) -> bool
+    {
+        return CompareEntitiesForSorting(left, right, sortMode);
+    };
     for (const AZ::EntityId& entityId : parentsToSort)
     {
         SortEntityChildren(entityId, comparer);
@@ -1433,7 +1440,10 @@ void OutlinerWidget::OnSortModeChanged(EntityOutliner::DisplaySortMode sortMode)
     if (sortMode != EntityOutliner::DisplaySortMode::Manually)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
-        auto comparer = AZStd::bind(&CompareEntitiesForSorting, AZStd::placeholders::_1, AZStd::placeholders::_2, sortMode);
+        auto comparer = [sortMode = m_sortMode](AZ::EntityId left, AZ::EntityId right) -> bool
+        {
+            return CompareEntitiesForSorting(left, right, sortMode);
+        };
         SortEntityChildrenRecursively(AZ::EntityId(), comparer);
     }
 
