@@ -97,7 +97,7 @@ namespace AZ
             // ResourcePool Overrides
 
             //! Called when the pool is shutting down.
-            void ShutdownInternal() override;
+            virtual void ShutdownInternal() override;
 
             //////////////////////////////////////////////////////////////////////////
 

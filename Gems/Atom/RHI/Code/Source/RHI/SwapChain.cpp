@@ -44,6 +44,8 @@ namespace AZ
                 return ResultCode::InvalidArgument;
             }
 
+            m_descriptor = descriptor;
+
             SwapChainDimensions nativeDimensions = descriptor.m_dimensions;
             ResultCode resultCode = ResourcePool::Init(
                 device, descriptor,
@@ -54,7 +56,6 @@ namespace AZ
 
             if (resultCode == ResultCode::Success)
             {
-                m_descriptor = descriptor;
                 // Overwrite descriptor dimensions with the native ones (the ones assigned by the platform) returned by InitInternal.
                 m_descriptor.m_dimensions = nativeDimensions;
 

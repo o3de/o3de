@@ -52,6 +52,7 @@ namespace AZ
             void QueueBarrier(const VkPipelineStageFlags src, const VkPipelineStageFlags dst, const VkImageMemoryBarrier& imageBarrier);
 
             void ProcessRecreation() override;
+
         private:
             SwapChain() = default;
 

@@ -88,7 +88,7 @@ namespace AZ
             instanceCreateInfo.pApplicationInfo = &appInfo;
 
             StringList instanceLayerNames = GetInstanceLayerNames();
-            if (GetValidationMode() != RHI::ValidationMode::Disabled)
+            //if (GetValidationMode() != RHI::ValidationMode::Disabled)
             {
                 RawStringList validationLayers = Debug::GetValidationLayers();
                 m_descriptor.m_optionalLayers.insert(m_descriptor.m_requiredLayers.end(), validationLayers.begin(), validationLayers.end());

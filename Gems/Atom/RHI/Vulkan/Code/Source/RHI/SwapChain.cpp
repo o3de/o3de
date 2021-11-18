@@ -63,6 +63,8 @@ namespace AZ
         {
             if (m_pendingRecreation)
             {
+                vkDeviceWaitIdle(static_cast<Device&>(GetDevice()).GetNativeDevice());
+
                 ShutdownImages();
                 InvalidateNativeSwapChain();
                 CreateSwapchain();
@@ -120,6 +122,8 @@ namespace AZ
 
         void SwapChain::ShutdownInternal()
         {
+            m_pendingRecreation = false;
+
             InvalidateNativeSwapChain();
             InvalidateSurface();
 
@@ -127,6 +131,8 @@ namespace AZ
 
             m_swapchainNativeImages.clear();
             m_currentFrameContext = {};
+
+            ResourcePool::ShutdownInternal();
         }
 
         RHI::ResultCode SwapChain::InitImageInternal(const RHI::SwapChain::InitImageRequest& request)
