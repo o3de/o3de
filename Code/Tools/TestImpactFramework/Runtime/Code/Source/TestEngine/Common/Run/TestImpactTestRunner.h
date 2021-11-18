@@ -13,12 +13,12 @@
 
 namespace TestImpact
 {
-    template<typename AdditionalInfo>
+    template<typename JobData>
     class TestRunner
-        : public TestRunnerBase<AdditionalInfo, TestRun>
+        : public TestRunnerBase<JobData, TestRun>
     {
     public:
-        using TestRunnerBase = TestRunnerBase<AdditionalInfo, TestRun>;
+        using TestRunnerBase = TestRunnerBase<JobData, TestRun>;
         using TestRunnerBase::TestRunnerBase;
     };
 

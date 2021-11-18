@@ -50,6 +50,7 @@ namespace TestImpact
         using JobDataMap = typename JobRunner::JobDataMap;
         using JobCallback = typename JobRunner::JobCallback;
         using StdContentCallback = typename JobRunner::StdContentCallback;
+        using JobPayloadOutcome = PayloadOutcome<JobPayload>;
 
         //! Constructs the job runner with the specified parameters common to all job runs of this runner.
         //! @param maxConcurrentJobs The maximum number of jobs to be in flight at any given time.

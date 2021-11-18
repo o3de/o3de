@@ -627,6 +627,6 @@ namespace UnitTest
 
         AZ_Printf("Here\n", rawRun.c_str());
 
-        const AZStd::vector<TestImpact::TestRunSuite> suites = TestImpact::PyTest::TestRunSuitesFactory(rawRun);
+        const AZStd::vector<TestImpact::TestRunSuite> suites = TestImpact::JUnit::TestRunSuitesFactory(rawRun);
     }
 } // namespace UnitTest

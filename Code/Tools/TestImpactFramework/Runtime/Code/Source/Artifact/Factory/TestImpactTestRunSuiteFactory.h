@@ -20,7 +20,7 @@ namespace TestImpact
         AZStd::vector<TestRunSuite> TestRunSuitesFactory(const AZStd::string& testRunData);
     } // namespace GTest
 
-    namespace PyTest
+    namespace JUnit
     {
         //! Constructs a list of test run suite artifacts from the specified test run data.
         //! @param testRunData The raw test run data in JUnit XML format.

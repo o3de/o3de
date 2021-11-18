@@ -60,7 +60,7 @@ namespace UnitTest
             for (const auto& cmd : cmds)
             {
                 id++;
-                jobInfos.push_back(JobInfo({ id }, {cmd}, JobData("")));
+                jobInfos.push_back(JobInfo({ id }, { cmd }, JobData("e:/DynamicVegetationTests_Main.xml", "E:/o3de_TIF_Feature/build/windows_vs2019/bin/TestImpactFramework/debug/Temp/RuntimeArtifact")));
             }
 
            //jobInfos.push_back(JobInfo(

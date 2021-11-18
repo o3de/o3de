@@ -137,7 +137,7 @@ namespace TestImpact
         }
     } // namespace GTest
 
-    namespace PyTest
+    namespace JUnit
     {
         AZStd::vector<TestRunSuite> TestRunSuitesFactory(const AZStd::string& testRunData)
         {

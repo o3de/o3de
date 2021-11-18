@@ -14,27 +14,22 @@
 #include <TestEngine/TestImpactTestEngineException.h>
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
 #include <TestEngine/Common/Run/TestImpactTestRunnerWithCoverage.h>
+#include <TestEngine/Common/Run/TestImpactTestCoverage.h>
 #include <TestEngine/Common/Job/TestImpactTestRunWithCoverageJobData.h>
 #include <TestEngine/Native/Job/TestImpactNativeTestRunJobData.h>
 
 namespace TestImpact
 {
-    class NativeInstrumentedTestRunJobData
-        : public NativeTestRunJobData<TestRunWithCoverageJobData>
-    {
-        using NativeTestRunJobData<TestRunWithCoverageJobData>::NativeTestRunJobData;
-    };
-
     class NativeInstrumentedTestRunner
-        : public TestRunnerWithCoverage<NativeInstrumentedTestRunJobData>
+        : public TestRunnerWithCoverage<NativeTestRunJobData<TestRunWithCoverageJobData>, TestCoverage>
     {
     public:
-        using TestImpact::TestRunnerWithCoverage<NativeInstrumentedTestRunJobData>::TestRunnerWithCoverage;
+        using TestImpact::TestRunnerWithCoverage<NativeTestRunJobData<TestRunWithCoverageJobData>, TestCoverage>::TestRunnerWithCoverage;
     };
 
     template<>
-    inline PayloadOutcome<AZStd::pair<AZStd::optional<TestRun>, TestCoverage>> PayloadFactory(
-        const JobInfo<NativeInstrumentedTestRunJobData>& jobData, const JobMeta& jobMeta)
+    inline NativeInstrumentedTestRunner::JobPayloadOutcome PayloadFactory(
+        const NativeInstrumentedTestRunner::JobInfo& jobData, const JobMeta& jobMeta)
     {
         AZStd::optional<TestRun> run;
         try
@@ -46,14 +41,14 @@ namespace TestImpact
         catch (const Exception& e)
         {
             // No run result is not necessarily a failure (e.g. test targets not using gtest)
-            AZ_Printf("RunInstrumentedTests", AZStd::string::format("%s\n.", e.what()).c_str());
+            AZ_Printf("NativeInstrumentedTestRunJobData", AZStd::string::format("%s\n.", e.what()).c_str());
         }
 
         try
         {
             AZStd::vector<ModuleCoverage> moduleCoverages = Cobertura::ModuleCoveragesFactory(
                 ReadFileContents<TestEngineException>(jobData.GetCoverageArtifactPath()));
-            return AZ::Success(AZStd::pair<AZStd::optional<TestRun>, TestCoverage>{ run, TestCoverage(AZStd::move(moduleCoverages)) });
+            return AZ::Success(NativeInstrumentedTestRunner::JobPayload{ run, TestCoverage(AZStd::move(moduleCoverages)) });
         }
         catch (const Exception& e)
         {

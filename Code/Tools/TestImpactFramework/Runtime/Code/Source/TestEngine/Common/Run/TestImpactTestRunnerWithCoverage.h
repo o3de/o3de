@@ -8,19 +8,18 @@
 
 #pragma once
 
-#include <TestEngine/Common/Run/TestImpactTestCoverage.h>
 #include <TestEngine/Common/Run/TestImpactTestRun.h>
 #include <TestEngine/Common/Run/TestImpactTestRunnerBase.h>
 
 namespace TestImpact
 {
-    template<typename AdditionalInfo>
+    template<typename JobData, typename CoverageArtifact>
     class TestRunnerWithCoverage
-        : public TestRunnerBase<AdditionalInfo, AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>
+        : public TestRunnerBase<JobData, AZStd::pair<AZStd::optional<TestRun>, CoverageArtifact>>
     {
     public:
-        using TestRunner =  TestRunnerBase<AdditionalInfo, AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>;
-        using TestRunner::TestRunnerBase;
+        using TestRunnerBase =  TestRunnerBase<JobData, AZStd::pair<AZStd::optional<TestRun>, CoverageArtifact>>;
+        using TestRunnerBase::TestRunnerBase;
     };
 
 } // namespace TestImpact

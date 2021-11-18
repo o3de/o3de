@@ -18,25 +18,19 @@
 
 namespace TestImpact
 {
-    class NativeRegularTestRunJobData
-        : public NativeTestRunJobData<TestRunJobData>
-    {
-        using NativeTestRunJobData<TestRunJobData>::NativeTestRunJobData;
-    };
-
     class NativeRegularTestRunner
-        : public TestRunner<NativeRegularTestRunJobData>
+        : public TestRunner<NativeTestRunJobData<TestRunJobData>>
     {
     public:
-        using TestRunner<NativeRegularTestRunJobData>::TestRunner;
+        using TestRunner<NativeTestRunJobData<TestRunJobData>>::TestRunner;
     };
 
     template<>
-    inline PayloadOutcome<TestRun> PayloadFactory(const JobInfo<NativeRegularTestRunJobData>& jobData, const JobMeta& jobMeta)
+    inline NativeRegularTestRunner::JobPayloadOutcome PayloadFactory(const NativeRegularTestRunner::JobInfo& jobData, const JobMeta& jobMeta)
     {
         try
         {
-            return AZ::Success(TestRun(
+            return AZ::Success(NativeRegularTestRunner::JobPayload(
                 GTest::TestRunSuitesFactory(ReadFileContents<TestEngineException>(jobData.GetRunArtifactPath())),
                 jobMeta.m_duration.value()));
         }

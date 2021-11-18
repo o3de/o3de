@@ -11,35 +11,51 @@
 #include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
-#include <TestEngine/Common/Job/TestImpactTestRunJobData.h>
-#include <TestEngine/Common/Run/TestImpactTestRunner.h>
+#include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
+#include <TestEngine/Common/Job/TestImpactTestRunWithCoverageJobData.h>
+#include <TestEngine/Common/Run/TestImpactTestCoverage.h>
+#include <TestEngine/Common/Run/TestImpactTestRunnerWithCoverage.h>
 #include <TestEngine/TestImpactTestEngineException.h>
 
 namespace TestImpact
 {
-    class PythonTestRunJobData
-        : public TestRunJobData
-    {
-        using TestRunJobData::TestRunJobData;
-    };
-
     class PythonTestRunner
-        : public TestRunner<PythonTestRunJobData>
+        : public TestRunnerWithCoverage<TestRunWithCoverageJobData, TestCaseCoverage>
     {
     public:
+        using TestRunnerWithCoverage = TestRunnerWithCoverage<TestRunWithCoverageJobData, TestCaseCoverage>;
         PythonTestRunner();
     };
 
     template<>
-    inline PayloadOutcome<TestRun> PayloadFactory(
-        [[maybe_unused]] const JobInfo<PythonTestRunJobData>& jobData, [[maybe_unused]] const JobMeta& jobMeta)
+    inline PythonTestRunner::JobPayloadOutcome PayloadFactory(
+        const PythonTestRunner::JobInfo& jobData, const JobMeta& jobMeta)
     {
+        AZStd::optional<TestRun> run;
         try
         {
-            return AZ::Failure(AZStd::string("TODO"));
-        } catch (const Exception& e)
+            run = TestRun(
+                JUnit::TestRunSuitesFactory(ReadFileContents<TestEngineException>(jobData.GetRunArtifactPath())),
+                jobMeta.m_duration.value());
+
+            // Python tests have a separate coverage file per test case so we will attempt to parse each enumerated test case coverage
+            TestCaseCoverage coverage;
+            for (const auto& testSuite : run->GetTestSuites())
+            {
+                for (const auto& testCase : testSuite.m_tests)
+                {
+                    const RepoPath covergeFile = jobData.GetCoverageArtifactPath() / RepoPath(AZStd::string::format("%s.pycoverage", testCase.m_name.c_str()));
+                    coverage.emplace(
+                        testCase.m_name,
+                        TestCoverage(PythonCoverage::ModuleCoveragesFactory(ReadFileContents<TestEngineException>(covergeFile))));
+                }
+            }
+
+            return AZ::Success(PythonTestRunner::JobPayload{ run, AZStd::move(coverage) });
+        }
+        catch (const Exception& e)
         {
-            return AZ::Failure(AZStd::string::format("%s\n", e.what()));
+            return AZ::Failure(AZStd::string(e.what()));
         }
     };
 } // namespace TestImpact

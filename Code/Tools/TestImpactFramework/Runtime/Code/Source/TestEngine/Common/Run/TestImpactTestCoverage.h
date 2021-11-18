@@ -10,18 +10,20 @@
 
 #include <Artifact/Dynamic/TestImpactCoverage.h>
 
-#include <AzCore/std/containers/set.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/unordered_map.h>
 
 namespace TestImpact
 {
     //! Scope of coverage data.
-    enum class CoverageLevel : bool
+    enum class CoverageLevel : AZ::u8
     {
+        Module, //!< Module-level coverage data.
         Source, //!< Line-level coverage data.
         Line //!< Source-level coverage data.
     };
 
-    //! Representation of a given test target's test coverage results.
+    //! Representation of test coverage results.
     class TestCoverage
     {
     public:
@@ -55,4 +57,7 @@ namespace TestImpact
         AZStd::vector<RepoPath> m_sourcesCovered;
         AZStd::optional<CoverageLevel> m_coverageLevel;
     };
+
+    //! Representation of per test case coverage results.
+    using TestCaseCoverage = AZStd::unordered_map<AZStd::string, TestCoverage>;
 } // namespace TestImpact

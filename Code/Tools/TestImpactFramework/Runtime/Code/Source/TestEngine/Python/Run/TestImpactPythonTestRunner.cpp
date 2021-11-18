@@ -13,7 +13,7 @@
 namespace TestImpact
 {
     PythonTestRunner::PythonTestRunner()
-        : TestRunner(1)
+        : TestRunnerWithCoverage(1)
     {
     }
 } // namespace TestImpact

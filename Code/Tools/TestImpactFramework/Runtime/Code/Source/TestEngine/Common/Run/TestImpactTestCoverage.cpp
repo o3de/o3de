@@ -65,7 +65,7 @@ namespace TestImpact
 
     void TestCoverage::CalculateTestMetrics()
     {
-        m_coverageLevel.reset();
+        m_coverageLevel = CoverageLevel::Module;
         m_sourcesCovered.clear();
 
         for (const auto& moduleCovered : m_modules)
