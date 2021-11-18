@@ -123,7 +123,6 @@
 #include "Util/XmlTemplate.h"
 
 // Utility classes.
-#include "Util/bitarray.h"
 #include "Util/RefCountBase.h"
 #include "Util/TRefCountBase.h"
 #include "Util/MemoryBlock.h"

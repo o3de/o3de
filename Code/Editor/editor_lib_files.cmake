@@ -660,7 +660,6 @@ set(FILES
     Util/XmlArchive.h
     Util/XmlTemplate.cpp
     Util/XmlTemplate.h
-    Util/bitarray.h
     Util/fastlib.h
     Util/smartptr.h
     WaitProgress.cpp
