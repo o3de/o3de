@@ -17,10 +17,18 @@ namespace Multiplayer
 {
     struct AuditTrailInput
     {
-        ClientInputId inputId;
-        HostFrameId hostFrameId;
-        AZStd::string name;
-        AZStd::vector<MultiplayerAuditingElement> children;
+        AuditTrailInput(ClientInputId inputId, HostFrameId hostFrameId, const AZStd::string name, const AZStd::vector<MultiplayerAuditingElement>&& children)
+            : m_inputId(inputId)
+            , m_hostFrameId(hostFrameId)
+            , m_name(name)
+            , m_children(children)
+        {
+        }
+
+        ClientInputId m_inputId;
+        HostFrameId m_hostFrameId;
+        AZStd::string m_name;
+        AZStd::vector<MultiplayerAuditingElement> m_children;
     };
 
     /**

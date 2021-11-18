@@ -212,7 +212,7 @@ namespace Multiplayer
                     if (!inputLogs.empty())
                     {
                         AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
-                            input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName().c_str(), inputLogs);
+                            input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName().c_str(), AZStd::move(inputLogs));
                     }
                     AZLOG(NET_Prediction, "Processed InputId=%u", aznumeric_cast<uint32_t>(input.GetClientInputId()));
                 }
@@ -343,8 +343,6 @@ namespace Multiplayer
         // If this correction is for a move outside our input history window, just start replaying from the oldest move we have available
         const uint32_t startReplayIndex = (inputHistorySize > historicalDelta) ? (inputHistorySize - historicalDelta) : 0;
 
-        const double clientInputRateSec = ConvertTimeMsToSeconds(cl_InputRateMs);
-
         if (cl_EnableDesyncDebugging)
         {
             NetworkInput& startReplayInput = m_inputHistory[startReplayIndex];
@@ -373,12 +371,6 @@ namespace Multiplayer
             }
 #endif
 		}
-
-        const uint32_t inputHistorySize = static_cast<uint32_t>(m_inputHistory.Size());
-        const uint32_t historicalDelta = aznumeric_cast<uint32_t>(m_clientInputId - inputId); // Do not replay the move we just corrected, that was already processed by the server
-
-        // If this correction is for a move outside our input history window, just start replaying from the oldest move we have available
-        const uint32_t startReplayIndex = (inputHistorySize > historicalDelta) ? (inputHistorySize - historicalDelta) : 0;
 
         const double clientInputRateSec = AZ::TimeMsToSecondsDouble(cl_InputRateMs);
         for (uint32_t replayIndex = startReplayIndex; replayIndex < inputHistorySize; ++replayIndex)
@@ -537,7 +529,7 @@ namespace Multiplayer
                 if (!inputLogs.empty())
                 {
                     AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
-                        input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName().c_str(), inputLogs);
+                        input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName().c_str(), AZStd::move(inputLogs));
                 }
 
             }

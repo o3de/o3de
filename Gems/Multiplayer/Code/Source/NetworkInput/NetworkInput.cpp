@@ -102,7 +102,7 @@ namespace Multiplayer
             MultiplayerAuditingElement log = m_componentInputs[i].get()->GetInputDeltaLog();
             if (!log.elements.empty())
             {
-                logs.push_back(log);
+                logs.push_back(AZStd::move(log));
             }
         }
 

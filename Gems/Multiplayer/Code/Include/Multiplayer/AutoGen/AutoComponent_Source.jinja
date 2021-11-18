@@ -1383,14 +1383,12 @@ namespace {{ Component.attrib['Namespace'] }}
 {% call(Input) AutoComponentMacros.ParseNetworkInputs(Component) %}
         if (m_{{ LowerFirst(Input.attrib['Name']) }} != {{ Input.attrib['Type'] }}({{ Input.attrib['Init'] }}))
         {
-            AZStd::pair<AZStd::string, AZStd::string> element;
-            element.first ="{{ LowerFirst(Input.attrib['Name']) }}";
+
 {% if Input.attrib['Init'] != '' %}
-            element.second = AZStd::to_string(m_{{ LowerFirst(Input.attrib['Name']) }});
+            output.elements.emplace_back("{{ LowerFirst(Input.attrib['Name']) }}", AZStd::to_string(m_{{ LowerFirst(Input.attrib['Name']) }}));
 {% else %}
-            element.second = "";
+            output.elements.emplace_back("{{ LowerFirst(Input.attrib['Name']) }}", "");
 {% endif %}
-            output.elements.push_back(element);
         }
 {% endcall %}
 

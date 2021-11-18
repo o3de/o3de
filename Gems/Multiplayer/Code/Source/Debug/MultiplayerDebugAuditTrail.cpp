@@ -56,15 +56,15 @@ namespace Multiplayer
             {
                 ImGui::TableNextRow();
                 ImGui::TableNextColumn();
-                if (ImGui::TreeNodeEx(elem->name.c_str(), treeFlags))
+                if (ImGui::TreeNodeEx(elem->m_name.c_str(), treeFlags))
                 {
                     ImGui::TableNextColumn();
                     ImGui::TableNextColumn();
-                    ImGui::Text("%d", elem->inputId);
+                    ImGui::Text("%d", elem->m_inputId);
                     ImGui::TableNextColumn();
-                    ImGui::Text("%d", elem->hostFrameId);
+                    ImGui::Text("%d", elem->m_hostFrameId);
 
-                    for (const auto& child : elem->children)
+                    for (const auto& child : elem->m_children)
                     {
                         ImGui::TableNextRow();
                         ImGui::TableNextColumn();

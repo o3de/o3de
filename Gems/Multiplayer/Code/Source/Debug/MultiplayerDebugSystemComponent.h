@@ -54,7 +54,7 @@ namespace Multiplayer
             ClientInputId inputId,
             HostFrameId frameId,
             AZStd::string name,
-            AZStd::vector<MultiplayerAuditingElement> entryDetails) override;
+            AZStd::vector<MultiplayerAuditingElement>&& entryDetails) override;
         void CommitAuditTrail() override;
         //! @}
 

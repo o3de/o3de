@@ -30,7 +30,7 @@ namespace Multiplayer
             ClientInputId inputId,
             HostFrameId frameId,
             AZStd::string name,
-            AZStd::vector<MultiplayerAuditingElement> entryDetails) = 0;
+            AZStd::vector<MultiplayerAuditingElement>&& entryDetails) = 0;
 
 		//! Commits current audit trail data for display 
         virtual void CommitAuditTrail() = 0;

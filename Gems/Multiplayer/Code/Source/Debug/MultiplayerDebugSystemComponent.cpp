@@ -74,19 +74,14 @@ namespace Multiplayer
             ClientInputId inputId,
             HostFrameId frameId,
             AZStd::string name,
-            AZStd::vector<MultiplayerAuditingElement> entryDetails)
+            AZStd::vector<MultiplayerAuditingElement>&& entryDetails)
     {
         while (m_auditTrailElems.size() >= net_DebutAuditTrail_HistorySize)
         {
             m_auditTrailElems.pop_back();
         }
 
-        AuditTrailInput elem;
-        elem.inputId = inputId;
-        elem.hostFrameId = frameId;
-        elem.name = name;
-        elem.children = entryDetails;
-        m_auditTrailElems.push_front(elem);
+        m_auditTrailElems.emplace_front(inputId, frameId, name, AZStd::move(entryDetails));
     }
 
     void MultiplayerDebugSystemComponent::CommitAuditTrail()
