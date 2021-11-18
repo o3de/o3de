@@ -26,6 +26,9 @@ namespace AzFramework
 
 namespace AzToolsFramework
 {
+    //! Default ray length for picking in the viewport.
+    inline constexpr float EditorPickRayLength = 1000.0f;
+
     //! Is the pivot at the center of the object (middle of extents) or at the
     //! exported authored object root position.
     inline bool Centered(const EditorTransformComponentSelectionRequests::Pivot pivot)

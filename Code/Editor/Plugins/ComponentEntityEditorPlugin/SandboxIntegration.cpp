@@ -56,6 +56,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
 #include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <MathConversion.h>
 
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -1397,8 +1398,9 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
     // will be created at the origin.
     if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport())
     {
-        worldPosition = AzToolsFramework::CalculateWorldPosition(
-            view->GetViewportId(), AzFramework::ScreenPointFromVector2(m_contextMenuViewPoint), GetDefaultEntityPlacementDistance());
+        worldPosition = AzToolsFramework::FindClosestPickIntersection(
+            view->GetViewportId(), AzFramework::ScreenPointFromVector2(m_contextMenuViewPoint), AzToolsFramework::EditorPickRayLength,
+            GetDefaultEntityPlacementDistance());
     }
 
     CreateNewEntityAtPosition(worldPosition);

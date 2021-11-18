@@ -23,6 +23,7 @@
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 // Editor
 #include "Editor/Plugins/ComponentEntityEditorPlugin/SandboxIntegration.h"
@@ -60,8 +61,9 @@ float GetDefaultEntityPlacementDistance()
 void QtViewport::BuildDragDropContext(
     AzQtComponents::ViewportDragContext& context, const AzFramework::ViewportId viewportId, const QPoint& point)
 {
-    context.m_hitLocation = AzToolsFramework::CalculateWorldPosition(
-        viewportId, AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point), GetDefaultEntityPlacementDistance());
+    context.m_hitLocation = AzToolsFramework::FindClosestPickIntersection(
+        viewportId, AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point), AzToolsFramework::EditorPickRayLength,
+        GetDefaultEntityPlacementDistance());
 }
 
 void QtViewport::dragEnterEvent(QDragEnterEvent* event)

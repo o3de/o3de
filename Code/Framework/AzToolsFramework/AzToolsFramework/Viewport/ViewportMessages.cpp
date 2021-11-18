@@ -64,18 +64,17 @@ namespace AzToolsFramework
         return circleBoundWidth;
     }
 
-    AZ::Vector3 CalculateWorldPosition(
-        AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, const float defaultDistance)
+    AZ::Vector3 FindClosestPickIntersection(
+        AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, const float rayLength, const float defaultDistance)
     {
         using AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
         AzToolsFramework::ViewportInteraction::ProjectedViewportRay viewportRay{};
         ViewportInteractionRequestBus::EventResult(
             viewportRay, viewportId, &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPoint);
 
-        const float RayDistance = 1000.0f;
         AzFramework::RenderGeometry::RayRequest ray;
         ray.m_startWorldPosition = viewportRay.origin;
-        ray.m_endWorldPosition = viewportRay.origin + viewportRay.direction * RayDistance;
+        ray.m_endWorldPosition = viewportRay.origin + viewportRay.direction * rayLength;
         ray.m_onlyVisible = true;
 
         AzFramework::RenderGeometry::RayResult renderGeometryIntersectionResult;
