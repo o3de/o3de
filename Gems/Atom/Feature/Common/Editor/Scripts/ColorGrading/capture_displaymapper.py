@@ -10,9 +10,7 @@
 """Frame capture of the Displaymapper Passthrough (outputs .dds image)"""
 # ------------------------------------------------------------------------
 import logging as _logging
-from env_bool import env_bool
 
-# ------------------------------------------------------------------------
 _MODULENAME = 'ColorGrading.capture_displaymapperpassthrough'
 
 import ColorGrading.initialize
@@ -27,25 +25,35 @@ _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 import azlmbr.bus
 import azlmbr.atom
 
-default_passtree = ["Root",
+# This requires the level to have the DisplayMapper component added
+# and configured to 'Passthrough'
+# but now we can capture the parent input 
+# so this is here for reference for how it previously worked
+passtree_displaymapperpassthrough = ["Root",
+                                     "MainPipeline_0",
+                                     "MainPipeline",
+                                     "PostProcessPass",
+                                     "LightAdaptation",
+                                     "DisplayMapperPass",
+                                     "DisplayMapperPassthrough"]
+
+# we can grad the parent pass input to the displaymapper directly
+passtree_default = ["Root",
                     "MainPipeline_0",
                     "MainPipeline",
                     "PostProcessPass",
                     "LightAdaptation",
-                    "DisplayMapperPass",
-                    "DisplayMapperPassthrough"]
+                    "DisplayMapperPass"]
 
-default_path = "FrameCapture\DisplayMapperPassthrough.dds"
-
-# To Do: we should try to set display mapper to passthrough,
-# then back after capture?
+default_path = "FrameCapture\DisplayMappeInput.dds"
 
 # To Do: we can wrap this, to call from a PySide2 GUI
 
 def capture(command="CapturePassAttachment",
-            passtree=default_passtree,
-            pass_type="Output",
+            passtree=passtree_default,
+            pass_type="Input",
             output_path=default_path):
+    """Writes frame capture into project cache"""
     azlmbr.atom.FrameCaptureRequestBus(azlmbr.bus.Broadcast,
                                        command,
                                        passtree,
