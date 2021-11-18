@@ -34,12 +34,10 @@ class TestAutomation(TestAutomationBase):
         from .EditorScripts import AssetBrowser_TreeNavigation as test_module
         self._run_test(request, workspace, editor, test_module, batch_mode=False)
 
-    @pytest.mark.skip(reason="Crashes Editor: ATOM-15493")
     def test_AssetBrowser_SearchFiltering(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import AssetBrowser_SearchFiltering as test_module
         self._run_test(request, workspace, editor, test_module, batch_mode=False)
 
-    @pytest.mark.skip(reason="Crashes Editor: ATOM-15493")
     def test_AssetPicker_UI_UX(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import AssetPicker_UI_UX as test_module
         self._run_test(request, workspace, editor, test_module, autotest_mode=False, batch_mode=False)
