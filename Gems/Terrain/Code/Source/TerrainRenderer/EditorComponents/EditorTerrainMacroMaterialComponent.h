@@ -25,8 +25,8 @@ namespace Terrain
         static constexpr const char* const s_categoryName = "Terrain";
         static constexpr const char* const s_componentName = "Terrain Macro Material";
         static constexpr const char* const s_componentDescription = "Provides a macro material for a region to the terrain renderer";
-        static constexpr const char* const s_icon = "Editor/Icons/Components/TerrainLayerRenderer.svg";
-        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/TerrainLayerRenderer.svg";
+        static constexpr const char* const s_icon = "Editor/Icons/Components/TerrainMacroMaterial.svg";
+        static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/TerrainMacroMaterial.svg";
         static constexpr const char* const s_helpUrl = "";
     };
 }
