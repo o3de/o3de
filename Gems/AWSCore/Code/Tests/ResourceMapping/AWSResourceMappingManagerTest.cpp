@@ -84,7 +84,7 @@ static constexpr const char TEST_VALID_EMPTY_ACCOUNTID_RESOURCE_MAPPING_CONFIG_F
     },
     "AccountId": "",
     "Region": "us-west-2",
-    "Version": "1.0.0"
+    "Version": "1.1.0"
 })";
 
 static constexpr const char TEST_INVALID_RESOURCE_MAPPING_CONFIG_FILE[] =
