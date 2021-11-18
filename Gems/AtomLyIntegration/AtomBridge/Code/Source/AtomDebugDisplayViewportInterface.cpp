@@ -1016,6 +1016,55 @@ namespace AZ::AtomBridge
         }
     }
 
+    void AtomDebugDisplayViewportInterface::DrawWireCylinderNoEnds(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height)
+    {
+        if (m_auxGeomPtr)
+        {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
+            const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
+            const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
+            m_auxGeomPtr->DrawCylinderNoEnds(
+                worldCenter, 
+                worldAxis, 
+                scale * radius, 
+                scale * height, 
+                m_rendState.m_color, 
+                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex
+            );
+        }
+    }
+
+    void AtomDebugDisplayViewportInterface::DrawSolidCylinderNoEnds(
+        const AZ::Vector3& center, 
+        const AZ::Vector3& axis, 
+        float radius, 
+        float height, 
+        bool drawShaded)
+    {
+        if (m_auxGeomPtr)
+        {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
+            const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
+            const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
+            m_auxGeomPtr->DrawCylinderNoEnds(
+                worldCenter, 
+                worldAxis, 
+                scale * radius, 
+                scale * height, 
+                m_rendState.m_color, 
+                drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex
+            );
+        }
+    }
+
     void AtomDebugDisplayViewportInterface::DrawWireCapsule(
         const AZ::Vector3& center, 
         const AZ::Vector3& axis, 
@@ -1030,52 +1079,19 @@ namespace AZ::AtomBridge
             const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
             const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
 
-            // Draw cylinder part (or just a circle around the middle)
+            // Draw cylinder part (if cylinder height is too small, ignore cylinder and just draw both hemispheres)
             if (heightStraightSection > FLT_EPSILON)
             {
-                m_auxGeomPtr->DrawCylinderNoEnds(
-                    worldCenter,
-                    worldAxis,
-                    scale * radius,
-                    scale * heightStraightSection,
-                    m_rendState.m_color,
-                    AZ::RPI::AuxGeomDraw::DrawStyle::Line,
-                    m_rendState.m_depthTest,
-                    m_rendState.m_depthWrite,
-                    m_rendState.m_faceCullMode,
-                    m_rendState.m_viewProjOverrideIndex
-                );
+                DrawWireCylinderNoEnds(worldCenter, worldAxis, scale * radius, scale * heightStraightSection);
             }
 
-            AZ::Vector3 ortho1Normalized, ortho2Normalized;
-            CalcBasisVectors(axisNormalized, ortho1Normalized, ortho2Normalized);
             AZ::Vector3 centerToTopCircleCenter = axisNormalized * heightStraightSection * 0.5f;
-            AZ::Vector3 topCenter = center + centerToTopCircleCenter;
-            AZ::Vector3 bottomCenter = center - centerToTopCircleCenter;
 
-            m_auxGeomPtr->DrawHemisphere(
-                topCenter,
-                worldAxis,
-                scale * radius,
-                m_rendState.m_color,
-                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
-                m_rendState.m_depthTest,
-                m_rendState.m_depthWrite,
-                m_rendState.m_faceCullMode,
-                m_rendState.m_viewProjOverrideIndex
-            );
+            // Top hemisphere
+            DrawWireHemisphere(center + centerToTopCircleCenter, worldAxis, scale * radius);
 
-            m_auxGeomPtr->DrawHemisphere(
-                bottomCenter,
-                -worldAxis,
-                scale * radius,
-                m_rendState.m_color,
-                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
-                m_rendState.m_depthTest,
-                m_rendState.m_depthWrite,
-                m_rendState.m_faceCullMode,
-                m_rendState.m_viewProjOverrideIndex
-            );
+            // Bottom hemisphere
+            DrawWireHemisphere(center - centerToTopCircleCenter, -worldAxis, scale * radius);
         }
     }
 
@@ -1119,6 +1135,25 @@ namespace AZ::AtomBridge
             axisRadius = AZ::Vector3(radius.GetX(), 0.0f, radius.GetZ());
             CreateAxisAlignedArc(lines, step, 0.0f, maxAngle, pos, axisRadius, CircleAxisY);
             lines.Draw(m_auxGeomPtr, m_rendState);
+        }
+    }
+
+    void AtomDebugDisplayViewportInterface::DrawWireHemisphere(const AZ::Vector3& pos, const AZ::Vector3& axis, float radius)
+    {
+        if (m_auxGeomPtr)
+        {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
+            m_auxGeomPtr->DrawHemisphere(
+                ToWorldSpacePosition(pos),
+                axis,
+                scale * radius,
+                m_rendState.m_color,
+                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex
+            );
         }
     }
 
