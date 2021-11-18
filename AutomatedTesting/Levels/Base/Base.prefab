@@ -17,7 +17,7 @@
             },
             "Component_[3837204912784440039]": {
                 "$type": "EditorDisabledCompositionComponent",
-                "Id": 3837204912784440039
+                "Id": 3837204912784440039,
                 "ChildEntityOrderEntryArray": [
                     {
                         "EntityId": ""
