@@ -34,8 +34,8 @@ namespace ScriptCanvasEditor
             ScanResult m_result;
 
             void FilterAsset(SourceHandle);
-            const SourceHandle& GetCurrentAsset() const;
             SourceHandle LoadAsset();
+            SourceHandle& ModCurrentAsset();
             void OnSystemTick() override;
         };
     }    

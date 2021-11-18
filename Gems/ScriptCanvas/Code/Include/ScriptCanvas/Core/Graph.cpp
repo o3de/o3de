@@ -52,6 +52,7 @@ namespace GraphCpp
         VariablePanelSymantics,
         AddVersionData,
         RemoveFunctionGraphMarker,
+        FixupVersionDataTypeId,
         // label your version above
         Current
     };
@@ -71,13 +72,24 @@ namespace ScriptCanvas
             componentElementNode.AddElementWithData(context, "m_assetType", azrtti_typeid<RuntimeAsset>());
         }
 
-        if (componentElementNode.GetVersion() < GraphCpp::GraphVersion::RemoveFunctionGraphMarker)
+        if (componentElementNode.GetVersion() <= GraphCpp::GraphVersion::RemoveFunctionGraphMarker)
         {
             componentElementNode.RemoveElementByName(AZ_CRC_CE("isFunctionGraph"));
         }
 
+        if (componentElementNode.GetVersion() < GraphCpp::GraphVersion::FixupVersionDataTypeId)
+        {
+            if (auto subElement = componentElementNode.FindSubElement(AZ_CRC_CE("versionData")))
+            {
+                if (subElement->GetId() == azrtti_typeid<SlotId>())
+                {
+                    componentElementNode.RemoveElementByName(AZ_CRC_CE("versionData"));
+                }
+            }
+        }
+
         return true;
-    }
+    }s
 
     Graph::Graph(const ScriptCanvasId& scriptCanvasId)
         : m_scriptCanvasId(scriptCanvasId)

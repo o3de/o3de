@@ -32,8 +32,12 @@ namespace ScannerCpp
             && entry->GetFullPath().ends_with(".scriptcanvas"))
         {
             auto sourceEntry = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry*>(entry);
+
+            AZStd::string fullPath = sourceEntry->GetFullPath();
+            AzFramework::StringFunc::Path::Normalize(fullPath);
+
             result.m_catalogAssets.push_back(
-                ScriptCanvasEditor::SourceHandle(nullptr, sourceEntry->GetSourceUuid(), sourceEntry->GetFullPath()));
+                ScriptCanvasEditor::SourceHandle(nullptr, sourceEntry->GetSourceUuid(), fullPath));
         }
 
         const int rowCount = model.rowCount(index);
@@ -79,21 +83,16 @@ namespace ScriptCanvasEditor
         {
             if (m_config.filter && m_config.filter(asset) == ScanConfiguration::Filter::Exclude)
             {
-                VE_LOG("Scanner: Excluded: %s ", GetCurrentAsset().Path().c_str());
-                m_result.m_filteredAssets.push_back(GetCurrentAsset().Describe());
-                ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanFilteredGraph, GetCurrentAsset());
+                VE_LOG("Scanner: Excluded: %s ", ModCurrentAsset().Path().c_str());
+                m_result.m_filteredAssets.push_back(ModCurrentAsset().Describe());
+                ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanFilteredGraph, ModCurrentAsset());
             }
             else
             {
-                VE_LOG("Scanner: Included: %s ", GetCurrentAsset().Path().c_str());
-                m_result.m_unfiltered.push_back(GetCurrentAsset().Describe());
-                ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanUnFilteredGraph, GetCurrentAsset());
+                VE_LOG("Scanner: Included: %s ", ModCurrentAsset().Path().c_str());
+                m_result.m_unfiltered.push_back(ModCurrentAsset().Describe());
+                ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanUnFilteredGraph, ModCurrentAsset());
             }
-        }
-
-        const SourceHandle& Scanner::GetCurrentAsset() const
-        {
-            return m_result.m_catalogAssets[m_catalogAssetIndex];
         }
 
         const ScanResult& Scanner::GetResult() const
@@ -103,7 +102,7 @@ namespace ScriptCanvasEditor
 
         SourceHandle Scanner::LoadAsset()
         {
-            auto fileOutcome = LoadFromFile(GetCurrentAsset().Path().c_str());
+            auto fileOutcome = LoadFromFile(ModCurrentAsset().Path().c_str());
             if (fileOutcome.IsSuccess())
             {
                 return fileOutcome.GetValue();
@@ -112,6 +111,11 @@ namespace ScriptCanvasEditor
             {
                 return {};
             }
+        }
+
+        SourceHandle& Scanner::ModCurrentAsset()
+        {
+            return m_result.m_catalogAssets[m_catalogAssetIndex];
         }
 
         void Scanner::OnSystemTick()
@@ -130,17 +134,17 @@ namespace ScriptCanvasEditor
             {
                 if (auto asset = LoadAsset(); asset.IsValid())
                 {
-                    VE_LOG("Scanner: Loaded: %s ", GetCurrentAsset().Path().c_str());
+                    VE_LOG("Scanner: Loaded: %s ", ModCurrentAsset().Path().c_str());
                     FilterAsset(asset);
                 }
                 else
                 {
-                    VE_LOG("Scanner: Failed to load: %s ", GetCurrentAsset().Path().c_str());
-                    m_result.m_loadErrors.push_back(GetCurrentAsset());
-                    ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanLoadFailure, GetCurrentAsset());
+                    VE_LOG("Scanner: Failed to load: %s ", ModCurrentAsset().Path().c_str());
+                    m_result.m_loadErrors.push_back(ModCurrentAsset().Describe());
+                    ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanLoadFailure, ModCurrentAsset());
                 }
 
-                VE_LOG("Scanner: scan of %s complete", GetCurrentAsset().Path().c_str());
+                VE_LOG("Scanner: scan of %s complete", ModCurrentAsset().Path().c_str());
                 ++m_catalogAssetIndex;
             }
         }

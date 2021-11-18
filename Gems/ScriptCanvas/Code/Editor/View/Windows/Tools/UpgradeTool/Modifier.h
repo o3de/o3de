@@ -83,12 +83,13 @@ namespace ScriptCanvasEditor
             FileSaveResult m_fileSaveResult;
 
             void GatherDependencies();
-            const SourceHandle& GetCurrentAsset() const;
             AZStd::unordered_set<size_t>& GetOrCreateDependencyIndexSet();
             SourceHandle LoadAsset();
+            SourceHandle& ModCurrentAsset();
             void ModifyCurrentAsset();
             void ModifyNextAsset();
             void ModificationComplete(const ModificationResult& result) override;
+            void ReleaseCurrentAsset();
             void ReportModificationError(AZStd::string_view report);
             void ReportModificationSuccess();
             void ReportSaveResult();
