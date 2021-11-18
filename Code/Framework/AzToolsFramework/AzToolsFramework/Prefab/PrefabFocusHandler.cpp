@@ -217,20 +217,24 @@ namespace AzToolsFramework::Prefab
 
     bool PrefabFocusHandler::IsOwningPrefabBeingFocused(AZ::EntityId entityId) const
     {
-        if (!m_focusedInstanceContainerEntityId.IsValid())
-        {
-            // PrefabFocusHandler has not been initialized yet.
-            return false;
-        }
-
         if (!entityId.IsValid())
         {
             return false;
         }
 
         InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+        if (!instance.has_value())
+        {
+            return false;
+        }
 
-        return instance.has_value() && (instance->get().GetContainerEntityId() == m_focusedInstanceContainerEntityId);
+        // If this is owned by the root instance, that corresponds to an invalid m_focusedInstanceContainerEntityId.
+        if (!instance->get().GetParentInstance().has_value())
+        {
+            return !m_focusedInstanceContainerEntityId.IsValid();
+        }
+
+        return (instance->get().GetContainerEntityId() == m_focusedInstanceContainerEntityId);
     }
 
     bool PrefabFocusHandler::IsOwningPrefabInFocusHierarchy(AZ::EntityId entityId) const
@@ -304,7 +308,6 @@ namespace AzToolsFramework::Prefab
     void PrefabFocusHandler::OnPrefabInstancePropagationEnd()
     {
         // Refresh the path and notify changes in case propagation updated any container names.
-        RefreshInstanceFocusList();
         RefreshInstanceFocusPath();
         PrefabFocusNotificationBus::Broadcast(&PrefabFocusNotifications::OnPrefabFocusChanged);
     }
