@@ -49,7 +49,7 @@ endif()
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_FULL_NAME "Open3D Engine")
 set(CPACK_PACKAGE_VENDOR "O3DE Binary Project a Series of LF Projects, LLC")
-set(CPACK_PACKAGE_CONTACT "sig-build@lists.o3de.org")
+set(CPACK_PACKAGE_CONTACT "info@o3debinaries.org")
 set(CPACK_PACKAGE_VERSION "${LY_VERSION_STRING}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Installation Tool")
 
