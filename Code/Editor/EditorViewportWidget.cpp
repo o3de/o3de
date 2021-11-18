@@ -2282,10 +2282,10 @@ void* EditorViewportWidget::GetSystemCursorConstraintWindow() const
     return systemCursorConstrained ? renderOverlayHWND() : nullptr;
 }
 
-void EditorViewportWidget::BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const QPoint& pt)
+void EditorViewportWidget::BuildDragDropContext(
+    AzQtComponents::ViewportDragContext& context, const AzFramework::ViewportId viewportId, const QPoint& point)
 {
-    const auto scaledPoint = WidgetToViewport(pt);
-    QtViewport::BuildDragDropContext(context, scaledPoint);
+    QtViewport::BuildDragDropContext(context, viewportId, point);
 }
 
 void EditorViewportWidget::RestoreViewportAfterGameMode()
