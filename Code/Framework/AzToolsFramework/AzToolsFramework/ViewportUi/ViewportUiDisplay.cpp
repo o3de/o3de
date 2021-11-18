@@ -308,7 +308,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_viewportBorderText.setVisible(true);
         m_viewportBorderText.setText(borderTitle.c_str());
         UpdateUiOverlayGeometry();
-		
+
         // only display the back button if a callback was provided
         m_viewportBorderBackButtonCallback = backButtonCallback;
         m_viewportBorderBackButton.setVisible(m_viewportBorderBackButtonCallback.has_value());
