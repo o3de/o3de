@@ -5,8 +5,94 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "SurfaceTagWeight"
-            }
+                "name": "Surface Tag Weight"
+            },
+            "methods": [
+                {
+                    "key": "GetsurfaceType",
+                    "details": {
+                        "name": "Get Surface Type"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA14018E-E853-4BF5-8E13-D83BB99A54CC}",
+                            "details": {
+                                "name": "Surface Tag Weight"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Tag"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetsurfaceType",
+                    "details": {
+                        "name": "Set Surface Type"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA14018E-E853-4BF5-8E13-D83BB99A54CC}",
+                            "details": {
+                                "name": "Surface Tag Weight"
+                            }
+                        },
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Tag"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Getweight",
+                    "details": {
+                        "name": "Get Weight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA14018E-E853-4BF5-8E13-D83BB99A54CC}",
+                            "details": {
+                                "name": "Surface Tag Weight"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Weight"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Setweight",
+                    "details": {
+                        "name": "Set Weight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA14018E-E853-4BF5-8E13-D83BB99A54CC}",
+                            "details": {
+                                "name": "Surface Tag Weight"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Weight"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
