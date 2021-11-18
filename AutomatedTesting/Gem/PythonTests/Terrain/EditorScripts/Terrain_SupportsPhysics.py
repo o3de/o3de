@@ -31,7 +31,7 @@ def Terrain_SupportsPhysics():
     Test Steps:
      1) Load the base level
      2) Create 2 test entities, one parent at 512.0, 512.0, 50.0 and one child at the default position and add the required components
-     2a) Create a ball at 600.0, 600.0, 46.0 - This position is bot too high over the heighfield so will collide in a reasonable time
+     2a) Create a ball at 600.0, 600.0, 46.0 - This position is not too high over the heightfield so will collide in a reasonable time
      3) Start the Tracer to catch any errors and warnings
      4) Change the Axis Aligned Box Shape dimensions
      5) Set the Vegetation Shape reference to TestEntity1
@@ -80,7 +80,7 @@ def Terrain_SupportsPhysics():
     height_provider_entity = hydra.Entity("TestEntity2")
     height_provider_entity.create_entity(azmath.Vector3(0.0, 0.0, 0.0), entity2_components_to_add,terrain_spawner_entity.id)
     Report.result(Tests.create_height_provider_entity, height_provider_entity.id.IsValid())
-    # 2a) Create a ball at 600.0, 600.0, 46.0 - This position is bot too high over the heighfield so will collide in a reasonable time
+    # 2a) Create a ball at 600.0, 600.0, 46.0 - This position is not too high over the heightfield so will collide in a reasonable time
     ball = hydra.Entity("Ball")
     ball.create_entity(azmath.Vector3(600.0, 600.0, 46.0), ball_components_to_add)
     Report.result(Tests.create_test_ball, ball.id.IsValid())
@@ -107,9 +107,9 @@ def Terrain_SupportsPhysics():
         Report.result(Tests.frequency_changed, math.isclose(Frequency, FrequencyVal, abs_tol = 0.00001))
 
         # 7) Set the Gradient List to TestEntity2
-        pte = hydra.get_property_tree(terrain_spawner_entity.components[2])
-        pte.add_container_item("Configuration|Gradient Entities", 0, height_provider_entity.id)
-        checkID = pte.get_container_item("Configuration|Gradient Entities", 0)
+        propertyTree = hydra.get_property_tree(terrain_spawner_entity.components[2])
+        propertyTree.add_container_item("Configuration|Gradient Entities", 0, height_provider_entity.id)
+        checkID = propertyTree.get_container_item("Configuration|Gradient Entities", 0)
         Report.result(Tests.entity_added, checkID.GetValue() == height_provider_entity.id)
 
         # 8) Set the PhysX Collider to Sphere mode
