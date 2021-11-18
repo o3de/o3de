@@ -118,6 +118,8 @@ set(FILES
     Source/TestEngine/Native/Job/TestImpactNativeTestTargetExtension.h
     Source/TestEngine/Native/Run/TestImpactNativeInstrumentedTestRunner.h
     Source/TestEngine/Native/Run/TestImpactNativeRegularTestRunner.h
+    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.cpp
+    Source/TestEngine/Python/Job/TestImpactPythonTestJobInfoGenerator.h
     Source/TestEngine/Python/Run/TestImpactPythonTestRunner.cpp
     Source/TestEngine/Python/Run/TestImpactPythonTestRunner.h
     Source/TestEngine/TestImpactTestSuiteContainer.h

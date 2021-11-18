@@ -8,8 +8,6 @@
 
 #pragma once
 
-#include <TestImpactFramework/TestImpactRuntime.h>
-
 #include <Artifact/Dynamic/TestImpactCoverage.h>
 #include <TestEngine/Native/Enumeration/TestImpactNativeTestEnumerator.h>
 #include <TestEngine/Native/Run/TestImpactNativeInstrumentedTestRunner.h>
