@@ -21,7 +21,6 @@ namespace AzToolsFramework::ViewportUi::Internal
 {
     const static int HighlightBorderSize = 5;
     const static char* HighlightBorderColor = "#4A90E2";
-    const static int HighlightBorderBackButtonMargin = 5;
     const static int HighlightBorderBackButtonIconSize = 20;
     const static char* HighlightBorderBackButtonIconFile = "X_axis.svg";
 
