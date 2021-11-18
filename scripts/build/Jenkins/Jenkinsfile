@@ -428,20 +428,33 @@ def ExportTestScreenshots(Map options, String branchName, String platformName, S
         }
     }
 }
-def ArchiveArtifactsOnS3(Map options, String artifactsSourceDir, String artifactsRegex, String s3Prefix) {
-    def command = "${options.PYTHON_DIR}/python"
-    if(env.IS_UNIX) command += '.sh'
-    else command += '.cmd'
-    command += " -u scripts/build/tools/copy_file.py -s ${artifactsSourceDir} -r \"${artifactsRegex}\" -t ${s3Prefix}"
-    palSh(command, "Copying artifacts")
-    archiveArtifacts artifacts: "${s3Prefix}/**"
+
+// All files are included by default.
+// --include will only re-include files that have been excluded from an --exclude filter.
+//See more details at https://docs.aws.amazon.com/cli/latest/reference/s3/#use-of-exclude-and-include-filters
+def ArchiveArtifactsOnS3(String artifactsSourceDir, String s3Prefix="", boolean recursive=false, List<String> includes=[], List<String> excludes=[]) {
+    if (!fileExists(s3Prefix)) {
+        palMkdir(s3Prefix)
+    }
+    palSh("echo ${env.BUILD_URL} > ${s3Prefix}/build_url.txt")
+    // archiveArtifacts is very slow, so we only archive one file and upload the rest artifacts to the same bucket using S3 CLI.
+    archiveArtifacts artifacts: "${s3Prefix}/build_url.txt"
+    def command = "aws s3 cp ${artifactsSourceDir} s3://${env.JENKINS_ARTIFACTS_S3_BUCKET}/${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix} "
+    includes.each{ include ->
+        command += "--include \"${include}\" "
+    }
+    excludes.each{ exclude ->
+        command += "--exclude \"${exclude}\" "
+    }
+    if (recursive) command += "--recursive "
+    palSh(command, "Archiving artifacts to ${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix}", false)
 }
 
-def UploadAPLogs(Map options, String branchName, String platformName, String jobName, String workspace, Map params) {
+def UploadAPLogs(String platformName, String jobName, String workspace, Map params) {
     dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
         projects = params.CMAKE_LY_PROJECTS.split(",")
         projects.each{ project ->
-            ArchiveArtifactsOnS3(options, "${project}/user/log", "**", "ap_logs/${platformName}/${jobName}/${project}")
+            ArchiveArtifactsOnS3("${project}/user/log", "ap_logs/${platformName}/${jobName}/${project}", recursive=true)
         }
     }
 }
@@ -509,10 +522,10 @@ def CreateExportTestScreenshotsStage(Map pipelineConfig, String branchName, Stri
     }
 }
 
-def CreateUploadAPLogsStage(Map pipelineConfig, String branchName, String platformName, String jobName, String workspace, Map params) {
+def CreateUploadAPLogsStage(String platformName, String jobName, String workspace, Map params) {
     return {
         stage("${jobName}_upload_ap_logs") {
-            UploadAPLogs(pipelineConfig, branchName, platformName, jobName, workspace, params)
+            UploadAPLogs(platformName, jobName, workspace, params)
         }
     }
 }
@@ -568,8 +581,8 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                                 error "Node disconnected during build: ${e}"  // Error raised to retry stage on a new node
                             }
                         }
-                        if (jobName.toLowerCase().contains('asset') && env.IS_UPLOAD_AP_LOGS) {
-                            CreateUploadAPLogsStage(pipelineConfig, branchName, platform.key, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
+                        if (build_job_name.toLowerCase().contains('asset') && env.IS_UPLOAD_AP_LOGS?.toBoolean()) {
+                            CreateUploadAPLogsStage(platform.key, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
                         }
                         // All other errors will be raised outside the retry block
                         currentResult = envVars['ON_FAILURE_MARK'] ?: 'FAILURE'
