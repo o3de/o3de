@@ -14,6 +14,7 @@
 #include <QSet>
 #include <QFileInfo>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/EBus/Event.h>
 
 namespace AssetProcessor
 {
@@ -55,7 +56,7 @@ namespace AssetProcessor
 
         AZ_DISABLE_COPY_MOVE(IFileStateRequests);
     };
-    
+
     class FileStateBase
         : public IFileStateRequests
     {
@@ -90,7 +91,6 @@ namespace AssetProcessor
     {
     public:
 
-
         // FileStateRequestBus implementation
         bool GetFileInfo(const QString& absolutePath, FileStateInfo* foundFileInfo) const override;
         bool Exists(const QString& absolutePath) const override;
@@ -118,7 +118,7 @@ namespace AssetProcessor
 
         mutable AZStd::recursive_mutex m_mapMutex;
         QHash<QString, FileStateInfo> m_fileInfoMap;
-        
+
         QHash<QString, FileHash> m_fileHashMap;
 
         AZ::Event<FileStateInfo> m_deleteEvent;

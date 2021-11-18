@@ -14,10 +14,10 @@
 namespace AssetProcessor
 {
     class PlatformConfiguration;
-    
+
     struct ExcludedFolderCache : ExcludedFolderCacheInterface
     {
-        ExcludedFolderCache(const PlatformConfiguration* platformConfig);
+        explicit ExcludedFolderCache(const PlatformConfiguration* platformConfig);
         ~ExcludedFolderCache() override;
 
         // Gets a set of absolute paths to folder which have been excluded according to the platform configuration rules

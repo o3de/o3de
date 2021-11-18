@@ -23,5 +23,4 @@ namespace AssetProcessor
         virtual const AZStd::unordered_set<AZStd::string>& GetExcludedFolders() = 0;
         virtual void FileAdded(QString path) = 0;
     };
-    
 }
