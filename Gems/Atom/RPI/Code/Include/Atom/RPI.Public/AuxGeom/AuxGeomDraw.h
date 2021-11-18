@@ -147,8 +147,21 @@ namespace AZ
             //! @param viewProjOverrideIndex Which view projection override entry to use, -1 if unused
             virtual void DrawSphere( const AZ::Vector3& center, float radius, const AZ::Color& color, DrawStyle style = DrawStyle::Shaded, DepthTest depthTest = DepthTest::On, DepthWrite depthWrite = DepthWrite::On, FaceCullMode faceCull = FaceCullMode::Back, int32_t viewProjOverrideIndex = -1) = 0;
 
+            //! Draw a sphere.
+            //! @param center        The center of the sphere.
+            //! @param direction     The direction vector. The Pole of the hemisphere will point along this vector.
+            //! @param radius        The radius.
+            //! @param color         The color to draw the sphere.
+            //! @param style         The draw style (point, wireframe, solid, shaded etc).
+            //! @param depthTest     If depth testing should be enabled
+            //! @param depthWrite    If depth writing should be enabled
+            //! @param faceCull      Which (if any) facing triangles should be culled
+            //! @param viewProjOverrideIndex Which view projection override entry to use, -1 if unused
+            virtual void DrawSphere(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, const AZ::Color& color, DrawStyle style = DrawStyle::Shaded, DepthTest depthTest = DepthTest::On, DepthWrite depthWrite = DepthWrite::On, FaceCullMode faceCull = FaceCullMode::Back, int32_t viewProjOverrideIndex = -1) = 0;
+
             //! Draw a hemisphere.
             //! @param center        The center of the sphere.
+            //! @param direction     The direction vector. The Pole of the hemisphere will point along this vector.
             //! @param radius        The radius.
             //! @param color         The color to draw the sphere.
             //! @param style         The draw style (point, wireframe, solid, shaded etc).
