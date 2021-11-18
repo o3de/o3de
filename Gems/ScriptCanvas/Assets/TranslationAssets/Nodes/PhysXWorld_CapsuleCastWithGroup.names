@@ -1,0 +1,106 @@
+{
+    "entries": [
+        {
+            "key": "{1467D2BE-D829-5A8A-976D-6D06FDCD3310}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Capsule Cast With Group",
+                "category": "PhysX/World",
+                "tooltip": "CapsuleCast"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Distance",
+                    "details": {
+                        "name": "Distance"
+                    }
+                },
+                {
+                    "key": "DataInput_Pose",
+                    "details": {
+                        "name": "Pose"
+                    }
+                },
+                {
+                    "key": "DataInput_Direction",
+                    "details": {
+                        "name": "Direction"
+                    }
+                },
+                {
+                    "key": "DataInput_Height",
+                    "details": {
+                        "name": "Height"
+                    }
+                },
+                {
+                    "key": "DataInput_Radius",
+                    "details": {
+                        "name": "Radius"
+                    }
+                },
+                {
+                    "key": "DataInput_Collision group",
+                    "details": {
+                        "name": "Collision group"
+                    }
+                },
+                {
+                    "key": "DataInput_Ignore",
+                    "details": {
+                        "name": "Ignore"
+                    }
+                },
+                {
+                    "key": "DataOutput_Object Hit",
+                    "details": {
+                        "name": "Object Hit"
+                    }
+                },
+                {
+                    "key": "DataOutput_Position",
+                    "details": {
+                        "name": "Position"
+                    }
+                },
+                {
+                    "key": "DataOutput_Normal",
+                    "details": {
+                        "name": "Normal"
+                    }
+                },
+                {
+                    "key": "DataOutput_Distance",
+                    "details": {
+                        "name": "Distance"
+                    }
+                },
+                {
+                    "key": "DataOutput_EntityId",
+                    "details": {
+                        "name": "EntityId"
+                    }
+                },
+                {
+                    "key": "DataOutput_Surface",
+                    "details": {
+                        "name": "Surface"
+                    }
+                }
+            ]
+        }
+    ]
+}
