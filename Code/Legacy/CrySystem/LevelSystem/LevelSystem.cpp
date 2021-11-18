@@ -890,7 +890,7 @@ void CLevelSystem::UnloadLevel()
 
     m_bLevelLoaded = false;
 
-    const AZ::TimeMs unloadTimeMs = AZ::GetRealElapsedTimeMs() - beginTimeMs;
+    [[maybe_unused]] const AZ::TimeMs unloadTimeMs = AZ::GetRealElapsedTimeMs() - beginTimeMs;
     CryLog("UnloadLevel End: %.1f sec", AZ::TimeMsToSeconds(unloadTimeMs));
 
     // Must be sent last.

@@ -566,7 +566,7 @@ namespace LegacyLevelSystem
 
         m_bLevelLoaded = false;
 
-        const AZ::TimeMs unloadTimeMs = AZ::GetRealElapsedTimeMs() - beginTimeMs;
+        [[maybe_unused]] const AZ::TimeMs unloadTimeMs = AZ::GetRealElapsedTimeMs() - beginTimeMs;
         AZ_TracePrintf("LevelSystem", "UnloadLevel End: %.1f sec\n", AZ::TimeMsToSeconds(unloadTimeMs));
 
         // Must be sent last.
