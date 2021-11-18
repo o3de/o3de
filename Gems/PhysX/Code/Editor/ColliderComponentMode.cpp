@@ -39,19 +39,17 @@ namespace PhysX
         : AzToolsFramework::ComponentModeFramework::EditorBaseComponentMode(entityComponentIdPair, componentType)
     {
         CreateSubModes();
+        CreateSubModeSelectionCluster();
         ColliderComponentModeRequestBus::Handler::BusConnect(entityComponentIdPair);
         ColliderComponentModeUiRequestBus::Handler::BusConnect(entityComponentIdPair);
-
-        CreateSubModeSelectionCluster();
     }
 
     ColliderComponentMode::~ColliderComponentMode()
     {
-        RemoveSubModeSelectionCluster();
-
         ColliderComponentModeUiRequestBus::Handler::BusDisconnect();
         ColliderComponentModeRequestBus::Handler::BusDisconnect();
 
+        RemoveSubModeSelectionCluster();
         m_subModes[m_subMode]->Teardown(GetEntityComponentIdPair());
     }
 
@@ -141,7 +139,7 @@ namespace PhysX
         if (mouseInteraction.m_mouseEvent == AzToolsFramework::ViewportInteraction::MouseEvent::Wheel &&
             mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl())
         {
-            int direction = MouseWheelDelta(mouseInteraction) > 0.0f ? 1 : -1;
+            int direction = MouseWheelDelta(mouseInteraction) > 0.0f ? -1 : 1;
             AZ::u32 currentModeIndex = static_cast<AZ::u32>(m_subMode);
             AZ::u32 numSubModes = static_cast<AZ::u32>(SubMode::NumModes);
             AZ::u32 nextModeIndex = (currentModeIndex + numSubModes + direction) % m_subModes.size();
@@ -159,10 +157,30 @@ namespace PhysX
 
     void ColliderComponentMode::SetCurrentMode(SubMode newMode)
     {
-        AZ_Assert(m_subModes.count(newMode) > 0, "Submode not found:%d", newMode);
-        m_subModes[m_subMode]->Teardown(GetEntityComponentIdPair());
-        m_subMode = newMode;
-        m_subModes[m_subMode]->Setup(GetEntityComponentIdPair());
+        if (auto subMode = m_subModes.find(newMode);
+            subMode != m_subModes.end())
+        {
+            m_subModes[m_subMode]->Teardown(GetEntityComponentIdPair());
+            m_subMode = newMode;
+            m_subModes[m_subMode]->Setup(GetEntityComponentIdPair());
+
+            const auto modeIndex = static_cast<size_t>(newMode);
+            if (modeIndex < m_buttonIds.size())
+            {
+                AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+                    AzToolsFramework::ViewportUi::DefaultViewportId,
+                    &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_modeSelectionClusterId,
+                    m_buttonIds[modeIndex]);
+            }
+            else
+            {
+                AZ_Error("PhysX Collider Component Mode", false, "Invalid mode index %i.", modeIndex);
+            }
+        }
+        else
+        {
+            AZ_Assert(false, "Submode not found:%d", newMode);
+        }
     }
 
     AzToolsFramework::ViewportUi::ClusterId ColliderComponentMode::GetClusterId() const
@@ -172,17 +190,22 @@ namespace PhysX
 
     AzToolsFramework::ViewportUi::ButtonId ColliderComponentMode::GetOffsetButtonId() const
     {
-        return m_offsetModeButtonId;
+        return m_buttonIds[static_cast<size_t>(SubMode::Offset)];
     }
 
     AzToolsFramework::ViewportUi::ButtonId ColliderComponentMode::GetRotationButtonId() const
     {
-        return m_rotationModeButtonId;
+        return m_buttonIds[static_cast<size_t>(SubMode::Rotation)];
     }
 
     AzToolsFramework::ViewportUi::ButtonId ColliderComponentMode::GetDimensionsButtonId() const
     {
-        return m_dimensionsModeButtonId;
+        return m_buttonIds[static_cast<size_t>(SubMode::Dimensions)];
+    }
+
+    AZStd::string ColliderComponentMode::GetComponentModeName() const
+    {
+        return "Collider Edit Mode";
     }
 
     void RefreshUI()
@@ -237,25 +260,31 @@ namespace PhysX
             &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::CreateCluster, AzToolsFramework::ViewportUi::Alignment::TopLeft);
 
         // create and register the buttons
-        m_offsetModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Move");
-        m_rotationModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Rotate");
-        m_dimensionsModeButtonId = RegisterClusterButton(m_modeSelectionClusterId, "Scale");
+        m_buttonIds.resize(static_cast<size_t>(SubMode::NumModes));
+        m_buttonIds[static_cast<size_t>(SubMode::Offset)] = RegisterClusterButton(m_modeSelectionClusterId, "Move");
+        m_buttonIds[static_cast<size_t>(SubMode::Rotation)] = RegisterClusterButton(m_modeSelectionClusterId, "Rotate");
+        m_buttonIds[static_cast<size_t>(SubMode::Dimensions)] = RegisterClusterButton(m_modeSelectionClusterId, "Scale");
+
+        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
+            AzToolsFramework::ViewportUi::DefaultViewportId,
+            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_modeSelectionClusterId,
+            m_buttonIds[static_cast<size_t>(SubMode::Dimensions)]);
 
         const auto onButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId) {
-            if (buttonId == m_dimensionsModeButtonId)
-            {
-                SetCurrentMode(SubMode::Dimensions);
-            }
-            else if (buttonId == m_offsetModeButtonId)
+            if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::Offset)])
             {
                 SetCurrentMode(SubMode::Offset);
             }
-            else if (buttonId == m_rotationModeButtonId)
+            else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::Rotation)])
             {
                 SetCurrentMode(SubMode::Rotation);
             }
+            else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::Dimensions)])
+            {
+            SetCurrentMode(SubMode::Dimensions);
+            }
         };
-        
+
         m_modeSelectionHandler = AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler(onButtonClicked);
         AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
             AzToolsFramework::ViewportUi::DefaultViewportId,
