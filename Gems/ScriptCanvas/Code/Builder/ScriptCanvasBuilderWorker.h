@@ -62,6 +62,7 @@ namespace ScriptCanvasBuilder
 
         ForceBuildForDevTest0,
         ForceBuildForDevTest1,
+        ForceBuildForDevTest2,
 
         // add new entries above
         Current,
@@ -73,7 +74,6 @@ namespace ScriptCanvasBuilder
 
     struct AssetHandlers
     {
-        AZ::Data::AssetHandler* m_editorAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_editorFunctionAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_runtimeAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_subgraphInterfaceHandler = nullptr;
@@ -84,7 +84,6 @@ namespace ScriptCanvasBuilder
 
     struct SharedHandlers
     {
-        HandlerOwnership m_editorAssetHandler{};
         HandlerOwnership m_editorFunctionAssetHandler{};
         HandlerOwnership m_runtimeAssetHandler{};
         HandlerOwnership m_subgraphInterfaceHandler{};
@@ -173,7 +172,6 @@ namespace ScriptCanvasBuilder
         void ShutDown() override {};
 
     private:
-        AZ::Data::AssetHandler* m_editorAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_runtimeAssetHandler = nullptr;
         AZ::Data::AssetHandler* m_subgraphInterfaceHandler = nullptr;
 

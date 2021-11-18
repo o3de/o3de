@@ -35,7 +35,6 @@ namespace ScriptCanvasBuilder
 {
     void Worker::Activate(const AssetHandlers& handlers)
     {
-        m_editorAssetHandler = handlers.m_editorAssetHandler;
         m_runtimeAssetHandler = handlers.m_runtimeAssetHandler;
         m_subgraphInterfaceHandler = handlers.m_subgraphInterfaceHandler;
     }
@@ -255,49 +254,14 @@ namespace ScriptCanvasBuilder
             return;
         }
 
-        if (!m_editorAssetHandler)
-        {
-            AZ_Error(s_scriptCanvasBuilder, false, R"(Exporting of .scriptcanvas for "%s" file failed as no editor asset handler was registered for script canvas. The ScriptCanvas Gem might not be enabled.)", fullPath.data());
-            return;
-        }
-
         if (!m_runtimeAssetHandler)
         {
             AZ_Error(s_scriptCanvasBuilder, false, R"(Exporting of .scriptcanvas for "%s" file failed as no runtime asset handler was registered for script canvas.)", fullPath.data());
             return;
         }
 
-        AZStd::shared_ptr<AZ::Data::AssetDataStream> assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();
-
-        AZ::IO::FileIOStream stream(fullPath.c_str(), AZ::IO::OpenMode::ModeRead);
-        if (!AZ::IO::RetryOpenStream(stream))
-        {
-            AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", fullPath.data());
-            return;
-        }
-
-        // Read the asset into a memory buffer, then hand ownership of the buffer to assetDataStream
-        {
-            AZ::IO::FileIOStream ioStream;
-            if (!ioStream.Open(fullPath.data(), AZ::IO::OpenMode::ModeRead))
-            {
-                AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", fullPath.data());
-                return;
-            }
-            AZStd::vector<AZ::u8> fileBuffer(ioStream.GetLength());
-            size_t bytesRead = ioStream.Read(fileBuffer.size(), fileBuffer.data());
-            if (bytesRead != ioStream.GetLength())
-            {
-                AZ_Warning(s_scriptCanvasBuilder, false, AZStd::string::format("File failed to read completely: %s", fullPath.data()).c_str());
-                return;
-            }
-
-            assetDataStream->Open(AZStd::move(fileBuffer));
-        }
-
-        AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasAsset> asset;
-        asset.Create(request.m_sourceFileUUID);
-        if (m_editorAssetHandler->LoadAssetDataFromStream(asset, assetDataStream, nullptr) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
+        auto loadOutcome = ScriptCanvasEditor::LoadFromFile(request.m_fullPath);
+        if (!loadOutcome.IsSuccess())
         {
             AZ_Error(s_scriptCanvasBuilder, false, R"(Loading of ScriptCanvas asset for source file "%s" has failed)", fullPath.data());
             return;
@@ -310,9 +274,11 @@ namespace ScriptCanvasBuilder
         AzFramework::StringFunc::Path::Join(request.m_tempDirPath.c_str(), fileNameOnly.c_str(), runtimeScriptCanvasOutputPath, true, true);
         AzFramework::StringFunc::Path::ReplaceExtension(runtimeScriptCanvasOutputPath, ScriptCanvas::RuntimeAsset::GetFileExtension());
 
+        auto sourceHandle = loadOutcome.TakeValue();
+
         if (request.m_jobDescription.m_jobKey == s_scriptCanvasProcessJobKey)
         {
-            AZ::Entity* buildEntity = asset.Get()->GetScriptCanvasEntity();
+            AZ::Entity* buildEntity = sourceHandle.Get()->GetEntity();
             ProcessTranslationJobInput input;
             input.assetID = AZ::Data::AssetId(request.m_sourceFileUUID, AZ_CRC("RuntimeData", 0x163310ae));
             input.request = &request;

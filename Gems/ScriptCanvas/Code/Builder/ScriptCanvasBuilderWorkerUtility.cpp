@@ -34,15 +34,13 @@
 namespace ScriptCanvasBuilder
 {
     AssetHandlers::AssetHandlers(SharedHandlers& source)
-        : m_editorAssetHandler(source.m_editorAssetHandler.first)
-        , m_editorFunctionAssetHandler(source.m_editorFunctionAssetHandler.first)
+        : m_editorFunctionAssetHandler(source.m_editorFunctionAssetHandler.first)
         , m_runtimeAssetHandler(source.m_runtimeAssetHandler.first)
         , m_subgraphInterfaceHandler(source.m_subgraphInterfaceHandler.first)
     {}
 
     void SharedHandlers::DeleteOwnedHandlers()
     {
-        DeleteIfOwned(m_editorAssetHandler);
         DeleteIfOwned(m_editorFunctionAssetHandler);
         DeleteIfOwned(m_runtimeAssetHandler);
         DeleteIfOwned(m_subgraphInterfaceHandler);
