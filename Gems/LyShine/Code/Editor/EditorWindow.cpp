@@ -712,7 +712,15 @@ bool EditorWindow::SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceA
         QDir validDirCheck(dirPath.c_str());
         while (!validDirCheck.exists() && (dirPath.HasParentPath()))
         {
-            dirPath = dirPath.ParentPath();
+            AZ::IO::Path parentPath = dirPath.ParentPath();
+            if (parentPath == dirPath)
+            {
+                break;
+            }
+            else
+            {
+                dirPath = parentPath;
+            }
             validDirCheck = QDir(dirPath.c_str());
         }
         // Append the default filename
