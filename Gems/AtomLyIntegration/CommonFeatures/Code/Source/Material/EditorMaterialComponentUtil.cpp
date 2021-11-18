@@ -134,7 +134,7 @@ namespace AZ
                         propertyValue = AZ::RPI::MaterialPropertyValue::FromAny(propertyOverrideItr->second);
                     }
 
-                    if (!AtomToolsFramework::ConvertToExportFormat(path, propertyDefinition, propertyValue))
+                    if (!AtomToolsFramework::ConvertToExportFormat(path, propertyId.GetFullName(), propertyDefinition, propertyValue))
                     {
                         AZ_Error("AZ::Render::EditorMaterialComponentUtil", false, "Failed to export: %s", path.c_str());
                         result = false;

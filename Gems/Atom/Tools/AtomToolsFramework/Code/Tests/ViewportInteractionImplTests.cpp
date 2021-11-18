@@ -7,12 +7,14 @@
  */
 
 #include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <Tests/Utils/Printers.h>
@@ -168,5 +170,40 @@ namespace UnitTest
         auto intersection = AZ::Intersect::IntersectRaySphere(ray.origin, ray.direction, AZ::Vector3(-14.0f, 5.7f, 0.75f), 0.5f, unused);
 
         EXPECT_EQ(intersection, AZ::Intersect::SphereIsectTypes::ISECT_RAY_SPHERE_ISECT);
+    }
+
+    TEST_F(ViewportInteractionImplFixture, ViewportInteractionRequestsReturnsNewViewWhenItIsChanged)
+    {
+        // Given
+        const auto primaryViewTransform = AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(
+            AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(90.0f)) * AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(-45.0f)),
+            AZ::Vector3(-10.0f, -15.0f, 20.0f));
+
+        m_view->SetCameraTransform(primaryViewTransform);
+
+        AZ::RPI::ViewPtr secondaryView = AZ::RPI::View::CreateView(AZ::Name("SecondaryView"), AZ::RPI::View::UsageCamera);
+
+        const auto secondaryViewTransform = AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(
+            AZ::Matrix3x3::CreateRotationZ(AZ::DegToRad(-90.0f)) * AZ::Matrix3x3::CreateRotationX(AZ::DegToRad(30.0f)),
+            AZ::Vector3(-50.0f, -25.0f, 10.0f));
+
+        secondaryView->SetCameraTransform(secondaryViewTransform);
+
+        // When
+        AZ::RPI::ViewportContextIdNotificationBus::Event(
+            TestViewportId, &AZ::RPI::ViewportContextIdNotificationBus::Events::OnViewportDefaultViewChanged, secondaryView);
+
+        // retrieve updated camera transform
+        AzFramework::CameraState cameraState;
+        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::EventResult(
+            cameraState, TestViewportId, &AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Events::GetCameraState);
+
+        const auto cameraMatrix = AzFramework::CameraTransform(cameraState);
+        const auto cameraTransform = AZ::Matrix3x4::CreateFromMatrix3x3AndTranslation(
+            AZ::Matrix3x3::CreateFromMatrix4x4(cameraMatrix), cameraMatrix.GetTranslation());
+
+        // Then
+        // camera transform matches that of the secondary view
+        EXPECT_THAT(cameraTransform, IsClose(secondaryViewTransform));
     }
 } // namespace UnitTest
