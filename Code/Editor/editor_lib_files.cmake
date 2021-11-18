@@ -628,8 +628,6 @@ set(FILES
     Util/AutoDirectoryRestoreFileDialog.h
     Util/AutoDirectoryRestoreFileDialog.cpp
     Util/CryMemFile.h
-    Util/DynamicArray2D.cpp
-    Util/DynamicArray2D.h
     Util/EditorAutoLevelLoadTest.cpp
     Util/EditorAutoLevelLoadTest.h
     Util/EditorUtils.cpp
