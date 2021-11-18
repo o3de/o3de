@@ -363,7 +363,10 @@ namespace O3DE::ProjectManager
         {
             const QString selectedGemPath = m_gemModel->GetPath(modelIndex);
 
-            // Remove gem from gems to be added
+            const bool wasAdded = GemModel::WasPreviouslyAdded(modelIndex);
+            const bool wasAddedDependency = GemModel::WasPreviouslyAddedDependency(modelIndex);
+
+            // Remove gem from gems to be added to update any dependencies
             GemModel::SetIsAdded(*m_gemModel, modelIndex, false);
 
             // Unregister the gem
@@ -391,6 +394,8 @@ namespace O3DE::ProjectManager
 
                 // Select remote gem
                 QModelIndex remoteGemIndex = m_gemModel->FindIndexByNameString(selectedGemName);
+                GemModel::SetWasPreviouslyAdded(*m_gemModel, remoteGemIndex, wasAdded);
+                GemModel::SetWasPreviouslyAddedDependency(*m_gemModel, remoteGemIndex, wasAddedDependency);
                 QModelIndex proxyIndex = m_proxyModel->mapFromSource(remoteGemIndex);
                 m_proxyModel->GetSelectionModel()->setCurrentIndex(proxyIndex, QItemSelectionModel::ClearAndSelect);
             }
@@ -523,7 +528,9 @@ namespace O3DE::ProjectManager
             const QString& gemPath = GemModel::GetPath(modelIndex);
 
             // make sure any remote gems we added were downloaded successfully 
-            if (GemModel::GetGemOrigin(modelIndex) == GemInfo::Remote && GemModel::GetDownloadStatus(modelIndex) != GemInfo::Downloaded)
+            const GemInfo::DownloadStatus status = GemModel::GetDownloadStatus(modelIndex);
+            if (GemModel::GetGemOrigin(modelIndex) == GemInfo::Remote &&
+                !(status == GemInfo::Downloaded || status == GemInfo::DownloadSuccessful))
             {
                 QMessageBox::critical(
                     nullptr, "Cannot add gem that isn't downloaded",
