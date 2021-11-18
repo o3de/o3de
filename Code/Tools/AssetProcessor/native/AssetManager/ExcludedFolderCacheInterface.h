@@ -8,6 +8,9 @@
 
 #pragma once
 
+#include <AzCore/std/containers/unordered_set.h>
+#include <QString>
+
 namespace AssetProcessor
 {
     class PlatformConfiguration;
