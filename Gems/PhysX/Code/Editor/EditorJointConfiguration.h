@@ -100,12 +100,21 @@ namespace PhysX
         AZ_TYPE_INFO(EditorJointConfig, "{8A966D65-CA97-4786-A13C-ACAA519D97EA}");
         static void Reflect(AZ::ReflectContext* context);
 
+        enum class DisplaySetupState : AZ::u8
+        {
+            Never = 0,
+            Selected,
+            Always
+        };
+
         void SetLeadEntityId(AZ::EntityId leadEntityId);
         JointGenericProperties ToGenericProperties() const;
         JointComponentConfiguration ToGameTimeConfig() const;
 
+        bool ShowSetupDisplay() const;
+
         bool m_breakable = false;
-        bool m_displayJointSetup = false;
+        DisplaySetupState m_displayJointSetup = DisplaySetupState::Selected;
         bool m_inComponentMode = false;
         bool m_selectLeadOnSnap = true;
         bool m_selfCollide = false;
@@ -129,3 +138,8 @@ namespace PhysX
     };
 
 } // namespace PhysX
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(PhysX::EditorJointConfig::DisplaySetupState, "{17EBE6BD-289A-4326-8A24-DCE3B7FEC51E}");
+} // namespace AZ
