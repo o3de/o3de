@@ -46,6 +46,8 @@ namespace PhysX
         AzToolsFramework::ViewportUi::ClusterId GetClusterId() const override;
         AzToolsFramework::ViewportUi::ButtonId GetDimensionsButtonId() const override;
 
+        // ComponentMode ...
+        AZStd::string GetComponentModeName() const override;
     private:
         
         // AzToolsFramework::ViewportInteraction::ViewportSelectionRequests ...
@@ -63,12 +65,9 @@ namespace PhysX
 
         AzToolsFramework::ViewportUi::ClusterId
             m_modeSelectionClusterId; //!< Viewport UI cluster for changing sub mode.
-        AzToolsFramework::ViewportUi::ButtonId
-            m_dimensionsModeButtonId; //!< Id of the Viewport UI button for resize/dimensions mode.
-        AzToolsFramework::ViewportUi::ButtonId
-            m_offsetModeButtonId; //!< Id of the Viewport UI button for offset mode.
-        AzToolsFramework::ViewportUi::ButtonId
-            m_rotationModeButtonId; //!< Id of the Viewport UI button for rotation mode.
+
+        AZStd::vector<AzToolsFramework::ViewportUi::ButtonId> m_buttonIds; //!< Ids for the Viewport UI buttons for each mode.
+
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler
             m_modeSelectionHandler; //!< Event handler for sub mode changes.
     };
