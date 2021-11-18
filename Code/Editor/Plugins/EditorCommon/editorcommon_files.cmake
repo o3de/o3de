@@ -9,7 +9,6 @@
 set(FILES
     EditorCommon.h
     EditorCommon.cpp
-    EditorCommon.rc
     EditorCommonAPI.h
     ActionOutput.h
     ActionOutput.cpp
