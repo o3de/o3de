@@ -149,7 +149,7 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
                 with download_path.open('wb') as f:
                     download_cancelled = copyfileobj(s, f, download_progress)
                     if download_cancelled:
-                        logger.warn(f'Download of file to {download_path} cancelled.')
+                        logger.info(f'Download of file to {download_path} cancelled.')
                         return 1
         except urllib.error.HTTPError as e:
             logger.error(f'HTTP Error {e.code} opening {parsed_uri.geturl()}')
