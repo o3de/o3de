@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiImageType_Fixed",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiImageType_Fixed::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

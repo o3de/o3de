@@ -71,7 +71,6 @@
 // CRY Stuff ////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 #include "Cry_Math.h"
-#include <Cry_Camera.h>
 #include <smartptr.h>
 #include <Range.h>
 #include <StlUtils.h>
@@ -90,7 +89,6 @@ inline int RoundToClosestMB(size_t memSize)
 #include <IRenderer.h>
 #include <CryFile.h>
 #include <ISystem.h>
-#include <ITimer.h>
 #include <IXml.h>
 #include <ICmdLine.h>
 #include <IConsole.h>

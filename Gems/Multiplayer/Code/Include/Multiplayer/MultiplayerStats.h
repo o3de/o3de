@@ -27,7 +27,7 @@ namespace Multiplayer
         uint64_t m_serverConnectionCount = 0;
 
         uint64_t m_recordMetricIndex = 0;
-        AZ::TimeMs m_totalHistoryTimeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_totalHistoryTimeMs = AZ::Time::ZeroTimeMs;
 
         static const uint32_t RingbufferSamples = 32;
         using MetricRingbuffer = AZStd::array<uint64_t, RingbufferSamples>;

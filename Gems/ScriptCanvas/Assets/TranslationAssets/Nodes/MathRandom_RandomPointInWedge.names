@@ -1,0 +1,70 @@
+{
+    "entries": [
+        {
+            "key": "{A2D614BC-1636-5F54-868A-BF5544910967}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Random Point In Wedge",
+                "category": "Math/Random",
+                "tooltip": "Returns a random point in the specified wedge"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Origin",
+                    "details": {
+                        "name": "Origin"
+                    }
+                },
+                {
+                    "key": "DataInput_Direction",
+                    "details": {
+                        "name": "Direction"
+                    }
+                },
+                {
+                    "key": "DataInput_Normal",
+                    "details": {
+                        "name": "Normal"
+                    }
+                },
+                {
+                    "key": "DataInput_Radius",
+                    "details": {
+                        "name": "Radius"
+                    }
+                },
+                {
+                    "key": "DataInput_Height",
+                    "details": {
+                        "name": "Height"
+                    }
+                },
+                {
+                    "key": "DataInput_Angle",
+                    "details": {
+                        "name": "Angle"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

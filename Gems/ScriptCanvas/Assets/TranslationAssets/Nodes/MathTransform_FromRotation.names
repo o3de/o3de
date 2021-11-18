@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "key": "{B5BCF19E-2EF2-584E-B4B6-0FC7E9FEE99B}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "From Rotation",
+                "category": "Math/Transform",
+                "tooltip": "Returns a transform from the rotation and with the translation set to zero"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

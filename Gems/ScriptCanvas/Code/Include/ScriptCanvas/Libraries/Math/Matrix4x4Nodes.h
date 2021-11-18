@@ -14,7 +14,7 @@ namespace ScriptCanvas
 {
     namespace Matrix4x4Nodes
     {
-        static const char* k_categoryName = "Math/Matrix4x4";
+        static constexpr const char* k_categoryName = "Math/Matrix4x4";
 
         AZ_INLINE Data::Matrix4x4Type FromColumns(const Data::Vector4Type& col0, const Data::Vector4Type& col1, const Data::Vector4Type& col2, const Data::Vector4Type& col3)
         {

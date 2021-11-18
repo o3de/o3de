@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "ConsoleNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "ConsoleNotificationBus"
+            },
+            "methods": [
+                {
+                    "key": "OnConsoleCommandExecuted",
+                    "details": {
+                        "name": "OnConsoleCommandExecuted"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

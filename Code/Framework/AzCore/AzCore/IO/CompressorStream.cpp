@@ -15,9 +15,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Memory/Memory.h>
 
-namespace AZ
-{
-namespace IO
+namespace AZ::IO
 {
 /*!
 \brief Constructs a compressor stream using the supplied filename and OpenFlags to open a file on disk
@@ -300,7 +298,4 @@ Compressor* CompressorStream::CreateCompressor(AZ::u32 compressorId)
     return m_compressor.get();
 }
 
-} // namespace IO
-} // namespace AZ
-
-
+} // namespace AZ::IO

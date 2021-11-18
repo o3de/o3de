@@ -2065,11 +2065,15 @@ namespace AZ
         }
 
         EnumerateInstanceCallContext callContext(
-            AZStd::bind(&SerializeContext::BeginCloneElement, this, AZStd::placeholders::_1, AZStd::placeholders::_2, AZStd::placeholders::_3, &cloneData, &m_errorLogger, &scratchBuffer),
-            AZStd::bind(&SerializeContext::EndCloneElement, this, &cloneData),
-            this,
-            SerializeContext::ENUM_ACCESS_FOR_READ,
-            &m_errorLogger);
+            [&](void* ptr, const ClassData* classData, const ClassElement* elementData) -> bool
+            {
+                return BeginCloneElement(ptr, classData, elementData, &cloneData, &m_errorLogger, &scratchBuffer);
+            },
+            [&]() -> bool
+            {
+                return EndCloneElement(&cloneData);
+            },
+            this, SerializeContext::ENUM_ACCESS_FOR_READ, &m_errorLogger);
 
         EnumerateInstance(
             &callContext
@@ -2098,19 +2102,17 @@ namespace AZ
         if (ptr)
         {
             EnumerateInstanceCallContext callContext(
-            AZStd::bind(&SerializeContext::BeginCloneElementInplace, this, dest, AZStd::placeholders::_1, AZStd::placeholders::_2, AZStd::placeholders::_3, &cloneData, &m_errorLogger, &scratchBuffer),
-                AZStd::bind(&SerializeContext::EndCloneElement, this, &cloneData),
-                this,
-                SerializeContext::ENUM_ACCESS_FOR_READ,
-                &m_errorLogger);
+                [&](void* ptr, const ClassData* classData, const ClassElement* elementData) -> bool
+                {
+                    return BeginCloneElementInplace(dest, ptr, classData, elementData, &cloneData, &m_errorLogger, &scratchBuffer);
+                },
+                [&]() -> bool
+                {
+                    return EndCloneElement(&cloneData);
+                },
+                this, SerializeContext::ENUM_ACCESS_FOR_READ, &m_errorLogger);
 
-            EnumerateInstance(
-                &callContext
-                , const_cast<void*>(ptr)
-                , classId
-                , nullptr
-                , nullptr
-            );
+            EnumerateInstance(&callContext, const_cast<void*>(ptr), classId, nullptr, nullptr);
         }
     }
 
@@ -2941,14 +2943,10 @@ namespace AZ
     {
         m_errorHandler = errorHandler ? errorHandler : &m_defaultErrorHandler;
 
-        m_elementCallback = AZStd::bind(static_cast<bool (SerializeContext::*)(EnumerateInstanceCallContext*, void*, const Uuid&, const ClassData*, const ClassElement*) const>(&SerializeContext::EnumerateInstance)
-            , m_context
-            , this
-            , AZStd::placeholders::_1
-            , AZStd::placeholders::_2
-            , AZStd::placeholders::_3
-            , AZStd::placeholders::_4
-        );
+        m_elementCallback = [this](void* ptr, const Uuid& classId, const ClassData* classData, const ClassElement* classElement)->bool
+        {
+            return m_context->EnumerateInstance(this, ptr, classId, classData, classElement);
+        };
     }
 
     //=========================================================================

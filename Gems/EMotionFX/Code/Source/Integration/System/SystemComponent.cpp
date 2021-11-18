@@ -514,7 +514,6 @@ namespace EMotionFX
             AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
             AzToolsFramework::EditorAnimationSystemRequestsBus::Handler::BusConnect();
             AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Handler::BusConnect();
-            m_updateTimer.Stamp();
 
             // Register custom property handlers for the reflected property editor.
             m_propertyHandlers = RegisterPropertyTypes();
@@ -604,15 +603,8 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
-        void SystemComponent::OnTick(float delta, AZ::ScriptTimePoint timePoint)
+        void SystemComponent::OnTick(float delta, [[maybe_unused]]AZ::ScriptTimePoint timePoint)
         {
-            AZ_UNUSED(timePoint);
-
-#if defined (EMOTIONFXANIMATION_EDITOR)
-            AZ_UNUSED(delta);
-            delta = m_updateTimer.StampAndGetDeltaTimeInSeconds();
-#endif
-
             // Flush events prior to updating EMotion FX.
             ActorNotificationBus::ExecuteQueuedEvents();
 
@@ -626,7 +618,7 @@ namespace EMotionFX
                 // Check if we are in game mode.
                 IEditor* editor = nullptr;
                 AzToolsFramework::EditorRequestBus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::GetEditor);
-                inGameMode = editor->IsInGameMode();
+                inGameMode = !editor || editor->IsInGameMode();
 #endif
 
                 // Apply the motion extraction deltas to the character controller / entity transform for all entities.

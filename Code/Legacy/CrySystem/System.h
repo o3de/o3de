@@ -13,7 +13,6 @@
 #include <IRenderer.h>
 #include <IWindowMessageHandler.h>
 
-#include "Timer.h"
 #include <CryVersion.h>
 #include "CmdLine.h"
 
@@ -22,6 +21,8 @@
 
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Math/Crc.h>
+
+#include <CryCommon/TimeValue.h>
 
 #include <list>
 #include <map>
@@ -83,10 +84,6 @@ class CWatchdogThread;
 
 //////////////////////////////////////////////////////////////////////////
 
-#endif
-
-#if defined(LINUX)
-    #include "CryLibrary.h"
 #endif
 
 #ifdef WIN32
@@ -226,12 +223,10 @@ public:
     void Quit() override;
     bool IsQuitting() const override;
     void ShutdownFileSystem(); // used to cleanup any file resources, such as cache handle.
-    void SetAffinity();
     const char* GetUserName() override;
     int GetApplicationInstance() override;
     int GetApplicationLogInstance(const char* logFilePath) override;
 
-    ITimer* GetITimer() override{ return m_env.pTimer; }
     AZ::IO::IArchive* GetIPak() override { return m_env.pCryPak; };
     IConsole* GetIConsole() override { return m_env.pConsole; };
     IRemoteConsole* GetIRemoteConsole() override;
@@ -239,7 +234,6 @@ public:
     ICryFont* GetICryFont() override{ return m_env.pCryFont; }
     ILog* GetILog() override{ return m_env.pLog; }
     ICmdLine* GetICmdLine() override{ return m_pCmdLine; }
-    IViewSystem* GetIViewSystem() override;
     ILevelSystem* GetILevelSystem() override;
     ISystemEventDispatcher* GetISystemEventDispatcher() override { return m_pSystemEventDispatcher; }
     //////////////////////////////////////////////////////////////////////////
@@ -388,7 +382,6 @@ private: // ------------------------------------------------------
     // System environment.
     SSystemGlobalEnvironment m_env;
 
-    CTimer                m_Time;                       //!<
     bool                  m_bInitializedSuccessfully;   //!< true if the system completed all initialization steps
     bool                  m_bRelaunch;                  //!< relaunching the app or not (true beforerelaunch)
     int                   m_iLoadingMode;               //!< Game is loading w/o changing context (0 not, 1 quickloading, 2 full loading)
@@ -410,10 +403,6 @@ private: // ------------------------------------------------------
     //! current active process
     IProcess* m_pProcess;
 
-    CCamera m_PhysRendererCamera;
-    ICVar* m_p_draw_helpers_str;
-    int m_iJumpToPhysProfileEnt;
-
     CTimeValue m_lastTickTime;
 
     //! system event dispatcher
@@ -427,9 +416,6 @@ private: // ------------------------------------------------------
 
     //! System to manage levels.
     ILevelSystem* m_pLevelSystem;
-
-    //! System to manage views.
-    IViewSystem* m_pViewSystem;
 
     // XML Utils interface.
     class CXmlUtils* m_pXMLUtils;

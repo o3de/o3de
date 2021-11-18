@@ -50,8 +50,9 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::ActivateWindow()
     {
-        activateWindow();
+        show();
         raise();
+        activateWindow();
     }
 
     bool AtomToolsMainWindow::AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation)

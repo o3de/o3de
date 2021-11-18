@@ -8,179 +8,176 @@
 
 #include <AzCore/std/string/memorytoascii.h>
 
-namespace AZStd
+namespace AZStd::MemoryToASCII
 {
-    namespace MemoryToASCII
+    AZStd::string ToString(const void* memoryAddrs, AZStd::size_t dataSize, AZStd::size_t maxShowSize, AZStd::size_t dataWidth/*=16*/, Options format/*=Options::Default*/)
     {
-        AZStd::string ToString(const void* memoryAddrs, AZStd::size_t dataSize, AZStd::size_t maxShowSize, AZStd::size_t dataWidth/*=16*/, Options format/*=Options::Default*/)
+        AZStd::string output;
+
+        if ((memoryAddrs != nullptr) && (dataSize > 0))
         {
-            AZStd::string output;
+            const AZ::u8 *data = reinterpret_cast<const AZ::u8*>(memoryAddrs);
 
-            if ((memoryAddrs != nullptr) && (dataSize > 0))
+            if (static_cast<unsigned>(format) != 0)
             {
-                const AZ::u8 *data = reinterpret_cast<const AZ::u8*>(memoryAddrs);
+                output.reserve(8162);
 
-                if (static_cast<unsigned>(format) != 0)
+                bool showHeader = static_cast<unsigned>(format) & static_cast<unsigned>(Options::Header) ? true : false;
+                bool showOffset = static_cast<unsigned>(format) & static_cast<unsigned>(Options::Offset) ? true : false;
+                bool showBinary = static_cast<unsigned>(format) & static_cast<unsigned>(Options::Binary) ? true : false;
+                bool showASCII = static_cast<unsigned>(format) & static_cast<unsigned>(Options::ASCII) ? true : false;
+                bool showInfo = static_cast<unsigned>(format) & static_cast<unsigned>(Options::Info) ? true : false;
+
+                // Because of the auto formatting for the headers, the min width is 3
+                if (dataWidth < 3)
                 {
-                    output.reserve(8162);
+                    dataWidth = 3;
+                }
 
-                    bool showHeader = static_cast<unsigned>(format) & static_cast<unsigned>(Options::Header) ? true : false;
-                    bool showOffset = static_cast<unsigned>(format) & static_cast<unsigned>(Options::Offset) ? true : false;
-                    bool showBinary = static_cast<unsigned>(format) & static_cast<unsigned>(Options::Binary) ? true : false;
-                    bool showASCII = static_cast<unsigned>(format) & static_cast<unsigned>(Options::ASCII) ? true : false;
-                    bool showInfo = static_cast<unsigned>(format) & static_cast<unsigned>(Options::Info) ? true : false;
+                if (showHeader)
+                {
+                    AZStd::string line1;
+                    AZStd::string line2;
+                    line1.reserve(1024);
+                    line2.reserve(1024);
 
-                    // Because of the auto formatting for the headers, the min width is 3
-                    if (dataWidth < 3)
+                    if (showOffset)
                     {
-                        dataWidth = 3;
+                        line1 += "Offset";
+                        line2 += "------";
+
+                        if (showBinary || showASCII)
+                        {
+                            line1 += " ";
+                            line2 += " ";
+                        }
                     }
 
-                    if (showHeader)
+                    if (showBinary)
                     {
-                        AZStd::string line1;
-                        AZStd::string line2;
-                        line1.reserve(1024);
-                        line2.reserve(1024);
+                        static const char *kHeaderName = "Data";
+                        static AZStd::size_t kHeaderNameSize = 4;
 
-                        if (showOffset)
+                        AZStd::size_t lineLength = (dataWidth * 3) - 1;
+                        AZStd::size_t numPreSpaces = (lineLength - kHeaderNameSize) / 2;
+                        AZStd::size_t numPostSpaces = lineLength - numPreSpaces - kHeaderNameSize;
+
+                        line1 += AZStd::string(numPreSpaces, ' ') + kHeaderName + AZStd::string(numPostSpaces, ' ');
+                        //line2 += AZStd::string(lineLength, '-');
+                        for(size_t i=0; i<dataWidth; i++)
                         {
-                            line1 += "Offset";
-                            line2 += "------";
-
-                            if (showBinary || showASCII)
+                            if (i > 0)
                             {
-                                line1 += " ";
-                                line2 += " ";
-                            }
-                        }
-
-                        if (showBinary)
-                        {
-                            static const char *kHeaderName = "Data";
-                            static AZStd::size_t kHeaderNameSize = 4;
-
-                            AZStd::size_t lineLength = (dataWidth * 3) - 1;
-                            AZStd::size_t numPreSpaces = (lineLength - kHeaderNameSize) / 2;
-                            AZStd::size_t numPostSpaces = lineLength - numPreSpaces - kHeaderNameSize;
-
-                            line1 += AZStd::string(numPreSpaces, ' ') + kHeaderName + AZStd::string(numPostSpaces, ' ');
-                            //line2 += AZStd::string(lineLength, '-');
-                            for(size_t i=0; i<dataWidth; i++)
-                            {
-                                if (i > 0)
-                                {
-                                    line2 += "-";
-                                }
-
-                                line2 += AZStd::string::format("%02zx", i);
+                                line2 += "-";
                             }
 
-                            if (showASCII)
-                            {
-                                line1 += " ";
-                                line2 += " ";
-                            }
+                            line2 += AZStd::string::format("%02zx", i);
                         }
 
                         if (showASCII)
                         {
-                            static const char *kHeaderName = "ASCII";
-                            static AZStd::size_t kHeaderNameSize = 5;
-
-                            AZStd::size_t numPreSpaces = (dataWidth - kHeaderNameSize) / 2;
-                            AZStd::size_t numPostSpaces = dataWidth - numPreSpaces - kHeaderNameSize;
-
-                            line1 += AZStd::string(numPreSpaces, ' ') + kHeaderName + AZStd::string(numPostSpaces, ' ');
-                            line2 += AZStd::string(dataWidth, '-');
+                            line1 += " ";
+                            line2 += " ";
                         }
-
-                        if (showInfo)
-                        {
-                            output += AZStd::string::format("Address: 0x%p Data Size:%zu Max Size:%zu\n", data, dataSize, maxShowSize);
-                        }
-
-                        output += line1 + "\n";
-                        output += line2 + "\n";
                     }
 
-                    AZStd::size_t offset = 0;
-                    AZStd::size_t maxSize = dataSize > maxShowSize ? maxShowSize : dataSize;
-
-                    while (offset < maxSize)
+                    if (showASCII)
                     {
-                        if (showOffset)
-                        {
-                            output += AZStd::string::format("%06zx", offset);
+                        static const char *kHeaderName = "ASCII";
+                        static AZStd::size_t kHeaderNameSize = 5;
 
-                            if (showBinary || showASCII)
+                        AZStd::size_t numPreSpaces = (dataWidth - kHeaderNameSize) / 2;
+                        AZStd::size_t numPostSpaces = dataWidth - numPreSpaces - kHeaderNameSize;
+
+                        line1 += AZStd::string(numPreSpaces, ' ') + kHeaderName + AZStd::string(numPostSpaces, ' ');
+                        line2 += AZStd::string(dataWidth, '-');
+                    }
+
+                    if (showInfo)
+                    {
+                        output += AZStd::string::format("Address: 0x%p Data Size:%zu Max Size:%zu\n", data, dataSize, maxShowSize);
+                    }
+
+                    output += line1 + "\n";
+                    output += line2 + "\n";
+                }
+
+                AZStd::size_t offset = 0;
+                AZStd::size_t maxSize = dataSize > maxShowSize ? maxShowSize : dataSize;
+
+                while (offset < maxSize)
+                {
+                    if (showOffset)
+                    {
+                        output += AZStd::string::format("%06zx", offset);
+
+                        if (showBinary || showASCII)
+                        {
+                            output += " ";
+                        }
+                    }
+
+                    if (showBinary)
+                    {
+                        AZStd::string binLine;
+                        binLine.reserve((dataWidth * 3) * 2);
+
+                        for (AZStd::size_t index = 0; index < dataWidth; index++)
+                        {
+                            if (!binLine.empty())
                             {
-                                output += " ";
+                                binLine += " ";
+                            }
+
+                            if ((offset + index) < maxSize)
+                            {
+                                binLine += AZStd::string::format("%02x", data[offset + index]);
+                            }
+                            else
+                            {
+                                binLine += "  ";
                             }
                         }
 
-                        if (showBinary)
-                        {
-                            AZStd::string binLine;
-                            binLine.reserve((dataWidth * 3) * 2);
-
-                            for (AZStd::size_t index = 0; index < dataWidth; index++)
-                            {
-                                if (!binLine.empty())
-                                {
-                                    binLine += " ";
-                                }
-
-                                if ((offset + index) < maxSize)
-                                {
-                                    binLine += AZStd::string::format("%02x", data[offset + index]);
-                                }
-                                else
-                                {
-                                    binLine += "  ";
-                                }
-                            }
-
-                            output += binLine;
-
-                            if (showASCII)
-                            {
-                                output += " ";
-                            }
-                        }
+                        output += binLine;
 
                         if (showASCII)
                         {
-                            AZStd::string asciiLine;
-                            asciiLine.reserve(dataWidth * 2);
+                            output += " ";
+                        }
+                    }
 
-                            for (AZStd::size_t index = 0; index < dataWidth; index++)
+                    if (showASCII)
+                    {
+                        AZStd::string asciiLine;
+                        asciiLine.reserve(dataWidth * 2);
+
+                        for (AZStd::size_t index = 0; index < dataWidth; index++)
+                        {
+                            if ((offset + index) > maxSize)
                             {
-                                if ((offset + index) > maxSize)
-                                {
-                                    break;
-                                }
-                                else
-                                {
-                                    char value = static_cast<char>(data[offset + index]);
-
-                                    if ((value < 32) || (value > 127))
-                                        value = ' ';
-
-                                    asciiLine += value;
-                                }
+                                break;
                             }
+                            else
+                            {
+                                char value = static_cast<char>(data[offset + index]);
 
-                            output += asciiLine;
+                                if ((value < 32) || (value > 127))
+                                    value = ' ';
+
+                                asciiLine += value;
+                            }
                         }
 
-                        output += "\n";
-                        offset += dataWidth;
+                        output += asciiLine;
                     }
+
+                    output += "\n";
+                    offset += dataWidth;
                 }
             }
-
-            return output;
         }
-    } // namespace MemoryToASCII
-} // namespace AZStd
+
+        return output;
+    }
+} // namespace AZStd::MemoryToASCII

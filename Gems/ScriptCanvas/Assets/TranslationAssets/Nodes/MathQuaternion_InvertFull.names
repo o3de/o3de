@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "key": "{25150C46-3ECA-596A-8643-DB9B143D17C9}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Invert Full",
+                "category": "Math/Quaternion",
+                "tooltip": "Returns the inverse for any rotation, not just unit rotations"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

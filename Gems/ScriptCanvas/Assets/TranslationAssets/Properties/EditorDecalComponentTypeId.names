@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorDecalComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorDecalComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -71,18 +71,6 @@ namespace ScriptCanvasEditor
             AZStd::string m_titlePalette;
             AZStd::vector< AZ::Uuid > m_customComponents;
 
-            // Translation Information for the Node
-            AZStd::string m_translationContext;
-
-            AZStd::string m_translationKeyName;
-            AZStd::string m_translationKeyContext;
-
-            TranslationContextGroup m_translationGroup;
-
-            AZStd::string m_titleFallback;
-            AZStd::string m_subtitleFallback;
-            AZStd::string m_tooltipFallback;
-
             AZ::EntityId  m_scriptCanvasId;
         };
 
@@ -92,16 +80,9 @@ namespace ScriptCanvasEditor
             AZStd::string m_titlePalette;
         };
 
-        AZStd::string GetContextName(const AZ::SerializeContext::ClassData& classData);
-        AZStd::string GetCategoryName(const AZ::SerializeContext::ClassData& classData);
-
-        void CopySlotTranslationKeyedNamesToDatums(AZ::EntityId graphCanvasNodeId);
-
-        // Copies the the translated key name to the ScriptCanvas Data Slot which matches
-        // the scSlotId
-        void CopyTranslationKeyedNameToDatumLabel(const AZ::EntityId& graphCanvasNodeId,
-            ScriptCanvas::SlotId scSlotId,
-            const AZ::EntityId& graphCanvasSlotId);
+        // Copies the slot name to the underlying ScriptCanvas Data Slot which matches the slot Id
+        void UpdateSlotDatumLabels(AZ::EntityId graphCanvasNodeId);
+        void UpdateSlotDatumLabel(const AZ::EntityId& graphCanvasNodeId, ScriptCanvas::SlotId scSlotId, const AZStd::string& name);
 
         template <typename NodeType>
         NodeType* GetNode(AZ::EntityId scriptCanvasGraphId, NodeIdPair nodeIdPair)

@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "ViewPaneCallbackBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "ViewPaneCallbackBus"
+            },
+            "methods": [
+                {
+                    "key": "CreateViewPaneWidget",
+                    "details": {
+                        "name": "CreateViewPaneWidget"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

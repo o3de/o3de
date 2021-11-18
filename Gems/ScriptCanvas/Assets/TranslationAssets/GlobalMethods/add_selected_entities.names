@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "add_selected_entities",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "add_selected_entities",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke add_selected_entities"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after add_selected_entities is invoked"
+                    },
+                    "details": {
+                        "name": "add_selected_entities",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

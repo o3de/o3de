@@ -953,14 +953,8 @@ void CBaseObject::DrawTextureIcon(DisplayContext& dc, [[maybe_unused]] const Vec
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CBaseObject::DrawWarningIcons(DisplayContext& dc, const Vec3& pos)
+void CBaseObject::DrawWarningIcons(DisplayContext& dc, const Vec3&)
 {
-    // Don't draw warning icons if they are beyond draw distance
-    if ((dc.camera->GetPosition() - pos).GetLength() > gSettings.viewports.fWarningIconsDrawDistance)
-    {
-        return;
-    }
-
     if (gSettings.viewports.bShowIcons || gSettings.viewports.bShowSizeBasedIcons)
     {
         const int warningIconSizeX = OBJECT_TEXTURE_ICON_SIZEX / 2;
@@ -1010,11 +1004,8 @@ void CBaseObject::DrawLabel(DisplayContext& dc, const Vec3& pos, const QColor& l
         labelColor = QColor(0, 0, 0);
     }
 
-    float camDist = dc.camera->GetPosition().GetDistance(pos);
-    float maxDist = dc.settings->GetLabelsDistance();
-    if (camDist < dc.settings->GetLabelsDistance() || (dc.flags & DISPLAY_SELECTION_HELPERS))
+    if (dc.flags & DISPLAY_SELECTION_HELPERS)
     {
-        float range = maxDist / 2.0f;
         Vec3 c(static_cast<f32>(labelColor.redF()), static_cast<f32>(labelColor.greenF()), static_cast<f32>(labelColor.redF()));
         if (IsSelected())
         {
@@ -1031,10 +1022,6 @@ void CBaseObject::DrawLabel(DisplayContext& dc, const Vec3& pos, const QColor& l
             col[0] = c.x;
             col[1] = c.y;
             col[2] = c.z;
-        }
-        else if (camDist > range)
-        {
-            col[3] = col[3] * (1.0f - (camDist - range) / range);
         }
 
         dc.SetColor(col[0], col[1], col[2], col[3] * alpha);
@@ -1194,33 +1181,6 @@ bool CBaseObject::CanBeDrawn(const DisplayContext& dc, bool& outDisplaySelection
     }
 
     return bResult;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool CBaseObject::IsInCameraView(const CCamera& camera)
-{
-    AABB bbox;
-    GetBoundBox(bbox);
-    return (camera.IsAABBVisible_F(AABB(bbox.min, bbox.max)));
-}
-
-//////////////////////////////////////////////////////////////////////////
-float CBaseObject::GetCameraVisRatio(const CCamera& camera)
-{
-    AABB bbox;
-    GetBoundBox(bbox);
-
-    static const float defaultVisRatio = 1000.0f;
-
-    const float objectHeightSq = max(1.0f, (bbox.max - bbox.min).GetLengthSquared());
-    const float camdistSq = (bbox.min - camera.GetPosition()).GetLengthSquared();
-    float visRatio = defaultVisRatio;
-    if (camdistSq > FLT_EPSILON)
-    {
-        visRatio = objectHeightSq / camdistSq;
-    }
-
-    return visRatio;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1689,7 +1649,7 @@ QString CBaseObject::GetTypeName() const
     }
 
     QString name;
-    name.append(className.mid(0, className.length() - subClassName.length()));
+    name.append(className.midRef(0, className.length() - subClassName.length()));
     return name;
 }
 

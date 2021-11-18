@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eSSB_GotoStartTime",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eSSB_GotoStartTime::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

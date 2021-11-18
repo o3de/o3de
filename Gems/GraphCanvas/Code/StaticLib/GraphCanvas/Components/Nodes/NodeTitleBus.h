@@ -38,18 +38,17 @@ namespace GraphCanvas
 
         virtual QGraphicsWidget* GetGraphicsWidget() = 0;
 
+        //! Set the node's details, title, subtitle, tooltip
+        virtual void SetDetails(const AZStd::string& title, const AZStd::string& subtitle) = 0;
+
         //! Set the Node's title.
         virtual void SetTitle(const AZStd::string& value) = 0;
-
-        virtual void SetTranslationKeyedTitle(const TranslationKeyedString& value) = 0;
 
         //! Get the Node's title.
         virtual AZStd::string GetTitle() const = 0;
 
         //! Set the Node's sub-title.
         virtual void SetSubTitle(const AZStd::string& value) = 0;
-
-        virtual void SetTranslationKeyedSubTitle(const TranslationKeyedString& value) = 0;
 
         //! Get the Node's sub-title.
         virtual AZStd::string GetSubTitle() const = 0;

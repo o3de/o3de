@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "BlendFactor_AlphaSourceSaturate",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "BlendFactor_AlphaSourceSaturate::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

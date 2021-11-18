@@ -28,7 +28,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The id used to identify the primary motion input device
-        static const InputDeviceId Id;
+        static constexpr inline InputDeviceId Id{"motion"};
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Check whether an input device id identifies a motion device (regardless of index)

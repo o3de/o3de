@@ -1,0 +1,61 @@
+{
+    "entries": [
+        {
+            "key": "TickRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "TickRequestBus",
+                "category": "Timing"
+            },
+            "methods": [
+                {
+                    "key": "GetTickDeltaTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Tick Delta Time"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Tick Delta Time is invoked"
+                    },
+                    "details": {
+                        "name": "Get Tick Delta Time",
+                        "tooltip": "Gets the latest time between ticks"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTimeAtCurrentTick",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Time at Current Tick"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Time at Current Tick is invoked"
+                    },
+                    "details": {
+                        "name": "Get Time at Current Tick",
+                        "tooltip": "Gets the time in seconds since the epoch (January 1, 1970)"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{4C0F6AD4-0D4F-4354-AD4A-0C01E948245C}",
+                            "details": {
+                                "name": "ScriptTimePoint"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

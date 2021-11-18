@@ -671,7 +671,7 @@ AzToolsFramework::PropertyRowWidget* ReflectedPropertyControl::FindPropertyRowWi
         return nullptr;
     }
     const AzToolsFramework::ReflectedPropertyEditor::WidgetList& widgets = m_editor->GetWidgets();
-    for (auto instance : widgets)
+    for (const auto& instance : widgets)
     {
         if (instance.second->label() == item->GetPropertyName())
         {

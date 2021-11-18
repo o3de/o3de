@@ -20,7 +20,6 @@
 #include <CrySystemBus.h>
 
 #if defined (EMOTIONFXANIMATION_EDITOR)
-#   include <AzCore/Debug/Timer.h>
 #   include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #   include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #   include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -117,7 +116,6 @@ namespace EMotionFX
             AzToolsFramework::AssetBrowser::SourceFileDetails GetSourceFileDetails(const char* fullSourceFileName) override;
             //////////////////////////////////////////////////////////////////////////////////////
 
-            AZ::Debug::Timer m_updateTimer;
             AZStd::vector<AzToolsFramework::PropertyHandlerBase*> m_propertyHandlers;
 #endif // EMOTIONFXANIMATION_EDITOR
 

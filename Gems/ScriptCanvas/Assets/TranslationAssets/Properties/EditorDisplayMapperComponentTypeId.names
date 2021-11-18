@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorDisplayMapperComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorDisplayMapperComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

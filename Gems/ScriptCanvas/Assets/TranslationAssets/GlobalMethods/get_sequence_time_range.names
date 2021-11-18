@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "get_sequence_time_range",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "get_sequence_time_range",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke get_sequence_time_range"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after get_sequence_time_range is invoked"
+                    },
+                    "details": {
+                        "name": "get_sequence_time_range",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{515CF4CF-4992-4139-BDE5-42A887432B45}",
+                            "details": {
+                                "name": "Range"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

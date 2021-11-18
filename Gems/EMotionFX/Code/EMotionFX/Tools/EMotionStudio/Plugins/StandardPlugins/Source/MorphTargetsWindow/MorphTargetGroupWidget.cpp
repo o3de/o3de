@@ -15,7 +15,6 @@
 #include <QLabel>
 #include <AzQtComponents/Components/Widgets/SliderCombo.h>
 
-
 namespace EMStudio
 {
 

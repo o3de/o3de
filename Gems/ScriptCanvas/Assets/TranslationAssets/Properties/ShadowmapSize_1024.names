@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ShadowmapSize_1024",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ShadowmapSize_1024::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

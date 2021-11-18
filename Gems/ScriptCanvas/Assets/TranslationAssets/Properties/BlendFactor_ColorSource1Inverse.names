@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "BlendFactor_ColorSource1Inverse",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "BlendFactor_ColorSource1Inverse::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

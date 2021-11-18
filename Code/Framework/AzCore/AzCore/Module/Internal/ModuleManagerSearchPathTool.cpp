@@ -10,21 +10,18 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 
-namespace AZ
+namespace AZ::Internal
 {
-    namespace Internal
+    AZ::OSString ModuleManagerSearchPathTool::GetModuleDirectory(const AZ::DynamicModuleDescriptor& moduleDesc)
     {
-        AZ::OSString ModuleManagerSearchPathTool::GetModuleDirectory(const AZ::DynamicModuleDescriptor& moduleDesc)
+        // For each module that is loaded, attempt to set the module's folder as a path for dependent module resolution
+        AZ::OSString modulePath = moduleDesc.m_dynamicLibraryPath;
+        AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::ResolveModulePath, modulePath);
+        auto lastPathSep = modulePath.find_last_of(AZ_TRAIT_OS_PATH_SEPARATOR);
+        if (lastPathSep != modulePath.npos)
         {
-            // For each module that is loaded, attempt to set the module's folder as a path for dependent module resolution
-            AZ::OSString modulePath = moduleDesc.m_dynamicLibraryPath;
-            AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Events::ResolveModulePath, modulePath);
-            auto lastPathSep = modulePath.find_last_of(AZ_TRAIT_OS_PATH_SEPARATOR);
-            if (lastPathSep != modulePath.npos)
-            {
-                modulePath = modulePath.substr(0, lastPathSep);
-            }
-            return modulePath;
+            modulePath = modulePath.substr(0, lastPathSep);
         }
-    } // namespace Internal
-} // namespace AZ
+        return modulePath;
+    }
+} // namespace AZ::Internal

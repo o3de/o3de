@@ -1,0 +1,53 @@
+{
+    "entries": [
+        {
+            "key": "CreateBoxOverlapRequest",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "CreateBoxOverlapRequest",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateBoxOverlapRequest"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateBoxOverlapRequest is invoked"
+                    },
+                    "details": {
+                        "name": "CreateBoxOverlapRequest",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        },
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "const Transform&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3DC986C2-316B-4C54-A0A6-8ABBB8ABCC4A}",
+                            "details": {
+                                "name": "OverlapRequest"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

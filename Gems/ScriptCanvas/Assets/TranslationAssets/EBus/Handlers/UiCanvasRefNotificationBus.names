@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "key": "UiCanvasRefNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Canvas Ref",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "OnCanvasRefChanged",
+                    "details": {
+                        "name": "On Canvas Ref Changed",
+                        "tooltip": "Executes when the canvas referenced by a UiCanvasAssetRefComponent has changed. This can happen when \"Load Canvas\", \"Unload Canvas\", or \"Set Canvas Ref Entity\" is called"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Canvas Ref EntityID",
+                                "tooltip": "The entity associated with the canvas"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Canvas EntityID",
+                                "tooltip": "The canvas"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

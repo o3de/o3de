@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "key": "{3234ADB9-4B1E-594B-8AF6-EC857CCA1241}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Random Point In Ellipsoid",
+                "category": "Math/Random",
+                "tooltip": "Returns a random point in an ellipsoid"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Dimensions",
+                    "details": {
+                        "name": "Dimensions"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

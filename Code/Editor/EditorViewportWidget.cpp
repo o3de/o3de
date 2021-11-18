@@ -53,7 +53,6 @@
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 
 // CryCommon
-#include <CryCommon/HMDBus.h>
 #include <CryCommon/IRenderAuxGeom.h>
 
 // AzFramework
@@ -556,22 +555,6 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             // this should only occur for the main viewport and no others.
             ShowCursor();
 
-            // If the user has selected game mode, enable outputting to any attached HMD and properly size the context
-            // to the resolution specified by the VR device.
-            if (gSettings.bEnableGameModeVR)
-            {
-                const AZ::VR::HMDDeviceInfo* deviceInfo = nullptr;
-                EBUS_EVENT_RESULT(deviceInfo, AZ::VR::HMDDeviceRequestBus, GetDeviceInfo);
-                AZ_Warning("Render Viewport", deviceInfo, "No VR device detected");
-
-                if (deviceInfo)
-                {
-                    // Note: This may also need to adjust the viewport size
-                    SetActiveWindow();
-                    SetFocus();
-                    SetSelected(true);
-                }
-            }
             SetCurrentCursor(STD_CURSOR_GAME);
 
             if (ShouldPreviewFullscreen())
@@ -1815,13 +1798,6 @@ float EditorViewportWidget::GetScreenScaleFactor([[maybe_unused]] const Vec3& wo
     AZ_Error("CryLegacy", false, "EditorViewportWidget::GetScreenScaleFactor not implemented");
     return 1.f;
 }
-//////////////////////////////////////////////////////////////////////////
-float EditorViewportWidget::GetScreenScaleFactor(const CCamera& camera, const Vec3& object_position)
-{
-    Vec3 camPos = camera.GetPosition();
-    float dist = camPos.GetDistance(object_position);
-    return dist;
-}
 
 //////////////////////////////////////////////////////////////////////////
 bool EditorViewportWidget::CheckRespondToInput() const
@@ -1842,7 +1818,6 @@ bool EditorViewportWidget::CheckRespondToInput() const
 //////////////////////////////////////////////////////////////////////////
 bool EditorViewportWidget::HitTest(const QPoint& point, HitContext& hitInfo)
 {
-    hitInfo.camera = nullptr;
     hitInfo.pExcludedObject = GetCameraObject();
     return QtViewport::HitTest(point, hitInfo);
 }
@@ -2543,12 +2518,6 @@ bool EditorViewportWidget::ShouldPreviewFullscreen() const
 
     // Doesn't work with split layout
     if (layout->GetLayout() != EViewLayout::ET_Layout0)
-    {
-        return false;
-    }
-
-    // Not supported in VR
-    if (gSettings.bEnableGameModeVR)
     {
         return false;
     }

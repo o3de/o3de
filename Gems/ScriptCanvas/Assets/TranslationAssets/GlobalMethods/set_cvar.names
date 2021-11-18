@@ -1,0 +1,45 @@
+{
+    "entries": [
+        {
+            "key": "set_cvar",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "set_cvar",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke set_cvar"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after set_cvar is invoked"
+                    },
+                    "details": {
+                        "name": "set_cvar",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        },
+                        {
+                            "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
+                            "details": {
+                                "name": "const any&"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

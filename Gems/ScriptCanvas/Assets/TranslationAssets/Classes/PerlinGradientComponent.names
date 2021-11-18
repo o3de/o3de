@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "PerlinGradientComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "PerlinGradientComponent"
+            }
+        }
+    ]
+}

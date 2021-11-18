@@ -67,7 +67,10 @@ namespace UnitTest
     {
         SerializeContextFixture::SetUp();
 
+        SuppressTraceOutput(false);
+
         AZ::JobManagerDesc jobDesc;
+
         AZ::JobManagerThreadDesc threadDesc;
         for (size_t threadCount = 0; threadCount < GetNumJobManagerThreads(); threadCount++)
         {
@@ -111,7 +114,19 @@ namespace UnitTest
         delete m_jobContext;
         delete m_jobManager;
 
+        // Reset back to default suppression settings to avoid affecting other tests
+        SuppressTraceOutput(true);
+
         SerializeContextFixture::TearDown();
+    }
+
+    void BaseAssetManagerTest::SuppressTraceOutput(bool suppress)
+    {
+        UnitTest::TestRunner::Instance().m_suppressAsserts = suppress;
+        UnitTest::TestRunner::Instance().m_suppressErrors = suppress;
+        UnitTest::TestRunner::Instance().m_suppressWarnings = suppress;
+        UnitTest::TestRunner::Instance().m_suppressPrintf = suppress;
+        UnitTest::TestRunner::Instance().m_suppressOutput = suppress;
     }
 
     void BaseAssetManagerTest::WriteAssetToDisk(const AZStd::string& assetName, [[maybe_unused]] const AZStd::string& assetIdGuid)

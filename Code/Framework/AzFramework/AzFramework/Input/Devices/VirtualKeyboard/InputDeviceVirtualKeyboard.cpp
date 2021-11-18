@@ -15,9 +15,6 @@
 namespace AzFramework
 {
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    const InputDeviceId InputDeviceVirtualKeyboard::Id("virtual_keyboard");
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////
     bool InputDeviceVirtualKeyboard::IsVirtualKeyboardDevice(const InputDeviceId& inputDeviceId)
     {
         return (inputDeviceId.GetNameCrc32() == Id.GetNameCrc32());

@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "key": "{70D7DC40-B9AB-55F6-8E80-A9F8EA9BE964}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Rotation Z (Degrees)",
+                "category": "Math/Transform",
+                "tooltip": "Returns a transform representing a rotation Degrees around the Z-Axis"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Degrees",
+                    "details": {
+                        "name": "Degrees"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -2640,7 +2640,7 @@ QSize OutlinerItemDelegate::sizeHint(const QStyleOptionViewItem& option, const Q
             m_cachedBoundingRectOfTallCharacter = QRect(); 
         };
 
-        QTimer::singleShot(0, resetFunction);
+        QTimer::singleShot(0, this, resetFunction);
     }
   
     // And add 8 to it gives the outliner roughly the visible spacing we're looking for.

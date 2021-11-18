@@ -1,0 +1,165 @@
+{
+    "entries": [
+        {
+            "key": "UiMarkupButtonNotificationsBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Markup Button",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "OnHoverStart",
+                    "details": {
+                        "name": "On Hover Start",
+                        "tooltip": "Executes when the button has become hovered"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "ID",
+                                "tooltip": "The markup ID of the clickable text"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Action",
+                                "tooltip": "The action string of the clickable text"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Data",
+                                "tooltip": "The data string of the clickable text"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnHoverEnd",
+                    "details": {
+                        "name": "On Hover End",
+                        "tooltip": "Executes when the button is no longer hovered"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "ID",
+                                "tooltip": "The markup ID of the clickable text"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Action",
+                                "tooltip": "The action string of the clickable text"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Data",
+                                "tooltip": "The data string of the clickable text"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnPressed",
+                    "details": {
+                        "name": "On Pressed",
+                        "tooltip": "Executes when the button receives a press event"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "ID",
+                                "tooltip": "The markup ID of the clickable text"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Action",
+                                "tooltip": "The action string of the clickable text"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Data",
+                                "tooltip": "The data string of the clickable text"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnReleased",
+                    "details": {
+                        "name": "On Released",
+                        "tooltip": "Executes when the button receives a release event"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "ID",
+                                "tooltip": "The markup ID of the clickable text"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Action",
+                                "tooltip": "The action string of the clickable text"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Data",
+                                "tooltip": "The data string of the clickable text"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OnClick",
+                    "details": {
+                        "name": "On Click",
+                        "tooltip": "Executes when the button is clicked (a release on the button following a press on the button)"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "ID",
+                                "tooltip": "The markup ID of the clickable text"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Action",
+                                "tooltip": "The action string of the clickable text"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Data",
+                                "tooltip": "The data string of the clickable text"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "key": "{6AEAAC03-A8D7-5C29-9F23-07FF59EE55D7}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "From Axis Angle (Degrees)",
+                "category": "Math/Quaternion",
+                "tooltip": "Returns the rotation created from Axis the angle Degrees"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Axis",
+                    "details": {
+                        "name": "Axis"
+                    }
+                },
+                {
+                    "key": "DataInput_Degrees",
+                    "details": {
+                        "name": "Degrees"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}
