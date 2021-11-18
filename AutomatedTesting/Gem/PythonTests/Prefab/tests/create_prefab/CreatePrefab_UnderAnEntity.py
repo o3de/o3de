@@ -5,7 +5,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-def PrefabComplexWorflow_CreatePrefabOfChildEntity():
+def CreatePrefab_UnderAnEntity():
     """
     Test description:
     - Creates two entities, parent and child. Child entity has Parent entity as its parent.
@@ -18,7 +18,7 @@ def PrefabComplexWorflow_CreatePrefabOfChildEntity():
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.prefab_utils import Prefab
 
-    import PrefabTestUtils as prefab_test_utils
+    import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     prefab_test_utils.open_base_tests_level()
 
@@ -49,4 +49,4 @@ def PrefabComplexWorflow_CreatePrefabOfChildEntity():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(PrefabComplexWorflow_CreatePrefabOfChildEntity)
+    Report.start_test(CreatePrefab_UnderAnEntity)

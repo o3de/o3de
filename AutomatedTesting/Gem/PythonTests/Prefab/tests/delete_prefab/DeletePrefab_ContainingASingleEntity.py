@@ -5,14 +5,14 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-def PrefabBasicWorkflow_CreateAndDeletePrefab():
+def DeletePrefab_ContainingASingleEntity():
 
     CAR_PREFAB_FILE_NAME = 'car_prefab'
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
     from editor_python_test_tools.prefab_utils import Prefab
 
-    import PrefabTestUtils as prefab_test_utils
+    import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     prefab_test_utils.open_base_tests_level()
 
@@ -29,4 +29,4 @@ def PrefabBasicWorkflow_CreateAndDeletePrefab():
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
-    Report.start_test(PrefabBasicWorkflow_CreateAndDeletePrefab)
+    Report.start_test(DeletePrefab_ContainingASingleEntity)

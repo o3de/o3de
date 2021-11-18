@@ -363,9 +363,9 @@ namespace AZ::Data
         // We'll go through and check the ready status of every dependency immediately after finishing initialization anyway
         if (m_initComplete)
         {
-            RemoveFromAllWaitingPreloads(asset->GetId());
-            RemoveWaitingAsset(asset->GetId());
-        }
+        RemoveFromAllWaitingPreloads(asset->GetId());
+        RemoveWaitingAsset(asset->GetId());
+    }
     }
 
     void AssetContainer::OnAssetDataLoaded(Asset<AssetData> asset)
@@ -583,7 +583,7 @@ namespace AZ::Data
                     // will load the assets but won't/can't create a circular preload dependency chain
                     if (*thisAsset == rootAssetId)
                     {
-                        AZ_Error("AssetContainer", false, "Circular preload dependency found - %s has a preload "
+                        AZ_Error("AssetContainer", false, "Circular preload dependency found - %s has a preload"
                             "dependency back to root %s\n",
                             thisListPair->first.ToString<AZStd::string>().c_str(),
                             rootAssetId.ToString<AZStd::string>().c_str());
@@ -592,7 +592,7 @@ namespace AZ::Data
                     }
                     else if (*thisAsset == thisListPair->first)
                     {
-                        AZ_Error("AssetContainer", false, "Circular preload dependency found - Root asset %s has a preload "
+                        AZ_Error("AssetContainer", false, "Circular preload dependency found - Root asset %s has a preload"
                             "dependency on %s which depends back back to itself\n",
                             rootAssetId.ToString<AZStd::string>().c_str(),
                             thisListPair->first.ToString<AZStd::string>().c_str());
@@ -601,7 +601,7 @@ namespace AZ::Data
                     }
                     else if (m_preloadWaitList.count(thisListPair->first) && m_preloadWaitList[thisListPair->first].count(*thisAsset))
                     {
-                        AZ_Error("AssetContainer", false, "Circular dependency found - Root asset %s has a preload "
+                        AZ_Error("AssetContainer", false, "Circular dependency found - Root asset %s has a preload"
                             "dependency on %s which has a circular dependency with %s\n",
                             rootAssetId.ToString<AZStd::string>().c_str(),
                             thisListPair->first.ToString<AZStd::string>().c_str(),
@@ -684,4 +684,4 @@ namespace AZ::Data
     {
         return m_invalidDependencies.load();
     }
-}   // namespace AZ::Data
+} // namespace AZ::Data

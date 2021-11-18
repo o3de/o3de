@@ -1083,6 +1083,7 @@ namespace EMStudio
         settings.m_selectedClothColliderColor = m_selectedClothColliderColor;
         settings.m_simulatedObjectColliderColor = m_simulatedObjectColliderColor;
         settings.m_selectedSimulatedObjectColliderColor = m_selectedSimulatedObjectColliderColor;
+        settings.m_jointNameColor = m_nodeNameColor;
     }
 
     void RenderOptions::OnGridUnitSizeChangedCallback() const
@@ -1285,6 +1286,7 @@ namespace EMStudio
     void RenderOptions::OnNodeNameColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_nodeNameColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_nodeNameColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnGridColorChangedCallback() const

@@ -2186,7 +2186,7 @@ namespace AZ::Data
     {
         return AZStd::shared_ptr<AssetContainer>( aznew AssetContainer(AZStd::move(asset), loadParams));
     }
-}   // namespace AZ
+} // namespace AZ::Data
 
 size_t AZStd::hash<AZ::Data::AssetContainerKey>::operator()(const AZ::Data::AssetContainerKey& obj) const
 {
