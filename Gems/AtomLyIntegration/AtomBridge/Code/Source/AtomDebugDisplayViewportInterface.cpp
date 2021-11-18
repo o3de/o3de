@@ -1025,33 +1025,27 @@ namespace AZ::AtomBridge
         if (m_auxGeomPtr &&  radius > FLT_EPSILON &&  axis.GetLengthSq() > FLT_EPSILON)
         {
             AZ::Vector3 axisNormalized = axis.GetNormalizedEstimate();
-            SingleColorStaticSizeLineHelper<(16+1) * 5> lines; // 360/22.5 = 16, 5 possible calls to CreateArbitraryAxisArc
-            AZ::Vector3 radiusV3 = AZ::Vector3(radius);
-            float stepAngle = DegToRad(22.5f);
-            float Deg0 = DegToRad(0.0f);
 
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
+            const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
+            const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
 
             // Draw cylinder part (or just a circle around the middle)
             if (heightStraightSection > FLT_EPSILON)
             {
-                DrawWireCylinder(center, axis, radius, heightStraightSection);
+                m_auxGeomPtr->DrawCylinderNoEnds(
+                    worldCenter,
+                    worldAxis,
+                    scale * radius,
+                    scale * heightStraightSection,
+                    m_rendState.m_color,
+                    AZ::RPI::AuxGeomDraw::DrawStyle::Line,
+                    m_rendState.m_depthTest,
+                    m_rendState.m_depthWrite,
+                    m_rendState.m_faceCullMode,
+                    m_rendState.m_viewProjOverrideIndex
+                );
             }
-            else
-            {
-                float Deg360 = DegToRad(360.0f);
-                CreateArbitraryAxisArc(
-                    lines,
-                    stepAngle,
-                    Deg0,
-                    Deg360,
-                    center,
-                    radiusV3,
-                    axisNormalized
-                    );
-            }
-
-            float Deg90 = DegToRad(90.0f);
-            float Deg180 = DegToRad(180.0f);
 
             AZ::Vector3 ortho1Normalized, ortho2Normalized;
             CalcBasisVectors(axisNormalized, ortho1Normalized, ortho2Normalized);
@@ -1059,49 +1053,29 @@ namespace AZ::AtomBridge
             AZ::Vector3 topCenter = center + centerToTopCircleCenter;
             AZ::Vector3 bottomCenter = center - centerToTopCircleCenter;
 
-            // Draw top cap as two criss-crossing 180deg arcs
-            CreateArbitraryAxisArc(
-                    lines,
-                    stepAngle,
-                    Deg90,
-                    Deg90 + Deg180,
-                    topCenter,
-                    radiusV3,
-                    ortho1Normalized
-                    );
+            m_auxGeomPtr->DrawHemisphere(
+                topCenter,
+                worldAxis,
+                scale * radius,
+                m_rendState.m_color,
+                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex
+            );
 
-            CreateArbitraryAxisArc(
-                    lines,
-                    stepAngle,
-                    Deg180,
-                    Deg180 + Deg180,
-                    topCenter,
-                    radiusV3,
-                    ortho2Normalized
-                    );
-
-            // Draw bottom cap
-            CreateArbitraryAxisArc(
-                    lines,
-                    stepAngle,
-                    -Deg90,
-                    -Deg90 + Deg180,
-                    bottomCenter,
-                    radiusV3,
-                    ortho1Normalized
-                    );
-
-            CreateArbitraryAxisArc(
-                    lines,
-                    stepAngle,
-                    Deg0,
-                    Deg0 + Deg180,
-                    bottomCenter,
-                    radiusV3,
-                    ortho2Normalized
-                    );
-
-            lines.Draw(m_auxGeomPtr, m_rendState);
+            m_auxGeomPtr->DrawHemisphere(
+                bottomCenter,
+                -worldAxis,
+                scale * radius,
+                m_rendState.m_color,
+                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex
+            );
         }
     }
 
@@ -1353,9 +1327,8 @@ namespace AZ::AtomBridge
         // if 2d draw need to project pos to screen first
         AzFramework::TextDrawParameters params;
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
-        const auto dpiScaleFactor = viewportContext->GetDpiScalingFactor();
         params.m_drawViewportId = viewportContext->GetId(); // get the viewport ID so default viewport works
-        params.m_position = AZ::Vector3(x * dpiScaleFactor, y * dpiScaleFactor, 1.0f);
+        params.m_position = AZ::Vector3(x, y, 1.0f);
         params.m_color = m_rendState.m_color;
         params.m_scale = AZ::Vector2(size);
         params.m_hAlign = center ? AzFramework::TextHorizontalAlignment::Center : AzFramework::TextHorizontalAlignment::Left; //! Horizontal text alignment

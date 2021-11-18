@@ -527,8 +527,8 @@ namespace AzToolsFramework
             m_errorButton = nullptr;
         }
     }
-
-    void PropertyAssetCtrl::UpdateErrorButton(const AZStd::string& errorLog)
+    
+    void PropertyAssetCtrl::UpdateErrorButton()
     {
         if (m_errorButton)
         {
@@ -543,12 +543,17 @@ namespace AzToolsFramework
             m_errorButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_errorButton->setFixedSize(QSize(16, 16));
             m_errorButton->setMouseTracking(true);
-            m_errorButton->setIcon(QIcon("Icons/PropertyEditor/error_icon.png"));
+            m_errorButton->setIcon(QIcon(":/PropertyEditor/Resources/error_icon.png"));
             m_errorButton->setToolTip("Show Errors");
 
             // Insert the error button after the asset label
             qobject_cast<QHBoxLayout*>(layout())->insertWidget(1, m_errorButton);
         }
+    }
+
+    void PropertyAssetCtrl::UpdateErrorButtonWithLog(const AZStd::string& errorLog)
+    {
+        UpdateErrorButton();
 
         // Connect pressed to opening the error dialog
         // Must capture this for call to QObject::connect
@@ -585,6 +590,21 @@ namespace AzToolsFramework
             // Show the dialog
             logDialog->adjustSize();
             logDialog->show();
+        });
+    }
+    
+    void PropertyAssetCtrl::UpdateErrorButtonWithMessage(const AZStd::string& message)
+    {
+        UpdateErrorButton();
+        
+        connect(m_errorButton, &QPushButton::clicked, this, [this, message]() {
+            QMessageBox::critical(nullptr, "Error", message.c_str());
+
+            // Without this, the error button would maintain focus after clicking, which left the red error icon in a blue-highlighted state
+            if (parentWidget())
+            {
+                parentWidget()->setFocus();
+            }
         });
     }
 
@@ -960,7 +980,6 @@ namespace AzToolsFramework
         else
         {
             const AZ::Data::AssetId assetID = GetCurrentAssetID();
-            m_currentAssetHint = "";
 
             AZ::Outcome<AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
             AssetSystemJobRequestBus::BroadcastResult(jobOutcome, &AssetSystemJobRequestBus::Events::GetAssetJobsInfoByAssetID, assetID, false, false);
@@ -1018,7 +1037,7 @@ namespace AzToolsFramework
                         // In case of failure, render failure icon
                         case AssetSystem::JobStatus::Failed:
                         {
-                            UpdateErrorButton(errorLog);
+                            UpdateErrorButtonWithLog(errorLog);
                         }
                         break;
 
@@ -1042,6 +1061,10 @@ namespace AzToolsFramework
                 {
                     m_currentAssetHint = assetPath;
                 }
+            }
+            else
+            {
+                UpdateErrorButtonWithMessage(AZStd::string::format("Asset is missing.\n\nID: %s\nHint:%s", assetID.ToString<AZStd::string>().c_str(), GetCurrentAssetHint().c_str()));
             }
         }
 

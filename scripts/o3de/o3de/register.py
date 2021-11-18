@@ -490,7 +490,7 @@ def register_repo(json_data: dict,
     repo_sha256 = hashlib.sha256(url.encode())
     cache_file = manifest.get_o3de_cache_folder() / str(repo_sha256.hexdigest() + '.json')
 
-    result = utils.download_file(parsed_uri, cache_file)
+    result = utils.download_file(parsed_uri, cache_file, True)
     if result == 0:
         json_data.setdefault('repos', []).insert(0, repo_uri)
 
