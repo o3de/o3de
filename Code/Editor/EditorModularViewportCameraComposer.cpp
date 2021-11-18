@@ -337,12 +337,12 @@ namespace SandboxEditor
             AZ::TransformBus::EventResult(worldFromLocal, viewEntityId, &AZ::TransformBus::Events::GetWorldTM);
 
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                m_viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetReferenceFrame, worldFromLocal);
+                m_viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::StartTrackingTransform, worldFromLocal);
         }
         else
         {
             AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                m_viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::ClearReferenceFrame);
+                m_viewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::StopTrackingTransform);
         }
     }
 
