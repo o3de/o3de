@@ -708,12 +708,10 @@ void MainWindow::InitActions()
         .SetShortcut(QKeySequence::Undo)
         .SetReserved()
         .SetStatusTip(tr("Undo last operation"))
-        //.SetMenu(new QMenu("FIXME"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateUndo);
     am->AddAction(ID_REDO, tr("&Redo"))
         .SetShortcut(AzQtComponents::RedoKeySequence)
         .SetReserved()
-        //.SetMenu(new QMenu("FIXME"))
         .SetStatusTip(tr("Redo last undo operation"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateRedo);
 
