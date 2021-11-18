@@ -172,7 +172,8 @@ namespace AzToolsFramework::Prefab
         // Close all container entities in the old path.
         CloseInstanceContainers(m_instanceFocusHierarchy);
 
-        m_focusedInstanceContainerEntityId = focusedInstance->get().GetContainerEntityId();
+        // Do not store the container for the root instance, use an invalid EntityId instead.
+        m_focusedInstanceContainerEntityId = focusedInstance->get().GetParentInstance().has_value() ? focusedInstance->get().GetContainerEntityId() : AZ::EntityId();
         m_focusedTemplateId = focusedInstance->get().GetTemplateId();
 
         // Focus on the descendants of the container entity in the Editor, if the interface is initialized.
@@ -234,15 +235,16 @@ namespace AzToolsFramework::Prefab
 
     bool PrefabFocusHandler::IsOwningPrefabInFocusHierarchy(AZ::EntityId entityId) const
     {
-        if (!m_focusedInstanceContainerEntityId.IsValid())
-        {
-            // PrefabFocusHandler has not been initialized yet.
-            return false;
-        }
-
         if (!entityId.IsValid())
         {
             return false;
+        }
+
+        // If the focus is on the root, m_focusedInstanceContainerEntityId will be the invalid id.
+        // In those case all entities are in the focus hierarchy and should return true.
+        if (!m_focusedInstanceContainerEntityId.IsValid())
+        {
+            return true;
         }
 
         InstanceOptionalReference instance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
@@ -336,7 +338,14 @@ namespace AzToolsFramework::Prefab
         InstanceOptionalReference currentInstance = GetReferenceFromContainerEntityId(m_focusedInstanceContainerEntityId);
         while (currentInstance.has_value())
         {
-            m_instanceFocusHierarchy.emplace_back(currentInstance->get().GetContainerEntityId());
+            if (currentInstance->get().GetParentInstance().has_value())
+            {
+                m_instanceFocusHierarchy.emplace_back(currentInstance->get().GetContainerEntityId());
+            }
+            else
+            {
+                m_instanceFocusHierarchy.emplace_back(AZ::EntityId());
+            }
 
             currentInstance = currentInstance->get().GetParentInstance();
         }
@@ -424,6 +433,19 @@ namespace AzToolsFramework::Prefab
 
     InstanceOptionalReference PrefabFocusHandler::GetReferenceFromContainerEntityId(AZ::EntityId containerEntityId) const
     {
+        if (!containerEntityId.IsValid())
+        {
+            PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipInterface =
+                AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
+
+            if (!prefabEditorEntityOwnershipInterface)
+            {
+                return AZStd::nullopt;
+            }
+
+            return prefabEditorEntityOwnershipInterface->GetRootPrefabInstance();
+        }
+
         return m_instanceEntityMapperInterface->FindOwningInstance(containerEntityId);
     }
 
