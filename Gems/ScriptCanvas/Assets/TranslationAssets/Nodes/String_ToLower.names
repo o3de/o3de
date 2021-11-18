@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "ToLower",
+                "name": "To Lower",
                 "category": "String",
-                "tooltip": "Makes all the characters in the string lower case",
-                "subtitle": "String"
+                "tooltip": "Makes all the characters in the string lower case"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_String: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "String: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: String",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: String"
+                        "name": "Result"
                     }
                 }
             ]
