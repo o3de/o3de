@@ -334,6 +334,12 @@ namespace AzToolsFramework
         return entityContextId;
     }
 
+    //! Performs an intersection test against meshes in the scene, if there is a hit (the ray intersects
+    //! a mesh), that position is returned, otherwise a point projected defaultDistance from the
+    //! origin of the ray will be returned.
+    AZ::Vector3 FindClosestPickIntersection(
+        AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, float rayLength, float defaultDistance);
+
     //! Maps a mouse interaction event to a ClickDetector event.
     //! @note Function only cares about up or down events, all other events are mapped to Nil (ignored).
     AzFramework::ClickDetector::ClickEvent ClickDetectorEventFromViewportInteraction(
