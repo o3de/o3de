@@ -357,6 +357,8 @@ namespace O3DE::ProjectManager
                     if (!IsAdded(dependency))
                     {
                         numChangedDependencies++;
+                        const QString dependencyName = gemModel->GetName(dependency);
+                        gemModel->emit dependencyGemStatusChanged(dependencyName);
                     }
                 }
             }
@@ -381,6 +383,8 @@ namespace O3DE::ProjectManager
                     if (!IsAdded(dependency))
                     {
                         numChangedDependencies++;
+                        const QString dependencyName = gemModel->GetName(dependency);
+                        gemModel->emit dependencyGemStatusChanged(dependencyName);
                     }
                 }
             }
@@ -477,6 +481,28 @@ namespace O3DE::ProjectManager
             added |= modelIndex.data(RoleIsAddedDependency).toBool();
         }
         return previouslyAdded && !added;
+    }
+
+    void GemModel::DeactivateDependentGems(QAbstractItemModel& model, const QModelIndex& modelIndex)
+    {
+        GemModel* gemModel = GetSourceModel(&model);
+        AZ_Assert(gemModel, "Failed to obtain GemModel");
+
+        QVector<QModelIndex> dependentGems = gemModel->GatherDependentGems(modelIndex);
+        if (!dependentGems.isEmpty())
+        {
+            // we need to deactivate all gems that depend on this one
+            for (auto dependentModelIndex : dependentGems)
+            {
+                DeactivateDependentGems(model, dependentModelIndex);
+            }
+
+        }
+        else
+        {
+            // Deactivate this gem
+            SetIsAdded(model, modelIndex, false);
+        }
     }
 
     void GemModel::SetDownloadStatus(QAbstractItemModel& model, const QModelIndex& modelIndex, GemInfo::DownloadStatus status)

@@ -57,6 +57,7 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(m_headerWidget);
 
         connect(m_gemModel, &GemModel::gemStatusChanged, this, &GemCatalogScreen::OnGemStatusChanged);
+        connect(m_gemModel, &GemModel::dependencyGemStatusChanged, this, &GemCatalogScreen::OnDependencyGemStatusChanged);
         connect(m_gemModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this]{ ShowInspector(); });
         connect(m_headerWidget, &GemCatalogHeaderWidget::RefreshGems, this, &GemCatalogScreen::Refresh);
         connect(m_headerWidget, &GemCatalogHeaderWidget::OpenGemsRepo, this, &GemCatalogScreen::HandleOpenGemRepo);
@@ -279,7 +280,8 @@ namespace O3DE::ProjectManager
                 {
                     notification += tr(" and ");
                 }
-                if (added && GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded)
+                if (added && (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded) ||
+                    (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
                 {
                     m_downloadController->AddGemDownload(GemModel::GetName(modelIndex));
                     GemModel::SetDownloadStatus(*m_gemModel, modelIndex, GemInfo::DownloadStatus::Downloading);
@@ -301,6 +303,18 @@ namespace O3DE::ProjectManager
             toastConfiguration.m_borderRadius = 4;
             toastConfiguration.m_duration = AZStd::chrono::milliseconds(3000);
             m_notificationsView->ShowToastNotification(toastConfiguration);
+        }
+    }
+
+    void GemCatalogScreen::OnDependencyGemStatusChanged(const QString& gemName)
+    {
+        QModelIndex modelIndex = m_gemModel->FindIndexByNameString(gemName);
+        bool added = GemModel::IsAddedDependency(modelIndex);
+        if (added && (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded) ||
+            (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
+        {
+            m_downloadController->AddGemDownload(GemModel::GetName(modelIndex));
+            GemModel::SetDownloadStatus(*m_gemModel, modelIndex, GemInfo::DownloadStatus::Downloading);
         }
     }
 
@@ -383,6 +397,7 @@ namespace O3DE::ProjectManager
 
             // Remove gem from gems to be added to update any dependencies
             GemModel::SetIsAdded(*m_gemModel, modelIndex, false);
+            GemModel::DeactivateDependentGems(*m_gemModel, modelIndex);
 
             // Unregister the gem
             auto unregisterResult = PythonBindingsInterface::Get()->UnregisterGem(selectedGemPath);
@@ -660,6 +675,8 @@ namespace O3DE::ProjectManager
             QModelIndex index = m_gemModel->FindIndexByNameString(gemName);
             if (index.isValid())
             {
+                GemModel::SetIsAdded(*m_gemModel, index, false);
+                GemModel::DeactivateDependentGems(*m_gemModel, index);
                 GemModel::SetDownloadStatus(*m_gemModel, index, GemInfo::DownloadFailed);
             }
         }
