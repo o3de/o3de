@@ -1649,7 +1649,7 @@ QString CBaseObject::GetTypeName() const
     }
 
     QString name;
-    name.append(className.mid(0, className.length() - subClassName.length()));
+    name.append(className.midRef(0, className.length() - subClassName.length()));
     return name;
 }
 

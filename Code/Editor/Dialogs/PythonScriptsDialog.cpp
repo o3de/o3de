@@ -40,10 +40,10 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 namespace
 {
     // File name extension for python files
-    const QString s_kPythonFileNameSpec = "*.py";
+    const QString s_kPythonFileNameSpec("*.py");
 
     // Tree root element name
-    const QString s_kRootElementName = "Python Scripts";
+    const QString s_kRootElementName("Python Scripts");
 }
 
 //////////////////////////////////////////////////////////////////////////

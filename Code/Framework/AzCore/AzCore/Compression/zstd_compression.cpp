@@ -57,6 +57,7 @@ void ZStd::StartCompressor(unsigned int compressionLevel)
     ZSTD_customMem customAlloc;
     customAlloc.customAlloc = reinterpret_cast<ZSTD_allocFunction>(&AllocateMem);
     customAlloc.customFree = &FreeMem;
+    customAlloc.opaque = nullptr;
 
     AZ_UNUSED(compressionLevel);
     m_streamCompression = (ZSTD_createCStream_advanced(customAlloc));
