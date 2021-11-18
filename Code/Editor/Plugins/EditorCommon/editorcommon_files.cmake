@@ -17,7 +17,6 @@ set(FILES
     DockTitleBarWidget.h
     SaveUtilities/AsyncSaveRunner.h
     SaveUtilities/AsyncSaveRunner.cpp
-    DisplayContext.cpp
     Resource.h
     WinWidget/WinWidget.h
     WinWidget/WinWidgetManager.h
