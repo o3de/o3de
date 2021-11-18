@@ -1732,7 +1732,7 @@ namespace AzToolsFramework
                  ++componentIter)
             {
                 // Check the component type
-                auto typeFieldIter = componentIter->value.FindMember(PrefabDomUtils::TypeFieldName);
+                auto typeFieldIter = componentIter->value.FindMember(PrefabDomUtils::TypeName);
                 if (typeFieldIter == componentIter->value.MemberEnd())
                 {
                     continue;
@@ -1748,7 +1748,7 @@ namespace AzToolsFramework
                 }
 
                 // Check for the entity order field
-                auto orderMembersIter = componentIter->value.FindMember(PrefabDomUtils::EntityOrderFieldName);
+                auto orderMembersIter = componentIter->value.FindMember(PrefabDomUtils::EntityOrderName);
                 if (orderMembersIter == componentIter->value.MemberEnd() || !orderMembersIter->value.IsArray())
                 {
                     continue;
@@ -1865,6 +1865,23 @@ namespace AzToolsFramework
                     for (auto componentIter = componentsIter->value.MemberBegin(); componentIter != componentIter->value.MemberEnd() && parentEntityAlias.empty();
                          ++componentIter)
                     {
+                        // Check the component type
+                        auto typeFieldIter = componentIter->value.FindMember(PrefabDomUtils::TypeName);
+                        if (typeFieldIter == componentIter->value.MemberEnd())
+                        {
+                            continue;
+                        }
+
+                        AZ::JsonDeserializerSettings jsonDeserializerSettings;
+                        AZ::Uuid typeId = AZ::Uuid::CreateNull();
+                        AZ::JsonSerialization::LoadTypeId(typeId, typeFieldIter->value);
+
+                        // Prefabs get serialized with the Editor transform component type, check for that
+                        if (typeId != azrtti_typeid<Components::TransformComponent>())
+                        {
+                            continue;
+                        }
+
                         if (auto parentEntityIter = componentIter->value.FindMember("Parent Entity");
                             parentEntityIter != componentIter->value.MemberEnd())
                         {

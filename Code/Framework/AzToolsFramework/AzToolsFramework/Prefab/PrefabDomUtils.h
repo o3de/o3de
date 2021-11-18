@@ -29,8 +29,8 @@ namespace AzToolsFramework
             inline static const char* EntitiesName = "Entities";
             inline static const char* ContainerEntityName = "ContainerEntity";
             inline static const char* ComponentsName = "Components";
-            inline static const char* EntityOrderFieldName = "Child Entity Order";
-            inline static const char* TypeFieldName = "$type";
+            inline static const char* EntityOrderName = "Child Entity Order";
+            inline static const char* TypeName = "$type";
 
             /**
             * Find Prefab value from given parent value and target value's name.

@@ -283,7 +283,11 @@ namespace AzToolsFramework
         {
             m_ignoreIncomingOrderChanges = false;
 
-            SanitizeOrderEntryArray();
+            if (m_shouldSanityCheckStateAfterPropagation)
+            {
+                SanitizeOrderEntryArray();
+                m_shouldSanityCheckStateAfterPropagation = false;
+            }
         }
 
         void EditorEntitySortComponent::MarkDirtyAndSendChangedEvent()
