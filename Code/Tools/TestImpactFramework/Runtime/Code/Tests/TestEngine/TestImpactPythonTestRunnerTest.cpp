@@ -6,67 +6,35 @@
  *
  */
 
-#include <TestEngine/Common/Run/TestImpactRegularTestRunner.h>
+#include <TestEngine/Python/Run/TestImpactPythonTestRunner.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzTest/AzTest.h>
 
-namespace TestImpact
-{
-    class PythonRegularTestRunJobData
-        : public TestRunJobData
-    {
-        using TestRunJobData::TestRunJobData;
-    };
-
-    class PythonRegularTestRunner
-        : public RegularTestRunner<PythonRegularTestRunJobData>
-    {
-    public:
-        using RegularTestRunner<PythonRegularTestRunJobData>::RegularTestRunner;
-    };
-
-    template<>
-    inline PayloadOutcome<TestRun> PayloadFactory(
-        [[maybe_unused]] const JobInfo<PythonRegularTestRunJobData>& jobData, [[maybe_unused]] const JobMeta& jobMeta)
-    {
-        try
-        {
-            return AZ::Failure(AZStd::string("TODO"));
-        }
-        catch (const Exception& e)
-        {
-            return AZ::Failure(AZStd::string::format("%s\n", e.what()));
-        }
-    };
-} // namespace TestImpact
-
 namespace UnitTest
 {
-    static constexpr auto maxConcurrentRuns = 1;
     class PyTestRunnerFixture
         : public AllocatorsTestFixture
     {
     public:
         PyTestRunnerFixture()
-            : m_testRunner(maxConcurrentRuns)
         {
         }
 
-        TestImpact::PythonRegularTestRunner m_testRunner;
+        TestImpact::PythonTestRunner m_testRunner;
     };
 
     TEST_F(PyTestRunnerFixture, Foo)
     {
         try
         {
-            using JobInfo = TestImpact::PythonRegularTestRunner::JobInfo;
-            using JobData = TestImpact::PythonRegularTestRunner::JobData;
-            using Command = TestImpact::PythonRegularTestRunner::Command;
+            using JobInfo = TestImpact::PythonTestRunner::JobInfo;
+            using JobData = TestImpact::PythonTestRunner::JobData;
+            using Command = TestImpact::PythonTestRunner::Command;
 
             const AZStd::vector<AZStd::string> cmds =
             {
-                 "E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/Atom/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/Atom_TestSuite_Main.xml"
+                 /*"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/Atom/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/Atom_TestSuite_Main.xml"
                 ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/Atom/TestSuite_Main_GPU.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/Atom_TestSuite_Main_GPU.xml"
                 ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/assetpipeline/fbx_tests/pythonassetbuildertests.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/SceneProcessingTests.PythonAssetBuilderTests.xml"
                 ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/physics/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/PhysicsTests_Main.xml"
@@ -74,12 +42,12 @@ namespace UnitTest
                 ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/NvCloth/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/NvClothTests_Main.xml"
                 ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/prefab/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/PrefabTests.xml"
                 ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/Blast/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/BlastTests_Main.xml"
-                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/largeworlds/dyn_veg/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/DynamicVegetationTests_Main.xml"
-                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/largeworlds/landscape_canvas/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/LandscapeCanvasTests_Main.xml"
-                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/editor/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/EditorTests_Main.xml"
-                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/editor/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/EditorTests_Main_GPU.xml"
-                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/smoke/test_Editor_NewExistingLevels_Works.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/EditorTestWithGPU.xml"
-                ,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/Gems/Atom/RPI/Tools/atom_rpi_tools/tests  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/atom_rpi_tools_tests.xml"
+                ,*/"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/largeworlds/dyn_veg/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/DynamicVegetationTests_Main.xml"
+                //,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/largeworlds/landscape_canvas/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/LandscapeCanvasTests_Main.xml"
+                //,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/editor/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/EditorTests_Main.xml"
+                //,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/editor/TestSuite_Main.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/EditorTests_Main_GPU.xml"
+                //,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/AutomatedTesting/Gem/PythonTests/smoke/test_Editor_NewExistingLevels_Works.py  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/EditorTestWithGPU.xml"
+                //,"E:/o3de_TIF_Feature/python/python.cmd -m pytest -s E:/o3de_TIF_Feature/Gems/Atom/RPI/Tools/atom_rpi_tools/tests  --build-directory E:/o3de_TIF_Feature/build/windows_vs2019/bin/debug/ --junitxml=e:/atom_rpi_tools_tests.xml"
             };
 
             //JobData jobData("");

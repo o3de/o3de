@@ -6,17 +6,17 @@
  *
  */
 
-#include <TestEngine/Common/Job/TestImpactTestRunAndCoverageJobData.h>
+#include <TestEngine/Common/Job/TestImpactTestRunWithCoverageJobData.h>
 
 namespace TestImpact
 {
-    TestRunJobDataWithCoverageArtifact::TestRunJobDataWithCoverageArtifact(const RepoPath& resultsArtifact, const RepoPath& coverageArtifact)
+    TestRunWithCoverageJobData::TestRunWithCoverageJobData(const RepoPath& resultsArtifact, const RepoPath& coverageArtifact)
         : TestRunJobData(resultsArtifact)
         , m_coverageArtifact(coverageArtifact)
     {
     }
 
-    const RepoPath& TestRunJobDataWithCoverageArtifact::GetCoverageArtifactPath() const
+    const RepoPath& TestRunWithCoverageJobData::GetCoverageArtifactPath() const
     {
         return m_coverageArtifact;
     }

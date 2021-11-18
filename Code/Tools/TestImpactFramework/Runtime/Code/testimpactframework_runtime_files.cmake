@@ -90,8 +90,8 @@ set(FILES
     Source/TestEngine/Common/TestImpactErrorCodeChecker.cpp
     Source/TestEngine/Common/TestImpactErrorCodeChecker.h
     Source/TestEngine/Common/Job/TestImpactTestJobRunner.h
-    Source/TestEngine/Common/Job/TestImpactTestRunAndcoverageJobData.cpp
-    Source/TestEngine/Common/Job/TestImpactTestRunAndcoverageJobData.h
+    Source/TestEngine/Common/Job/TestImpactTestRunWithCoverageJobData.cpp
+    Source/TestEngine/Common/Job/TestImpactTestRunWithCoverageJobData.h
     Source/TestEngine/Common/Job/TestImpactTestEnumerationJobData.cpp
     Source/TestEngine/Common/Job/TestImpactTestEnumerationJobData.h
     Source/TestEngine/Common/Job/TestImpactTestRunJobData.cpp
@@ -100,9 +100,9 @@ set(FILES
     Source/TestEngine/Common/Enumeration/TestImpactTestEnumeration.h
     Source/TestEngine/Common/Enumeration/TestImpactTestEnumerationSerializer.cpp
     Source/TestEngine/Common/Enumeration/TestImpactTestEnumerationSerializer.h
+    Source/TestEngine/Common/Run/TestImpactTestRunnerBase.h
     Source/TestEngine/Common/Run/TestImpactTestRunner.h
-    Source/TestEngine/Common/Run/TestImpactRegularTestRunner.h
-    Source/TestEngine/Common/Run/TestImpactInstrumentedTestRunner.h
+    Source/TestEngine/Common/Run/TestImpactTestRunnerWithCoverage.h
     Source/TestEngine/Common/Run/TestImpactTestCoverage.cpp
     Source/TestEngine/Common/Run/TestImpactTestCoverage.h
     Source/TestEngine/Common/Run/TestImpactTestRun.cpp
@@ -118,6 +118,8 @@ set(FILES
     Source/TestEngine/Native/Job/TestImpactNativeTestTargetExtension.h
     Source/TestEngine/Native/Run/TestImpactNativeInstrumentedTestRunner.h
     Source/TestEngine/Native/Run/TestImpactNativeRegularTestRunner.h
+    Source/TestEngine/Python/Run/TestImpactPythonTestRunner.cpp
+    Source/TestEngine/Python/Run/TestImpactPythonTestRunner.h
     Source/TestEngine/TestImpactTestSuiteContainer.h
     Source/TestEngine/TestImpactTestEngine.cpp
     Source/TestEngine/TestImpactTestEngine.h

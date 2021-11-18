@@ -12,7 +12,7 @@
 
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <TestEngine/TestImpactTestEngineException.h>
-#include <TestEngine/Common/Run/TestImpactRegularTestRunner.h>
+#include <TestEngine/Common/Run/TestImpactTestRunner.h>
 #include <TestEngine/Common/Job/TestImpactTestRunJobData.h>
 #include <TestEngine/Native/Job/TestImpactNativeTestRunJobData.h>
 
@@ -25,10 +25,10 @@ namespace TestImpact
     };
 
     class NativeRegularTestRunner
-        : public RegularTestRunner<NativeRegularTestRunJobData>
+        : public TestRunner<NativeRegularTestRunJobData>
     {
     public:
-        using RegularTestRunner<NativeRegularTestRunJobData>::RegularTestRunner;
+        using TestRunner<NativeRegularTestRunJobData>::TestRunner;
     };
 
     template<>

@@ -13,23 +13,23 @@
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
 #include <TestEngine/TestImpactTestEngineException.h>
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
-#include <TestEngine/Common/Run/TestImpactInstrumentedTestRunner.h>
-#include <TestEngine/Common/Job/TestImpactTestRunAndCoverageJobData.h>
+#include <TestEngine/Common/Run/TestImpactTestRunnerWithCoverage.h>
+#include <TestEngine/Common/Job/TestImpactTestRunWithCoverageJobData.h>
 #include <TestEngine/Native/Job/TestImpactNativeTestRunJobData.h>
 
 namespace TestImpact
 {
     class NativeInstrumentedTestRunJobData
-        : public NativeTestRunJobData<TestRunJobDataWithCoverageArtifact>
+        : public NativeTestRunJobData<TestRunWithCoverageJobData>
     {
-        using NativeTestRunJobData<TestRunJobDataWithCoverageArtifact>::NativeTestRunJobData;
+        using NativeTestRunJobData<TestRunWithCoverageJobData>::NativeTestRunJobData;
     };
 
     class NativeInstrumentedTestRunner
-        : public InstrumentedTestRunner<NativeInstrumentedTestRunJobData>
+        : public TestRunnerWithCoverage<NativeInstrumentedTestRunJobData>
     {
     public:
-        using TestImpact::InstrumentedTestRunner<NativeInstrumentedTestRunJobData>::InstrumentedTestRunner;
+        using TestImpact::TestRunnerWithCoverage<NativeInstrumentedTestRunJobData>::TestRunnerWithCoverage;
     };
 
     template<>

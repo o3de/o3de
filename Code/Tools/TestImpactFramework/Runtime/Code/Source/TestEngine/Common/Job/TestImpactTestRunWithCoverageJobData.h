@@ -13,11 +13,11 @@
 namespace TestImpact
 {
     //! Per-job data for test runs that also produce coverage artifacts.
-    class TestRunJobDataWithCoverageArtifact
+    class TestRunWithCoverageJobData
         : public TestRunJobData
     {
     public:
-        TestRunJobDataWithCoverageArtifact(const RepoPath& resultsArtifact, const RepoPath& coverageArtifact);
+        TestRunWithCoverageJobData(const RepoPath& resultsArtifact, const RepoPath& coverageArtifact);
 
         //! Returns the path to the coverage artifact produced by the test target.
         const RepoPath& GetCoverageArtifactPath() const;

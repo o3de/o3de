@@ -10,17 +10,17 @@
 
 #include <TestEngine/Common/Run/TestImpactTestCoverage.h>
 #include <TestEngine/Common/Run/TestImpactTestRun.h>
-#include <TestEngine/Common/Run/TestImpactTestRunner.h>
+#include <TestEngine/Common/Run/TestImpactTestRunnerBase.h>
 
 namespace TestImpact
 {
     template<typename AdditionalInfo>
-    class InstrumentedTestRunner
-        : public TestRunner<AdditionalInfo, AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>
+    class TestRunnerWithCoverage
+        : public TestRunnerBase<AdditionalInfo, AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>
     {
     public:
-        using TestRunner =  TestRunner<AdditionalInfo, AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>;
-        using TestRunner::TestRunner;
+        using TestRunner =  TestRunnerBase<AdditionalInfo, AZStd::pair<AZStd::optional<TestRun>, TestCoverage>>;
+        using TestRunner::TestRunnerBase;
     };
 
 } // namespace TestImpact
