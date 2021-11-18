@@ -80,6 +80,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 AZ::AzTestShared
+                AZ::AzFrameworkTestShared
                 Gem::AtomToolsFramework.Static
                 Gem::Atom_Utils.TestUtils.Static
     )
