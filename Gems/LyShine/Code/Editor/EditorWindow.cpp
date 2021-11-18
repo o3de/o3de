@@ -708,24 +708,25 @@ bool EditorWindow::SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceA
         // Make sure the directory exists. If not, walk up the directory path until we find one that does
         // so that we will have a consistent 'starting folder' in the 'AzQtComponents::FileDialog::GetSaveFileName' call
         // across different platforms. 
-        AZ::IO::Path dirPath(dir.toUtf8().constData());
-        QDir validDirCheck(dirPath.c_str());
-        while (!validDirCheck.exists() && (dirPath.HasParentPath()))
+        AZ::IO::FixedMaxPath dirPath(dir.toUtf8().constData());
+
+        while (!AZ::IO::SystemFile::IsDirectory(dirPath.c_str()))
         {
-            AZ::IO::Path parentPath = dirPath.ParentPath();
+            AZ::IO::PathView parentPath = dirPath.ParentPath();
             if (parentPath == dirPath)
             {
+                // We've reach the root path, need to break out whether or not
+                // the root path exists
                 break;
             }
             else
             {
                 dirPath = parentPath;
             }
-            validDirCheck = QDir(dirPath.c_str());
         }
         // Append the default filename
         dirPath /= canvasMetadata.m_canvasDisplayName;
-        dir = QString(dirPath.c_str());
+        dir = QString::fromUtf8(dirPath.c_str());
 
         QString filename = AzQtComponents::FileDialog::GetSaveFileName(nullptr,
             QString(),
