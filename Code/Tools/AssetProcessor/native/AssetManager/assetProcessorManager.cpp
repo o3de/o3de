@@ -18,8 +18,8 @@
 
 #include <AzToolsFramework/Debug/TraceContext.h>
 
-
 #include "native/AssetManager/assetProcessorManager.h"
+
 #include <AzCore/std/sort.h>
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 
@@ -66,8 +66,10 @@ namespace AssetProcessor
 
         m_sourceFileRelocator = AZStd::make_unique<SourceFileRelocator>(m_stateData, m_platformConfig);
 
-        PopulateJobStateCache();
+        m_excludedFolderCache = AZStd::make_unique<ExcludedFolderCache>(m_platformConfig);
 
+        PopulateJobStateCache();
+        
         AssetProcessor::ProcessingJobInfoBus::Handler::BusConnect();
     }
 
@@ -3573,6 +3575,8 @@ namespace AssetProcessor
                     QString knownPathBeforeWildcard = encodedFileData.left(slashBeforeWildcardIndex + 1); // include the slash
                     QString relativeSearch = encodedFileData.mid(slashBeforeWildcardIndex + 1); // skip the slash
 
+                    const auto& excludedFolders = m_excludedFolderCache->GetExcludedFolders();
+
                     // Absolute path, just check the 1 scan folder
                     if (AZ::IO::PathView(encodedFileData.toUtf8().constData()).IsAbsolute())
                     {
@@ -3592,7 +3596,8 @@ namespace AssetProcessor
                             QString scanFolderAndKnownSubPath = rooted.absoluteFilePath(knownPathBeforeWildcard);
 
                             resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(
-                                scanFolderAndKnownSubPath, relativeSearch, false, scanFolderInfo->RecurseSubFolders()));
+                                scanFolderAndKnownSubPath, relativeSearch,
+                                excludedFolders, false, scanFolderInfo->RecurseSubFolders()));
                         }
                     }
                     else // Relative path, check every scan folder
@@ -3610,7 +3615,21 @@ namespace AssetProcessor
                             QString absolutePath = rooted.absoluteFilePath(knownPathBeforeWildcard);
 
                             resolvedDependencyList.append(m_platformConfig->FindWildcardMatches(
-                                absolutePath, relativeSearch, false, scanFolderInfo->RecurseSubFolders()));
+                                absolutePath, relativeSearch,
+                                excludedFolders, false, scanFolderInfo->RecurseSubFolders()));
+                        }
+                    }
+
+                    // Filter out any excluded files
+                    for (auto itr = resolvedDependencyList.begin(); itr != resolvedDependencyList.end();)
+                    {
+                        if (m_platformConfig->IsFileExcluded(*itr))
+                        {
+                            itr = resolvedDependencyList.erase(itr);
+                        }
+                        else
+                        {
+                            ++itr;
                         }
                     }
 
