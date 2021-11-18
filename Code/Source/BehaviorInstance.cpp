@@ -179,7 +179,7 @@ namespace EMotionFX
                     SamplePose(m_motionInstance, m_blendTargetPose);
                 }
                 outputPose = m_blendTargetPose;
-                //m_motionInstance->ExtractMotion(m_motionExtractionDelta);
+                m_motionInstance->ExtractMotion(m_motionExtractionDelta);
             }
             else if (m_blendWeight > AZ::Constants::FloatEpsilon && m_blendWeight < 1.0f - AZ::Constants::FloatEpsilon)
             {
@@ -198,10 +198,10 @@ namespace EMotionFX
                 outputPose.Blend(&m_blendTargetPose, m_blendWeight);
 
                 // Blend the motion extraction delta.
-                //Transform targetMotionExtractionDelta;
-                //m_motionInstance->ExtractMotion(m_motionExtractionDelta);
-                //m_prevMotionInstance->ExtractMotion(targetMotionExtractionDelta);
-                //m_motionExtractionDelta.Blend(targetMotionExtractionDelta, m_blendWeight);
+                Transform targetMotionExtractionDelta;
+                m_motionInstance->ExtractMotion(m_motionExtractionDelta);
+                m_prevMotionInstance->ExtractMotion(targetMotionExtractionDelta);
+                m_motionExtractionDelta.Blend(targetMotionExtractionDelta, m_blendWeight);
             }
             else
             {
@@ -211,10 +211,9 @@ namespace EMotionFX
                     SamplePose(m_prevMotionInstance, m_blendSourcePose);
                 }
                 outputPose = m_blendSourcePose;
-                //m_prevMotionInstance->ExtractMotion(m_motionExtractionDelta);
+                m_prevMotionInstance->ExtractMotion(m_motionExtractionDelta);
             }
 
-            // Always use the target motion extraction delta. This gives the nicest visual results.
             m_motionInstance->ExtractMotion(m_motionExtractionDelta);
         }
 
