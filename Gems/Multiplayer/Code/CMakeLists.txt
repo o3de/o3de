@@ -86,11 +86,31 @@ ly_create_alias(NAME Multiplayer.Servers NAMESPACE Gem TARGETS Gem::Multiplayer 
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
+        NAME Multiplayer.Tools.Static STATIC
+        NAMESPACE Gem
+        FILES_CMAKE
+            multiplayer_tools_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                ${pal_source_dir}
+                AZ::AzNetworking
+                Source
+                .
+            PUBLIC
+                Include
+        BUILD_DEPENDENCIES
+            PUBLIC
+                AZ::AzCore
+                AZ::AzFramework
+                AZ::AzNetworking
+                AZ::AzToolsFramework
+    )
+
+    ly_add_target(
         NAME Multiplayer.Editor GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
             multiplayer_editor_shared_files.cmake
-            multiplayer_tools_files.cmake
         COMPILE_DEFINITIONS
             PUBLIC
                 MULTIPLAYER_EDITOR
@@ -112,6 +132,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Atom_RPI.Public
                 Gem::Atom_RHI.Reflect
                 Gem::Multiplayer.Static
+                Gem::Multiplayer.Tools.Static
                 Gem::Multiplayer.Builders
     )
     
@@ -158,7 +179,6 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAMESPACE Gem
             FILES_CMAKE
                 multiplayer_tools_tests_files.cmake
-                multiplayer_tools_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
@@ -168,10 +188,9 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     AZ::AzTest
                     AZ::AzTestShared
-                    AZ::AzToolsFramework
                     AZ::AzToolsFrameworkTestCommon
-                    AZ::AzNetworking
                     Gem::Multiplayer.Static
+                    Gem::Multiplayer.Tools.Static
         )
         ly_add_googletest(
             NAME Gem::Multiplayer.Builders.Tests
