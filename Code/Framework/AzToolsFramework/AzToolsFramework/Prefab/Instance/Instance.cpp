@@ -647,7 +647,15 @@ namespace AzToolsFramework
 
         AZ::EntityId Instance::GetContainerEntityId() const
         {
-            return m_containerEntity ? m_containerEntity->GetId() : AZ::EntityId();
+            if (m_containerEntity)
+            {
+                return m_containerEntity->GetId();
+            }
+
+            AliasPath absoluteEntityPath = GetAbsoluteInstanceAliasPath();
+            absoluteEntityPath.Append(PrefabDomUtils::ContainerEntityName);
+
+            return InstanceEntityIdMapper::GenerateEntityIdForAliasPath(absoluteEntityPath);
         }
 
         bool Instance::HasContainerEntity() const
