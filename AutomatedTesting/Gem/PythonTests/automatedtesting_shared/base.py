@@ -97,7 +97,9 @@ class TestAutomationBase:
             pycmd += ["-BatchMode"]
         if autotest_mode:
             pycmd += ["-autotest_mode"]
-        if not enable_prefab_system:
+        if enable_prefab_system:
+            pycmd += ["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
+        else:
             pycmd += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
 
         pycmd += extra_cmdline_args

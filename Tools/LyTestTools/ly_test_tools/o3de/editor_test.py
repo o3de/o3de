@@ -743,7 +743,9 @@ class EditorTestSuite():
             test_cmdline_args += ["--attach-debugger"]
         if test_spec.wait_for_debugger:
             test_cmdline_args += ["--wait-for-debugger"]
-        if not self.enable_prefab_system:
+        if self.enable_prefab_system:
+            test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
+        else:
             test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
 
         # Cycle any old crash report in case it wasn't cycled properly
@@ -808,7 +810,9 @@ class EditorTestSuite():
             test_cmdline_args += ["--attach-debugger"]
         if any([t.wait_for_debugger for t in test_spec_list]):
             test_cmdline_args += ["--wait-for-debugger"]
-        if not self.enable_prefab_system:
+        if self.enable_prefab_system:
+            test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
+        else:
             test_cmdline_args += ["--regset=/Amazon/Preferences/EnablePrefabSystem=false"]
 
         # Cycle any old crash report in case it wasn't cycled properly

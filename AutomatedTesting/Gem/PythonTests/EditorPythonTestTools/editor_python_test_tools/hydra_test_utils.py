@@ -57,7 +57,9 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
         editor.args.extend(["--autotest_mode"])
     if null_renderer:
         editor.args.extend(["-rhi=Null"])
-    if not enable_prefab_system:
+    if enable_prefab_system:
+        editor.args.extend(["--regset=/Amazon/Preferences/EnablePrefabSystem=true"])
+    else:
         editor.args.extend(["--regset=/Amazon/Preferences/EnablePrefabSystem=false"])
 
     with editor.start():
