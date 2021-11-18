@@ -46,6 +46,7 @@ site.addsitedir(_DCCSIG_PATH)
 import azpy
 from azpy.env_bool import env_bool
 from azpy.config_utils import return_stub_dir
+from azpy.config_utils import get_stub_check_path
 # -------------------------------------------------------------------------
 
 
@@ -107,6 +108,7 @@ TAG_DCCSI_CONFIG = str('dccsiconfiguration.setreg')
 
 # filesystem markers, stub file names.
 STUB_O3DE_DEV = str('engine.json')
+STUB_O3DE_BUILD = str('CMakeCache.txt')
 STUB_O3DE_ROOT_DCCSI = str('dccsi_stub')
 STUB_O3DE_DCCSI_AZPY = str('dccsi_azpy_stub')
 STUB_O3DE_DCCSI_TOOLS = str('dccsi_tools_stub')
@@ -223,7 +225,9 @@ STR_QTPLUGIN_DIR = str('{0}\\bin\\profile\\EditorPlugins')
 STR_QTFORPYTHON_PATH = str('{0}\\Gems\\QtForPython\\3rdParty\\pyside2\\windows\\release')
 STR_O3DE_BIN_PATH = str('{0}\\bin\\profile')
 
-PATH_O3DE_BUILD_PATH = str('{0}\\{1}'.format(PATH_O3DE_DEV, TAG_DIR_O3DE_BUILD_FOLDER))
+STR_O3DE_BUILD_PATH = str('{0}\\{1}')
+PATH_O3DE_BUILD_PATH = STR_O3DE_BUILD_PATH.format(PATH_O3DE_DEV, TAG_DIR_O3DE_BUILD_FOLDER)
+
 PATH_QTFORPYTHON_PATH = str(STR_QTFORPYTHON_PATH.format(PATH_O3DE_DEV))
 PATH_QT_PLUGIN_PATH = str(STR_QTPLUGIN_DIR).format(PATH_O3DE_BUILD_PATH)
 PATH_O3DE_BIN_PATH = str(STR_O3DE_BIN_PATH).format(PATH_O3DE_BUILD_PATH)

@@ -135,11 +135,7 @@ _O3DE_DEV = azpy.config_utils.get_o3de_engine_root()
 # set up dynamic config envars
 os.environ["DYNACONF_O3DE_DEV"] = str(_O3DE_DEV.resolve())
 
-from azpy.constants import TAG_DIR_O3DE_BUILD_FOLDER
-_O3DE_BUILD_FOLDER = TAG_DIR_O3DE_BUILD_FOLDER
-os.environ["DYNACONF_O3DE_BUILD_FOLDER"] = str(_O3DE_BUILD_FOLDER)
-_O3DE_BUILD_PATH = Path(_O3DE_DEV, TAG_DIR_O3DE_BUILD_FOLDER)
-os.environ["DYNACONF_O3DE_BUILD_PATH"] = str(_O3DE_BUILD_PATH.resolve())
+_O3DE_BUILD_PATH = azpy.config_utils.get_o3de_build_path(_O3DE_DEV,'CMakeCache.txt')
 
 from azpy.constants import STR_O3DE_BIN_PATH
 _O3DE_BIN_PATH = Path(STR_O3DE_BIN_PATH.format(_O3DE_BUILD_PATH))
@@ -242,7 +238,7 @@ def init_o3de_pyside2(dccsi_path=_DCCSI_PATH,
             status = False
             raise(e)
     else:
-        _LOGGER.warning('~   No PySide2 Tools: {}'.format(_DCCSI_PYSIDE2_TOOLS.resolve))
+        _LOGGER.warning('~   No PySide2 Tools: {}'.format(_DCCSI_PYSIDE2_TOOLS.resolve()))
     
     _O3DE_DCCSI_PATH = os.environ['PATH']
     os.environ["DYNACONF_PATH"] = _O3DE_DCCSI_PATH
@@ -287,7 +283,6 @@ def test_pyside2():
 
 # -------------------------------------------------------------------------
 def init_o3de_core(engine_path=_O3DE_DEV,
-                   build_folder=_O3DE_BUILD_FOLDER,
                    project_name=None,
                    project_path=_O3DE_PROJECT_PATH):
     """Initialize the DCCsi Core dynamic env and settings"""
@@ -334,9 +329,8 @@ def init_o3de_core(engine_path=_O3DE_DEV,
     # To Do: there might be a project namespace in the project.json?
 
     # -- O3DE build -- set up \bin\path (for Qt dll access)
-    os.environ["DYNACONF_O3DE_BUILD_FOLDER"] = str(build_folder)
-    _O3DE_BUILD_PATH = Path(_O3DE_DEV, build_folder)
-    
+    _O3DE_BUILD_PATH = Path(azpy.config_utils.get_o3de_build_path(_O3DE_DEV,
+                                                                  'CMakeCache.txt'))
     os.environ["DYNACONF_O3DE_BUILD_PATH"] = str(_O3DE_BUILD_PATH.resolve())
     
     _O3DE_BIN_PATH = Path(STR_O3DE_BIN_PATH.format(_O3DE_BUILD_PATH))
@@ -447,7 +441,6 @@ def init_o3de_python(engine_path=_O3DE_DEV,
 # -------------------------------------------------------------------------
 # settings.setenv()  # doing this will add the additional DYNACONF_ envars
 def get_config_settings(engine_path=_O3DE_DEV,
-                        build_folder=_O3DE_BUILD_FOLDER,
                         project_name=None,
                         project_path=_O3DE_PROJECT_PATH,
                         enable_o3de_python=None,
@@ -456,7 +449,6 @@ def get_config_settings(engine_path=_O3DE_DEV,
     """Convenience method to initialize and retreive settings directly from module."""
     
     settings = init_o3de_core(engine_path,
-                              build_folder,
                               project_name,
                               project_path)
 
@@ -597,7 +589,6 @@ if __name__ == '__main__':
 
     # now standalone we can validate the config. env, settings.
     settings = get_config_settings(engine_path=args.engine_path,
-                                   build_folder=args.build_folder,
                                    project_name=args.project_name,
                                    project_path=args.project_path,
                                    enable_o3de_python=args.enable_python,
@@ -623,8 +614,11 @@ if __name__ == '__main__':
     _LOGGER.info('DCCSI_LOG_PATH: {}'.format(settings.DCCSI_LOG_PATH))
     _LOGGER.info('DCCSI_CONFIG_PATH: {}'.format(settings.DCCSI_CONFIG_PATH))
     
-    if settings.O3DE_DCCSI_ENV_TEST:
+    try:
+        settings.O3DE_DCCSI_ENV_TEST
         _LOGGER.info('O3DE_DCCSI_ENV_TEST: {}'.format(settings.O3DE_DCCSI_ENV_TEST))
+    except:
+        pass # don't exist
     
     _LOGGER.info(STR_CROSSBAR)
     _LOGGER.info('')
@@ -640,19 +634,23 @@ if __name__ == '__main__':
         _LOGGER.info(STR_CROSSBAR)
         _LOGGER.info('')
     else:
-        _LOGGER.info('Tip: add arg --enable-python to extend the environment with O3DE python access')
+        _LOGGER.info('Tip: add arg --enable-python (-py) to extend the environment with O3DE python access')
         
     if args.enable_qt:
         _LOGGER.info(STR_CROSSBAR)
         # _LOGGER.info('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
         _LOGGER.info('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
         _LOGGER.info('QT_QPA_PLATFORM_PLUGIN_PATH: {}'.format(settings.QT_QPA_PLATFORM_PLUGIN_PATH))
-        _LOGGER.info('DCCSI_PYSIDE2_TOOLS: {}'.format(settings.DCCSI_PYSIDE2_TOOLS))  
+        try:
+            settings.DCCSI_PYSIDE2_TOOLS
+            _LOGGER.info('DCCSI_PYSIDE2_TOOLS: {}'.format(settings.DCCSI_PYSIDE2_TOOLS))  
+        except:
+            pass # don't exist
         _LOGGER.info(STR_CROSSBAR)
         _LOGGER.info('')
     else:
-
-        _LOGGER.info('Tip: add arg --enable-qt to extend the environment with O3DE Qt/PySide2 support')        
+        _LOGGER.info('Tip: add arg --enable-qt (-qt) to extend the environment with O3DE Qt/PySide2 support')      
+        _LOGGER.info('Tip: add arg --test-pyside2 (-tp) to test the O3DE Qt/PySide2 support')    
     
     settings.setenv()  # doing this will add/set the additional DYNACONF_ envars
     
@@ -699,10 +697,3 @@ if __name__ == '__main__':
     # return
     sys.exit()
 # --- END -----------------------------------------------------------------    
-
-
-
-
-
-
-
