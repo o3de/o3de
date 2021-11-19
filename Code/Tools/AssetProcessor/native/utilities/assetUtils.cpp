@@ -1181,6 +1181,7 @@ namespace AssetUtilities
                 return hash;
             }
         }
+
         hash = AssetBuilderSDK::GetFileHash(filePath, bytesReadOut, hashMsDelay);
         return hash;
     }

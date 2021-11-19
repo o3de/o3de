@@ -86,9 +86,11 @@ namespace AssetProcessor
                 return AZStd::string::format("         %03" PRId64 "ms", milliseconds);
             }
 
-            // Prints out a single stat.
-            void PrintStat(const char* name, duration milliseconds, int64_t count)
+            // Prints out a single stat. 
+            void PrintStat([[maybe_unused]] const char* name, duration milliseconds, int64_t count)
             {
+                // note that name may be unused as it only appears in Trace macros, which are
+                // stripped out in release builds.
                 if (count <= 1)
                 {
                     count = 1;
