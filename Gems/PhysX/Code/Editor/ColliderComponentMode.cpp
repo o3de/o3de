@@ -265,10 +265,7 @@ namespace PhysX
         m_buttonIds[static_cast<size_t>(SubMode::Rotation)] = RegisterClusterButton(m_modeSelectionClusterId, "Rotate");
         m_buttonIds[static_cast<size_t>(SubMode::Dimensions)] = RegisterClusterButton(m_modeSelectionClusterId, "Scale");
 
-        AzToolsFramework::ViewportUi::ViewportUiRequestBus::Event(
-            AzToolsFramework::ViewportUi::DefaultViewportId,
-            &AzToolsFramework::ViewportUi::ViewportUiRequestBus::Events::SetClusterActiveButton, m_modeSelectionClusterId,
-            m_buttonIds[static_cast<size_t>(SubMode::Dimensions)]);
+        SetCurrentMode(SubMode::Offset);
 
         const auto onButtonClicked = [this](AzToolsFramework::ViewportUi::ButtonId buttonId) {
             if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::Offset)])
@@ -281,7 +278,7 @@ namespace PhysX
             }
             else if (buttonId == m_buttonIds[static_cast<size_t>(SubMode::Dimensions)])
             {
-            SetCurrentMode(SubMode::Dimensions);
+                SetCurrentMode(SubMode::Dimensions);
             }
         };
 
