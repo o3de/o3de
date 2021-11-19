@@ -334,17 +334,17 @@ namespace AssetProcessor
         }
 
         // Public interface:
-        static StatsCaptureImpl* s_instance = nullptr;
+        static StatsCaptureImpl* g_instance = nullptr;
 
         //! call this one time before capturing stats.
         void Initialize()
         {
-            if (s_instance)
+            if (g_instance)
             {
                 AZ_Assert(false, "An instance of StatsCaptureImpl already exists.");
                 return;
             }
-            s_instance = aznew StatsCaptureImpl();
+            g_instance = aznew StatsCaptureImpl();
         }
 
         //! Call this one time as part of shutting down.
@@ -353,28 +353,28 @@ namespace AssetProcessor
         //! to essentially be "turned off" just by not initializing it in the first place.
         void Shutdown()
         {
-            if (s_instance)
+            if (g_instance)
             {
-                delete s_instance;
-                s_instance = nullptr;
+                delete g_instance;
+                g_instance = nullptr;
             }
         }
 
         //! Start the clock running for a particular stat name.
         void BeginCaptureStat(AZStd::string_view statName)
         {
-            if (s_instance)
+            if (g_instance)
             {
-                s_instance->BeginCaptureStat(statName);
+                g_instance->BeginCaptureStat(statName);
             }
         }
 
         //! Stop the clock running for a particular stat name.
         void EndCaptureStat(AZStd::string_view statName)
         {
-            if (s_instance)
+            if (g_instance)
             {
-                s_instance->EndCaptureStat(statName);
+                g_instance->EndCaptureStat(statName);
             }
         }
 
@@ -383,9 +383,9 @@ namespace AssetProcessor
         //! is going to make a lot of assumptions about the way the data is encoded.
         void Dump()
         {
-            if (s_instance)
+            if (g_instance)
             {
-                s_instance->Dump();
+                g_instance->Dump();
             }
         }
     }

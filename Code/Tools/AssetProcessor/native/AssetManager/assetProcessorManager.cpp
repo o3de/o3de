@@ -228,7 +228,7 @@ namespace AssetProcessor
             else //if failed or succeeded remove from the map
             {
                 // note that sometimes this gets called twice, once by the RCJobs thread and once by the AP itself,
-                // becuase sometimes jobs take a short cut from "started" -> "failed" or "started" -> "complete
+                // because sometimes jobs take a short cut from "started" -> "failed" or "started" -> "complete
                 // without going thru the RC.
                 // as such, all the code in this block should be crafted to work regardless of whether its double called.
                 AssetProcessor::StatsCapture::EndCaptureStat(statKey.toUtf8().constData());

@@ -108,7 +108,7 @@ TEST_F(StatsCaptureOutputTest, StatsCaptureTest_HumanReadableOnly_DumpsNoMachine
     for (const auto& message : m_gatheredMessages)
     {
         // we expect to see ZERO "Machine Readable" lines
-        EXPECT_EQ(message.find("MachineReadableStat:"), AZStd::string::npos) << "Found unexpected line in output: " << message.c_str();
+        EXPECT_FALSE(message.contains("MachineReadableStat:")) << "Found unexpected line in output: " << message.c_str();
     }
 }
 
@@ -125,7 +125,7 @@ TEST_F(StatsCaptureOutputTest, StatsCaptureTest_MachineReadableOnly_DumpsNoHuman
     for (const auto& message : m_gatheredMessages)
     {
         // we expect to see ONLY "Machine Readable" lines
-        EXPECT_NE(message.find("MachineReadableStat:"), AZStd::string::npos) << "Found unexpected line in output: " << message.c_str();
+        EXPECT_TRUE(message.contains("MachineReadableStat:")) << "Found unexpected line in output: " << message.c_str();
     }
     EXPECT_GT(m_gatheredMessages.size(), 0);
 }
@@ -168,7 +168,7 @@ TEST_F(StatsCaptureOutputTest, StatsCaptureTest_Sanity)
     
     for (const auto& stat : m_gatheredMessages)
     {
-        if (stat.find("MachineReadableStat:") != AZStd::string::npos)
+        if (stat.contains("MachineReadableStat:"))
         {
             AZStd::vector<AZStd::string> tokens;
             AZ::StringFunc::Tokenize(stat, tokens, ":", false, false);
