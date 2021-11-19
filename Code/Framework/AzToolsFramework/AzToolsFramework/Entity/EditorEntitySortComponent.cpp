@@ -383,7 +383,7 @@ namespace AzToolsFramework
                 }
             }
 
-            AZStd::sort(children.begin(), children.end(), [this](AZ::EntityId lhs, AZ::EntityId rhs)
+            AZStd::sort(children.begin(), children.end(), [](AZ::EntityId lhs, AZ::EntityId rhs)
             {
                 return GetEntityById(lhs)->GetName() < GetEntityById(rhs)->GetName();
             });
