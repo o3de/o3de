@@ -23,6 +23,8 @@ namespace AzToolsFramework
             , public EditorEntityContextNotificationBus::Handler
             , public AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
         {
+            friend class JsonEditorEntitySortComponentSerializer;
+
         public:
             AZ_COMPONENT(EditorEntitySortComponent, "{6EA1E03D-68B2-466D-97F7-83998C8C27F0}", EditorComponentBase);
 
@@ -63,6 +65,8 @@ namespace AzToolsFramework
             // Serialization events
             void PrepareSave();
             void PostLoad();
+
+            void SanitizeOrderEntryArray();
 
             class EntitySortSerializationEvents
                 : public AZ::SerializeContext::IEventHandler
@@ -112,6 +116,7 @@ namespace AzToolsFramework
 
             bool m_entityOrderIsDirty = true; ///< This flag indicates our stored serialization order data is out of date and must be rebuilt before serialization occurs
             bool m_ignoreIncomingOrderChanges = false; ///< This is set when prefab propagation occurs so that non-authored order changes can be ignored
+            bool m_shouldSanityCheckStateAfterPropagation = false; //< This is set after activation, to queue a cleanup of any invalid state after the next prefab propagation.
         };
     }
 } // namespace AzToolsFramework
