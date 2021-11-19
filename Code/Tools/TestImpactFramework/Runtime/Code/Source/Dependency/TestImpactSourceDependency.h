@@ -24,11 +24,11 @@ namespace TestImpact
     class ParentTarget
     {
     public:
-        //! Constructor overload for test target types.
-        ParentTarget(const TestTarget* target);
-
-        //! Constructor overload for production target types.
-        ParentTarget(const ProductionTarget* target);
+        template<typename TargetType>
+        ParentTarget(const TargetType* target)
+            : m_target(target)
+        {
+        }
 
         //! Returns the base build target pointer for this parent.
         const BuildTarget* GetBuildTarget() const;

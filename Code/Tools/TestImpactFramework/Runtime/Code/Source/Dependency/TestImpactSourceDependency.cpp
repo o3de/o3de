@@ -15,16 +15,6 @@
 
 namespace TestImpact
 {
-    ParentTarget::ParentTarget(const TestTarget* target)
-        : m_target(target)
-    {
-    }
-
-    ParentTarget::ParentTarget(const ProductionTarget* target)
-        : m_target(target)
-    {
-    }
-
     bool ParentTarget::operator==(const ParentTarget& other) const
     {
         return GetBuildTarget() == other.GetBuildTarget();
