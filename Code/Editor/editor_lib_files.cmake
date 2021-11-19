@@ -636,8 +636,6 @@ set(FILES
     Util/FileEnum.h
     Util/FileUtil.cpp
     Util/FileUtil.h
-    Util/GdiUtil.cpp
-    Util/GdiUtil.h
     Util/GeometryUtil.cpp
     Util/GuidUtil.cpp
     Util/GuidUtil.h
