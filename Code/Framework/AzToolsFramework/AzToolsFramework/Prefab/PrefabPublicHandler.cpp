@@ -597,9 +597,41 @@ namespace AzToolsFramework
             
             Instance& entityOwningInstance = owningInstanceOfParentEntity->get();
 
-            // Get the comparison instance directly from the template, as that's what we'll be applying our patch to
-            const PrefabDom& instanceDomBeforeUpdate =
-                m_prefabSystemComponentInterface->FindTemplateDom(entityOwningInstance.GetTemplateId());
+            // Get the template for our owning instance from the root prefab DOM and use that to generate our patch
+            AZStd::vector<InstanceOptionalConstReference> pathOfInstances;
+
+            InstanceOptionalReference rootInstance = owningInstanceOfParentEntity;
+            while (rootInstance->get().GetParentInstance() != AZStd::nullopt)
+            {
+                pathOfInstances.emplace_back(rootInstance);
+                rootInstance = rootInstance->get().GetParentInstance();
+            }
+
+            AZStd::string aliasPathResult = "";
+            for (auto instanceIter = pathOfInstances.rbegin(); instanceIter != pathOfInstances.rend(); ++instanceIter)
+            {
+                aliasPathResult.append("/Instances/");
+                aliasPathResult.append((*instanceIter)->get().GetInstanceAlias());
+            }
+
+            PrefabDomPath rootPrefabDomPath(aliasPathResult.c_str());
+
+            PrefabDom& rootPrefabTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(rootInstance->get().GetTemplateId());
+
+            auto instanceDomFromRootValue = rootPrefabDomPath.Get(rootPrefabTemplateDom);
+            if (!instanceDomFromRootValue)
+            {
+                return AZ::Failure<AZStd::string>("Could not load Instance DOM from the top level ancestor's DOM.");
+            }
+
+            PrefabDomValueReference instanceDomFromRoot = *instanceDomFromRootValue;
+            if (!instanceDomFromRoot.has_value())
+            {
+                return AZ::Failure<AZStd::string>("Could not load Instance DOM from the top level ancestor's DOM.");
+            }
+
+            PrefabDom instanceDomBeforeUpdate;
+            instanceDomBeforeUpdate.CopyFrom(instanceDomFromRoot.value().get(), instanceDomBeforeUpdate.GetAllocator());
 
             ScopedUndoBatch undoBatch("Add Entity");
 
