@@ -95,7 +95,8 @@ def EntityOutliner_EntityOrdering():
         entity_outliner_model.dropMimeData(
             mime_data, QtCore.Qt.MoveAction, target_row, 0, target_index.parent()
         )
-        QtWidgets.QApplication.processEvents()
+        # Wait after move to let events (i.e. prefab propagation) process
+        general.idle_wait(1.0)
 
     # Move an entity before another entity in the order by dragging the source above the target
     move_entity_before = lambda source_name, target_name: _move_entity(
