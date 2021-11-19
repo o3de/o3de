@@ -30,8 +30,8 @@ namespace UnitTest
             m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{{"ProductionTargetB", "", ""}, {}});
             m_buildTargetDescriptors.emplace_back(TestImpact::BuildTargetDescriptor{{"ProductionTargetC", "", ""}, {}});
 
-            m_testTargetMetaMap.emplace("TestTargetA", TestImpact::TestTargetMeta{"", "", AZStd::chrono::milliseconds{0}, TestImpact::LaunchMethod::TestRunner});
-            m_testTargetMetaMap.emplace("TestTargetB", TestImpact::TestTargetMeta{"", "", AZStd::chrono::milliseconds{0}, TestImpact::LaunchMethod::StandAlone});
+            m_testTargetMetaMap.emplace("TestTargetA", TestImpact::TestTargetMeta{TestImpact::TestSuiteMeta{"", AZStd::chrono::milliseconds{0}}, "", TestImpact::LaunchMethod::TestRunner});
+            m_testTargetMetaMap.emplace("TestTargetB", TestImpact::TestTargetMeta{TestImpact::TestSuiteMeta{"", AZStd::chrono::milliseconds{0}}, "", TestImpact::LaunchMethod::StandAlone});
         }
 
     protected:
@@ -47,7 +47,9 @@ namespace UnitTest
     TestImpact::TestTargetDescriptor ConstructTestTargetDescriptor(const AZStd::string& name, TestImpact::LaunchMethod launchMethod)
     {
         return TestImpact::TestTargetDescriptor{
-            TestImpact::BuildTargetDescriptor{{name, "", ""}, {{}, {}}}, TestImpact::TestTargetMeta{"", "", AZStd::chrono::milliseconds{0}, launchMethod}};
+            TestImpact::BuildTargetDescriptor{ { name, "", "" }, { {}, {} } },
+            TestImpact::TestTargetMeta{ TestImpact::TestSuiteMeta{ "", AZStd::chrono::milliseconds{ 0 } }, "", launchMethod }
+        };
     }
 
     TEST_F(TargetDescriptorCompilerTestFixture, EmptyBuildTargetDescriptorList_ExpectArtifactException)
@@ -103,7 +105,7 @@ namespace UnitTest
         try
         {
             // Given a valid build target descriptor list but a test target meta map with an orphan entry
-            m_testTargetMetaMap.emplace("Orphan", TestImpact::TestTargetMeta{"", "", AZStd::chrono::milliseconds{0}, TestImpact::LaunchMethod::TestRunner});
+            m_testTargetMetaMap.emplace("Orphan", TestImpact::TestTargetMeta{TestImpact::TestSuiteMeta{"", AZStd::chrono::milliseconds{0}}, "", TestImpact::LaunchMethod::TestRunner});
 
             // When attempting to construct the test target
             const auto& [productionTargetDescriptors, testTargetDescriptors] =

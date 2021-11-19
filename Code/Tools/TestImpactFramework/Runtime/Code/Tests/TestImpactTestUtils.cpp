@@ -1710,9 +1710,23 @@ namespace UnitTest
         return lhs.m_buildMetaData == rhs.m_buildMetaData && lhs.m_sources == rhs.m_sources;
     }
 
+    bool operator==(const TestImpact::TestSuiteMeta& lhs, const TestImpact::TestSuiteMeta& rhs)
+    {
+        if (lhs.m_name != rhs.m_name)
+        {
+            return false;
+        }
+        else if (lhs.m_timeout != rhs.m_timeout)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     bool operator==(const TestImpact::TestTargetMeta& lhs, const TestImpact::TestTargetMeta& rhs)
     {
-        if (lhs.m_suite != rhs.m_suite)
+        if (!(lhs.m_suiteMeta == rhs.m_suiteMeta))
         {
             return false;
         }

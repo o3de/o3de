@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <Artifact/Static/TestImpactTestScriptDescriptor.h>
+#include <Artifact/Static/TestImpactTestScriptTargetDescriptor.h>
 #include <TestImpactFramework/TestImpactTestSequence.h>
 
 #include <AzCore/std/containers/vector.h>
@@ -16,5 +16,5 @@
 namespace TestImpact
 {
     //!
-    AZStd::vector<TestScriptDescriptor> TestScriptDescriptorFactory(const AZStd::string& masterTestListData, SuiteType suiteType);
+    AZStd::vector<TestScriptTargetDescriptor> TestScriptTargetDescriptorFactory(const AZStd::string& masterTestListData, SuiteType suiteType);
 } // namespace TestImpact

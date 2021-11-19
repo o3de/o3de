@@ -15,7 +15,7 @@
 namespace TestImpact
 {
     //! Artifact produced by the target artifact compiler that represents a test build target in the repository.
-    struct TestScriptDescriptor
+    struct TestScriptTargetDescriptor
     {
         AZStd::string m_name; //!< Python test name.
         TestSuiteMeta m_suiteMeta;

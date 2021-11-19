@@ -206,6 +206,7 @@ namespace UnitTest
     bool operator==(const TestImpact::BuildMetaData& lhs, const TestImpact::BuildMetaData& rhs);
     bool operator==(const TestImpact::TargetSources& lhs, const TestImpact::TargetSources& rhs);
     bool operator==(const TestImpact::BuildTargetDescriptor& lhs, const TestImpact::BuildTargetDescriptor& rhs);
+    bool operator==(const TestImpact::TestSuiteMeta& lhs, const TestImpact::TestSuiteMeta& rhs);
     bool operator==(const TestImpact::TestTargetMeta& lhs, const TestImpact::TestTargetMeta& rhs);
     bool operator==(const TestImpact::ProductionTargetDescriptor& lhs, const TestImpact::ProductionTargetDescriptor& rhs);
     bool operator==(const TestImpact::TestTargetDescriptor& lhs, const TestImpact::TestTargetDescriptor& rhs);
