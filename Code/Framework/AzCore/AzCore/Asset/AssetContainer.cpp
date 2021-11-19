@@ -359,15 +359,15 @@ namespace AZ
 
         void AssetContainer::HandleReadyAsset(Asset<AssetData> asset)
         {
-        // Wait until we've finished initialization before allowing this
-        // If a ready event happens before we've gotten all the maps/structures set up, there may be some missing data
-        // which can lead to a crash
-        // We'll go through and check the ready status of every dependency immediately after finishing initialization anyway
-        if (m_initComplete)
-        {
-            RemoveFromAllWaitingPreloads(asset->GetId());
-            RemoveWaitingAsset(asset->GetId());
-    }
+            // Wait until we've finished initialization before allowing this
+            // If a ready event happens before we've gotten all the maps/structures set up, there may be some missing data
+            // which can lead to a crash
+            // We'll go through and check the ready status of every dependency immediately after finishing initialization anyway
+            if (m_initComplete)
+            {
+                RemoveFromAllWaitingPreloads(asset->GetId());
+                RemoveWaitingAsset(asset->GetId());
+            }
         }
 
         void AssetContainer::OnAssetDataLoaded(Asset<AssetData> asset)
