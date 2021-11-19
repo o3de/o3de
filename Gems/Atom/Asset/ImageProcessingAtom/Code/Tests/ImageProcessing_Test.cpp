@@ -203,7 +203,7 @@ namespace UnitTest
             m_gemFolder = AZ::Test::GetEngineRootPath() + "/Gems/Atom/Asset/ImageProcessingAtom/";
             m_outputFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/temp/");
 
-            m_defaultSettingFolder = m_gemFolder + AZStd::string("Config/");
+            m_defaultSettingFolder = m_gemFolder + AZStd::string("Assets/Config/");
             m_testFileFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/");
 
             InitialImageFilenames();

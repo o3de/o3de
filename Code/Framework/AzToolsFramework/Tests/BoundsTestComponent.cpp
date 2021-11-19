@@ -40,6 +40,9 @@ namespace UnitTest
     {
         AzFramework::BoundsRequestBus::Handler::BusConnect(GetEntityId());
         AzToolsFramework::EditorComponentSelectionRequestsBus::Handler::BusConnect(GetEntityId());
+
+        // default local bounds to unit cube
+        m_localBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(-0.5f), AZ::Vector3(0.5f));
     }
 
     void BoundsTestComponent::Deactivate()
@@ -57,7 +60,6 @@ namespace UnitTest
 
     AZ::Aabb BoundsTestComponent::GetLocalBounds()
     {
-        return AZ::Aabb::CreateFromMinMax(AZ::Vector3(-0.5f), AZ::Vector3(0.5f));
+        return m_localBounds;
     }
-
 } // namespace UnitTest

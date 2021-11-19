@@ -24,11 +24,12 @@ namespace AzFramework
 
     ClickDetector::ClickOutcome ClickDetector::DetectClick(const ClickEvent clickEvent, const ScreenVector& cursorDelta)
     {
+        m_moveAccumulator += ScreenVectorLength(cursorDelta);
+
         const auto previousDetectionState = m_detectionState;
         if (previousDetectionState == DetectionState::WaitingForMove)
         {
             // only allow the action to begin if the mouse has been moved a small amount
-            m_moveAccumulator += ScreenVectorLength(cursorDelta);
             if (m_moveAccumulator > m_deadZone)
             {
                 m_detectionState = DetectionState::Moved;
@@ -43,7 +44,7 @@ namespace AzFramework
                 using FloatingPointSeconds = AZStd::chrono::duration<float, AZStd::chrono::seconds::period>;
 
                 const auto diff = now - m_tryBeginTime.value();
-                if (FloatingPointSeconds(diff).count() < m_doubleClickInterval)
+                if (FloatingPointSeconds(diff).count() < m_doubleClickInterval && m_moveAccumulator < m_deadZone)
                 {
                     return ClickOutcome::Nil;
                 }

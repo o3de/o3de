@@ -64,6 +64,7 @@ namespace O3DE::ProjectManager
         QLabel* m_nameLabel = nullptr;
         QLabel* m_creatorLabel = nullptr;
         QLabel* m_summaryLabel = nullptr;
+        QLabel* m_licenseLabel = nullptr;
         LinkLabel* m_licenseLinkLabel = nullptr;
         LinkLabel* m_directoryLinkLabel = nullptr;
         LinkLabel* m_documentationLinkLabel = nullptr;

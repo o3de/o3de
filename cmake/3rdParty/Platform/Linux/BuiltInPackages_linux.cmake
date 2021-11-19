@@ -45,3 +45,4 @@ ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-linux                 
 ly_associate_package(PACKAGE_NAME astc-encoder-3.2-rev1-linux                       TARGETS astc-encoder                PACKAGE_HASH 2ba97a06474d609945f0ab4419af1f6bbffdd294ca6b869f5fcebec75c573c0f)
 ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-linux                    TARGETS ISPCTexComp                 PACKAGE_HASH 065fd12abe4247dde247330313763cf816c3375c221da030bdec35024947f259)
 ly_associate_package(PACKAGE_NAME lz4-1.9.3-vcpkg-rev4-linux                        TARGETS lz4                         PACKAGE_HASH 5de3dbd3e2a3537c6555d759b3c5bb98e5456cf85c74ff6d046f809b7087290d)
+ly_associate_package(PACKAGE_NAME pyside2-5.15.2-rev2-linux                         TARGETS pyside2                     PACKAGE_HASH 7589c397c8224d0c3ad691ff02e1afd55d9a1f9de1967c14eb8105dd2b0c4dd1)

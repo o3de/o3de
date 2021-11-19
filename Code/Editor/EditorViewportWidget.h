@@ -166,7 +166,6 @@ private:
         Qt::MouseButtons buttons, Qt::KeyboardModifiers modifiers, const QPoint& point) override;
     void SetViewportId(int id) override;
     QPoint WorldToView(const Vec3& wp) const override;
-    QPoint WorldToViewParticleEditor(const Vec3& wp, int width, int height) const override;
     Vec3 WorldToView3D(const Vec3& wp, int nFlags = 0) const override;
     Vec3 ViewToWorld(const QPoint& vp, bool* collideWithTerrain = nullptr, bool onlyTerrain = false, bool bSkipVegetation = false, bool bTestRenderMesh = false, bool* collideWithObject = nullptr) const override;
     void ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& rayDir) const override;
@@ -208,7 +207,6 @@ private:
     void* GetSystemCursorConstraintWindow() const override;
 
     // AzToolsFramework::MainEditorViewportInteractionRequestBus overrides ...
-    AZ::EntityId PickEntity(const AzFramework::ScreenPoint& point) override;
     AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) override;
     float TerrainHeight(const AZ::Vector2& position) override;
     bool ShowingWorldSpace() override;
@@ -275,7 +273,8 @@ private:
 
     bool CheckRespondToInput() const;
 
-    void BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const QPoint& pt) override;
+    void BuildDragDropContext(
+        AzQtComponents::ViewportDragContext& context, AzFramework::ViewportId viewportId, const QPoint& point) override;
 
     void SetAsActiveViewport();
     void PushDisableRendering();
@@ -306,8 +305,8 @@ private:
     const DisplayContext& GetDisplayContext() const { return m_displayContext; }
     CBaseObject* GetCameraObject() const;
 
-    void UnProjectFromScreen(float sx, float sy, float sz, float* px, float* py, float* pz) const;
-    void ProjectToScreen(float ptx, float pty, float ptz, float* sx, float* sy, float* sz) const;
+    void UnProjectFromScreen(float sx, float sy, float* px, float* py, float* pz) const;
+    void ProjectToScreen(float ptx, float pty, float ptz, float* sx, float* sy) const;
 
     AZ::RPI::ViewPtr GetCurrentAtomView() const;
 
