@@ -9,9 +9,9 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
-#include <AzFramework/Matchmaking/MatchmakingNotifications.h>
 #include <AzFramework/Session/ISessionRequests.h>
 #include <AzFramework/Session/ISessionHandlingRequests.h>
+#include <AzFramework/Matchmaking/IMatchmakingRequests.h>
 #include <AzFramework/Matchmaking/MatchmakingNotifications.h>
 #include <AzTest/AzTest.h>
 
@@ -76,21 +76,44 @@ public:
     MOCK_METHOD0(OnStopMatchmakingAsyncComplete, void());
 };
 
-class MatchAcceptanceNotificationsHandlerMock
-    : public AzFramework::MatchAcceptanceNotificationBus::Handler
+class MatchmakingNotificationsHandlerMock
+    : public AzFramework::MatchmakingNotificationBus::Handler
 {
 public:
-    MatchAcceptanceNotificationsHandlerMock()
+    MatchmakingNotificationsHandlerMock()
     {
-        AzFramework::MatchAcceptanceNotificationBus::Handler::BusConnect();
+        AzFramework::MatchmakingNotificationBus::Handler::BusConnect();
     }
 
-    ~MatchAcceptanceNotificationsHandlerMock()
+    ~MatchmakingNotificationsHandlerMock()
     {
-        AzFramework::MatchAcceptanceNotificationBus::Handler::BusDisconnect();
+        AzFramework::MatchmakingNotificationBus::Handler::BusDisconnect();
     }
 
-    MOCK_METHOD0(OnMatchAcceptance, void());
+    void OnMatchAcceptance() override
+    {
+        ++m_numMatchAcceptance;
+    }
+
+    void OnMatchComplete() override
+    {
+        ++m_numMatchComplete;
+    }
+
+    void OnMatchError() override
+    {
+        ++m_numMatchError;
+    }
+
+    void OnMatchFailure() override
+    {
+        ++m_numMatchFailure;
+    }
+
+    int m_numMatchAcceptance = 0;
+    int m_numMatchComplete = 0;
+    int m_numMatchError = 0;
+    int m_numMatchFailure = 0;
 };
 
 class SessionAsyncRequestNotificationsHandlerMock

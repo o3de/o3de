@@ -196,7 +196,7 @@ namespace AZ
                 {
                     // bake is complete, update configuration with the new baked texture asset
                     AzToolsFramework::ScopedUndoBatch undoBatch("DiffuseProbeGrid Texture Bake");
-                    configurationAsset = { textureAsset.GetAs<RPI::StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+                    configurationAsset = textureAsset;
                     SetDirty();
 
                     if (m_controller.m_configuration.m_bakedIrradianceTextureAsset.IsReady() &&

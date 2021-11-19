@@ -1,5 +1,5 @@
 {
-    "Source" : "ShadowmapSkin",
+    "Source" : "ShadowmapSkin.azsl",
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "LessEqual" }

@@ -84,10 +84,6 @@ namespace AtomImGuiTools
         {
             m_imguiGpuProfiler.Draw(m_showGpuProfiler, AZ::RPI::PassSystemInterface::Get()->GetRootPass().get());
         }
-        if (m_showCpuProfiler)
-        {
-            m_imguiCpuProfiler.Draw(m_showCpuProfiler);
-        }
         if (m_showTransientAttachmentProfiler)
         {
             auto* transientStats = AZ::RHI::RHISystemInterface::Get()->GetTransientAttachmentStatistics();
@@ -108,12 +104,6 @@ namespace AtomImGuiTools
         {
             ImGui::MenuItem("Pass Viewer", "", &m_showPassTree);
             ImGui::MenuItem("Gpu Profiler", "", &m_showGpuProfiler);
-            if (ImGui::MenuItem("Cpu Profiler", "", &m_showCpuProfiler))
-            {
-                AZ::RHI::RHISystemInterface::Get()->ModifyFrameSchedulerStatisticsFlags(
-                    AZ::RHI::FrameSchedulerStatisticsFlags::GatherCpuTimingStatistics, m_showCpuProfiler);
-                AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(m_showCpuProfiler);
-            }
             if (ImGui::MenuItem("Transient Attachment Profiler", "", &m_showTransientAttachmentProfiler))
             {
                 AZ::RHI::RHISystemInterface::Get()->ModifyFrameSchedulerStatisticsFlags(

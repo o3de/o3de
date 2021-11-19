@@ -72,7 +72,9 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::leaveEvent([[maybe_unused]] QEvent* event)
     {
-        m_mousePosition = QPoint();
+        m_mousePosition = QPoint(-1, -1);
+        m_currentHoveredIndex = QModelIndex();
+        update();
     }
 
     void EntityOutlinerTreeView::mousePressEvent(QMouseEvent* event)
@@ -129,6 +131,11 @@ namespace AzToolsFramework
         }
 
         m_mousePosition = event->pos();
+        if (QModelIndex hoveredIndex = indexAt(m_mousePosition); m_currentHoveredIndex != indexAt(m_mousePosition))
+        {
+            m_currentHoveredIndex = hoveredIndex;
+            update();
+        }
 
         //process mouse movement as normal, potentially triggering drag and drop
         QTreeView::mouseMoveEvent(event);
@@ -193,7 +200,7 @@ namespace AzToolsFramework
         const bool isEnabled = (this->model()->flags(index) & Qt::ItemIsEnabled);
 
         const bool isSelected = selectionModel()->isSelected(index);
-        const bool isHovered = (index == indexAt(m_mousePosition)) && isEnabled;
+        const bool isHovered = (index == indexAt(m_mousePosition).siblingAtColumn(0)) && isEnabled;
 
         // Paint the branch Selection/Hover Rect
         PaintBranchSelectionHoverRect(painter, rect, isSelected, isHovered);

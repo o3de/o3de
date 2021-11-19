@@ -28,7 +28,7 @@ from azpy.constants import ENVAR_DCCSI_DEV_MODE
 from dynaconf import settings
 from pathlib import Path
 
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, settings.DCCSI_GDEBUG)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, settings.DCCSI_GDEBUG)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, settings.DCCSI_DEV_MODE)
 
 _MODULENAME = 'DCCsi.SDK.substance.builder.sbsar_utils'
@@ -190,15 +190,15 @@ if __name__ == "__main__":
     _SYNTH_ENV_DICT = synthetic_env.stash_env()
 
     from azpy.constants import ENVAR_DCCSIG_PATH
-    from azpy.constants import ENVAR_LY_PROJECT_PATH
+    from azpy.constants import ENVAR_O3DE_PROJECT_PATH
     
     # grab a specific path from the base_env
     _PATH_DCCSI = _SYNTH_ENV_DICT[ENVAR_DCCSIG_PATH]
 
     # use DCCsi as the project path for this test
-    _LY_PROJECT_PATH = _PATH_DCCSI
+    _O3DE_PROJECT_PATH = _PATH_DCCSI
     
-    _PROJECT_ASSETS_PATH = Path(_LY_PROJECT_PATH, 'Assets').resolve()
+    _PROJECT_ASSETS_PATH = Path(_O3DE_PROJECT_PATH, 'Assets').resolve()
     _PROJECT_MATERIALS_PATH = Path(_PROJECT_ASSETS_PATH, 'Materials').resolve()
     
     # this will combine two parts into a single path (object)

@@ -8,50 +8,13 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/std/containers/set.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Aabb.h>
-#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/SurfaceData/SurfaceData.h>
 
 namespace AzFramework
 {
-    namespace SurfaceData
-    {
-        namespace Constants
-        {
-            static const char* s_unassignedTagName = "(unassigned)";
-        }
-
-        struct SurfaceTagWeight
-        {
-            AZ_TYPE_INFO(SurfaceTagWeight, "{EA14018E-E853-4BF5-8E13-D83BB99A54CC}");
-
-            AZ::Crc32 m_surfaceType = AZ::Crc32(Constants::s_unassignedTagName);
-            float m_weight = 0.0f; //! A Value in the range [0.0f .. 1.0f]
-
-            //! Don't call this directly. TerrainDataRequests::Reflect is doing it already.
-            static void Reflect(AZ::ReflectContext* context);
-        };
-
-        struct SurfaceTagWeightComparator
-        {
-            bool operator()(const SurfaceTagWeight& tagWeight1, const SurfaceTagWeight& tagWeight2) const
-            {
-                if (!AZ::IsClose(tagWeight1.m_weight, tagWeight2.m_weight))
-                {
-                    return tagWeight1.m_weight > tagWeight2.m_weight;
-                }
-                else
-                {
-                    return tagWeight1.m_surfaceType > tagWeight2.m_surfaceType;
-                }
-            }
-        };
-
-         using OrderedSurfaceTagWeightSet = AZStd::set<SurfaceTagWeight, SurfaceTagWeightComparator>;
-    } //namespace SurfaceData
-
     namespace Terrain
     {
 
@@ -91,49 +54,82 @@ namespace AzFramework
             //! Returns terrains height in meters at location x,y.
             //! @terrainExistsPtr: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a terrain HOLE then *terrainExistsPtr will become false,
             //!                  otherwise *terrainExistsPtr will become true.
-            virtual float GetHeight(AZ::Vector3 position, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
-            virtual float GetHeightFromFloats(float x, float y, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
+            virtual float GetHeight(const AZ::Vector3& position, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
+            virtual float GetHeightFromVector2(
+                const AZ::Vector2& position, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
+            virtual float GetHeightFromFloats(
+                float x, float y, Sampler sampler = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
+
+            //! Returns true if there's a hole at location x,y.
+            //! Also returns true if there's no terrain data at location x,y.
+            virtual bool GetIsHole(const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR) const = 0;
+            virtual bool GetIsHoleFromVector2(const AZ::Vector2& position, Sampler sampleFilter = Sampler::BILINEAR) const = 0;
+            virtual bool GetIsHoleFromFloats(float x, float y, Sampler sampleFilter = Sampler::BILINEAR) const = 0;
+
+            // Given an XY coordinate, return the surface normal.
+            //! @terrainExists: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a
+            //! terrain HOLE then *terrainExistsPtr will be set to false,
+            //!                  otherwise *terrainExistsPtr will be set to true.
+            virtual AZ::Vector3 GetNormal(
+                const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
+            virtual AZ::Vector3 GetNormalFromVector2(
+                const AZ::Vector2& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
+            virtual AZ::Vector3 GetNormalFromFloats(
+                float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
 
             //! Given an XY coordinate, return the max surface type and weight.
             //! @terrainExists: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a terrain HOLE then *terrainExistsPtr will be set to false,
             //!                  otherwise *terrainExistsPtr will be set to true.
-            virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeight(AZ::Vector3 position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
-            virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromVector2(const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT, bool* terrainExistsPtr = nullptr) const = 0;
-            virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
+            virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeight(
+                const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
+            virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromVector2(
+                const AZ::Vector2& inPosition, Sampler sampleFilter = Sampler::DEFAULT, bool* terrainExistsPtr = nullptr) const = 0;
+            virtual SurfaceData::SurfaceTagWeight GetMaxSurfaceWeightFromFloats(
+                float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
 
             //! Given an XY coordinate, return the set of surface types and weights.  The Vector3 input position version is defined to ignore
             //! the input Z value.
             virtual void GetSurfaceWeights(
                 const AZ::Vector3& inPosition,
-                SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+                SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 bool* terrainExistsPtr = nullptr) const = 0;
             virtual void GetSurfaceWeightsFromVector2(
                 const AZ::Vector2& inPosition,
-                SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+                SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 bool* terrainExistsPtr = nullptr) const = 0;
             virtual void GetSurfaceWeightsFromFloats(
                 float x,
                 float y,
-                SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights,
+                SurfaceData::SurfaceTagWeightList& outSurfaceWeights,
                 Sampler sampleFilter = Sampler::DEFAULT,
                 bool* terrainExistsPtr = nullptr) const = 0;
 
             //! Convenience function for  low level systems that can't do a reverse lookup from Crc to string. Everyone else should use GetMaxSurfaceWeight or GetMaxSurfaceWeightFromFloats.
             //! Not available in the behavior context.
             //! Returns nullptr if the position is inside a hole or outside of the terrain boundaries.
-            virtual const char * GetMaxSurfaceName(AZ::Vector3 position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
+            virtual const char* GetMaxSurfaceName(
+                const AZ::Vector3& position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
 
-            //! Returns true if there's a hole at location x,y.
-            //! Also returns true if there's no terrain data at location x,y.
-            virtual bool GetIsHoleFromFloats(float x, float y, Sampler sampleFilter = Sampler::BILINEAR) const = 0;
-
-            // Given an XY coordinate, return the surface normal.
-            //! @terrainExists: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a terrain HOLE then *terrainExistsPtr will be set to false,
-            //!                  otherwise *terrainExistsPtr will be set to true.
-            virtual AZ::Vector3 GetNormal(AZ::Vector3 position, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
-            virtual AZ::Vector3 GetNormalFromFloats(float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const = 0;
+            //! Given an XY coordinate, return all terrain information at that location.  The Vector3 input position version is defined
+            //! to ignore the input Z value.
+            virtual void GetSurfacePoint(
+                const AZ::Vector3& inPosition,
+                SurfaceData::SurfacePoint& outSurfacePoint,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                bool* terrainExistsPtr = nullptr) const = 0;
+            virtual void GetSurfacePointFromVector2(
+                const AZ::Vector2& inPosition,
+                SurfaceData::SurfacePoint& outSurfacePoint,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                bool* terrainExistsPtr = nullptr) const = 0;
+            virtual void GetSurfacePointFromFloats(
+                float x,
+                float y,
+                SurfaceData::SurfacePoint& outSurfacePoint,
+                Sampler sampleFilter = Sampler::DEFAULT,
+                bool* terrainExistsPtr = nullptr) const = 0;
         };
         using TerrainDataRequestBus = AZ::EBus<TerrainDataRequests>;
 
@@ -169,6 +165,10 @@ namespace AzFramework
             }
         };
         using TerrainDataNotificationBus = AZ::EBus<TerrainDataNotifications>;
-
-    } //namespace Terrain
+    } // namespace Terrain
 } // namespace AzFramework
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(AzFramework::Terrain::TerrainDataRequests::Sampler, "{D29BB6D7-3006-4114-858D-355EAA256B86}");
+} // namespace AZ

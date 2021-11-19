@@ -66,7 +66,7 @@ option bool o_enableAzimuthCoeff = true;
 float M_R(Surface surface, float Lh, float sinLiPlusSinLr)
 {
     float a = 1.0f * surface.cuticleTilt;   // Tilt is translate as the mean offset
-    float b = 0.5 * surface.roughnessA2;    // Roughness is used as the standard deviation
+    float b = 0.5f * surface.roughnessA2;    // Roughness is used as the standard deviation
 
 //    return GaussianNormalized(sinLiPlusSinLr, a, b);  // reference
     return GaussianNormalized(Lh, a, b);
@@ -74,8 +74,8 @@ float M_R(Surface surface, float Lh, float sinLiPlusSinLr)
 
 float M_TT(Surface surface, float Lh, float sinLiPlusSinLr)
 {
-    float a = 1.0 * surface.cuticleTilt;
-    float b = 0.5 * surface.roughnessA2;
+    float a = 1.0f * surface.cuticleTilt;
+    float b = 0.5f * surface.roughnessA2;
 
 //    return GaussianNormalized(sinLiPlusSinLr, a, b);  // reference
     return GaussianNormalized(Lh, a, b);
@@ -83,8 +83,8 @@ float M_TT(Surface surface, float Lh, float sinLiPlusSinLr)
 
 float M_TRT(Surface surface, float Lh, float sinLiPlusSinLr)
 {
-    float a = 1.5 * surface.cuticleTilt;
-    float b = 1.0 * surface.roughnessA2;
+    float a = 1.5f * surface.cuticleTilt;
+    float b = 1.0f * surface.roughnessA2;
 
 //    return GaussianNormalized(sinLiPlusSinLr, a, b);  // reference
     return GaussianNormalized(Lh, a, b);    

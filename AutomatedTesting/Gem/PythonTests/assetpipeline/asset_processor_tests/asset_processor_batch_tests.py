@@ -329,7 +329,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         #    or an expected behavior has changed.  Processing bootstrap.cfg sometimes but not other times should not
         #    cause a failure in this test.
         num_processed_assets = asset_processor_utils.get_num_processed_assets(output)
-        assert num_processed_assets >= 8, f'Wrong number of successfully processed assets found in output: '\
+        assert num_processed_assets >= 6, f'Wrong number of successfully processed assets found in output: '\
                                           '{num_processed_assets}'
 
         missing_assets, _ = asset_processor.compare_assets_with_cache()
@@ -585,20 +585,18 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         3. Verify that logs exist for both AP Batch & AP GUI
         """
         asset_processor.create_temp_asset_root()
+        asset_processor.create_temp_log_root()
         LOG_PATH = {
             "batch_log": workspace.paths.ap_batch_log(),
-            "gui_log": workspace.paths.ap_gui_log(),
-            "job_logs": workspace.paths.ap_job_logs(),
+            "gui_log": workspace.paths.ap_gui_log()
         }
 
         class LogTimes:
             batch_log_start_time = 0
             gui_log_start_time = 0
-            job_logs_start_time = 0
 
             batch_log_final_time = 0
             gui_log_final_time = 0
-            job_logs_final_time = 0
 
             @staticmethod
             def Report():
@@ -607,12 +605,10 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
                     Original Times:
                     Batch: {LogTimes.batch_log_start_time}
                     GUI: {LogTimes.gui_log_start_time}
-                    JobLogs:{LogTimes.job_logs_start_time}
 
                     Post-Run Times:
                     Batch: {LogTimes.batch_log_final_time}
                     GUI: {LogTimes.gui_log_final_time}
-                    JobLogs:{LogTimes.job_logs_final_time}
                     """
                 )
 
@@ -629,22 +625,18 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
             LogTimes.Report()
 
         def check_existence(name, path):
-            assert os.path.exists(path), f"{name} could not be located after running the AP."
+            assert os.path.exists(path), f"{name} could not be located {path} after running the AP."
 
         # Check if log files previously exist and grab their modification times
         update_times("_start_time")
 
         # Run the Batch process
-        assert asset_processor.batch_process(), "Batch process failed to successfully terminate"
+        assert asset_processor.batch_process(create_temp_log=False), "Batch process failed to successfully terminate"
 
-        asset_processor.gui_process(quitonidle=True)
+        asset_processor.gui_process(quitonidle=True, create_temp_log=False)
 
         # Check that the Logs directory exists (C1564055)
         check_existence("Logs Directory", workspace.paths.ap_log_dir())
-
-        # Check that the logs and JobLogs directory have updated modified times (C1564056)
-        for key in LOG_PATH.keys():
-            check_existence(key, LOG_PATH[key])
 
         update_times("_final_time")
 
@@ -708,6 +700,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
+    @pytest.mark.skip(reason="need to change assets from .slice files to an asset type that can have nested dependencies")
     def test_validateNestedPreloadDependency_Found(self, asset_processor, ap_setup_fixture, workspace):
         """
         Tests processing of a nested circular dependency and verifies that Asset Processor will return an error

@@ -330,8 +330,6 @@ set(FILES
     Commands/CommandManager.h
     Controls/BitmapToolTip.cpp
     Controls/BitmapToolTip.h
-    Controls/ColorGradientCtrl.cpp
-    Controls/ColorGradientCtrl.h
     Controls/ConsoleSCB.cpp
     Controls/ConsoleSCB.h
     Controls/ConsoleSCB.ui

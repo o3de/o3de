@@ -29,15 +29,14 @@ namespace AzToolsFramework
             bool Changed() const override { return m_changed; }
 
         protected:
-            TemplateId m_templateId = InvalidTemplateId;
+            TemplateId m_templateId;
 
             PrefabDom m_redoPatch;
             PrefabDom m_undoPatch;
 
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
 
-            bool m_changed = true;
-            bool m_useImmediatePropagation = true;
+            bool m_changed;
         };
 
         //! handles the addition and removal of entities from instances
@@ -45,7 +44,7 @@ namespace AzToolsFramework
             : public PrefabUndoBase
         {
         public:
-            explicit PrefabUndoInstance(const AZStd::string& undoOperationName, const bool useImmediatePropagation = true);
+            explicit PrefabUndoInstance(const AZStd::string& undoOperationName);
 
             void Capture(
                 const PrefabDom& initialState,
@@ -54,6 +53,7 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
+            void Redo(InstanceOptionalConstReference instance);
         };
 
         //! handles entity updates, such as when the values on an entity change
@@ -73,7 +73,7 @@ namespace AzToolsFramework
             void Undo() override;
             void Redo() override;
             //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
-            void Redo(InstanceOptionalReference instanceToExclude);
+            void Redo(InstanceOptionalConstReference instanceToExclude);
 
         private:
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
@@ -138,10 +138,10 @@ namespace AzToolsFramework
             void Undo() override;
             void Redo() override;
             //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
-            void Redo(InstanceOptionalReference instanceToExclude);
+            void Redo(InstanceOptionalConstReference instanceToExclude);
 
         private:
-            void UpdateLink(PrefabDom& linkDom, InstanceOptionalReference instanceToExclude = AZStd::nullopt);
+            void UpdateLink(PrefabDom& linkDom, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt);
 
             LinkId m_linkId;
             PrefabDom m_linkDomNext;  //data for delete/update

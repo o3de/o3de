@@ -11,19 +11,28 @@
 #include <FormFolderBrowseEditWidget.h>
 #include <PythonBindingsInterface.h>
 #include <PathValidator.h>
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
 
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QScrollArea>
 
 namespace O3DE::ProjectManager
 {
     EngineSettingsScreen::EngineSettingsScreen(QWidget* parent)
         : ScreenWidget(parent)
     {
-        auto* layout = new QVBoxLayout();
+        QScrollArea* scrollArea = new QScrollArea(this);
+        scrollArea->setWidgetResizable(true);
+
+        QWidget* scrollWidget = new QWidget(this);
+        scrollArea->setWidget(scrollWidget);
+
+        QVBoxLayout* layout = new QVBoxLayout(scrollWidget);
         layout->setAlignment(Qt::AlignTop);
+        scrollWidget->setLayout(layout);
 
         setObjectName("engineSettingsScreen");
 
@@ -39,9 +48,18 @@ namespace O3DE::ProjectManager
         formTitleLabel->setObjectName("formTitleLabel");
         layout->addWidget(formTitleLabel);
 
-        m_engineVersion = new FormLineEditWidget(tr("Engine Version"), engineInfo.m_version, this);
-        m_engineVersion->lineEdit()->setReadOnly(true);
-        layout->addWidget(m_engineVersion);
+        FormLineEditWidget* engineName = new FormLineEditWidget(tr("Engine Name"), engineInfo.m_name, this);
+        engineName->lineEdit()->setReadOnly(true);
+        layout->addWidget(engineName);
+
+        FormLineEditWidget* engineVersion = new FormLineEditWidget(tr("Engine Version"), engineInfo.m_version, this);
+        engineVersion->lineEdit()->setReadOnly(true);
+        layout->addWidget(engineVersion);
+
+        FormBrowseEditWidget* engineFolder = new FormBrowseEditWidget(tr("Engine Folder"), engineInfo.m_path, this);
+        engineFolder->lineEdit()->setReadOnly(true);
+        connect( engineFolder, &FormBrowseEditWidget::OnBrowse, [engineInfo]{ AzQtComponents::ShowFileOnDesktop(engineInfo.m_path); });
+        layout->addWidget(engineFolder);
 
         m_thirdParty = new FormFolderBrowseEditWidget(tr("3rd Party Software Folder"), engineInfo.m_thirdPartyPath, this);
         m_thirdParty->lineEdit()->setValidator(new PathValidator(PathValidator::PathMode::ExistingFolder, this));
@@ -71,7 +89,11 @@ namespace O3DE::ProjectManager
         connect(m_defaultProjectTemplates->lineEdit(), &QLineEdit::textChanged, this, &EngineSettingsScreen::OnTextChanged);
         layout->addWidget(m_defaultProjectTemplates);
 
-        setLayout(layout);
+        QVBoxLayout* mainLayout = new QVBoxLayout();
+        mainLayout->setAlignment(Qt::AlignTop);
+        mainLayout->setMargin(0);
+        mainLayout->addWidget(scrollArea);
+        setLayout(mainLayout);
     }
 
     ProjectManagerScreen EngineSettingsScreen::GetScreenEnum()

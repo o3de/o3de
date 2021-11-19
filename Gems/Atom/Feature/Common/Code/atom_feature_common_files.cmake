@@ -12,6 +12,7 @@ set(FILES
     Include/Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h
     Include/Atom/Feature/Automation/AtomAutomationBus.h
     Include/Atom/Feature/AuxGeom/AuxGeomFeatureProcessor.h
+    Include/Atom/Feature/ColorGrading/LutResolution.h
     Include/Atom/Feature/CoreLights/CoreLightsConstants.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformPass.h
     Include/Atom/Feature/DisplayMapper/AcesOutputTransformLutPass.h
@@ -66,6 +67,8 @@ set(FILES
     Source/AuxGeom/DynamicPrimitiveProcessor.h
     Source/AuxGeom/FixedShapeProcessor.cpp
     Source/AuxGeom/FixedShapeProcessor.h
+    Source/ColorGrading/LutGenerationPass.cpp
+    Source/ColorGrading/LutGenerationPass.h
     Source/CoreLights/CapsuleLightFeatureProcessor.h
     Source/CoreLights/CapsuleLightFeatureProcessor.cpp
     Source/CoreLights/CascadedShadowmapsPass.h
@@ -214,8 +217,6 @@ set(FILES
     Source/PostProcessing/BloomCompositePass.cpp
     Source/PostProcessing/BloomParentPass.h
     Source/PostProcessing/BloomParentPass.cpp
-    Source/PostProcessing/HDRColorGradingPass.cpp
-    Source/PostProcessing/HDRColorGradingPass.h
     Source/PostProcessing/DepthOfFieldCompositePass.h
     Source/PostProcessing/DepthOfFieldCompositePass.cpp
     Source/PostProcessing/DepthOfFieldBokehBlurPass.h
@@ -236,12 +237,16 @@ set(FILES
     Source/PostProcessing/EyeAdaptationPass.h
     Source/PostProcessing/FastDepthAwareBlurPasses.cpp
     Source/PostProcessing/FastDepthAwareBlurPasses.h
+    Source/PostProcessing/HDRColorGradingPass.cpp
+    Source/PostProcessing/HDRColorGradingPass.h
     Source/PostProcessing/LookModificationCompositePass.cpp
     Source/PostProcessing/LookModificationCompositePass.h
     Source/PostProcessing/LookModificationTransformPass.cpp
     Source/PostProcessing/LookModificationTransformPass.h
     Source/PostProcessing/LuminanceHistogramGeneratorPass.h
     Source/PostProcessing/LuminanceHistogramGeneratorPass.cpp
+    Source/PostProcessing/NewDepthOfFieldPasses.cpp
+    Source/PostProcessing/NewDepthOfFieldPasses.h
     Source/PostProcessing/PostProcessingShaderOptionBase.cpp
     Source/PostProcessing/PostProcessingShaderOptionBase.h
     Source/PostProcessing/SMAABasePass.cpp

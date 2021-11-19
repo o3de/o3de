@@ -348,19 +348,7 @@ namespace PhysX
         LmbrCentral::BoxShapeComponentRequestsBus::EventResult(boxDimensions, GetEntityId(),
             &LmbrCentral::BoxShapeComponentRequests::GetBoxDimensions);
 
-        if (m_shapeType != ShapeType::Box)
-        {
-            m_shapeConfigs.clear();
-            m_shapeConfigs.emplace_back(AZStd::make_shared<Physics::BoxShapeConfiguration>(boxDimensions));
-
-            m_shapeType = ShapeType::Box;
-        }
-        else
-        {
-            Physics::BoxShapeConfiguration& configuration =
-                static_cast<Physics::BoxShapeConfiguration&>(*m_shapeConfigs.back());
-            configuration = Physics::BoxShapeConfiguration(boxDimensions);
-        }
+        SetShapeConfig(ShapeType::Box, Physics::BoxShapeConfiguration(boxDimensions));
 
         m_shapeConfigs.back()->m_scale = scale;
         m_geometryCache.m_boxDimensions = scale * boxDimensions;
@@ -374,19 +362,7 @@ namespace PhysX
         const Physics::CapsuleShapeConfiguration& capsuleShapeConfig =
             Utils::ConvertFromLmbrCentralCapsuleConfig(lmbrCentralCapsuleShapeConfig);
 
-        if (m_shapeType != ShapeType::Capsule)
-        {
-            m_shapeConfigs.clear();
-            m_shapeConfigs.emplace_back(AZStd::make_shared<Physics::CapsuleShapeConfiguration>(capsuleShapeConfig));
-
-            m_shapeType = ShapeType::Capsule;
-        }
-        else
-        {
-            Physics::CapsuleShapeConfiguration& configuration =
-                static_cast<Physics::CapsuleShapeConfiguration&>(*m_shapeConfigs.back());
-            configuration = capsuleShapeConfig;
-        }
+        SetShapeConfig(ShapeType::Capsule, capsuleShapeConfig);
 
         m_shapeConfigs.back()->m_scale = scale;
         const float scalarScale = scale.GetMaxElement();
@@ -400,19 +376,7 @@ namespace PhysX
         LmbrCentral::SphereShapeComponentRequestsBus::EventResult(radius, GetEntityId(),
             &LmbrCentral::SphereShapeComponentRequests::GetRadius);
 
-        if (m_shapeType != ShapeType::Sphere)
-        {
-            m_shapeConfigs.clear();
-            m_shapeConfigs.emplace_back(AZStd::make_shared<Physics::SphereShapeConfiguration>(radius));
-
-            m_shapeType = ShapeType::Sphere;
-        }
-        else
-        {
-            Physics::SphereShapeConfiguration& configuration =
-                static_cast<Physics::SphereShapeConfiguration&>(*m_shapeConfigs.back());
-            configuration = Physics::SphereShapeConfiguration(radius);
-        }
+        SetShapeConfig(ShapeType::Sphere, Physics::SphereShapeConfiguration(radius));
         
         m_shapeConfigs.back()->m_scale = scale;
         m_geometryCache.m_radius = scale.GetMaxElement() * radius;
@@ -455,19 +419,7 @@ namespace PhysX
 
         if (shapeConfig.has_value())
         {
-            if (m_shapeType != ShapeType::Cylinder)
-            {
-                m_shapeConfigs.clear();
-                m_shapeConfigs.push_back(AZStd::make_shared<Physics::CookedMeshShapeConfiguration>(shapeConfig.value()));
-
-                m_shapeType = ShapeType::Cylinder;
-            }
-            else
-            {
-                Physics::CookedMeshShapeConfiguration& configuration =
-                    static_cast<Physics::CookedMeshShapeConfiguration&>(*m_shapeConfigs.back());
-                configuration = Physics::CookedMeshShapeConfiguration(shapeConfig.value());
-            }
+            SetShapeConfig(ShapeType::Cylinder, shapeConfig.value());
 
             CreateStaticEditorCollider();
         }

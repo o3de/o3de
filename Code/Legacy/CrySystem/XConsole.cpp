@@ -333,11 +333,6 @@ void CXConsole::Init(ISystem* pSystem)
 
     m_nLoadingBackTexID = -1;
 
-    if (gEnv->IsDedicated())
-    {
-        m_bConsoleActive = true;
-    }
-
     REGISTER_COMMAND("ConsoleShow", &ConsoleShow, VF_NULL, "Opens the console");
     REGISTER_COMMAND("ConsoleHide", &ConsoleHide, VF_NULL, "Closes the console");
 

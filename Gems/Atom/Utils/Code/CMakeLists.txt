@@ -27,6 +27,27 @@ ly_add_target(
             3rdParty::libpng
 )
 
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+
+    ly_add_target(
+        NAME Atom_Utils.TestUtils.Static STATIC
+        NAMESPACE Gem
+        FILES_CMAKE
+            atom_utils_editor_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Source
+            PUBLIC
+                Include
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AtomCore
+                AZ::AzCore
+                AZ::AzFramework
+                AZ::AzToolsFramework
+    )
+endif()
+
 ################################################################################
 # Tests
 ################################################################################

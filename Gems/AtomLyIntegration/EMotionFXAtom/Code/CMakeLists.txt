@@ -49,6 +49,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME EMotionFX_Atom.Editor GEM_MODULE
 
         NAMESPACE Gem
+        AUTORCC
         FILES_CMAKE
             emotionfx_atom_editor_files.cmake
         INCLUDE_DIRECTORIES

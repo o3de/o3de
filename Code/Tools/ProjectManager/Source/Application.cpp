@@ -16,6 +16,7 @@
 #include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <ProjectManager_Traits_Platform.h>
 
 #include <QApplication>
 #include <QDir>
@@ -194,8 +195,12 @@ namespace O3DE::ProjectManager
         // set stylesheet after creating the main window or their styles won't get updated
         AzQtComponents::StyleManager::setStyleSheet(m_mainWindow.data(), QStringLiteral("style:ProjectManager.qss"));
 
-        // the decoration wrapper is intended to remember window positioning and sizing 
+        // the decoration wrapper is intended to remember window positioning and sizing
+#if AZ_TRAIT_PROJECT_MANAGER_CUSTOM_TITLEBAR
         auto wrapper = new AzQtComponents::WindowDecorationWrapper();
+#else
+        auto wrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionDisabled);
+#endif
         wrapper->setGuest(m_mainWindow.data());
 
         // show the main window here to apply the stylesheet before restoring geometry or we

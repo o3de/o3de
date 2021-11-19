@@ -41,6 +41,11 @@ def get_o3de_folder() -> pathlib.Path:
     o3de_folder.mkdir(parents=True, exist_ok=True)
     return o3de_folder
 
+def get_o3de_user_folder() -> pathlib.Path:
+    o3de_user_folder = get_home_folder() / 'O3DE'
+    o3de_user_folder.mkdir(parents=True, exist_ok=True)
+    return o3de_user_folder
+
 
 def get_o3de_registry_folder() -> pathlib.Path:
     registry_folder = get_o3de_folder() / 'Registry'
@@ -67,19 +72,19 @@ def get_o3de_engines_folder() -> pathlib.Path:
 
 
 def get_o3de_projects_folder() -> pathlib.Path:
-    projects_folder = get_o3de_folder() / 'Projects'
+    projects_folder = get_o3de_user_folder() / 'Projects'
     projects_folder.mkdir(parents=True, exist_ok=True)
     return projects_folder
 
 
 def get_o3de_gems_folder() -> pathlib.Path:
-    gems_folder = get_o3de_folder() / 'Gems'
+    gems_folder = get_o3de_user_folder() / 'Gems'
     gems_folder.mkdir(parents=True, exist_ok=True)
     return gems_folder
 
 
 def get_o3de_templates_folder() -> pathlib.Path:
-    templates_folder = get_o3de_folder() / 'Templates'
+    templates_folder = get_o3de_user_folder() / 'Templates'
     templates_folder.mkdir(parents=True, exist_ok=True)
     return templates_folder
 
@@ -497,7 +502,10 @@ def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None
     if gem_name and not gem_path:
         gem_path = get_registered(gem_name=gem_name, project_path=project_path)
 
-    return get_json_data('gem', gem_path, validation.valid_o3de_gem_json)
+    if pathlib.Path(gem_path).is_file():
+        return get_json_data_file(gem_path, 'gem', validation.valid_o3de_gem_json)
+    else:
+        return get_json_data('gem', gem_path, validation.valid_o3de_gem_json)
 
 
 def get_template_json_data(template_name: str = None, template_path: str or pathlib.Path = None,

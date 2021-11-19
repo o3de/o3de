@@ -18,7 +18,6 @@ namespace Multiplayer
         m_canSendUpdates = canSendUpdates;
     }
 
-
     inline NetworkEntityHandle ServerToClientConnectionData::GetPrimaryPlayerEntity()
     {
         return m_controlledEntity;

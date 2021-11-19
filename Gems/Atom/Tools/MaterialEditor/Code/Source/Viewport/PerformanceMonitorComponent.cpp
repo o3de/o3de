@@ -9,7 +9,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 
@@ -65,12 +64,6 @@ namespace MaterialEditor
         {
             AZ_Error("PerformanceMonitorComponent", false, "Failed to find root pass.");
         }
-
-        AZ::RHI::RHISystemInterface::Get()->ModifyFrameSchedulerStatisticsFlags(
-            AZ::RHI::FrameSchedulerStatisticsFlags::GatherCpuTimingStatistics,
-            enabled);
-
-        AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(enabled);
 
         if (enabled)
         {

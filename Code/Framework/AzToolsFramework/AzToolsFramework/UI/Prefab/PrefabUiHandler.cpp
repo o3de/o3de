@@ -21,10 +21,18 @@
 
 namespace AzToolsFramework
 {
+    AzFramework::EntityContextId PrefabUiHandler::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+
+    const QColor PrefabUiHandler::m_backgroundColor = QColor("#444444");
+    const QColor PrefabUiHandler::m_backgroundHoverColor = QColor("#5A5A5A");
+    const QColor PrefabUiHandler::m_backgroundSelectedColor = QColor("#656565");
     const QColor PrefabUiHandler::m_prefabCapsuleColor = QColor("#1E252F");
+    const QColor PrefabUiHandler::m_prefabCapsuleDisabledColor = QColor("#35383C");
     const QColor PrefabUiHandler::m_prefabCapsuleEditColor = QColor("#4A90E2");
     const QString PrefabUiHandler::m_prefabIconPath = QString(":/Entity/prefab.svg");
     const QString PrefabUiHandler::m_prefabEditIconPath = QString(":/Entity/prefab_edit.svg");
+    const QString PrefabUiHandler::m_prefabEditOpenIconPath = QString(":/Entity/prefab_edit_open.svg");
+    const QString PrefabUiHandler::m_prefabEditCloseIconPath = QString(":/Entity/prefab_edit_close.svg");
 
     PrefabUiHandler::PrefabUiHandler()
     {
@@ -41,6 +49,9 @@ namespace AzToolsFramework
             AZ_Assert(false, "PrefabUiHandler - could not get PrefabFocusPublicInterface on PrefabUiHandler construction.");
             return;
         }
+
+        // Get EditorEntityContextId
+        EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
     }
 
     QString PrefabUiHandler::GenerateItemInfoString(AZ::EntityId entityId) const
@@ -75,7 +86,7 @@ namespace AzToolsFramework
 
         if (!path.empty())
         {
-            tooltip = QObject::tr("%1").arg(path.Native().data());
+            tooltip = QObject::tr("Double click to edit.\n%1").arg(path.Native().data());
         }
 
         return tooltip;
@@ -102,12 +113,19 @@ namespace AzToolsFramework
         AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
         const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
         const bool isLastColumn = index.column() == EntityOutlinerListModel::ColumnLockToggle;
-        const bool hasVisibleChildren = index.data(EntityOutlinerListModel::ExpandedRole).value<bool>() && index.model()->hasChildren(index);
+        QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
+        const bool hasVisibleChildren =
+            firstColumnIndex.data(EntityOutlinerListModel::ExpandedRole).value<bool>() &&
+            firstColumnIndex.model()->hasChildren(firstColumnIndex);
 
         QColor backgroundColor = m_prefabCapsuleColor;
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             backgroundColor = m_prefabCapsuleEditColor;
+        }
+        else if (!(option.state & QStyle::State_Enabled))
+        {
+            backgroundColor = m_prefabCapsuleDisabledColor;
         }
 
         QPainterPath backgroundPath;
@@ -167,7 +185,7 @@ namespace AzToolsFramework
         painter->restore();
     }
 
-    void PrefabUiHandler::PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
+    void PrefabUiHandler::PaintDescendantForeground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
         const QModelIndex& descendantIndex) const
     {
         if (!painter)
@@ -184,7 +202,8 @@ namespace AzToolsFramework
         const bool isFirstColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnName;
         const bool isLastColumn = descendantIndex.column() == EntityOutlinerListModel::ColumnLockToggle;
 
-        QColor borderColor = m_prefabCapsuleColor;
+        // There is no legal way of opening prefabs in their default state, so default to disabled.
+        QColor borderColor = m_prefabCapsuleDisabledColor;
         if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             borderColor = m_prefabCapsuleEditColor;
@@ -273,6 +292,71 @@ namespace AzToolsFramework
         painter->restore();
     }
 
+    void PrefabUiHandler::PaintItemForeground(QPainter* painter, const QStyleOptionViewItem& option, [[maybe_unused]] const QModelIndex& index) const
+    {
+        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        const QPoint offset = QPoint(-18, 3);
+        QModelIndex firstColumnIndex = index.siblingAtColumn(EntityOutlinerListModel::ColumnName);
+        const int iconSize = 16;
+        const bool isHovered = (option.state & QStyle::State_MouseOver);
+        const bool isSelected = index.data(EntityOutlinerListModel::SelectedRole).template value<bool>();
+        const bool isFirstColumn = index.column() == EntityOutlinerListModel::ColumnName;
+        const bool isExpanded =
+            firstColumnIndex.data(EntityOutlinerListModel::ExpandedRole).value<bool>() &&
+            firstColumnIndex.model()->hasChildren(firstColumnIndex);
+
+        if (!isFirstColumn || !(option.state & QStyle::State_Enabled))
+        {
+            return;
+        }
+
+        painter->save();
+        painter->setRenderHint(QPainter::Antialiasing, true);
+
+        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+        {
+            // Only show the close icon if the prefab is expanded.
+            // This allows the prefab container to be opened if it was collapsed during propagation.
+            if (!isExpanded)
+            {
+                return;
+            }
+
+            // Use the same color as the background.
+            QColor backgroundColor = m_backgroundColor;
+            if (isSelected)
+            {
+                backgroundColor = m_backgroundSelectedColor;
+            }
+            else if (isHovered)
+            {
+                backgroundColor = m_backgroundHoverColor;
+            }
+
+            // Paint a rect to cover up the expander.
+            QRect rect = QRect(0, 0, 16, 16);
+            rect.translate(option.rect.topLeft() + offset);
+            painter->fillRect(rect, backgroundColor);
+
+            // Paint the icon.
+            QIcon closeIcon = QIcon(m_prefabEditCloseIconPath);
+            painter->drawPixmap(option.rect.topLeft() + offset, closeIcon.pixmap(iconSize));
+        }
+        else
+        {
+            // Only show the edit icon on hover.
+            if (!isHovered)
+            {
+                return;
+            }
+
+            QIcon openIcon = QIcon(m_prefabEditOpenIconPath);
+            painter->drawPixmap(option.rect.topLeft() + offset, openIcon.pixmap(iconSize));
+        }
+
+        painter->restore();
+    }
+
     bool PrefabUiHandler::IsLastVisibleChild(const QModelIndex& parent, const QModelIndex& child)
     {
         QModelIndex lastVisibleItemIndex = GetLastVisibleChild(parent);
@@ -314,16 +398,57 @@ namespace AzToolsFramework
         return Internal_GetLastVisibleChild(model, lastChild);
     }
 
-    void PrefabUiHandler::OnDoubleClick(AZ::EntityId entityId) const
+    bool PrefabUiHandler::OnOutlinerItemClick(const QPoint& position, const QStyleOptionViewItem& option, const QModelIndex& index) const
     {
-        bool prefabWipFeaturesEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            prefabWipFeaturesEnabled, &AzFramework::ApplicationRequests::ArePrefabWipFeaturesEnabled);
+        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+        const QPoint offset = QPoint(-18, 3);
 
-        if (prefabWipFeaturesEnabled)
+        if (m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId))
+        {
+            QRect iconRect = QRect(0, 0, 16, 16);
+            iconRect.translate(option.rect.topLeft() + offset);
+
+            if (iconRect.contains(position))
+            {
+                if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+                {
+                    // Focus on this prefab.
+                    m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
+                }
+
+                // Don't propagate event.
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    void PrefabUiHandler::OnOutlinerItemCollapse(const QModelIndex& index) const
+    {
+        AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
+
+        if (m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
+        {
+            // Close this prefab and focus on the parent
+            m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(s_editorEntityContextId);
+        }
+    }
+
+    bool PrefabUiHandler::OnEntityDoubleClick(AZ::EntityId entityId) const
+    {
+        if (!m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId))
         {
             // Focus on this prefab
             m_prefabFocusPublicInterface->FocusOnOwningPrefab(entityId);
         }
+        else
+        {
+            // Close this prefab and focus on the parent
+            m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(s_editorEntityContextId);
+        }
+
+        // Don't propagate event.
+        return true;
     }
 }

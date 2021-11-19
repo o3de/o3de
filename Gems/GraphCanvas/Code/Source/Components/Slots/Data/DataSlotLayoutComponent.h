@@ -10,6 +10,7 @@
 #include <QGraphicsLinearLayout>
 #include <QTimer>
 
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 #include <Components/Slots/SlotLayoutComponent.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/Slots/SlotBus.h>
@@ -58,7 +59,7 @@ namespace GraphCanvas
             SlotId m_slotId;
 
             ViewId  m_viewId;
-            ToastId m_toastId;
+            AzToolsFramework::ToastId m_toastId;
         };
 
         class DoubleClickSceneEventFilter

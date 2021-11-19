@@ -48,6 +48,7 @@ namespace AZ::Render
         void SetFieldOfViewY(ShadowId id, float fieldOfViewYRadians) override;
         void SetShadowmapMaxResolution(ShadowId id, ShadowmapSize size) override;
         void SetShadowBias(ShadowId id, float bias) override;
+        void SetNormalShadowBias(ShadowId id, float normalShadowBias) override;
         void SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method) override;
         void SetFilteringSampleCount(ShadowId id, uint16_t count) override;
         void SetShadowProperties(ShadowId id, const ProjectedShadowDescriptor& descriptor) override;
@@ -64,10 +65,10 @@ namespace AZ::Render
             uint32_t m_shadowmapArraySlice = 0; // array slice who has shadowmap in the atlas.
             uint32_t m_shadowFilterMethod = 0; // filtering method of shadows.
             float m_boundaryScale = 0.f; // the half of boundary of lit/shadowed areas. (in degrees)
-            uint32_t m_predictionSampleCount = 0; // sample count to judge whether it is on the shadow boundary or not.
             uint32_t m_filteringSampleCount = 0;
             AZStd::array<float, 2> m_unprojectConstants = { {0, 0} };
             float m_bias;
+            float m_normalShadowBias;
             float m_esmExponent = 87.0f;
             float m_padding[3];
         };
@@ -78,6 +79,7 @@ namespace AZ::Render
             ProjectedShadowDescriptor m_desc;
             RPI::ViewPtr m_shadowmapView;
             float m_bias = 0.1f;
+            float m_normalShadowBias = 0.0f;
             ShadowId m_shadowId;
         };
 
@@ -95,8 +97,8 @@ namespace AZ::Render
             
         // Functions for caching the ProjectedShadowmapsPass and EsmShadowmapsPass.
         void CachePasses();
-        AZStd::vector<RPI::RenderPipelineId> CacheProjectedShadowmapsPass();
-        void CacheEsmShadowmapsPass(const AZStd::vector<RPI::RenderPipelineId>& validPipelineIds);
+        void CacheProjectedShadowmapsPass();
+        void CacheEsmShadowmapsPass();
             
         //! Functions to update the parameter of Gaussian filter used in ESM.
         void UpdateFilterParameters();

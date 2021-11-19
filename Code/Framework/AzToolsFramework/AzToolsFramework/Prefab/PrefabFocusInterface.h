@@ -26,6 +26,11 @@ namespace AzToolsFramework::Prefab
     public:
         AZ_RTTI(PrefabFocusInterface, "{F3CFA37B-5FD8-436A-9C30-60EB54E350E1}");
 
+        //! Initializes the editor interfaces for Prefab Focus mode.
+        //! If this is not called on initialization, the Prefab Focus Mode functions will still work
+        //! but won't trigger the Editor APIs to visualize focus mode on the UI.
+        virtual void InitializeEditorInterfaces() = 0;
+
         //! Set the focused prefab instance to the owning instance of the entityId provided.
         //! @param entityId The entityId of the entity whose owning instance we want the prefab system to focus on.
         virtual PrefabFocusOperationResult FocusOnPrefabInstanceOwningEntityId(AZ::EntityId entityId) = 0;

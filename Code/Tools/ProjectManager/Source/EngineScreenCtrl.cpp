@@ -29,21 +29,30 @@ namespace O3DE::ProjectManager
         
         topBarFrameWidget->setLayout(topBarHLayout);
 
-        QTabWidget* tabWidget = new QTabWidget();
-        tabWidget->setObjectName("engineTab");
-        tabWidget->tabBar()->setObjectName("engineTabBar");
-        tabWidget->tabBar()->setFocusPolicy(Qt::TabFocus);
+        m_tabWidget = new QTabWidget();
+        m_tabWidget->setObjectName("engineTab");
+        m_tabWidget->tabBar()->setObjectName("engineTabBar");
+        m_tabWidget->tabBar()->setFocusPolicy(Qt::TabFocus);
 
         m_engineSettingsScreen = new EngineSettingsScreen();
         m_gemRepoScreen = new GemRepoScreen();
 
-        tabWidget->addTab(m_engineSettingsScreen, tr("General"));
-        tabWidget->addTab(m_gemRepoScreen, tr("Gem Repositories"));
-        topBarHLayout->addWidget(tabWidget);
+        m_tabWidget->addTab(m_engineSettingsScreen, tr("General"));
+        m_tabWidget->addTab(m_gemRepoScreen, tr("Gem Repositories"));
+
+        // when tab changes, notify the current screen so it can refresh
+        connect(m_tabWidget, &QTabWidget::currentChanged, this, &EngineScreenCtrl::TabChanged);
+
+        topBarHLayout->addWidget(m_tabWidget);
 
         vLayout->addWidget(topBarFrameWidget);
 
         setLayout(vLayout);
+    }
+
+    void EngineScreenCtrl::TabChanged([[maybe_unused]] int index)
+    {
+        NotifyCurrentScreen();
     }
 
     ProjectManagerScreen EngineScreenCtrl::GetScreenEnum()
@@ -59,6 +68,39 @@ namespace O3DE::ProjectManager
     bool EngineScreenCtrl::IsTab()
     {
         return true;
+    }
+
+    bool EngineScreenCtrl::ContainsScreen(ProjectManagerScreen screen)
+    {
+        if (screen == m_engineSettingsScreen->GetScreenEnum() || screen == m_gemRepoScreen->GetScreenEnum())
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    void EngineScreenCtrl::NotifyCurrentScreen()
+    {
+        ScreenWidget* screen = reinterpret_cast<ScreenWidget*>(m_tabWidget->currentWidget());
+        if (screen)
+        {
+            screen->NotifyCurrentScreen();
+        }
+    }
+
+    void EngineScreenCtrl::GoToScreen(ProjectManagerScreen screen)
+    {
+        if (screen == m_engineSettingsScreen->GetScreenEnum())
+        {
+            m_tabWidget->setCurrentWidget(m_engineSettingsScreen);
+            m_engineSettingsScreen->NotifyCurrentScreen();
+        }
+        else if (screen == m_gemRepoScreen->GetScreenEnum())
+        {
+            m_tabWidget->setCurrentWidget(m_gemRepoScreen);
+            m_gemRepoScreen->NotifyCurrentScreen();
+        }
     }
 
 } // namespace O3DE::ProjectManager

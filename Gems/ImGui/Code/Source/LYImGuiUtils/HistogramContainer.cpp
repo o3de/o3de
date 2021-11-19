@@ -147,6 +147,8 @@ namespace ImGui
             float imGuiHistoWidgetHeight = m_collapsed ? histogramHeight : (histogramHeight - 15);
             if (GetSize() > 0)
             {
+                ImGui::PushStyleColor(ImGuiCol_PlotHistogram, m_barLineColor.Value);
+
                 switch (m_viewType)
                 {
                     default:
@@ -160,6 +162,8 @@ namespace ImGui
                         ImGui::PlotLines(AZStd::string::format("##%s_lines", m_histogramName.c_str()).c_str(), ImGui::LYImGuiUtils::s_histogramContainerGetter, this, GetSize(), 0, m_histogramName.c_str(), m_minScale, m_maxScale, ImVec2(histogramWidth - 10, imGuiHistoWidgetHeight));
                         break;
                 }
+
+                ImGui::PopStyleColor();
             }
 
 

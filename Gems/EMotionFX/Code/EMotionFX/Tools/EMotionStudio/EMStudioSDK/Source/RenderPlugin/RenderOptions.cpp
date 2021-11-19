@@ -12,9 +12,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <EMotionFX/Rendering/Common/OrbitCamera.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
-#include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
-#include <EMotionStudio/EMStudioSDK/Source/GUIOptions.h>
-#include <EMotionStudio/EMStudioSDK/Source/MainWindow.h>
+#include <Integration/Rendering/RenderActorSettings.h>
 #include <MysticQt/Source/MysticQtConfig.h>
 
 #include <QColor>
@@ -317,6 +315,8 @@ namespace EMStudio
         options.m_renderSelectionBox = settings->value(s_renderSelectionBoxOptionName, options.m_renderSelectionBox).toBool();
 
         options.m_manipulatorMode = static_cast<ManipulatorMode>(settings->value("manipulatorMode", options.m_manipulatorMode).toInt());
+
+        options.CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
 
         return options;
     }
@@ -1057,6 +1057,33 @@ namespace EMStudio
         return m_manipulatorMode;
     }
 
+    void RenderOptions::CopyToRenderActorSettings(AZ::Render::RenderActorSettings& settings) const
+    {
+        settings.m_vertexNormalsScale = m_vertexNormalsScale;
+        settings.m_faceNormalsScale = m_faceNormalsScale;
+        settings.m_tangentsScale = m_tangentsScale;
+
+        settings.m_vertexNormalsColor = m_vertexNormalsColor;
+        settings.m_faceNormalsColor = m_faceNormalsColor;
+        settings.m_tangentsColor = m_tangentsColor;
+        settings.m_mirroredBitangentsColor = m_mirroredBitangentsColor;
+        settings.m_bitangentsColor = m_bitangentsColor;
+        settings.m_wireframeColor = m_wireframeColor;
+        settings.m_staticAABBColor = m_staticAABBColor;
+        settings.m_skeletonColor = m_skeletonColor;
+        settings.m_lineSkeletonColor = m_lineSkeletonColor;
+
+        settings.m_hitDetectionColliderColor = m_hitDetectionColliderColor;
+        settings.m_selectedHitDetectionColliderColor = m_selectedHitDetectionColliderColor;
+        settings.m_ragdollColliderColor = m_ragdollColliderColor;
+        settings.m_selectedRagdollColliderColor = m_selectedRagdollColliderColor;
+        settings.m_violatedJointLimitColor = m_violatedJointLimitColor;
+        settings.m_clothColliderColor = m_clothColliderColor;
+        settings.m_selectedClothColliderColor = m_selectedClothColliderColor;
+        settings.m_simulatedObjectColliderColor = m_simulatedObjectColliderColor;
+        settings.m_selectedSimulatedObjectColliderColor = m_selectedSimulatedObjectColliderColor;
+    }
+
     void RenderOptions::OnGridUnitSizeChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_gridUnitSizeOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_gridUnitSizeOptionName);
@@ -1065,16 +1092,19 @@ namespace EMStudio
     void RenderOptions::OnVertexNormalsScaleChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_vertexNormalsScaleOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_vertexNormalsScaleOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnFaceNormalsScaleChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_faceNormalsScaleOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_faceNormalsScaleOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnTangentsScaleChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_tangentsScaleOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_tangentsScaleOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnNodeOrientationScaleChangedCallback() const
@@ -1175,6 +1205,7 @@ namespace EMStudio
     void RenderOptions::OnWireframeColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_wireframeColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_wireframeColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnCollisionMeshColorChangedCallback() const
@@ -1185,26 +1216,31 @@ namespace EMStudio
     void RenderOptions::OnVertexNormalsColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_vertexNormalsColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_vertexNormalsColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnFaceNormalsColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_faceNormalsColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_faceNormalsColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnTangentsColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_tangentsColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_tangentsColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnMirroredBitangentsColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_mirroredBitangentsColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_mirroredBitangentsColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnBitangentsColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_bitangentsColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_bitangentsColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnNodeAABBColorChangedCallback() const
@@ -1215,6 +1251,7 @@ namespace EMStudio
     void RenderOptions::OnStaticAABBColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_staticAABBColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_staticAABBColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnMeshAABBColorChangedCallback() const
@@ -1225,6 +1262,7 @@ namespace EMStudio
     void RenderOptions::OnLineSkeletonColorChangedCallback() const
     {
         PluginOptionsNotificationsBus::Event(s_lineSkeletonColorOptionName, &PluginOptionsNotificationsBus::Events::OnOptionChanged, s_lineSkeletonColorOptionName);
+        CopyToRenderActorSettings(EMotionFX::GetRenderActorSettings());
     }
 
     void RenderOptions::OnSkeletonColorChangedCallback() const

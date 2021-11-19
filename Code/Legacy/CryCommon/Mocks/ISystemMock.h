@@ -76,8 +76,6 @@ public:
         ::IConsole * ());
     MOCK_METHOD0(GetIRemoteConsole,
         IRemoteConsole * ());
-    MOCK_METHOD0(GetIProfilingSystem,
-        IProfilingSystem * ());
     MOCK_METHOD0(GetISystemEventDispatcher,
         ISystemEventDispatcher * ());
     MOCK_METHOD0(GetITimer,

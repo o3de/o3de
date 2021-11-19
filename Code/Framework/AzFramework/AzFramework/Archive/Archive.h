@@ -19,6 +19,7 @@
 #include <AzCore/IO/CompressionBus.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/lock.h>
@@ -271,6 +272,11 @@ namespace AZ::IO
             ZipDir::CachePtr* pZip = {}) const;
     private:
 
+        // Archives can't be fully mounted until the system entity has been activated,
+        // because mounting them requires the BundlingSystemComponent and the serialization system
+        // to both be available.
+        void OnSystemEntityActivated();
+
         bool OpenPackCommon(AZStd::string_view szBindRoot, AZStd::string_view pName, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = nullptr, bool addLevels = true);
         bool OpenPacksCommon(AZStd::string_view szDir, AZStd::string_view pWildcardIn, AZStd::vector<AZ::IO::FixedMaxPathString>* pFullPaths = nullptr, bool addLevels = true);
 
@@ -313,6 +319,8 @@ namespace AZ::IO
         mutable AZStd::shared_mutex m_csZips;
         ZipArray m_arrZips;
 
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_componentApplicationLifecycleHandler;
+
         //////////////////////////////////////////////////////////////////////////
         // Opened files collector.
         //////////////////////////////////////////////////////////////////////////
@@ -339,5 +347,34 @@ namespace AZ::IO
         // [LYN-2376] Remove once legacy slice support is removed
         LevelPackOpenEvent m_levelOpenEvent;
         LevelPackCloseEvent m_levelCloseEvent;
+
+         // If pak files are loaded before the serialization and bundling system
+        // are ready to go, their asset catalogs can't be loaded.
+        // In this case, cache information about those archives,
+        // and attempt to load the catalogs later, when the required systems are enabled.
+        struct ArchivesWithCatalogsToLoad
+        {
+            ArchivesWithCatalogsToLoad(
+                AZStd::string_view fullPath,
+                AZStd::string_view bindRoot,
+                int flags,
+                AZ::IO::PathView nextBundle,
+                AZ::IO::Path strFileName)
+                : m_fullPath(fullPath)
+                , m_bindRoot(bindRoot)
+                , m_flags(flags)
+                , m_nextBundle(nextBundle)
+                , m_strFileName(strFileName)
+            {
+            }
+
+            AZ::IO::Path m_strFileName;
+            AZStd::string m_fullPath;
+            AZStd::string m_bindRoot;
+            AZ::IO::PathView m_nextBundle;
+            int m_flags;
+        };
+
+        AZStd::vector<ArchivesWithCatalogsToLoad> m_archivesWithCatalogsToLoad;
     };
 }

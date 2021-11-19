@@ -1061,7 +1061,7 @@ void MainWindow::InitActions()
     if (emfxEnabled.value)
     {
         QAction* action = am->AddAction(ID_OPEN_EMOTIONFX_EDITOR, tr("Animation Editor"))
-            .SetToolTip(tr("Open Animation Editor (PREVIEW)"))
+            .SetToolTip(tr("Open Animation Editor"))
             .SetIcon(QIcon(":/EMotionFX/EMFX_icon_32x32.png"))
             .SetApplyHoverEffect();
         QObject::connect(action, &QAction::triggered, this, []() {

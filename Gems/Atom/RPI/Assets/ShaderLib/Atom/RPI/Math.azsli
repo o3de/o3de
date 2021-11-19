@@ -31,6 +31,8 @@ void swap(inout float a, inout float b)
     b = c;
 }
 
+// ---------- Power -----------
+
 float Pow2(float x)
 {
     return x * x;
@@ -48,6 +50,44 @@ float Pow5(float x)
 {
     return x * Pow4(x);
 }
+
+// ---------- Min & Max -----------
+
+float min3(float a, float b, float c)
+{
+    return min(min(a, b), c);
+}
+float min4(float a, float b, float c, float d)
+{
+    return min(min3(a, b, c), d);
+}
+float max3(float a, float b, float c)
+{
+    return max(max(a, b), c);
+}
+float max4(float a, float b, float c, float d)
+{
+    return max(max3(a, b, c), d);
+}
+
+float min3(float3 abc)
+{
+    return min3(abc.x, abc.y, abc.z);
+}
+float min4(float4 abcd)
+{
+    return min4(abcd.x, abcd.y, abcd.z, abcd.w);
+}
+float max3(float3 abc)
+{
+    return max3(abc.x, abc.y, abc.z);
+}
+float max4(float4 abcd)
+{
+    return max4(abcd.x, abcd.y, abcd.z, abcd.w);
+}
+
+
 // ---------- Intersection -----------
 
 // a simple ray sphere intersection function, didn't take limited precision 

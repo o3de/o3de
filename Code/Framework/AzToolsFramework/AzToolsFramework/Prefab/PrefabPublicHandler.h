@@ -63,7 +63,7 @@ namespace AzToolsFramework
 
             PrefabOperationResult DeleteEntitiesInInstance(const EntityIdList& entityIds) override;
             PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) override;
-            PrefabOperationResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
+            DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) override;
 
             PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) override;
 

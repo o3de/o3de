@@ -10,12 +10,19 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QLabel>
-#include <QStringList>
 #include <QWidget>
+#include <QVector>
+#include <QStringList>
 #endif
 
 namespace O3DE::ProjectManager
 {
+    struct Tag
+    {
+        QString text;
+        QString id;
+    };
+
     // Single tag
     class TagWidget
         : public QLabel
@@ -23,8 +30,17 @@ namespace O3DE::ProjectManager
         Q_OBJECT // AUTOMOC
 
     public:
-        explicit TagWidget(const QString& text, QWidget* parent = nullptr);
+        explicit TagWidget(const Tag& id, QWidget* parent = nullptr);
         ~TagWidget() = default;
+
+    signals:
+        void TagClicked(const Tag& tag);
+
+    protected:
+        void mousePressEvent(QMouseEvent* event) override;
+
+    private:
+        Tag m_tag;
     };
 
     // Widget containing multiple tags, automatically wrapping based on the size
@@ -37,6 +53,13 @@ namespace O3DE::ProjectManager
         explicit TagContainerWidget(QWidget* parent = nullptr);
         ~TagContainerWidget() = default;
 
+        void Update(const QVector<Tag>& tags);
         void Update(const QStringList& tags);
+
+    signals:
+        void TagClicked(const Tag& tag);
+
+    private:
+        void Clear();
     };
 } // namespace O3DE::ProjectManager

@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Memory/MemoryComponent.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
@@ -189,14 +190,16 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerTransformChangedUpdatesTerrainSyst
     CreateMockTerrainSystem();
 
     // The TransformChanged call should refresh the area.
-    EXPECT_CALL(*m_terrainSystem, RefreshArea(_)).Times(1);
+    EXPECT_CALL(*m_terrainSystem, RefreshArea(_, _)).Times(1);
 
     AddLayerSpawnerAndShapeComponentToEntity();
 
     m_entity->Activate();
 
-    AZ::TransformNotificationBus::Event(
-        m_entity->GetId(), &AZ::TransformNotificationBus::Events::OnTransformChanged, AZ::Transform(), AZ::Transform());
+    // The component gets transform change notifications via the shape bus.
+    LmbrCentral::ShapeComponentNotificationsBus::Event(
+        m_entity->GetId(), &LmbrCentral::ShapeComponentNotificationsBus::Events::OnShapeChanged,
+        LmbrCentral::ShapeComponentNotifications::ShapeChangeReasons::TransformChanged);
 
     m_entity->Deactivate();
 }
@@ -208,7 +211,7 @@ TEST_F(LayerSpawnerComponentTest, LayerSpawnerShapeChangedUpdatesTerrainSystem)
     CreateMockTerrainSystem();
 
     // The ShapeChanged call should refresh the area.
-    EXPECT_CALL(*m_terrainSystem, RefreshArea(_)).Times(1);
+    EXPECT_CALL(*m_terrainSystem, RefreshArea(_, _)).Times(1);
 
     AddLayerSpawnerAndShapeComponentToEntity();
 

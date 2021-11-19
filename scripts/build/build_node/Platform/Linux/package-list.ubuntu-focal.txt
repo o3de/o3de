@@ -16,5 +16,7 @@ libsdl2-dev                             # for WWise/Audio
 libxcb-xkb-dev                          # For xcb keyboard input
 libxkbcommon-x11-dev                    # For xcb keyboard input
 libxkbcommon-dev                        # For xcb keyboard input
+libxcb-xfixes0-dev                      # For mouse input
+libxcb-xinput-dev                       # For mouse input
 zlib1g-dev
 mesa-common-dev

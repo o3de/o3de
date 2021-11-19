@@ -27,6 +27,8 @@ namespace AZ
             , public EditorMaterialSystemComponentNotificationBus::Handler
         {
         public:
+            friend class JsonEditorMaterialComponentSerializer;
+
             using BaseClass = EditorRenderComponentAdapter<MaterialComponentController, MaterialComponent, MaterialComponentConfig>;
             AZ_EDITOR_COMPONENT(EditorMaterialComponent, EditorMaterialComponentTypeId, BaseClass);
 

@@ -6,13 +6,22 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>300</height>
+    <width>668</width>
+    <height>368</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <property name="leftMargin">
+    <number>50</number>
+   </property>
+   <property name="topMargin">
+    <number>42</number>
+   </property>
+   <property name="rightMargin">
+    <number>42</number>
+   </property>
    <property name="bottomMargin">
-    <number>9</number>
+    <number>42</number>
    </property>
    <property name="verticalSpacing">
     <number>10</number>
@@ -29,7 +38,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>250</width>
+         <width>300</width>
          <height>20</height>
         </size>
        </property>
@@ -53,7 +62,7 @@
           <number>1</number>
          </property>
          <property name="topMargin">
-          <number>28</number>
+          <number>20</number>
          </property>
          <property name="bottomMargin">
           <number>24</number>
@@ -94,7 +103,7 @@
          <item>
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>Developer Preview</string>
+            <string>General Availability</string>
            </property>
           </widget>
          </item>
@@ -153,20 +162,28 @@
            <property name="minimumSize">
             <size>
              <width>290</width>
-             <height>0</height>
+             <height>32</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
              <width>290</width>
-             <height>16777215</height>
+             <height>32</height>
             </size>
+           </property>
+           <property name="font">
+            <font>
+             <pointsize>8</pointsize>
+            </font>
            </property>
            <property name="text">
             <string>Starting Editor...</string>
            </property>
+           <property name="textFormat">
+            <enum>Qt::PlainText</enum>
+           </property>
            <property name="alignment">
-            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+            <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
            </property>
           </widget>
          </item>

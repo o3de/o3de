@@ -90,7 +90,8 @@ def get_downloadable(engine_name: str = None,
 
 
 def download_o3de_object(object_name: str, default_folder_name: str, dest_path: str or pathlib.Path,
-                         object_type: str, downloadable_kwarg_key, skip_auto_register: bool) -> int:
+                         object_type: str, downloadable_kwarg_key, skip_auto_register: bool,
+                         download_progress_callback = None) -> int:
 
     download_path = manifest.get_o3de_cache_folder() / default_folder_name / object_name
     download_path.mkdir(parents=True, exist_ok=True)
@@ -104,7 +105,7 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
     origin_uri = downloadable_object_data['originuri']
     parsed_uri = urllib.parse.urlparse(origin_uri)
 
-    download_zip_result = utils.download_zip_file(parsed_uri, download_zip_path)
+    download_zip_result = utils.download_zip_file(parsed_uri, download_zip_path, download_progress_callback)
     if download_zip_result != 0:
         return download_zip_result
 
@@ -147,33 +148,38 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
 
 def download_engine(engine_name: str,
                     dest_path: str or pathlib.Path,
-                    skip_auto_register: bool) -> int:
-    return download_o3de_object(engine_name, 'engines', dest_path, 'engine', 'engine_name', skip_auto_register)
+                    skip_auto_register: bool,
+                    download_progress_callback = None) -> int:
+    return download_o3de_object(engine_name, 'engines', dest_path, 'engine', 'engine_name', skip_auto_register, download_progress_callback)
 
 
 def download_project(project_name: str,
                      dest_path: str or pathlib.Path,
-                     skip_auto_register: bool) -> int:
-    return download_o3de_object(project_name, 'projects', dest_path, 'project', 'project_name', skip_auto_register)
+                     skip_auto_register: bool,
+                     download_progress_callback = None) -> int:
+    return download_o3de_object(project_name, 'projects', dest_path, 'project', 'project_name', skip_auto_register, download_progress_callback)
 
 
 def download_gem(gem_name: str,
                  dest_path: str or pathlib.Path,
-                 skip_auto_register: bool) -> int:
-    return download_o3de_object(gem_name, 'gems', dest_path, 'gem', 'gem_name', skip_auto_register)
+                 skip_auto_register: bool,
+                 download_progress_callback = None) -> int:
+    return download_o3de_object(gem_name, 'gems', dest_path, 'gem', 'gem_name', skip_auto_register, download_progress_callback)
 
 
 def download_template(template_name: str,
                       dest_path: str or pathlib.Path,
-                      skip_auto_register: bool) -> int:
-    return download_o3de_object(template_name, 'templates', dest_path, 'template', 'template_name', skip_auto_register)
+                      skip_auto_register: bool,
+                      download_progress_callback = None) -> int:
+    return download_o3de_object(template_name, 'templates', dest_path, 'template', 'template_name', skip_auto_register, download_progress_callback)
 
 
 
 def download_restricted(restricted_name: str,
                         dest_path: str or pathlib.Path,
-                        skip_auto_register: bool) -> int:
-    return download_o3de_object(restricted_name, 'restricted', dest_path, 'restricted', 'restricted_name', skip_auto_register)
+                        skip_auto_register: bool,
+                        download_progress_callback = None) -> int:
+    return download_o3de_object(restricted_name, 'restricted', dest_path, 'restricted', 'restricted_name', skip_auto_register, download_progress_callback)
 
 
 def _run_download(args: argparse) -> int:

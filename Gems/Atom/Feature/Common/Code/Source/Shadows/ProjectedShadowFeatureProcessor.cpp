@@ -151,6 +151,14 @@ namespace AZ::Render
         shadowProperty.m_bias = bias;
     }
 
+    void ProjectedShadowFeatureProcessor::SetNormalShadowBias(ShadowId id, float normalShadowBias)
+    {
+        AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetNormalShadowBias().");
+
+        ShadowProperty& shadowProperty = GetShadowPropertyFromShadowId(id);
+        shadowProperty.m_normalShadowBias = normalShadowBias;
+    }
+
     void ProjectedShadowFeatureProcessor::SetShadowmapMaxResolution(ShadowId id, ShadowmapSize size)
     {
         AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetShadowmapMaxResolution().");
@@ -305,52 +313,38 @@ namespace AZ::Render
     
     void ProjectedShadowFeatureProcessor::CachePasses()
     {
-        const AZStd::vector<RPI::RenderPipelineId> validPipelineIds = CacheProjectedShadowmapsPass();
-        CacheEsmShadowmapsPass(validPipelineIds);
+        CacheProjectedShadowmapsPass();
+        CacheEsmShadowmapsPass();
         m_shadowmapPassNeedsUpdate = true;
     }
     
-    AZStd::vector<RPI::RenderPipelineId> ProjectedShadowFeatureProcessor::CacheProjectedShadowmapsPass()
+    void ProjectedShadowFeatureProcessor::CacheProjectedShadowmapsPass()
     {
-        const AZStd::vector<RPI::RenderPipelinePtr>& renderPipelines = GetParentScene()->GetRenderPipelines();
-        const auto* passSystem = RPI::PassSystemInterface::Get();;
-        const AZStd::vector<RPI::Pass*>& passes = passSystem->GetPassesForTemplateName(Name("ProjectedShadowmapsTemplate"));
-
-        AZStd::vector<RPI::RenderPipelineId> validPipelineIds;
         m_projectedShadowmapsPasses.clear();
-        for (RPI::Pass* pass : passes)
-        {
-            ProjectedShadowmapsPass* shadowPass = static_cast<ProjectedShadowmapsPass*>(pass);
-            for (const RPI::RenderPipelinePtr& pipeline : renderPipelines)
+        RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("ProjectedShadowmapsTemplate"), GetParentScene());
+        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
             {
-                if (pipeline.get() == shadowPass->GetRenderPipeline())
-                {
-                    m_projectedShadowmapsPasses.emplace_back(shadowPass);
-                    validPipelineIds.push_back(shadowPass->GetRenderPipeline()->GetId());
-                }
-            }
-        }
-        return validPipelineIds;
+                ProjectedShadowmapsPass* shadowPass = static_cast<ProjectedShadowmapsPass*>(pass);
+                m_projectedShadowmapsPasses.emplace_back(shadowPass);
+                return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+            });
     }
 
-    void ProjectedShadowFeatureProcessor::CacheEsmShadowmapsPass(const AZStd::vector<RPI::RenderPipelineId>& validPipelineIds)
+    void ProjectedShadowFeatureProcessor::CacheEsmShadowmapsPass()
     {
         const Name LightTypeName = Name("projected");
-
-        const auto* passSystem = RPI::PassSystemInterface::Get();
-        const AZStd::vector<RPI::Pass*> passes = passSystem->GetPassesForTemplateName(Name("EsmShadowmapsTemplate"));
-
+                
         m_esmShadowmapsPasses.clear();
-        for (RPI::Pass* pass : passes)
-        {
-            EsmShadowmapsPass* esmPass = static_cast<EsmShadowmapsPass*>(pass);
-            if (esmPass->GetRenderPipeline() &&
-                AZStd::find(validPipelineIds.begin(), validPipelineIds.end(), esmPass->GetRenderPipeline()->GetId()) != validPipelineIds.end() &&
-                esmPass->GetLightTypeName() == LightTypeName)
+        RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("EsmShadowmapsTemplate"), GetParentScene());
+        RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this, LightTypeName](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
             {
-                m_esmShadowmapsPasses.emplace_back(esmPass);
-            }
-        }
+                EsmShadowmapsPass* esmPass = static_cast<EsmShadowmapsPass*>(pass);
+                if (esmPass->GetLightTypeName() == LightTypeName)
+                {
+                    m_esmShadowmapsPasses.emplace_back(esmPass);
+                }
+                return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+            });
     }
     
     void ProjectedShadowFeatureProcessor::UpdateFilterParameters()

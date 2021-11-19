@@ -1,5 +1,5 @@
 {
-    "Source" : "DepthPassSkin",
+    "Source" : "DepthPassSkin.azsl",
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }

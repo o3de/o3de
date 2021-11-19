@@ -25,7 +25,7 @@ from cmake.Tools.Platform.Android import android_support
 
 GRADLE_ARGUMENT_NAME = '--gradle-install-path'
 GRADLE_MIN_VERSION = LooseVersion('6.5')
-GRADLE_MAX_VERSION = LooseVersion('7.0.0')
+GRADLE_MAX_VERSION = LooseVersion('7.0.2')
 GRADLE_VERSION_REGEX = re.compile(r"Gradle\s(\d+.\d+.?\d*)")
 GRADLE_EXECUTABLE = 'gradle.bat' if platform.system() == 'Windows' else 'gradle'
 
@@ -102,6 +102,7 @@ def build_optional_signing_profile(store_file, store_password, key_alias, key_pa
 ANDROID_SDK_ARGUMENT_NAME = '--android-sdk-path'
 ANDROID_SDK_PLATFORM_ARGUMENT_NAME = '--android-sdk-platform'
 ANDROID_SDK_PREFERRED_TOOL_VER = '--android-sdk-build-tool-version'
+ANDROID_SDK_COMMAND_LINE_TOOLS_VER = '--android-sdk-command-line-tools-version'
 
 ANDROID_NATIVE_API_LEVEL = '--android-native-api-level'
 
@@ -113,7 +114,7 @@ MIN_NATIVE_API_LEVEL = 24       # The minimum Native API level that is supported
 ANDROID_NDK_PLATFORM_ARGUMENT_NAME = '--android-ndk-version'
 
 ANDROID_GRADLE_PLUGIN_ARGUMENT_NAME = '--gradle-plugin-version'
-ANDROID_GRADLE_MIN_PLUGIN_VERSION = LooseVersion("4.2.0")
+ANDROID_GRADLE_MIN_PLUGIN_VERSION = LooseVersion("4.2.2")
 
 # Constants for asset-related options for APK generation
 INCLUDE_APK_ASSETS_ARGUMENT_NAME = "--include-apk-assets"
@@ -185,6 +186,11 @@ def main(args):
                         default=-1)
 
     # Override arguments
+    parser.add_argument(ANDROID_SDK_COMMAND_LINE_TOOLS_VER,
+                        default='latest',
+                        help='The android SDK command line tools version.',
+                        required=False)
+
     parser.add_argument(ANDROID_SDK_PREFERRED_TOOL_VER,
                         help='The android SDK build tools version.',
                         required=False)
@@ -214,6 +220,11 @@ def main(args):
 
     parser.add_argument('--native-build-path',
                         help='Custom path to place native build artifacts.',
+                        default=None,
+                        required=False)
+
+    parser.add_argument('--vulkan-validation-path',
+                        help='Override path to where the Vulkan Validation Layers libraries are.  Required for use with NDK r23+',
                         default=None,
                         required=False)
 
@@ -304,7 +315,8 @@ def main(args):
                                   f"({android_gradle_plugin_version}).")
 
     # Use the SDK Resolver to make sure the build tools and ndk
-    android_sdk = android_support.AndroidSDKResolver(android_sdk_path=parsed_args.get_argument(ANDROID_SDK_ARGUMENT_NAME))
+    android_sdk = android_support.AndroidSDKResolver(android_sdk_path=parsed_args.get_argument(ANDROID_SDK_ARGUMENT_NAME),
+                                                command_line_tools_version=parsed_args.get_argument(ANDROID_SDK_COMMAND_LINE_TOOLS_VER))
 
     # If no SDK platform is provided, check for any installed one
     if android_sdk_platform_version < 0:
@@ -402,7 +414,8 @@ def main(args):
                                                         is_test_project=is_test_project,
                                                         overwrite_existing=parsed_args.overwrite_existing,
                                                         unity_build_enabled=parsed_args.enable_unity_build,
-                                                        native_build_path=parsed_args.native_build_path)
+                                                        native_build_path=parsed_args.native_build_path,
+                                                        vulkan_validation_path=parsed_args.vulkan_validation_path)
     generator.execute()
 
 

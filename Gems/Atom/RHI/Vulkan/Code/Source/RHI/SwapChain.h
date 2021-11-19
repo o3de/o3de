@@ -70,23 +70,47 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////
 
             RHI::ResultCode BuildSurface(const RHI::SwapChainDescriptor& descriptor);
+
+            //! Returns true is the swapchain dimensions are supported by the current surface.
             bool ValidateSurfaceDimensions(const RHI::SwapChainDimensions& dimensions);
+            //! Returns the corresponding Vulkan format that is supported by the surface.
+            //! If such format is not found, return the first supported format from the surface.
             VkSurfaceFormatKHR GetSupportedSurfaceFormat(const RHI::Format format) const;
+            //! Returns the correct presentation mode.
+            //! If verticalSyncInterval is non-zero, returns VK_PRESENT_MODE_FIFO_KHR.
+            //! Otherwise, choose preferred mode if they are supported.
+            //! If not, the first supported present mode is returned.
             VkPresentModeKHR GetSupportedPresentMode(uint32_t verticalSyncInterval) const;
+            //! Returns the preferred alpha compositing modes if they are supported.
+            //! If not, error will be reported.
             VkCompositeAlphaFlagBitsKHR GetSupportedCompositeAlpha() const;
-            RHI::ResultCode BuildNativeSwapChain(const RHI::SwapChainDimensions& dimensions, uint32_t verticalSyncInterval);
+            //! Returns the current surface capabilities.
+            VkSurfaceCapabilitiesKHR GetSurfaceCapabilities();
+            //! Create the swapchain when initializing, or
+            //! swapchain is no longer compatible or is sub-optimal with the surface.
+            RHI::ResultCode CreateSwapchain();
+            //! Build underlying Vulkan swapchain.
+            RHI::ResultCode BuildNativeSwapChain(const RHI::SwapChainDimensions& dimensions);
+            //! Retrieve the index of the next available presentable image.
             RHI::ResultCode AcquireNewImage(uint32_t* acquiredImageIndex);
 
+            //! Destroy the surface.
             void InvalidateSurface();
+            //! Destroy the old swapchain.
             void InvalidateNativeSwapChain();
 
-            VkSwapchainKHR m_nativeSwapChain = VK_NULL_HANDLE;
             RHI::Ptr<WSISurface> m_surface;
+            VkSwapchainKHR m_nativeSwapChain = VK_NULL_HANDLE;
             CommandQueue* m_presentationQueue = nullptr;
-            VkSurfaceFormatKHR m_surfaceFormat = {};
-            VkSurfaceCapabilitiesKHR m_surfaceCapabilities;
-
             FrameContext m_currentFrameContext;
+
+            //! Swapchain data
+            VkSurfaceFormatKHR m_surfaceFormat = {};
+            VkSurfaceCapabilitiesKHR m_surfaceCapabilities = {};
+            VkPresentModeKHR m_presentMode = {};
+            VkCompositeAlphaFlagBitsKHR m_compositeAlphaFlagBits = {}; 
+            AZStd::vector<VkImage> m_swapchainNativeImages;
+            RHI::SwapChainDimensions m_dimensions;
 
             struct SwapChainBarrier
             {
@@ -95,8 +119,6 @@ namespace AZ
                 VkImageMemoryBarrier m_barrier = {};
                 bool m_isValid = false;
             } m_swapChainBarrier;
-
-            AZStd::vector<VkImage> m_swapchainNativeImages;
         };
     }
 }

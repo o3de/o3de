@@ -115,17 +115,20 @@ CViewSystem::CViewSystem(ISystem* pSystem)
     , m_useDeferredViewSystemUpdate(false)
     , m_bControlsAudioListeners(true)
 {
-#if !defined(_RELEASE) && !defined(DEDICATED_SERVER)
-    if (!s_debugCamera)
+#if !defined(_RELEASE)
+    if (!gEnv->IsDedicated())
     {
-        s_debugCamera = new DebugCamera;
-    }
+        if (!s_debugCamera)
+        {
+            s_debugCamera = new DebugCamera;
+        }
 
-    REGISTER_COMMAND("debugCameraToggle", ToggleDebugCamera, VF_DEV_ONLY, "Toggle the debug camera.\n");
-    REGISTER_COMMAND("debugCameraInvertY", ToggleDebugCameraInvertY, VF_DEV_ONLY, "Toggle debug camera Y-axis inversion.\n");
-    REGISTER_COMMAND("debugCameraMove", DebugCameraMove, VF_DEV_ONLY, "Move the debug camera the specified distance (x y z).\n");
-    gEnv->pConsole->CreateKeyBind("ctrl_keyboard_key_punctuation_backslash", "debugCameraToggle");
-    gEnv->pConsole->CreateKeyBind("alt_keyboard_key_punctuation_backslash", "debugCameraInvertY");
+        REGISTER_COMMAND("debugCameraToggle", ToggleDebugCamera, VF_DEV_ONLY, "Toggle the debug camera.\n");
+        REGISTER_COMMAND("debugCameraInvertY", ToggleDebugCameraInvertY, VF_DEV_ONLY, "Toggle debug camera Y-axis inversion.\n");
+        REGISTER_COMMAND("debugCameraMove", DebugCameraMove, VF_DEV_ONLY, "Move the debug camera the specified distance (x y z).\n");
+        gEnv->pConsole->CreateKeyBind("ctrl_keyboard_key_punctuation_backslash", "debugCameraToggle");
+        gEnv->pConsole->CreateKeyBind("alt_keyboard_key_punctuation_backslash", "debugCameraInvertY");
+    }
 #endif
 
     REGISTER_CVAR2("cl_camera_noise", &m_fCameraNoise, -1, 0,
@@ -167,6 +170,21 @@ CViewSystem::~CViewSystem()
     {
         m_pSystem->GetILevelSystem()->RemoveListener(this);
     }
+
+#if !defined(_RELEASE)
+    if (!gEnv->IsDedicated())
+    {
+        UNREGISTER_COMMAND("debugCameraToggle");
+        UNREGISTER_COMMAND("debugCameraInvertY");
+        UNREGISTER_COMMAND("debugCameraMove");
+
+        if (s_debugCamera)
+        {
+            delete s_debugCamera;
+            s_debugCamera = nullptr;
+        }
+    }
+#endif
 }
 
 //------------------------------------------------------------------------

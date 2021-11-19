@@ -118,7 +118,7 @@ namespace AZ
 
             ResetIssueCounts(); // Because the asset creator can be used multiple times
 
-            m_asset = Data::AssetManager::Instance().CreateAsset<AssetDataT>(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
+            m_asset = Data::Asset<AssetDataT>(assetId, aznew AssetDataT, AZ::Data::AssetLoadBehavior::PreLoad);
             m_beginCalled = true;
 
             if (!m_asset)
@@ -138,6 +138,7 @@ namespace AZ
             }
             else
             {
+                Data::AssetManager::Instance().AssignAssetData(m_asset);
                 result = AZStd::move(m_asset);
                 success = true;
             }

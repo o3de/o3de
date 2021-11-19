@@ -1,6 +1,6 @@
 {
  
-    "Source" : "ImGui",
+    "Source" : "ImGui.azsl",
 
     
     "RasterState" : { "CullMode" : "None" },

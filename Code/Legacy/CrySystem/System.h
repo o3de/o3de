@@ -85,10 +85,6 @@ class CWatchdogThread;
 
 #endif
 
-#if defined(LINUX)
-    #include "CryLibrary.h"
-#endif
-
 #ifdef WIN32
 using WIN_HMODULE = void*;
 #else
@@ -104,10 +100,6 @@ namespace Audio
 struct IDataProbe;
 
 #define PHSYICS_OBJECT_ENTITY 0
-
-using VTuneFunction = void (__cdecl *)(void);
-extern VTuneFunction VTResume;
-extern VTuneFunction VTPause;
 
 #define MAX_STREAMING_POOL_INDEX 6
 #define MAX_THREAD_POOL_INDEX 6
@@ -139,7 +131,6 @@ struct SSystemCVars
     int sys_ai;
     int sys_entitysystem;
     int sys_trackview;
-    int sys_vtune;
     float sys_update_profile_time;
     int sys_limit_phys_thread_count;
     int sys_MaxFPS;
@@ -168,21 +159,6 @@ struct SSystemCVars
 extern SSystemCVars g_cvars;
 
 class CSystem;
-
-struct CProfilingSystem
-    : public IProfilingSystem
-{
-    //////////////////////////////////////////////////////////////////////////
-    // VTune Profiling interface.
-
-    // Summary:
-    //   Resumes vtune data collection.
-    void VTuneResume() override;
-    // Summary:
-    //   Pauses vtune data collection.
-    void VTunePause() override;
-    //////////////////////////////////////////////////////////////////////////
-};
 
 class AssetSystem;
 
@@ -246,7 +222,6 @@ public:
     void Quit() override;
     bool IsQuitting() const override;
     void ShutdownFileSystem(); // used to cleanup any file resources, such as cache handle.
-    void SetAffinity();
     const char* GetUserName() override;
     int GetApplicationInstance() override;
     int GetApplicationLogInstance(const char* logFilePath) override;
@@ -262,7 +237,6 @@ public:
     IViewSystem* GetIViewSystem() override;
     ILevelSystem* GetILevelSystem() override;
     ISystemEventDispatcher* GetISystemEventDispatcher() override { return m_pSystemEventDispatcher; }
-    IProfilingSystem* GetIProfilingSystem() override { return &m_ProfilingSystem; }
     //////////////////////////////////////////////////////////////////////////
     // retrieves the perlin noise singleton instance
     CPNoise3* GetNoiseGen() override;
@@ -324,8 +298,6 @@ public:
     void SetVersionInfo(const char* const szVersion);
 #endif
 
-    void ShutdownModuleLibraries();
-
 #if defined(WIN32)
     friend LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 #endif
@@ -344,8 +316,6 @@ private:
     // Release all resources.
     void ShutDown();
 
-    bool LoadEngineDLLs();
-
     //! @name Initialization routines
     //@{
     bool InitConsole();
@@ -361,11 +331,8 @@ private:
     void CreateSystemVars();
     void CreateAudioVars();
 
-    AZStd::unique_ptr<AZ::DynamicModuleHandle> LoadDLL(const char* dllName);
-
     void FreeLib(AZStd::unique_ptr<AZ::DynamicModuleHandle>& hLibModule);
 
-    bool UnloadDLL(const char* dllName);
     void QueryVersionInfo();
     void LogVersion();
     void LogBuildInfo();
@@ -379,8 +346,6 @@ private:
     void UpdateAudioSystems();
 
     void AddCVarGroupDirectory(const AZStd::string& sPath) override;
-
-    AZStd::unique_ptr<AZ::DynamicModuleHandle> LoadDynamiclibrary(const char* dllName) const;
 
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEM_H_SECTION_3
@@ -436,9 +401,6 @@ private: // ------------------------------------------------------
     int                   m_ttMemStatSS;              //!< Time to memstat screenshot
     bool                  m_bDrawConsole;              //!< Set to true if OK to draw the console.
     bool                  m_bDrawUI;                   //!< Set to true if OK to draw UI.
-
-
-    std::map<AZ::Crc32, AZStd::unique_ptr<AZ::DynamicModuleHandle> > m_moduleDLLHandles;
 
     //! current active process
     IProcess* m_pProcess;
@@ -564,8 +526,6 @@ private: // ------------------------------------------------------
     ESystemConfigSpec m_nMaxConfigSpec;
     ESystemConfigPlatform m_ConfigPlatform;
 
-    CProfilingSystem m_ProfilingSystem;
-
     // Pause mode.
     bool m_bPaused;
     bool m_bNoUpdate;
@@ -588,9 +548,7 @@ public:
     const SFileVersion& GetProductVersion() override;
     const SFileVersion& GetBuildVersion() override;
 
-    bool InitVTuneProfiler();
-
-    void OpenBasicPaks();
+    void OpenPlatformPaks();
     void OpenLanguagePak(const char* sLanguage);
     void OpenLanguageAudioPak(const char* sLanguage);
     void GetLocalizedPath(const char* sLanguage, AZStd::string& sLocalizedPath);

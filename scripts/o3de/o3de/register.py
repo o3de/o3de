@@ -467,7 +467,7 @@ def register_restricted_path(json_data: dict,
 
 
 def register_repo(json_data: dict,
-                  repo_uri: str or pathlib.Path,
+                  repo_uri: str,
                   remove: bool = False) -> int:
     if not repo_uri:
         logger.error(f'Repo URI cannot be empty.')
@@ -477,12 +477,12 @@ def register_repo(json_data: dict,
     parsed_uri = urllib.parse.urlparse(url)
 
     if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
-        while repo_uri in json_data['repos']:
+        while repo_uri in json_data.get('repos', []):
             json_data['repos'].remove(repo_uri)
     else:
-        repo_uri = pathlib.Path(repo_uri).resolve()
-        while repo_uri.as_posix() in json_data['repos']:
-            json_data['repos'].remove(repo_uri.as_posix())
+        repo_uri = pathlib.Path(repo_uri).resolve().as_posix()
+        while repo_uri in json_data.get('repos', []):
+            json_data['repos'].remove(repo_uri)
 
     if remove:
         logger.warn(f'Removing repo uri {repo_uri}.')
@@ -492,7 +492,7 @@ def register_repo(json_data: dict,
 
     result = utils.download_file(parsed_uri, cache_file)
     if result == 0:
-        json_data['repos'].insert(0, repo_uri)
+        json_data.setdefault('repos', []).insert(0, repo_uri)
 
     repo_set = set()
     result = repo.process_add_o3de_repo(cache_file, repo_set)
@@ -566,7 +566,7 @@ def register(engine_path: pathlib.Path = None,
              external_subdir_path: pathlib.Path = None,
              template_path: pathlib.Path = None,
              restricted_path: pathlib.Path = None,
-             repo_uri: str or pathlib.Path = None,
+             repo_uri: str = None,
              default_engines_folder: pathlib.Path = None,
              default_projects_folder: pathlib.Path = None,
              default_gems_folder: pathlib.Path = None,
@@ -596,7 +596,7 @@ def register(engine_path: pathlib.Path = None,
     :param default_third_party_folder: default 3rd party cache folder
     :param external_subdir_engine_path: Path to the engine to use when registering an external subdirectory.
      The registration occurs in the engine.json file in this case
-    :param external_subdir_engine_path: Path to the project to use when registering an external subdirectory.
+    :param external_subdir_project_path: Path to the project to use when registering an external subdirectory.
      The registrations occurs in the project.json in this case
     :param remove: add/remove the entries
     :param force: force update of the engine_path for specified "engine_name" from the engine.json file
@@ -641,7 +641,7 @@ def register(engine_path: pathlib.Path = None,
             return 1
         result = result or register_restricted_path(json_data, restricted_path, remove, project_path, engine_path)
 
-    if isinstance(repo_uri, str) or isinstance(repo_uri, pathlib.PurePath):
+    if isinstance(repo_uri, str):
         if not repo_uri:
             logger.error(f'Repo URI cannot be empty.')
             return 1

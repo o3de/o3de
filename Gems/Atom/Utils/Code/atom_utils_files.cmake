@@ -9,8 +9,6 @@
 set(FILES
     Include/Atom/Utils/DdsFile.h
     Include/Atom/Utils/ImageComparison.h
-    Include/Atom/Utils/ImGuiCpuProfiler.h
-    Include/Atom/Utils/ImGuiCpuProfiler.inl
     Include/Atom/Utils/ImGuiCullingDebug.h
     Include/Atom/Utils/ImGuiCullingDebug.inl
     Include/Atom/Utils/ImGuiGpuProfiler.h

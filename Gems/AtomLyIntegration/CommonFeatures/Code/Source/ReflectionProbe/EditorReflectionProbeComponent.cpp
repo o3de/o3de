@@ -178,7 +178,7 @@ namespace AZ
                     if (notificationType == CubeMapAssetNotificationType::Ready)
                     {
                         // bake is complete, update configuration with the new baked cubemap asset
-                        m_controller.m_configuration.m_bakedCubeMapAsset = { cubeMapAsset.GetAs<RPI::StreamingImageAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+                        m_controller.m_configuration.m_bakedCubeMapAsset = cubeMapAsset;
 
                         // refresh the currently rendered cubemap
                         m_controller.UpdateCubeMap();

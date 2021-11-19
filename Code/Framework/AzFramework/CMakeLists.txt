@@ -42,6 +42,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAMESPACE AZ
         FILES_CMAKE
             Tests/framework_shared_tests_files.cmake
+            AzFramework/Physics/physics_mock_files.cmake
         INCLUDE_DIRECTORIES
             PUBLIC
                 Tests
@@ -53,7 +54,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzTestShared
     )
-
+    
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
 
         ly_add_target(

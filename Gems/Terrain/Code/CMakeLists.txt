@@ -111,6 +111,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzFramework
                 Gem::LmbrCentral.Mocks
+                Gem::GradientSignal.Mocks
                 Gem::Terrain.Mocks
                 Gem::Terrain.Static
     )

@@ -85,6 +85,7 @@ namespace UnitTest
 
             m_rootWidget = AZStd::make_unique<QWidget>();
             m_rootWidget->setFixedSize(QSize(100, 100));
+            QApplication::setActiveWindow(m_rootWidget.get());
 
             m_controllerList = AZStd::make_shared<AzFramework::ViewportControllerList>();
             m_controllerList->RegisterViewportContext(TestViewportId);
@@ -100,6 +101,8 @@ namespace UnitTest
             m_controllerList.reset();
             m_rootWidget.reset();
 
+            QApplication::setActiveWindow(nullptr);
+
             AllocatorsTestFixture::TearDown();
         }
 
@@ -110,7 +113,7 @@ namespace UnitTest
 
     const AzFramework::ViewportId ViewportManipulatorControllerFixture::TestViewportId = AzFramework::ViewportId(0);
 
-    TEST_F(ViewportManipulatorControllerFixture, An_event_is_not_propagated_to_the_viewport_when_a_manipulator_handles_it_first)
+    TEST_F(ViewportManipulatorControllerFixture, AnEventIsNotPropagatedToTheViewportWhenAManipulatorHandlesItFirst)
     {
         // forward input events to our controller list
         QObject::connect(
@@ -150,5 +153,78 @@ namespace UnitTest
         EXPECT_FALSE(viewportInteractionCalled);
 
         editorInteractionViewportFake.Disconnect();
+    }
+
+    TEST_F(ViewportManipulatorControllerFixture, ChangingFocusDoesNotClearInput)
+    {
+        bool endedEvent = false;
+        // detect input events and ensure that the Alt key press does not end before the end of the test
+        QObject::connect(
+            m_inputChannelMapper.get(), &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, m_rootWidget.get(),
+            [&endedEvent](const AzFramework::InputChannel* inputChannel, [[maybe_unused]] QEvent* event)
+            {
+                if (inputChannel->GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::ModifierAltL &&
+                    inputChannel->IsStateEnded())
+                {
+                    endedEvent = true;
+                }
+            });
+
+        // given
+        auto* secondaryWidget = new QWidget(m_rootWidget.get());
+
+        m_rootWidget->show();
+        secondaryWidget->show();
+
+        m_rootWidget->setFocus();
+
+        // simulate a key press when root widget has focus
+        QTest::keyPress(m_rootWidget.get(), Qt::Key_Alt, Qt::KeyboardModifier::AltModifier);
+
+        // when
+        // change focus to secondary widget
+        secondaryWidget->setFocus();
+
+        // then
+        // the alt key was not released (cleared)
+        EXPECT_FALSE(endedEvent);
+    }
+
+    // note: Application State Change includes events such as switching to another application or minimizing
+    // the current application
+    TEST_F(ViewportManipulatorControllerFixture, ApplicationStateChangeDoesClearInput)
+    {
+        bool endedEvent = false;
+        // detect input events and ensure that the Alt key press does not end before the end of the test
+        QObject::connect(
+            m_inputChannelMapper.get(), &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, m_rootWidget.get(),
+            [&endedEvent](const AzFramework::InputChannel* inputChannel, [[maybe_unused]] QEvent* event)
+            {
+                if (inputChannel->GetInputChannelId() == AzFramework::InputDeviceKeyboard::Key::AlphanumericW &&
+                    inputChannel->IsStateEnded())
+                {
+                    endedEvent = true;
+                }
+            });
+
+        // given
+        auto* secondaryWidget = new QWidget(m_rootWidget.get());
+
+        m_rootWidget->show();
+        secondaryWidget->show();
+
+        m_rootWidget->setFocus();
+
+        // simulate a key press when root widget has focus
+        QTest::keyPress(m_rootWidget.get(), Qt::Key_W);
+
+        // when
+        // simulate changing the window state
+        QApplicationStateChangeEvent applicationStateChangeEvent(Qt::ApplicationState::ApplicationInactive);
+        QCoreApplication::sendEvent(m_rootWidget.get(), &applicationStateChangeEvent);
+
+        // then
+        // the key was released (cleared)
+        EXPECT_TRUE(endedEvent);
     }
 } // namespace UnitTest

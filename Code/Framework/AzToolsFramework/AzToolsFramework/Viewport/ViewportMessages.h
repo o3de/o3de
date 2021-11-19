@@ -198,6 +198,8 @@ namespace AzToolsFramework
             virtual float ManipulatorCircleBoundWidth() const = 0;
             //! Returns if sticky select is enabled or not.
             virtual bool StickySelectEnabled() const = 0;
+            //! Returns the default viewport camera position.
+            virtual AZ::Vector3 DefaultEditorCameraPosition() const = 0;
 
         protected:
             ~ViewportSettingsRequests() = default;
@@ -300,6 +302,12 @@ namespace AzToolsFramework
 
         using EditorViewportInputTimeNowRequestBus = AZ::EBus<EditorViewportInputTimeNowRequests>;
 
+        //! The style of cursor override.
+        enum class CursorStyleOverride
+        {
+            Forbidden
+        };
+
         //! Viewport requests for managing the viewport cursor state.
         class ViewportMouseCursorRequests
         {
@@ -310,6 +318,10 @@ namespace AzToolsFramework
             virtual void EndCursorCapture() = 0;
             //! Is the mouse over the viewport.
             virtual bool IsMouseOver() const = 0;
+            //! Set the cursor style override.
+            virtual void SetOverrideCursor(CursorStyleOverride cursorStyleOverride) = 0;
+            //! Clear the cursor style override.
+            virtual void ClearOverrideCursor() = 0;
 
         protected:
             ~ViewportMouseCursorRequests() = default;

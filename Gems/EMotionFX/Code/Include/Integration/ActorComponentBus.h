@@ -85,9 +85,6 @@ namespace EMotionFX
             /// Detach from parent entity, if attached.
             virtual void DetachFromEntity() {}
 
-            /// Enables debug-drawing of the actor's root.
-            virtual void DebugDrawRoot(bool /*enable*/) {}
-
             /// Enables rendering of the actor.
             virtual bool GetRenderCharacter() const = 0;
             virtual void SetRenderCharacter(bool enable) = 0;

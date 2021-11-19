@@ -13,8 +13,11 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabCatchmentProcessor.h>
 #include <AzToolsFramework/Prefab/Spawnable/SpawnableUtils.h>
+
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
 {
@@ -37,7 +40,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
                 ->Value("Text", SerializationFormats::Text);
 
             serializeContext->Class<PrefabCatchmentProcessor, PrefabProcessor>()
-                ->Version(2)
+                ->Version(3)
                 ->Field("SerializationFormat", &PrefabCatchmentProcessor::m_serializationFormat);
         }
     }
@@ -45,6 +48,8 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     void PrefabCatchmentProcessor::ProcessPrefab(PrefabProcessorContext& context, AZStd::string_view prefabName, PrefabDom& prefab,
         AZ::DataStream::StreamType serializationFormat)
     {
+        using namespace AzToolsFramework::Prefab::SpawnableUtils;
+
         AZStd::string uniqueName = prefabName;
         uniqueName += AzFramework::Spawnable::DotFileExtension;
 
@@ -59,33 +64,38 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
             AZStd::move(uniqueName), context.GetSourceUuid(), AZStd::move(serializer));
         AZ_Assert(spawnable, "Failed to create a new spawnable.");
 
-        bool result = SpawnableUtils::CreateSpawnable(*spawnable, prefab, object.GetReferencedAssets());
-        if (result)
+        Instance instance;
+        if (Prefab::PrefabDomUtils::LoadInstanceFromPrefabDom(
+                instance, prefab, object.GetReferencedAssets(),
+                Prefab::PrefabDomUtils::LoadFlags::AssignRandomEntityId)) // Always assign random entity ids because the spawnable is
+                                                                          // going to be used to create clones of the entities.
         {
+            // Resolve entity aliases that store PrefabDOM information to use the spawnable instead. This is done before the entities are
+            // moved from the instance as they'd otherwise can't be found.
+            context.ResolveSpawnableEntityAliases(prefabName, *spawnable, instance);
+
             AzFramework::Spawnable::EntityList& entities = spawnable->GetEntities();
-            for (auto it = entities.begin(); it != entities.end(); )
-            {
-                if (*it)
+            instance.DetachAllEntitiesInHierarchy(
+                [&entities, &context](AZStd::unique_ptr<AZ::Entity> entity)
                 {
-                    (*it)->InvalidateDependencies();
-                    AZ::Entity::DependencySortOutcome evaluation = (*it)->EvaluateDependenciesGetDetails();
-                    if (evaluation.IsSuccess())
+                    if (entity)
                     {
-                        ++it;
+                        entity->InvalidateDependencies();
+                        AZ::Entity::DependencySortOutcome evaluation = entity->EvaluateDependenciesGetDetails();
+                        if (evaluation.IsSuccess())
+                        {
+                            entities.emplace_back(AZStd::move(entity));
+                        }
+                        else
+                        {
+                            AZ_Error(
+                                "Prefabs", false, "Entity '%s' %s cannot be activated for the following reason: %s",
+                                entity->GetName().c_str(), entity->GetId().ToString().c_str(), evaluation.GetError().m_message.c_str());
+                            context.ErrorEncountered();
+                        }
                     }
-                    else
-                    {
-                        AZ_Error(
-                            "Prefabs", false, "Entity '%s' %s cannot be activated for the following reason: %s", (*it)->GetName().c_str(),
-                            (*it)->GetId().ToString().c_str(), evaluation.GetError().m_message.c_str());
-                        it = entities.erase(it);
-                    }
-                }
-                else
-                {
-                    it = entities.erase(it);
-                }
-            }
+                });
+
             SpawnableUtils::SortEntitiesByTransformHierarchy(*spawnable);
             context.GetProcessedObjects().push_back(AZStd::move(object));
         }

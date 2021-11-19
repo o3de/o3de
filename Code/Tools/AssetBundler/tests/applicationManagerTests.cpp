@@ -66,12 +66,18 @@ namespace AssetBundler
             }
             auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
                 + "/project_path";
-            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::IO::FixedMaxPath enginePath;
+            registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
 
             m_data->m_applicationManager.reset(aznew MockApplicationManagerTest(0, 0));
-            m_data->m_applicationManager->Start(AzFramework::Application::Descriptor());
+
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            // The AssetBundler does not need to load gems
+            startupParameters.m_loadDynamicModules = false;
+            m_data->m_applicationManager->Start(AzFramework::Application::Descriptor(), startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 

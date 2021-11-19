@@ -561,7 +561,7 @@ namespace AZ
             // Access the root constants reflection
             if (!azslCompiler.ParseSrgPopulateRootConstantData(
                     jsonOutcome.GetValue(),
-                    rootConstantData)) // consuming data from --srg ("InlineConstantBuffer" subjson section)
+                    rootConstantData)) // consuming data from --srg ("RootConstantBuffer" subjson section)
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to obtain root constant data reflection");
                 return false;

@@ -23,8 +23,6 @@ namespace AzNetworking
         Delete
     };
 
-    class ITimeoutHandler;
-
     //! @class TimeoutQueue
     //! @brief class for managing timeout items.
     class TimeoutQueue
@@ -64,10 +62,11 @@ namespace AzNetworking
         //! @param timeoutId the identifier of the item to remove
         void RemoveItem(TimeoutId timeoutId);
 
-        //! Updates timeouts for all items, invokes timeout handlers if required.
-        //! @param timeoutHandler listener instance to call back on for timeouts
-        //! @param maxTimeouts   the maximum number of timeouts to process before breaking iteration
-        void UpdateTimeouts(ITimeoutHandler& timeoutHandler, int32_t maxTimeouts = -1);
+        //! Updates timeouts for all items, invokes the provided timeout functor if required.
+        //! @param timeoutHandler lambda to invoke for all timeouts
+        //! @param maxTimeouts    the maximum number of timeouts to process before breaking iteration
+        using TimeoutHandler = AZStd::function<TimeoutResult(TimeoutQueue::TimeoutItem&)>;
+        void UpdateTimeouts(const TimeoutHandler& timeoutHandler, int32_t maxTimeouts = -1);
 
     private:
 
@@ -87,19 +86,6 @@ namespace AzNetworking
         TimeoutId        m_nextTimeoutId = TimeoutId{ 0 };
         TimeoutItemMap   m_timeoutItemMap;
         TimeoutItemQueue m_timeoutItemQueue;
-    };
-
-    //! @class ITimeoutHandler
-    //! @brief interface class for managing timeout items.
-    class ITimeoutHandler
-    {
-    public:
-        virtual ~ITimeoutHandler() = default;
-
-        //! Handler callback for timed out items.
-        //! @param item containing registered timeout details
-        //! @return ETimeoutResult for whether to re-register or discard the timeout params
-        virtual TimeoutResult HandleTimeout(TimeoutQueue::TimeoutItem& item) = 0;
     };
 }
 

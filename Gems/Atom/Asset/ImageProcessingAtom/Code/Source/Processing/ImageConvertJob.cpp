@@ -108,17 +108,14 @@ namespace ImageProcessingAtom
         }
 
         IImageObjectPtr outputImage = m_process->GetOutputImage();
-        IImageObjectPtr outputImageAlpha = m_process->GetOutputAlphaImage();
 
         m_output->SetOutputImage(outputImage, ImageConvertOutput::Base);
-        m_output->SetOutputImage(outputImageAlpha, ImageConvertOutput::Alpha);
 
         if (!IsJobCancelled())
         {
             // For preview, combine image output with alpha if any
             m_output->SetProgress(1.0f / static_cast<float>(m_previewProcessStep));
-            IImageObjectPtr combinedImage = MergeOutputImageForPreview(outputImage, outputImageAlpha);
-            m_output->SetOutputImage(combinedImage, ImageConvertOutput::Preview);
+            m_output->SetOutputImage(outputImage, ImageConvertOutput::Preview);
         }
 
         m_output->SetReady(true);

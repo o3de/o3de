@@ -44,10 +44,8 @@ namespace UnitTest
             ArgumentContainer argContainer{ {} };
 
             // Append Command Line override for the Project Cache Path
-            AZ::IO::Path cacheProjectRootFolder{ m_tempDir.GetDirectory() };
-            auto projectCachePathOverride = FixedValueString::format(R"(--project-cache-path="%s")", cacheProjectRootFolder.c_str());
-            auto projectPathOverride = FixedValueString{ R"(--project-path=AutomatedTesting)" };
-            argContainer.push_back(projectCachePathOverride.data());
+            auto cacheProjectRootFolder = AZ::IO::Path{ m_tempDir.GetDirectory() } / "Cache";
+            auto projectPathOverride = FixedValueString::format(R"(--project-path="%s")", m_tempDir.GetDirectory());
             argContainer.push_back(projectPathOverride.data());
             m_application = new ToolsTestApplication("AddressedAssetCatalogManager", aznumeric_caster(argContainer.size()), argContainer.data());
 
@@ -195,10 +193,7 @@ namespace UnitTest
             ArgumentContainer argContainer{ {} };
 
             // Append Command Line override for the Project Cache Path
-            AZ::IO::Path cacheProjectRootFolder{ m_tempDir.GetDirectory() };
-            auto projectCachePathOverride = FixedValueString::format(R"(--project-cache-path="%s")", cacheProjectRootFolder.c_str());
-            auto projectPathOverride = FixedValueString{ R"(--project-path=AutomatedTesting)" };
-            argContainer.push_back(projectCachePathOverride.data());
+            auto projectPathOverride = FixedValueString::format(R"(--project-path="%s")", m_tempDir.GetDirectory());
             argContainer.push_back(projectPathOverride.data());
             m_application = new ToolsTestApplication("MessageTest", aznumeric_caster(argContainer.size()), argContainer.data());
 

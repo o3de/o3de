@@ -60,13 +60,6 @@
 
 #include <platform.h>
 
-#if defined(WIN32) || defined(WIN64) || defined(APPLE) || defined(LINUX)
-#if defined(DEDICATED_SERVER)
-// enable/disable map load slicing functionality from the build
-#define MAP_LOADING_SLICING
-#endif
-#endif
-
 #ifdef WIN32
 #include <AzCore/PlatformIncl.h>
 #include <tlhelp32.h>

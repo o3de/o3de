@@ -27,6 +27,7 @@ namespace O3DE::ProjectManager
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setContentsMargins(30, 30, 25, 10);
         vLayout->setSpacing(0);
+        vLayout->setAlignment(Qt::AlignTop);
         setLayout(vLayout);
 
         QLabel* instructionTitleLabel = new QLabel(tr("Enter a valid path to add a new user repository"));
@@ -41,8 +42,17 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(instructionContextLabel);
 
         m_repoPath = new FormFolderBrowseEditWidget(tr("Repository Path"), "", this);
-        m_repoPath->setFixedWidth(600);
+        m_repoPath->setFixedSize(QSize(600, 100));
         vLayout->addWidget(m_repoPath);
+
+        vLayout->addSpacing(10);
+
+        QLabel* warningLabel = new QLabel(tr("Online repositories may contain files that could potentially harm your computer,"
+            " please ensure you understand the risks before downloading Gems from third-party sources."));
+        warningLabel->setObjectName("gemRepoAddDialogWarningLabel");
+        warningLabel->setWordWrap(true);
+        warningLabel->setAlignment(Qt::AlignLeft);
+        vLayout->addWidget(warningLabel);
 
         vLayout->addSpacing(40);
 

@@ -124,6 +124,13 @@ namespace EMotionFX
             AZ::u32 m_numThreads;
 
         private:
+            //! Synchronize the actor instance location with the entity or character controller.
+            //! In case no character controller component is available, the entity will be moved
+            //! to the actor instance position. The spatial difference between the entity and the
+            //! actor instance will be calculated in case a character controller is present, and the
+            //! velocity will be applied to it to move it towards the actor instance.
+            void ApplyMotionExtraction(const ActorInstance* actorInstance, float timeDelta);
+
             AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler> > m_assetHandlers;
             AZStd::unique_ptr<EMotionFXEventHandler> m_eventHandler;
             AZStd::unique_ptr<RenderBackendManager> m_renderBackendManager;

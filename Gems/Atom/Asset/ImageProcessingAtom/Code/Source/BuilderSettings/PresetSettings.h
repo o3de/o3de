@@ -84,16 +84,7 @@ namespace ImageProcessingAtom
 
         //settings for mipmap generation. it's null if this preset disable mipmap.
         AZStd::unique_ptr<MipmapSettings> m_mipmapSetting;
-
-        //some specific settings
-        // "colorchart". This is to indicate if need to extract color chart from the image and output the color chart data.
-        // This is very specific usage for cryEngine. Check ColorChart.cpp for better explanation.
-        bool m_isColorChart = false;
-
-        //"highpass". Defines which mip level is subtracted when applying the high pass filter
-        //this is only used for terrain asset. we might remove it later since it can be done with source image directly
-        AZ::u32 m_highPassMip = 0;
-
+        
         //"glossfromnormals". Bake normal variance into smoothness stored in alpha channel
         AZ::u32 m_glossFromNormals = 0;
 
@@ -108,10 +99,6 @@ namespace ImageProcessingAtom
         //set to 0, the StreamingImageAsset will contain as many mips as possible (starting from the lowest resolution)
         //that add up to 64K or lower
         AZ::u8 m_numResidentMips = 0;
-
-        //legacy options might be removed later
-        //"glosslegacydist". If the gloss map use legacy distribution. NW is still using legacy dist
-        bool m_isLegacyGloss = false;
 
         //"swizzle". need to be 4 character and each character need to be one of "rgba01"
         AZStd::string m_swizzle;

@@ -61,6 +61,7 @@ namespace AzFramework
     //=========================================================================
     void AssetRegistry::Clear()
     {
+        m_assetDependencies = {};
         m_assetIdToInfo = AssetIdToInfoMap();
         m_assetPathToId = AssetPathToIdMap();
     }

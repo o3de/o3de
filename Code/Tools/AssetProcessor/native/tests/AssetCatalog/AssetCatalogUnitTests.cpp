@@ -128,7 +128,9 @@ namespace AssetProcessor
             settingsRegistry->Set(cacheRootKey, m_data->m_temporarySourceDir.absoluteFilePath("Cache").toUtf8().constData());
             auto projectPathKey =
                 AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-            settingsRegistry->Set(projectPathKey, "AutomatedTesting");
+            AZ::IO::FixedMaxPath enginePath;
+            settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            settingsRegistry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
             AssetUtilities::ComputeProjectCacheRoot(m_data->m_cacheRootDir);
             QString normalizedCacheRoot = AssetUtilities::NormalizeDirectoryPath(m_data->m_cacheRootDir.absolutePath());
@@ -281,7 +283,7 @@ namespace AssetProcessor
 
             ExcludeAssetRecognizer excludeRecogniser;
             excludeRecogniser.m_name = "backup";
-            excludeRecogniser.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher(".*\\/savebackup\\/.*", AssetBuilderSDK::AssetBuilderPattern::Regex);
+            excludeRecogniser.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("(^|.+/)savebackup/.*", AssetBuilderSDK::AssetBuilderPattern::Regex);
             config.AddExcludeRecognizer(excludeRecogniser);
         }
 

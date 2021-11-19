@@ -2,6 +2,7 @@
     "gem_name": "LyShine",
     "display_name": "LyShine",
     "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "origin": "Open 3D Engine - o3de.org",
     "type": "Code",
     "summary": "The LyShine Gem provides the runtime UI system and creation tools for Open 3D Engine projects.",

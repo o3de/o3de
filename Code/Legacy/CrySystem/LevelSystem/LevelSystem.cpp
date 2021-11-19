@@ -86,7 +86,7 @@ bool CLevelInfo::ReadInfo()
         usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
 
     // Set up a default game type for legacy code.
-    m_defaultGameTypeName = "Mission0";
+    m_defaultGameTypeName = "mission0";
 
     if (usePrefabSystemForLevels)
     {
@@ -96,17 +96,17 @@ bool CLevelInfo::ReadInfo()
 
     AZStd::string levelPath(m_levelPath);
     AZStd::string xmlFile(levelPath);
-    xmlFile += "/LevelInfo.xml";
+    xmlFile += "/levelinfo.xml";
     XmlNodeRef rootNode = GetISystem()->LoadXmlFromFile(xmlFile.c_str());
 
     if (rootNode)
     {
         AZStd::string dataFile(levelPath);
-        dataFile += "/LevelDataAction.xml";
+        dataFile += "/leveldataaction.xml";
         XmlNodeRef dataNode = GetISystem()->LoadXmlFromFile(dataFile.c_str());
         if (!dataNode)
         {
-            dataFile = levelPath + "/LevelData.xml";
+            dataFile = levelPath + "/leveldata.xml";
             dataNode = GetISystem()->LoadXmlFromFile(dataFile.c_str());
         }
 
@@ -614,7 +614,7 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
         }
 
         {
-            AZStd::string missionXml("Mission_");
+            AZStd::string missionXml("mission_");
             missionXml += pLevelInfo->m_defaultGameTypeName;
             missionXml += ".xml";
             AZStd::string xmlFile(pLevelInfo->GetPath());

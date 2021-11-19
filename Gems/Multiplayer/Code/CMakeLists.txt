@@ -149,6 +149,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzFramework
                 AZ::AzNetworking
                 AZ::AzToolsFramework
+                Gem::Atom_RPI.Public
+                Gem::Atom_RHI.Reflect
                 Gem::Multiplayer.Static
                 Gem::Multiplayer.Builders
     )
@@ -175,6 +177,11 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzTest
                 Gem::Multiplayer.Static
+        AUTOGEN_RULES
+            *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
+            *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
+            *.AutoComponent.xml,AutoComponentTypes_Header.jinja,$path/AutoComponentTypes.h
+            *.AutoComponent.xml,AutoComponentTypes_Source.jinja,$path/AutoComponentTypes.cpp
     )
     ly_add_googletest(
         NAME Gem::Multiplayer.Tests

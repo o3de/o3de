@@ -93,9 +93,14 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 {
     Texture2D m_heightmapImage;
+    Texture2D<uint4> m_detailMaterialIdImage;
+    float2 m_detailMaterialIdImageCenter;
     float m_detailTextureMultiplier;
     float m_detailFadeDistance;
     float m_detailFadeLength;
+
+    float4 m_detailAabb;
+    float m_detailHalfPixelUv;
 
     Sampler HeightmapSampler
     {
@@ -115,6 +120,15 @@ ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
         MagFilter = Linear;
         MipFilter = Linear;
         MaxAnisotropy = 16;
+    };
+
+    Sampler m_detailSampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
     };
 
     // Base Color
@@ -218,9 +232,10 @@ float4x4 GetObject_WorldMatrix()
 
 float GetHeight(float2 origUv)
 {
-    float2 uv = clamp(origUv + (ObjectSrg::m_terrainData.m_uvStep * 0.5f), 0.0f, 1.0f);
-    float height = 0.0f;
+    float2 halfStep = ObjectSrg::m_terrainData.m_uvStep * 0.5;
+    float2 uv = origUv * (1.0 - ObjectSrg::m_terrainData.m_uvStep) + halfStep;
 
+    float height = 0.0f;
     if (o_useTerrainSmoothing)
     {
         float2 textureSize;

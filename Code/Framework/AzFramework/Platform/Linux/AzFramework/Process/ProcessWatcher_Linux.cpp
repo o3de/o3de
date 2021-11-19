@@ -91,31 +91,42 @@ namespace AzFramework
             return processId == 0;
         }
 
-        /*! Executes a command in the child process after the fork operation has been executed.
-         * This function will never return. If the execvp command fails this will call _exit with
-         * the errno value as the return value since continuing execution after a execvp command
-         * is invalid (it will be running the parent's code and in its address space and will 
-         * cause many issues).
+        /*! Executes a command in the child process after the fork operation
+         * has been executed. This function will never return. If the execvpe
+         * command fails this will call _exit since continuing execution after
+         * a execvpe command is invalid (it will be running the parent's code
+         * and in its address space and will cause many issues).
+         *
+         * This function runs after a `fork()` call. `fork()` creates a copy of
+         * the current process, including the current state of the process's
+         * memory, at the time the call is made. However, it only creates a
+         * copy of the one thread that called `fork()`. This means that if any
+         * mutexes are locked by other threads at the time of `fork()`, those
+         * mutexes will remain locked in the child process, with no way to
+         * unlock them. So this function needs to ensure that it does as little
+         * work as possible.
          *
          * \param commandAndArgs - Array of strings that has the command to execute in index 0 with any args for the command following. Last element must be a null pointer.
-         * \param envionrmentVariables - Array of strings that contains environment variables that command should use. Last element must be a null pointer.
+         * \param environmentVariables - Array of strings that contains environment variables that command should use. Last element must be a null pointer.
          * \param processLaunchInfo - struct containing information about luanching the command
          * \param startupInfo - struct containing information needed to startup the command
+         * \param errorPipe - a pipe file descriptor used to communicate a failed execvpe call's error code to the parent process
          */
-        void ExecuteCommandAsChild(char** commandAndArgs, char** environmentVariables, const ProcessLauncher::ProcessLaunchInfo& processLaunchInfo, StartupInfo& startupInfo)
+        [[noreturn]] static void ExecuteCommandAsChild(char** commandAndArgs, char** environmentVariables, const ProcessLauncher::ProcessLaunchInfo& processLaunchInfo, StartupInfo& startupInfo, const AZStd::array<int, 2>& errorPipe)
         {
+            close(errorPipe[0]);
+
             if (!processLaunchInfo.m_workingDirectory.empty())
             {
                 int res = chdir(processLaunchInfo.m_workingDirectory.c_str());
                 if (res != 0)
                 {
-                    std::cerr << strerror(errno) << std::endl;
-                    AZ_TracePrintf("Process Watcher", "ProcessWatcher::LaunchProcessAndRetrieveOutput: Unable to change the launched process' directory to '%s'.", processLaunchInfo.m_workingDirectory.c_str());
+                    write(errorPipe[1], &errno, sizeof(int));
                     // We *have* to _exit as we are the child process and simply
                     // returning at this point would mean we would start running
                     // the code from our parent process and that will just wreck
                     // havoc.
-                    _exit(errno);
+                    _exit(0);
                 }
             }
 
@@ -135,15 +146,17 @@ namespace AzFramework
 
             startupInfo.SetupHandlesForChildProcess();
 
-            execve(commandAndArgs[0], commandAndArgs, environmentVariables);
+            execvpe(commandAndArgs[0], commandAndArgs, environmentVariables);
+            const int errval = errno;
 
-            // If we get here then execve failed to run the requested program and
+            // If we get here then execvpe failed to run the requested program and
             // we have an error. In this case we need to exit the child process
-            // to stop it from continuing to run as a clone of the parent
-            AZ_TracePrintf("Process Watcher", "ProcessWatcher::LaunchProcessAndRetrieveOutput: Unable to launch process %s : errno = %s ", commandAndArgs[0], strerror(errno));
-            std::cerr << strerror(errno) << std::endl;
+            // to stop it from continuing to run as a clone of the parent.
+            // Communicate the error code back to the parent via a pipe for the
+            // parent to read.
+            write(errorPipe[1], &errval, sizeof(errval));
 
-            _exit(errno);
+            _exit(0);
         }
     }
 
@@ -212,9 +225,8 @@ namespace AzFramework
         
         AZStd::string outputString;
         bool inQuotes = false;
-        for (size_t pos = 0; pos < processLaunchInfo.m_commandlineParameters.size(); ++pos)
+        for (const char currentChar : processLaunchInfo.m_commandlineParameters)
         {
-            char currentChar = processLaunchInfo.m_commandlineParameters[pos];
             if (currentChar == '"')
             {
                 inQuotes = !inQuotes;
@@ -231,7 +243,7 @@ namespace AzFramework
                 outputString.push_back(currentChar);
             }
         }
-        
+
         if (!outputString.empty())
         {
             commandTokens.push_back(outputString);
@@ -249,10 +261,10 @@ namespace AzFramework
             return false;
         }
 
-        // Because of the way execve is defined we need to copy the strings from
+        // Because of the way execvpe is defined we need to copy the strings from
         // AZ::string (using c_str() returns a const char*) into a non-const char*
 
-        // Need to add one more as exec requires the array's last element to be a null pointer
+        // Need to add one more as execvpe requires the array's last element to be a null pointer
         char** commandAndArgs = new char*[commandTokens.size() + 1];
         for (int i = 0; i < commandTokens.size(); ++i)
         {
@@ -275,7 +287,7 @@ namespace AzFramework
                 azstrcat(environmentVariable.get(), envVarString.size() + 1, envVarString.c_str());
                 environmentVariablesVector.emplace_back(environmentVariable.get());
             }
-            // Adding one more as exec expects the array to have a nullptr as the last element
+            // Adding one more as execvpe expects the array to have a nullptr as the last element
             environmentVariablesVector.emplace_back(nullptr);
             environmentVariables = environmentVariablesVector.data();
         }
@@ -288,15 +300,50 @@ namespace AzFramework
             AZ_Assert(environmentVariables, "Environment variables for current process not available\n");
         }
 
+        // Set up a pipe to communicate the error code from the subprocess's execvpe call
+        AZStd::array<int, 2> childErrorPipeFds{};
+        pipe(childErrorPipeFds.data());
+
+        // This configures the write end of the pipe to close on calls to `exec`
+        fcntl(childErrorPipeFds[1], F_SETFD, fcntl(childErrorPipeFds[1], F_GETFD) | FD_CLOEXEC);
+
         pid_t child_pid = fork();
         if (IsIdChildProcess(child_pid))
         {
-            ExecuteCommandAsChild(commandAndArgs, environmentVariables, processLaunchInfo, processData.m_startupInfo);
+            ExecuteCommandAsChild(commandAndArgs, environmentVariables, processLaunchInfo, processData.m_startupInfo, childErrorPipeFds);
         }
-        processData.m_childProcessId = child_pid;
 
         // Close these handles as they are only to be used by the child process
         processData.m_startupInfo.CloseAllHandles();
+        close(childErrorPipeFds[1]);
+
+        {
+            int errorCodeFromChild = 0;
+            int count = 0;
+            // Read from the error pipe.
+            // * If the child's call to execvpe succeeded, then the pipe will
+            // be closed due to setting FD_CLOEXEC on the write end of the
+            // pipe. `read()` will return 0.
+            // * If the child's call to execvpe failed, the child will have
+            // written the error code to the pipe. `read()` will return >0, and
+            // the data to be read is the error code from execvpe.
+            while ((count = read(childErrorPipeFds[0], &errorCodeFromChild, sizeof(errorCodeFromChild))) == -1)
+            {
+                if (errno != EAGAIN && errno != EINTR)
+                {
+                    break;
+                }
+            }
+            if (count)
+            {
+                AZ_TracePrintf("Process Watcher", "ProcessLauncher::LaunchProcess: Unable to launch process %s : errno = %s\n", commandAndArgs[0], strerror(errorCodeFromChild));
+                processData.m_childProcessIsDone = true;
+                child_pid = -1;
+            }
+        }
+        close(childErrorPipeFds[0]);
+
+        processData.m_childProcessId = child_pid;
 
         for (int i = 0; i < commandTokens.size(); i++)
         {

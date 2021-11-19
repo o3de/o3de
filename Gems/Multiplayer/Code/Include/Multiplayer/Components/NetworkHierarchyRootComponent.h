@@ -29,6 +29,7 @@ namespace Multiplayer
         , public NetworkHierarchyRequestBus::Handler
     {
         friend class NetworkHierarchyChildComponent;
+        friend class NetworkHierarchyRootComponentController;
     public:
         AZ_MULTIPLAYER_COMPONENT(Multiplayer::NetworkHierarchyRootComponent, s_networkHierarchyRootComponentConcreteUuid, Multiplayer::NetworkHierarchyRootComponentBase);
 
@@ -57,10 +58,11 @@ namespace Multiplayer
         void BindNetworkHierarchyLeaveEventHandler(NetworkHierarchyLeaveEvent::Handler& handler) override;
         //! @}
 
-    protected:
-        void SetTopLevelHierarchyRootEntity(AZ::Entity* hierarchyRoot);
+        bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
 
     private:
+        void SetTopLevelHierarchyRootEntity(AZ::Entity* previousHierarchyRoot, AZ::Entity* newHierarchyRoot);
+
         AZ::ChildChangedEvent::Handler m_childChangedHandler;
         AZ::ParentChangedEvent::Handler m_parentChangedHandler;
 
@@ -77,26 +79,39 @@ namespace Multiplayer
 
         //! Rebuilds hierarchy starting from this root component's entity.
         void RebuildHierarchy();
-        
-        //! @param underEntity Walk the child entities that belong to @underEntity and consider adding them to the hierarchy
-        //! @param currentEntityCount The total number of entities in the hierarchy prior to calling this method,
-        //!            used to avoid adding too many entities to the hierarchy while walking recursively the relevant entities.
-        //!            @currentEntityCount will be modified to reflect the total entity count upon completion of this method.
-        //! @returns false if an attempt was made to go beyond the maximum supported hierarchy size, true otherwise
-        bool RecursiveAttachHierarchicalEntities(AZ::EntityId underEntity, uint32_t& currentEntityCount);
 
-        //! @param entity Add the child entity and any of its relevant children to the hierarchy
-        //! @param currentEntityCount The total number of entities in the hierarchy prior to calling this method,
-        //!            used to avoid adding too many entities to the hierarchy while walking recursively the relevant entities.
-        //!            @currentEntityCount will be modified to reflect the total entity count upon completion of this method.
-        //! @returns false if an attempt was made to go beyond the maximum supported hierarchy size, true otherwise
-        bool RecursiveAttachHierarchicalChild(AZ::EntityId entity, uint32_t& currentEntityCount);
+        //! @param underEntity Walk the child entities that belong to @underEntity and consider adding them to the hierarchy.
+        //! Builds the hierarchy using breadth-first iterative method.
+        void InternalBuildHierarchyList(AZ::Entity* underEntity);
 
-        void SetRootForEntity(AZ::Entity* root, const AZ::Entity* childEntity);
-        
+        void SetRootForEntity(AZ::Entity* previousKnownRoot, AZ::Entity* newRoot, const AZ::Entity* childEntity);
+
         //! Set to false when deactivating or otherwise not to be included in hierarchy considerations.
         bool m_isHierarchyEnabled = true;
 
+        AzNetworking::ConnectionId m_previousOwningConnectionId = AzNetworking::InvalidConnectionId;
+        void SetOwningConnectionId(AzNetworking::ConnectionId connectionId) override;
+
         friend class HierarchyBenchmarkBase;
+    };
+
+
+    //! NetworkHierarchyRootComponentController
+    //! This is the network controller for NetworkHierarchyRootComponent.
+    //! Class provides the ability to process input for hierarchies.
+    class NetworkHierarchyRootComponentController final
+        : public NetworkHierarchyRootComponentControllerBase
+    {
+    public:
+        NetworkHierarchyRootComponentController(NetworkHierarchyRootComponent& parent);
+
+        // NetworkHierarchyRootComponentControllerBase
+        void OnActivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+        void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
+
+        //! MultiplayerController interface
+        Multiplayer::MultiplayerController::InputPriorityOrder GetInputOrder() const override;
+        void CreateInput(Multiplayer::NetworkInput& input, float deltaTime) override;
+        void ProcessInput(Multiplayer::NetworkInput& input, float deltaTime) override;
     };
 }

@@ -603,12 +603,12 @@ namespace AZ
             RHI::Ptr<RHI::Device> device = RHI::RHISystemInterface::Get()->GetDevice();
             if (device->GetFeatures().m_rayTracing == false)
             {
-                RPI::PassHierarchyFilter updatePassFilter(AZ::Name("DiffuseProbeGridUpdatePass"));
-                const AZStd::vector<RPI::Pass*>& updatePasses = RPI::PassSystemInterface::Get()->FindPasses(updatePassFilter);
-                for (RPI::Pass* pass : updatePasses)
-                {
-                    pass->SetEnabled(false);
-                }
+                RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("DiffuseProbeGridUpdatePass"), GetParentScene());
+                RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                    {
+                        pass->SetEnabled(false);
+                         return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                    });
             }
         }
 

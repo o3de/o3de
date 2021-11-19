@@ -197,48 +197,46 @@ AssetCatalogModel::~AssetCatalogModel()
     AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
 }
 
-AZ::Data::AssetType AssetCatalogModel::GetAssetType(QString filename) const
+AZ::Data::AssetType AssetCatalogModel::GetAssetType(const QString &filename) const
 {
-    AZ::Data::AssetType returnType = AZ::Uuid::CreateNull();
 
     //  Compare file extensions with the map created from the asset database.
     int dotIndex = filename.lastIndexOf('.');
-    if (dotIndex >= 0)
+    if (dotIndex < 0)
     {
-        QString extension = filename.mid(dotIndex);
-        for (auto pair : m_extensionToAssetType)
-        {
-            QString qExtensions = pair.first.c_str();
-            if (qExtensions.indexOf(extension) >= 0)
-            {
-                if (pair.second.size() > 1)
-                {
-                    //  There are multiple types with this extension. Check each handler to see if they can handle this data type.
-                    AZStd::string azFilename = filename.toStdString().c_str();
-                    EBUS_EVENT(AzFramework::ApplicationRequests::Bus, MakePathAssetRootRelative, azFilename);
-                    AZ::Data::AssetId assetId;
-                    EBUS_EVENT_RESULT(assetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, azFilename.c_str(), AZ::Data::s_invalidAssetType, false);
+        return AZ::Uuid::CreateNull();
+    }
 
-                    for (AZ::Uuid type : pair.second)
-                    {
-                        const AZ::Data::AssetHandler* handler = AZ::Data::AssetManager::Instance().GetHandler(type);
-                        if (handler && handler->CanHandleAsset(assetId))
-                        {
-                            returnType = type;
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    returnType = pair.second[0];
-                    break;
-                }
+    QStringRef extension = filename.midRef(dotIndex);
+    for (const auto& pair : m_extensionToAssetType)
+    {
+        QString qExtensions = pair.first.c_str();
+        if (qExtensions.indexOf(extension) < 0 || pair.second.empty())
+        {
+            continue;
+        }
+        if (pair.second.size() == 1)
+        {
+            return pair.second[0];
+        }
+
+        //  There are multiple types with this extension. Search for a handler that can handle this data type.
+        AZStd::string azFilename = filename.toStdString().c_str();
+        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, MakePathAssetRootRelative, azFilename);
+        AZ::Data::AssetId assetId;
+        EBUS_EVENT_RESULT(assetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, azFilename.c_str(), AZ::Data::s_invalidAssetType, false);
+
+        for (const AZ::Uuid& type : pair.second)
+        {
+            const AZ::Data::AssetHandler* handler = AZ::Data::AssetManager::Instance().GetHandler(type);
+            if (handler && handler->CanHandleAsset(assetId))
+            {
+                return type;
             }
         }
     }
 
-    return returnType;
+    return AZ::Uuid::CreateNull();
 }
 
 QStandardItem* AssetCatalogModel::GetPath(QString& path, bool createIfNeeded, QStandardItem* parent)
@@ -419,7 +417,7 @@ AssetCatalogEntry* AssetCatalogModel::AddAsset(QString assetPath, AZ::Data::Asse
             //  icons' memory being reclaimed and crashing the Editor.
             QSize size = fileIcon.actualSize(QSize(16, 16));
             QIcon deepCopy = fileIcon.pixmap(size).copy(0, 0, size.width(), size.height());
-            
+
             if (!fileIcon.isNull())
             {
                 m_assetTypeToIcon[assetType] = deepCopy;

@@ -61,8 +61,12 @@ namespace AssetBundler
         {
             AZStd::string absolutePath = filePath.toUtf8().data();
             if (AZ::IO::FileIOBase::GetInstance()->Exists(absolutePath.c_str()))
-            { 
-                AZStd::string projectName = pathToProjectNameMap.at(absolutePath);
+            {
+                AZStd::string projectName;
+                if (pathToProjectNameMap.contains(absolutePath))
+                {
+                    projectName = pathToProjectNameMap.at(absolutePath);
+                }
 
                 // If a project name is already specified, then the associated file is a default file
                 LoadFile(absolutePath, projectName, !projectName.empty());

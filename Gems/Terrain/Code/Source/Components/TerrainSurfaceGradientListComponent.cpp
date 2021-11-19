@@ -166,7 +166,7 @@ namespace Terrain
     
     void TerrainSurfaceGradientListComponent::GetSurfaceWeights(
         const AZ::Vector3& inPosition,
-        AzFramework::SurfaceData::OrderedSurfaceTagWeightSet& outSurfaceWeights) const
+        AzFramework::SurfaceData::SurfaceTagWeightList& outSurfaceWeights) const
     {
         outSurfaceWeights.clear();
 
@@ -178,16 +178,15 @@ namespace Terrain
             GradientSignal::GradientRequestBus::EventResult(weight,
                 mapping.m_gradientEntityId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
 
-            AzFramework::SurfaceData::SurfaceTagWeight tagWeight;
-            tagWeight.m_surfaceType = mapping.m_surfaceTag;
-            tagWeight.m_weight = weight;
-            outSurfaceWeights.emplace(tagWeight);
+            outSurfaceWeights.emplace_back(mapping.m_surfaceTag, weight);
         }
     }
 
     void TerrainSurfaceGradientListComponent::OnCompositionChanged()
     {
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId());
+        TerrainSystemServiceRequestBus::Broadcast(
+            &TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId(),
+            AzFramework::Terrain::TerrainDataNotifications::SurfaceData);
     }
 
 } // namespace Terrain

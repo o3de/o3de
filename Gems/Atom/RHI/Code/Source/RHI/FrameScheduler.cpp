@@ -86,6 +86,8 @@ namespace AZ
 
             if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
             {
+                statsProfiler->ActivateProfiler(rhiMetricsId, true);
+
                 auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
                 rhiMetrics.GetStatsManager().AddStatistic(frameTimeMetricId, frameTimeMetricName, /*units=*/"clocks", /*failIfExist=*/false);
             }
@@ -150,8 +152,6 @@ namespace AZ
 
         ResultCode FrameScheduler::ImportScopeProducer(ScopeProducer& scopeProducer)
         {
-            AZ_PROFILE_SCOPE(RHI, "FrameScheduler: ImportScopeProducer");
-
             if (!ValidateIsProcessing())
             {
                 return RHI::ResultCode::InvalidOperation;
@@ -264,7 +264,6 @@ namespace AZ
 
             // Execute all queued resource invalidations, which will mark SRG's for compilation.
             {
-                AZ_PROFILE_SCOPE(RHI, "Invalidate Resources");
                 ResourceInvalidateBus::ExecuteQueuedEvents();
             }
 
@@ -602,14 +601,11 @@ namespace AZ
 
         double FrameScheduler::GetCpuFrameTime() const
         {
-            if (CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherCpuTimingStatistics))
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
             {
-                if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
-                {
-                    auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
-                    const auto* frameTimeStat = rhiMetrics.GetStatistic(frameTimeMetricId);
-                    return (frameTimeStat->GetMostRecentSample() * 1000) / aznumeric_cast<double>(AZStd::GetTimeTicksPerSecond());
-                }
+                auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
+                const auto* frameTimeStat = rhiMetrics.GetStatistic(frameTimeMetricId);
+                return (frameTimeStat->GetMostRecentSample() * 1000) / aznumeric_cast<double>(AZStd::GetTimeTicksPerSecond());
             }
             return 0;
         }

@@ -25,6 +25,7 @@ namespace AzToolsFramework
     {
         using CreatePrefabResult = AZ::Outcome<AZ::EntityId, AZStd::string>;
         using InstantiatePrefabResult = AZ::Outcome<AZ::EntityId, AZStd::string>;
+        using DuplicatePrefabResult = AZ::Outcome<EntityIdList, AZStd::string>;
         using PrefabOperationResult = AZ::Outcome<void, AZStd::string>;
 
         /**
@@ -69,6 +70,29 @@ namespace AzToolsFramework
              * Return an outcome object; on failure, it comes with an error message detailing the cause of the error.
              */
             virtual PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) = 0;
+
+            /**
+              * If the entity id is a container entity id, detaches the prefab instance corresponding to it. This includes converting
+              * the container entity into a regular entity and putting it under the parent prefab, removing the link between this
+              * instance and the parent, removing links between this instance and its nested instances, and adding entities directly
+              * owned by this instance under the parent instance.
+              * Bails if the entity is not a container entity or belongs to the level prefab instance.
+              * Return an outcome object; on failure, it comes with an error message detailing the cause of the error.
+              */
+            virtual PrefabOperationResult DetachPrefab(const AZ::EntityId& containerEntityId) = 0;
+
+            /**
+              * Duplicates all entities in the owning instance. Bails if the entities don't all belong to the same instance.
+              * Return an outcome object with a list of ids of given entities' duplicates if duplication succeeded;
+              * on failure, it comes with an error message detailing the cause of the error.
+              */
+            virtual DuplicatePrefabResult DuplicateEntitiesInInstance(const EntityIdList& entityIds) = 0;
+
+            /**
+             * Get the file path to the prefab file for the prefab instance owning the entity provided.
+             * Returns the path to the prefab, or an empty path if the entity is owned by the level.
+             */
+            virtual AZStd::string GetOwningInstancePrefabPath(AZ::EntityId entityId) const = 0;
         };
 
         using PrefabPublicRequestBus = AZ::EBus<PrefabPublicRequests>;

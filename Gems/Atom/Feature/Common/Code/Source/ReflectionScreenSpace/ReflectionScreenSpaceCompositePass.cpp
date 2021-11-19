@@ -33,20 +33,22 @@ namespace AZ
                 return;
             }
 
-            RPI::PassHierarchyFilter passFilter(AZ::Name("ReflectionScreenSpaceBlurPass"));
-            const AZStd::vector<RPI::Pass*>& passes = RPI::PassSystemInterface::Get()->FindPasses(passFilter);
-            if (!passes.empty())
-            {
-                Render::ReflectionScreenSpaceBlurPass* blurPass = azrtti_cast<ReflectionScreenSpaceBlurPass*>(passes.front());
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(AZ::Name("ReflectionScreenSpaceBlurPass"), GetRenderPipeline());
 
-                // compute the max mip level based on the available mips in the previous frame image, and capping it
-                // to stay within a range that has reasonable data
-                const uint32_t MaxNumRoughnessMips = 8;
-                uint32_t maxMipLevel = AZStd::min(MaxNumRoughnessMips, blurPass->GetNumBlurMips()) - 1;
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                {
+                    Render::ReflectionScreenSpaceBlurPass* blurPass = azrtti_cast<ReflectionScreenSpaceBlurPass*>(pass);
 
-                auto constantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_maxMipLevel"));
-                m_shaderResourceGroup->SetConstant(constantIndex, maxMipLevel);
-            }
+                    // compute the max mip level based on the available mips in the previous frame image, and capping it
+                    // to stay within a range that has reasonable data
+                    const uint32_t MaxNumRoughnessMips = 8;
+                    uint32_t maxMipLevel = AZStd::min(MaxNumRoughnessMips, blurPass->GetNumBlurMips()) - 1;
+
+                    auto constantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_maxMipLevel"));
+                    m_shaderResourceGroup->SetConstant(constantIndex, maxMipLevel);
+
+                     return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                });
 
             FullscreenTrianglePass::CompileResources(context);
         }

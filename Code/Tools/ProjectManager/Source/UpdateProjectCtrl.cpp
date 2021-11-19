@@ -7,6 +7,7 @@
  */
 
 #include <GemCatalog/GemCatalogScreen.h>
+#include <GemRepo/GemRepoScreen.h>
 #include <ProjectManagerDefs.h>
 #include <PythonBindingsInterface.h>
 #include <ScreenHeaderWidget.h>
@@ -39,6 +40,10 @@ namespace O3DE::ProjectManager
 
         m_updateSettingsScreen = new UpdateProjectSettingsScreen();
         m_gemCatalogScreen = new GemCatalogScreen();
+        m_gemRepoScreen = new GemRepoScreen(this);
+
+        connect(m_gemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &UpdateProjectCtrl::OnChangeScreenRequest);
+        connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_gemCatalogScreen, &GemCatalogScreen::Refresh);
 
         m_stack = new QStackedWidget(this);
         m_stack->setObjectName("body");
@@ -65,6 +70,7 @@ namespace O3DE::ProjectManager
 
         m_stack->addWidget(topBarFrameWidget);
         m_stack->addWidget(m_gemCatalogScreen);
+        m_stack->addWidget(m_gemRepoScreen);
 
         QDialogButtonBox* backNextButtons = new QDialogButtonBox();
         backNextButtons->setObjectName("footer");
@@ -96,6 +102,22 @@ namespace O3DE::ProjectManager
 
         // Gather the available gems that will be shown in the gem catalog.
         m_gemCatalogScreen->ReinitForProject(m_projectInfo.m_path);
+
+        // make sure the gem repo has the latest repo details
+        m_gemRepoScreen->Reinit();
+    }
+
+    void UpdateProjectCtrl::OnChangeScreenRequest(ProjectManagerScreen screen)
+    {
+        if (screen == ProjectManagerScreen::GemRepos)
+        {
+            m_stack->setCurrentWidget(m_gemRepoScreen);
+            Update();
+        }
+        else
+        {
+            emit ChangeScreenRequest(screen);
+        }
     }
 
     void UpdateProjectCtrl::HandleGemsButton()
@@ -118,7 +140,7 @@ namespace O3DE::ProjectManager
         {
             if (UpdateProjectSettings(true))
             {
-                emit GotoPreviousScreenRequest();
+                emit GoToPreviousScreenRequest();
             }
         }
     }
@@ -136,6 +158,12 @@ namespace O3DE::ProjectManager
         }
         else if (m_stack->currentIndex() == ScreenOrder::Gems && m_gemCatalogScreen)
         {
+            if (!m_gemCatalogScreen->GetDownloadController()->IsDownloadQueueEmpty())
+            {
+                QMessageBox::critical(this, tr("Gems downloading"), tr("You must wait for gems to finish downloading before continuing."));
+                return;
+            }
+
             // Enable or disable the gems that got adjusted in the gem catalog and apply them to the given project.
             const GemCatalogScreen::EnableDisableGemsResult result = m_gemCatalogScreen->EnableDisableGemsForProject(m_projectInfo.m_path);
             if (result == GemCatalogScreen::EnableDisableGemsResult::Failed)
@@ -172,18 +200,26 @@ namespace O3DE::ProjectManager
 
     void UpdateProjectCtrl::Update()
     {
-        if (m_stack->currentIndex() == ScreenOrder::Gems)
+        if (m_stack->currentIndex() == ScreenOrder::GemRepos)
+        {
+            m_header->setTitle(QString(tr("Edit Project Settings: \"%1\"")).arg(m_projectInfo.GetProjectDisplayName()));
+            m_header->setSubTitle(QString(tr("Gem Repositories")));
+            m_nextButton->setVisible(false);
+        }
+        else if (m_stack->currentIndex() == ScreenOrder::Gems)
         {
 
             m_header->setTitle(QString(tr("Edit Project Settings: \"%1\"")).arg(m_projectInfo.GetProjectDisplayName()));
             m_header->setSubTitle(QString(tr("Configure Gems")));
             m_nextButton->setText(tr("Save"));
+            m_nextButton->setVisible(true);
         }
         else
         {
             m_header->setTitle("");
             m_header->setSubTitle(QString(tr("Edit Project Settings: \"%1\"")).arg(m_projectInfo.GetProjectDisplayName()));
             m_nextButton->setText(tr("Save"));
+            m_nextButton->setVisible(true);
         }
     }
 

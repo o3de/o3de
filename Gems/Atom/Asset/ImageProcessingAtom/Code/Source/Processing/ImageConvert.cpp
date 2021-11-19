@@ -46,7 +46,6 @@ namespace ImageProcessingAtom
     enum ConvertStep
     {
         StepValidateInput = 0,
-        StepGenerateColorChart,
         StepConvertToLinear,
         StepSwizzle,
         StepCubemapLayout,
@@ -55,9 +54,7 @@ namespace ImageProcessingAtom
         StepMipmap,
         StepGlossFromNormal,
         StepPostNormalize,
-        StepCreateHighPass,
         StepConvertOutputColorSpace,
-        StepAlphaImage,
         StepConvertPixelFormat,
         StepSaveToFile,
         StepAll
@@ -66,7 +63,6 @@ namespace ImageProcessingAtom
     [[maybe_unused]] const char ProcessStepNames[StepAll][64] =
     {
         "ValidateInput",
-        "GenerateColorChart",
         "ConvertToLinear",
         "Swizzle",
         "CubemapLayout",
@@ -75,9 +71,7 @@ namespace ImageProcessingAtom
         "Mipmap",
         "GlossFromNormal",
         "PostNormalize",
-        "CreateHighPass",
         "ConvertOutputColorSpace",
-        "AlphaImage",
         "ConvertPixelFormat",
         "SaveToFile",
     };
@@ -92,11 +86,6 @@ namespace ImageProcessingAtom
             return m_image->Get();
         }
         return nullptr;
-    }
-
-    IImageObjectPtr ImageConvertProcess::GetOutputAlphaImage()
-    {
-        return m_alphaImage;
     }
 
     IImageObjectPtr ImageConvertProcess::GetOutputIBLSpecularCubemap()
@@ -181,6 +170,58 @@ namespace ImageProcessingAtom
             }
 
             break;
+        case StepConvertToLinear:
+            // convert to linear space and the output image pixel format should be rgba32f
+            ConvertToLinear();
+            break;
+        case StepSwizzle:
+            {
+                // swizzle if swizzle was set or decard alpha
+                bool swizzleWasSet = m_input->m_presetSetting.m_swizzle.size() >= 4;
+                if (swizzleWasSet || m_input->m_presetSetting.m_discardAlpha)
+                {
+                    AZStd::string swizzle = "rgba";
+                    if (swizzleWasSet)
+                    {
+                        swizzle = m_input->m_presetSetting.m_swizzle.substr(0, 4);
+                    }
+
+                    if (m_input->m_presetSetting.m_discardAlpha)
+                    {
+                        swizzle[3] = '1';
+                    }
+
+                    m_image->Get()->Swizzle(swizzle.c_str());
+                    if (!m_input->m_presetSetting.m_discardAlpha)
+                    {
+                        m_alphaContent = EAlphaContent::eAlphaContent_Absent;
+                    }
+                    else
+                    {
+                        m_alphaContent = m_image->Get()->GetAlphaContent();
+                    }
+                }
+            }
+            break;
+        case StepCubemapLayout:
+            // convert cubemap image's layout to vertical strip used in game.
+            if (IsConvertToCubemap())
+            {
+                if (!m_image->ConvertCubemapLayout(CubemapLayoutVertical))
+                {
+                    m_image->Set(nullptr);
+                }
+            }
+            break;
+        case StepPreNormalize:
+            // normalize base image before mipmap generation if glossfromnormals is enabled and require normalize
+            if (m_input->m_presetSetting.m_isMipRenormalize && m_input->m_presetSetting.m_glossFromNormals)
+            {
+                // Normalize the base mip map. This has to be done explicitly because we need to disable mip renormalization to
+                // preserve the normal length when deriving the normal variance
+                m_image->Get()->NormalizeVectors(0, 1);
+            }
+            break;
         case StepGenerateIBL:
             if (IsConvertToCubemap())
             {
@@ -202,56 +243,6 @@ namespace ImageProcessingAtom
                 // this preset doesn't output an image of its own, just the IBL cubemaps
                 m_isSucceed = true;
                 m_isFinished = true;
-            }
-            break;
-        case StepGenerateColorChart:
-            // GenerateColorChart.
-            if (m_input->m_presetSetting.m_isColorChart)
-            {
-                // Convert to uncompressed format if it's compressed format. For example, loaded from DDS file.
-                if (!CPixelFormats::GetInstance().IsPixelFormatUncompressed(m_image->Get()->GetPixelFormat()))
-                {
-                    m_image->ConvertFormat(ePixelFormat_R32G32B32A32F);
-                }
-
-                m_image->CreateColorChart();
-            }
-            break;
-        case StepConvertToLinear:
-            // convert to linear space and the output image pixel format should be rgba32f
-            ConvertToLinear();
-            break;
-        case StepSwizzle:
-            // convert texture format.
-            if (m_input->m_presetSetting.m_swizzle.size() >= 4)
-            {
-                m_image->Get()->Swizzle(m_input->m_presetSetting.m_swizzle.substr(0, 4).c_str());
-                m_alphaContent = m_image->Get()->GetAlphaContent();
-            }
-
-            // convert gloss map (alhpa channel) from legacy distribution to new one
-            if (m_input->m_presetSetting.m_isLegacyGloss)
-            {
-                m_image->Get()->ConvertLegacyGloss();
-            }
-            break;
-        case StepCubemapLayout:
-            // convert cubemap image's layout to vertical strip used in game.
-            if (IsConvertToCubemap())
-            {
-                if (!m_image->ConvertCubemapLayout(CubemapLayoutVertical))
-                {
-                    m_image->Set(nullptr);
-                }
-            }
-            break;
-        case StepPreNormalize:
-            // normalize base image before mipmap generation if glossfromnormals is enabled and require normalize
-            if (m_input->m_presetSetting.m_isMipRenormalize && m_input->m_presetSetting.m_glossFromNormals)
-            {
-                // Normalize the base mip map. This has to be done explicitly because we need to disable mip renormalization to
-                // preserve the normal length when deriving the normal variance
-                m_image->Get()->NormalizeVectors(0, 1);
             }
             break;
         case StepMipmap:
@@ -304,19 +295,9 @@ namespace ImageProcessingAtom
                 m_image->Get()->AddImageFlags(EIF_RenormalizedTexture);
             }
             break;
-        case StepCreateHighPass:
-            if (m_input->m_presetSetting.m_highPassMip > 0)
-            {
-                m_image->CreateHighPass(m_input->m_presetSetting.m_highPassMip);
-            }
-            break;
         case StepConvertOutputColorSpace:
             // convert image from linear space to desired output color space
             ConvertToOuputColorSpace();
-            break;
-        case StepAlphaImage:
-            // save alpha channel to separate image if it's needed
-            CreateAlphaImage();
             break;
         case StepConvertPixelFormat:
             // convert pixel format
@@ -407,12 +388,6 @@ namespace ImageProcessingAtom
         outHeight = inputHeight;
 
         if (textureSettings == nullptr || presetSettings == nullptr)
-        {
-            return;
-        }
-
-        // don't do any reduce for color chart
-        if (presetSettings->m_isColorChart)
         {
             return;
         }
@@ -510,52 +485,6 @@ namespace ImageProcessingAtom
         return true;
     }
 
-    void ImageConvertProcess::CreateAlphaImage()
-    {
-        // if alpha content doesn't have alpha or we need to discard alpha, skip
-        // we won't create alpha image for cubemap too
-        if (m_alphaContent == EAlphaContent::eAlphaContent_Absent
-            || m_alphaContent == EAlphaContent::eAlphaContent_OnlyWhite
-            || m_input->m_presetSetting.m_discardAlpha || IsConvertToCubemap())
-        {
-            return;
-        }
-
-        // if dest format could save alpha, skip too
-        if (!CPixelFormats::GetInstance().IsPixelFormatWithoutAlpha(m_input->m_presetSetting.m_pixelFormat))
-        {
-            return;
-        }
-
-        // now create alpha image
-        ImageToProcess alphaImage(m_image->Get());
-        alphaImage.ConvertFormat(ePixelFormat_A8);
-
-        // validate pixelformatalpha
-        if (CPixelFormats::GetInstance().IsFormatSingleChannel(m_input->m_presetSetting.m_pixelFormatAlpha))
-        {
-            alphaImage.ConvertFormat(m_input->m_presetSetting.m_pixelFormatAlpha);
-        }
-        else
-        {
-            //For ASTC compression we need to clear out the alpha to get accurate rgb compression.
-            if (IsASTCFormat(m_input->m_presetSetting.m_pixelFormat))
-            {
-                alphaImage.ConvertFormat(ePixelFormat_R8G8B8X8);
-                alphaImage.ConvertFormat(m_input->m_presetSetting.m_pixelFormatAlpha);
-            }
-            else
-            {
-                AZ_Assert(false, "PixelFormatAlpha only supports single channel pixel formats or ASTC formats");
-            }
-        }
-
-        // get final result and save it to member variable for later use
-        m_alphaImage = alphaImage.Get();
-
-        m_image->Get()->AddImageFlags(EIF_AttachedAlpha);
-    }
-
     // pixel format conversion
     bool ImageConvertProcess::ConvertPixelformat()
     {
@@ -574,12 +503,6 @@ namespace ImageProcessingAtom
         m_image->GetCompressOption().compressQuality = quality;
         m_image->GetCompressOption().rgbWeight = m_input->m_presetSetting.GetColorWeight();
         m_image->GetCompressOption().discardAlpha = m_input->m_presetSetting.m_discardAlpha;
-
-        //For ASTC compression we need to clear out the alpha to get accurate rgb compression.
-        if(m_alphaImage && IsASTCFormat(m_input->m_presetSetting.m_pixelFormat))
-        {
-            m_image->GetCompressOption().discardAlpha = true;
-        }
 
         m_image->ConvertFormat(m_input->m_presetSetting.m_pixelFormat);
 
@@ -762,7 +685,6 @@ namespace ImageProcessingAtom
     if (ImageProcess##PrivateName::DoesSupport(m_input->m_platform))                                                                                                                              \
     {                                                                                                                                                                                             \
         ImageProcess##PrivateName::PrepareImageForExport(m_image->Get());                                                                                                                         \
-        ImageProcess##PrivateName::PrepareImageForExport(m_alphaImage);                                                                                                                           \
     }
         AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
 #undef AZ_RESTRICTED_PLATFORM_EXPANSION

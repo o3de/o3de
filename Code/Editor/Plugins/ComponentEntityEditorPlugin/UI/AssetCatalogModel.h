@@ -110,7 +110,7 @@ protected:
     void SetFilterRegExp(const AZStd::string& filterType, const QRegExp& regExp);
     void ClearFilterRegExp(const AZStd::string& filterType = AZStd::string());
 
-    AZ::Data::AssetType GetAssetType(QString filename) const;
+    AZ::Data::AssetType GetAssetType(const QString &filename) const;
     QStandardItem* GetPath(QString& path, bool createIfNeeded, QStandardItem* parent = nullptr);
 
     void ApplyFilter(QStandardItem* parent);

@@ -130,7 +130,8 @@ namespace AZ::Render
         }
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
 
-        if (!m_fontDrawInterface || !viewportContext || !viewportContext->GetRenderScene())
+        if (!m_fontDrawInterface || !viewportContext || !viewportContext->GetRenderScene() ||
+            !AZ::Interface<AzFramework::FontQueryInterface>::Get())
         {
             return;
         }

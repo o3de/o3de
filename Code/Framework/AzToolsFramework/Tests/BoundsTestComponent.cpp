@@ -28,9 +28,12 @@ namespace UnitTest
         return true;
     }
 
-    void BoundsTestComponent::Reflect([[maybe_unused]] AZ::ReflectContext* context)
+    void BoundsTestComponent::Reflect(AZ::ReflectContext* context)
     {
-        // noop
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<BoundsTestComponent, EditorComponentBase>()->Version(1);
+        }
     }
 
     void BoundsTestComponent::Activate()

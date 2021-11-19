@@ -34,5 +34,4 @@ namespace AzToolsFramework
     private:
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
     };
-
 }

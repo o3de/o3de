@@ -320,7 +320,7 @@ namespace PhysXEditorTests
     
     TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithCylinderWithNullHeight_HandledGracefully)
     {
-        ValidateInvalidEditorShapeColliderComponentParams(0.f, 1.f);
+        ValidateInvalidEditorShapeColliderComponentParams(1.f, 0.f);
     }
     
     TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithCylinderWithNullRadiusAndNullHeight_HandledGracefully)
@@ -336,6 +336,44 @@ namespace PhysXEditorTests
     TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithCylinderWithNullRadiusAndNegativeHeight_HandledGracefully)
     {
         ValidateInvalidEditorShapeColliderComponentParams(0.f, -1.f);
+    }
+
+    TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithCylinderSwitchingFromNullHeightToValidHeight_HandledGracefully)
+    {
+        // create an editor entity with a shape collider component and a cylinder shape component
+        EntityPtr editorEntity = CreateInactiveEditorEntity("ShapeColliderComponentEditorEntity");
+        editorEntity->CreateComponent<PhysX::EditorShapeColliderComponent>();
+        editorEntity->CreateComponent(LmbrCentral::EditorCylinderShapeComponentTypeId);
+        editorEntity->Activate();
+
+        const float validRadius = 1.0f;
+        const float nullHeight = 0.0f;
+        const float validHeight = 1.0f;
+
+        LmbrCentral::CylinderShapeComponentRequestsBus::Event(editorEntity->GetId(),
+            &LmbrCentral::CylinderShapeComponentRequests::SetRadius, validRadius);
+
+        {
+            UnitTest::ErrorHandler dimensionWarningHandler("Negative or zero cylinder dimensions are invalid");
+            UnitTest::ErrorHandler colliderWarningHandler("No Collider or Shape information found when creating Rigid body");
+
+            LmbrCentral::CylinderShapeComponentRequestsBus::Event(editorEntity->GetId(),
+                &LmbrCentral::CylinderShapeComponentRequests::SetHeight, nullHeight);
+
+            EXPECT_EQ(dimensionWarningHandler.GetExpectedWarningCount(), 1);
+            EXPECT_EQ(colliderWarningHandler.GetExpectedWarningCount(), 1);
+        }
+
+        {
+            UnitTest::ErrorHandler dimensionWarningHandler("Negative or zero cylinder dimensions are invalid");
+            UnitTest::ErrorHandler colliderWarningHandler("No Collider or Shape information found when creating Rigid body");
+
+            LmbrCentral::CylinderShapeComponentRequestsBus::Event(editorEntity->GetId(),
+                &LmbrCentral::CylinderShapeComponentRequests::SetHeight, validHeight);
+
+            EXPECT_EQ(dimensionWarningHandler.GetExpectedWarningCount(), 0);
+            EXPECT_EQ(colliderWarningHandler.GetExpectedWarningCount(), 0);
+        }
     }
 
     TEST_F(PhysXEditorFixture, EditorShapeColliderComponent_ShapeColliderWithBoxAndRigidBody_CorrectRuntimeComponents)

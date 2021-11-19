@@ -137,6 +137,18 @@ namespace AtomToolsFramework
             m_viewportContext->SetRenderScene(nullptr);
             return;
         }
+
+        // Check if the scene already has an atom scene attached. In this case we don't need to create a new atom scene.
+        if (auto existingScene = scene->FindSubsystem<AZ::RPI::ScenePtr>())
+        {
+            m_viewportContext->SetRenderScene(*existingScene);
+            if (auto auxGeomFP = existingScene->get()->GetFeatureProcessor<AZ::RPI::AuxGeomFeatureProcessorInterface>())
+            {
+                m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(m_defaultCamera.get());
+            }
+            return;
+        }
+
         AZ::RPI::ScenePtr atomScene;
         auto initializeScene = [&](AZ::Render::Bootstrap::Request* bootstrapRequests)
         {
@@ -196,12 +208,8 @@ namespace AtomToolsFramework
 
     bool RenderViewportWidget::event(QEvent* event)
     {
-        // On some types of QEvents, a resize event is needed to make sure that the current viewport window
-        // needs to be updated based on a potential new surface dimensions.
         switch (event->type()) 
         {
-            case QEvent::ScreenChangeInternal:
-            case QEvent::UpdateLater:
             case QEvent::Resize:
                 SendWindowResizeEvent();
                 break;
@@ -373,6 +381,16 @@ namespace AtomToolsFramework
     void RenderViewportWidget::EndCursorCapture()
     {
         m_inputChannelMapper->SetCursorCaptureEnabled(false);
+    }
+
+    void RenderViewportWidget::SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride)
+    {
+        m_inputChannelMapper->SetOverrideCursor(cursorStyleOverride);
+    }
+
+    void RenderViewportWidget::ClearOverrideCursor()
+    {
+        m_inputChannelMapper->ClearOverrideCursor();
     }
 
     void RenderViewportWidget::SetWindowTitle(const AZStd::string& title)

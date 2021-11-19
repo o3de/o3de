@@ -103,17 +103,17 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleIncludedGems).toStringList();
     }
 
-    QStringList GemRepoModel::GetIncludedGemNames(const QModelIndex& modelIndex)
+    QVector<Tag> GemRepoModel::GetIncludedGemTags(const QModelIndex& modelIndex)
     {
-        QStringList gemNames;
-        QVector<GemInfo> gemInfos = GetIncludedGemInfos(modelIndex);
-
+        QVector<Tag> tags;
+        const QVector<GemInfo>& gemInfos = GetIncludedGemInfos(modelIndex);
+        tags.reserve(gemInfos.size());
         for (const GemInfo& gemInfo : gemInfos)
         {
-            gemNames.append(gemInfo.m_displayName);
+            tags.append({ gemInfo.m_displayName, gemInfo.m_name });
         }
 
-        return gemNames;
+        return tags;
     }
 
     QVector<GemInfo> GemRepoModel::GetIncludedGemInfos(const QModelIndex& modelIndex)

@@ -392,11 +392,11 @@ namespace O3DE::ProjectManager
         {
             if (!WarnIfInBuildQueue(projectPath))
             {
-                AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
+                AZ::IO::FixedMaxPath executableDirectory = ProjectUtils::GetEditorDirectory();
                 AZStd::string executableFilename = "Editor";
                 AZ::IO::FixedMaxPath editorExecutablePath = executableDirectory / (executableFilename + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
                 auto cmdPath = AZ::IO::FixedMaxPathString::format(
-                    "%s -regset=\"/Amazon/AzCore/Bootstrap/project_path=%s\"", editorExecutablePath.c_str(),
+                    "%s --regset=\"/Amazon/AzCore/Bootstrap/project_path=%s\"", editorExecutablePath.c_str(),
                     projectPath.toStdString().c_str());
 
                 AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;

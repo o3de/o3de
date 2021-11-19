@@ -1,7 +1,7 @@
 {
     "description": "Material Type tailored for rendering skin, with support for blended wrinkle maps that work with animated vertex blend shapes.",
+    "version": 3,
     "propertyLayout": {
-        "version": 3,
         "groups": [
             {
                 "name": "baseColor",

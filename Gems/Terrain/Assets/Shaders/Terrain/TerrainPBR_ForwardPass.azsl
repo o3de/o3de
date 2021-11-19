@@ -17,17 +17,18 @@
 #include <Atom/Features/PBR/Lighting/StandardLighting.azsli>
 #include <Atom/Features/Shadow/DirectionalLightShadow.azsli>
 #include <Atom/Features/PBR/Decals.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
 
 struct VSOutput
 {
     float4 m_position : SV_Position;
     float3 m_normal: NORMAL;
-    float3 m_tangent : TANGENT; 
-    float3 m_bitangent : BITANGENT; 
     float3 m_worldPosition : UV0;
-    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV2;
     float2 m_uv : UV1;
+    float3 m_shadowCoords[ViewSrg::MaxCascadeCount] : UV2;
 };
+
+option bool o_debugDetailMaterialIds = false;
 
 VSOutput TerrainPBR_MainPassVS(VertexInput IN)
 {
@@ -47,9 +48,9 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
     float down  = GetHeight(origUv + terrainData.m_uvStep * float2( 0.0f,  1.0f));
     float left  = GetHeight(origUv + terrainData.m_uvStep * float2(-1.0f,  0.0f));
 
-    OUT.m_bitangent = normalize(float3(0.0, terrainData.m_sampleSpacing * 2.0f, down - up));
-    OUT.m_tangent = normalize(float3(terrainData.m_sampleSpacing * 2.0f, 0.0, right - left));
-    OUT.m_normal = cross(OUT.m_tangent, OUT.m_bitangent);
+    float3 bitangent = normalize(float3(0.0, terrainData.m_sampleSpacing * 2.0f, down - up));
+    float3 tangent = normalize(float3(terrainData.m_sampleSpacing * 2.0f, 0.0, right - left));
+    OUT.m_normal = normalize(cross(tangent, bitangent));
     OUT.m_uv = uv;
 
     // directional light shadow 
@@ -59,6 +60,7 @@ VSOutput TerrainPBR_MainPassVS(VertexInput IN)
         DirectionalLightShadow::GetShadowCoords(
             shadowIndex,
             worldPosition,
+            OUT.m_normal,
             OUT.m_shadowCoords);
     }
     
@@ -74,18 +76,14 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     surface.position = IN.m_worldPosition.xyz;
     float viewDistance = length(ViewSrg::m_worldPosition - surface.position);
     float detailFactor = saturate((viewDistance - TerrainMaterialSrg::m_detailFadeDistance) / max(TerrainMaterialSrg::m_detailFadeLength, EPSILON));
-
-    ObjectSrg::TerrainData terrainData = ObjectSrg::m_terrainData;
-    float2 origUv = lerp(terrainData.m_uvMin, terrainData.m_uvMax, IN.m_uv);
-    origUv.y = 1.0 - origUv.y;
     float2 detailUv = IN.m_uv * TerrainMaterialSrg::m_detailTextureMultiplier;
     
     // ------- Normal -------
-    float3 macroNormal = IN.m_normal;
+    float3 macroNormal = normalize(IN.m_normal);
     
     // ------- Macro Color / Normal -------
     float3 macroColor = TerrainMaterialSrg::m_baseColor.rgb;
-    [unroll] for (uint i = 0; i < 4; ++i)
+    [unroll] for (uint i = 0; i < 4 && (i < ObjectSrg::m_macroMaterialCount); ++i)
     {
         float2 macroUvMin = ObjectSrg::m_macroMaterialData[i].m_uvMin;
         float2 macroUvMax = ObjectSrg::m_macroMaterialData[i].m_uvMax;
@@ -119,6 +117,48 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
     // ------- Base Color -------
     float3 detailColor = GetBaseColorInput(TerrainMaterialSrg::m_baseColorMap, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
     float3 blendedColor = BlendBaseColor(lerp(detailColor, TerrainMaterialSrg::m_baseColor.rgb, detailFactor), macroColor, TerrainMaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
+
+    // ------- Debug detail materials using random colors -------
+    // This assigns a random color to each material, turns off any kind of distance fading, and draws a black line at the texture edges.
+    if (o_debugDetailMaterialIds) 
+    {
+        float2 detailRegionMin = TerrainMaterialSrg::m_detailAabb.xy;
+        float2 detailRegionMax = TerrainMaterialSrg::m_detailAabb.zw;
+        float2 detailRegionUv = (surface.position.xy - detailRegionMin) / (detailRegionMax - detailRegionMin);
+        if (all(detailRegionUv > TerrainMaterialSrg::m_detailHalfPixelUv) && all(detailRegionUv < 1.0 - TerrainMaterialSrg::m_detailHalfPixelUv))
+        {
+            detailRegionUv += TerrainMaterialSrg::m_detailMaterialIdImageCenter - (0.5);
+
+            uint material1 = TerrainMaterialSrg::m_detailMaterialIdImage.GatherRed(TerrainMaterialSrg::m_detailSampler, detailRegionUv, 0).r;
+            uint material2 = TerrainMaterialSrg::m_detailMaterialIdImage.GatherGreen(TerrainMaterialSrg::m_detailSampler, detailRegionUv, 0).r;
+            float blend = float(TerrainMaterialSrg::m_detailMaterialIdImage.GatherBlue(TerrainMaterialSrg::m_detailSampler, detailRegionUv, 0).r) / 0xFF;
+            
+            float3 material1Color = float3(0.1, 0.1, 0.1);
+            float3 material2Color = float3(0.1, 0.1, 0.1);
+
+            // Get a reasonably random hue for the material id
+            if (material1 != 255)
+            {
+                float hue1 = (material1 * 25043 % 256) / 256.0;
+                material1Color = HsvToRgb(float3(hue1, 1.0, 1.0));
+            }
+            if (material2 != 255)
+            {
+                float hue2 = (material2 * 25043 % 256) / 256.0;
+                material2Color = HsvToRgb(float3(hue2, 1.0, 1.0));
+            }
+
+            blendedColor = lerp(material1Color, material2Color, blend);
+            float seamBlend = 0.0;
+            const float halfLineWidth = 1.0 / 2048.0;
+            if (any(abs(detailRegionUv) % 1.0 < halfLineWidth) || any(abs(detailRegionUv) % 1.0 > 1.0 - halfLineWidth))
+            {
+                seamBlend = 1.0;
+            }
+            blendedColor = lerp(blendedColor, float3(0.0, 0.0, 0.0), seamBlend); // draw texture seams
+            blendedColor = pow(blendedColor , 2.2);
+        }
+    }
 
     // ------- Specular -------
     float specularF0Factor = GetSpecularInput(TerrainMaterialSrg::m_specularF0Map, TerrainMaterialSrg::m_sampler, detailUv, TerrainMaterialSrg::m_specularF0Factor, o_specularF0_useTexture);

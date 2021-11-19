@@ -39,6 +39,8 @@ namespace AZ
             bool m_showAttachments = false;
 
             AZ::RPI::Pass* m_selectedPass = nullptr;
+            AZ::RPI::Pass* m_lastSelectedPass = nullptr;
+            AZ::Name m_selectedPassPath;
             AZ::RHI::AttachmentId m_attachmentId;
             AZ::Name m_slotName;
             bool m_selectedChanged = false;

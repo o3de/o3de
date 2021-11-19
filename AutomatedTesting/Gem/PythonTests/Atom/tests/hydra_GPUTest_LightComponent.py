@@ -22,7 +22,7 @@ from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 helper = EditorTestHelper(log_prefix="Atom_EditorTestHelper")
 
-LEVEL_NAME = "auto_test"
+LEVEL_NAME = "Base"
 LIGHT_COMPONENT = "Light"
 LIGHT_TYPE_PROPERTY = 'Controller|Configuration|Light type'
 DEGREE_RADIAN_FACTOR = 0.0174533

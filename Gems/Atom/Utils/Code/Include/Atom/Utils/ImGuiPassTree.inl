@@ -31,7 +31,7 @@
 
 namespace AZ::Render
 {
-    inline AZ::RPI::PassAttachment* FindPassAttachment(AZ::RPI::RenderPass* pass, AZ::RHI::AttachmentId attachmentId)
+    inline AZ::RPI::PassAttachment* FindPassAttachment(AZ::RPI::Pass* pass, AZ::RHI::AttachmentId attachmentId)
     {
         for (auto& binding : pass->GetAttachmentBindings())
         {
@@ -46,6 +46,10 @@ namespace AZ::Render
     inline void ImGuiPassTree::Draw(bool& draw, AZ::RPI::Pass* rootPass)
     {
         using namespace AZ;
+
+        // always set m_selectedPass to empty and use m_selectedPassPath to find it when render the pass tree
+        m_selectedPass = nullptr;
+        bool needSaveAttachment = false;
 
         ImGui::SetNextWindowSize(ImVec2(200.f, 200.f), ImGuiCond_FirstUseEver);
         if (ImGui::Begin("PassTree View", &draw, ImGuiWindowFlags_None))
@@ -83,60 +87,16 @@ namespace AZ::Render
 
             if (Scriptable_ImGui::Button("Save Attachment"))
             {
-                m_attachmentReadbackInfo = "";
-                if (!m_readback)
-                {
-                    m_readback = AZStd::make_shared<AZ::RPI::AttachmentReadback>(AZ::RHI::ScopeId{ "AttachmentReadback" });
-                    m_readback->SetCallback(AZStd::bind(&ImGuiPassTree::ReadbackCallback, this, AZStd::placeholders::_1));
-                }
-
-                if (m_selectedPass && !m_slotName.IsEmpty())
-                {
-                    bool readbackResult = m_selectedPass->ReadbackAttachment(m_readback, m_slotName);
-                    if (!readbackResult)
-                    {
-                        AZ_Error("ImGuiPassTree", false, "Failed to readback attachment from pass [%s] slot [%s]", m_selectedPass->GetName().GetCStr(), m_slotName.GetCStr());
-                    }
-                }
+                needSaveAttachment = true;
             }
 
             ImGui::TextWrapped("%s", m_attachmentReadbackInfo.c_str());
         }
 
-        if (m_previewAttachment && m_selectedChanged)
-        {
-            m_selectedChanged = false;
-            if (!m_attachmentId.IsEmpty() && m_selectedPass)
-            {
-                AZ::RPI::RenderPass* renderPass = azrtti_cast<AZ::RPI::RenderPass*>(m_selectedPass);
-                if (renderPass)
-                {
-                    if (!m_previewPass->GetParent())
-                    {
-                        RPI::PassSystemInterface::Get()->GetRootPass()->AddChild(m_previewPass);
-                    }
-                    AZ::RPI::PassAttachment* attachment = FindPassAttachment(renderPass, m_attachmentId);
-                    if (attachment)
-                    {
-                        // Reset output attachment to empty so the preview will use pass's owner render pipeline's output
-                        m_previewPass->SetOutputColorAttachment(nullptr);
-                        m_previewPass->PreviewImageAttachmentForPass(renderPass, attachment);
-                    }
-                }
-                else
-                {
-                    m_previewPass->ClearPreviewAttachment();
-                    if (m_previewPass->GetParent())
-                    {
-                        m_previewPass->QueueForRemoval();
-                    }
-                }
-            }
-        }
-
         ImGui::End();
 
         // Draw the hierarchical view
+        // It will assign m_seletedPass if there is a pass matches m_seletedPassPath
         ImGui::SetNextWindowPos(ImVec2(300, 60), ImGuiCond_FirstUseEver);
         ImGui::SetNextWindowSize(ImVec2(300, 500), ImGuiCond_FirstUseEver);
         if (ImGui::Begin("PassTree", nullptr, ImGuiWindowFlags_None))
@@ -144,6 +104,63 @@ namespace AZ::Render
             DrawTreeView(rootPass);
         }
         ImGui::End();
+
+        // It's possible that the pass pointer changed but selected pass path wasn't changed
+        if (m_selectedPass != m_lastSelectedPass)
+        {
+            m_selectedChanged = true;
+            if (m_selectedPass == nullptr)
+            {
+                m_selectedPassPath = AZ::Name{};
+            }
+        }
+        m_lastSelectedPass = m_selectedPass;
+
+        if (m_previewAttachment && m_selectedChanged)
+        {
+            m_selectedChanged = false;
+            if (!m_attachmentId.IsEmpty() && m_selectedPass)
+            {
+                if (!m_previewPass->GetParent())
+                {
+                    RPI::PassSystemInterface::Get()->GetRootPass()->AddChild(m_previewPass);
+                }
+                AZ::RPI::PassAttachment* attachment = FindPassAttachment(m_selectedPass, m_attachmentId);
+                if (attachment)
+                {
+                    // Reset output attachment to empty so the preview will use pass's owner render pipeline's output
+                    m_previewPass->SetOutputColorAttachment(nullptr);
+                    m_previewPass->PreviewImageAttachmentForPass(m_selectedPass, attachment);
+                }
+            }
+            else
+            {
+                m_previewPass->ClearPreviewAttachment();
+                if (m_previewPass->GetParent())
+                {
+                    m_previewPass->QueueForRemoval();
+                }
+            }
+        }
+
+        if (needSaveAttachment)
+        {            
+            m_attachmentReadbackInfo = "";
+            if (!m_readback)
+            {
+                m_readback = AZStd::make_shared<AZ::RPI::AttachmentReadback>(AZ::RHI::ScopeId{ "AttachmentReadback" });
+                m_readback->SetCallback(AZStd::bind(&ImGuiPassTree::ReadbackCallback, this, AZStd::placeholders::_1));
+            }
+
+            if (m_selectedPass && !m_slotName.IsEmpty())
+            {
+                bool readbackResult = m_selectedPass->ReadbackAttachment(m_readback, m_slotName);
+                if (!readbackResult)
+                {
+                    AZ_Error("ImGuiPassTree", false, "Failed to readback attachment from pass [%s] slot [%s]", m_selectedPass->GetName().GetCStr(), m_slotName.GetCStr());
+                }
+            }
+        }
     }
         
     inline void ImGuiPassTree::DrawPassAttachments(AZ::RPI::Pass* pass)
@@ -202,6 +219,7 @@ namespace AZ::Render
 
                 if (Scriptable_ImGui::Selectable(label.c_str(), m_attachmentId == binding.m_attachment->GetAttachmentId()))
                 {
+                    m_selectedPassPath = pass->GetPathName();
                     m_selectedPass = pass;
                     m_attachmentId = binding.m_attachment->GetAttachmentId();
                     m_slotName = binding.m_name;
@@ -232,9 +250,9 @@ namespace AZ::Render
             if (!m_showAttachments)
             {
                 // Only draw the leaf pass as selectable if we are not showing attachments as its children
-                if (Scriptable_ImGui::Selectable(pass->GetName().GetCStr(), m_selectedPass == pass))
+                if (Scriptable_ImGui::Selectable(pass->GetName().GetCStr(), m_selectedPassPath == pass->GetPathName()))
                 {
-                    m_selectedPass = pass;
+                    m_selectedPassPath = pass->GetPathName();
                     m_attachmentId = AZ::RHI::AttachmentId{};
                     m_slotName = AZ::Name{};
                     m_selectedChanged = true;
@@ -244,13 +262,13 @@ namespace AZ::Render
             {
                 // Draw the pass as a tree node which has attachments as its children
                 ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DefaultOpen
-                    | ((m_selectedPass == pass) ? ImGuiTreeNodeFlags_Selected : 0);
+                    | ((m_selectedPassPath == pass->GetPathName()) ? ImGuiTreeNodeFlags_Selected : 0);
 
                 bool nodeOpen = Scriptable_ImGui::TreeNodeEx(pass->GetName().GetCStr(), flags);
 
                 if (ImGui::IsItemClicked())
                 {
-                    m_selectedPass = pass;
+                    m_selectedPassPath = pass->GetPathName();
                     m_attachmentId = AZ::RHI::AttachmentId{};
                     m_slotName = AZ::Name{};
                     m_selectedChanged = true;
@@ -259,7 +277,6 @@ namespace AZ::Render
                 if (nodeOpen)
                 {
                     DrawPassAttachments(pass);
-
                     Scriptable_ImGui::TreePop();
                 }
             }
@@ -268,13 +285,13 @@ namespace AZ::Render
         {
             // For a ParentPasse, draw it as a tree node 
             ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_DefaultOpen
-                | ((m_selectedPass == pass) ? ImGuiTreeNodeFlags_Selected : 0);
+                | ((m_selectedPassPath == pass->GetPathName()) ? ImGuiTreeNodeFlags_Selected : 0);
 
             bool nodeOpen = ImGui::TreeNodeEx(pass->GetName().GetCStr(), flags);
 
             if (ImGui::IsItemClicked())
             {
-                m_selectedPass = pass;
+                m_selectedPassPath = pass->GetPathName();
                 m_attachmentId = AZ::RHI::AttachmentId{};
                 m_slotName = AZ::Name{};
                 m_selectedChanged = true;
@@ -282,7 +299,10 @@ namespace AZ::Render
 
             if (nodeOpen)
             {
-                DrawPassAttachments(pass);
+                if (m_showAttachments)
+                {
+                    DrawPassAttachments(pass);
+                }
                 for (const auto& child : asParent->GetChildren())
                 {
                     DrawTreeView(child.get());
@@ -295,6 +315,12 @@ namespace AZ::Render
         if (!enabled)
         {
             ImGui::PopStyleColor();
+        }
+
+        // set m_selectedPass if pass path matches
+        if (pass->GetPathName() == m_selectedPassPath)
+        {
+            m_selectedPass = pass;
         }
     }
 
@@ -364,7 +390,9 @@ namespace AZ::Render
         m_previewAttachment = false;
         m_showAttachments = false;
 
+        m_selectedPassPath = AZ::Name{};
         m_selectedPass = nullptr;
+        m_lastSelectedPass = nullptr;
         m_attachmentId = AZ::RHI::AttachmentId{};
          m_slotName = AZ::Name{};
         m_selectedChanged = false;

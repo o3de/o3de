@@ -826,6 +826,10 @@ namespace AzToolsFramework
         /// Path will be empty if component should have no icon.
         virtual AZStd::string GetComponentEditorIcon(const AZ::Uuid& /*componentType*/, AZ::Component* /*component*/) { return AZStd::string(); }
 
+        //! Return path to icon for component type.
+        //! Path will be empty if component type should have no icon.
+        virtual AZStd::string GetComponentTypeEditorIcon(const AZ::Uuid& /*componentType*/) { return AZStd::string(); }
+
         /**
          * Return the icon image path based on the component type and where it is used.
          * \param componentType         component type

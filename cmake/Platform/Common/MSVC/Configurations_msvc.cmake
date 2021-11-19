@@ -139,11 +139,20 @@ endif()
 
 # Configure system includes
 ly_set(LY_CXX_SYSTEM_INCLUDE_CONFIGURATION_FLAG 
-    /experimental:external # Turns on "external" headers feature for MSVC compilers
+    /experimental:external # Turns on "external" headers feature for MSVC compilers, required for MSVC < 16.10
     /external:W0 # Set warning level in external headers to 0. This is used to suppress warnings 3rdParty libraries which uses the "system_includes" option in their json configuration
 )
+
+# CMake 3.22rc added a definition for CMAKE_INCLUDE_SYSTEM_FLAG_CXX. However, its defined as "-external:I ", that space causes 
+# issues when trying to use in TargetIncludeSystemDirectories_unsupported.cmake.
+# CMake 3.22rc has also not added support for external directories in MSVC through target_include_directories(... SYSTEM
+# So we will just fix the flag that was added by 3.22rc so it works with our TargetIncludeSystemDirectories_unsupported.cmake
+# Once target_include_directories(... SYSTEM is supported, we can branch and use TargetIncludeSystemDirectories_supported.cmake
+# Reported this here: https://gitlab.kitware.com/cmake/cmake/-/issues/17904#note_1078281
 if(NOT CMAKE_INCLUDE_SYSTEM_FLAG_CXX)
-    ly_set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX /external:I)
+    ly_set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX "/external:I")
+else()
+    string(STRIP ${CMAKE_INCLUDE_SYSTEM_FLAG_CXX} CMAKE_INCLUDE_SYSTEM_FLAG_CXX)
 endif()
 
 include(cmake/Platform/Common/TargetIncludeSystemDirectories_unsupported.cmake)

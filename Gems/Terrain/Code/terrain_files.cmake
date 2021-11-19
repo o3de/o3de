@@ -12,6 +12,8 @@ set(FILES
     Source/Components/TerrainHeightGradientListComponent.h
     Source/Components/TerrainLayerSpawnerComponent.cpp
     Source/Components/TerrainLayerSpawnerComponent.h
+    Source/Components/TerrainPhysicsColliderComponent.cpp
+    Source/Components/TerrainPhysicsColliderComponent.h
     Source/Components/TerrainSurfaceDataSystemComponent.cpp
     Source/Components/TerrainSurfaceDataSystemComponent.h
     Source/Components/TerrainSurfaceGradientListComponent.cpp

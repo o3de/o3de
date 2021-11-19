@@ -29,7 +29,8 @@ namespace O3DE::ProjectManager
         {
             NoFilter = -1,
             Unselected,
-            Selected
+            Selected,
+            Both
         };
         enum class GemActive
         {

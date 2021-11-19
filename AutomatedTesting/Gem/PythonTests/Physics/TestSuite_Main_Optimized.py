@@ -53,6 +53,27 @@ class EditorSingleTest_WithFileOverrides(EditorSingleTest):
         for f in original_file_list:
             fm._restore_file(f, file_list[f])
 
+@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
+@pytest.mark.SUITE_main
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
+@pytest.mark.parametrize("project", ["AutomatedTesting"])
+class TestAutomationWithPrefabSystemEnabled(EditorTestSuite):
+
+    global_extra_cmdline_args = ['-BatchMode', '-autotest_mode',
+                                 'extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]']
+
+    @staticmethod
+    def get_number_parallel_editors():
+        return 16
+
+    class C4982801_PhysXColliderShape_CanBeSelected(EditorSharedTest):
+        from .tests.collider import Collider_BoxShapeEditing as test_module
+
+    class C4982800_PhysXColliderShape_CanBeSelected(EditorSharedTest):
+        from .tests.collider import Collider_SphereShapeEditing as test_module
+
+    class C4982802_PhysXColliderShape_CanBeSelected(EditorSharedTest):
+        from .tests.collider import Collider_CapsuleShapeEditing as test_module
 
 @pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_main
@@ -286,15 +307,6 @@ class TestAutomation(EditorTestSuite):
     class C19723164_ShapeCollider_WontCrashEditor(EditorSharedTest):
         from .tests.shape_collider import ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor as test_module
 
-    class C4982800_PhysXColliderShape_CanBeSelected(EditorSharedTest):
-        from .tests.collider import Collider_SphereShapeEditting as test_module
-
-    class C4982801_PhysXColliderShape_CanBeSelected(EditorSharedTest):
-        from .tests.collider import Collider_BoxShapeEditting as test_module
-
-    class C4982802_PhysXColliderShape_CanBeSelected(EditorSharedTest):
-        from .tests.collider import Collider_CapsuleShapeEditting as test_module
-       
     class C12905528_ForceRegion_WithNonTriggerCollider(EditorSharedTest):
         from .tests.force_region import ForceRegion_WithNonTriggerColliderWarning as test_module
         # Fixme: expected_lines = ["[Warning] (PhysX Force Region) - Please ensure collider component marked as trigger exists in entity"]

@@ -16,6 +16,7 @@
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
+#include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -59,6 +60,23 @@ namespace AZ
 
                 serializeContext->RegisterGenericType<PropertyConnectionList>();
 
+                serializeContext->Class<VersionUpdatesRenameOperationDefinition>()
+                    ->Version(1)
+                    ->Field("op", &VersionUpdatesRenameOperationDefinition::m_operation)
+                    ->Field("from", &VersionUpdatesRenameOperationDefinition::m_renameFrom)
+                    ->Field("to", &VersionUpdatesRenameOperationDefinition::m_renameTo)
+                    ;
+
+                serializeContext->RegisterGenericType<VersionUpdateActions>();
+
+                serializeContext->Class<VersionUpdateDefinition>()
+                    ->Version(1)
+                    ->Field("toVersion", &VersionUpdateDefinition::m_toVersion)
+                    ->Field("actions", &VersionUpdateDefinition::m_actions)
+                    ;
+
+                serializeContext->RegisterGenericType<VersionUpdates>();
+
                 serializeContext->Class<ShaderVariantReferenceData>()
                     ->Version(2)
                     ->Field("file", &ShaderVariantReferenceData::m_shaderFilePath)
@@ -67,8 +85,8 @@ namespace AZ
                     ;
 
                 serializeContext->Class<PropertyLayout>()
-                    ->Version(1)
-                    ->Field("version", &PropertyLayout::m_version)
+                    ->Version(2) // Material Version Update
+                    ->Field("version", &PropertyLayout::m_versionOld)
                     ->Field("groups", &PropertyLayout::m_groups)
                     ->Field("properties", &PropertyLayout::m_properties)
                     ;
@@ -76,8 +94,10 @@ namespace AZ
                 serializeContext->RegisterGenericType<UvNameMap>();
 
                 serializeContext->Class<MaterialTypeSourceData>()
-                    ->Version(3)
+                    ->Version(4) // Material Version Update
                     ->Field("description", &MaterialTypeSourceData::m_description)
+                    ->Field("version", &MaterialTypeSourceData::m_version)
+                    ->Field("versionUpdates", &MaterialTypeSourceData::m_versionUpdates)
                     ->Field("propertyLayout", &MaterialTypeSourceData::m_propertyLayout)
                     ->Field("shaders", &MaterialTypeSourceData::m_shaderCollection)
                     ->Field("functors", &MaterialTypeSourceData::m_materialFunctorSourceData)
@@ -110,19 +130,67 @@ namespace AZ
             return nullptr;
         }
 
-        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName) const
+        bool MaterialTypeSourceData::ApplyPropertyRenames(MaterialPropertyId& propertyId, uint32_t materialTypeVersion) const
         {
-            auto groupIter = m_propertyLayout.m_properties.find(groupName);
-            if (groupIter == m_propertyLayout.m_properties.end())
+            bool renamed = false;
+
+            for (const VersionUpdateDefinition& versionUpdate : m_versionUpdates)
             {
-                return nullptr;
+                if (materialTypeVersion >= versionUpdate.m_toVersion)
+                {
+                    continue;
+                }
+
+                for (const VersionUpdatesRenameOperationDefinition& action : versionUpdate.m_actions)
+                {
+                    if (action.m_operation == "rename")
+                    {
+                        if (action.m_renameFrom == propertyId.GetFullName().GetStringView())
+                        {
+                            propertyId = MaterialPropertyId::Parse(action.m_renameTo);
+                            renamed = true;
+                        }
+                    }
+                    else
+                    {
+                        AZ_Warning("Material source data", false, "Unsupported material version update operation '%s'", action.m_operation.c_str());
+                    }
+                }
             }
 
-            for (const PropertyDefinition& property : groupIter->second)
+            return renamed;
+        }
+
+        const MaterialTypeSourceData::PropertyDefinition* MaterialTypeSourceData::FindProperty(AZStd::string_view groupName, AZStd::string_view propertyName, uint32_t materialTypeVersion) const
+        {
+            auto groupIter = m_propertyLayout.m_properties.find(groupName);
+            if (groupIter != m_propertyLayout.m_properties.end())
             {
-                if (property.m_name == propertyName)
+                for (const PropertyDefinition& property : groupIter->second)
                 {
-                    return &property;
+                    if (property.m_name == propertyName)
+                    {
+                        return &property;
+                    }
+                }
+            }
+
+            // Property has not been found, try looking for renames in the version history
+
+            MaterialPropertyId propertyId = MaterialPropertyId{groupName, propertyName};
+            ApplyPropertyRenames(propertyId, materialTypeVersion);
+
+            // Do the search again with the new names
+
+            groupIter = m_propertyLayout.m_properties.find(propertyId.GetGroupName().GetStringView());
+            if (groupIter != m_propertyLayout.m_properties.end())
+            {
+                for (const PropertyDefinition& property : groupIter->second)
+                {
+                    if (property.m_name == propertyId.GetPropertyName().GetStringView())
+                    {
+                        return &property;
+                    }
                 }
             }
 
@@ -232,53 +300,46 @@ namespace AZ
             }
         }
 
-        bool MaterialTypeSourceData::ConvertPropertyValueToSourceDataFormat(const PropertyDefinition& propertyDefinition, MaterialPropertyValue& propertyValue) const
-        {
-            if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Enum && propertyValue.Is<uint32_t>())
-            {
-                const uint32_t index = propertyValue.GetValue<uint32_t>();
-                if (index >= propertyDefinition.m_enumValues.size())
-                {
-                    AZ_Error("Material source data", false, "Invalid value for material enum property: '%s'.", propertyDefinition.m_name.c_str());
-                    return false;
-                }
-
-                propertyValue = propertyDefinition.m_enumValues[index];
-                return true;
-            }
-
-            // Image asset references must be converted from asset IDs to a relative source file path
-            if (propertyDefinition.m_dataType == AZ::RPI::MaterialPropertyDataType::Image && propertyValue.Is<Data::Asset<ImageAsset>>())
-            {
-                const Data::Asset<ImageAsset>& imageAsset = propertyValue.GetValue<Data::Asset<ImageAsset>>();
-
-                Data::AssetInfo imageAssetInfo;
-                if (imageAsset.GetId().IsValid())
-                {
-                    bool result = false;
-                    AZStd::string rootFilePath;
-                    const AZStd::string platformName = ""; // Empty for default
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetInfoById,
-                        imageAsset.GetId(), imageAsset.GetType(), platformName, imageAssetInfo, rootFilePath);
-                    if (!result)
-                    {
-                        AZ_Error("Material source data", false, "Image asset could not be found for property: '%s'.", propertyDefinition.m_name.c_str());
-                        return false;
-                    }
-                }
-
-                propertyValue = imageAssetInfo.m_relativePath;
-                return true;
-            }
-
-            return true;
-        }
-
         Outcome<Data::Asset<MaterialTypeAsset>> MaterialTypeSourceData::CreateMaterialTypeAsset(Data::AssetId assetId, AZStd::string_view materialTypeSourceFilePath, bool elevateWarnings) const
         {
             MaterialTypeAssetCreator materialTypeAssetCreator;
             materialTypeAssetCreator.SetElevateWarnings(elevateWarnings);
             materialTypeAssetCreator.Begin(assetId);
+
+            if (m_propertyLayout.m_versionOld != 0)
+            {
+                materialTypeAssetCreator.ReportError(
+                    "The field '/propertyLayout/version' is deprecated and moved to '/version'. "
+                    "Please edit this material type source file and move the '\"version\": %u' setting up one level.",
+                    m_propertyLayout.m_versionOld);
+                return Failure();
+            }
+
+            // Set materialtype version and add each version update object into MaterialTypeAsset.
+            materialTypeAssetCreator.SetVersion(m_version);
+            {
+                const AZ::Name rename = AZ::Name{ "rename" };
+
+                for (const auto& versionUpdate : m_versionUpdates)
+                {
+                    MaterialVersionUpdate materialVersionUpdate{versionUpdate.m_toVersion};
+                    for (const auto& action : versionUpdate.m_actions)
+                    {
+                        if (action.m_operation == rename.GetStringView())
+                        {
+                            materialVersionUpdate.AddAction(MaterialVersionUpdate::RenamePropertyAction{
+                                    AZ::Name{ action.m_renameFrom },
+                                    AZ::Name{ action.m_renameTo }
+                                });
+                        }
+                        else
+                        {
+                            materialTypeAssetCreator.ReportWarning("Unsupported material version update operation '%s'", action.m_operation.c_str());
+                        }
+                    }
+                    materialTypeAssetCreator.AddVersionUpdate(materialVersionUpdate);
+                }
+            }
 
             // Used to gather all the UV streams used in this material type from its shaders in alphabetical order.
             auto semanticComp = [](const RHI::ShaderSemantic& lhs, const RHI::ShaderSemantic& rhs) -> bool
@@ -290,11 +351,12 @@ namespace AZ
             for (const ShaderVariantReferenceData& shaderRef : m_shaderCollection)
             {
                 const auto& shaderFile = shaderRef.m_shaderFilePath;
-                const auto& shaderAsset = AssetUtils::LoadAsset<ShaderAsset>(materialTypeSourceFilePath, shaderFile, 0);
+                auto shaderAssetResult = AssetUtils::LoadAsset<ShaderAsset>(materialTypeSourceFilePath, shaderFile, 0);
 
-                if (shaderAsset)
+                if (shaderAssetResult)
                 {
-                    auto optionsLayout = shaderAsset.GetValue()->GetShaderOptionGroupLayout();
+                    auto shaderAsset = shaderAssetResult.GetValue();
+                    auto optionsLayout = shaderAsset->GetShaderOptionGroupLayout();
                     ShaderOptionGroup options{ optionsLayout };
                     for (auto& iter : shaderRef.m_shaderOptionValues)
                     {
@@ -305,12 +367,11 @@ namespace AZ
                     }
 
                     materialTypeAssetCreator.AddShader(
-                        shaderAsset.GetValue(), options.GetShaderVariantId(),
-                        shaderRef.m_shaderTag.IsEmpty() ? Uuid::CreateRandom().ToString<AZ::Name>() : shaderRef.m_shaderTag
-                    );
+                        shaderAsset, options.GetShaderVariantId(),
+                        shaderRef.m_shaderTag.IsEmpty() ? Uuid::CreateRandom().ToString<AZ::Name>() : shaderRef.m_shaderTag);
 
                     // Gather UV names
-                    const ShaderInputContract& shaderInputContract = shaderAsset.GetValue()->GetInputContract();
+                    const ShaderInputContract& shaderInputContract = shaderAsset->GetInputContract();
                     for (const ShaderInputContract::StreamChannelInfo& channel : shaderInputContract.m_streamChannels)
                     {
                         const RHI::ShaderSemantic& semantic = channel.m_semantic;
@@ -390,15 +451,19 @@ namespace AZ
                         {
                         case MaterialPropertyDataType::Image:
                         {
-                            Outcome<Data::Asset<ImageAsset>> imageAssetResult = MaterialUtils::GetImageAssetReference(materialTypeSourceFilePath, property.m_value.GetValue<AZStd::string>());
+                            auto imageAssetResult = MaterialUtils::GetImageAssetReference(
+                                materialTypeSourceFilePath, property.m_value.GetValue<AZStd::string>());
 
-                            if (imageAssetResult.IsSuccess())
+                            if (imageAssetResult)
                             {
-                                materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAssetResult.GetValue());
+                                auto imageAsset = imageAssetResult.GetValue();
+                                materialTypeAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
                             }
                             else
                             {
-                                materialTypeAssetCreator.ReportError("Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(), property.m_value.GetValue<AZStd::string>().data());
+                                materialTypeAssetCreator.ReportError(
+                                    "Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(),
+                                    property.m_value.GetValue<AZStd::string>().data());
                             }
                         }
                         break;

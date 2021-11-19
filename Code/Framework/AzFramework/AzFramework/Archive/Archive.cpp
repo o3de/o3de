@@ -12,6 +12,7 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Interface/Interface.h>
@@ -363,6 +364,23 @@ namespace AZ::IO
         , m_mainThreadId{ AZStd::this_thread::get_id() }
     {
         CompressionBus::Handler::BusConnect();
+
+        // If the settings registry is not available at this point,
+        // then something catastrophic has happened in the application startup.
+        // That should have been caught and messaged out earlier in startup.
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            // Automatically register the event if it's not registered, because
+            // this system is initialized before the settings registry has loaded the event list.
+            AZ::ComponentApplicationLifecycle::RegisterHandler(
+                *settingsRegistry, m_componentApplicationLifecycleHandler,
+                [this](AZStd::string_view /*path*/, AZ::SettingsRegistryInterface::Type /*type*/)
+                {
+                    OnSystemEntityActivated();
+                },
+                "SystemComponentsActivated",
+                /*autoRegisterEvent*/ true);
+        }
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -1175,11 +1193,18 @@ namespace AZ::IO
             }
         }
 
-        auto bundleManifest = GetBundleManifest(desc.pZip);
         AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog;
+        auto bundleManifest = GetBundleManifest(desc.pZip);
         if (bundleManifest)
         {
             bundleCatalog = GetBundleCatalog(desc.pZip, bundleManifest->GetCatalogName());
+        }
+
+        // If this archive is loaded before the serialize context is available, then the manifest and catalog will need to be loaded later.
+        if (!bundleManifest || !bundleCatalog)
+        {
+            m_archivesWithCatalogsToLoad.push_back(
+                ArchivesWithCatalogsToLoad(szFullPath, szBindRoot, flags, nextBundle, desc.m_strFileName));
         }
 
         bool usePrefabSystemForLevels = false;
@@ -1219,12 +1244,17 @@ namespace AZ::IO
             m_levelOpenEvent.Signal(levelDirs);
         }
 
-        AZ::IO::ArchiveNotificationBus::Broadcast([](AZ::IO::ArchiveNotifications* archiveNotifications, const char* bundleName,
-            AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest, const AZ::IO::FixedMaxPath& nextBundle, AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog)
+        if (bundleManifest && bundleCatalog)
         {
-            archiveNotifications->BundleOpened(bundleName, bundleManifest, nextBundle.c_str(), bundleCatalog);
-        }, desc.m_strFileName.c_str(), bundleManifest, nextBundle, bundleCatalog);
-
+            AZ::IO::ArchiveNotificationBus::Broadcast(
+                [](AZ::IO::ArchiveNotifications* archiveNotifications, const char* bundleName,
+                   AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest, const AZ::IO::FixedMaxPath& nextBundle,
+                   AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog)
+                {
+                    archiveNotifications->BundleOpened(bundleName, bundleManifest, nextBundle.c_str(), bundleCatalog);
+                },
+                desc.m_strFileName.c_str(), bundleManifest, nextBundle, bundleCatalog);
+        }
         return true;
     }
 
@@ -2138,7 +2168,7 @@ namespace AZ::IO
             }
 
             currentDirPattern = currentDir + AZ_FILESYSTEM_SEPARATOR_WILDCARD;
-            currentFilePattern = currentDir + AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING + "levels.pak";
+            currentFilePattern = currentDir + AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING + "level.pak";
 
             ZipDir::FileEntry* fileEntry = findFile.FindExact(currentFilePattern.c_str());
             if (fileEntry)
@@ -2174,5 +2204,37 @@ namespace AZ::IO
         auto catalogInfo = AZStd::shared_ptr<AzFramework::AssetRegistry>(AZ::Utils::LoadObjectFromBuffer<AzFramework::AssetRegistry>(fileData->GetData(), fileData->GetFileEntry()->desc.lSizeUncompressed));
 
         return catalogInfo;
+    }
+
+    void Archive::OnSystemEntityActivated()
+    {
+        for (const auto& archiveInfo : m_archivesWithCatalogsToLoad)
+        {
+            AZStd::intrusive_ptr<INestedArchive> archive =
+                OpenArchive(archiveInfo.m_fullPath, archiveInfo.m_bindRoot, archiveInfo.m_flags, nullptr);
+            if (!archive)
+            {
+                continue;
+            }
+
+            ZipDir::CachePtr pZip = static_cast<NestedArchive*>(archive.get())->GetCache();
+
+            AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog;
+            auto bundleManifest = GetBundleManifest(pZip);
+            if (bundleManifest)
+            {
+                bundleCatalog = GetBundleCatalog(pZip, bundleManifest->GetCatalogName());
+            }
+
+            AZ::IO::ArchiveNotificationBus::Broadcast(
+                [](AZ::IO::ArchiveNotifications* archiveNotifications, const char* bundleName,
+                   AZStd::shared_ptr<AzFramework::AssetBundleManifest> bundleManifest, const AZ::IO::FixedMaxPath& nextBundle,
+                   AZStd::shared_ptr<AzFramework::AssetRegistry> bundleCatalog)
+                {
+                    archiveNotifications->BundleOpened(bundleName, bundleManifest, nextBundle.c_str(), bundleCatalog);
+                },
+                archiveInfo.m_strFileName.c_str(), bundleManifest, archiveInfo.m_nextBundle, bundleCatalog);
+        }
+        m_archivesWithCatalogsToLoad.clear();
     }
 }
