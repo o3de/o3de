@@ -8,13 +8,13 @@
 
 #include <DiffuseGlobalIllumination/DiffuseProbeGridDownsamplePass.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridFeatureProcessor.h>
-//#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
 {
     namespace Render
     {
         // --- Dedicated class for disabling ---
+        // Since this class was created to facilitate disabling of the associated pass, it could be removed in future if an alternative method is found
 
         RPI::Ptr<DiffuseProbeGridDownsamplePass> DiffuseProbeGridDownsamplePass::Create(const RPI::PassDescriptor& descriptor)
         {
