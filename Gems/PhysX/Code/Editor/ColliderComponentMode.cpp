@@ -60,21 +60,9 @@ namespace PhysX
 
     AZStd::vector<AzToolsFramework::ActionOverride> ColliderComponentMode::PopulateActionsImpl()
     {
-
-        AzToolsFramework::ActionOverride setDimensionsModeAction;
-        setDimensionsModeAction.SetUri(SetDimensionsSubModeActionUri);
-        setDimensionsModeAction.SetKeySequence(QKeySequence(Qt::Key_1));
-        setDimensionsModeAction.SetTitle("Set Resize Mode");
-        setDimensionsModeAction.SetTip("Set resize mode");
-        setDimensionsModeAction.SetEntityComponentIdPair(GetEntityComponentIdPair());
-        setDimensionsModeAction.SetCallback([this]()
-        {
-            SetCurrentMode(SubMode::Dimensions);
-        });
-
         AzToolsFramework::ActionOverride setOffsetModeAction;
         setOffsetModeAction.SetUri(SetOffsetSubModeActionUri);
-        setOffsetModeAction.SetKeySequence(QKeySequence(Qt::Key_2));
+        setOffsetModeAction.SetKeySequence(QKeySequence(Qt::Key_1));
         setOffsetModeAction.SetTitle("Set Offset Mode");
         setOffsetModeAction.SetTip("Set offset mode");
         setOffsetModeAction.SetEntityComponentIdPair(GetEntityComponentIdPair());
@@ -85,7 +73,7 @@ namespace PhysX
 
         AzToolsFramework::ActionOverride setRotationModeAction;
         setRotationModeAction.SetUri(SetRotationSubModeActionUri);
-        setRotationModeAction.SetKeySequence(QKeySequence(Qt::Key_3));
+        setRotationModeAction.SetKeySequence(QKeySequence(Qt::Key_2));
         setRotationModeAction.SetTitle("Set Rotation Mode");
         setRotationModeAction.SetTip("Set rotation mode");
         setRotationModeAction.SetEntityComponentIdPair(GetEntityComponentIdPair());
@@ -93,6 +81,17 @@ namespace PhysX
         {
             SetCurrentMode(SubMode::Rotation);
         });
+
+        AzToolsFramework::ActionOverride setDimensionsModeAction;
+        setDimensionsModeAction.SetUri(SetDimensionsSubModeActionUri);
+        setDimensionsModeAction.SetKeySequence(QKeySequence(Qt::Key_3));
+        setDimensionsModeAction.SetTitle("Set Resize Mode");
+        setDimensionsModeAction.SetTip("Set resize mode");
+        setDimensionsModeAction.SetEntityComponentIdPair(GetEntityComponentIdPair());
+        setDimensionsModeAction.SetCallback([this]()
+            {
+                SetCurrentMode(SubMode::Dimensions);
+            });
 
         AzToolsFramework::ActionOverride resetModeAction;
         resetModeAction.SetUri(ResetSubModeActionUri);
