@@ -61,17 +61,15 @@ namespace AZ
 
         void SwapChain::ProcessRecreation()
         {
-            if (m_pendingRecreation)
-            {
-                vkDeviceWaitIdle(static_cast<Device&>(GetDevice()).GetNativeDevice());
+            //if (m_pendingRecreation)
+            //{
+            //    ShutdownImages();
+            //    InvalidateNativeSwapChain();
+            //    CreateSwapchain();
+            //    InitImages();
 
-                ShutdownImages();
-                InvalidateNativeSwapChain();
-                CreateSwapchain();
-                InitImages();
-
-                m_pendingRecreation = false;
-            }
+            //    m_pendingRecreation = false;
+            //}
         }
 
         void SwapChain::SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval)
