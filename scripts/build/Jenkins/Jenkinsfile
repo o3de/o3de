@@ -440,11 +440,11 @@ def ArchiveArtifactsOnS3(String artifactsSourceDir, String s3Prefix="", boolean 
     // archiveArtifacts is very slow, so we only archive one file and upload the rest artifacts to the same bucket using S3 CLI.
     archiveArtifacts artifacts: "${s3Prefix}/build_url.txt"
     def command = "aws s3 cp ${artifactsSourceDir} s3://${env.JENKINS_ARTIFACTS_S3_BUCKET}/${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix} "
-    includes.each{ include ->
-        command += "--include \"${include}\" "
-    }
     excludes.each{ exclude ->
         command += "--exclude \"${exclude}\" "
+    }
+    includes.each{ include ->
+        command += "--include \"${include}\" "
     }
     if (recursive) command += "--recursive "
     palSh(command, "Archiving artifacts to ${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix}", false)
