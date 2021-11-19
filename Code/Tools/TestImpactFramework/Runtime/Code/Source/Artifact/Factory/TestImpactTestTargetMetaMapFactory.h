@@ -11,8 +11,6 @@
 #include <TestImpactFramework/TestImpactTestSequence.h>
 #include <Artifact/Static/TestImpactTestTargetMeta.h>
 
-#include <AzCore/std/containers/vector.h>
-
 namespace TestImpact
 {
     //! Constructs a list of test target meta-data artifacts of the specified suite type from the specified master test list data.

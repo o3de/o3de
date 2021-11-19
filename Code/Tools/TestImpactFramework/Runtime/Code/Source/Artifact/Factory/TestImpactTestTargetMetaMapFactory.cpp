@@ -13,8 +13,6 @@
 
 #include <AzCore/JSON/document.h>
 
-#include <cstring>
-
 namespace TestImpact
 {
     TestTargetMetaMap TestTargetMetaMapFactory(const AZStd::string& masterTestListData, SuiteType suiteType)
@@ -50,7 +48,7 @@ namespace TestImpact
             TimeoutKey
         };
 
-        AZ_TestImpact_Eval(!masterTestListData.empty(), ArtifactException, "test meta-data cannot be empty");
+        AZ_TestImpact_Eval(!masterTestListData.empty(), ArtifactException, "Test meta-data cannot be empty");
 
         TestTargetMetaMap testMetas;
         rapidjson::Document masterTestList;
@@ -71,9 +69,9 @@ namespace TestImpact
                 if (const auto suiteName = suite[Keys[SuiteKey]].GetString();
                     strcmp(SuiteTypeAsString(suiteType).c_str(), suiteName) == 0)
                 {
-                    testMeta.m_suite = suiteName;
+                    testMeta.m_suiteMeta.m_name = suiteName;
+                    testMeta.m_suiteMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
                     testMeta.m_customArgs = suite[Keys[CommandKey]].GetString();
-                    testMeta.m_timeout = AZStd::chrono::seconds{ suite[Keys[TimeoutKey]].GetUint() };
                     if (const auto buildTypeString = test[Keys[LaunchMethodKey]].GetString(); strcmp(buildTypeString, Keys[TestRunnerKey]) == 0)
                     {
                         testMeta.m_launchMethod = LaunchMethod::TestRunner;

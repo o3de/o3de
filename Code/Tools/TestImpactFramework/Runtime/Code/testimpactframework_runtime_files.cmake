@@ -27,6 +27,8 @@ set(FILES
     Source/Artifact/TestImpactArtifactException.h
     Source/Artifact/Factory/TestImpactBuildTargetDescriptorFactory.cpp
     Source/Artifact/Factory/TestImpactBuildTargetDescriptorFactory.h
+    Source/Artifact/Factory/TestImpactTestScriptDescriptorFactory.cpp
+    Source/Artifact/Factory/TestImpactTestScriptDescriptorFactory.h
     Source/Artifact/Factory/TestImpactTestEnumerationSuiteFactory.cpp
     Source/Artifact/Factory/TestImpactTestEnumerationSuiteFactory.h
     Source/Artifact/Factory/TestImpactTestRunSuiteFactory.cpp
@@ -43,9 +45,11 @@ set(FILES
     Source/Artifact/Static/TestImpactTargetDescriptorCompiler.h
     Source/Artifact/Static/TestImpactProductionTargetDescriptor.cpp
     Source/Artifact/Static/TestImpactProductionTargetDescriptor.h
+    Source/Artifact/Static/TestImpactTestSuiteMeta.h
     Source/Artifact/Static/TestImpactTestTargetMeta.h
     Source/Artifact/Static/TestImpactTestTargetDescriptor.cpp
     Source/Artifact/Static/TestImpactTestTargetDescriptor.h
+    Source/Artifact/Static/TestImpactTestScriptDescriptor.h
     Source/Artifact/Static/TestImpactDependencyGraphData.h
     Source/Artifact/Dynamic/TestImpactTestEnumerationSuite.h
     Source/Artifact/Dynamic/TestImpactTestRunSuite.h

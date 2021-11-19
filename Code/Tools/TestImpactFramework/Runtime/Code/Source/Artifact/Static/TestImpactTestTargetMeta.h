@@ -8,9 +8,9 @@
 
 #pragma once
 
+#include <Artifact/Static/TestImpactTestSuiteMeta.h>
+
 #include <AzCore/std/containers/unordered_map.h>
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/chrono/chrono.h>
 
 namespace TestImpact
 {
@@ -24,9 +24,8 @@ namespace TestImpact
     //! Artifact produced by the build system for each test target containing the additional meta-data about the test.
     struct TestTargetMeta
     {
-        AZStd::string m_suite;
+        TestSuiteMeta m_suiteMeta;
         AZStd::string m_customArgs;
-        AZStd::chrono::milliseconds m_timeout = AZStd::chrono::milliseconds{ 0 };
         LaunchMethod m_launchMethod = LaunchMethod::TestRunner;
     };
 

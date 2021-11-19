@@ -18,7 +18,7 @@ namespace TestImpact
 
     const AZStd::string& TestTarget::GetSuite() const
     {
-        return m_testMetaData.m_suite;
+        return m_testMetaData.m_suiteMeta.m_name;
     }
 
     const AZStd::string& TestTarget::GetCustomArgs() const
@@ -28,7 +28,7 @@ namespace TestImpact
 
     AZStd::chrono::milliseconds TestTarget::GetTimeout() const
     {
-        return m_testMetaData.m_timeout;
+        return m_testMetaData.m_suiteMeta.m_timeout;
     }
 
     LaunchMethod TestTarget::GetLaunchMethod() const
