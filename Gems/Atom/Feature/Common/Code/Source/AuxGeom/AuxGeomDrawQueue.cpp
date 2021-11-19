@@ -322,9 +322,14 @@ namespace AZ
             return Matrix3x3::CreateFromColumns(unitOrthogonal, unitDirection, unitCross);
         }
 
+        void AuxGeomDrawQueue::DrawSphere(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex)
+        {
+            DrawSphereCommon(center, direction, radius, color, style, depthTest, depthWrite, faceCull, viewProjOverrideIndex, false);
+        }
+
         void AuxGeomDrawQueue::DrawSphere(const AZ::Vector3& center, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex)
         {
-            DrawSphereCommon(center, AZ::Vector3::CreateAxisY(), radius, color, style, depthTest, depthWrite, faceCull, viewProjOverrideIndex, false);
+            DrawSphereCommon(center, AZ::Vector3::CreateAxisZ(), radius, color, style, depthTest, depthWrite, faceCull, viewProjOverrideIndex, false);
         }
 
         void AuxGeomDrawQueue::DrawHemisphere(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex)
