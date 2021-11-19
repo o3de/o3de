@@ -30,11 +30,12 @@ function(ly_copy source_file target_directory)
             # which is the correct relative path based on the source location. But when we copy it to their subfolder, 
             # the rpath needs to be adjusted to the parent ($ORIGIN/..)
             if("${source_file}" MATCHES "qt/plugins" AND "${target_filename_ext}" STREQUAL ".so")
-                file(RPATH_CHANGE FILE "${target_directory}/${target_filename}" OLD_RPATH "\$ORIGIN/../../lib" NEW_RPATH "\$ORIGIN/..")
+                file(RPATH_CHANGE FILE "${target_file}" OLD_RPATH "\$ORIGIN/../../lib" NEW_RPATH "\$ORIGIN/..")
             endif()
-
         endif()
     endif()    
 endfunction()
 
 @LY_COPY_COMMANDS@
+
+file(TOUCH @STAMP_OUTPUT_FILE@)
