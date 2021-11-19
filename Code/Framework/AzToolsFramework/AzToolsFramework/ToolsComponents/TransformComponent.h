@@ -242,6 +242,8 @@ namespace AzToolsFramework
             // element is used rather than a data element.
             bool m_addNonUniformScaleButton = false;
 
+            bool m_initialized = false;
+
             // Deprecated
             AZ::InterpolationMode m_interpolatePosition;
             AZ::InterpolationMode m_interpolateRotation;
