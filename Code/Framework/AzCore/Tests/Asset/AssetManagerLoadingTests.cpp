@@ -2297,6 +2297,45 @@ namespace UnitTest
             AssetManager::Destroy();
         }
 
+        struct MockAssetContainer : AssetContainer
+        {
+            MockAssetContainer(Asset<AssetData> assetData, const AssetLoadParameters& loadParams)
+            {
+                // Copying the code in the original constructor, we can't call that constructor because it will not invoke our virtual method
+                m_rootAsset = AssetInternal::WeakAsset<AssetData>(assetData);
+                m_containerAssetId = m_rootAsset.GetId();
+
+                AddDependentAssets(assetData, loadParams);
+            }
+
+        protected:
+            AZStd::vector<AZStd::pair<AssetInfo, Asset<AssetData>>> CreateAndQueueDependentAssets(
+                const AZStd::vector<AssetInfo>& dependencyInfoList, const AssetLoadParameters& loadParamsCopyWithNoLoadingFilter) override
+            {
+                auto result = AssetContainer::CreateAndQueueDependentAssets(dependencyInfoList, loadParamsCopyWithNoLoadingFilter);
+
+                // Sleep for a long enough time to allow asset loads to complete and start triggering AssetReady events
+                // This forces the race condition to occur
+                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(500));
+
+                return result;
+            }
+        };
+
+        struct MockAssetManager : AssetManager
+        {
+            explicit MockAssetManager(const Descriptor& desc)
+                : AssetManager(desc)
+            {
+            }
+
+        protected:
+            AZStd::shared_ptr<AssetContainer> CreateAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams) const override
+            {
+                return AZStd::shared_ptr<AssetContainer>(aznew MockAssetContainer(asset, loadParams));
+            }
+        };
+
         void ParallelDeepAssetReferences()
         {
             SerializeContext context;
@@ -2304,7 +2343,7 @@ namespace UnitTest
             AssetWithAssetReference::Reflect(context);
 
             AssetManager::Descriptor desc;
-            AssetManager::Create(desc);
+            AssetManager::SetInstance(aznew MockAssetManager(desc));
 
             auto& db = AssetManager::Instance();
 
@@ -2327,17 +2366,17 @@ namespace UnitTest
 
                 // AssetC is MYASSETC
                 AssetWithAssetReference c;
-                c.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(AssetId(MyAssetDId)); // point at D
+                c.m_asset = db.CreateAsset<AssetWithSerializedData>(AssetId(MyAssetDId)); // point at D
                 EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset3.txt", AZ::DataStream::ST_XML, &c, &context));
 
                 // AssetB is MYASSETB
                 AssetWithAssetReference b;
-                b.m_asset = AssetManager::Instance().CreateAsset<AssetWithAssetReference>(AssetId(MyAssetCId)); // point at C
+                b.m_asset = db.CreateAsset<AssetWithAssetReference>(AssetId(MyAssetCId)); // point at C
                 EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset2.txt", AZ::DataStream::ST_XML, &b, &context));
 
                 // AssetA will be written to disk as MYASSETA
                 AssetWithAssetReference a;
-                a.m_asset = AssetManager::Instance().CreateAsset<AssetWithAssetReference>(AssetId(MyAssetBId)); // point at B
+                a.m_asset = db.CreateAsset<AssetWithAssetReference>(AssetId(MyAssetBId)); // point at B
                 EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset1.txt", AZ::DataStream::ST_XML, &a, &context));
             }
 
@@ -2546,7 +2585,7 @@ namespace UnitTest
     TEST_F(AssetJobsMultithreadedTest, DISABLED_ParallelDeepAssetReferences)
 #else
     // temporarily disabled until sporadic failures can be root caused
-    TEST_F(AssetJobsMultithreadedTest, DISABLED_ParallelDeepAssetReferences)
+    TEST_F(AssetJobsMultithreadedTest, ParallelDeepAssetReferences)
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         ParallelDeepAssetReferences();
