@@ -4705,13 +4705,6 @@ namespace AzToolsFramework
     {
         if (mimeData->hasFormat(AssetBrowser::AssetBrowserEntry::GetMimeType()))
         {
-            // extra special case:  MTLs from FBX drags are ignored.  are we dragging a FBX file?
-            bool isDraggingFBXFile = false;
-            AssetBrowser::AssetBrowserEntry::ForEachEntryInMimeData<AssetBrowser::SourceAssetBrowserEntry>(mimeData, [&](const AssetBrowser::SourceAssetBrowserEntry* source)
-            {
-                isDraggingFBXFile = isDraggingFBXFile || AzFramework::StringFunc::Equal(source->GetExtension().c_str(), ".fbx", false);
-            });
-
             // the usual case - we only allow asset browser drops of assets that have actually been associated with a kind of component.
             AssetBrowser::AssetBrowserEntry::ForEachEntryInMimeData<AssetBrowser::ProductAssetBrowserEntry>(mimeData, [&](const AssetBrowser::ProductAssetBrowserEntry* product)
             {
@@ -4723,17 +4716,7 @@ namespace AzToolsFramework
 
                 if (canCreateComponent && !componentTypeId.IsNull())
                 {
-                    // we have a component type that handles this asset.
-                    // but we disallow it if its a MTL file from a FBX and the FBX itself is being dragged.  Its still allowed
-                    // to drag the actual MTL.
-                    EBusFindAssetTypeByName materialAssetTypeResult("Material");
-                    AZ::AssetTypeInfoBus::BroadcastResult(materialAssetTypeResult, &AZ::AssetTypeInfo::GetAssetType);
-                    AZ::Data::AssetType materialAssetType = materialAssetTypeResult.GetAssetType();
-
-                    if ((!isDraggingFBXFile) || (product->GetAssetType() != materialAssetType))
-                    {
-                        callbackFunction(product);
-                    }
+                    callbackFunction(product);
                 }
             });
         }

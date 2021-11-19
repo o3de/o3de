@@ -53,7 +53,7 @@ namespace O3DE::ProjectManager
             }
         }
     public slots:
-        void UpdateUIProgress(int progress);
+        void UpdateUIProgress(int bytesDownloaded, int totalBytes);
         void HandleResults(const QString& result);
 
     signals:
@@ -61,14 +61,12 @@ namespace O3DE::ProjectManager
         void Done(const QString& gemName, bool success = true);
         void GemDownloadAdded(const QString& gemName);
         void GemDownloadRemoved(const QString& gemName);
-        void GemDownloadProgress(const QString& gemName, int percentage);
+        void GemDownloadProgress(const QString& gemName, int bytesDownloaded, int totalBytes);
 
     private:
         DownloadWorker* m_worker;
         QThread m_workerThread;
         QWidget* m_parent;
         AZStd::vector<QString> m_gemNames;
-
-        int m_lastProgress;
     };
 } // namespace O3DE::ProjectManager

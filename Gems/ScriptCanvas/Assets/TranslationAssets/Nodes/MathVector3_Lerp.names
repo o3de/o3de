@@ -7,8 +7,7 @@
             "details": {
                 "name": "Lerp",
                 "category": "Math/Vector3",
-                "tooltip": "returns the linear interpolation (From + ((To - From) * T)",
-                "subtitle": "Vector3"
+                "tooltip": "Returns the linear interpolation (From + ((To - From) * T)"
             },
             "slots": [
                 {
@@ -24,27 +23,27 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: From",
+                    "key": "DataInput_From",
                     "details": {
-                        "name": "Vector3: From"
+                        "name": "From"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: To",
+                    "key": "DataInput_To",
                     "details": {
-                        "name": "Vector3: To"
+                        "name": "To"
                     }
                 },
                 {
-                    "key": "DataInput_Number: T",
+                    "key": "DataInput_T",
                     "details": {
-                        "name": "Number: T"
+                        "name": "T"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

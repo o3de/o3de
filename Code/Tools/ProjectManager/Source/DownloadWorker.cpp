@@ -20,12 +20,13 @@ namespace O3DE::ProjectManager
 
     void DownloadWorker::StartDownload()
     {
-        auto gemDownloadProgress = [=](int downloadProgress)
+        auto gemDownloadProgress = [=](int bytesDownloaded, int totalBytes)
         {
-            m_downloadProgress = downloadProgress;
-            emit UpdateProgress(downloadProgress);
+            emit UpdateProgress(bytesDownloaded, totalBytes);
         };
-        AZ::Outcome<void, AZStd::string> gemInfoResult = PythonBindingsInterface::Get()->DownloadGem(m_gemName, gemDownloadProgress);
+        AZ::Outcome<void, AZStd::string> gemInfoResult =
+            PythonBindingsInterface::Get()->DownloadGem(m_gemName, gemDownloadProgress, /*force*/true);
+
         if (gemInfoResult.IsSuccess())
         {
             emit Done("");

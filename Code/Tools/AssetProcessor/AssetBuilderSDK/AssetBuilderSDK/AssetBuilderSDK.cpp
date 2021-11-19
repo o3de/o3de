@@ -690,7 +690,6 @@ namespace AssetBuilderSDK
     static const char* textureExtensions = ".dds";
     static const char* staticMeshExtensions = ".cgf";
     static const char* skinnedMeshExtensions = ".skin";
-    static const char* materialExtensions = ".mtl";
 
     // MIPS
     static const int c_MaxMipsCount = 11; // 11 is for 8k textures non-compressed. When not compressed it is using one file per mip.
@@ -803,11 +802,6 @@ namespace AssetBuilderSDK
         if (AzFramework::StringFunc::Find(textureExtensions, extension.c_str()) != AZStd::string::npos)
         {
             return textureAssetType;
-        }
-
-        if (AzFramework::StringFunc::Find(materialExtensions, extension.c_str()) != AZStd::string::npos)
-        {
-            return materialAssetType;
         }
 
         if (AzFramework::StringFunc::Find(staticMeshExtensions, extension.c_str()) != AZStd::string::npos)
