@@ -20,9 +20,9 @@
 namespace AzToolsFramework::ViewportUi::Internal
 {
     const static int HighlightBorderSize = 5;
-    const static char* HighlightBorderColor = "#4A90E2";
+    const static char* const HighlightBorderColor = "#4A90E2";
     const static int HighlightBorderBackButtonIconSize = 20;
-    const static char* HighlightBorderBackButtonIconFile = "X_axis.svg";
+    const static char* const HighlightBorderBackButtonIconFile = "X_axis.svg";
 
     static void UnparentWidgets(ViewportUiElementIdInfoLookup& viewportUiElementIdInfoLookup)
     {
@@ -297,10 +297,10 @@ namespace AzToolsFramework::ViewportUi::Internal
     void ViewportUiDisplay::CreateViewportBorder(
         const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback)
     {
-        const AZStd::string styleSheet = AZStd::string::format(
-            "border: %dpx solid %s; border-top: %dpx solid %s;", HighlightBorderSize, HighlightBorderColor, ViewportUiTopBorderSize,
-            HighlightBorderColor);
-        m_uiOverlay.setStyleSheet(styleSheet.c_str());
+        m_uiOverlay.setStyleSheet(QString("border: %1px solid %2; border-top: %3px solid %4;")
+                                      .arg(
+                                          QString::number(HighlightBorderSize), HighlightBorderColor,
+                                          QString::number(ViewportUiTopBorderSize), HighlightBorderColor));
         m_uiOverlayLayout.setContentsMargins(
             HighlightBorderSize + ViewportUiOverlayMargin, ViewportUiTopBorderSize + ViewportUiOverlayMargin,
             HighlightBorderSize + ViewportUiOverlayMargin, HighlightBorderSize + ViewportUiOverlayMargin);
@@ -370,9 +370,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_fullScreenLayout.setContentsMargins(0, 0, 0, 0);
         m_fullScreenLayout.addLayout(&m_uiOverlayLayout, 0, 0, 1, 1);
 
-        // format the label which will appear on top of the highlight border
-        const AZStd::string borderStyleSheet = AZStd::string::format("background-color: %s; border: none;", HighlightBorderColor);
-        m_viewportBorderText.setStyleSheet(borderStyleSheet.c_str());
+        // style the label which will appear on top of the highlight border
+        m_viewportBorderText.setStyleSheet(QString("background-color: %1; border: none").arg(HighlightBorderColor));
         m_viewportBorderText.setFixedHeight(ViewportUiTopBorderSize);
         m_viewportBorderText.hide();
         m_fullScreenLayout.addWidget(&m_viewportBorderText, 0, 0, Qt::AlignTop | Qt::AlignHCenter);
@@ -380,7 +379,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         m_viewportBorderBackButton.setAutoRaise(true); // hover highlight
         m_viewportBorderBackButton.hide();
 
-        QIcon backButtonIcon(QString(AZStd::string::format(":/stylesheet/img/UI20/toolbar/%s", HighlightBorderBackButtonIconFile).c_str()));
+        QIcon backButtonIcon(QString(":/stylesheet/img/UI20/toolbar/%1").arg(HighlightBorderBackButtonIconFile));
         m_viewportBorderBackButton.setIcon(backButtonIcon);
         m_viewportBorderBackButton.setIconSize(QSize(HighlightBorderBackButtonIconSize, HighlightBorderBackButtonIconSize));
 
@@ -447,16 +446,9 @@ namespace AzToolsFramework::ViewportUi::Internal
         region += m_uiOverlay.childrenRegion();
 
         // set viewport ui visibility depending on if elements are present
-        if (region.isEmpty() || !UiDisplayEnabled())
-        {
-            m_uiMainWindow.hide();
-            m_uiOverlay.hide();
-        }
-        else
-        {
-            m_uiMainWindow.show();
-            m_uiOverlay.show();
-        }
+        const bool visible = !region.isEmpty() && UiDisplayEnabled();
+        m_uiMainWindow.setVisible(visible);
+        m_uiOverlay.setVisible(visible);
 
         m_uiMainWindow.setMask(region);
     }
