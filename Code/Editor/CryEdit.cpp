@@ -3833,7 +3833,7 @@ void CCryEditApp::SetEditorWindowTitle(QString sTitleStr, QString sPreTitleStr, 
     {
         if (sTitleStr.isEmpty())
         {
-            sTitleStr = QObject::tr("O3DE Editor [Stable 21.11]");
+            sTitleStr = QObject::tr("O3DE Editor [Developer Preview]");
         }
 
         if (!sPreTitleStr.isEmpty())
