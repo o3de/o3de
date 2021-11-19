@@ -710,8 +710,6 @@ namespace AzToolsFramework
                 bool isNewParentOwnedByDifferentInstance = false;
 
                 AzFramework::EntityContextId editorEntityContextId = AzToolsFramework::GetEntityContextId();
-                AZ::EntityId focusedInstanceContainerEntityId =
-                    m_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
 
                 bool isInFocusTree = m_prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(entityId);
                 bool isOwnedByFocusedPrefabInstance = m_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityId);
