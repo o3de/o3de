@@ -157,7 +157,7 @@ namespace SandboxEditor
                     // Only insert the double click timing once we're done processing events, to avoid a false IsDoubleClick positive
                     if (finishedProcessingEvents)
                     {
-                        m_pendingDoubleClicks[mouseButton] = m_curTime;
+                        m_pendingDoubleClicks[mouseButton] = { m_currentTime, m_mouseInteraction.m_mousePick.m_screenCoordinates };
                     }
                     eventType = MouseEvent::Down;
                 }
@@ -251,17 +251,22 @@ namespace SandboxEditor
 
     void ViewportManipulatorControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
     {
-        m_curTime = event.m_time;
+        m_currentTime = event.m_time;
     }
 
     bool ViewportManipulatorControllerInstance::IsDoubleClick(AzToolsFramework::ViewportInteraction::MouseButton button) const
     {
-        auto clickIt = m_pendingDoubleClicks.find(button);
-        if (clickIt == m_pendingDoubleClicks.end())
+        if (auto clickIt = m_pendingDoubleClicks.find(button); clickIt != m_pendingDoubleClicks.end())
         {
-            return false;
+            const double doubleClickThresholdMilliseconds = qApp->doubleClickInterval();
+            const bool insideTimeThreshold =
+                (m_currentTime.GetMilliseconds() - clickIt->second.m_time.GetMilliseconds()) < doubleClickThresholdMilliseconds;
+            const bool insideDistanceThreshold =
+                AzFramework::ScreenVectorLength(clickIt->second.m_position - m_mouseInteraction.m_mousePick.m_screenCoordinates) <
+                AzFramework::DefaultMouseMoveDeadZone;
+            return insideTimeThreshold && insideDistanceThreshold;
         }
-        const double doubleClickThresholdMilliseconds = qApp->doubleClickInterval();
-        return (m_curTime.GetMilliseconds() - clickIt->second.GetMilliseconds()) < doubleClickThresholdMilliseconds;
+
+        return false;
     }
 } // namespace SandboxEditor
