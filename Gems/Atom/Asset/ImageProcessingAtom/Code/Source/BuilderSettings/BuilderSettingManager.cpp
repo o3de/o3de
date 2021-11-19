@@ -146,6 +146,25 @@ namespace ImageProcessingAtom
         return nullptr;
     }
 
+    AZStd::vector<AZStd::string> BuilderSettingManager::GetFileMasksForPreset(const PresetName& presetName) const
+    {
+        AZStd::vector<AZStd::string> fileMasks;
+        
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_presetMapLock);
+        for (const auto& mapping:m_presetFilterMap)
+        {
+            for (const auto& preset : mapping.second)
+            {
+                if (preset == presetName)
+                {
+                    fileMasks.push_back(mapping.first);
+                    break;
+                }
+            }
+        }
+        return fileMasks;
+    }
+
     const BuilderSettings* BuilderSettingManager::GetBuilderSetting(const PlatformName& platform) const
     {
         auto itr = m_builderSettings.find(platform);
@@ -175,6 +194,13 @@ namespace ImageProcessingAtom
     {
         AZStd::lock_guard<AZStd::recursive_mutex> lock(m_presetMapLock);
         return m_presetFilterMap;
+    }
+
+    const AZStd::unordered_set<PresetName>& BuilderSettingManager::GetFullPresetList() const
+    {
+        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_presetMapLock);
+        AZStd::string noFilter = AZStd::string();
+        return m_presetFilterMap.find(noFilter)->second;
     }
 
     const PresetName BuilderSettingManager::GetPresetNameFromId(const AZ::Uuid& presetId)
