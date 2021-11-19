@@ -432,14 +432,14 @@ def ExportTestScreenshots(Map options, String branchName, String platformName, S
 // All files are included by default.
 // --include will only re-include files that have been excluded from an --exclude filter.
 //See more details at https://docs.aws.amazon.com/cli/latest/reference/s3/#use-of-exclude-and-include-filters
-def ArchiveArtifactsOnS3(String artifactsSourceDir, String s3Prefix="", boolean recursive=false, List<String> includes=[], List<String> excludes=[]) {
+def ArchiveArtifactsOnS3(String artifactsSource, String s3Prefix="", boolean recursive=false, List<String> includes=[], List<String> excludes=[]) {
     if (!fileExists(s3Prefix)) {
         palMkdir(s3Prefix)
     }
     palSh("echo ${env.BUILD_URL} > ${s3Prefix}/build_url.txt")
     // archiveArtifacts is very slow, so we only archive one file and upload the rest artifacts to the same bucket using S3 CLI.
     archiveArtifacts artifacts: "${s3Prefix}/build_url.txt"
-    def command = "aws s3 cp ${artifactsSourceDir} s3://${env.JENKINS_ARTIFACTS_S3_BUCKET}/${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix} "
+    def command = "aws s3 cp ${artifactsSource} s3://${env.JENKINS_ARTIFACTS_S3_BUCKET}/${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix} "
     excludes.each{ exclude ->
         command += "--exclude \"${exclude}\" "
     }
