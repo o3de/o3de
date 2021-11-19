@@ -9,13 +9,6 @@ REM
 
 SETLOCAL EnableDelayedExpansion
 
-REM Jenkins reports MSB8029 when TMP/TEMP is not defined, define a dummy folder
-SET TMP=%cd%/temp
-SET TEMP=%cd%/temp
-IF NOT EXIST %TMP% (
-    MKDIR temp
-)
-
 CALL %~dp0env_windows.cmd
 
 IF NOT EXIST "%OUTPUT_DIRECTORY%" (
