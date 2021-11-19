@@ -57,6 +57,8 @@ namespace ImageProcessingAtom
         
         const PresetSettings* GetPreset(const PresetName& presetName, const PlatformName& platform = "", AZStd::string_view* settingsFilePathOut = nullptr) const;
 
+        AZStd::vector<AZStd::string> GetFileMasksForPreset(const PresetName& presetName) const;
+
         const BuilderSettings* GetBuilderSetting(const PlatformName& platform) const;
                 
         //! Return A list of platform supported
@@ -66,6 +68,8 @@ namespace ImageProcessingAtom
         //!      @key filemask string, empty string means no filemask
         //!      @value set of preset setting names supporting the specified filemask
         const AZStd::map<FileMask, AZStd::unordered_set<PresetName>>& GetPresetFilterMap() const;
+
+        const AZStd::unordered_set<PresetName>& GetFullPresetList() const;
 
         //! Find preset name based on the preset id.
         const PresetName GetPresetNameFromId(const AZ::Uuid& presetId);
