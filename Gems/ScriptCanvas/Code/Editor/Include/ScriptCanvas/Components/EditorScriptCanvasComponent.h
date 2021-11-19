@@ -45,7 +45,6 @@ namespace ScriptCanvasEditor
         AZ_COMPONENT(EditorScriptCanvasComponent, "{C28E2D29-0746-451D-A639-7F113ECF5D72}", AzToolsFramework::Components::EditorComponentBase);
 
         EditorScriptCanvasComponent();
-        // EditorScriptCanvasComponent(AZ::Data::Asset<ScriptCanvasAsset> asset);
         EditorScriptCanvasComponent(const SourceHandle& sourceHandle);
         ~EditorScriptCanvasComponent() override;
 
@@ -130,7 +129,7 @@ namespace ScriptCanvasEditor
         void UpdateName();
 
         //=====================================================================
-        void OnScriptCanvasAssetReady(const SourceHandle& sourceHandle);
+        void UpdatePropertyDisplay(const SourceHandle& sourceHandle);
         //=====================================================================
 
         void BuildGameEntityData();

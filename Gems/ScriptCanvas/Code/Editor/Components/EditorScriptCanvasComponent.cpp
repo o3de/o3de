@@ -394,7 +394,7 @@ namespace ScriptCanvasEditor
         {
             if (auto loaded = LoadFromFile(assetId.Path().c_str()); loaded.IsSuccess())
             {
-                OnScriptCanvasAssetReady(loaded.GetValue());
+                UpdatePropertyDisplay(loaded.GetValue());
             }
         }
 
@@ -421,14 +421,38 @@ namespace ScriptCanvasEditor
         }
     }
 
-    void EditorScriptCanvasComponent::SourceFileChanged(AZStd::string /*relativePath*/, AZStd::string /*scanFolder*/, AZ::Uuid /*fileAssetId*/)
-    {}
+    void EditorScriptCanvasComponent::SourceFileChanged([[maybe_unused]] AZStd::string relativePath
+        , [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid fileAssetId)
+    {
+        if (fileAssetId == m_sourceHandle.Id())
+        {
+            if (auto handle = CompleteDescription(SourceHandle(nullptr, fileAssetId, {})))
+            {
+                // consider queueing on tick bus
+                OnScriptCanvasAssetChanged(*handle);
+            }
+        }
+    }
 
-    void EditorScriptCanvasComponent::SourceFileRemoved(AZStd::string /*relativePath*/, AZStd::string /*scanFolder*/, AZ::Uuid /*fileAssetId*/)
-    {}
+    void EditorScriptCanvasComponent::SourceFileRemoved([[maybe_unused]] AZStd::string relativePath
+        , [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid fileAssetId)
+    {
+        if (fileAssetId == m_sourceHandle.Id())
+        {
+            m_removedHandle = m_sourceHandle;
+            OnScriptCanvasAssetChanged(m_removedHandle);
+        }
+    }
 
-    void EditorScriptCanvasComponent::SourceFileFailed(AZStd::string /*relativePath*/, AZStd::string /*scanFolder*/, AZ::Uuid /*fileAssetId*/)
-    {}
+    void EditorScriptCanvasComponent::SourceFileFailed([[maybe_unused]] AZStd::string relativePath
+        , [[maybe_unused]] AZStd::string scanFolder, [[maybe_unused]] AZ::Uuid fileAssetId)
+    {
+        if (fileAssetId == m_sourceHandle.Id())
+        {
+            m_removedHandle = m_sourceHandle;
+            OnScriptCanvasAssetChanged(m_removedHandle);
+        }
+    }
 
     bool EditorScriptCanvasComponent::HasAssetId() const
     {
@@ -442,7 +466,7 @@ namespace ScriptCanvasEditor
         return ScriptCanvas::GraphIdentifier(m_sourceHandle.Id(), 0);
     }
 
-    void EditorScriptCanvasComponent::OnScriptCanvasAssetReady(const SourceHandle& sourceHandle)
+    void EditorScriptCanvasComponent::UpdatePropertyDisplay(const SourceHandle& sourceHandle)
     {
         if (sourceHandle.IsValid())
         {
