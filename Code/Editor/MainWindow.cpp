@@ -708,14 +708,10 @@ void MainWindow::InitActions()
         .SetShortcut(QKeySequence::Undo)
         .SetReserved()
         .SetStatusTip(tr("Undo last operation"))
-        //.SetMenu(new QMenu("FIXME"))
-        .SetApplyHoverEffect()
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateUndo);
     am->AddAction(ID_REDO, tr("&Redo"))
         .SetShortcut(AzQtComponents::RedoKeySequence)
         .SetReserved()
-        //.SetMenu(new QMenu("FIXME"))
-        .SetApplyHoverEffect()
         .SetStatusTip(tr("Redo last undo operation"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateRedo);
 
@@ -731,7 +727,6 @@ void MainWindow::InitActions()
     // Modify actions
     am->AddAction(AzToolsFramework::EditModeMove, tr("Move"))
         .SetIcon(Style::icon("Move"))
-        .SetApplyHoverEffect()
         .SetShortcut(tr("1"))
         .SetToolTip(tr("Move (1)"))
         .SetCheckable(true)
@@ -757,7 +752,6 @@ void MainWindow::InitActions()
             });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
     am->AddAction(AzToolsFramework::EditModeRotate, tr("Rotate"))
         .SetIcon(Style::icon("Translate"))
-        .SetApplyHoverEffect()
         .SetShortcut(tr("2"))
         .SetToolTip(tr("Rotate (2)"))
         .SetCheckable(true)
@@ -783,7 +777,6 @@ void MainWindow::InitActions()
             });
     am->AddAction(AzToolsFramework::EditModeScale, tr("Scale"))
         .SetIcon(Style::icon("Scale"))
-        .SetApplyHoverEffect()
         .SetShortcut(tr("3"))
         .SetToolTip(tr("Scale (3)"))
         .SetCheckable(true)
@@ -808,7 +801,6 @@ void MainWindow::InitActions()
 
     am->AddAction(AzToolsFramework::SnapToGrid, tr("Snap to grid"))
         .SetIcon(Style::icon("Grid"))
-        .SetApplyHoverEffect()
         .SetShortcut(tr("G"))
         .SetToolTip(tr("Snap to grid (G)"))
         .SetStatusTip(tr("Toggles snap to grid"))
@@ -821,7 +813,6 @@ void MainWindow::InitActions()
 
     am->AddAction(AzToolsFramework::SnapAngle, tr("Snap angle"))
         .SetIcon(Style::icon("Angle"))
-        .SetApplyHoverEffect()
         .SetStatusTip(tr("Snap angle"))
         .SetCheckable(true)
         .RegisterUpdateCallback([](QAction* action) {
@@ -961,7 +952,6 @@ void MainWindow::InitActions()
         .SetShortcut(tr("Ctrl+P"))
         .SetToolTip(tr("Simulate (Ctrl+P)"))
         .SetStatusTip(tr("Enable processing of Physics and AI."))
-        .SetApplyHoverEffect()
         .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnSwitchPhysicsUpdate);
     am->AddAction(ID_GAME_SYNCPLAYER, tr("Move Player and Camera Separately")).SetCheckable(true)
@@ -1051,8 +1041,7 @@ void MainWindow::InitActions()
 
     // Editors Toolbar actions
     am->AddAction(ID_OPEN_ASSET_BROWSER, tr("Asset browser"))
-        .SetToolTip(tr("Open Asset Browser"))
-        .SetApplyHoverEffect();
+        .SetToolTip(tr("Open Asset Browser"));
 
     AZ::EBusReduceResult<bool, AZStd::logical_or<bool>> emfxEnabled(false);
     using AnimationRequestBus = AzToolsFramework::EditorAnimationSystemRequestsBus;
@@ -1062,8 +1051,7 @@ void MainWindow::InitActions()
     {
         QAction* action = am->AddAction(ID_OPEN_EMOTIONFX_EDITOR, tr("Animation Editor"))
             .SetToolTip(tr("Open Animation Editor (PREVIEW)"))
-            .SetIcon(QIcon(":/EMotionFX/EMFX_icon_32x32.png"))
-            .SetApplyHoverEffect();
+            .SetIcon(QIcon(":/EMotionFX/EMFX_icon_32x32.png"));
         QObject::connect(action, &QAction::triggered, this, []() {
             QtViewPaneManager::instance()->OpenPane(LyViewPane::AnimationEditor);
         });
@@ -1071,12 +1059,10 @@ void MainWindow::InitActions()
 
     am->AddAction(ID_OPEN_AUDIO_CONTROLS_BROWSER, tr("Audio Controls Editor"))
         .SetToolTip(tr("Open Audio Controls Editor"))
-        .SetIcon(Style::icon("Audio"))
-        .SetApplyHoverEffect();
+        .SetIcon(Style::icon("Audio"));
 
     am->AddAction(ID_OPEN_UICANVASEDITOR, tr(LyViewPane::UiEditor))
-        .SetToolTip(tr("Open UI Editor"))
-        .SetApplyHoverEffect();
+        .SetToolTip(tr("Open UI Editor"));
 
     // Edit Mode Toolbar Actions
     am->AddAction(IDC_SELECTION_MASK, tr("Selected Object Types"));
@@ -1089,12 +1075,10 @@ void MainWindow::InitActions()
     // Object Toolbar Actions
     am->AddAction(ID_GOTO_SELECTED, tr("Go to selected object"))
         .SetIcon(Style::icon("select_object"))
-        .SetApplyHoverEffect()
         .Connect(&QAction::triggered, this, &MainWindow::OnGotoSelected);
 
     // Misc Toolbar Actions
-    am->AddAction(ID_OPEN_SUBSTANCE_EDITOR, tr("Open Substance Editor"))
-        .SetApplyHoverEffect();
+    am->AddAction(ID_OPEN_SUBSTANCE_EDITOR, tr("Open Substance Editor"));
 }
 
 void MainWindow::InitToolActionHandlers()
