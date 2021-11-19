@@ -1944,7 +1944,7 @@ namespace ScriptCanvasEditor
                 {
                     if (auto firstRequestBus = EditorScriptCanvasComponentRequestBus::FindFirstHandler(entity->GetId()))
                     {
-                        firstRequestBus->SetAssetId(memoryAsset.Id());
+                        firstRequestBus->SetAssetId(memoryAsset.Describe());
                     }
                 }
                 else
@@ -1953,7 +1953,7 @@ namespace ScriptCanvasEditor
                     {
                         if (editorComponent->GetAssetId() == oldId)
                         {
-                            editorComponent->SetAssetId(memoryAsset.Id());
+                            editorComponent->SetAssetId(memoryAsset.Describe());
                             break;
                         }
                     }
@@ -4377,15 +4377,7 @@ namespace ScriptCanvasEditor
 
         if (usableRequestBus)
         {
-            ScriptCanvasMemoryAsset::pointer memoryAsset;
-            // #sc_editor_asset
-            // AssetTrackerRequestBus::BroadcastResult(memoryAsset, &AssetTrackerRequests::GetAsset, m_activeGraph);
-
-            if (memoryAsset)
-            {
-                // We need to assign the AssetId for the file asset, not the in-memory asset
-                usableRequestBus->SetAssetId(memoryAsset->GetFileAssetId());
-            }
+            usableRequestBus->SetAssetId(m_activeGraph.Describe());
         }
     }
 
