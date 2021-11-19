@@ -3522,6 +3522,7 @@ void UiTextComponent::UnitTestLocalization(CLyShine* lyshine, IConsoleCmdArgs* /
             }
         }
     }
+    AZ_Assert(initLocSuccess, "Test failed");
 
     ComponentGetSetTextTestsLoc(lyshine);
 }

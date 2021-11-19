@@ -291,11 +291,9 @@ namespace AZ
                 menuButton->setIcon(QIcon(":/Cards/img/UI20/Cards/menu_ico.svg"));
                 menuButton->setVisible(true);
                 QObject::connect(menuButton, &QToolButton::clicked, &dialog, [&]() {
-                    QAction* action = nullptr;
-
                     QMenu menu(&dialog);
-                    action = menu.addAction("Clear", [&] { inspector->SetUvNameMap(RPI::MaterialModelUvOverrideMap()); });
-                    action = menu.addAction("Revert", [&] { inspector->SetUvNameMap(matModUvOverrides);; });
+menu.addAction("Clear", [&] { inspector->SetUvNameMap(RPI::MaterialModelUvOverrideMap()); });
+menu.addAction("Revert", [&] { inspector->SetUvNameMap(matModUvOverrides);; });
                     menu.exec(QCursor::pos());
                 });
 

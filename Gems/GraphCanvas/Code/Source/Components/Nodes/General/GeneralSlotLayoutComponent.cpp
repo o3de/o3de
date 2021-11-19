@@ -190,8 +190,6 @@ namespace GraphCanvas
         ConnectionType connectionType = ConnectionType::CT_Invalid;
         SlotRequestBus::EventResult(connectionType, slotId, &SlotRequests::GetConnectionType);                
         
-        int layoutOrder = 0;
-
         SlotLayoutInfo slotInfo(slotId);
 
         if (connectionType == CT_Input)
@@ -199,7 +197,7 @@ namespace GraphCanvas
             SlotUINotificationBus::MultiHandler::BusConnect(slotId);
 
             m_inputSlotSet.insert(slotId);
-            layoutOrder = LayoutSlot(m_inputs, m_inputSlots, slotInfo);
+LayoutSlot(m_inputs, m_inputSlots, slotInfo);
         }
         else if (connectionType == CT_Output)
         {

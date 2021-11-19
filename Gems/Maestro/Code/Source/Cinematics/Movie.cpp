@@ -785,11 +785,13 @@ bool CMovieSystem::InternalStopSequence(IAnimSequence* sequence, bool bAbort, bo
 {
     assert(sequence != 0);
 
-    bool bRet = false;
     PlayingSequences::iterator it;
 
-    if (FindSequence(sequence, it))
+    if (!FindSequence(sequence, it))
     {
+        return false;
+    }
+
         if (bAnimate && sequence->IsActivated())
         {
             if (m_sequenceStopBehavior == eSSB_GotoEndTime)
@@ -835,10 +837,8 @@ bool CMovieSystem::InternalStopSequence(IAnimSequence* sequence, bool bAbort, bo
 
         sequence->Resume();
         static_cast<CAnimSequence*>(sequence)->OnStop();
-        bRet = true;
-    }
 
-    return bRet;
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -906,7 +906,7 @@ void CMovieSystem::Reset(bool bPlayOnReset, bool bSeekToStart)
     InternalStopAllSequences(true, false);
 
     // Reset all sequences.
-    for (Sequences::iterator iter = m_sequences.begin(); iter != m_sequences.end(); ++iter)
+    for (Sequences::const_iterator iter = m_sequences.cbegin(); iter != m_sequences.cend(); ++iter)
     {
         IAnimSequence* pCurrentSequence = iter->get();
         NotifyListeners(pCurrentSequence, IMovieListener::eMovieEvent_Started);
@@ -940,7 +940,7 @@ void CMovieSystem::Reset(bool bPlayOnReset, bool bSeekToStart)
 //////////////////////////////////////////////////////////////////////////
 void CMovieSystem::PlayOnLoadSequences()
 {
-    for (Sequences::iterator sit = m_sequences.begin(); sit != m_sequences.end(); ++sit)
+    for (Sequences::const_iterator sit = m_sequences.cbegin(); sit != m_sequences.cend(); ++sit)
     {
         IAnimSequence* sequence = sit->get();
         if (sequence->GetFlags() & IAnimSequence::eSeqFlags_PlayOnReset)
@@ -984,15 +984,26 @@ void CMovieSystem::ShowPlayedSequencesDebug()
 {
     float y = 10.0f;
     std::vector<const char*> names;
+    std::vector<float> rows;
+    constexpr f32 green[4]  = {0, 1, 0, 1};
+    constexpr f32 purple[4] = {1, 0, 1, 1};
+    constexpr f32 white[4]  = {1, 1, 1, 1};
+
+    //TODO: needs an implementation
+    auto Draw2dLabel = [](float /*x*/,float /*y*/,float /*depth*/,const f32* /*color*/,bool /*center*/, const char* /*fmt*/, ...) {};
 
     for (PlayingSequences::iterator it = m_playingSequences.begin(); it != m_playingSequences.end(); ++it)
     {
         PlayingSequence& playingSequence = *it;
 
-        if (playingSequence.sequence == NULL)
+        if (playingSequence.sequence == nullptr)
         {
             continue;
         }
+
+        const char* fullname = playingSequence.sequence->GetName();
+
+        Draw2dLabel(1.0f, y, 1.3f, green, false, "Sequence %s : %f (x %f)", fullname, playingSequence.currentTime, playingSequence.currentSpeed);
 
         y += 16.0f;
 
@@ -1014,9 +1025,10 @@ void CMovieSystem::ShowPlayedSequencesDebug()
             if (alreadyThere == false)
             {
                 names.push_back(name);
-            }
-        }
 
+            }
+            Draw2dLabel((21.0f + 100.0f * i), ((i % 2) ? (y + 8.0f) : y), 1.0f, alreadyThere ? white : purple, false, "%s", name);
+        }
         y += 32.0f;
     }
 }
@@ -1088,7 +1100,8 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
 
         // Skip sequence if current update does not apply
         const bool bSequenceEarlyUpdate = (playingSequence.sequence->GetFlags() & IAnimSequence::eSeqFlags_EarlyMovieUpdate) != 0;
-        if (bPreUpdate && !bSequenceEarlyUpdate || !bPreUpdate && bSequenceEarlyUpdate)
+        if ((bPreUpdate && !bSequenceEarlyUpdate ) || (!bPreUpdate && bSequenceEarlyUpdate)
+)
         {
             continue;
         }
@@ -1263,7 +1276,7 @@ void CMovieSystem::PauseCutScenes()
 {
     m_bCutscenesPausedInEditor = true;
 
-    if (m_pUser != NULL)
+    if (m_pUser != nullptr)
     {
         for (PlayingSequences::iterator it = m_playingSequences.begin(); it != m_playingSequences.end(); ++it)
         {
@@ -1285,7 +1298,7 @@ void CMovieSystem::ResumeCutScenes()
 
     m_bCutscenesPausedInEditor = false;
 
-    if (m_pUser != NULL)
+    if (m_pUser != nullptr)
     {
         for (PlayingSequences::iterator it = m_playingSequences.begin(); it != m_playingSequences.end(); ++it)
         {
@@ -1475,7 +1488,7 @@ void CMovieSystem::ListSequencesCmd([[maybe_unused]] IConsoleCmdArgs* pArgs)
 void CMovieSystem::PlaySequencesCmd(IConsoleCmdArgs* pArgs)
 {
     const char* sequenceName = pArgs->GetArg(1);
-    gEnv->pMovieSystem->PlaySequence(sequenceName, NULL, false, false);
+    gEnv->pMovieSystem->PlaySequence(sequenceName, nullptr, false, false);
 }
 #endif //#if !defined(_RELEASE)
 
