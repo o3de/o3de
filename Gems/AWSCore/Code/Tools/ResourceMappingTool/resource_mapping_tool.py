@@ -20,6 +20,7 @@ argument_parser.add_argument('--debug', action='store_true', help='Execute on de
 argument_parser.add_argument('--log-path', help='Path to resource mapping tool logging directory '
                                                 '(if not provided, logging file will be located at tool directory)')
 argument_parser.add_argument('--profile', default='default', help='Named AWS profile to use for querying AWS resources')
+
 arguments: Namespace = argument_parser.parse_args()
 
 # logging setup
