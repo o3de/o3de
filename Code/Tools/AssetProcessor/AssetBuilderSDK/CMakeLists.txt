@@ -11,7 +11,7 @@ ly_get_pal_tool_dirs(pal_tool_dirs ${CMAKE_CURRENT_LIST_DIR}/AssetBuilderSDK/Pla
 set(pal_files "")
 foreach(enabled_platform ${LY_PAL_TOOLS_ENABLED})
     string(TOLOWER ${enabled_platform} enabled_platform_lowercase)
-    ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/AssetBuilderSDK/Platform/${enabled_platform})
+    o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/AssetBuilderSDK/Platform/${enabled_platform} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
     list(APPEND pal_files ${pal_dir}/assetbuildersdk_${enabled_platform_lowercase}_files.cmake)
 endforeach()
 

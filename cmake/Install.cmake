@@ -12,7 +12,7 @@ if(INSTALLED_ENGINE)
 endif()
 
 if(LY_INSTALL_ENABLED)
-    ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})
+    o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
     include(${pal_dir}/Install_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 endif()
 

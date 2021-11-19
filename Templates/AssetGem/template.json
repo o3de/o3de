@@ -1,10 +1,15 @@
 {
     "template_name": "AssetGem",
-    "origin": "The primary repo for AssetGem goes here: i.e. http://www.mydomain.com",
-    "license": "What license AssetGem uses goes here: i.e. https://opensource.org/licenses/MIT",
-    "display_name": "AssetGem",
-    "summary": "A short description of AssetGem template.",
-    "canonical_tags": [],
+    "template_restricted_platform_relative_path": "Templates/AssetGem",
+    "origin": "https://github.com/o3de/o3de",
+    "license": "https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT",
+    "display_name": "Asset Gem Template",
+    "summary": "Use this gem template to create the minimal gem needed for adding asset(s).",
+    "canonical_tags": [
+		"Template",
+        "Gem",
+        "Asset"
+	],
     "user_tags": [
         "AssetGem"
     ],
@@ -12,27 +17,20 @@
     "copyFiles": [
         {
             "file": "CMakeLists.txt",
-            "origin": "CMakeLists.txt",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": true
         },
         {
             "file": "gem.json",
-            "origin": "gem.json",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": true
         },
         {
             "file": "preview.png",
-            "origin": "preview.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         }
     ],
     "createDirectories": [
         {
-            "dir": "Assets",
-            "origin": "Assets"
+            "dir": "Assets"
         }
     ]
 }

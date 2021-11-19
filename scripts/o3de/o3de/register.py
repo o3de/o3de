@@ -696,25 +696,25 @@ def remove_invalid_o3de_projects(manifest_path: pathlib.Path = None) -> int:
     return result
 
 def remove_invalid_o3de_objects() -> None:
-    for engine_path in manifest.get_engines():
+    for engine_path in manifest.get_manifest_engines():
         if not validation.valid_o3de_engine_json(pathlib.Path(engine_path).resolve() / 'engine.json'):
             logger.warn(f"Engine path {engine_path} is invalid.")
             register(engine_path=engine_path, remove=True)
 
     remove_invalid_o3de_projects()
 
-    for external in manifest.get_external_subdirectories():
+    for external in manifest.get_manifest_external_subdirectories():
         external = pathlib.Path(external).resolve()
         if not external.is_dir():
             logger.warn(f"External subdirectory {external} is invalid.")
             register(engine_path=engine_path, external_subdir_path=external, remove=True)
 
-    for template in manifest.get_templates():
+    for template in manifest.get_manifest_templates():
         if not validation.valid_o3de_template_json(pathlib.Path(template).resolve() / 'template.json'):
             logger.warn(f"Template path {template} is invalid.")
             register(template_path=template, remove=True)
 
-    for restricted in manifest.get_restricted():
+    for restricted in manifest.get_manifest_restricted():
         if not validation.valid_o3de_restricted_json(pathlib.Path(restricted).resolve() / 'restricted.json'):
             logger.warn(f"Restricted path {restricted} is invalid.")
             register(restricted_path=restricted, remove=True)

@@ -687,6 +687,7 @@ endmacro()
 # is associated with a package, as above.  If it is, it makes sure that the package
 # is brought into scope (and if necessary, downloaded.)
 macro(ly_download_associated_package find_library_name)
+    unset(package_name)
     ly_get_package_association(${find_library_name} package_name)
     if (package_name)
         # it is an associated package.

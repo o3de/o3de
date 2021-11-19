@@ -10,8 +10,8 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) #for PAL_TRAIT_BUILD_ATOM_ASSET_SHADER_SUPPORTED
 
@@ -72,7 +72,7 @@ ly_add_target(
 set(builder_tools_include_files)
 foreach(enabled_platform ${LY_PAL_TOOLS_ENABLED})
     string(TOLOWER ${enabled_platform} enabled_platform_lowercase)
-    ly_get_list_relative_pal_filename(builder_tools_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${enabled_platform})
+    o3de_pal_dir(builder_tools_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${enabled_platform} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
     list(APPEND builder_tools_include_files ${builder_tools_source_dir}/platform_builders_${enabled_platform_lowercase}.cmake)
 endforeach()
 

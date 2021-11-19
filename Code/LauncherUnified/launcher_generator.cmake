@@ -204,7 +204,7 @@ function(ly_delayed_generate_static_modules_inl)
 
             foreach(game_gem_dependency ${all_game_gem_dependencies})
                 # Sometimes, a gem's Client variant may be an interface library
-                # which dependes on multiple gem targets. The interface libraries
+                # which depends on multiple gem targets. The interface libraries
                 # should be skipped; the real dependencies of the interface will be processed
                 if(TARGET ${game_gem_dependency})
                     get_target_property(target_type ${game_gem_dependency} TYPE)

@@ -15,27 +15,193 @@
 # PAL_PLATFORM_NAME_LOWERCASE: name of the platform in lower case (part of filenames)
 #
 
-file(GLOB detection_files "cmake/Platform/*/PALDetection_*.cmake")
-foreach(detection_file ${detection_files})
-    include(${detection_file})
-endforeach()
-
-
-#! o3de_restricted_id: Reads the "restricted" key from an o3de json
+#! o3de_get_home_path: returns the home path
 #
-# \arg:o3de_json_file name of the o3de json file to read the "restricted" key from
-# \arg:restricted returns the restricted association element from an o3de json, otherwise its doesnt change anything
-# \arg:o3de_json_file name of the o3de json file
-function(o3de_restricted_id o3de_json_file restricted)
-    ly_file_read(${o3de_json_file} json_data)
-    string(JSON restricted_entry ERROR_VARIABLE json_error GET ${json_data} "restricted")
+# \arg:o3de_manifest_path returns the path of the manifest
+function(o3de_get_home_path o3de_home_path)
+    # The o3de_manifest.json is in the home directory / .o3de folder
+    file(TO_CMAKE_PATH "$ENV{USERPROFILE}" home_path) # Windows
+    if(NOT EXISTS ${home_path})
+        file(TO_CMAKE_PATH "$ENV{HOME}" home_path) # Unix
+        if (NOT EXISTS ${home_path})
+            message(FATAL_ERROR "o3de Home path not found")
+        endif()
+    endif()
+    set(${o3de_home_path} ${home_path} PARENT_SCOPE)
+endfunction()
+
+#! o3de_get_manifest_path: returns the path to the manifest
+#
+# \arg:o3de_manifest_path returns the path of the manifest
+function(o3de_get_manifest_path o3de_manifest_path)
+    # The o3de_manifest.json is in the home directory / .o3de folder
+    o3de_get_home_path(o3de_home_path)
+    set(${o3de_manifest_path} ${o3de_home_path}/.o3de/o3de_manifest.json PARENT_SCOPE)
+endfunction()
+
+#! o3de_read_manifest: returns the contents of the manifest
+#
+# \arg:restricted_subdirs returns the restricted elements from the manifest
+function(o3de_read_manifest o3de_manifest_json_data)
+    #get the manifest path
+    o3de_get_manifest_path(o3de_manifest_path)
+    if(EXISTS ${o3de_manifest_path})
+        ly_file_read(${o3de_manifest_path} json_data)
+        set(${o3de_manifest_json_data} ${json_data} PARENT_SCOPE)
+    endif()
+endfunction()
+
+#! o3de_recurse_gems: returns the gem paths
+#
+# \arg:object json path
+# \arg:gems returns the gems from the external subdirectory elements from the manifest
+function(o3de_recurse_gems object_json_path gems)
+    get_filename_component(object_json_parent_path ${object_json_path} DIRECTORY) 
+    ly_file_read(${object_json_path} json_data)
+    string(JSON external_subdirectories_count ERROR_VARIABLE json_error LENGTH ${json_data} "external_subdirectories")
+    if(NOT json_error)
+        if(external_subdirectories_count GREATER 0)
+            math(EXPR external_subdirectories_range "${external_subdirectories_count}-1")
+            foreach(external_subdirectories_index RANGE ${external_subdirectories_range})
+                string(JSON external_subdirectories_entry ERROR_VARIABLE json_error GET ${json_data} "external_subdirectories" "${external_subdirectories_index}")
+                cmake_path(IS_RELATIVE external_subdirectories_entry is_relative)
+                if(${is_relative})
+                    cmake_path(ABSOLUTE_PATH external_subdirectories_entry BASE_DIRECTORY ${object_json_parent_path} NORMALIZE OUTPUT_VARIABLE external_subdirectories_entry)
+                endif()
+                if(EXISTS ${external_subdirectories_entry}/gem.json)
+                    list(APPEND gem_entries ${external_subdirectories_entry})
+                    o3de_recurse_gems(${external_subdirectories_entry}/gem.json gem_entries)
+                endif()
+            endforeach()
+        endif()
+    endif()
+    set(${gems} ${gem_entries} PARENT_SCOPE)
+endfunction()
+
+#! o3de_find_gem: returns the gem path
+#
+# \arg:gem_name the gem name to find
+# \arg:the path of the gem
+function(o3de_find_gem gem_name gem_path)
+    o3de_get_manifest_path(manifest_path)
+    o3de_recurse_gems(${manifest_path} gems)
+    o3de_recurse_gems(${LY_ROOT_FOLDER}/engine.json gems)
+    foreach(gem ${gems})
+        ly_file_read(${gem}/gem.json json_data)
+        string(JSON gem_json_name ERROR_VARIABLE json_error GET ${json_data} "gem_name")
+        if(gem_json_name STREQUAL gem_name)
+            set(${gem_path} ${gem} PARENT_SCOPE)
+            return()
+        endif()
+    endforeach()
+endfunction()
+
+#! o3de_manifest_restricted: returns the manifests restricted paths
+#
+# \arg:restricted returns the restricted elements from the manifest
+function(o3de_manifest_restricted restricted)
+    #read the manifest
+    o3de_read_manifest(o3de_manifest_json_data)
+    string(JSON restricted_count ERROR_VARIABLE json_error LENGTH ${o3de_manifest_json_data} "restricted")
     if(json_error)
         # Restricted fields can never be a requirement so no warning is issued
         return()
     endif()
-    if(restricted_entry)
-       set(${restricted} ${restricted_entry} PARENT_SCOPE)
+    if(restricted_count GREATER 0)
+        math(EXPR restricted_range "${restricted_count}-1")
+        foreach(restricted_index RANGE ${restricted_range})
+            string(JSON restricted_entry ERROR_VARIABLE json_error GET ${o3de_manifest_json_data} "restricted" "${restricted_index}")
+            list(APPEND restricted_entries ${restricted_entry})
+        endforeach()
     endif()
+    set(${restricted} ${restricted_entries} PARENT_SCOPE)
+endfunction()
+
+#! o3de_json_restricted: returns the restricted element from a json
+#
+# \arg:restricted returns the restricted element of the json
+function(o3de_json_restricted json_path restricted)
+    if(EXISTS ${json_path})
+        ly_file_read(${json_path} json_data)
+        string(JSON restricted_entry ERROR_VARIABLE json_error GET ${json_data} "restricted")
+        if(json_error)
+            # Restricted fields can never be a requirement so no warning is issued
+            return()
+        endif()
+        set(${restricted} ${restricted_entry} PARENT_SCOPE)
+    endif()
+endfunction()
+
+#! o3de_restricted_id: determines the restricted object for this json
+#
+# Find this objects restricted name. If the object has a "restricted" element
+# If it does not have one it inherits its parents "restricted" element if it has one
+# If the parent does not have one it inherits its parents parent "restricted" element is it has one and so on...
+# We stop looking if the object or parent is in the manifest, as the manifest only has top level objects
+# which means they have no children.
+#
+# \arg:o3de_json_file name of the o3de json file to read the "restricted" key from
+# \arg:restricted returns the restricted association element from an o3de json, otherwise its doesnt change anything
+# \arg:o3de_json_file name of the o3de json file
+function(o3de_restricted_id o3de_json_file restricted parent_relative_path)
+    # read the passed in o3de json and see if "restricted" is set
+    o3de_json_restricted(${o3de_json_file} restricted_name)
+    if(restricted_name)
+        set(${parent_relative_path} "" PARENT_SCOPE)
+        set(${restricted} ${restricted_name} PARENT_SCOPE)
+        return()
+    endif()
+
+    # This object did not have a "restricted" set, now we must look at the parent
+    # Stop if this is a top level object
+    o3de_manifest_restricted(manifest_restricted_paths)
+    get_filename_component(o3de_json_file_parent ${o3de_json_file} DIRECTORY)
+    get_filename_component(relative_path ${o3de_json_file_parent} NAME)
+    get_filename_component(o3de_json_file_parent ${o3de_json_file_parent} DIRECTORY)
+    if(${o3de_json_file_parent} IN_LIST manifest_restricted_paths)
+        set(${parent_relative_path} "" PARENT_SCOPE)
+        set(${restricted} "" PARENT_SCOPE)
+        return()
+    endif()
+    
+    string(LENGTH ${o3de_json_file_parent} parent_len)
+    while(parent_len)
+        if(EXISTS ${o3de_json_file_parent}/engine.json)
+            o3de_json_restricted(${o3de_json_file_parent}/engine.json restricted_name)
+            if(restricted_name)
+                set(${parent_relative_path} ${relative_path} PARENT_SCOPE)
+                set(${restricted} ${restricted_name} PARENT_SCOPE)
+                return()
+            endif()
+        endif()
+        if(EXISTS ${o3de_json_file_parent}/project.json)
+            o3de_json_restricted(${o3de_json_file_parent}/project.json restricted_name)
+            if(restricted_name)
+                set(${parent_relative_path} ${relative_path} PARENT_SCOPE)
+                set(${restricted} ${restricted_name} PARENT_SCOPE)
+                return()
+            endif()
+        endif()
+        if(EXISTS ${o3de_json_file_parent}/gem.json)
+            o3de_json_restricted(${o3de_json_file_parent}/gem.json restricted_name)
+            if(restricted_name)
+                set(${parent_relative_path} ${relative_path} PARENT_SCOPE)
+                set(${restricted} ${restricted_name} PARENT_SCOPE)
+                return()
+            endif()
+        endif()
+
+        if(${o3de_json_file_parent} IN_LIST manifest_restricted_paths)
+            set(${parent_relative_path} "" PARENT_SCOPE)
+            set(${restricted} "" PARENT_SCOPE)
+            return()
+        endif()
+        
+        get_filename_component(parent ${o3de_json_file_parent} NAME)
+        string(PREPEND relative_path ${parent}/)
+        get_filename_component(o3de_json_file_parent ${o3de_json_file_parent} DIRECTORY)
+        string(LENGTH ${o3de_json_file_parent} parent_len)
+    endwhile()
 endfunction()
 
 #! o3de_find_restricted_folder:
@@ -43,40 +209,9 @@ endfunction()
 # \arg:restricted_path returns the path of the o3de restricted folder using the restricted_name
 # \arg:restricted_name name of the restricted
 function(o3de_find_restricted_folder restricted_name restricted_path)
-    # Read the restricted element from engine.json if one EXISTS
-    ly_file_read(${LY_ROOT_FOLDER}/engine.json engine_json_data)
-    string(JSON restricted_subdirs_count ERROR_VARIABLE engine_json_error LENGTH ${engine_json_data} "restricted")
-    if(restricted_subdirs_count GREATER 0)
-        string(JSON restricted_subdir ERROR_VARIABLE engine_json_error GET ${engine_json_data} "restricted" "0")
-        set(${restricted_path} ${restricted_subdir} PARENT_SCOPE)
-        return()
-    endif()
-
-    # The o3de_manifest.json is in the home directory / .o3de folder
-    file(TO_CMAKE_PATH "$ENV{USERPROFILE}" home_directory) # Windows
-    if(NOT EXISTS ${home_directory})
-        file(TO_CMAKE_PATH "$ENV{HOME}" home_directory) # Unix
-        if (NOT EXISTS ${home_directory})
-            return()
-        endif()
-    endif()
-    set(o3de_manifest_path ${home_directory}/.o3de/o3de_manifest.json)
-
-    # Examine the o3de manifest file for the list of restricted directories
-    if(EXISTS ${o3de_manifest_path})
-        ly_file_read(${o3de_manifest_path} o3de_manifest_json_data)
-        string(JSON restricted_subdirs_count ERROR_VARIABLE engine_json_error LENGTH ${o3de_manifest_json_data} "restricted")
-        if(restricted_subdirs_count GREATER 0)
-            math(EXPR restricted_subdirs_range "${restricted_subdirs_count}-1")
-            foreach(restricted_subdir_index RANGE ${restricted_subdirs_range})
-                string(JSON restricted_subdir ERROR_VARIABLE engine_json_error GET ${o3de_manifest_json_data} "restricted" "${restricted_subdir_index}")
-                list(APPEND restricted_subdirs ${restricted_subdir})
-            endforeach()
-        endif()
-    endif()
-
+    o3de_manifest_restricted(restricted_entries)
     # Iterate over the restricted directories from the manifest file
-    foreach(restricted_entry ${restricted_subdirs})
+    foreach(restricted_entry ${restricted_entries})
         set(restricted_json_file ${restricted_entry}/restricted.json)
         ly_file_read(${restricted_json_file} restricted_json)
         string(JSON this_restricted_name ERROR_VARIABLE json_error GET ${restricted_json} "restricted_name")
@@ -96,18 +231,25 @@ endfunction()
 #
 # \arg:o3de_json_file json file to read restricted id from
 # \arg:restricted_name name of the restricted object
-function(o3de_restricted_path o3de_json_file restricted_path)
-    o3de_restricted_id(${o3de_json_file} restricted_name)
+function(o3de_restricted_path o3de_json_file restricted_path parent_relative_path)
+    o3de_restricted_id(${o3de_json_file} restricted_name parent_relative)
     if(restricted_name)
         o3de_find_restricted_folder(${restricted_name} restricted_folder)
         if(restricted_folder)
+            set(${parent_relative_path} ${parent_relative} PARENT_SCOPE)
             set(${restricted_path} ${restricted_folder} PARENT_SCOPE)
         endif()
     endif()
 endfunction()
 
+# detect open platforms
+file(GLOB detection_files "cmake/Platform/*/PALDetection_*.cmake")
+foreach(detection_file ${detection_files})
+    include(${detection_file})
+endforeach()
+
 # set the O3DE_ENGINE_RESTRICTED_PATH
-o3de_restricted_path(${LY_ROOT_FOLDER}/engine.json O3DE_ENGINE_RESTRICTED_PATH)
+o3de_restricted_path(${LY_ROOT_FOLDER}/engine.json O3DE_ENGINE_RESTRICTED_PATH engine_has_no_parent)
 
 # detect platforms in the restricted path
 file(GLOB detection_files ${O3DE_ENGINE_RESTRICTED_PATH}/*/cmake/PALDetection_*.cmake)
@@ -137,21 +279,16 @@ foreach(pal_restricted_file ${pal_restricted_files})
     string(TOLOWER ${platform} platform_lower)
     list(APPEND PAL_RESTRICTED_PLATFORMS ${platform_lower})
 endforeach()
+list(REMOVE_DUPLICATES PAL_RESTRICTED_PLATFORMS)
+
 ly_set(PAL_RESTRICTED_PLATFORMS ${PAL_RESTRICTED_PLATFORMS})
 
 function(ly_get_absolute_pal_filename out_name in_name)
-    set(full_name ${in_name})
-
+    message(DEPRECATION "ly_get_list_relative_pal_filename is being deprecated, change your code to use o3de_pal_dir instead.")
+    
+    # parent relative path is optional
     if(${ARGC} GREATER 4)
-        # The object name is used to resolve ambiguities when a PAL directory is requested from
-        # two different external subdirectory root paths
-        # Such as if a PAL directory for two root object paths with same relative structure was requested to be Palified
-        # i.e <gem-root1>/Platform/<platform-name>/IO and <gem-root2>/Platform/<platform-name>/IO
-        # Normally the restricted PAL path for both gems would be "<restricted-root-path>/<platform-name>/IO".
-        # The object name can be used to make this path unique
-        # "<restricted-root-path>/<platform-name>/<custom-name1>/IO" for gem 1 and
-        # "<restricted-root-path>/<platform-name>/<custom-name2>/IO" for gem 2
-        set(object_name ${ARGV4})
+        set(parent_relative_path ${ARGV4})
     endif()
 
     # The Default object path for path is the LY_ROOT_FOLDER
@@ -161,14 +298,30 @@ function(ly_get_absolute_pal_filename out_name in_name)
         cmake_path(SET object_path NORMALIZE ${ARGV3})
     endif()
 
-    # The Default restricted object path is O3DE_ENGINE_RESTRICTED_PATH
+    # The default restricted object path is O3DE_ENGINE_RESTRICTED_PATH
     cmake_path(SET object_restricted_path NORMALIZE "${O3DE_ENGINE_RESTRICTED_PATH}")
     if(${ARGC} GREATER 2)
         # The user has supplied an object restricted path
         cmake_path(SET object_restricted_path NORMALIZE ${ARGV2})
     endif()
 
-    # The input path must exist in order to form a PAL path
+    if(${ARGC} GREATER 4)
+        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path} ${parent_relative_path})
+    else()
+        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path})
+    endif()
+    set(${out_name} ${abs_name} PARENT_SCOPE)
+endfunction()
+
+function(o3de_pal_dir out_name in_name object_restricted_path object_path) #parent_relative_path)
+    set(full_name ${in_name})
+
+    # parent relative path is optional
+    if(${ARGC} GREATER 4)
+        set(parent_relative_path ${ARGV4})
+    endif()
+
+    # The input path must not exist in order to form a restricted PAL path
     if (NOT EXISTS ${full_name})
         # if the file is not in the object path then we cannot determine a PAL file for it
         cmake_path(IS_PREFIX object_path ${full_name} is_input_path_in_root)
@@ -213,7 +366,7 @@ function(ly_get_absolute_pal_filename out_name in_name)
             if(NOT EXISTS ${candidate_PAL_path})
                 string(TOLOWER ${candidate_platform_name} candidate_platform_name_lower)
                 if("${candidate_platform_name_lower}" IN_LIST PAL_RESTRICTED_PLATFORMS)
-                    cmake_path(APPEND object_restricted_path ${candidate_platform_name} ${object_name}
+                    cmake_path(APPEND object_restricted_path ${candidate_platform_name} ${parent_relative_path}
                         ${pre_platform_paths} OUTPUT_VARIABLE candidate_PAL_path)
                 endif()
             endif()
@@ -227,17 +380,43 @@ function(ly_get_absolute_pal_filename out_name in_name)
 endfunction()
 
 function(ly_get_list_relative_pal_filename out_name in_name)
-    ly_get_absolute_pal_filename(abs_name ${in_name} ${ARGN})
+    message(DEPRECATION "ly_get_list_relative_pal_filename is being deprecated, change your code to use o3de_pal_dir instead.")
+    
+    # parent relative path is optional
+    if(${ARGC} GREATER 4)
+        set(parent_relative_path ${ARGV4})
+    endif()
+
+    # The Default object path for path is the LY_ROOT_FOLDER
+    cmake_path(SET object_path NORMALIZE "${LY_ROOT_FOLDER}")
+    if(${ARGC} GREATER 3)
+        # The user has supplied an object restricted path, the object path for consideration
+        cmake_path(SET object_path NORMALIZE ${ARGV3})
+    endif()
+
+    # The default restricted object path is O3DE_ENGINE_RESTRICTED_PATH
+    cmake_path(SET object_restricted_path NORMALIZE "${O3DE_ENGINE_RESTRICTED_PATH}")
+    if(${ARGC} GREATER 2)
+        # The user has supplied an object restricted path
+        cmake_path(SET object_restricted_path NORMALIZE ${ARGV2})
+    endif()
+
+    if(${ARGC} GREATER 4)
+        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path} ${parent_relative_path})
+    else()
+        o3de_pal_dir(abs_name ${in_name} ${object_restricted_path} ${object_path})
+    endif()
+
     cmake_path(RELATIVE_PATH abs_name BASE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} OUTPUT_VARIABLE relative_name)
     set(${out_name} ${relative_name} PARENT_SCOPE)
 endfunction()
 
-ly_get_absolute_pal_filename(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_cmake_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 
-ly_include_cmake_file_list(${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake)
+ly_include_cmake_file_list(${pal_cmake_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake)
 
-include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-include(${pal_dir}/Toolchain_${PAL_PLATFORM_NAME_LOWERCASE}.cmake OPTIONAL)
+include(${pal_cmake_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+include(${pal_cmake_dir}/Toolchain_${PAL_PLATFORM_NAME_LOWERCASE}.cmake OPTIONAL)
 
 set(LY_DISABLE_TEST_MODULES FALSE CACHE BOOL "Option to forcibly disable the inclusion of test targets in the build")
 

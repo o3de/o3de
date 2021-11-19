@@ -6,8 +6,8 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_editor_include_dir ${CMAKE_CURRENT_LIST_DIR}/Include/Private/Editor/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(pal_cafile_include_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Framework/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_editor_include_dir ${CMAKE_CURRENT_LIST_DIR}/Include/Private/Editor/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
+o3de_pal_dir(pal_cafile_include_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Framework/Platform/${PAL_PLATFORM_NAME} ${gem_restricted_path} ${gem_path} ${gem_parent_relative_path})
 
 ly_add_target(
     NAME AWSCore.Static STATIC

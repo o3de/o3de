@@ -10,5 +10,8 @@
         "version_name": "1.0.0.0",
         "orientation": "landscape"
     },
-    "engine": "o3de"
+    "engine": "o3de",
+    "external_subdirectories": [
+        "Gem"
+    ]
 }

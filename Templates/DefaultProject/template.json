@@ -1,658 +1,460 @@
 {
     "template_name": "DefaultProject",
+    "template_restricted_platform_relative_path": "Templates/DefaultProject",
     "restricted_name": "o3de",
-    "restricted_platform_relative_path": "Templates",
-    "origin": "The primary repo for DefaultProject goes here: i.e. http://www.mydomain.com",
-    "license": "What license DefaultProject uses goes here: i.e. https://opensource.org/licenses/MIT",
-    "display_name": "Standard",
-    "summary": "This template has everything you need to build a full online 3D game or application.",
-    "canonical_tags": [],
+    "restricted_platform_relative_path": "Templates/DefaultProject",
+    "origin": "https://github.com/o3de/o3de",
+    "license": "https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT",
+    "display_name": "Default Project Template",
+    "summary": "This is the project template that will be used if no project template is specified during project creation.",
+    "canonical_tags": [
+        "Template",
+        "Project"
+    ],
     "user_tags": [
         "DefaultProject"
     ],
     "icon_path": "preview.png",
+
     "copyFiles": [
         {
             "file": ".gitignore",
-            "origin": ".gitignore",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "CMakeLists.txt",
-            "origin": "CMakeLists.txt",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/${NameLower}_files.cmake",
-            "origin": "Code/${NameLower}_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/${NameLower}_shared_files.cmake",
-            "origin": "Code/${NameLower}_shared_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/CMakeLists.txt",
-            "origin": "Code/CMakeLists.txt",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Include/${Name}/${Name}Bus.h",
-            "origin": "Code/Include/${Name}/${Name}Bus.h",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Android/${NameLower}_android_files.cmake",
-            "origin": "Code/Platform/Android/${NameLower}_android_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Android/${NameLower}_shared_android_files.cmake",
-            "origin": "Code/Platform/Android/${NameLower}_shared_android_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Android/PAL_android.cmake",
-            "origin": "Code/Platform/Android/PAL_android.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Linux/${NameLower}_linux_files.cmake",
-            "origin": "Code/Platform/Linux/${NameLower}_linux_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Linux/${NameLower}_shared_linux_files.cmake",
-            "origin": "Code/Platform/Linux/${NameLower}_shared_linux_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Linux/PAL_linux.cmake",
-            "origin": "Code/Platform/Linux/PAL_linux.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Mac/${NameLower}_mac_files.cmake",
-            "origin": "Code/Platform/Mac/${NameLower}_mac_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Mac/${NameLower}_shared_mac_files.cmake",
-            "origin": "Code/Platform/Mac/${NameLower}_shared_mac_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Mac/PAL_mac.cmake",
-            "origin": "Code/Platform/Mac/PAL_mac.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Windows/${NameLower}_shared_windows_files.cmake",
-            "origin": "Code/Platform/Windows/${NameLower}_shared_windows_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Windows/${NameLower}_windows_files.cmake",
-            "origin": "Code/Platform/Windows/${NameLower}_windows_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/Windows/PAL_windows.cmake",
-            "origin": "Code/Platform/Windows/PAL_windows.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/iOS/${NameLower}_ios_files.cmake",
-            "origin": "Code/Platform/iOS/${NameLower}_ios_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/iOS/${NameLower}_shared_ios_files.cmake",
-            "origin": "Code/Platform/iOS/${NameLower}_shared_ios_files.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Platform/iOS/PAL_ios.cmake",
-            "origin": "Code/Platform/iOS/PAL_ios.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Source/${Name}Module.cpp",
-            "origin": "Code/Source/${Name}Module.cpp",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Source/${Name}SystemComponent.cpp",
-            "origin": "Code/Source/${Name}SystemComponent.cpp",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/Source/${Name}SystemComponent.h",
-            "origin": "Code/Source/${Name}SystemComponent.h",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/enabled_gems.cmake",
-            "origin": "Code/enabled_gems.cmake",
-            "isTemplated": true,
-            "isOptional": false
-        },
-        {
-            "file": "Code/gem.json",
-            "origin": "Code/gem.json",
-            "isTemplated": true,
-            "isOptional": true
-        },
-        {
-            "file": "Config/shader_global_build_options.json",
-            "origin": "Config/shader_global_build_options.json",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": true
         },
         {
             "file": "Config/default_aws_resource_mappings.json",
-            "origin": "Config/default_aws_resource_mappings.json",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
+        },
+        {
+            "file": "Config/shader_global_build_options.json",
+            "isTemplated": false
         },
         {
             "file": "EngineFinder.cmake",
-            "origin": "EngineFinder.cmake",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
+        },
+        {
+            "file": "Gem/${NameLower}_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Gem/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Gem/CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "Gem/Include/${Name}/${Name}Bus.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Gem/Platform/Android/${NameLower}_android_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Gem/Platform/Android/${NameLower}_shared_android_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Gem/Platform/Android/PAL_android.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Gem/Platform/Linux/${NameLower}_linux_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Gem/Platform/Linux/${NameLower}_shared_linux_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Gem/Platform/Linux/PAL_linux.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Gem/Platform/Mac/${NameLower}_mac_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Gem/Platform/Mac/${NameLower}_shared_mac_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Gem/Platform/Mac/PAL_mac.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Gem/Platform/Windows/${NameLower}_shared_windows_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Gem/Platform/Windows/${NameLower}_windows_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Gem/Platform/Windows/PAL_windows.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Gem/Platform/iOS/${NameLower}_ios_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Gem/Platform/iOS/${NameLower}_shared_ios_files.cmake",
+            "isTemplated": false
+        },
+        {
+            "file": "Gem/Platform/iOS/PAL_ios.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Gem/Source/${Name}Module.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Gem/Source/${Name}SystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Gem/Source/${Name}SystemComponent.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Gem/enabled_gems.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Gem/gem.json",
+            "isTemplated": true
         },
         {
             "file": "Platform/Android/android_project.cmake",
-            "origin": "Platform/Android/android_project.cmake",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Platform/Android/android_project.json",
-            "origin": "Platform/Android/android_project.json",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": true
         },
         {
             "file": "Platform/Linux/linux_project.cmake",
-            "origin": "Platform/Linux/linux_project.cmake",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Platform/Linux/linux_project.json",
-            "origin": "Platform/Linux/linux_project.json",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Platform/Mac/mac_project.cmake",
-            "origin": "Platform/Mac/mac_project.cmake",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Platform/Mac/mac_project.json",
-            "origin": "Platform/Mac/mac_project.json",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Platform/Windows/windows_project.cmake",
-            "origin": "Platform/Windows/windows_project.cmake",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Platform/Windows/windows_project.json",
-            "origin": "Platform/Windows/windows_project.json",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Platform/iOS/ios_project.cmake",
-            "origin": "Platform/iOS/ios_project.cmake",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Platform/iOS/ios_project.json",
-            "origin": "Platform/iOS/ios_project.json",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Registry/assets_scan_folders.setreg",
-            "origin": "Registry/assets_scan_folders.setreg",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": true
         },
         {
             "file": "Registry/awscoreconfiguration.setreg",
-            "origin": "Registry/awscoreconfiguration.setreg",
-            "isTemplated": false,
-            "isOptional": false
-        },
-        {
-            "file": "Resources/LegacyLogoLauncher.bmp",
-            "origin": "Resources/LegacyLogoLauncher.bmp",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/GameSDK.ico",
-            "origin": "Resources/GameSDK.ico",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/LegacyLogoLauncher.bmp",
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/Mac/Images.xcassets/Contents.json",
-            "origin": "Resources/Platform/Mac/Images.xcassets/Contents.json",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/Contents.json",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/Contents.json",
-            "isTemplated": false,
-            "isOptional": false
-        },
-        {
-            "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_128_2x.png",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_128_2x.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_128.png",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_128.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_128_2x.png",
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_16.png",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_16.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_16_2x.png",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_16_2x.png",
-            "isTemplated": false,
-            "isOptional": false
-        },
-        {
-            "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_256_2x.png",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_256_2x.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_256.png",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_256.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
+        },
+        {
+            "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_256_2x.png",
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_32.png",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_32.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_32_2x.png",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_32_2x.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_512.png",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_512.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_512_2x.png",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset/icon_512_2x.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/Mac/Info.plist",
-            "origin": "Resources/Platform/Mac/Info.plist",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": true
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/Contents.json",
-            "origin": "Resources/Platform/iOS/Images.xcassets/Contents.json",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/Contents.json",
-            "origin": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/Contents.json",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPadLaunchImage1024x768.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPadLaunchImage1024x768.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPadLaunchImage1536x2048.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPadLaunchImage1536x2048.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPadLaunchImage2048x1536.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPadLaunchImage2048x1536.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPadLaunchImage768x1024.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPadLaunchImage768x1024.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPhoneLaunchImage640x1136.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPhoneLaunchImage640x1136.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPhoneLaunchImage640x960.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage/iPhoneLaunchImage640x960.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/Contents.json",
-            "origin": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/Contents.json",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPadAppIcon152x152.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPadAppIcon152x152.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPadAppIcon76x76.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPadAppIcon76x76.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPadProAppIcon167x167.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPadProAppIcon167x167.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPadSettingsIcon29x29.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPadSettingsIcon29x29.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPadSettingsIcon58x58.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPadSettingsIcon58x58.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPadSpotlightIcon40x40.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPadSpotlightIcon40x40.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPadSpotlightIcon80x80.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPadSpotlightIcon80x80.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPhoneAppIcon120x120.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPhoneAppIcon120x120.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPhoneAppIcon180x180.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPhoneAppIcon180x180.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPhoneSettingsIcon58x58.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPhoneSettingsIcon58x58.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPhoneSettingsIcon87x87.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPhoneSettingsIcon87x87.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPhoneSpotlightIcon120x120.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPhoneSpotlightIcon120x120.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPhoneSpotlightIcon80x80.png",
-            "origin": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset/iPhoneSpotlightIcon80x80.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "Resources/Platform/iOS/Info.plist",
-            "origin": "Resources/Platform/iOS/Info.plist",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": true
         },
         {
             "file": "ShaderLib/README.md",
-            "origin": "ShaderLib/README.md",
-            "isTemplated": false,
-            "isOptional": true
+            "isTemplated": false
         },
         {
             "file": "ShaderLib/scenesrg.srgi",
-            "origin": "ShaderLib/scenesrg.srgi",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "ShaderLib/viewsrg.srgi",
-            "origin": "ShaderLib/viewsrg.srgi",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "autoexec.cfg",
-            "origin": "autoexec.cfg",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "game.cfg",
-            "origin": "game.cfg",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "preview.png",
-            "origin": "preview.png",
-            "isTemplated": false,
-            "isOptional": false
+            "isTemplated": false
         },
         {
             "file": "project.json",
-            "origin": "project.json",
-            "isTemplated": true,
-            "isOptional": false
+            "isTemplated": true
         }
     ],
     "createDirectories": [
         {
-            "dir": "Assets",
-            "origin": "Assets"
+            "dir": "Assets"
         },
         {
-            "dir": "Code",
-            "origin": "Code"
+            "dir": "Config"
         },
         {
-            "dir": "Code/Include",
-            "origin": "Code/Include"
+            "dir": "Gem"
         },
         {
-            "dir": "Code/Include/${Name}",
-            "origin": "Code/Include/${Name}"
+            "dir": "Gem/Include"
         },
         {
-            "dir": "Code/Platform",
-            "origin": "Code/Platform"
+            "dir": "Gem/Include/${Name}"
         },
         {
-            "dir": "Code/Platform/Android",
-            "origin": "Code/Platform/Android"
+            "dir": "Gem/Platform"
         },
         {
-            "dir": "Code/Platform/Linux",
-            "origin": "Code/Platform/Linux"
+            "dir": "Gem/Platform/Android"
         },
         {
-            "dir": "Code/Platform/Mac",
-            "origin": "Code/Platform/Mac"
+            "dir": "Gem/Platform/Linux"
         },
         {
-            "dir": "Code/Platform/Windows",
-            "origin": "Code/Platform/Windows"
+            "dir": "Gem/Platform/Mac"
         },
         {
-            "dir": "Code/Platform/iOS",
-            "origin": "Code/Platform/iOS"
+            "dir": "Gem/Platform/Windows"
         },
         {
-            "dir": "Code/Source",
-            "origin": "Code/Source"
+            "dir": "Gem/Platform/iOS"
         },
         {
-            "dir": "Config",
-            "origin": "Config"
+            "dir": "Gem/Source"
         },
         {
-            "dir": "Platform",
-            "origin": "Platform"
+            "dir": "Platform"
         },
         {
-            "dir": "Platform/Android",
-            "origin": "Platform/Android"
+            "dir": "Platform/Android"
         },
         {
-            "dir": "Platform/Linux",
-            "origin": "Platform/Linux"
+            "dir": "Platform/Linux"
         },
         {
-            "dir": "Platform/Mac",
-            "origin": "Platform/Mac"
+            "dir": "Platform/Mac"
         },
         {
-            "dir": "Platform/Windows",
-            "origin": "Platform/Windows"
+            "dir": "Platform/Windows"
         },
         {
-            "dir": "Platform/iOS",
-            "origin": "Platform/iOS"
+            "dir": "Platform/iOS"
         },
         {
-            "dir": "Registry",
-            "origin": "Registry"
+            "dir": "Registry"
         },
         {
-            "dir": "Resources",
-            "origin": "Resources"
+            "dir": "Resources"
         },
         {
-            "dir": "Resources/Platform",
-            "origin": "Resources/Platform"
+            "dir": "Resources/Platform"
         },
         {
-            "dir": "Resources/Platform/Mac",
-            "origin": "Resources/Platform/Mac"
+            "dir": "Resources/Platform/Mac"
         },
         {
-            "dir": "Resources/Platform/Mac/Images.xcassets",
-            "origin": "Resources/Platform/Mac/Images.xcassets"
+            "dir": "Resources/Platform/Mac/Images.xcassets"
         },
         {
-            "dir": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset",
-            "origin": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset"
+            "dir": "Resources/Platform/Mac/Images.xcassets/TestDPAppIcon.appiconset"
         },
         {
-            "dir": "Resources/Platform/iOS",
-            "origin": "Resources/Platform/iOS"
+            "dir": "Resources/Platform/iOS"
         },
         {
-            "dir": "Resources/Platform/iOS/Images.xcassets",
-            "origin": "Resources/Platform/iOS/Images.xcassets"
+            "dir": "Resources/Platform/iOS/Images.xcassets"
         },
         {
-            "dir": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage",
-            "origin": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage"
+            "dir": "Resources/Platform/iOS/Images.xcassets/LaunchImage.launchimage"
         },
         {
-            "dir": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset",
-            "origin": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset"
+            "dir": "Resources/Platform/iOS/Images.xcassets/TestDPAppIcon.appiconset"
         },
         {
-            "dir": "ShaderLib",
-            "origin": "ShaderLib"
+            "dir": "ShaderLib"
         },
         {
-            "dir": "Shaders",
-            "origin": "Shaders"
+            "dir": "Shaders"
         },
         {
-            "dir": "Shaders/ShaderResourceGroups",
-            "origin": "Shaders/ShaderResourceGroups"
+            "dir": "Shaders/ShaderResourceGroups"
         }
     ]
 }

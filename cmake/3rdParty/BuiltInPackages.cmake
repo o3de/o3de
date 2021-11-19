@@ -12,9 +12,9 @@
 # cmake/3rdParty/Platform/Windows/BuiltInPackages_windows.cmake
 
 #include the platform-specific 3rd party packages.
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 
-set(LY_PAL_PACKAGE_FILE_NAME ${CMAKE_CURRENT_LIST_DIR}/${pal_dir}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+set(LY_PAL_PACKAGE_FILE_NAME ${pal_dir}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 include(${LY_PAL_PACKAGE_FILE_NAME})
 
 # add the above file to the ALLFILES list, so that they show up in IDEs
