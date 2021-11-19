@@ -125,9 +125,6 @@ namespace AzToolsFramework
         int rows = m_assetBrowserFilterModel->rowCount(index);
         if (rows == 0)
         {
-            if (index != QModelIndex()) {
-                AZ_Error("AssetCompleterModel", false, "No children detected in FetchResources()");
-            }
             return;
         }
 
@@ -136,7 +133,7 @@ namespace AzToolsFramework
             QModelIndex childIndex = m_assetBrowserFilterModel->index(i, 0, index);
             AssetBrowserEntry* childEntry = GetAssetEntry(m_assetBrowserFilterModel->mapToSource(childIndex));
 
-            if (childEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
+            if (childEntry->GetEntryType() == m_entryType)
             {
                 ProductAssetBrowserEntry* productEntry = static_cast<ProductAssetBrowserEntry*>(childEntry);
                 AZStd::string assetName;
@@ -172,7 +169,6 @@ namespace AzToolsFramework
         return m_assets[index.row()].m_displayName;
     }
 
-
     const AZ::Data::AssetId AssetCompleterModel::GetAssetIdFromIndex(const QModelIndex& index) 
     {
         if (!index.isValid())
@@ -181,5 +177,20 @@ namespace AzToolsFramework
         }
 
         return m_assets[index.row()].m_assetId;
+    }
+
+    const AZStd::string_view AssetCompleterModel::GetPathFromIndex(const QModelIndex& index)
+    {
+        if (!index.isValid())
+        {
+            return "";
+        }
+
+        return m_assets[index.row()].m_path;
+    }
+
+    void AssetCompleterModel::SetFetchEntryType(AssetBrowserEntry::AssetEntryType entryType)
+    {
+        m_entryType = entryType;
     }
 }

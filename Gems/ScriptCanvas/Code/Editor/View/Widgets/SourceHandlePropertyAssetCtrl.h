@@ -29,11 +29,15 @@ namespace ScriptCanvasEditor
         AzToolsFramework::AssetBrowser::AssetSelectionModel GetAssetSelectionModel() override;
         void PopupAssetPicker() override;
         void ClearAssetInternal() override;
+        void ConfigureAutocompleter() override;
 
         void SetSourceAssetFilterPattern(const QString& filterPattern);
 
         AZ::IO::Path GetSelectedSourcePath() const;
         void SetSelectedSourcePath(const AZ::IO::Path& sourcePath);
+
+    public Q_SLOTS:
+        void OnAutocomplete(const QModelIndex& index) override;
 
     private:
         //! A regular expression pattern for filtering by source assets
