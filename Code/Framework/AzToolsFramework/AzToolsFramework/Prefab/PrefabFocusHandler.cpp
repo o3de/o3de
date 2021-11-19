@@ -212,7 +212,9 @@ namespace AzToolsFramework::Prefab
 
     AZ::EntityId PrefabFocusHandler::GetFocusedPrefabContainerEntityId([[maybe_unused]] AzFramework::EntityContextId entityContextId) const
     {
-        return m_focusedInstanceContainerEntityId;
+        return (m_focusedInstanceContainerEntityId.IsValid()
+            ? m_focusedInstanceContainerEntityId
+            : GetReferenceFromContainerEntityId(m_focusedInstanceContainerEntityId)->get().GetContainerEntityId());
     }
 
     bool PrefabFocusHandler::IsOwningPrefabBeingFocused(AZ::EntityId entityId) const
