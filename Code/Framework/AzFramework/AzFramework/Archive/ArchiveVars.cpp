@@ -13,10 +13,12 @@ namespace AZ::IO
 {
     FileSearchPriority GetDefaultFileSearchPriority()
     {
-#if defined(LY_ARCHIVE_FILE_SEARCH_MODE_DEFAULT)
-        return FileSearchPriority{ LY_ARCHIVE_FILE_SEARCH_MODE_DEFAULT };
+#if defined(LY_ARCHIVE_FILE_SEARCH_MODE)
+        return FileSearchPriority{ LY_ARCHIVE_FILE_SEARCH_MODE };
 #else
-        return FileSearchPriority{};
+        return FileSearchPriority{ !ArchiveVars::IsReleaseConfig
+            ? FileSearchPriority::FileFirst
+            : FileSearchPriority::PakOnly };
 #endif
     }
 }
