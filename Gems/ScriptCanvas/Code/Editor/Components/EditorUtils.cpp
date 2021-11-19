@@ -17,6 +17,7 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h>
 #include <ScriptCanvas/Utils/NodeUtils.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
 #include <Editor/Include/ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
@@ -30,6 +31,44 @@ AZ_POP_DISABLE_WARNING
 
 namespace ScriptCanvasEditor
 {
+    AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source)
+    {
+        if (source.IsValidDescription())
+        {
+            return source.Describe();
+        }
+
+        AZStd::string watchFolder;
+        AZ::Data::AssetInfo assetInfo;
+        bool sourceInfoFound{};
+
+        if (!source.Id().IsNull())
+        {
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult
+                ( sourceInfoFound
+                , &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, source.Id(), assetInfo, watchFolder);
+
+            if (sourceInfoFound && !assetInfo.m_relativePath.empty())
+            {
+                return SourceHandle(nullptr, assetInfo.m_assetId.m_guid, assetInfo.m_relativePath);
+            }
+        }
+
+        if (!source.Path().empty())
+        {
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult
+                ( sourceInfoFound
+                , &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, source.Path().c_str(), assetInfo, watchFolder);
+
+            if (sourceInfoFound && assetInfo.m_assetId.IsValid())
+            {
+                return SourceHandle(nullptr, assetInfo.m_assetId.m_guid, assetInfo.m_relativePath);
+            }
+        }
+
+        return AZStd::nullopt;
+    }
+
     //////////////////////////
     // NodeIdentifierFactory
     //////////////////////////
