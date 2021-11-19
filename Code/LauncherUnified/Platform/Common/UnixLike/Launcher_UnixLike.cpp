@@ -49,18 +49,17 @@ namespace
         rlimit limit;
         if (getrlimit(resource, &limit) != 0)
         {
-            AZ_Error("Launcher", false, "[ERROR] Failed to get limit for resource %d.  Error: %s", resource, strerror(errno));
-            return false;
+            AZ_Warning("Launcher", false, "[WARNING] Unable to get limit for resource %d.  Error: %s", resource, strerror(errno));
         }
 
         if (updateLimit(limit))
         {
             if (setrlimit(resource, &limit) != 0)
             {
-                AZ_Error("Launcher", false, "[ERROR] Failed to update resource limit for resource %d.  Error: %s", resource, strerror(errno));
-                return false;
+                AZ_Warning("Launcher", false, "[WARNING] Unable to update resource limit for resource %d.  Error: %s", resource, strerror(errno));
             }
         }
+
         return true;
     }
 }
