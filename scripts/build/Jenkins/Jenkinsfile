@@ -454,7 +454,7 @@ def UploadAPLogs(String platformName, String jobName, String workspace, Map para
     dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
         projects = params.CMAKE_LY_PROJECTS.split(",")
         projects.each{ project ->
-            ArchiveArtifactsOnS3("${project}/user/log", "ap_logs/${platformName}/${jobName}/${project}", recursive=true)
+            ArchiveArtifactsOnS3("${project}/user/log", "ap_logs/${platformName}/${jobName}/${project}", true)
         }
     }
 }
