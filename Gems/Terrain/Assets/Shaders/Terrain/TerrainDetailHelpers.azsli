@@ -304,7 +304,7 @@ bool GetDetailSurface(inout DetailSurface surface, float2 detailMaterialIdUv, fl
     // Calculate weight based on proximity to detail material samples
     float2 gatherWeight = frac(detailMaterialIdCoord);
     // Adjust the gather weight for better interpolation by (3x^2 - 2x^3). This helps avoid diamond-shaped artifacts in binlinear filtering.
-    gatherWeight = 3.0 * gatherWeight * gatherWeight - 2.0 * gatherWeight * gatherWeight * gatherWeight;
+    gatherWeight = gatherWeight * gatherWeight * (3.0 * - 2.0 * gatherWeight);
 
     if (o_debugDetailMaterialIds)
     {
