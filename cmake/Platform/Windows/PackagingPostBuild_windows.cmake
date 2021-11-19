@@ -6,6 +6,9 @@
 #
 #
 
+file(REAL_PATH "${CPACK_SOURCE_DIR}/.." LY_ROOT_FOLDER)
+include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingPostBuild_common.cmake)
+
 # convert the path to a windows style path using string replace because TO_NATIVE_PATH
 # only works on real paths
 string(REPLACE "/" "\\" _fixed_package_install_dir ${CPACK_PACKAGE_INSTALL_DIRECTORY})
@@ -56,8 +59,7 @@ set(_light_command
 )
 
 if(CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
-    file(REAL_PATH "${CPACK_SOURCE_DIR}/.." _root_path)
-    file(TO_NATIVE_PATH "${_root_path}/scripts/signer/Platform/Windows/signer.ps1" _sign_script)
+    file(TO_NATIVE_PATH "${LY_ROOT_FOLDER}/scripts/signer/Platform/Windows/signer.ps1" _sign_script)
 
     unset(_signing_command)
     find_program(_psiexec_path psexec.exe)
@@ -111,16 +113,12 @@ if(NOT ${_light_result} EQUAL 0)
     message(FATAL_ERROR "An error occurred invoking light.exe.  ${_light_errors}")
 endif()
 
-file(COPY ${_bootstrap_output_file}
-    DESTINATION ${CPACK_PACKAGE_DIRECTORY}
-)
-
-message(STATUS "Bootstrap installer generated to ${CPACK_PACKAGE_DIRECTORY}/${_bootstrap_filename}")
+message(STATUS "Bootstrap installer generated to ${_bootstrap_output_file}")
 
 if(CPACK_UPLOAD_URL) # Skip signing if we are not uploading the package
-    message(STATUS "Signing bootstrap installer in ${CPACK_PACKAGE_DIRECTORY}")
+    message(STATUS "Signing bootstrap installer in ${_bootstrap_output_file}")
     execute_process(
-        COMMAND ${_signing_command} -bootstrapPath ${CPACK_PACKAGE_DIRECTORY}/${_bootstrap_filename}
+        COMMAND ${_signing_command} -bootstrapPath ${_bootstrap_output_file}
         RESULT_VARIABLE _signing_result
         ERROR_VARIABLE _signing_errors
         OUTPUT_VARIABLE _signing_output
@@ -137,113 +135,32 @@ if(NOT CPACK_UPLOAD_DIRECTORY)
     set(CPACK_UPLOAD_DIRECTORY ${CPACK_PACKAGE_DIRECTORY}/CPackUploads)
 endif()
 
-# copy the artifacts intended to be uploaded to a remote server into the folder specified
-# through cpack_configure_downloads.  this mimics the same process cpack does natively for
+# Copy the artifacts intended to be uploaded to a remote server into the folder specified
+# through CPACK_UPLOAD_DIRECTORY. This mimics the same process cpack does natively for
 # some other frameworks that have built-in online installer support.
-message(STATUS "Copying installer artifacts to upload directory...")
+message(STATUS "Copying packaging artifacts to upload directory...")
 file(REMOVE_RECURSE ${CPACK_UPLOAD_DIRECTORY})
-file(GLOB _artifacts "${_cpack_wix_out_dir}/*.msi" "${_cpack_wix_out_dir}/*.cab")
+file(GLOB _artifacts 
+    "${_cpack_wix_out_dir}/*.msi" 
+    "${_cpack_wix_out_dir}/*.cab"
+    "${_cpack_wix_out_dir}/*.exe"
+)
 file(COPY ${_artifacts}
     DESTINATION ${CPACK_UPLOAD_DIRECTORY}
 )
 message(STATUS "Artifacts copied to ${CPACK_UPLOAD_DIRECTORY}")
 
-if(NOT CPACK_UPLOAD_URL)
-    return()
-endif()
-
-file(TO_NATIVE_PATH "${_cpack_wix_out_dir}" _cpack_wix_out_dir)
-file(TO_NATIVE_PATH "${_root_path}/python/python.cmd" _python_cmd)
-file(TO_NATIVE_PATH "${_root_path}/scripts/build/tools/upload_to_s3.py" _upload_script)
-
-function(upload_to_s3 in_url in_local_path in_file_regex)
-
-    # strip the scheme and extract the bucket/key prefix from the URL
-    string(REPLACE "s3://" "" _stripped_url ${in_url})
-    string(REPLACE "/" ";" _tokens ${_stripped_url})
-
-    list(POP_FRONT _tokens _bucket)
-    string(JOIN "/" _prefix ${_tokens})
-
-    set(_extra_args [[{"ACL":"bucket-owner-full-control"}]])
-
-    set(_upload_command
-        ${_python_cmd} -s
-        -u ${_upload_script}
-        --base_dir ${in_local_path}
-        --file_regex="${in_file_regex}"
-        --bucket ${_bucket}
-        --key_prefix ${_prefix}
-        --extra_args ${_extra_args}
+if(CPACK_UPLOAD_URL)
+    file(TO_NATIVE_PATH "${_cpack_wix_out_dir}" _cpack_wix_out_dir)
+    ly_upload_to_url(
+        ${CPACK_UPLOAD_URL}
+        ${_cpack_wix_out_dir}
+        ".*(cab|exe|msi)$"
     )
 
-    if(CPACK_AWS_PROFILE)
-        list(APPEND _upload_command --profile ${CPACK_AWS_PROFILE})
+    # for auto tagged builds, we will also upload a second copy of just the boostrapper
+    # to a special "Latest" folder under the branch in place of the commit date/hash
+    if(CPACK_AUTO_GEN_TAG)
+        ly_upload_to_latest(${CPACK_UPLOAD_URL} ${_bootstrap_output_file})
     endif()
-
-    execute_process(
-        COMMAND ${_upload_command}
-        RESULT_VARIABLE _upload_result
-        OUTPUT_VARIABLE _upload_output
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-    if (NOT ${_upload_result} EQUAL 0)
-        message(FATAL_ERROR "An error occurred uploading to s3.\nOutput:\n${_upload_output}")
-    endif()
-endfunction()
-
-message(STATUS "Uploading artifacts to ${CPACK_UPLOAD_URL}")
-upload_to_s3(
-    ${CPACK_UPLOAD_URL}
-    ${_cpack_wix_out_dir}
-    ".*(cab|exe|msi)$"
-)
-message(STATUS "Artifact uploading complete!")
-
-# for auto tagged builds, we will also upload a second copy of just the boostrapper
-# to a special "Latest" folder under the branch in place of the commit date/hash
-if(CPACK_AUTO_GEN_TAG)
-    message(STATUS "Updating latest tagged build")
-
-    # make sure we can extra the commit info from the URL first
-    string(REGEX MATCH "([0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-[0-9a-zA-Z]+)"
-        _commit_info ${CPACK_UPLOAD_URL}
-    )
-    if(NOT _commit_info)
-        message(FATAL_ERROR "Failed to extract the build tag")
-    endif()
-
-    set(_temp_dir ${_cpack_wix_out_dir}/temp)
-    if(NOT EXISTS ${_temp_dir})
-        file(MAKE_DIRECTORY ${_temp_dir})
-    endif()
-
-    # strip the version number form the exe name in the one uploaded to latest
-    string(TOLOWER "${CPACK_PACKAGE_NAME}_installer.exe" _non_versioned_exe)
-    set(_temp_exe_copy ${_temp_dir}/${_non_versioned_exe})
-
-    file(COPY ${_bootstrap_output_file} DESTINATION ${_temp_dir})
-    file(RENAME "${_temp_dir}/${_bootstrap_filename}" ${_temp_exe_copy})
-
-    # include the commit info in a text file that will live next to the exe
-    set(_temp_info_file ${_temp_dir}/build_tag.txt)
-    file(WRITE ${_temp_info_file} ${_commit_info})
-
-    # update the URL and upload
-    string(REPLACE
-        ${_commit_info} "Latest"
-        _latest_upload_url ${CPACK_UPLOAD_URL}
-    )
-
-    upload_to_s3(
-        ${_latest_upload_url}
-        ${_temp_dir}
-        ".*(${_non_versioned_exe}|build_tag.txt)$"
-    )
-
-    # cleanup the temp files
-    file(REMOVE_RECURSE ${_temp_dir})
-
-    message(STATUS "Latest build update complete!")
 endif()
