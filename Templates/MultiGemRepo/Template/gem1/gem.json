@@ -4,7 +4,7 @@
     "license": "What license test_from_template uses goes here: i.e. Apache-2.0 Or MIT",
     "license_url": "",
     "origin": "The primary repo for ${Name}Gem1 goes here: i.e. http://www.mydomain.com",
-    "summary": "This gem is zipped up in an archived named gem.zip in the gem1 folder. Though not required, it is recommended that the sha256 of the gem.zip file should be placed in the sha256 field of this gem.json so the download can be verified.",
+    "summary": "This gem is zipped up in an archive named gem.zip in the gem1 folder. Though not required, it is recommended that the sha256 of the gem.zip file should be placed in the sha256 field of this gem.json so the download can be verified.",
     "origin_uri": "${RepoURI}/gem1/gem.zip",
     "sha256": "",
     "type": "Code",
