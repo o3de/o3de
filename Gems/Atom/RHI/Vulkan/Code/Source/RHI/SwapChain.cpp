@@ -61,15 +61,17 @@ namespace AZ
 
         void SwapChain::ProcessRecreation()
         {
-            //if (m_pendingRecreation)
-            //{
-            //    ShutdownImages();
-            //    InvalidateNativeSwapChain();
-            //    CreateSwapchain();
-            //    InitImages();
+            if (m_pendingRecreation)
+            {
+                m_presentationQueue->WaitForIdle();
 
-            //    m_pendingRecreation = false;
-            //}
+                ShutdownImages();
+                InvalidateNativeSwapChain();
+                CreateSwapchain();
+                InitImages();
+
+                m_pendingRecreation = false;
+            }
         }
 
         void SwapChain::SetVerticalSyncIntervalInternal(uint32_t previousVsyncInterval)
@@ -130,7 +132,7 @@ namespace AZ
             m_swapchainNativeImages.clear();
             m_currentFrameContext = {};
 
-            ResourcePool::ShutdownInternal();
+            RHI::SwapChain::ShutdownInternal();
         }
 
         RHI::ResultCode SwapChain::InitImageInternal(const RHI::SwapChain::InitImageRequest& request)
