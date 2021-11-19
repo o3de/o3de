@@ -55,21 +55,19 @@ namespace AWSCore
         AZStd::string profileName = "default";
         AWSCoreInternalRequestBus::BroadcastResult(profileName, &AWSCoreInternalRequests::GetProfileName);
 
-        AZ::IO::FixedMaxPathString executablePath = AZ::Utils::GetExecutableDirectory();
-
         if (m_isDebug)
         {
             return AZStd::string::format(
-                "\"%s\" " AWSCORE_EDITOR_PYTHON_DEBUG_ARGUMENT "-B \"%s\" --binaries-path \"%s\" --debug --profile \"%s\" --config-path \"%s\" --log-path \"%s\" --executable-path=\"%s\"",
+                "\"%s\" " AWSCORE_EDITOR_PYTHON_DEBUG_ARGUMENT "-B \"%s\" --binaries-path \"%s\" --debug --profile \"%s\" --config-path \"%s\" --log-path \"%s\"",
                 m_enginePythonEntryPath.c_str(), m_toolScriptPath.c_str(), m_toolQtBinDirectoryPath.c_str(),
-                profileName.c_str(), m_toolConfigDirectoryPath.c_str(), m_toolLogDirectoryPath.c_str(), executablePath.c_str());
+                profileName.c_str(), m_toolConfigDirectoryPath.c_str(), m_toolLogDirectoryPath.c_str());
         }
         else
         {
             return AZStd::string::format(
-                "\"%s\" -B \"%s\" --binaries-path \"%s\" --profile \"%s\" --config-path \"%s\" --log-path \"%s\" --executable-path=\"%s\"",
+                "\"%s\" -B \"%s\" --binaries-path \"%s\" --profile \"%s\" --config-path \"%s\" --log-path \"%s\"",
                 m_enginePythonEntryPath.c_str(), m_toolScriptPath.c_str(), m_toolQtBinDirectoryPath.c_str(),
-                profileName.c_str(), m_toolConfigDirectoryPath.c_str(), m_toolLogDirectoryPath.c_str(), executablePath.c_str());
+                profileName.c_str(), m_toolConfigDirectoryPath.c_str(), m_toolLogDirectoryPath.c_str());
         }
     }
 
