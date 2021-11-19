@@ -363,12 +363,33 @@
     "PARAMETERS": {
         "CONFIGURATION": "profile",
         "OUTPUT_DIRECTORY": "build\\windows_vs2019",
-        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE -DLY_DISABLE_TEST_MODULES=TRUE -DLY_VERSION_ENGINE_NAME=o3de-sdk -DLY_INSTALLER_WIX_ROOT=\"!WIX! \"",
-        "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=ON -DLY_INSTALLER_DOWNLOAD_URL=!INSTALLER_DOWNLOAD_URL! -DLY_INSTALLER_LICENSE_URL=!INSTALLER_DOWNLOAD_URL!/license",
-        "CPACK_BUCKET": "!INSTALLER_BUCKET!",
-        "CMAKE_LY_PROJECTS": "",
+        "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_DISABLE_TEST_MODULES=TRUE -DLY_VERSION_ENGINE_NAME=o3de-sdk -DLY_INSTALLER_WIX_ROOT=\"!WIX! \"",
+        "EXTRA_CMAKE_OPTIONS": "-DLY_INSTALLER_AUTO_GEN_TAG=TRUE -DLY_INSTALLER_DOWNLOAD_URL=!INSTALLER_DOWNLOAD_URL! -DLY_INSTALLER_LICENSE_URL=!INSTALLER_DOWNLOAD_URL!/license",
         "CMAKE_TARGET": "ALL_BUILD",
+        "CPACK_OPTIONS": "-D CPACK_UPLOAD_URL=\"!CPACK_UPLOAD_URL!\"",
         "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"
+    }
+  },
+  "install_profile_vs2019_pipe": {
+    "TAGS": [
+      "nightly-incremental",
+      "nightly-clean"
+    ],
+    "PIPELINE_ENV": {
+      "PROJECT_REPOSITORY_NAME": "TestProject"
+    },
+    "steps": [
+      "install_profile_vs2019",
+      "project_generate",
+      "project_engineinstall_profile_vs2019"
+    ]
+  },
+  "project_generate": {
+    "TAGS": [],
+    "COMMAND": "python_windows.cmd",
+    "PARAMETERS": {
+      "SCRIPT_PATH": "install\\scripts\\o3de.py",
+      "SCRIPT_PARAMETERS": "create-project -pp %WORKSPACE%\\%PROJECT_REPOSITORY_NAME% --force"
     }
   },
   "project_enginesource_profile_vs2019": {

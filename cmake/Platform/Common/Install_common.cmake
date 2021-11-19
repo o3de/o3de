@@ -517,15 +517,27 @@ endfunction()
 function(ly_setup_runtime_dependencies)
 
     # Common functions used by the bellow code
-    if(COMMAND ly_install_code_function_override)
-        ly_install_code_function_override()
+    if(COMMAND ly_setup_runtime_dependencies_copy_function_override)
+        ly_setup_runtime_dependencies_copy_function_override()
     else()
-        install(CODE
+        # despite this copy function being the same, we need to install it per component that uses it
+        # (which is per-configuration per-permutation component)
+        foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
+            string(TOUPPER ${conf} UCONF)
+            ly_install(CODE
 "function(ly_copy source_file target_directory)
-    file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
+    cmake_path(GET source_file FILENAME target_filename)
+    cmake_path(APPEND full_target_directory \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}\" \"\${target_directory}\")
+    cmake_path(APPEND target_file \"\${full_target_directory}\" \"\${target_filename}\")
+    if(\"\${source_file}\" IS_NEWER_THAN \"\${target_file}\")
+        message(STATUS \"Copying \${source_file} to \${full_target_directory}...\")
+        file(COPY \"\${source_file}\" DESTINATION \"\${full_target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS} FOLLOW_SYMLINK_CHAIN)
+        file(TOUCH_NOCREATE \"${target_file}\")
+    endif()
 endfunction()"
-        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-        )
+                COMPONENT ${LY_INSTALL_PERMUTATION_COMPONENT}_${UCONF}
+            )
+        endforeach()
     endif()
 
     unset(runtime_commands)
@@ -545,12 +557,7 @@ endfunction()"
         endif()
 
         # runtime dependencies that need to be copied to the output
-        # Anywhere CMAKE_INSTALL_PREFIX is used, it has to be escaped so it is baked into the cmake_install.cmake script instead
-        # of baking the path. This is needed so `cmake --install --prefix <someprefix>` works regardless of the CMAKE_INSTALL_PREFIX
-        # used to generate the solution.
-        # CMAKE_INSTALL_PREFIX is still used when building the INSTALL target
-        set(install_output_folder "\${CMAKE_INSTALL_PREFIX}/${runtime_output_directory}")
-        set(target_file_dir "${install_output_folder}/${target_runtime_output_subdirectory}")
+        set(target_file_dir "${runtime_output_directory}/${target_runtime_output_subdirectory}")
         ly_get_runtime_dependencies(runtime_dependencies ${target})
         foreach(runtime_dependency ${runtime_dependencies})
             unset(runtime_command)
