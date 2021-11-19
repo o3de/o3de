@@ -57,7 +57,8 @@ namespace AZ::Render
         //! Returns the offset into the internal data vector for a given index.
         IndexType GetRawIndex(IndexType index) const;
 
-        //! Returns the public index for data given its pointer.
+        //! Returns the logical index for data given its pointer, which could passed to
+        //! GetData() to retrieve the data again.
         IndexType GetIndexForData(const DataType* data) const;
 
     private:
@@ -66,7 +67,7 @@ namespace AZ::Render
         // Indices to data and an embedded free list in the unused entries
         AZStd::vector<IndexType> m_indices;
 
-        // Map of index in m_data to the index for that data in m_indices.
+        // Map of the physical index in m_data to the logical index for that data in m_indices.
         AZStd::vector<IndexType> m_dataToIndices;
 
         // The actual data.
