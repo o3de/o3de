@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsActive",
+                "name": "Is Active",
                 "category": "Entity/Entity",
-                "tooltip": "returns true if entity with the provided Id is valid and active.",
-                "subtitle": "Entity"
+                "tooltip": "Returns true if entity with the provided Id is valid and active."
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_EntityID: Entity Id",
+                    "key": "DataInput_Entity Id",
                     "details": {
-                        "name": "EntityID: Entity Id"
+                        "name": "Entity Id"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]
