@@ -111,6 +111,9 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PRIVATE
                 Gem::AWSCore.Editor.Static
+        RUNTIME_DEPENDENCIES
+            3rdParty::pyside2
+
     )
     ly_add_dependencies(AWSCore.Editor AWSCore.ResourceMappingTool)
 
