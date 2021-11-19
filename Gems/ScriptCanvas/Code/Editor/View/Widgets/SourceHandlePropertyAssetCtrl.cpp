@@ -119,7 +119,15 @@ namespace ScriptCanvasEditor
         (void)node;
 
         auto sourceHandle = SourceHandle(nullptr, {}, GUI->GetSelectedSourcePath());
-        instance = property_t(*CompleteDescription(sourceHandle));
+        auto completeSourceHandle = CompleteDescription(sourceHandle);
+        if (completeSourceHandle)
+        {
+            instance = property_t(*CompleteDescription(sourceHandle));
+        }
+        else
+        {
+            instance = property_t();
+        }
     }
 
     bool SourceHandlePropertyHandler::ReadValuesIntoGUI(size_t index, SourceHandlePropertyAssetCtrl* GUI, const property_t& instance, AzToolsFramework::InstanceDataNode* node)
