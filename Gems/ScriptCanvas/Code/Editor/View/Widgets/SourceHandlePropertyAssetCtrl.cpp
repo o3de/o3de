@@ -13,6 +13,7 @@
 
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/UI/PropertyEditor/Model/AssetCompleterModel.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 
 namespace ScriptCanvasEditor
@@ -61,6 +62,20 @@ namespace ScriptCanvasEditor
         PropertyAssetCtrl::ClearAssetInternal();
     }
 
+    void SourceHandlePropertyAssetCtrl::ConfigureAutocompleter()
+    {
+        if (m_completerIsConfigured)
+        {
+            return;
+        }
+
+        AzToolsFramework::PropertyAssetCtrl::ConfigureAutocompleter();
+
+        AssetSelectionModel selection = GetAssetSelectionModel();
+        m_model->SetFetchEntryType(AssetBrowserEntry::AssetEntryType::Source);
+        m_model->SetFilter(selection.GetDisplayFilter());
+    }
+
     void SourceHandlePropertyAssetCtrl::SetSourceAssetFilterPattern(const QString& filterPattern)
     {
         m_sourceAssetFilterPattern = filterPattern;
@@ -84,6 +99,11 @@ namespace ScriptCanvasEditor
 
         // The AssetID gets ignored, the only important bit is triggering the change for the RequestWrite
         emit OnAssetIDChanged(AZ::Data::AssetId());
+    }
+
+    void SourceHandlePropertyAssetCtrl::OnAutocomplete(const QModelIndex& index)
+    {
+        SetSelectedSourcePath(m_model->GetPathFromIndex(GetSourceIndex(index)));
     }
 
     QWidget* SourceHandlePropertyHandler::CreateGUI(QWidget* pParent)

@@ -173,10 +173,11 @@ namespace AzToolsFramework
         virtual void SetFolderSelection(const AZStd::string& /* folderPath */) {}
         virtual void ClearAssetInternal();
 
-        void ConfigureAutocompleter();
+        virtual void ConfigureAutocompleter();
         void RefreshAutocompleter();
         void EnableAutocompleter();
         void DisableAutocompleter();
+        const QModelIndex GetSourceIndex(const QModelIndex& index);
 
         void HandleFieldClear();
         AZStd::string AddDefaultSuffix(const AZStd::string& filename);
@@ -240,13 +241,12 @@ namespace AzToolsFramework
         virtual void OnEditButtonClicked();
         void OnThumbnailClicked();
         void OnCompletionModelReset();
-        void OnAutocomplete(const QModelIndex& index);
+        virtual void OnAutocomplete(const QModelIndex& index);
         void OnTextChange(const QString& text);
         void OnReturnPressed();
         void ShowContextMenu(const QPoint& pos);
 
     private:
-        const QModelIndex GetSourceIndex(const QModelIndex& index);
         void UpdateThumbnail();
     };
 
