@@ -43,7 +43,8 @@ logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 logger.info(f"Using {logging_path} for logging.")
 
-# Optional executable path (linux only)
+# Optional executable path needed on platforms that need to preload Pyside2 (or other) related
+# shared libraries in order for the pyside python library to load the correct one
 if platform.system() == 'Linux':
 
     import ctypes
