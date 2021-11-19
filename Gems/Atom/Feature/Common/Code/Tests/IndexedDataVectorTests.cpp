@@ -54,7 +54,7 @@ namespace UnitTest
         }
 
         template<typename T>
-        void ShuffleIndexedDataVector(IndexedDataVector<T> dataVector, AZStd::vector<uint16_t> indices)
+        void ShuffleIndexedDataVector(IndexedDataVector<T>& dataVector, AZStd::vector<uint16_t>& indices)
         {
             AZStd::vector<T> values;
 
