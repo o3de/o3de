@@ -7,6 +7,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 from argparse import (ArgumentParser, Namespace)
 import logging
+import os
+import platform
 import sys
 
 from utils import environment_utils
@@ -20,6 +22,7 @@ argument_parser.add_argument('--debug', action='store_true', help='Execute on de
 argument_parser.add_argument('--log-path', help='Path to resource mapping tool logging directory '
                                                 '(if not provided, logging file will be located at tool directory)')
 argument_parser.add_argument('--profile', default='default', help='Named AWS profile to use for querying AWS resources')
+argument_parser.add_argument('--executable-path', default=None, help='The path to the executable that launched python for this script')
 arguments: Namespace = argument_parser.parse_args()
 
 # logging setup
@@ -39,6 +42,22 @@ logging.getLogger('s3transfer').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
 logger.info(f"Using {logging_path} for logging.")
+
+# Optional executable path (linux only)
+if platform.system() == 'Linux':
+
+    import ctypes
+
+    if not arguments.executable_path:
+        logger.error(f"Argument '--executable-path' is required on platform: {platform.system()}")
+        exit(-1)
+    preload_shared_libs = [f'{arguments.executable_path}/libpyside2.abi3.so.5.14',
+                           f'{arguments.executable_path}/libQt5Widgets.so.5']
+    for preload_shared_lib in preload_shared_libs:
+        if not os.path.exists(preload_shared_lib):
+            logger.error(f"Cannot find required shared library at {preload_shared_lib}")
+            exit(-1)
+        ctypes.CDLL(preload_shared_lib)
 
 if __name__ == "__main__":
     if arguments.binaries_path and not environment_utils.is_qt_linked():
