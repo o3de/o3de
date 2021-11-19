@@ -211,7 +211,7 @@ namespace UnitTest
                 request.m_deadline = deadline;
                 request.m_priority = priority;
                 request.m_data = allocator.Allocate(size, size, 8);
-                
+
                 const auto* virtualFile = FindFile(relativePath);
 
                 AZ_Assert(
@@ -254,7 +254,7 @@ namespace UnitTest
                     if (onCompleteCallback)
                     {
                         onCompleteCallback(fileRequest);
-                        
+
                         m_readRequests.erase(readRequest);
                     }
                 }
@@ -267,7 +267,7 @@ namespace UnitTest
             });
 
         ON_CALL(m_mockStreamer, GetRequestStatus(_))
-            .WillByDefault([this]([[maybe_unused]] FileRequestHandle request)
+            .WillByDefault([]([[maybe_unused]] FileRequestHandle request)
             {
                 // Return whatever request status has been set in this class
                 return IO::IStreamerTypes::RequestStatus::Completed;
@@ -320,7 +320,7 @@ namespace UnitTest
     AZStd::vector<char>* MemoryStreamerWrapper::FindFile(AZStd::string_view path)
     {
         auto itr = m_virtualFiles.find(path);
-            
+
         if (itr == m_virtualFiles.end())
         {
             // Path didn't work as-is, does it have the test folder prefixed? If so try removing it
