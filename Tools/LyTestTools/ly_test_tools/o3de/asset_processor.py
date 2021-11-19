@@ -188,8 +188,6 @@ class AssetProcessor(object):
             log = APLogParser(self._workspace.paths.ap_gui_log())
             if len(log.runs):
                 try:
-                    for key in log.runs[-1]:
-                        logger.debug(f"Log contained key {key} with value {log.runs[-1][key]}")
                     port = log.runs[-1][port_type]
                     logger.debug(f"Read port type {port_type} : {port}")
                     return True
