@@ -313,12 +313,14 @@ function(ly_add_pytest)
     # Add the script path to the test target params
     set(LY_TEST_PARAMS "${ly_add_pytest_PATH}")
 
+    string(REPLACE "::" "_" pytest_output_directory "${CMAKE_BINARY_DIR}/Testing/LyTestTools/${ly_add_pytest_NAME}")
+
     ly_add_test(
         NAME ${ly_add_pytest_NAME}
         PARENT_NAME ${ly_add_pytest_NAME}
         TEST_SUITE ${ly_add_pytest_TEST_SUITE}
         LABELS FRAMEWORK_pytest
-        TEST_COMMAND ${LY_PYTEST_EXECUTABLE} ${ly_add_pytest_PATH} ${ly_add_pytest_EXTRA_ARGS} --junitxml=${pytest_report_directory} ${custom_marks_args}
+        TEST_COMMAND ${LY_PYTEST_EXECUTABLE} ${ly_add_pytest_PATH} ${ly_add_pytest_EXTRA_ARGS} --output-path ${pytest_output_directory} --junitxml=${pytest_report_directory} ${custom_marks_args}
         TEST_LIBRARY pytest
         COMPONENT ${ly_add_pytest_COMPONENT}
         ${ly_add_pytest_UNPARSED_ARGUMENTS}
