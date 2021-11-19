@@ -592,11 +592,11 @@ void CEntityObject::AdjustLightProperties(CVarBlockPtr& properties, const char* 
     if (IVariable* pCastShadowVarLegacy = FindVariableInSubBlock(properties, pSubBlockVar, "bCastShadow"))
     {
         pCastShadowVarLegacy->SetFlags(pCastShadowVarLegacy->GetFlags() | IVariable::UI_INVISIBLE);
-
-        if (pCastShadowVarLegacy->GetDisplayValue()[0] != '0')
+        const QString zeroPrefix("0");
+        if (!pCastShadowVarLegacy->GetDisplayValue().startsWith(zeroPrefix))
         {
             bCastShadowLegacy = true;
-            pCastShadowVarLegacy->SetDisplayValue("0");
+            pCastShadowVarLegacy->SetDisplayValue(zeroPrefix);
         }
     }
 

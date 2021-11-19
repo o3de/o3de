@@ -33,12 +33,20 @@ namespace AZ
             ID3D12DeviceX* dx12Device = device.GetDevice();
 
             m_copyQueue = CommandQueue::Create();
-            
+
+            // The async upload queue should always use the primary copy queue,
+            // but because this change is being made in the stabilization branch
+            // we will put it behind a define out of an abundance of caution, and
+            // change it to always do this once the change gets back to development.
+        #if defined(AZ_DX12_USE_PRIMARY_COPY_QUEUE_FOR_ASYNC_UPLOAD_QUEUE)
+            m_copyQueue = &device.GetCommandQueueContext().GetCommandQueue(RHI::HardwareQueueClass::Copy);
+        #else
             // Make a secondary Copy queue, the primary queue is owned by the CommandQueueContext
             CommandQueueDescriptor commandQueueDesc;
             commandQueueDesc.m_hardwareQueueClass = RHI::HardwareQueueClass::Copy;
             commandQueueDesc.m_hardwareQueueSubclass = HardwareQueueSubclass::Secondary;
             m_copyQueue->Init(device, commandQueueDesc);
+        #endif // defined(AZ_DX12_ASYNC_UPLOAD_QUEUE_USE_PRIMARY_COPY_QUEUE)
             m_uploadFence.Init(dx12Device, RHI::FenceState::Signaled);
 
             for (size_t i = 0; i < descriptor.m_frameCount; ++i)

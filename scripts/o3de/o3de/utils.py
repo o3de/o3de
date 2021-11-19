@@ -117,7 +117,7 @@ def backup_folder(folder: str or pathlib.Path) -> None:
             if backup_folder_name.is_dir():
                 renamed = True
 
-def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite, download_progress_callback = None) -> int:
+def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, download_progress_callback = None) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_path: location path on disk to download file
@@ -140,9 +140,9 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite, down
                 download_file_size = s.headers['content-length']
             except KeyError:
                 pass
-            def download_progress(blocks):
-                if download_progress_callback and download_file_size:
-                    return download_progress_callback(int(blocks/int(download_file_size) * 100))
+            def download_progress(downloaded_bytes):
+                if download_progress_callback:
+                    return download_progress_callback(int(downloaded_bytes), int(download_file_size))
                 return False
             with download_path.open('wb') as f:
                 download_cancelled = copyfileobj(s, f, download_progress)
@@ -157,12 +157,12 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite, down
     return 0
 
 
-def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, download_progress_callback = None) -> int:
+def download_zip_file(parsed_uri, download_zip_path: pathlib.Path, force_overwrite: bool, download_progress_callback = None) -> int:
     """
     :param parsed_uri: uniform resource identifier to zip file to download
     :param download_zip_path: path to output zip file
     """
-    download_file_result = download_file(parsed_uri, download_zip_path, download_progress_callback)
+    download_file_result = download_file(parsed_uri, download_zip_path, force_overwrite, download_progress_callback)
     if download_file_result != 0:
         return download_file_result
 

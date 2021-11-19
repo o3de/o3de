@@ -40,6 +40,8 @@
 #include "AssetRequestHandler.h"
 #include "native/utilities/JobDiagnosticTracker.h"
 #include "SourceFileRelocator.h"
+
+#include <AssetManager/ExcludedFolderCache.h>
 #endif
 
 class FileWatcher;
@@ -341,7 +343,8 @@ namespace AssetProcessor
         void CleanEmptyFolder(QString folder, QString root);
 
         void ProcessBuilders(QString normalizedPath, QString relativePathToFile, const ScanFolderInfo* scanFolder, const AssetProcessor::BuilderInfoList& builderInfoList);
-        
+        AZStd::vector<AZStd::string> GetExcludedFolders();
+
         struct SourceInfo
         {
             QString m_watchFolder;
@@ -551,6 +554,8 @@ namespace AssetProcessor
 
         // when true, a flag will be sent to builders process job indicating debug output/mode should be used
         bool m_builderDebugFlag = false;
+
+        AZStd::unique_ptr<ExcludedFolderCache> m_excludedFolderCache{};
 
 protected Q_SLOTS:
         void FinishAnalysis(AZStd::string fileToCheck);

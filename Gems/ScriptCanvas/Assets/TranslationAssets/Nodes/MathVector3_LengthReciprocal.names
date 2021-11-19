@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "LengthReciprocal",
+                "name": "Length Reciprocal",
                 "category": "Math/Vector3",
-                "tooltip": "returns the 1 / magnitude of the source",
-                "subtitle": "Vector3"
+                "tooltip": "Returns the 1 / magnitude of the source"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Vector3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

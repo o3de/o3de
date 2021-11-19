@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetElement",
+                "name": "Get Element",
                 "category": "Math/Vector3",
-                "tooltip": "returns the element corresponding to the index (0 -> x) (1 -> y) (2 -> z)",
-                "subtitle": "Vector3"
+                "tooltip": "Returns the element corresponding to the index (0 -> x) (1 -> y) (2 -> z)"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Vector3: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Index",
+                    "key": "DataInput_Index",
                     "details": {
-                        "name": "Number: Index"
+                        "name": "Index"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

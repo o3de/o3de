@@ -5,10 +5,10 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "YExtent",
-                "category": "Math/AABB",
+                "name": "Y Extent",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the Y extent (max Y - min Y) of Source",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {

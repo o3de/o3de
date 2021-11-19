@@ -10,6 +10,7 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Integration/Rendering/RenderActorInstance.h>
 #include <Integration/Rendering/RenderActorSettings.h>
 
@@ -41,6 +42,8 @@ namespace AZ::Render
             return;
         }
 
+        const RPI::Scene* scene = RPI::Scene::GetSceneForEntityId(instance->GetEntityId());
+        const RPI::ViewportContextPtr viewport = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->GetViewportContextByScene(scene);
         const AZ::Render::RenderActorSettings& renderActorSettings = EMotionFX::GetRenderActorSettings();
 
         // Render aabb
@@ -49,10 +52,21 @@ namespace AZ::Render
             RenderAABB(instance, renderActorSettings.m_staticAABBColor);
         }
 
-        // Render skeleton
+        // Render simple line skeleton
         if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_LINESKELETON])
         {
+            RenderLineSkeleton(instance, renderActorSettings.m_lineSkeletonColor);
+        }
+
+        // Render advanced skeleton
+        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_SKELETON])
+        {
             RenderSkeleton(instance, renderActorSettings.m_skeletonColor);
+        }
+
+        if (renderFlags[EMotionFX::ActorRenderFlag::RENDER_NODENAMES])
+        {
+            RenderJointNames(instance, viewport, renderActorSettings.m_jointNameColor);
         }
 
         // Render internal EMFX debug lines.
@@ -110,6 +124,29 @@ namespace AZ::Render
         return aabbRadius * 0.01f;
     }
 
+    float AtomActorDebugDraw::CalculateBoneScale(EMotionFX::ActorInstance* actorInstance, EMotionFX::Node* node)
+    {
+        // Get the transform data
+        EMotionFX::TransformData* transformData = actorInstance->GetTransformData();
+        const EMotionFX::Pose* pose = transformData->GetCurrentPose();
+
+        const size_t nodeIndex = node->GetNodeIndex();
+        const size_t parentIndex = node->GetParentIndex();
+        const AZ::Vector3 nodeWorldPos = pose->GetWorldSpaceTransform(nodeIndex).m_position;
+
+        if (parentIndex != InvalidIndex)
+        {
+            const AZ::Vector3 parentWorldPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
+            const AZ::Vector3 bone = parentWorldPos - nodeWorldPos;
+            const float boneLength = bone.GetLengthEstimate();
+
+            // 10% of the bone length is the sphere size
+            return boneLength * 0.1f;
+        }
+
+        return 0.0f;
+    }
+
     void AtomActorDebugDraw::PrepareForMesh(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM)
     {
         // Check if we have already prepared for the given mesh
@@ -145,7 +182,7 @@ namespace AZ::Render
         auxGeom->DrawAabb(aabb, aabbColor, RPI::AuxGeomDraw::DrawStyle::Line);
     }
 
-    void AtomActorDebugDraw::RenderSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor)
+    void AtomActorDebugDraw::RenderLineSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor)
     {
         RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
 
@@ -187,6 +224,42 @@ namespace AZ::Render
         lineArgs.m_colorCount = 1;
         lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
         auxGeom->DrawLines(lineArgs);
+    }
+
+    void AtomActorDebugDraw::RenderSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor)
+    {
+        RPI::AuxGeomDrawPtr auxGeom = m_auxGeomFeatureProcessor->GetDrawQueue();
+
+        const EMotionFX::TransformData* transformData = instance->GetTransformData();
+        const EMotionFX::Skeleton* skeleton = instance->GetActor()->GetSkeleton();
+        const EMotionFX::Pose* pose = transformData->GetCurrentPose();
+        const size_t numEnabled = instance->GetNumEnabledNodes();
+        for (size_t i = 0; i < numEnabled; ++i)
+        {
+            EMotionFX::Node* joint = skeleton->GetNode(instance->GetEnabledNode(i));
+            const size_t jointIndex = joint->GetNodeIndex();
+            const size_t parentIndex = joint->GetParentIndex();
+
+            // check if this node has a parent and is a bone, if not skip it
+            if (parentIndex == InvalidIndex)
+            {
+                continue;
+            }
+
+            const AZ::Vector3 nodeWorldPos = pose->GetWorldSpaceTransform(jointIndex).m_position;
+            const AZ::Vector3 parentWorldPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
+            const AZ::Vector3 bone = parentWorldPos - nodeWorldPos;
+            const AZ::Vector3 boneDirection = bone.GetNormalizedEstimate();
+            const AZ::Vector3 centerWorldPos = bone / 2 + nodeWorldPos;
+            const float boneLength = bone.GetLengthEstimate();
+            const float boneScale = CalculateBoneScale(instance, joint);
+            const float parentBoneScale = CalculateBoneScale(instance, skeleton->GetNode(parentIndex));
+            const float cylinderSize = boneLength - boneScale - parentBoneScale;
+
+            // Render the bone cylinder, the cylinder will be directed towards the node's parent and must fit between the spheres
+            auxGeom->DrawCylinder(centerWorldPos, boneDirection, boneScale, cylinderSize, skeletonColor);
+            auxGeom->DrawSphere(nodeWorldPos, boneScale, skeletonColor);
+        }
     }
 
     void AtomActorDebugDraw::RenderEMFXDebugDraw(EMotionFX::ActorInstance* instance)
@@ -485,6 +558,56 @@ namespace AZ::Render
             lineArgs.m_colorCount = 1;
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
             auxGeom->DrawLines(lineArgs);
+        }
+    }
+
+    void AtomActorDebugDraw::RenderJointNames(EMotionFX::ActorInstance* actorInstance,
+        RPI::ViewportContextPtr viewportContext, const AZ::Color& jointNameColor)
+    {
+        if (!m_fontDrawInterface)
+        {
+            auto fontQueryInterface = AZ::Interface<AzFramework::FontQueryInterface>::Get();
+            if (!fontQueryInterface)
+            {
+                return;
+            }
+            m_fontDrawInterface = fontQueryInterface->GetDefaultFontDrawInterface();
+        }
+
+        if (!m_fontDrawInterface || !viewportContext || !viewportContext->GetRenderScene() ||
+            !AZ::Interface<AzFramework::FontQueryInterface>::Get())
+        {
+            return;
+        }
+
+        const EMotionFX::Actor* actor = actorInstance->GetActor();
+        const EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
+        const EMotionFX::TransformData* transformData = actorInstance->GetTransformData();
+        const EMotionFX::Pose* pose = transformData->GetCurrentPose();
+        const size_t numEnabledNodes = actorInstance->GetNumEnabledNodes();
+
+        m_drawParams.m_drawViewportId = viewportContext->GetId();
+        AzFramework::WindowSize viewportSize = viewportContext->GetViewportSize();
+        m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), 0.0f, 1.0f) +
+            TopRightBorderPadding * viewportContext->GetDpiScalingFactor();
+        m_drawParams.m_color = jointNameColor;
+        m_drawParams.m_scale = AZ::Vector2(BaseFontSize);
+        m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
+        m_drawParams.m_monospace = false;
+        m_drawParams.m_depthTest = false;
+        m_drawParams.m_virtual800x600ScreenSize = false;
+        m_drawParams.m_scaleWithWindow = false;
+        m_drawParams.m_multiline = true;
+        m_drawParams.m_lineSpacing = 0.5f;
+
+        for (size_t i = 0; i < numEnabledNodes; ++i)
+        {
+            const EMotionFX::Node* joint = skeleton->GetNode(actorInstance->GetEnabledNode(i));
+            const size_t jointIndex = joint->GetNodeIndex();
+            const AZ::Vector3 worldPos = pose->GetWorldSpaceTransform(jointIndex).m_position;
+
+            m_drawParams.m_position = worldPos;
+            m_fontDrawInterface->DrawScreenAlignedText3d(m_drawParams, joint->GetName());
         }
     }
 } // namespace AZ::Render

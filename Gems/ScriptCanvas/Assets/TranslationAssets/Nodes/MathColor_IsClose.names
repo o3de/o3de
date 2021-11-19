@@ -5,9 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsClose",
+                "name": "Is Close",
                 "category": "Math/Color",
-                "tooltip": "returns true if A is within Tolerance of B, else false",
+                "tooltip": "Returns true if A is within Tolerance of B, else false",
                 "subtitle": "Color"
             },
             "slots": [
@@ -26,25 +26,25 @@
                 {
                     "key": "DataInput_Color: A",
                     "details": {
-                        "name": "Color: A"
+                        "name": "First"
                     }
                 },
                 {
                     "key": "DataInput_Color: B",
                     "details": {
-                        "name": "Color: B"
+                        "name": "Second"
                     }
                 },
                 {
                     "key": "DataInput_Number: Tolerance",
                     "details": {
-                        "name": "Number: Tolerance"
+                        "name": "Tolerance"
                     }
                 },
                 {
                     "key": "DataOutput_Result: Boolean",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Is Close"
                     }
                 }
             ]

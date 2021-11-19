@@ -1248,6 +1248,32 @@ namespace AZ
             property.m_shadowmapViewNeedsUpdate = true;
         }
 
+        float DirectionalLightFeatureProcessor::GetShadowmapSizeFromCameraView(const LightHandle handle, const RPI::View* cameraView) const
+        {
+            const DirectionalLightShadowData& shadowData = m_shadowData.at(cameraView).GetData(handle.GetIndex());
+            return static_cast<float>(shadowData.m_shadowmapSize);
+        }
+
+        void DirectionalLightFeatureProcessor::SnapAabbToPixelIncrements(const float invShadowmapSize, Vector3& orthoMin, Vector3& orthoMax)
+        {
+            // This function stops the cascaded shadowmap from shimmering as the camera moves.
+            // See CascadedShadowsManager.cpp in the Microsoft CascadedShadowMaps11 sample for details.
+
+            const Vector3 normalizeByBufferSize = Vector3(invShadowmapSize, invShadowmapSize, invShadowmapSize);
+
+            const Vector3 worldUnitsPerTexel = (orthoMax - orthoMin) * normalizeByBufferSize;
+
+            // We snap the camera to 1 pixel increments so that moving the camera does not cause the shadows to jitter.
+            // This is a matter of dividing by the world space size of a texel
+            orthoMin /= worldUnitsPerTexel;
+            orthoMin = orthoMin.GetFloor();
+            orthoMin *= worldUnitsPerTexel;
+
+            orthoMax /= worldUnitsPerTexel;
+            orthoMax = orthoMax.GetFloor();
+            orthoMax *= worldUnitsPerTexel;
+        }
+
         void DirectionalLightFeatureProcessor::UpdateShadowmapViews(LightHandle handle)
         {
             ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
@@ -1259,18 +1285,26 @@ namespace AZ
 
             for (auto& segmentIt : property.m_segments)
             {
+                const float invShadowmapSize = 1.0f / GetShadowmapSizeFromCameraView(handle, segmentIt.first);
+
                 for (uint16_t cascadeIndex = 0; cascadeIndex < segmentIt.second.size(); ++cascadeIndex)
                 {
-                    const Aabb viewAabb = CalculateShadowViewAabb(
-                        handle, segmentIt.first, cascadeIndex, lightTransform);
+                    const Aabb viewAabb = CalculateShadowViewAabb(handle, segmentIt.first, cascadeIndex, lightTransform);
 
                     if (viewAabb.IsValid() && viewAabb.IsFinite())
                     {
+                        const float cascadeNear = viewAabb.GetMin().GetY();
+                        const float cascadeFar = viewAabb.GetMax().GetY();
+
+                        Vector3 snappedAabbMin = viewAabb.GetMin();
+                        Vector3 snappedAabbMax = viewAabb.GetMax();
+
+                        SnapAabbToPixelIncrements(invShadowmapSize, snappedAabbMin, snappedAabbMax);
+
                         Matrix4x4 viewToClipMatrix = Matrix4x4::CreateIdentity();
-                        MakeOrthographicMatrixRH(viewToClipMatrix,
-                            viewAabb.GetMin().GetElement(0), viewAabb.GetMax().GetElement(0),
-                            viewAabb.GetMin().GetElement(2), viewAabb.GetMax().GetElement(2),
-                            viewAabb.GetMin().GetElement(1), viewAabb.GetMax().GetElement(1));
+                        MakeOrthographicMatrixRH(
+                            viewToClipMatrix, snappedAabbMin.GetElement(0), snappedAabbMax.GetElement(0), snappedAabbMin.GetElement(2),
+                            snappedAabbMax.GetElement(2), cascadeNear, cascadeFar);
 
                         CascadeSegment& segment = segmentIt.second[cascadeIndex];
                         segment.m_aabb = viewAabb;

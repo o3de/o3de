@@ -18,7 +18,6 @@ namespace O3DE::ProjectManager
 {
     DownloadController::DownloadController(QWidget* parent)
         : QObject()
-        , m_lastProgress(0)
         , m_parent(parent)
     {
         m_worker = new DownloadWorker();
@@ -69,10 +68,9 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void DownloadController::UpdateUIProgress(int progress)
+    void DownloadController::UpdateUIProgress(int bytesDownloaded, int totalBytes)
     {
-        m_lastProgress = progress;
-        emit GemDownloadProgress(m_gemNames.front(), progress);
+        emit GemDownloadProgress(m_gemNames.front(), bytesDownloaded, totalBytes);
     }
 
     void DownloadController::HandleResults(const QString& result)
@@ -88,6 +86,7 @@ namespace O3DE::ProjectManager
         QString gemName = m_gemNames.front();
         m_gemNames.erase(m_gemNames.begin());
         emit Done(gemName, succeeded);
+        emit GemDownloadRemoved(gemName);
 
         if (!m_gemNames.empty())
         {

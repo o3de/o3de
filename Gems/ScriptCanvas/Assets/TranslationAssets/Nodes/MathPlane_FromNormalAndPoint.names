@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromNormalAndPoint",
+                "name": "From Normal And Point",
                 "category": "Math/Plane",
-                "tooltip": "returns the plane which includes the Point with the specified Normal",
-                "subtitle": "Plane"
+                "tooltip": "Returns the plane which includes the Point with the specified Normal"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Normal",
+                    "key": "DataInput_Normal",
                     "details": {
-                        "name": "Vector3: Normal"
+                        "name": "Normal"
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Point",
+                    "key": "DataInput_Point",
                     "details": {
-                        "name": "Vector3: Point"
+                        "name": "Point"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Plane",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Plane"
+                        "name": "Result"
                     }
                 }
             ]

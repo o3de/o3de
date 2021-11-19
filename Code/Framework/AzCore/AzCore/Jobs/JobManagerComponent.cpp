@@ -57,11 +57,12 @@ namespace AZ
         int numberOfWorkerThreads = m_numberOfWorkerThreads;
         if (numberOfWorkerThreads <= 0) // spawn default number of threads
         {
+        #if (AZ_TRAIT_THREAD_NUM_JOB_MANAGER_WORKER_THREADS)
+            numberOfWorkerThreads = AZ_TRAIT_THREAD_NUM_JOB_MANAGER_WORKER_THREADS;
+        #else
             uint32_t scaledHardwareThreads = Threading::CalcNumWorkerThreads(cl_jobThreadsConcurrencyRatio, cl_jobThreadsMinNumber, cl_jobThreadsNumReserved);
             numberOfWorkerThreads = AZ::GetMin(static_cast<unsigned int>(desc.m_workerThreads.capacity()), scaledHardwareThreads);
-        #if (AZ_TRAIT_MAX_JOB_MANAGER_WORKER_THREADS)
-            numberOfWorkerThreads = AZ::GetMin(numberOfWorkerThreads, AZ_TRAIT_MAX_JOB_MANAGER_WORKER_THREADS);
-        #endif // (AZ_TRAIT_MAX_JOB_MANAGER_WORKER_THREADS)
+        #endif // (AZ_TRAIT_THREAD_NUM_JOB_MANAGER_WORKER_THREADS)
         }
 
         threadDesc.m_cpuId = AFFINITY_MASK_USERTHREADS;

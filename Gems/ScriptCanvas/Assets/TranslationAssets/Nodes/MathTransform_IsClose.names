@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsClose",
+                "name": "Is Close",
                 "category": "Math/Transform",
-                "tooltip": "returns true if every row of A is within Tolerance of corresponding row in B, else false",
-                "subtitle": "Transform"
+                "tooltip": "Returns true if every row of A is within Tolerance of corresponding row in B, else false"
             },
             "slots": [
                 {
@@ -24,27 +23,27 @@
                     }
                 },
                 {
-                    "key": "DataInput_Transform: A",
+                    "key": "DataInput_A",
                     "details": {
-                        "name": "Transform: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Transform: B",
+                    "key": "DataInput_B",
                     "details": {
-                        "name": "Transform: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Tolerance",
+                    "key": "DataInput_Tolerance",
                     "details": {
-                        "name": "Number: Tolerance"
+                        "name": "Tolerance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

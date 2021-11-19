@@ -19,7 +19,7 @@ namespace AzToolsFramework::EmbeddedPython
         ~PythonLoader();
 
     private:
-        void* m_embeddedLibPythonHandle{ nullptr };
+        [[maybe_unused]] void* m_embeddedLibPythonHandle{ nullptr };
     };
 
 } // namespace AzToolsFramework::EmbeddedPython

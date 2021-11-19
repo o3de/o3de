@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "RandomNumber",
+                "name": "Random Number",
                 "category": "Math/Random",
-                "tooltip": "returns a random real number [Min, Max]",
-                "subtitle": "Random"
+                "tooltip": "Returns a random real number [Min, Max]"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Number: Min",
+                    "key": "DataInput_Min",
                     "details": {
-                        "name": "Number: Min"
+                        "name": "Min"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Max",
+                    "key": "DataInput_Max",
                     "details": {
-                        "name": "Number: Max"
+                        "name": "Max"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Number",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Number"
+                        "name": "Result"
                     }
                 }
             ]

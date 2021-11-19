@@ -202,17 +202,17 @@ namespace AZ
                     return;
                 }
                 AZ_Assert(m_asset->m_buildTimestamp == m_reloadedRootShaderVariantAsset->GetBuildTimestamp(),
-                    "shaderAsset timeStamp=%lld, but Root ShaderVariantAsset timeStamp=%lld",
+                    "shaderAsset '%s' timeStamp=%lld, but Root ShaderVariantAsset timeStamp=%lld", m_asset.GetHint().c_str(),
                     m_asset->m_buildTimestamp, m_reloadedRootShaderVariantAsset->GetBuildTimestamp());
                 m_asset->UpdateRootShaderVariantAsset(m_supervariantIndex, m_reloadedRootShaderVariantAsset);
                 m_reloadedRootShaderVariantAsset = {}; // Clear the temporary reference.
 
                 if (ShaderReloadDebugTracker::IsEnabled())
                 {
-                    auto makeTimeString = [](AZStd::sys_time_t timestamp, AZStd::sys_time_t now)
+                    auto makeTimeString = [](AZ::u64 timestamp, AZ::u64 now)
                     {
-                        AZStd::sys_time_t elapsedMicroseconds = now - timestamp;
-                        double elapsedSeconds = aznumeric_cast<double>(elapsedMicroseconds / 1'000'000);
+                        AZ::u64 elapsedMillis = now - timestamp;
+                        double elapsedSeconds = aznumeric_cast<double>(elapsedMillis / 1'000);
                         AZStd::string timeString = AZStd::string::format("%lld (%f seconds ago)", timestamp, elapsedSeconds);
                         return timeString;
                     };

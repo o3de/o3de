@@ -1019,12 +1019,19 @@ namespace ScriptCanvasEditor
             GraphCanvas::TranslationRequestBus::BroadcastResult(catdetails, &GraphCanvas::TranslationRequests::GetDetails, catkey, catdetails);
 
             GraphCanvas::TranslationKey key;
-            key << "BehaviorClass" << methodClass.c_str() << "methods" << methodName.c_str() << "details";
+
+            AZStd::string updatedMethodName;
+            if (propertyStatus != ScriptCanvas::PropertyStatus::None)
+            {
+                updatedMethodName = (propertyStatus == ScriptCanvas::PropertyStatus::Getter) ? "Get" : "Set";
+            }
+            updatedMethodName += methodName;
+            key << "BehaviorClass" << methodClass.c_str() << "methods" << updatedMethodName << "details";
 
             GraphCanvas::TranslationRequests::Details details;
             GraphCanvas::TranslationRequestBus::BroadcastResult(details, &GraphCanvas::TranslationRequests::GetDetails, key, details);
 
-            methodModelInformation->m_displayName = details.m_name.empty() ? methodName : details.m_name;
+            methodModelInformation->m_displayName = details.m_name.empty() ? updatedMethodName : details.m_name;
             methodModelInformation->m_toolTip = details.m_tooltip;
             methodModelInformation->m_categoryPath = categoryPath;
 
