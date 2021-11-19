@@ -905,68 +905,6 @@ namespace ImageProcessingAtom
         return result;
     }
 
-    IImageObjectPtr MergeOutputImageForPreview(IImageObjectPtr image, IImageObjectPtr alphaImage)
-    {
-        if (!image)
-        {
-            return IImageObjectPtr();
-        }
-
-        ImageToProcess imageToProcess(image);
-        imageToProcess.ConvertFormat(ePixelFormat_R8G8B8A8);
-        IImageObjectPtr previewImage = imageToProcess.Get();
-
-        // If there is separate Alpha image, combine it with output
-        if (alphaImage)
-        {
-            // Create pixel operation function for rgb and alpha images
-            IPixelOperationPtr imageOp = CreatePixelOperation(ePixelFormat_R8G8B8A8);
-            IPixelOperationPtr alphaOp = CreatePixelOperation(ePixelFormat_A8);
-
-            // Convert the alpha image to A8 first
-            ImageToProcess imageToProcess2(alphaImage);
-            imageToProcess2.ConvertFormat(ePixelFormat_A8);
-            IImageObjectPtr previewImageAlpha = imageToProcess2.Get();
-
-            const uint32 imageMips = previewImage->GetMipCount();
-            [[maybe_unused]] const uint32 alphaMips = previewImageAlpha->GetMipCount();
-
-            // Get count of bytes per pixel for both rgb and alpha images
-            uint32 imagePixelBytes = CPixelFormats::GetInstance().GetPixelFormatInfo(ePixelFormat_R8G8B8A8)->bitsPerBlock / 8;
-            uint32 alphaPixelBytes = CPixelFormats::GetInstance().GetPixelFormatInfo(ePixelFormat_A8)->bitsPerBlock / 8;
-
-            AZ_Assert(imageMips <= alphaMips, "Mip level of alpha image is less than origin image!");
-
-            // For each mip level, set the alpha value to the image
-            for (uint32 mipLevel = 0; mipLevel < imageMips; ++mipLevel)
-            {
-                const uint32 pixelCount = previewImage->GetPixelCount(mipLevel);
-                [[maybe_unused]] const uint32 alphaPixelCount = previewImageAlpha->GetPixelCount(mipLevel);
-
-                AZ_Assert(pixelCount == alphaPixelCount, "Pixel count for image and alpha image at mip level %d is not equal!", mipLevel);
-
-                uint8* imageBuf;
-                uint32 pitch;
-                previewImage->GetImagePointer(mipLevel, imageBuf, pitch);
-
-                uint8* alphaBuf;
-                uint32 alphaPitch;
-                previewImageAlpha->GetImagePointer(mipLevel, alphaBuf, alphaPitch);
-
-                float rAlpha, gAlpha, bAlpha, aAlpha, rImage, gImage, bImage, aImage;
-
-                for (uint32 i = 0; i < pixelCount; ++i, imageBuf += imagePixelBytes, alphaBuf += alphaPixelBytes)
-                {
-                    alphaOp->GetRGBA(alphaBuf, rAlpha, gAlpha, bAlpha, aAlpha);
-                    imageOp->GetRGBA(imageBuf, rImage, gImage, bImage, aImage);
-                    imageOp->SetRGBA(imageBuf, rImage, gImage, bImage, aAlpha);
-                }
-            }
-        }
-
-        return previewImage;
-    }
-
     IImageObjectPtr ConvertImageForPreview(IImageObjectPtr image)
     {
         if (!image)

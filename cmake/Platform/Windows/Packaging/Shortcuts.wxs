@@ -7,7 +7,7 @@
 
         <DirectoryRef Id="TARGETDIR">
             <Directory Id="ProgramMenuFolder">
-                <Directory Id="ApplicationProgramsFolder" Name="$(var.CPACK_PACKAGE_NAME) [Stable 21.11]">
+                <Directory Id="ApplicationProgramsFolder" Name="$(var.CPACK_PACKAGE_NAME) [Stable]">
                     <Directory Id="VersionedApplicationProgramsFolder" Name="$(var.CPACK_PACKAGE_VERSION)"/>
                 </Directory>
             </Directory>

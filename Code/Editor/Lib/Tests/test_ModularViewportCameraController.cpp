@@ -389,6 +389,7 @@ namespace UnitTest
         m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
 
         QTest::mouseRelease(m_rootWidget.get(), Qt::MouseButton::RightButton, Qt::NoModifier, start + mouseDelta);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
 
         // update the position of the widget
         const auto offset = QPoint(500, 500);

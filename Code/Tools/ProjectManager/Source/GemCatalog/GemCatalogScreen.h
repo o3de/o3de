@@ -53,6 +53,7 @@ namespace O3DE::ProjectManager
 
     public slots:
         void OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies);
+        void OnDependencyGemStatusChanged(const QString& gemName);
         void OnAddGemClicked();
         void SelectGem(const QString& gemName);
         void OnGemDownloadResult(const QString& gemName, bool succeeded = true);
