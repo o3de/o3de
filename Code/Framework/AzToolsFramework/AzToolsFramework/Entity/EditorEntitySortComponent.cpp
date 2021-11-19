@@ -298,15 +298,6 @@ namespace AzToolsFramework
 
             // Use the ToolsApplication to mark the entity dirty, this will only do something if we already have an undo batch
             ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::AddDirtyEntity, GetEntityId());
-
-            // Force an immediate update for prefabs, which won't receive PrepareSave
-            bool isPrefabEnabled = false;
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(
-                isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-            if (isPrefabEnabled)
-            {
-                PrepareSave();
-            }
             EditorEntitySortNotificationBus::Event(GetEntityId(), &EditorEntitySortNotificationBus::Events::ChildEntityOrderArrayUpdated);
         }
 
@@ -358,16 +349,18 @@ namespace AzToolsFramework
         {
             bool shouldEmitDirtyState = false;
 
-            // Remove invalid entries that point at non-existent entities
+            // Remove invalid and duplicate entries that point at non-existent entities
+            AZStd::unordered_set<AZ::EntityId> duplicateIds;
             for (auto it = m_childEntityOrderArray.begin(); it != m_childEntityOrderArray.end();)
             {
-                if (!it->IsValid() || GetEntityById(*it) == nullptr)
+                if (!it->IsValid() || GetEntityById(*it) == nullptr || duplicateIds.contains(*it))
                 {
                     it = m_childEntityOrderArray.erase(it);
                     shouldEmitDirtyState = true;
                 }
                 else
                 {
+                    duplicateIds.insert(*it);
                     ++it;
                 }
             }
