@@ -14,5 +14,6 @@ ly_install_directory(
         DefaultGem
         DefaultProject
         MinimalProject
+        GemRepo
     VERBATIM
 )
