@@ -494,14 +494,9 @@ namespace O3DE::ProjectManager
             // we need to deactivate all gems that depend on this one
             for (auto dependentModelIndex : dependentGems)
             {
-                DeactivateDependentGems(model, dependentModelIndex);
+                SetIsAdded(model, dependentModelIndex, false);
             }
 
-        }
-        else
-        {
-            // Deactivate this gem
-            SetIsAdded(model, modelIndex, false);
         }
     }
 
