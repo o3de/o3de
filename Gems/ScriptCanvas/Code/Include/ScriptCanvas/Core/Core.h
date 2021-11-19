@@ -27,7 +27,7 @@
 
 #define OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED
 
-#define EDITOR_ASSET_SUPPORT_ENABLED
+// #define EDITOR_ASSET_SUPPORT_ENABLED
 
 namespace AZ
 {
@@ -325,6 +325,8 @@ namespace ScriptCanvasEditor
         AZ_TYPE_INFO(SourceHandle, "{65855A98-AE2F-427F-BFC8-69D45265E312}");
         AZ_CLASS_ALLOCATOR(SourceHandle, AZ::SystemAllocator, 0);
 
+        static void Reflect(AZ::ReflectContext* context);
+
         SourceHandle() = default;
 
         SourceHandle(const SourceHandle& data, const AZ::Uuid& id, const AZ::IO::Path& path);
@@ -343,6 +345,8 @@ namespace ScriptCanvasEditor
         const AZ::Uuid& Id() const;
 
         bool IsValid() const;
+
+        bool IsValidDescription() const;
 
         GraphPtr Mod() const;
 
@@ -372,8 +376,8 @@ namespace ScriptCanvas
 
         AZ_RTTI(ScriptCanvasData, "{1072E894-0C67-4091-8B64-F7DB324AD13C}");
         AZ_CLASS_ALLOCATOR(ScriptCanvasData, AZ::SystemAllocator, 0);
-        ScriptCanvasData() {}
-        virtual ~ScriptCanvasData() {}
+        ScriptCanvasData() = default;
+        virtual ~ScriptCanvasData() = default;
         ScriptCanvasData(ScriptCanvasData&& other);
         ScriptCanvasData& operator=(ScriptCanvasData&& other);
 
