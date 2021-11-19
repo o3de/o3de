@@ -7,6 +7,10 @@ REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
 REM
 
+REM To get recursive folder creation
+SETLOCAL EnableExtensions
+SETLOCAL EnableDelayedExpansion
+
 where /Q cmake
 IF NOT %ERRORLEVEL%==0 (
     ECHO [ci_build] CMake not found
@@ -27,6 +31,9 @@ IF NOT "%TMP%"=="" (
         SET TMP=%cd%/temp
         SET TEMP=%cd%/temp
     )
+)
+IF NOT EXIST "!TMP!" (
+    MKDIR "!TMP!"
 )
 
 EXIT /b 0
