@@ -5,7 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "ConsoleRequestBus",
+                "name": "Console",
                 "category": "Utilities"
             },
             "methods": [
@@ -26,7 +26,7 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "Command"
                             }
                         }
                     ]

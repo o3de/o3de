@@ -5,20 +5,20 @@
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "AWSMetricsNotificationBus",
-                "category": "EBus Handlers"
+                "name": "AWS Metrics",
+                "category": "AWS Core"
             },
             "methods": [
                 {
                     "key": "OnSendMetricsSuccess",
                     "details": {
-                        "name": "OnSendMetricsSuccess"
+                        "name": "On Send Metrics Success"
                     },
                     "params": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Request Id"
                             }
                         }
                     ]
@@ -26,19 +26,19 @@
                 {
                     "key": "OnSendMetricsFailure",
                     "details": {
-                        "name": "OnSendMetricsFailure"
+                        "name": "On Send Metrics Failure"
                     },
                     "params": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Request Id"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "AZStd::string"
+                                "name": "Error"
                             }
                         }
                     ]

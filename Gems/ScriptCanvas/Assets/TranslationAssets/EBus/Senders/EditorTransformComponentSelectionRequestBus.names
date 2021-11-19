@@ -5,27 +5,28 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "EditorTransformComponentSelectionRequestBus"
+                "name": "Editor Transform Component Selection",
+                "category": "Editor"
             },
             "methods": [
                 {
                     "key": "CopyTranslationToSelectedEntitiesGroup",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CopyTranslationToSelectedEntitiesGroup"
+                        "tooltip": "When signaled, this will invoke Copy Translation To Selected Entities Group"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CopyTranslationToSelectedEntitiesGroup is invoked"
+                        "tooltip": "Signaled after Copy Translation To Selected Entities Group is invoked"
                     },
                     "details": {
-                        "name": "CopyTranslationToSelectedEntitiesGroup"
+                        "name": "Copy Translation To Selected Entities Group"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Translation"
                             }
                         }
                     ]
@@ -34,14 +35,14 @@
                     "key": "CopyOrientationToSelectedEntitiesIndividual",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CopyOrientationToSelectedEntitiesIndividual"
+                        "tooltip": "When signaled, this will invoke Copy Orientation To Selected Entities Individual"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CopyOrientationToSelectedEntitiesIndividual is invoked"
+                        "tooltip": "Signaled after Copy Orientation To Selected Entities Individual is invoked"
                     },
                     "details": {
-                        "name": "CopyOrientationToSelectedEntitiesIndividual"
+                        "name": "Copy Orientation To Selected Entities Individual"
                     },
                     "params": [
                         {
@@ -56,14 +57,14 @@
                     "key": "CopyOrientationToSelectedEntitiesGroup",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CopyOrientationToSelectedEntitiesGroup"
+                        "tooltip": "When signaled, this will invoke Copy Orientation To Selected Entities Group"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CopyOrientationToSelectedEntitiesGroup is invoked"
+                        "tooltip": "Signaled after Copy Orientation To Selected Entities Group is invoked"
                     },
                     "details": {
-                        "name": "CopyOrientationToSelectedEntitiesGroup"
+                        "name": "Copy Orientation To Selected Entities Group"
                     },
                     "params": [
                         {
@@ -78,20 +79,20 @@
                     "key": "CopyTranslationToSelectedEntitiesIndividual",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CopyTranslationToSelectedEntitiesIndividual"
+                        "tooltip": "When signaled, this will invoke Copy Translation To Selected Entities Individual"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CopyTranslationToSelectedEntitiesIndividual is invoked"
+                        "tooltip": "Signaled after Copy Translation To Selected Entities Individual is invoked"
                     },
                     "details": {
-                        "name": "CopyTranslationToSelectedEntitiesIndividual"
+                        "name": "Copy Translation To Selected Entities Individual"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Translation"
                             }
                         }
                     ]
@@ -100,14 +101,14 @@
                     "key": "CopyScaleToSelectedEntitiesIndividualLocal",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CopyScaleToSelectedEntitiesIndividualLocal"
+                        "tooltip": "When signaled, this will invoke Copy Scale To Selected Entities Individual Local"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CopyScaleToSelectedEntitiesIndividualLocal is invoked"
+                        "tooltip": "Signaled after Copy Scale To Selected Entities Individual Local is invoked"
                     },
                     "details": {
-                        "name": "CopyScaleToSelectedEntitiesIndividualLocal"
+                        "name": "Copy Scale To Selected Entities Individual Local"
                     },
                     "params": [
                         {
@@ -122,20 +123,20 @@
                     "key": "OverrideManipulatorTranslation",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke OverrideManipulatorTranslation"
+                        "tooltip": "When signaled, this will invoke Override Manipulator Translation"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after OverrideManipulatorTranslation is invoked"
+                        "tooltip": "Signaled after Override Manipulator Translation is invoked"
                     },
                     "details": {
-                        "name": "OverrideManipulatorTranslation"
+                        "name": "Override Manipulator Translation"
                     },
                     "params": [
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Vector 3"
                             }
                         }
                     ]
@@ -144,14 +145,14 @@
                     "key": "RefreshManipulators",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke RefreshManipulators"
+                        "tooltip": "When signaled, this will invoke Refresh Manipulators"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after RefreshManipulators is invoked"
+                        "tooltip": "Signaled after Refresh Manipulators is invoked"
                     },
                     "details": {
-                        "name": "RefreshManipulators"
+                        "name": "Refresh Manipulators"
                     },
                     "params": [
                         {
@@ -166,14 +167,14 @@
                     "key": "OverrideManipulatorOrientation",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke OverrideManipulatorOrientation"
+                        "tooltip": "When signaled, this will invoke Override Manipulator Orientation"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after OverrideManipulatorOrientation is invoked"
+                        "tooltip": "Signaled after Override Manipulator Orientation is invoked"
                     },
                     "details": {
-                        "name": "OverrideManipulatorOrientation"
+                        "name": "Override Manipulator Orientation"
                     },
                     "params": [
                         {
@@ -188,14 +189,14 @@
                     "key": "GetTransformMode",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetTransformMode"
+                        "tooltip": "When signaled, this will invoke Get Transform Mode"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetTransformMode is invoked"
+                        "tooltip": "Signaled after Get Transform Mode is invoked"
                     },
                     "details": {
-                        "name": "GetTransformMode"
+                        "name": "Get Transform Mode"
                     },
                     "results": [
                         {
@@ -210,14 +211,14 @@
                     "key": "CopyScaleToSelectedEntitiesIndividualWorld",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke CopyScaleToSelectedEntitiesIndividualWorld"
+                        "tooltip": "When signaled, this will invoke Copy Scale To Selected Entities Individual World"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after CopyScaleToSelectedEntitiesIndividualWorld is invoked"
+                        "tooltip": "Signaled after Copy Scale To Selected Entities Individual World is invoked"
                     },
                     "details": {
-                        "name": "CopyScaleToSelectedEntitiesIndividualWorld"
+                        "name": "Copy Scale To Selected Entities Individual World"
                     },
                     "params": [
                         {
@@ -232,14 +233,14 @@
                     "key": "SetTransformMode",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetTransformMode"
+                        "tooltip": "When signaled, this will invoke Set Transform Mode"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetTransformMode is invoked"
+                        "tooltip": "Signaled after Set Transform Mode is invoked"
                     },
                     "details": {
-                        "name": "SetTransformMode"
+                        "name": "Set Transform Mode"
                     },
                     "params": [
                         {
@@ -254,28 +255,28 @@
                     "key": "ResetTranslationForSelectedEntitiesLocal",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ResetTranslationForSelectedEntitiesLocal"
+                        "tooltip": "When signaled, this will invoke Reset Translation For Selected Entities Local"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ResetTranslationForSelectedEntitiesLocal is invoked"
+                        "tooltip": "Signaled after Reset Translation For Selected Entities Local is invoked"
                     },
                     "details": {
-                        "name": "ResetTranslationForSelectedEntitiesLocal"
+                        "name": "Reset Translation For Selected Entities Local"
                     }
                 },
                 {
                     "key": "ResetOrientationForSelectedEntitiesLocal",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ResetOrientationForSelectedEntitiesLocal"
+                        "tooltip": "When signaled, this will invoke Reset Orientation For Selected Entities Local"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ResetOrientationForSelectedEntitiesLocal is invoked"
+                        "tooltip": "Signaled after Reset Orientation For Selected Entities Local is invoked"
                     },
                     "details": {
-                        "name": "ResetOrientationForSelectedEntitiesLocal"
+                        "name": "Reset Orientation For Selected Entities Local"
                     }
                 }
             ]

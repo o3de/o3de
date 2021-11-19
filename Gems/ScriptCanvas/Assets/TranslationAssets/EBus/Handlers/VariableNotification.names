@@ -5,14 +5,15 @@
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "VariableNotification",
+                "name": "Variable Notification",
+                "category": "Variables",
                 "tooltip": "Notifications from the Variables in the current Script Canvas graph"
             },
             "methods": [
                 {
                     "key": "OnVariableValueChanged",
                     "details": {
-                        "name": "OnVariableValueChanged"
+                        "name": "On Variable Value Changed"
                     }
                 }
             ]

@@ -5,8 +5,8 @@
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "BlastFamilyComponentNotificationBus",
-                "category": "EBus Handlers"
+                "name": "Blast Family",
+                "category": "Blast"
             },
             "methods": [
                 {
