@@ -1892,14 +1892,18 @@ namespace AzToolsFramework
                 if (auto componentsIter = entityDomAfter.FindMember(PrefabDomUtils::ComponentsName);
                     componentsIter != entityDomAfter.MemberEnd())
                 {
-                    for (auto componentIter = componentsIter->value.MemberBegin(); componentIter != componentIter->value.MemberEnd() && parentEntityAlias.empty();
-                         ++componentIter)
+                    auto checkComponent = [&](const rapidjson::Value& value) -> bool
                     {
-                        // Check the component type
-                        auto typeFieldIter = componentIter->value.FindMember(PrefabDomUtils::TypeName);
-                        if (typeFieldIter == componentIter->value.MemberEnd())
+                        if (!value.IsObject())
                         {
-                            continue;
+                            return false;
+                        }
+
+                        // Check the component type
+                        auto typeFieldIter = value.FindMember(PrefabDomUtils::TypeName);
+                        if (typeFieldIter == value.MemberEnd())
+                        {
+                            return false;
                         }
 
                         AZ::JsonDeserializerSettings jsonDeserializerSettings;
@@ -1909,20 +1913,47 @@ namespace AzToolsFramework
                         // Prefabs get serialized with the Editor transform component type, check for that
                         if (typeId != azrtti_typeid<Components::TransformComponent>())
                         {
-                            continue;
+                            return false;
                         }
 
-                        if (auto parentEntityIter = componentIter->value.FindMember("Parent Entity");
-                            parentEntityIter != componentIter->value.MemberEnd())
+                        if (auto parentEntityIter = value.FindMember("Parent Entity");
+                            parentEntityIter != value.MemberEnd())
                         {
                             parentEntityAlias = parentEntityIter->value.GetString();
-                            break;
+                            return true;
+                        }
+                        return false;
+                    };
+
+                    if (componentsIter->value.IsObject())
+                    {
+                        for (auto componentIter = componentsIter->value.MemberBegin(); componentIter != componentsIter->value.MemberEnd();
+                             ++componentIter)
+                        {
+                            if (checkComponent(componentIter->value))
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    else if (componentsIter->value.IsArray())
+                    {
+                        for (auto componentIter = componentsIter->value.Begin(); componentIter != componentsIter->value.End();
+                             ++componentIter)
+                        {
+                            if (checkComponent(*componentIter))
+                            {
+                                break;
+                            }
                         }
                     }
                 }
 
                 // Insert our entity into its parent's sort order
-                AddNewEntityToSortOrder(commonOwningInstance, domToAddDuplicatedEntitiesUnder, parentEntityAlias, newEntityAlias);
+                if (!parentEntityAlias.empty())
+                {
+                    AddNewEntityToSortOrder(commonOwningInstance, domToAddDuplicatedEntitiesUnder, parentEntityAlias, newEntityAlias);
+                }
 
                 // Add the new Entity DOM to the Entities member of the instance
                 rapidjson::Value aliasName(newEntityAlias.c_str(), static_cast<rapidjson::SizeType>(newEntityAlias.length()), domToAddDuplicatedEntitiesUnder.GetAllocator());
