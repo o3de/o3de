@@ -67,7 +67,7 @@ namespace ScriptCanvasEditor
         ScriptCanvas::GraphIdentifier GetGraphIdentifier() const override;
         //=====================================================================
 
-        void OpenEditor();
+        void OpenEditor(const AZ::Data::AssetId&, const AZ::Data::AssetType&);
         
         void SetName(AZStd::string_view name) { m_name = name; }
         const AZStd::string& GetName() const;

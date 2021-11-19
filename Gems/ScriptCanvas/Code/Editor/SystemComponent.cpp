@@ -22,6 +22,7 @@
 #include <Editor/SystemComponent.h>
 #include <Editor/View/Dialogs/NewGraphDialog.h>
 #include <Editor/View/Dialogs/SettingsDialog.h>
+#include <Editor/View/Widgets/SourceHandlePropertyAssetCtrl.h>
 #include <Editor/View/Windows/MainWindow.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <LyViewPaneNames.h>
@@ -119,6 +120,7 @@ namespace ScriptCanvasEditor
         PopulateEditorCreatableTypes();
 
         AzToolsFramework::RegisterGenericComboBoxHandler<ScriptCanvas::VariableId>();
+        AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::RegisterPropertyType, aznew SourceHandlePropertyHandler());
 
         SystemRequestBus::Handler::BusConnect();
         ScriptCanvasExecutionBus::Handler::BusConnect();

@@ -279,18 +279,6 @@ namespace ScriptCanvasEditor
                 ->Field("id", &SourceHandle::m_id)
                 ->Field("path", &SourceHandle::m_path)
                 ;
-
-            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
-            {
-                editContext->Class<SourceHandle>("Script Canvas Source Handle", "References a source editor file")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/ScriptCanvas.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/ScriptCanvas/Viewport/ScriptCanvas.svg")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &SourceHandle::m_path);
-                    ;
-            }
         }
     }
 
