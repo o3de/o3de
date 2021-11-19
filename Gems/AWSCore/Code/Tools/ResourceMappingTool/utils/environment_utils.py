@@ -44,7 +44,7 @@ def setup_qt_environment(bin_path: str) -> None:
         import ctypes
 
         preload_shared_libs = [f'{bin_path}/libpyside2.abi3.so.5.14',
-                            f'{bin_path}/libQt5Widgets.so.5']
+                               f'{bin_path}/libQt5Widgets.so.5']
 
         for preload_shared_lib in preload_shared_libs:
             if not os.path.exists(preload_shared_lib):
