@@ -17,6 +17,7 @@
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
 namespace ScriptCanvasEditor
 {
@@ -34,10 +35,9 @@ namespace ScriptCanvasEditor
         : public AzToolsFramework::Components::EditorComponentBase
         , private EditorContextMenuRequestBus::Handler
         , private AzFramework::AssetCatalogEventBus::Handler
+        , private AzToolsFramework::AssetSystemBus::Handler
         , private EditorScriptCanvasComponentLoggingBus::Handler
         , private EditorScriptCanvasComponentRequestBus::Handler
-        , private AssetTrackerNotificationBus::Handler
-        , private AzToolsFramework::AssetSystemBus::Handler
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
 
     {
@@ -46,7 +46,7 @@ namespace ScriptCanvasEditor
 
         EditorScriptCanvasComponent();
         // EditorScriptCanvasComponent(AZ::Data::Asset<ScriptCanvasAsset> asset);
-        EditorScriptCanvasComponent(AZ::Data::Asset<ScriptCanvasAsset> asset);
+        EditorScriptCanvasComponent(const SourceHandle& sourceHandle);
         ~EditorScriptCanvasComponent() override;
 
         //=====================================================================
@@ -70,14 +70,14 @@ namespace ScriptCanvasEditor
 
         void OpenEditor();
         
-        void SetName(const AZStd::string& name) { m_name = name; }
+        void SetName(AZStd::string_view name) { m_name = name; }
         const AZStd::string& GetName() const;
         AZ::EntityId GetEditorEntityId() const { return GetEntity() ? GetEntityId() : AZ::EntityId(); }
         AZ::NamedEntityId GetNamedEditorEntityId() const { return GetEntity() ? GetNamedEntityId() : AZ::NamedEntityId(); }
 
         //=====================================================================
         // EditorScriptCanvasComponentRequestBus
-        void SetAssetId(const AZ::Data::AssetId& assetId) override;
+        void SetAssetId(const SourceHandle& assetId) override;
         bool HasAssetId() const override;
         //=====================================================================
 
@@ -85,13 +85,12 @@ namespace ScriptCanvasEditor
         // EditorContextMenuRequestBus
         AZ::Data::AssetId GetAssetId() const override;
         //=====================================================================
-        AZ::EntityId GetGraphEntityId() const;
-
+        
         //=====================================================================
         // AssetTrackerNotificationBus
-        void OnAssetReady(const ScriptCanvasMemoryAsset::pointer asset) override;
-        void OnAssetSaved(const ScriptCanvasMemoryAsset::pointer asset, bool isSuccessful) override;
-        void OnAssetReloaded(const ScriptCanvasMemoryAsset::pointer asset) override;
+        void OnAssetReady(const ScriptCanvasMemoryAsset::pointer asset) ;
+        void OnAssetSaved(const ScriptCanvasMemoryAsset::pointer asset, bool isSuccessful) ;
+        void OnAssetReloaded(const ScriptCanvasMemoryAsset::pointer asset) ;
         //=====================================================================
 
 
@@ -119,25 +118,30 @@ namespace ScriptCanvasEditor
             (void)incompatible;
         }
 
-        void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
-        void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
-        void OnScriptCanvasAssetChanged(AZ::Data::AssetId assetId);
+        // complete the id, load call OnScriptCanvasAssetChanged
+        void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
+
+        // update the display icon for failure, save the values in the graph
+        void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
+        void SourceFileFailed(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
+
+        void OnScriptCanvasAssetChanged(const SourceHandle& sourceHandle);
 
         void UpdateName();
 
         //=====================================================================
-        void OnScriptCanvasAssetReady(const ScriptCanvasMemoryAsset::pointer asset);
+        void OnScriptCanvasAssetReady(const SourceHandle& sourceHandle);
         //=====================================================================
 
         void BuildGameEntityData();
         void ClearVariables();
 
     private:
-        AZ::Data::AssetId m_removedCatalogId;
-        AZ::Data::AssetId m_previousAssetId;
         AZStd::string m_name;
-        ScriptCanvasAssetHolder m_scriptCanvasAssetHolder;
         bool m_runtimeDataIsValid = false;
         ScriptCanvasBuilder::BuildVariableOverrides m_variableOverrides;
+        SourceHandle m_sourceHandle;
+        SourceHandle m_previousHandle;
+        SourceHandle m_removedHandle;
     };
 }

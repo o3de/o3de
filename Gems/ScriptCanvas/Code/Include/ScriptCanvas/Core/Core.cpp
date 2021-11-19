@@ -6,6 +6,7 @@
  *
  */
 
+
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/AttributeReader.h>
@@ -14,9 +15,8 @@
 #include <AzCore/StringFunc/StringFunc.h>
 #include <Editor/Include/ScriptCanvas/Assets/ScriptCanvasBaseAssetData.h>
 
-#include "Core.h"
 #include "Attributes.h"
-
+#include "Core.h"
 #include <Core/Graph.h>
 
 namespace ScriptCanvas
@@ -238,6 +238,11 @@ namespace ScriptCanvasEditor
         return m_data != nullptr;
     }
 
+    bool SourceHandle::IsValidDescription() const
+    {
+        return !m_id.IsNull() && !m_path.empty();
+    }
+
     GraphPtr SourceHandle::Mod() const
     {
         return m_data ? m_data->ModEditorGraph() : nullptr;
@@ -263,6 +268,30 @@ namespace ScriptCanvasEditor
     bool SourceHandle::PathEquals(const SourceHandle& other) const
     {
         return m_path == other.m_path;
+    }
+
+    void SourceHandle::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<SourceHandle>()
+                ->Version(0)
+                ->Field("id", &SourceHandle::m_id)
+                ->Field("path", &SourceHandle::m_path)
+                ;
+
+            if (AZ::EditContext* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<SourceHandle>("Script Canvas Source Handle", "References a source editor file")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "Scripting")
+                    ->Attribute(AZ::Edit::Attributes::Icon, "Icons/ScriptCanvas/ScriptCanvas.svg")
+                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/ScriptCanvas/Viewport/ScriptCanvas.svg")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &SourceHandle::m_path);
+                    ;
+            }
+        }
     }
 
     AZStd::string SourceHandle::ToString() const

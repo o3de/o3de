@@ -21,6 +21,8 @@ namespace GraphCanvas
 
 namespace ScriptCanvasEditor
 {
+    AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source);
+
     class Graph;
     class NodePaletteModel;
 
