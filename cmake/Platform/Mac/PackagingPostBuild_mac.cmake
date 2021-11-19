@@ -6,6 +6,5 @@
 #
 #
 
-include_guard(GLOBAL)
-
-list(APPEND CMAKE_CONFIGURATION_TYPES @conf@)
+file(REAL_PATH "${CPACK_SOURCE_DIR}/.." LY_ROOT_FOLDER)
+include(${LY_ROOT_FOLDER}/cmake/Platform/Common/PackagingPostBuild_common.cmake)

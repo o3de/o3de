@@ -131,7 +131,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 Gem::Multiplayer.Static
                 Gem::Multiplayer.Tools.Static
-                Gem::Multiplayer.Builders
     )
     
     ly_create_alias(NAME Multiplayer.Builders  NAMESPACE Gem TARGETS Gem::Multiplayer.Editor)

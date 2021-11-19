@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -6,6 +7,9 @@
 #
 #
 
-include_guard(GLOBAL)
+set -o errexit # exit on the first failure encountered
 
-list(APPEND CMAKE_CONFIGURATION_TYPES @conf@)
+BASEDIR=$(dirname "$0")
+source $BASEDIR/build_linux.sh
+
+source $BASEDIR/installer_linux.sh

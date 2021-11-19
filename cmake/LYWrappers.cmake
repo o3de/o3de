@@ -354,7 +354,7 @@ function(ly_add_target)
             # of running the copy of runtime dependencies, the stamp file is touched so the timestamp is updated.
             # Adding a config as part of the name since the stamp file is added to the VS project.
             # Note the STAMP_OUTPUT_FILE need to match with the one used in runtime dependencies (e.g. RuntimeDependencies_common.cmake)
-            set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}_$<CONFIG>.stamp)
+            set(STAMP_OUTPUT_FILE ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.stamp)
             add_custom_command(
                 OUTPUT ${STAMP_OUTPUT_FILE}
                 DEPENDS "$<GENEX_EVAL:$<TARGET_PROPERTY:${ly_add_target_NAME},RUNTIME_DEPENDENCIES_DEPENDS>>"
@@ -367,7 +367,7 @@ function(ly_add_target)
             # stamp file on each configuration so it gets properly excluded by the generator
             unset(stamp_files_per_config)
             foreach(conf IN LISTS CMAKE_CONFIGURATION_TYPES)
-                set(stamp_file_conf ${CMAKE_BINARY_DIR}/runtime_dependencies/${conf}/${ly_add_target_NAME}_${conf}.stamp)
+                set(stamp_file_conf ${CMAKE_BINARY_DIR}/runtime_dependencies/${conf}/${ly_add_target_NAME}.stamp)
                 set_source_files_properties(${stamp_file_conf} PROPERTIES GENERATED TRUE SKIP_AUTOGEN TRUE)
                 list(APPEND stamp_files_per_config $<$<CONFIG:${conf}>:${stamp_file_conf}>)
             endforeach()
