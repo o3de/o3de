@@ -5,7 +5,8 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Surface Tag Weight"
+                "name": "Surface Tag Weight",
+                "category": "Surface Data"
             },
             "methods": [
                 {

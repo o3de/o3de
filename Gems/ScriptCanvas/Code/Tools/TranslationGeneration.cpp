@@ -327,7 +327,8 @@ namespace ScriptCanvasEditorTools
 
         translationRoot.m_entries.push_back(entry);
 
-        AZStd::string fileName = AZStd::string::format("Classes/%s", className.c_str());
+        AZStd::string sanitizedFilename = GraphCanvas::TranslationKey::Sanitize(className);
+        AZStd::string fileName = AZStd::string::format("Classes/%s", sanitizedFilename.c_str());
 
         SaveJSONData(fileName, translationRoot);
 
