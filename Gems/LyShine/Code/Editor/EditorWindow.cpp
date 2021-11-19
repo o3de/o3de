@@ -726,7 +726,7 @@ bool EditorWindow::SaveCanvasToXml(UiCanvasMetadata& canvasMetadata, bool forceA
         }
         // Append the default filename
         dirPath /= canvasMetadata.m_canvasDisplayName;
-        dir = QString::fromUtf8(dirPath.c_str());
+        dir = QString::fromUtf8(dirPath.c_str(), static_cast<int>(dirPath.Native().size()));
 
         QString filename = AzQtComponents::FileDialog::GetSaveFileName(nullptr,
             QString(),
