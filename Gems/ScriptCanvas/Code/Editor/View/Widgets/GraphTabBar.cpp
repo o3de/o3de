@@ -181,11 +181,6 @@ namespace ScriptCanvasEditor
             return false;
         }
 
-//         void GraphTabBar::ConfigureTab(int /*tabIndex*/, ScriptCanvasEditor::SourceHandle fileAssetId, const AZStd::string& tabName)
-//         {
-//             
-//         }
-
         int GraphTabBar::FindTab(ScriptCanvasEditor::SourceHandle assetId) const
         {
             for (int tabIndex = 0; tabIndex < count(); ++tabIndex)
@@ -451,10 +446,9 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            auto assetId = tabdata.value<GraphTabMetadata>();
+            auto assetId = tabdata.value<GraphTabMetadata>().m_assetId;
 
-            // #sc_editor_asset
-        // ScriptCanvasEditor::GeneralRequestBus::Broadcast(&ScriptCanvasEditor::GeneralRequests::OnChangeActiveGraphTab, assetId);
+            ScriptCanvasEditor::GeneralRequestBus::Broadcast(&ScriptCanvasEditor::GeneralRequests::OnChangeActiveGraphTab, assetId);
 
             if (m_signalSaveOnChangeTo >= 0 && m_signalSaveOnChangeTo == index)
             {

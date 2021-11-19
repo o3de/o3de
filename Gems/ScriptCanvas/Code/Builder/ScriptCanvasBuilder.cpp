@@ -39,10 +39,19 @@ namespace ScriptCanvasBuilder
 
     void BuildVariableOverrides::CopyPreviousOverriddenValues(const BuildVariableOverrides& source)
     {
-        auto copyPreviousIfFound = [](ScriptCanvas::GraphVariable& overriddenValue, const AZStd::vector<ScriptCanvas::GraphVariable>& source)
+        auto isEqual = [](const ScriptCanvas::GraphVariable& overrideValue, const ScriptCanvas::GraphVariable& candidate)
         {
-            if (auto iter = AZStd::find_if(source.begin(), source.end(), [&overriddenValue](const auto& candidate) { return candidate.GetVariableId() == overriddenValue.GetVariableId(); });
-            iter != source.end())
+            return candidate.GetVariableId() == overrideValue.GetVariableId()
+                || (candidate.GetVariableName() == overrideValue.GetVariableName()
+                    && candidate.GetDataType() == overrideValue.GetDataType());
+        };
+
+        auto copyPreviousIfFound = [isEqual](ScriptCanvas::GraphVariable& overriddenValue, const AZStd::vector<ScriptCanvas::GraphVariable>& source)
+        {
+            auto iter = AZStd::find_if(source.begin(), source.end()
+                , [&overriddenValue, isEqual](const auto& candidate) { return isEqual(candidate, overriddenValue); });
+
+            if (iter != source.end())
             {
                 overriddenValue.DeepCopy(*iter);
                 overriddenValue.SetScriptInputControlVisibility(AZ::Edit::PropertyVisibility::Hide);
