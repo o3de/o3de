@@ -1734,8 +1734,8 @@ namespace AzToolsFramework
                 return;
             }
 
-            // Get the list of selected entitie, we'll insert our duplicated entities after the last selected
-            // siblign in their parent's list, e.g. for:
+            // Get the list of selected entities, we'll insert our duplicated entities after the last selected
+            // sibling in their parent's list, e.g. for:
             // - Entity1
             // - Entity2 (selected)
             // - Entity3
