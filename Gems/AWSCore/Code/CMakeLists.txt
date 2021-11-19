@@ -189,4 +189,22 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     endif()
 endif()
 
+ly_add_target_files(
+    TARGETS
+        AWSCore
+    FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/Tools/ResourceMappingTool/resource_mapping_schema.json
+    OUTPUT_SUBDIRECTORY
+        Gems/AWSCore
+)
+
+ly_add_target_files(
+    TARGETS
+        AWSCore.Tests
+    FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/Tools/ResourceMappingTool/resource_mapping_schema.json
+    OUTPUT_SUBDIRECTORY
+        Gems/AWSCore
+)
+
 ly_install_directory(DIRECTORIES Tools/ResourceMappingTool)
