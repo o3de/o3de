@@ -189,7 +189,7 @@ class AssetProcessor(object):
             if len(log.runs):
                 try:
                     for key in log.run[-1]:
-                        logger.debug(f"Log contained key {key} with value {log.run[-1][key]}")
+                        logger.debug(f"Log contained key {key} with value {log.runs[-1][key]}")
                     port = log.runs[-1][port_type]
                     logger.debug(f"Read port type {port_type} : {port}")
                     return True
