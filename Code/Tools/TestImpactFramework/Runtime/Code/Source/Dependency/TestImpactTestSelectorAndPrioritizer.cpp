@@ -74,7 +74,7 @@ namespace TestImpact
                         // 1. Select all parent test targets
                         selectedTestTargetMap.insert(target);
                     }
-                }, parentTarget.GetTarget());
+                }, parentTarget.GetSpecializedBuildTarget());
             }
         }
 
@@ -122,7 +122,7 @@ namespace TestImpact
                                 // 1. Select the parent test targets for this file
                                 selectedTestTargetMap.insert(target);
                             }
-                        }, parentTarget.GetTarget());
+                        }, parentTarget.GetSpecializedBuildTarget());
                     }
                 }
                 else
@@ -146,7 +146,7 @@ namespace TestImpact
                                 // 1. Select the parent test targets for this file
                                 selectedTestTargetMap.insert(target);
                             }
-                        }, parentTarget.GetTarget());
+                        }, parentTarget.GetSpecializedBuildTarget());
                     }
                 }
             }

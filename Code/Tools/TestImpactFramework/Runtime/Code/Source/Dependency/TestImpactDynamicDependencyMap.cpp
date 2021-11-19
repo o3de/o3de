@@ -76,7 +76,7 @@ namespace TestImpact
                 buildTarget = target;
             }
 
-        }, GetTarget(name));
+        }, GetSpecializedBuildTarget(name));
 
         return buildTarget;
     }
@@ -90,12 +90,12 @@ namespace TestImpact
             {
                 buildTarget = target;
             }
-        }, GetTargetOrThrow(name));
+        }, GetSpecializedBuildTargetOrThrow(name));
 
         return buildTarget;
     }
 
-    OptionalTarget DynamicDependencyMap::GetTarget(const AZStd::string& name) const
+    OptionalSpecializedBuildTarget DynamicDependencyMap::GetSpecializedBuildTarget(const AZStd::string& name) const
     {
         if (const auto testTarget = m_testTargets.GetTarget(name);
             testTarget != nullptr)
@@ -111,9 +111,9 @@ namespace TestImpact
         return AZStd::monostate{};
     }
 
-    Target DynamicDependencyMap::GetTargetOrThrow(const AZStd::string& name) const
+    SpecializedBuildTarget DynamicDependencyMap::GetSpecializedBuildTargetOrThrow(const AZStd::string& name) const
     {
-        Target buildTarget;
+        SpecializedBuildTarget buildTarget;
         AZStd::visit([&buildTarget, &name](auto&& target)
         {
             if constexpr (IsProductionTarget<decltype(target)> || IsTestTarget<decltype(target)>)
@@ -124,7 +124,7 @@ namespace TestImpact
             {
                 throw(TargetException(AZStd::string::format("Couldn't find target %s", name.c_str()).c_str()));
             }
-        }, GetTarget(name));
+        }, GetSpecializedBuildTarget(name));
 
         return buildTarget;
     }

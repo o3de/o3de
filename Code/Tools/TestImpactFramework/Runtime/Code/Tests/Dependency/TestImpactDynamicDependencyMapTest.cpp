@@ -652,7 +652,7 @@ namespace UnitTest
         for (const auto& expectedProductionTarget : m_productionTargets->GetTargets())
         {
             // When retrieving the production target in the dynamic dependency map
-            auto productionTarget = m_dynamicDependencyMap->GetTarget(expectedProductionTarget.GetName());
+            auto productionTarget = m_dynamicDependencyMap->GetSpecializedBuildTarget(expectedProductionTarget.GetName());
 
             // Expect the retrieved production target to match the production target we queried
             AZStd::visit([&expectedProductionTarget](auto&& productionTarget)
@@ -672,7 +672,7 @@ namespace UnitTest
         for (const auto& expectedTestTarget : m_testTargets->GetTargets())
         {
             // When retrieving the test target in the dynamic dependency map
-            auto testTarget = m_dynamicDependencyMap->GetTarget(expectedTestTarget.GetName());
+            auto testTarget = m_dynamicDependencyMap->GetSpecializedBuildTarget(expectedTestTarget.GetName());
 
             // Expect the retrieved production target to match the production target we queried
             AZStd::visit([&expectedTestTarget](auto&& testTarget)
@@ -701,7 +701,7 @@ namespace UnitTest
             AZStd::make_unique<TestImpact::DynamicDependencyMap>(MicroRepo::CreateProductionTargetDescriptors(), MicroRepo::CreateTestTargetDescriptors());
 
         // When retrieving a target not in the dynamic dependency map
-        auto invalidTarget = m_dynamicDependencyMap->GetTarget("invalid");
+        auto invalidTarget = m_dynamicDependencyMap->GetSpecializedBuildTarget("invalid");
 
         // Expect the retrieved target to be empty
         EXPECT_EQ(invalidTarget.index(), 0);
@@ -720,7 +720,7 @@ namespace UnitTest
         try
         {
             // When retrieving a target not in the dynamic dependency map
-            m_dynamicDependencyMap->GetTargetOrThrow("invalid");
+            m_dynamicDependencyMap->GetSpecializedBuildTargetOrThrow("invalid");
 
             // Do not expect this statement to be reachable
             FAIL();

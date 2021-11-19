@@ -53,11 +53,11 @@ namespace TestImpact
         //! Attempts to get the specified target's specialized type.
         //! @param name The name of the target to get.
         //! @returns If found, the pointer to the specialized target, otherwise AZStd::monostate.
-        OptionalTarget GetTarget(const AZStd::string& name) const;
+        OptionalSpecializedBuildTarget GetSpecializedBuildTarget(const AZStd::string& name) const;
 
         //! Attempts to get the specified target's specialized type or throw TargetException.
         //! @param name The name of the target to get.
-        Target GetTargetOrThrow(const AZStd::string& name) const;
+        SpecializedBuildTarget GetSpecializedBuildTargetOrThrow(const AZStd::string& name) const;
 
         //! Get the list of production targets in the repository.
         const ProductionTargetList& GetProductionTargetList() const;

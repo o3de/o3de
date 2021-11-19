@@ -32,7 +32,7 @@ namespace TestImpact
         return buildTarget;
     }
 
-    const Target& ParentTarget::GetTarget() const
+    const SpecializedBuildTarget& ParentTarget::GetSpecializedBuildTarget() const
     {
         return m_target;
     }

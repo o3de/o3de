@@ -34,11 +34,11 @@ namespace TestImpact
         const BuildTarget* GetBuildTarget() const;
 
         //! Returns the specialized target pointer for this parent.
-        const Target& GetTarget() const;
+        const SpecializedBuildTarget& GetSpecializedBuildTarget() const;
 
         bool operator==(const ParentTarget& other) const;
     private:
-        Target m_target; //! The specialized target pointer for this parent.
+        SpecializedBuildTarget m_target; //! The specialized target pointer for this parent.
     };
 }
 

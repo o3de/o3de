@@ -275,7 +275,7 @@
 //            ValidateTarget(targetList.GetTargets()[i], i);
 //
 //            // Expect the target obtained by name to match the procedurally generated target descriptor
-//            auto target = targetList.GetTarget(GenerateBuildTargetName(i));
+//            auto target = targetList.GetSpecializedBuildTarget(GenerateBuildTargetName(i));
 //            EXPECT_TRUE(target);
 //            EXPECT_EQ(target->GetName(), GenerateBuildTargetName(i));
 //        }
@@ -300,7 +300,7 @@
 //        for (size_t i = 0; i < targetList.GetNumTargets(); i++)
 //        {
 //            // When attempting to find a target that does not exist
-//            auto target = targetList.GetTarget(GenerateBuildTargetName(i + targetList.GetNumTargets()));
+//            auto target = targetList.GetSpecializedBuildTarget(GenerateBuildTargetName(i + targetList.GetNumTargets()));
 //
 //            // Expect an empty result
 //            EXPECT_FALSE(target);
@@ -328,7 +328,7 @@
 //            try
 //            {
 //                // When attempting to find a target that does not exist
-//                targetList.GetTargetOrThrow(GenerateBuildTargetName(i + targetList.GetNumTargets()));
+//                targetList.GetSpecializedBuildTargetOrThrow(GenerateBuildTargetName(i + targetList.GetNumTargets()));
 //
 //                // Do not expect the target list construction to succeed
 //                FAIL();
