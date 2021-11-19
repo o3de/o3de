@@ -53,10 +53,13 @@ namespace O3DE::ProjectManager
         Update(selectedIndices[0]);
     }
 
-    void SetLabelElidedText(QLabel* label, QString text)
+    void SetLabelElidedText(QLabel* label, QString text, int labelWidth = 0)
     {
         QFontMetrics nameFontMetrics(label->font());
-        int labelWidth = label->width();
+        if (!labelWidth)
+        {
+            labelWidth = label->width();
+        }
 
         // Don't elide if the widgets are sized too small (sometimes occurs when loading gem catalog)
         if (labelWidth > 100)
@@ -84,7 +87,8 @@ namespace O3DE::ProjectManager
         m_summaryLabel->setText(m_model->GetSummary(modelIndex));
         m_summaryLabel->adjustSize();
 
-        m_licenseLinkLabel->setText(m_model->GetLicenseText(modelIndex));
+        // Manually define remaining space to elide text because spacer would like to take all of the space
+        SetLabelElidedText(m_licenseLinkLabel, m_model->GetLicenseText(modelIndex), width() - m_licenseLabel->width() - 35);
         m_licenseLinkLabel->SetUrl(m_model->GetLicenseLink(modelIndex));
 
         m_directoryLinkLabel->SetUrl(m_model->GetDirectoryLink(modelIndex));
@@ -175,8 +179,8 @@ namespace O3DE::ProjectManager
             licenseHLayout->setAlignment(Qt::AlignLeft);
             m_mainLayout->addLayout(licenseHLayout);
 
-            QLabel* licenseLabel = CreateStyledLabel(licenseHLayout, s_baseFontSize, s_headerColor);
-            licenseLabel->setText(tr("License: "));
+            m_licenseLabel = CreateStyledLabel(licenseHLayout, s_baseFontSize, s_headerColor);
+            m_licenseLabel->setText(tr("License: "));
 
             m_licenseLinkLabel = new LinkLabel("", QUrl(), s_baseFontSize);
             licenseHLayout->addWidget(m_licenseLinkLabel);

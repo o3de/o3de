@@ -27,7 +27,9 @@ namespace UnitTest
         AZ::Entity* m_entity = nullptr;
         AZ::ComponentDescriptor* m_transformComponent = nullptr;
 
-        static const AzFramework::ViewportId TestViewportId;
+        static inline constexpr AzFramework::ViewportId TestViewportId = 2345;
+        static inline constexpr float HalfInterpolateToTransformDuration =
+            AtomToolsFramework::ModularViewportCameraControllerRequests::InterpolateToTransformDuration * 0.5f;
 
         void SetUp() override
         {
@@ -76,8 +78,6 @@ namespace UnitTest
         }
     };
 
-    const AzFramework::ViewportId EditorCameraFixture::TestViewportId = AzFramework::ViewportId(1337);
-
     TEST_F(EditorCameraFixture, ModularViewportCameraControllerReferenceFrameUpdatedWhenViewportEntityisChanged)
     {
         // Given
@@ -91,8 +91,8 @@ namespace UnitTest
             &Camera::EditorCameraNotificationBus::Events::OnViewportViewEntityChanged, m_entity->GetId());
 
         // ensure the viewport updates after the viewport view entity change
-        const float deltaTime = 1.0f / 60.0f;
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        // note: do a large step to ensure smoothing finishes (e.g. not 1.0f/60.0f)
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(2.0f), AZ::ScriptTimePoint() });
 
         // retrieve updated camera transform
         const AZ::Transform cameraTransform = m_cameraViewportContextView->GetCameraTransform();
@@ -102,61 +102,40 @@ namespace UnitTest
         EXPECT_THAT(cameraTransform, IsClose(entityTransform));
     }
 
-    TEST_F(EditorCameraFixture, ReferenceFrameRemainsIdentityAfterExternalCameraTransformChangeWhenNotSet)
+    TEST_F(EditorCameraFixture, TrackingTransformIsTrueAfterTransformIsTracked)
     {
-        // Given
-        m_cameraViewportContextView->SetCameraTransform(AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 20.0f, 30.0f)));
+        // Given/When
+        const AZ::Transform referenceFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
+            AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f)), AZ::Vector3(1.0f, 2.0f, 3.0f));
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+            TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::StartTrackingTransform, referenceFrame);
 
-        // When
-        AZ::Transform referenceFrame = AZ::Transform::CreateTranslation(AZ::Vector3(1.0f, 2.0f, 3.0f));
+        bool trackingTransform = false;
         AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
-            referenceFrame, TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::GetReferenceFrame);
+            trackingTransform, TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::IsTrackingTransform);
 
         // Then
-        // reference frame is still the identity
-        EXPECT_THAT(referenceFrame, IsClose(AZ::Transform::CreateIdentity()));
+        EXPECT_THAT(trackingTransform, ::testing::IsTrue());
     }
 
-    TEST_F(EditorCameraFixture, ExternalCameraTransformChangeWhenReferenceFrameIsSetUpdatesReferenceFrame)
+    TEST_F(EditorCameraFixture, TrackingTransformIsFalseAfterTransformIsStoppedBeingTracked)
     {
         // Given
         const AZ::Transform referenceFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f)), AZ::Vector3(1.0f, 2.0f, 3.0f));
         AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-            TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetReferenceFrame, referenceFrame);
-
-        const AZ::Transform nextTransform = AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 20.0f, 30.0f));
-        m_cameraViewportContextView->SetCameraTransform(nextTransform);
-
-        // When
-        AZ::Transform currentReferenceFrame = AZ::Transform::CreateTranslation(AZ::Vector3(1.0f, 2.0f, 3.0f));
-        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
-            currentReferenceFrame, TestViewportId,
-            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::GetReferenceFrame);
-
-        // Then
-        EXPECT_THAT(currentReferenceFrame, IsClose(nextTransform));
-    }
-
-    TEST_F(EditorCameraFixture, ReferenceFrameReturnedToIdentityAfterClear)
-    {
-        // Given
-        const AZ::Transform referenceFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
-            AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f)), AZ::Vector3(1.0f, 2.0f, 3.0f));
-        AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-            TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetReferenceFrame, referenceFrame);
+            TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::StartTrackingTransform, referenceFrame);
 
         // When
         AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-            TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::ClearReferenceFrame);
-
-        AZ::Transform currentReferenceFrame = AZ::Transform::CreateTranslation(AZ::Vector3(1.0f, 2.0f, 3.0f));
-        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
-            currentReferenceFrame, TestViewportId,
-            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::GetReferenceFrame);
+            TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::StopTrackingTransform);
 
         // Then
-        EXPECT_THAT(currentReferenceFrame, IsClose(AZ::Transform::CreateIdentity()));
+        bool trackingTransform = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            trackingTransform, TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::IsTrackingTransform);
+
+        EXPECT_THAT(trackingTransform, ::testing::IsFalse());
     }
 
     TEST_F(EditorCameraFixture, InterpolateToTransform)
@@ -169,8 +148,10 @@ namespace UnitTest
             transformToInterpolateTo);
 
         // simulate interpolation
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(0.5f), AZ::ScriptTimePoint() });
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(0.5f), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport(
+            { TestViewportId, AzFramework::FloatSeconds(HalfInterpolateToTransformDuration), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport(
+            { TestViewportId, AzFramework::FloatSeconds(HalfInterpolateToTransformDuration), AZ::ScriptTimePoint() });
 
         const auto finalTransform = m_cameraViewportContextView->GetCameraTransform();
 
@@ -184,7 +165,7 @@ namespace UnitTest
         const AZ::Transform referenceFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f)), AZ::Vector3(1.0f, 2.0f, 3.0f));
         AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-            TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::SetReferenceFrame, referenceFrame);
+            TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::StartTrackingTransform, referenceFrame);
 
         AZ::Transform transformToInterpolateTo = AZ::Transform::CreateFromQuaternionAndTranslation(
             AZ::Quaternion::CreateRotationZ(AZ::DegToRad(90.0f)), AZ::Vector3(20.0f, 40.0f, 60.0f));
@@ -195,18 +176,85 @@ namespace UnitTest
             transformToInterpolateTo);
 
         // simulate interpolation
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(0.5f), AZ::ScriptTimePoint() });
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(0.5f), AZ::ScriptTimePoint() });
-
-        AZ::Transform currentReferenceFrame = AZ::Transform::CreateTranslation(AZ::Vector3(1.0f, 2.0f, 3.0f));
-        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
-            currentReferenceFrame, TestViewportId,
-            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::GetReferenceFrame);
+        m_controllerList->UpdateViewport(
+            { TestViewportId, AzFramework::FloatSeconds(HalfInterpolateToTransformDuration), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport(
+            { TestViewportId, AzFramework::FloatSeconds(HalfInterpolateToTransformDuration), AZ::ScriptTimePoint() });
 
         const auto finalTransform = m_cameraViewportContextView->GetCameraTransform();
 
         // Then
         EXPECT_THAT(finalTransform, IsClose(transformToInterpolateTo));
-        EXPECT_THAT(currentReferenceFrame, IsClose(AZ::Transform::CreateIdentity()));
+    }
+
+    TEST_F(EditorCameraFixture, BeginningCameraInterpolationReturnsTrue)
+    {
+        // Given/When
+        bool interpolationBegan = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            interpolationBegan, TestViewportId,
+            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)));
+
+        // Then
+        EXPECT_THAT(interpolationBegan, ::testing::IsTrue());
+    }
+
+    TEST_F(EditorCameraFixture, CameraInterpolationDoesNotBeginDuringAnExistingInterpolation)
+    {
+        // Given/When
+        bool initialInterpolationBegan = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            initialInterpolationBegan, TestViewportId,
+            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)));
+
+        m_controllerList->UpdateViewport(
+            { TestViewportId, AzFramework::FloatSeconds(HalfInterpolateToTransformDuration), AZ::ScriptTimePoint() });
+
+        bool nextInterpolationBegan = true;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            nextInterpolationBegan, TestViewportId,
+            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)));
+
+        bool interpolating = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            interpolating, TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::IsInterpolating);
+
+        // Then
+        EXPECT_THAT(initialInterpolationBegan, ::testing::IsTrue());
+        EXPECT_THAT(nextInterpolationBegan, ::testing::IsFalse());
+        EXPECT_THAT(interpolating, ::testing::IsTrue());
+    }
+
+    TEST_F(EditorCameraFixture, CameraInterpolationCanBeginAfterAnInterpolationCompletes)
+    {
+        // Given/When
+        bool initialInterpolationBegan = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            initialInterpolationBegan, TestViewportId,
+            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)));
+
+        m_controllerList->UpdateViewport(
+            { TestViewportId,
+              AzFramework::FloatSeconds(AtomToolsFramework::ModularViewportCameraControllerRequests::InterpolateToTransformDuration + 0.5f),
+              AZ::ScriptTimePoint() });
+
+        bool interpolating = true;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            interpolating, TestViewportId, &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::IsInterpolating);
+
+        bool nextInterpolationBegan = false;
+        AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
+            nextInterpolationBegan, TestViewportId,
+            &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform,
+            AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 10.0f, 10.0f)));
+
+        // Then
+        EXPECT_THAT(initialInterpolationBegan, ::testing::IsTrue());
+        EXPECT_THAT(interpolating, ::testing::IsFalse());
+        EXPECT_THAT(nextInterpolationBegan, ::testing::IsTrue());
     }
 } // namespace UnitTest
