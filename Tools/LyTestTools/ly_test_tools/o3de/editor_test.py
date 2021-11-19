@@ -782,6 +782,11 @@ class EditorTestSuite():
             editor.kill()
             editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
             test_result = Result.Timeout.create(test_spec, output, test_spec.timeout, editor_log_content)
+        finally:
+            log_folder = editor_utils.retrieve_log_path(run_id, workspace)
+            if run_id == 0:
+                log_folder = workspace.paths.project_log()
+            workspace.artifact_manager.save_artifact(log_folder)
     
         editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
         results = self._get_results_using_output([test_spec], output, editor_log_content)
@@ -900,7 +905,11 @@ class EditorTestSuite():
                 results[test_spec_name] = Result.Timeout.create(timed_out_result.test_spec,
                                                                 results[test_spec_name].output,
                                                                 self.timeout_editor_shared_test, result.editor_log)
-
+        finally:
+            log_folder = editor_utils.retrieve_log_path(run_id, workspace)
+            if run_id == 0:
+                log_folder = workspace.paths.project_log()
+            workspace.artifact_manager.save_artifact(log_folder)
         return results
     
     def _run_single_test(self, request: Request, workspace: AbstractWorkspace, editor: Editor,
