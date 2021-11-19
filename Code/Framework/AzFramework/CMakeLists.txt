@@ -86,7 +86,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             NAMESPACE AZ
             FILES_CMAKE
                 Tests/frameworktests_files.cmake
-                ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+                ${test_pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
