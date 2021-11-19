@@ -27,7 +27,6 @@
 #include <AzToolsFramework/Manipulators/ScaleManipulators.h>
 #include <AzToolsFramework/Manipulators/TranslationManipulators.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
-#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
@@ -3487,7 +3486,7 @@ namespace AzToolsFramework
         // get the editor cameras current orientation
         const int viewportId = viewportInfo.m_viewportId;
         const AzFramework::CameraState editorCameraState = GetCameraState(viewportId);
-        const AZ::Matrix3x3& editorCameraOrientation = AZ::Matrix3x3::CreateFromMatrix4x4(AzFramework::CameraTransform(editorCameraState));
+        const AZ::Matrix3x3& editorCameraOrientation = AZ::Matrix3x3::CreateFromMatrix3x4(AzFramework::CameraTransform(editorCameraState));
 
         // create a gizmo camera transform about the origin matching the orientation of the editor camera
         // (10 units back in the y axis to produce an orbit effect)
@@ -3589,7 +3588,8 @@ namespace AzToolsFramework
         if (auto prefabFocusPublicInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabFocusPublicInterface>::Get())
         {
             AzFramework::EntityContextId editorEntityContextId = GetEntityContextId();
-            if (AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId); focusRoot.IsValid())
+            if (AZ::EntityId focusRoot = prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(editorEntityContextId);
+                focusRoot.IsValid())
             {
                 m_selectedEntityIds.erase(focusRoot);
             }
@@ -3721,7 +3721,6 @@ namespace AzToolsFramework
             break;
         case ViewportEditorMode::Focus:
             {
-                
                 ViewportUi::ViewportUiRequestBus::Event(
                     ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::RemoveViewportBorder);
             }

@@ -36,12 +36,12 @@ namespace AZ
             AzFramework::WindowNotificationBus::Handler::BusConnect(nativeWindow);
             AzFramework::ViewportRequestBus::Handler::BusConnect(id);
 
-            m_onProjectionMatrixChangedHandler = ViewportContext::MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
+            m_onProjectionMatrixChangedHandler = MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
             {
                 m_projectionMatrixChangedEvent.Signal(matrix);
             });
 
-            m_onViewMatrixChangedHandler = ViewportContext::MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
+            m_onViewMatrixChangedHandler = MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
             {
                 m_viewMatrixChangedEvent.Signal(matrix);
             });

@@ -1726,11 +1726,9 @@ void AZ::FFont::DrawScreenAlignedText3d(
     {
         return;
     }
-    AZ::Vector3 positionNDC = AzFramework::WorldToScreenNdc(
-        params.m_position,
-        currentView->GetWorldToViewMatrix(),
-        currentView->GetViewToClipMatrix()
-    );
+
+    const AZ::Vector3 positionNDC = AzFramework::WorldToScreenNdc(
+        params.m_position, AZ::Matrix3x4::CreateFromMatrix4x4(currentView->GetWorldToViewMatrix()), currentView->GetViewToClipMatrix());
 
     // Text behind the camera shouldn't get rendered.  WorldToScreenNDC returns values in the range 0 - 1, so Z < 0.5 is behind the screen
     // and >= 0.5 is in front of the screen.

@@ -267,12 +267,12 @@ namespace AZ
             passWithDrawListTag->SortDrawList(drawList);
         }
 
-        void View::ConnectWorldToViewMatrixChangedHandler(View::MatrixChangedEvent::Handler& handler)
+        void View::ConnectWorldToViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler)
         {
             handler.Connect(m_onWorldToViewMatrixChange);
         }
 
-        void View::ConnectWorldToClipMatrixChangedHandler(View::MatrixChangedEvent::Handler& handler)
+        void View::ConnectWorldToClipMatrixChangedHandler(MatrixChangedEvent::Handler& handler)
         {
             handler.Connect(m_onWorldToClipMatrixChange);
         }

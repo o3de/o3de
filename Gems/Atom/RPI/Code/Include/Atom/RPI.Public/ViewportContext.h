@@ -13,7 +13,6 @@
 #include <Atom/RPI.Public/WindowContext.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/SceneBus.h>
-#include <AzCore/EBus/Event.h>
 
 namespace AZ
 {
@@ -98,7 +97,6 @@ namespace AZ
             //! Alternatively, connect to ViewportContextNotificationsBus and listen to ViewportContextNotifications::OnViewportDpiScalingChanged.
             void ConnectDpiScalingFactorChangedHandler(ScalarChangedEvent::Handler& handler);
 
-            using MatrixChangedEvent = AZ::Event<const AZ::Matrix4x4&>;
             //! Notifies consumers when the view matrix has changed.
             void ConnectViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
             //! Notifies consumers when the projection matrix has changed.

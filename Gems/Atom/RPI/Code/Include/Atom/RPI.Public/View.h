@@ -120,7 +120,6 @@ namespace AZ
             //! Update View's SRG values and compile. This should only be called once per frame before execute command lists.
             void UpdateSrg();
 
-            using MatrixChangedEvent = AZ::Event<const AZ::Matrix4x4&>;
             //! Notifies consumers when the world to view matrix has changed.
             void ConnectWorldToViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler);
             //! Notifies consumers when the world to clip matrix has changed.

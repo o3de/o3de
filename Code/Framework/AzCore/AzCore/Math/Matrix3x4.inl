@@ -203,6 +203,17 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE Matrix3x4 Matrix3x4::CreateFromMatrix4x4(const Matrix4x4& matrix4x4)
+    {
+        Matrix3x4 result;
+        result.SetColumn(0, matrix4x4.GetColumn(0).GetAsVector3());
+        result.SetColumn(1, matrix4x4.GetColumn(1).GetAsVector3());
+        result.SetColumn(2, matrix4x4.GetColumn(2).GetAsVector3());
+        result.SetColumn(3, matrix4x4.GetColumn(3).GetAsVector3());
+        return result;
+    }
+
+
     AZ_MATH_INLINE Matrix3x4 Matrix3x4::CreateScale(const Vector3& scale)
     {
         return CreateDiagonal(scale);
