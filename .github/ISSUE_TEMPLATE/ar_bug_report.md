@@ -1,5 +1,5 @@
 ---
-name: Automated_Review_bug_template.md
+name: Automated Review bug report
 about: Create a bug for a an issue found in the Automated Review
 title: 'AR Bug Report'
 labels: 'needs-triage,kind/bug,kind/automation'
