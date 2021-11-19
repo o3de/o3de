@@ -14,8 +14,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
-#include <QApplication>
-#include <QMessageBox>
 
 namespace Terrain
 {
@@ -141,20 +139,12 @@ namespace Terrain
 
     AZ::Outcome<void, AZStd::string> TerrainWorldConfig::DetermineMessage(float numSamples)
     {
-        if (numSamples < 4.0f * 1024.0f * 1024.0f)
+        const int maximumSamplesAllowed = 8.0f * 1024.0f * 1024.0f;
+        if (numSamples < maximumSamplesAllowed)
         {
             return AZ::Success();
         }
-
-        if (numSamples < 8.0f * 1024.0f * 1024.0f)
-        {
-            QMessageBox::information(
-                QApplication::activeWindow(), "Performance Warning",
-                "The number of samples may mean there is a delay in calculating the values", QMessageBox::Ok);
-            return AZ::Success();
-        }
-
-        return AZ::Failure(AZStd::string("The number of samples exceeds the maximum allowed"));
+        return AZ::Failure(AZStd::string("The number of samples exceeds the maximum allowed."));
     }
 
     AZ::Outcome<void, AZStd::string> TerrainWorldConfig::ValidateWorldMin(void* newValue, [[maybe_unused]]const AZ::Uuid& valueType)

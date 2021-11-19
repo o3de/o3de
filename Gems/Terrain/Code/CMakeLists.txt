@@ -17,10 +17,7 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PUBLIC
-            3rdParty::Qt::Core
             AZ::AzCore
-            3rdParty::Qt::Gui
-            3rdParty::Qt::Widgets
             AZ::AzFramework
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
@@ -109,9 +106,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Source
         BUILD_DEPENDENCIES
             PRIVATE
-            	3rdParty::Qt::Core
-                3rdParty::Qt::Gui
-                3rdParty::Qt::Widgets
                 AZ::AzTest
                 AZ::AzFramework
                 Gem::LmbrCentral.Mocks
