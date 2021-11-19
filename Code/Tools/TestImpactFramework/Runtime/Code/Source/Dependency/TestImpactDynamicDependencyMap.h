@@ -32,7 +32,7 @@ namespace TestImpact
         //! Constructs the dependency map with entries for each build target's source files with empty test coverage data.
         DynamicDependencyMap(
             AZStd::vector<ProductionTargetDescriptor>&& productionTargetDescriptors,
-            AZStd::vector<TestTargetDescriptor>&& testTargetDescriptors);
+            AZStd::vector<TestTargetList::TargetType::Descriptor>&& testTargetDescriptors);
 
         //! Gets the total number of production and test targets in the repository.
         size_t GetNumTargets() const;
@@ -67,7 +67,8 @@ namespace TestImpact
 
         //! Gets the test targets covering the specified production target.
         //! @param productionTarget The production target to retrieve the covering tests for.
-        AZStd::vector<const TestTarget*> GetCoveringTestTargetsForProductionTarget(const ProductionTarget& productionTarget) const;
+        AZStd::vector<const TestTargetList::TargetType*> GetCoveringTestTargetsForProductionTarget(
+            const ProductionTarget& productionTarget) const;
 
         //! Gets the source dependency for the specified source file.
         //! @note Autogen input source dependencies are the consolidated source dependencies of all of their generated output sources.
@@ -99,13 +100,13 @@ namespace TestImpact
             const ChangeList& changeList, Policy::IntegrityFailure integrityFailurePolicy);
 
         //! Removes the specified test target from all source coverage.
-        void RemoveTestTargetFromSourceCoverage(const TestTarget* testTarget);
+        void RemoveTestTargetFromSourceCoverage(const TestTargetList::TargetType* testTarget);
 
         //! Returns the test targets that cover one or more sources in the repository.
-        AZStd::vector<const TestTarget*> GetCoveringTests() const;
+        AZStd::vector<const TestTargetList::TargetType*> GetCoveringTests() const;
 
         //! Returns the test targets that do not cover any sources in the repository.
-        AZStd::vector<const TestTarget*> GetNotCoveringTests() const;
+        AZStd::vector<const TestTargetList::TargetType*> GetNotCoveringTests() const;
 
     private:
         //! Internal handler for ReplaceSourceCoverage where the pruning of parentless and coverageless source depenencies after the
@@ -129,11 +130,11 @@ namespace TestImpact
         AZStd::unordered_map<AZStd::string, DependencyData> m_sourceDependencyMap;
 
         //! Map of all test targets and the sources they cover.
-        AZStd::unordered_map<const TestTarget*, AZStd::unordered_set<AZStd::string>> m_testTargetSourceCoverage;
+        AZStd::unordered_map<const TestTargetList::TargetType*, AZStd::unordered_set<AZStd::string>> m_testTargetSourceCoverage;
 
         //! The map of build targets and their covering test targets.
         //! @note As per the note for ReplaceSourceCoverageInternal, this map is currently not pruned when source coverage is replaced.
-        AZStd::unordered_map<const BuildTarget*, AZStd::unordered_set<const TestTarget*>> m_buildTargetCoverage;
+        AZStd::unordered_map<const BuildTarget*, AZStd::unordered_set<const TestTargetList::TargetType*>> m_buildTargetCoverage;
 
         //! Mapping of autogen input sources to their generated output sources.
         AZStd::unordered_map<AZStd::string, AZStd::vector<AZStd::string>> m_autogenInputToOutputMap;

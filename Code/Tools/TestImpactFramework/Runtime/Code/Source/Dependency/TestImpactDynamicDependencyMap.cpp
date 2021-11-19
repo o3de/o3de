@@ -13,7 +13,7 @@ namespace TestImpact
 {
     DynamicDependencyMap::DynamicDependencyMap(
         AZStd::vector<ProductionTargetDescriptor>&& productionTargetDescriptors,
-        AZStd::vector<TestTargetDescriptor>&& testTargetDescriptors)
+        AZStd::vector<TestTargetList::TargetType::Descriptor>&& testTargetDescriptors)
         : m_productionTargets(AZStd::move(productionTargetDescriptors))
         , m_testTargets(AZStd::move(testTargetDescriptors))
     {
@@ -163,7 +163,7 @@ namespace TestImpact
             // the parent test targets of this source dependency to ensure that this is in fact the last source being cleared and thus
             // it can be determined that the parent test target is no longer covering the given build target
             //
-            // The implications of this are that multiple calls to the test selector and priritizor's SelectTestTargets method will end
+            // The implications of this are that multiple calls to the test selector and prioritizor's SelectTestTargets method will end
             // up pulling in more test targets than needed for newly-created production sources until the next time the dynamic dependency
             // map reconstructed, however until this use case materializes the implications described will not be addressed
 
@@ -173,7 +173,7 @@ namespace TestImpact
             // Update the dependency with any new coverage data
             for (const auto& unresolvedTestTarget : sourceCoverage.GetCoveringTestTargets())
             {
-                if (const TestTarget* testTarget = m_testTargets.GetTarget(unresolvedTestTarget);
+                if (const TestTargetList::TargetType* testTarget = m_testTargets.GetTarget(unresolvedTestTarget);
                     testTarget)
                 {
                     // Source to covering test target mapping
@@ -251,9 +251,10 @@ namespace TestImpact
         return m_testTargets;
     }
 
-    AZStd::vector<const TestTarget*> DynamicDependencyMap::GetCoveringTestTargetsForProductionTarget(const ProductionTarget& productionTarget) const
+    AZStd::vector<const TestTargetList::TargetType*> DynamicDependencyMap::GetCoveringTestTargetsForProductionTarget(
+        const ProductionTarget& productionTarget) const
     {
-        AZStd::vector<const TestTarget*> coveringTestTargets;
+        AZStd::vector<const TestTargetList::TargetType*> coveringTestTargets;
         if (const auto coverage = m_buildTargetCoverage.find(&productionTarget);
             coverage != m_buildTargetCoverage.end())
         {
@@ -267,7 +268,7 @@ namespace TestImpact
     AZStd::optional<SourceDependency> DynamicDependencyMap::GetSourceDependency(const RepoPath& path) const
     {
         AZStd::unordered_set<ParentTarget> parentTargets;
-        AZStd::unordered_set<const TestTarget*> coveringTestTargets;
+        AZStd::unordered_set<const TestTargetList::TargetType*> coveringTestTargets;
 
         const auto getSourceDependency = [&parentTargets, &coveringTestTargets, this](const AZStd::string& path)
         {
@@ -462,7 +463,7 @@ namespace TestImpact
         return ChangeDependencyList(AZStd::move(createDependencies), AZStd::move(updateDependencies), AZStd::move(deleteDependencies));
     }
 
-    void DynamicDependencyMap::RemoveTestTargetFromSourceCoverage(const TestTarget* testTarget)
+    void DynamicDependencyMap::RemoveTestTargetFromSourceCoverage(const TestTargetList::TargetType* testTarget)
     {
         if (const auto& it = m_testTargetSourceCoverage.find(testTarget);
             it != m_testTargetSourceCoverage.end())
@@ -483,9 +484,9 @@ namespace TestImpact
         }
     }
 
-    AZStd::vector<const TestTarget*> DynamicDependencyMap::GetCoveringTests() const
+    AZStd::vector<const TestTargetList::TargetType*> DynamicDependencyMap::GetCoveringTests() const
     {
-        AZStd::vector<const TestTarget*> covering;
+        AZStd::vector<const TestTargetList::TargetType*> covering;
         for (const auto& [testTarget, coveringSources] : m_testTargetSourceCoverage)
         {
             if (!coveringSources.empty())
@@ -497,9 +498,9 @@ namespace TestImpact
         return covering;
     }
 
-    AZStd::vector<const TestTarget*> DynamicDependencyMap::GetNotCoveringTests() const
+    AZStd::vector<const TestTargetList::TargetType*> DynamicDependencyMap::GetNotCoveringTests() const
     {
-        AZStd::vector<const TestTarget*> notCovering;
+        AZStd::vector<const TestTargetList::TargetType*> notCovering;
         for(const auto& [testTarget, coveringSources] : m_testTargetSourceCoverage)
         {
             if (coveringSources.empty())
