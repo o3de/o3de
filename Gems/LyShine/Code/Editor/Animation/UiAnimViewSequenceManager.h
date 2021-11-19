@@ -9,8 +9,6 @@
 
 #pragma once
 
-#include "Util/smartptr.h"
-
 #include "UiAnimViewSequence.h"
 #include <LyShine/Animation/IUiAnimation.h>
 #include "UiEditorAnimationBus.h"

@@ -124,7 +124,6 @@
 
 // Utility classes.
 #include "Util/RefCountBase.h"
-#include "Util/TRefCountBase.h"
 #include "Util/MemoryBlock.h"
 #include "Util/PathUtil.h"
 

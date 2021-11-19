@@ -648,7 +648,6 @@ set(FILES
     Util/PredefinedAspectRatios.h
     Util/StringHelpers.cpp
     Util/StringHelpers.h
-    Util/TRefCountBase.h
     Util/Triangulate.cpp
     Util/Triangulate.h
     Util/Util.h
@@ -657,7 +656,6 @@ set(FILES
     Util/XmlTemplate.cpp
     Util/XmlTemplate.h
     Util/fastlib.h
-    Util/smartptr.h
     WaitProgress.cpp
     WaitProgress.h
     Util/FileUtil_impl.h
