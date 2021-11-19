@@ -32,6 +32,7 @@ namespace AzToolsFramework
         QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
         void SetFilter(AZ::Data::AssetType filterType);
+        void SetFilter(FilterConstType filter);
         void RefreshAssetList();
         void SearchStringHighlight(QString searchString);
 
