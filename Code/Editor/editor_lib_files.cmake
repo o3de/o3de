@@ -686,8 +686,6 @@ set(FILES
     Util/FileChangeMonitor.h
     Util/ImageUtil.cpp
     Util/ImageUtil.h
-    Util/ImageASC.cpp
-    Util/ImageASC.h
     Util/ImageBT.cpp
     Util/ImageBT.h
     Util/ImageGif.cpp
