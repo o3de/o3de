@@ -256,11 +256,11 @@ namespace UnitTest
                 AssetWithSerializedData ap1;
                 AssetWithSerializedData ap2;
                 AssetWithSerializedData ap3;
-                
+
                 EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset4.txt", &ap1, m_serializeContext));
                 EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset5.txt", &ap2, m_serializeContext));
                 EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset6.txt", &ap3, m_serializeContext));
-                
+
                 AssetWithAssetReference assetWithPreload1;
                 AssetWithAssetReference assetWithPreload2;
                 AssetWithAssetReference assetWithPreload3;
@@ -326,7 +326,7 @@ namespace UnitTest
                 m_assetHandlerAndCatalog->m_numCreations = 0;
             }
         }
-        
+
         void CheckFinishedCreationsAndDestructions()
         {
             // Make sure asset jobs have finished before validating the number of destroyed assets, because it's possible that the asset job
@@ -339,7 +339,7 @@ namespace UnitTest
     };
 
     static constexpr AZStd::chrono::seconds MaxDispatchTimeoutSeconds = BaseAssetManagerTest::DefaultTimeoutSeconds * 12;
-    
+
     template <typename Pred>
     bool DispatchEventsUntilCondition(AZ::Data::AssetManager& assetManager, Pred&& conditionPredicate,
         AZStd::chrono::seconds logIntervalSeconds = BaseAssetManagerTest::DefaultTimeoutSeconds,
@@ -580,7 +580,7 @@ namespace UnitTest
         AZ::Data::AssetData::AssetStatus expected_base_status = AZ::Data::AssetData::AssetStatus::Ready;
         EXPECT_EQ(baseStatus, expected_base_status);
     }
-    
+
     TEST_F(AssetJobsFloodTest, RapidAcquireAndRelease)
     {
         auto assetUuids = {
@@ -613,7 +613,7 @@ namespace UnitTest
                 {
                     Asset<AssetWithAssetReference> asset1 =
                         m_testAssetManager->GetAsset(assetUuid, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::PreLoad);
-                    
+
                     if (checkLoaded)
                     {
                         asset1.BlockUntilLoadComplete();
@@ -1986,7 +1986,7 @@ namespace UnitTest
         CheckFinishedCreationsAndDestructions();
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusDisconnect();
     }
-    
+
     /**
     * Run multiple threads that get and release assets simultaneously to test AssetManager's thread safety
     */
@@ -2001,7 +2001,7 @@ namespace UnitTest
         static inline const AZ::Uuid MyAsset5Id{ "{D9CDAB04-D206-431E-BDC0-1DD615D56197}" };
         static inline const AZ::Uuid MyAsset6Id{ "{B2F139C3-5032-4B52-ADCA-D52A8F88E043}" };
 
-        
+
         // Initialize the Job Manager with 2 threads for the Asset Manager to use.
         size_t GetNumJobManagerThreads() const override { return 2; }
 
@@ -2055,7 +2055,7 @@ namespace UnitTest
                 EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset4.txt", &ap1, &context));
                 EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset5.txt", &ap2, &context));
                 EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset6.txt", &ap3, &context));
-                
+
                 AssetWithAssetReference assetWithPreload1;
                 AssetWithAssetReference assetWithPreload2;
                 AssetWithAssetReference assetWithPreload3;
@@ -2066,7 +2066,7 @@ namespace UnitTest
                 EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset1.txt", &assetWithPreload1, &context));
                 EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset2.txt", &assetWithPreload2, &context));
                 EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset3.txt", &assetWithPreload3, &context));
-                
+
                 EXPECT_TRUE(assetHandlerAndCatalog->m_numCreations == 3);
                 assetHandlerAndCatalog->m_numCreations = 0;
             }
@@ -2322,7 +2322,7 @@ namespace UnitTest
                 AssetWithSerializedData d;
                 d.m_data = 42;
                 EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset4.txt", &d, &context));
-                
+
                 // AssetC is MYASSETC
                 AssetWithAssetReference c;
                 c.m_asset = db.CreateAsset<AssetWithSerializedData>(AssetId(MyAssetDId)); // point at D
@@ -2593,7 +2593,7 @@ namespace UnitTest
                 AssetManager::Instance().RegisterHandler(m_assetHandlerAndCatalog, type);
                 AssetManager::Instance().RegisterCatalog(m_assetHandlerAndCatalog, type);
             }
-            
+
             WriteAssetToDisk("MyAsset1.txt", MyAsset1Id.ToString<AZStd::string>().c_str());
             WriteAssetToDisk("MyAsset2.txt", MyAsset2Id.ToString<AZStd::string>().c_str());
             WriteAssetToDisk("MyAsset3.txt", MyAsset3Id.ToString<AZStd::string>().c_str());
