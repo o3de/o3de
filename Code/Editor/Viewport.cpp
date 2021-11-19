@@ -19,6 +19,7 @@
 
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 // Editor
 #include "ViewManager.h"
@@ -173,8 +174,6 @@ QtViewport::QtViewport(QWidget* parent)
 
     m_bAdvancedSelectMode = false;
 
-    m_pVisibleObjectsCache = new CBaseObjectsCache;
-
     m_constructionPlane.SetPlane(Vec3_OneZ, Vec3_Zero);
     m_constructionPlaneAxisX = Vec3_Zero;
     m_constructionPlaneAxisY = Vec3_Zero;
@@ -204,8 +203,6 @@ QtViewport::QtViewport(QWidget* parent)
 //////////////////////////////////////////////////////////////////////////
 QtViewport::~QtViewport()
 {
-    delete m_pVisibleObjectsCache;
-
     GetIEditor()->GetViewManager()->UnregisterViewport(this);
 }
 
@@ -376,11 +373,6 @@ void QtViewport::OnDeactivate()
 void QtViewport::ResetContent()
 {
     m_pMouseOverObject = nullptr;
-
-    // Need to clear visual object cache.
-    // Right after loading new level, some code(e.g. OnMouseMove) access invalid
-    // previous level object before cache updated.
-    GetVisibleObjectsCache()->ClearObjects();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -398,11 +390,8 @@ void QtViewport::Update()
     m_viewportUi.Update();
 
     m_bAdvancedSelectMode = false;
-    bool bSpaceClick = false;
-    {
-        bSpaceClick = CheckVirtualKey(Qt::Key_Space) & !CheckVirtualKey(Qt::Key_Shift) /*& !CheckVirtualKey(Qt::Key_Control)*/;
-    }
-    if (bSpaceClick && hasFocus())
+
+    if (CheckVirtualKey(Qt::Key_Space) && !CheckVirtualKey(Qt::Key_Shift) && hasFocus())
     {
         m_bAdvancedSelectMode = true;
     }
@@ -1418,6 +1407,69 @@ void QtViewport::ProcessRenderLisneters(DisplayContext& rstDisplayContext)
 }
 //////////////////////////////////////////////////////////////////////////
 #if defined(AZ_PLATFORM_WINDOWS)
+// Note: Both CreateAnglesYPR and CreateOrientationYPR were copied verbatim from Cry_Camera.h which has been removed.
+// 
+// Description
+//   <PRE>
+//   x-YAW
+//   y-PITCH (negative=looking down / positive=looking up)
+//   z-ROLL
+//   </PRE>
+// Note: If we are looking along the z-axis, its not possible to specify the x and z-angle
+inline Ang3 CreateAnglesYPR(const Matrix33& m)
+{
+    assert(m.IsOrthonormal());
+    float l = Vec3(m.m01, m.m11, 0.0f).GetLength();
+    if (l > 0.0001)
+    {
+        return Ang3(atan2f(-m.m01 / l, m.m11 / l), atan2f(m.m21, l), atan2f(-m.m20 / l, m.m22 / l));
+    }
+    else
+    {
+        return Ang3(0, atan2f(m.m21, l), 0);
+    }
+}
+
+// Description
+//  This function builds a 3x3 orientation matrix using YPR-angles
+//  Rotation order for the orientation-matrix is Z-X-Y. (Zaxis=YAW / Xaxis=PITCH / Yaxis=ROLL)
+//
+// <PRE>
+//  COORDINATE-SYSTEM
+//
+//  z-axis
+//    ^
+//    |
+//    |  y-axis
+//    |  /
+//    | /
+//    |/
+//    +--------------->   x-axis
+// </PRE>
+//
+//  Example:
+//      Matrix33 orientation=CreateOrientationYPR( Ang3(1,2,3) );
+inline Matrix33 CreateOrientationYPR(const Ang3& ypr)
+{
+    f32 sz, cz;
+    sincos_tpl(ypr.x, &sz, &cz);            //Zaxis = YAW
+    f32 sx, cx;
+    sincos_tpl(ypr.y, &sx, &cx);            //Xaxis = PITCH
+    f32 sy, cy;
+    sincos_tpl(ypr.z, &sy, &cy);            //Yaxis = ROLL
+    Matrix33 c;
+    c.m00 = cy * cz - sy * sz * sx;
+    c.m01 = -sz * cx;
+    c.m02 = sy * cz + cy * sz * sx;
+    c.m10 = cy * sz + sy * sx * cz;
+    c.m11 = cz * cx;
+    c.m12 = sy * sz - cy * sx * cz;
+    c.m20 = -sy * cx;
+    c.m21 = sx;
+    c.m22 = cy * cx;
+    return c;
+}
+
 void QtViewport::OnRawInput([[maybe_unused]] UINT wParam, HRAWINPUT lParam)
 {
     static C3DConnexionDriver* p3DConnexionDriver = 0;
@@ -1461,12 +1513,12 @@ void QtViewport::OnRawInput([[maybe_unused]] UINT wParam, HRAWINPUT lParam)
                     t *= sys_scale3DMouseTranslation->GetFVal();
 
                     float as = 0.001f * gSettings.cameraMoveSpeed;
-                    Ang3 ypr = CCamera::CreateAnglesYPR(Matrix33(viewTM));
+                    Ang3 ypr = CreateAnglesYPR(Matrix33(viewTM));
                     ypr.x += -all6DOFs[5] * as * fScaleYPR;
                     ypr.y = AZStd::clamp(ypr.y + all6DOFs[3] * as * fScaleYPR, -1.5f, 1.5f); // to keep rotation in reasonable range
                     ypr.z = 0;                                                  // to have camera always upward
 
-                    viewTM = Matrix34(CCamera::CreateOrientationYPR(ypr), viewTM.GetTranslation());
+                    viewTM = Matrix34(CreateOrientationYPR(ypr), viewTM.GetTranslation());
                     viewTM = viewTM * Matrix34::CreateTranslationMat(t);
 
                     SetViewTM(viewTM);

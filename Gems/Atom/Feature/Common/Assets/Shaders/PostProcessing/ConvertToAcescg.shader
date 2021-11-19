@@ -1,5 +1,5 @@
 { 
-    "Source" : "ConvertToAcescg",
+    "Source" : "ConvertToAcescg.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

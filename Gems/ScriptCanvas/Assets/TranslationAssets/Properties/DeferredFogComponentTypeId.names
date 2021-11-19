@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DeferredFogComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DeferredFogComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

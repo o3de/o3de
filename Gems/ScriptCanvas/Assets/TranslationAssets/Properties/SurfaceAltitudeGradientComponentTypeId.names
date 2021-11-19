@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "SurfaceAltitudeGradientComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "SurfaceAltitudeGradientComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

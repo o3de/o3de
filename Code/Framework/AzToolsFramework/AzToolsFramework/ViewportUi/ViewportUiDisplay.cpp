@@ -12,6 +12,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiCluster.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplay.h>
+#include <AzToolsFramework/ViewportUi/ViewportUiDisplayLayout.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiTextField.h>
 #include <QWidget>
@@ -19,8 +20,7 @@
 namespace AzToolsFramework::ViewportUi::Internal
 {
     const static int HighlightBorderSize = 5;
-    const static int TopHighlightBorderSize = 25;
-    const static char* HighlightBorderColor = "#44B2F8";
+    const static char* HighlightBorderColor = "#4A90E2";
 
     static void UnparentWidgets(ViewportUiElementIdInfoLookup& viewportUiElementIdInfoLookup)
     {
@@ -61,7 +61,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         , m_uiOverlay(parent)
         , m_fullScreenLayout(&m_uiOverlay)
         , m_uiOverlayLayout()
-        , m_componentModeBorderText(&m_uiOverlay)
+        , m_viewportBorderText(&m_uiOverlay)
     {
     }
 
@@ -221,11 +221,11 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     AZStd::shared_ptr<QWidget> ViewportUiDisplay::GetViewportUiElement(ViewportUiElementId elementId)
     {
-        auto element = m_viewportUiElements.find(elementId);
-        if (element != m_viewportUiElements.end())
+        if (auto element = m_viewportUiElements.find(elementId); element != m_viewportUiElements.end())
         {
             return element->second.m_widget;
         }
+
         return nullptr;
     }
 
@@ -287,27 +287,31 @@ namespace AzToolsFramework::ViewportUi::Internal
         {
             return element.IsValid() && element.m_widget->isVisible();
         }
+
         return false;
     }
 
-    void ViewportUiDisplay::CreateComponentModeBorder(const AZStd::string& borderTitle)
+    void ViewportUiDisplay::CreateViewportBorder(const AZStd::string& borderTitle)
     {
-        AZStd::string styleSheet = AZStd::string::format(
-            "border: %dpx solid %s; border-top: %dpx solid %s;", HighlightBorderSize, HighlightBorderColor, TopHighlightBorderSize,
+        const AZStd::string styleSheet = AZStd::string::format(
+            "border: %dpx solid %s; border-top: %dpx solid %s;", HighlightBorderSize, HighlightBorderColor, ViewportUiTopBorderSize,
             HighlightBorderColor);
         m_uiOverlay.setStyleSheet(styleSheet.c_str());
         m_uiOverlayLayout.setContentsMargins(
-            HighlightBorderSize + ViewportUiOverlayMargin, TopHighlightBorderSize + ViewportUiOverlayMargin,
+            HighlightBorderSize + ViewportUiOverlayMargin, ViewportUiTopBorderSize + ViewportUiOverlayMargin,
             HighlightBorderSize + ViewportUiOverlayMargin, HighlightBorderSize + ViewportUiOverlayMargin);
-        m_componentModeBorderText.setVisible(true);
-        m_componentModeBorderText.setText(borderTitle.c_str());
+        m_viewportBorderText.setVisible(true);
+        m_viewportBorderText.setText(borderTitle.c_str());
+        UpdateUiOverlayGeometry();
     }
 
-    void ViewportUiDisplay::RemoveComponentModeBorder()
+    void ViewportUiDisplay::RemoveViewportBorder()
     {
-        m_componentModeBorderText.setVisible(false);
+        m_viewportBorderText.setVisible(false);
         m_uiOverlay.setStyleSheet("border: none;");
-        m_uiOverlayLayout.setMargin(ViewportUiOverlayMargin);
+        m_uiOverlayLayout.setContentsMargins(
+            ViewportUiOverlayMargin, ViewportUiOverlayMargin + ViewportUiOverlayTopMarginPadding, ViewportUiOverlayMargin,
+            ViewportUiOverlayMargin);
     }
 
     void ViewportUiDisplay::PositionViewportUiElementFromWorldSpace(ViewportUiElementId elementId, const AZ::Vector3& pos)
@@ -339,7 +343,7 @@ namespace AzToolsFramework::ViewportUi::Internal
     {
         // no background for the widget else each set of buttons/text-fields/etc would have a black box around them
         SetTransparentBackground(mainWindow);
-        mainWindow->setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
+        mainWindow->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
     }
 
     void ViewportUiDisplay::InitializeUiOverlay()
@@ -359,10 +363,10 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         // format the label which will appear on top of the highlight border
         AZStd::string styleSheet = AZStd::string::format("background-color: %s; border: none;", HighlightBorderColor);
-        m_componentModeBorderText.setStyleSheet(styleSheet.c_str());
-        m_componentModeBorderText.setFixedHeight(TopHighlightBorderSize);
-        m_componentModeBorderText.setVisible(false);
-        m_fullScreenLayout.addWidget(&m_componentModeBorderText, 0, 0, Qt::AlignTop | Qt::AlignHCenter);
+        m_viewportBorderText.setStyleSheet(styleSheet.c_str());
+        m_viewportBorderText.setFixedHeight(ViewportUiTopBorderSize);
+        m_viewportBorderText.setVisible(false);
+        m_fullScreenLayout.addWidget(&m_viewportBorderText, 0, 0, Qt::AlignTop | Qt::AlignHCenter);
     }
 
     void ViewportUiDisplay::PrepareWidgetForViewportUi(QPointer<QWidget> widget)
@@ -395,14 +399,14 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiDisplay::UpdateUiOverlayGeometry()
     {
-        // add the component mode border region if visible
+        // add the viewport border region if visible
         QRegion region;
-        if (m_componentModeBorderText.isVisible())
+        if (m_viewportBorderText.isVisible())
         {
             // get the border region by taking the entire region and subtracting the non-border area
             region += m_uiOverlay.rect();
             region -= QRect(
-                QPoint(m_uiOverlay.rect().left() + HighlightBorderSize, m_uiOverlay.rect().top() + TopHighlightBorderSize),
+                QPoint(m_uiOverlay.rect().left() + HighlightBorderSize, m_uiOverlay.rect().top() + ViewportUiTopBorderSize),
                 QPoint(m_uiOverlay.rect().right() - HighlightBorderSize, m_uiOverlay.rect().bottom() - HighlightBorderSize));
         }
 
@@ -420,14 +424,15 @@ namespace AzToolsFramework::ViewportUi::Internal
             m_uiMainWindow.setVisible(true);
             m_uiOverlay.setVisible(true);
         }
+
         m_uiMainWindow.setMask(region);
     }
 
     void ViewportUiDisplay::PositionUiOverlayOverRenderViewport()
     {
         QPoint offset = m_renderOverlay->mapToGlobal(QPoint());
-        m_uiMainWindow.move(offset);
-        m_uiOverlay.setFixedSize(m_renderOverlay->width(), m_renderOverlay->height());
+        m_uiMainWindow.setGeometry(offset.x(), offset.y(), m_renderOverlay->width(), m_renderOverlay->height());
+        m_uiOverlay.setGeometry(m_uiMainWindow.rect());
         UpdateUiOverlayGeometry();
     }
 
@@ -437,6 +442,7 @@ namespace AzToolsFramework::ViewportUi::Internal
         {
             return element->second;
         }
+
         return ViewportUiElementInfo{ nullptr, InvalidViewportUiElementId, false };
     }
 

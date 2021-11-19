@@ -22,22 +22,22 @@ namespace AzToolsFramework
 
         virtual ~ViewportEditorModeTrackerInterface() = default;
 
-        //! Activates the specified editor mode for the specified viewport.
+        //! Activates the specified editor mode for the specified viewport editor mode tracker.
         virtual AZ::Outcome<void, AZStd::string> ActivateMode(
-            const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;
+            const ViewportEditorModeTrackerInfo& ViewportEditorModeTrackerInfo, ViewportEditorMode mode) = 0;
        
-        //! Deactivates the specified editor mode for the specified viewport.
+        //! Deactivates the specified editor mode for the specified viewport editor mode tracker.
         virtual AZ::Outcome<void, AZStd::string> DeactivateMode(
-            const ViewportEditorModeInfo& viewportEditorModeInfo, ViewportEditorMode mode) = 0;
+            const ViewportEditorModeTrackerInfo& ViewportEditorModeTrackerInfo, ViewportEditorMode mode) = 0;
 
-        //! Attempts to retrieve the editor mode state for the specified viewport, otherwise returns nullptr.
-        virtual const ViewportEditorModesInterface* GetViewportEditorModes(const ViewportEditorModeInfo& viewportEditorModeInfo) const = 0;
+        //! Attempts to retrieve the editor mode state for the specified viewport editor mode tracker, otherwise returns nullptr.
+        virtual const ViewportEditorModesInterface* GetViewportEditorModes(const ViewportEditorModeTrackerInfo& ViewportEditorModeTrackerInfo) const = 0;
 
-        //! Returns the number of viewports currently being tracked.
+        //! Returns the number of viewport editor mode trackers.
         virtual size_t GetTrackedViewportCount() const = 0;
 
-        //! Returns true if the specified viewport is being tracked, otherwise false.
-        virtual bool IsViewportModeTracked(const ViewportEditorModeInfo& viewportEditorModeInfo) const = 0;
+        //! Returns true if viewport editor modes are being tracked for the specified od, otherwise false.
+        virtual bool IsViewportModeTracked(const ViewportEditorModeTrackerInfo& ViewportEditorModeTrackerInfo) const = 0;
     };
 } // namespace AzToolsFramework
 

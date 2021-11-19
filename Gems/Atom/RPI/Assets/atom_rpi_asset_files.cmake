@@ -7,10 +7,10 @@
 # 
 
 set(FILES
-    Shader/DecomposeMsImage.azsl
-    Shader/DecomposeMsImage.shader
-    Shader/ImagePreview.azsl
-    Shader/ImagePreview.shader
+    Shaders/DecomposeMsImage.azsl
+    Shaders/DecomposeMsImage.shader
+    Shaders/ImagePreview.azsl
+    Shaders/ImagePreview.shader
     ShaderLib/Atom/RPI/Math.azsli
     ShaderLib/Atom/RPI/TangentSpace.azsli
     ShaderLib/Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli

@@ -13,6 +13,22 @@ IF NOT %ERRORLEVEL%==0 (
     GOTO :error
 )
 
+IF NOT "%COMMAND_CWD%"=="" (
+    ECHO [ci_build] Changing CWD to %COMMAND_CWD%
+    CD %COMMAND_CWD%
+)
+
+REM Jenkins reports MSB8029 when TMP/TEMP is not defined, define a dummy folder
+IF NOT "%TMP%"=="" (
+    IF NOT "%WORKSPACE_TMP%"=="" (
+        SET TMP=%WORKSPACE_TMP%
+        SET TEMP=%WORKSPACE_TMP%
+    ) ELSE (
+        SET TMP=%cd%/temp
+        SET TEMP=%cd%/temp
+    )
+)
+
 EXIT /b 0
 
 :error

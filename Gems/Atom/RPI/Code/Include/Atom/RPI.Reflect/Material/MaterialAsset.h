@@ -22,6 +22,7 @@
 namespace UnitTest
 {
     class MaterialTests;
+    class MaterialAssetTests;
 }
 
 namespace AZ
@@ -42,10 +43,12 @@ namespace AZ
             , public MaterialReloadNotificationBus::Handler
             , public AssetInitBus::Handler
         {
+            friend class MaterialVersionUpdate;
             friend class MaterialAssetCreator;
             friend class MaterialAssetHandler;
             friend class MaterialAssetCreatorCommon;
             friend class UnitTest::MaterialTests;
+            friend class UnitTest::MaterialAssetTests;
 
         public:
             AZ_RTTI(MaterialAsset, "{522C7BE0-501D-463E-92C6-15184A2B7AD8}", AZ::Data::AssetData);
@@ -119,6 +122,10 @@ namespace AZ
             //! from m_materialTypeAsset.
             void RealignPropertyValuesAndNames();
 
+            //! Checks the material type version and potentially applies a series of property changes (most common are simple property renames)
+            //! based on the MaterialTypeAsset's version update procedure.
+            void ApplyVersionUpdates();
+
             //! Called by asset creators to assign the asset to a ready state.
             void SetReady();
 
@@ -142,6 +149,10 @@ namespace AZ
             //! This is used to realign m_propertyValues as well as itself with MaterialPropertiesLayout when not empty.
             //! If empty, this implies that m_propertyValues is aligned with the entries in m_materialPropertiesLayout.
             AZStd::vector<AZ::Name> m_propertyNames;
+
+            //! The materialTypeVersion this materialAsset was based of. If the versions do not match at runtime when a
+            //! materialTypeAsset is loaded, an update will be performed on m_propertyNames if populated. 
+            uint32_t m_materialTypeVersion = 1;
 
             //! A flag to determine if m_propertyValues needs to be aligned with MaterialPropertiesLayout. Set to true whenever
             //! m_materialTypeAsset is reinitializing.

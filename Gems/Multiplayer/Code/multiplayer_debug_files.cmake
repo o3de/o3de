@@ -9,6 +9,8 @@
 set(FILES
     Source/Debug/MultiplayerDebugByteReporter.cpp
     Source/Debug/MultiplayerDebugByteReporter.h
+    Source/Debug/MultiplayerDebugHierarchyReporter.cpp
+    Source/Debug/MultiplayerDebugHierarchyReporter.h
     Source/Debug/MultiplayerDebugPerEntityReporter.cpp
     Source/Debug/MultiplayerDebugPerEntityReporter.h
     Source/Debug/MultiplayerDebugModule.cpp

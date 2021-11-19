@@ -53,6 +53,7 @@ namespace AWSCore
     public:
         virtual void SetAWSClientAuthEnabled() = 0;
         virtual void SetAWSMetricsEnabled() = 0;
+        virtual void SetAWSGameLiftEnabled() = 0;
 
         //////////////////////////////////////////////////////////////////////////
         // EBusTraits overrides

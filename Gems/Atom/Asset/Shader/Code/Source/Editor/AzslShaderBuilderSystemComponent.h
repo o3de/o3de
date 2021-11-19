@@ -61,7 +61,17 @@ namespace AZ
 
         private:
             ShaderAssetBuilder m_shaderAssetBuilder;
+
+            // The ShaderVariantAssetBuilder can be disabled with this registry key.
+            // By default it is enabled. A user might want to disable it when doing look development
+            // work with shaders or doing lots of iterative changes to shaders. In these cases
+            // GPU performance doesn't matter at all so it is important to not waste time
+            // building ShaderVariantAssets (Other than the Root ShaderVariantAsset, of course.).
+            static constexpr char EnableShaderVariantAssetBuilderRegistryKey[] = "/O3DE/Atom/Shaders/BuildVariants";
+            bool m_enableShaderVariantAssetBuilder = true;
+
             ShaderVariantAssetBuilder m_shaderVariantAssetBuilder;
+
             PrecompiledShaderBuilder m_precompiledShaderBuilder;
 
             /// Contains the ShaderPlatformInterface for all registered RHIs

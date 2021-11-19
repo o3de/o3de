@@ -1,5 +1,4 @@
 <EngineDependencies versionnumber="1.0.0">
     <Dependency path="libs/particles/preloadlibs.txt" optional="true" />
     <Dependency path="libs/gameaudio/wwise/*.xml" optional="false" />
-    <Dependency path=":libs/gameaudio/wwise/levels/default_controls.xml" optional="false" />
 </EngineDependencies>

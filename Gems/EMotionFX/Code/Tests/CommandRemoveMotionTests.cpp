@@ -33,7 +33,7 @@ namespace EMotionFX
         ASSERT_TRUE(motionSet) << "Motion set with id 0 does not exist";
         motionSetsWindowPlugin->SetSelectedSet(motionSet);
 
-        const std::string filename = "@devroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion";
+        const std::string filename = "@engroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin_idle.motion";
         ExecuteCommands({
             "ImportMotion -filename " + filename,
             "MotionSetAddMotion -motionSetID 0 -motionFilenamesAndIds " + filename + ";rin_idle",

@@ -64,7 +64,6 @@ public:
 
     // ovverided from CViewport.
     float GetScreenScaleFactor(const Vec3& worldPoint) const override;
-    float GetScreenScaleFactor([[maybe_unused]] const CCamera& camera, [[maybe_unused]] const Vec3& object_position) override { return 1; } //Eric@conffx
 
     // Overrided from CViewport.
     void OnDragSelectRectangle(const QRect &rect, bool bNormalizeRect = false) override;

@@ -14,7 +14,7 @@ import azlmbr.math as math
 import azlmbr.paths
 import azlmbr.legacy.general as general
 
-sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "PythonTests"))
+sys.path.append(os.path.join(azlmbr.paths.projectroot, "Gem", "PythonTests"))
 
 import editor_python_test_tools.hydra_editor_utils as hydra
 from Atom.atom_utils import atom_component_helper, atom_constants, screenshot_utils
@@ -22,7 +22,7 @@ from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 helper = EditorTestHelper(log_prefix="Atom_EditorTestHelper")
 
-LEVEL_NAME = "auto_test"
+LEVEL_NAME = "Base"
 LIGHT_COMPONENT = "Light"
 LIGHT_TYPE_PROPERTY = 'Controller|Configuration|Light type'
 DEGREE_RADIAN_FACTOR = 0.0174533

@@ -43,16 +43,16 @@
 
 // AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
+#include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
-#include <AzToolsFramework/API/EditorCameraBus.h>
 
 // AtomToolsFramework
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
 
 // CryCommon
-#include <CryCommon/HMDBus.h>
 #include <CryCommon/IRenderAuxGeom.h>
 
 // AzFramework
@@ -112,7 +112,6 @@ void StartFixedCursorMode(QObject *viewport);
 
 #define RENDER_MESH_TEST_DISTANCE (0.2f)
 #define CURSOR_FONT_HEIGHT  8.0f
-
 namespace AZ::ViewportHelpers
 {
     static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no level is loaded.";
@@ -556,22 +555,6 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
             // this should only occur for the main viewport and no others.
             ShowCursor();
 
-            // If the user has selected game mode, enable outputting to any attached HMD and properly size the context
-            // to the resolution specified by the VR device.
-            if (gSettings.bEnableGameModeVR)
-            {
-                const AZ::VR::HMDDeviceInfo* deviceInfo = nullptr;
-                EBUS_EVENT_RESULT(deviceInfo, AZ::VR::HMDDeviceRequestBus, GetDeviceInfo);
-                AZ_Warning("Render Viewport", deviceInfo, "No VR device detected");
-
-                if (deviceInfo)
-                {
-                    // Note: This may also need to adjust the viewport size
-                    SetActiveWindow();
-                    SetFocus();
-                    SetSelected(true);
-                }
-            }
             SetCurrentCursor(STD_CURSOR_GAME);
 
             if (ShouldPreviewFullscreen())
@@ -620,19 +603,13 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         break;
 
     case eNotify_OnEndNewScene:
-        PopDisableRendering();
-
         {
-            AZ::Aabb terrainAabb = AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
-            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(terrainAabb, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-            float sx = terrainAabb.GetXExtent();
-            float sy = terrainAabb.GetYExtent();
+            PopDisableRendering();
 
             Matrix34 viewTM;
             viewTM.SetIdentity();
-            // Initial camera will be at middle of the map at the height of 2
-            // meters above the terrain (default terrain height is 32)
-            viewTM.SetTranslation(Vec3(sx * 0.5f, sy * 0.5f, 34.0f));
+
+            viewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
             SetViewTM(viewTM);
 
             UpdateScene();
@@ -644,19 +621,13 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         break;
 
     case eNotify_OnEndTerrainCreate:
-        PopDisableRendering();
-
         {
-            AZ::Aabb terrainAabb = AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
-            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(terrainAabb, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-            float sx = terrainAabb.GetXExtent();
-            float sy = terrainAabb.GetYExtent();
+            PopDisableRendering();
 
             Matrix34 viewTM;
             viewTM.SetIdentity();
-            // Initial camera will be at middle of the map at the height of 2
-            // meters above the terrain (default terrain height is 32)
-            viewTM.SetTranslation(Vec3(sx * 0.5f, sy * 0.5f, 34.0f));
+
+            viewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
             SetViewTM(viewTM);
         }
         break;
@@ -1045,6 +1016,7 @@ void EditorViewportWidget::ConnectViewportInteractionRequestBus()
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     m_viewportUi.ConnectViewportUiBus(GetViewportId());
+    AzFramework::ViewportBorderRequestBus::Handler::BusConnect(GetViewportId());
 
     AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
 }
@@ -1053,6 +1025,7 @@ void EditorViewportWidget::DisconnectViewportInteractionRequestBus()
 {
     AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusDisconnect();
 
+    AzFramework::ViewportBorderRequestBus::Handler::BusDisconnect();
     m_viewportUi.DisconnectViewportUiBus();
     AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusDisconnect();
@@ -1137,7 +1110,9 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
         action = menu->addAction(tr("Create camera entity from current view"));
         connect(action, &QAction::triggered, this, &EditorViewportWidget::OnMenuCreateCameraEntityFromCurrentView);
 
-        if (!gameEngine || !gameEngine->IsLevelLoaded())
+        const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        if (!gameEngine || !gameEngine->IsLevelLoaded() ||
+            (prefabEditorEntityOwnershipInterface && !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned()))
         {
             action->setEnabled(false);
             action->setToolTip(tr(AZ::ViewportHelpers::TextCantCreateCameraNoLevel));
@@ -1345,10 +1320,6 @@ void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
 
 void EditorViewportWidget::SetViewTM(const Matrix34& tm)
 {
-    if (m_viewSourceType == ViewSourceType::None)
-    {
-        m_defaultViewTM = tm;
-    }
     SetViewTM(tm, false);
 }
 
@@ -1444,6 +1415,10 @@ void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
             "Viewport camera entity ID and view out of sync; request view transform will be ignored. "
             "Please report this as a bug."
         );
+    }
+    else if (shouldUpdateObject == ShouldUpdateObject::No)
+    {
+        GetCurrentAtomView()->SetCameraTransform(LYTransformToAZMatrix3x4(camMatrix));
     }
 
     if (m_pressedKeyState == KeyPressedState::PressedThisFrame)
@@ -1823,13 +1798,6 @@ float EditorViewportWidget::GetScreenScaleFactor([[maybe_unused]] const Vec3& wo
     AZ_Error("CryLegacy", false, "EditorViewportWidget::GetScreenScaleFactor not implemented");
     return 1.f;
 }
-//////////////////////////////////////////////////////////////////////////
-float EditorViewportWidget::GetScreenScaleFactor(const CCamera& camera, const Vec3& object_position)
-{
-    Vec3 camPos = camera.GetPosition();
-    float dist = camPos.GetDistance(object_position);
-    return dist;
-}
 
 //////////////////////////////////////////////////////////////////////////
 bool EditorViewportWidget::CheckRespondToInput() const
@@ -1850,7 +1818,6 @@ bool EditorViewportWidget::CheckRespondToInput() const
 //////////////////////////////////////////////////////////////////////////
 bool EditorViewportWidget::HitTest(const QPoint& point, HitContext& hitInfo)
 {
-    hitInfo.camera = nullptr;
     hitInfo.pExcludedObject = GetCameraObject();
     return QtViewport::HitTest(point, hitInfo);
 }
@@ -2028,7 +1995,6 @@ void EditorViewportWidget::SetDefaultCamera()
     m_viewSourceType = ViewSourceType::None;
     GetViewManager()->SetCameraObjectId(GUID_NULL);
     SetName(m_defaultViewName);
-    SetViewTM(m_defaultViewTM);
 
     // Synchronize the configured editor viewport FOV to the default camera
     if (m_viewPane)
@@ -2045,6 +2011,10 @@ void EditorViewportWidget::SetDefaultCamera()
         const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
         atomViewportRequests->PushView(contextName, m_defaultView);
     }
+
+    // Set the default Editor Camera position.
+    m_defaultViewTM.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
+    SetViewTM(m_defaultViewTM);
 
     PostCameraSet();
 }
@@ -2530,6 +2500,11 @@ bool EditorViewportSettings::StickySelectEnabled() const
     return SandboxEditor::StickySelectEnabled();
 }
 
+AZ::Vector3 EditorViewportSettings::DefaultEditorCameraPosition() const
+{
+    return SandboxEditor::CameraDefaultEditorPosition();
+}
+
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
 
 bool EditorViewportWidget::ShouldPreviewFullscreen() const
@@ -2543,12 +2518,6 @@ bool EditorViewportWidget::ShouldPreviewFullscreen() const
 
     // Doesn't work with split layout
     if (layout->GetLayout() != EViewLayout::ET_Layout0)
-    {
-        return false;
-    }
-
-    // Not supported in VR
-    if (gSettings.bEnableGameModeVR)
     {
         return false;
     }
@@ -2640,6 +2609,26 @@ void EditorViewportWidget::StopFullscreenPreview()
 
     // Show the main window
     MainWindow::instance()->show();
+}
+
+AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetViewportBorderPadding() const
+{
+    if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
+    {
+        auto viewportEditorModes = viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() });
+        if (viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Focus) ||
+            viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Component))
+        {
+            AzFramework::ViewportBorderPadding viewportBorderPadding = {};
+            viewportBorderPadding.m_top = AzToolsFramework::ViewportUi::ViewportUiTopBorderSize;
+            viewportBorderPadding.m_left = AzToolsFramework::ViewportUi::ViewportUiLeftRightBottomBorderSize;
+            viewportBorderPadding.m_right = AzToolsFramework::ViewportUi::ViewportUiLeftRightBottomBorderSize;
+            viewportBorderPadding.m_bottom = AzToolsFramework::ViewportUi::ViewportUiLeftRightBottomBorderSize;
+            return viewportBorderPadding;
+        }
+    }
+
+    return AZStd::nullopt;
 }
 
 #include <moc_EditorViewportWidget.cpp>

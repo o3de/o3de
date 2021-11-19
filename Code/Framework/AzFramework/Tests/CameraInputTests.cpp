@@ -53,31 +53,31 @@ namespace UnitTest
             };
 
             m_firstPersonTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
-                m_translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslatePivot);
+                m_translateCameraInputChannelIds, AzFramework::LookTranslation, AzFramework::TranslatePivotLook);
 
-            m_pivotCamera = AZStd::make_shared<AzFramework::PivotCameraInput>(m_pivotChannelId);
-            m_pivotCamera->SetPivotFn(
+            m_orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>(m_orbitChannelId);
+            m_orbitCamera->SetPivotFn(
                 [this](const AZ::Vector3&, const AZ::Vector3&)
                 {
                     return m_pivot;
                 });
 
-            auto pivotRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::InputDeviceMouse::Button::Left);
+            auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(AzFramework::InputDeviceMouse::Button::Left);
             // set rotate speed to be a value that will scale motion delta (pixels moved) by a thousandth.
-            pivotRotateCamera->m_rotateSpeedFn = []()
+            orbitRotateCamera->m_rotateSpeedFn = []()
             {
                 return 0.001f;
             };
 
-            auto pivotTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
-                m_translateCameraInputChannelIds, AzFramework::PivotTranslation, AzFramework::TranslateOffset);
+            auto orbitTranslateCamera = AZStd::make_shared<AzFramework::TranslateCameraInput>(
+                m_translateCameraInputChannelIds, AzFramework::OrbitTranslation, AzFramework::TranslateOffsetOrbit);
 
-            m_pivotCamera->m_pivotCameras.AddCamera(pivotRotateCamera);
-            m_pivotCamera->m_pivotCameras.AddCamera(pivotTranslateCamera);
+            m_orbitCamera->m_orbitCameras.AddCamera(orbitRotateCamera);
+            m_orbitCamera->m_orbitCameras.AddCamera(orbitTranslateCamera);
 
             m_cameraSystem->m_cameras.AddCamera(m_firstPersonRotateCamera);
             m_cameraSystem->m_cameras.AddCamera(m_firstPersonTranslateCamera);
-            m_cameraSystem->m_cameras.AddCamera(m_pivotCamera);
+            m_cameraSystem->m_cameras.AddCamera(m_orbitCamera);
 
             // these tests rely on using motion delta, not cursor positions (default is true)
             AzFramework::ed_cameraSystemUseCursor = false;
@@ -87,7 +87,7 @@ namespace UnitTest
         {
             AzFramework::ed_cameraSystemUseCursor = true;
 
-            m_pivotCamera.reset();
+            m_orbitCamera.reset();
             m_firstPersonRotateCamera.reset();
             m_firstPersonTranslateCamera.reset();
 
@@ -97,11 +97,11 @@ namespace UnitTest
             AllocatorsTestFixture::TearDown();
         }
 
-        AzFramework::InputChannelId m_pivotChannelId = AzFramework::InputChannelId("keyboard_key_modifier_alt_l");
+        AzFramework::InputChannelId m_orbitChannelId = AzFramework::InputChannelId("keyboard_key_modifier_alt_l");
         AzFramework::TranslateCameraInputChannelIds m_translateCameraInputChannelIds;
         AZStd::shared_ptr<AzFramework::RotateCameraInput> m_firstPersonRotateCamera;
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_firstPersonTranslateCamera;
-        AZStd::shared_ptr<AzFramework::PivotCameraInput> m_pivotCamera;
+        AZStd::shared_ptr<AzFramework::OrbitCameraInput> m_orbitCamera;
         AZ::Vector3 m_pivot = AZ::Vector3::CreateZero();
 
         //! This is approximately Pi/2 * 1000 - this can be used to rotate the camera 90 degrees (pitch or yaw based
@@ -109,17 +109,17 @@ namespace UnitTest
         inline static const int PixelMotionDelta = 1570;
     };
 
-    TEST_F(CameraInputFixture, BeginAndEndPivotCameraInputConsumesCorrectEvents)
+    TEST_F(CameraInputFixture, BeginAndEndOrbitCameraInputConsumesCorrectEvents)
     {
-        // begin pivot camera
+        // begin orbit camera
         const bool consumed1 = HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceKeyboard::Key::ModifierAltL,
                                                                                      AzFramework::InputChannel::State::Began });
-        // begin listening for pivot rotate (click detector) - event is not consumed
+        // begin listening for orbit rotate (click detector) - event is not consumed
         const bool consumed2 = HandleEventAndUpdate(
             AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Began });
-        // begin pivot rotate (mouse has moved sufficient distance to initiate)
+        // begin orbit rotate (mouse has moved sufficient distance to initiate)
         const bool consumed3 = HandleEventAndUpdate(AzFramework::HorizontalMotionEvent{ 5 });
-        // end pivot (mouse up) - event is not consumed
+        // end orbit (mouse up) - event is not consumed
         const bool consumed4 = HandleEventAndUpdate(
             AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Ended });
 
@@ -260,10 +260,10 @@ namespace UnitTest
         EXPECT_TRUE(activationEnded);
     }
 
-    TEST_F(CameraInputFixture, PivotCameraInputHandlesLookAtPointAndSelfAtSamePositionWhenPivoting)
+    TEST_F(CameraInputFixture, OrbitCameraInputHandlesLookAtPointAndSelfAtSamePositionWhenOrbiting)
     {
         // create pathological lookAtFn that just returns the same position as the camera
-        m_pivotCamera->SetPivotFn(
+        m_orbitCamera->SetPivotFn(
             [](const AZ::Vector3& position, [[maybe_unused]] const AZ::Vector3& direction)
             {
                 return position;
@@ -275,7 +275,7 @@ namespace UnitTest
             AZ::Transform::CreateFromQuaternionAndTranslation(
                 AZ::Quaternion::CreateFromEulerAnglesDegrees(AZ::Vector3(0.0f, 0.0f, 90.0f)), expectedCameraPosition));
 
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_pivotChannelId, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
 
         // verify the camera yaw has not changed and pivot point matches the expected camera position
         using ::testing::FloatNear;
@@ -321,14 +321,14 @@ namespace UnitTest
         EXPECT_THAT(m_camera.m_offset, IsClose(AZ::Vector3::CreateZero()));
     }
 
-    TEST_F(CameraInputFixture, PivotRotateCameraInputRotatesPitchOffsetByNinetyDegreesWithRequiredPixelDelta)
+    TEST_F(CameraInputFixture, OrbitRotateCameraInputRotatesPitchOffsetByNinetyDegreesWithRequiredPixelDelta)
     {
         const auto cameraStartingPosition = AZ::Vector3::CreateAxisY(-20.0f);
         m_targetCamera.m_pivot = cameraStartingPosition;
 
         m_pivot = AZ::Vector3::CreateAxisY(-10.0f);
 
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_pivotChannelId, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
         HandleEventAndUpdate(
             AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Began });
         HandleEventAndUpdate(AzFramework::VerticalMotionEvent{ PixelMotionDelta });
@@ -344,14 +344,14 @@ namespace UnitTest
         EXPECT_THAT(m_camera.Translation(), IsCloseTolerance(expectedCameraEndingPosition, 0.01f));
     }
 
-    TEST_F(CameraInputFixture, PivotRotateCameraInputRotatesYawOffsetByNinetyDegreesWithRequiredPixelDelta)
+    TEST_F(CameraInputFixture, OrbitRotateCameraInputRotatesYawOffsetByNinetyDegreesWithRequiredPixelDelta)
     {
         const auto cameraStartingPosition = AZ::Vector3(15.0f, -20.0f, 0.0f);
         m_targetCamera.m_pivot = cameraStartingPosition;
 
         m_pivot = AZ::Vector3(10.0f, -10.0f, 0.0f);
 
-        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_pivotChannelId, AzFramework::InputChannel::State::Began });
+        HandleEventAndUpdate(AzFramework::DiscreteInputEvent{ m_orbitChannelId, AzFramework::InputChannel::State::Began });
         HandleEventAndUpdate(
             AzFramework::DiscreteInputEvent{ AzFramework::InputDeviceMouse::Button::Left, AzFramework::InputChannel::State::Began });
         HandleEventAndUpdate(AzFramework::HorizontalMotionEvent{ -PixelMotionDelta });

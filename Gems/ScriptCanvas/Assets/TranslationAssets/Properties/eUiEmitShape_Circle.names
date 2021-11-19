@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiEmitShape_Circle",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiEmitShape_Circle::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

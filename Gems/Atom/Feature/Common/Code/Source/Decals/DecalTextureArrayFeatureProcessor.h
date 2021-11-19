@@ -114,6 +114,7 @@ namespace AZ
             AZStd::optional<DecalLocation> AddMaterialToTextureArrays(const AZ::RPI::MaterialAsset* materialAsset);
 
             int FindTextureArrayWithSize(const RHI::Size& size) const;
+            void RemoveMaterialFromDecal(const uint16_t decalIndex);
             void SetDecalTextureLocation(const DecalHandle& handle, const DecalLocation location);
             void QueueMaterialLoadForDecal(const AZ::Data::AssetId material, const DecalHandle handle);
             bool RemoveDecalFromTextureArrays(const DecalLocation decalLocation);

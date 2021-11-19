@@ -298,8 +298,10 @@ namespace PhysX
 
                     assetMaterialData.m_nodesToPerFaceMaterialIndices.emplace(nodeName, AZStd::vector<AZ::u16>(faceCount));
 
-                    // Convex and primitive methods can only have 1 material
+                    // Convex and primitive methods can only have 1 material per node.
                     const bool limitToOneMaterial = meshGroup.GetExportAsConvex() || meshGroup.GetExportAsPrimitive();
+                    AZStd::string firstMaterial;
+                    AZStd::set<AZStd::string> nodeMaterials;
 
                     for (AZ::u32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
                     {
@@ -318,17 +320,27 @@ namespace PhysX
 
                             materialName = localSourceSceneMaterialsList[materialId];
 
-                            // Keep using the first material when it has to be limited to one.
-                            if (limitToOneMaterial &&
-                                assetMaterialData.m_sourceSceneMaterialNames.size() == 1 &&
-                                assetMaterialData.m_sourceSceneMaterialNames[0] != materialName)
+                            // Use the first material found in the mesh when it has to be limited to one.
+                            if (limitToOneMaterial)
                             {
-                                materialName = assetMaterialData.m_sourceSceneMaterialNames[0];
+                                nodeMaterials.insert(materialName);
+                                if (firstMaterial.empty())
+                                {
+                                    firstMaterial = materialName;
+                                }
+                                materialName = firstMaterial;
                             }
                         }
 
                         const AZ::u16 materialIndex = InsertMaterialIndexByName(materialName, assetMaterialData);
                         assetMaterialData.m_nodesToPerFaceMaterialIndices[nodeName][faceIndex] = materialIndex;
+                    }
+
+                    if (limitToOneMaterial && nodeMaterials.size() > 1)
+                    {
+                        AZ_TracePrintf(AZ::SceneAPI::Utilities::WarningWindow,
+                            "Node '%s' has %d materials, but cooking methods Convex and Primitive support one material per node. The first material '%s' will be used.",
+                            sceneNodeSelectionList.GetSelectedNode(index).c_str(), nodeMaterials.size(), firstMaterial.c_str());
                     }
                 }
 

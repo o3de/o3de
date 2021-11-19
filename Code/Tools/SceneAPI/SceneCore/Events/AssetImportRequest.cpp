@@ -6,6 +6,7 @@
  *
  */
 
+#include <API/EditorAssetSystemAPI.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -73,6 +74,10 @@ namespace AZ
             {
             }
 
+            void AssetImportRequest::GetGeneratedManifestExtension(AZStd::string& /*result*/)
+            {
+            }
+
             void AssetImportRequest::GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& /*extensions*/)
             {
             }
@@ -103,13 +108,33 @@ namespace AZ
                 AZ_UNUSED(value);
             }
 
+            void AssetImportRequest::GetManifestDependencyPaths(AZStd::vector<AZStd::string>&)
+            {
+            }
+
             AZStd::shared_ptr<Containers::Scene> AssetImportRequest::LoadSceneFromVerifiedPath(const AZStd::string& assetFilePath, const Uuid& sourceGuid,
-                RequestingApplication requester, const Uuid& loadingComponentUuid)
+                                                                                               RequestingApplication requester, const Uuid& loadingComponentUuid)
             {
                 AZStd::string sceneName;
                 AzFramework::StringFunc::Path::GetFileName(assetFilePath.c_str(), sceneName);
                 AZStd::shared_ptr<Containers::Scene> scene = AZStd::make_shared<Containers::Scene>(AZStd::move(sceneName));
                 AZ_Assert(scene, "Unable to create new scene for asset importing.");
+
+                Data::AssetInfo assetInfo;
+                AZStd::string watchFolder;
+                bool result = false;
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, sourceGuid, assetInfo, watchFolder);
+
+                if (result)
+                {
+                    scene->SetWatchFolder(watchFolder);
+                }
+                else
+                {
+                    AZ_Error(
+                        "AssetImportRequest", false, "Failed to get watch folder for source %s",
+                        sourceGuid.ToString<AZStd::string>().c_str());
+                }
 
                 // Unique pointer, will deactivate and clean up once going out of scope.
                 SceneCore::EntityConstructor::EntityPointer loaders = 

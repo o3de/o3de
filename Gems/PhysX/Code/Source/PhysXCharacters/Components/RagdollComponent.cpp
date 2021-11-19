@@ -82,7 +82,7 @@ namespace PhysX
             if (editContext)
             {
                 editContext->Class<RagdollComponent>(
-                    "PhysX Ragdoll", "Provides simulation of characters in PhysX.")
+                    "PhysX Ragdoll", "Creates a PhysX ragdoll simulation for an animation actor.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRagdoll.svg")
@@ -91,26 +91,28 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/ragdoll/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RagdollComponent::m_positionIterations, "Position Iteration Count",
-                        "A higher iteration count generally improves fidelity at the cost of performance, but note that very high "
-                        "values may lead to severe instability if ragdoll colliders interfere with satisfying joint constraints")
+                        "The frequency at which ragdoll collider positions are resolved. Higher values can increase fidelity but decrease "
+                        "performance. Very high values might introduce instability.")
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, 255)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RagdollComponent::m_velocityIterations, "Velocity Iteration Count",
-                        "A higher iteration count generally improves fidelity at the cost of performance, but note that very high "
-                        "values may lead to severe instability if ragdoll colliders interfere with satisfying joint constraints")
+                        "The frequency at which ragdoll collider velocities are resolved. Higher values can increase fidelity but decrease "
+                        "performance. Very high values might introduce instability.")
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, 255)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RagdollComponent::m_enableJointProjection,
-                        "Enable Joint Projection", "Whether to use joint projection to preserve joint constraints "
-                        "in demanding situations at the expense of potentially reducing physical correctness")
+                        "Enable Joint Projection", "When active, preserves joint constraints in volatile simulations. "
+                        "Might not be physically correct in all simulations.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RagdollComponent::m_jointProjectionLinearTolerance,
-                        "Joint Projection Linear Tolerance", "Linear joint error above which projection will be applied")
+                        "Joint Projection Linear Tolerance",
+                        "Maximum linear joint error. Projection is applied to linear joint errors above this value.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 1e-3f)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &RagdollComponent::IsJointProjectionVisible)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &RagdollComponent::m_jointProjectionAngularToleranceDegrees,
-                        "Joint Projection Angular Tolerance", "Angular joint error (in degrees) above which projection will be applied")
+                        "Joint Projection Angular Tolerance",
+                        "Maximum angular joint error. Projection is applied to angular joint errors above this value.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.1f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")

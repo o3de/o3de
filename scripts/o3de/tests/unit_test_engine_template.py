@@ -31,17 +31,17 @@ TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE = """
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 
-namespace ${Name}
+namespace ${SanitizedCppName}
 {
-    class ${Name}Requests
+    class ${SanitizedCppName}Requests
     {
     public:
-        AZ_RTTI(${Name}Requests, "{${Random_Uuid}}");
-        virtual ~${Name}Requests() = default;
+        AZ_RTTI(${SanitizedCppName}Requests, "{${Random_Uuid}}");
+        virtual ~${SanitizedCppName}Requests() = default;
         // Put your public methods here
     };
 
-    class ${Name}BusTraits
+    class ${SanitizedCppName}BusTraits
         : public AZ::EBusTraits
     {
     public:
@@ -52,31 +52,31 @@ namespace ${Name}
         //////////////////////////////////////////////////////////////////////////
     };
 
-    using ${Name}RequestBus = AZ::EBus<${Name}Requests, ${Name}BusTraits>;
-    using ${Name}Interface = AZ::Interface<${Name}Requests>;
+    using ${SanitizedCppName}RequestBus = AZ::EBus<${SanitizedCppName}Requests, ${SanitizedCppName}BusTraits>;
+    using ${SanitizedCppName}Interface = AZ::Interface<${SanitizedCppName}Requests>;
 
-} // namespace ${Name}
+} // namespace ${SanitizedCppName}
 """
 
 TEST_TEMPLATED_CONTENT_WITH_LICENSE = CPP_LICENSE_TEXT + TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE
 
 TEST_CONCRETE_TESTTEMPLATE_CONTENT_WITHOUT_LICENSE = string.Template(
-    TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE).safe_substitute({'Name': "TestTemplate"})
+    TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE).safe_substitute({'SanitizedCppName': "TestTemplate"})
 
 TEST_CONCRETE_TESTTEMPLATE_CONTENT_WITH_LICENSE = string.Template(
-    TEST_TEMPLATED_CONTENT_WITH_LICENSE).safe_substitute({'Name': "TestTemplate"})
+    TEST_TEMPLATED_CONTENT_WITH_LICENSE).safe_substitute({'SanitizedCppName': "TestTemplate"})
 
 TEST_CONCRETE_TESTPROJECT_TEMPLATE_CONTENT_WITHOUT_LICENSE = string.Template(
-    TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE).safe_substitute({'Name': "TestProject"})
+    TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE).safe_substitute({'SanitizedCppName': "TestProject"})
 
 TEST_CONCRETE_TESTPROJECT_TEMPLATE_CONTENT_WITH_LICENSE = string.Template(
-    TEST_TEMPLATED_CONTENT_WITH_LICENSE).safe_substitute({'Name': "TestProject"})
+    TEST_TEMPLATED_CONTENT_WITH_LICENSE).safe_substitute({'SanitizedCppName': "TestProject"})
 
 TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITHOUT_LICENSE = string.Template(
-    TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE).safe_substitute({'Name': "TestGem"})
+    TEST_TEMPLATED_CONTENT_WITHOUT_LICENSE).safe_substitute({'SanitizedCppName': "TestGem"})
 
 TEST_CONCRETE_TESTGEM_TEMPLATE_CONTENT_WITH_LICENSE = string.Template(
-    TEST_TEMPLATED_CONTENT_WITH_LICENSE).safe_substitute({'Name': "TestGem"})
+    TEST_TEMPLATED_CONTENT_WITH_LICENSE).safe_substitute({'SanitizedCppName': "TestGem"})
 
 TEST_TEMPLATE_JSON_CONTENTS = """\
 {

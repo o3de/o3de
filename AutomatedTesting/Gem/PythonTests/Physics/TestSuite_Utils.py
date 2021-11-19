@@ -9,20 +9,17 @@ import pytest
 import sys
 
 import ly_test_tools.environment.file_system as fs
-from .FileManagement import FileManagement as fm
+from .utils.FileManagement import FileManagement as fm
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
 
-from .base import TestAutomationBase
+from base import TestAutomationBase
 
-
-@pytest.mark.parametrize("platform", ["win_x64_vs2017"])
-@pytest.mark.parametrize("configuration", ["profile"])
-@pytest.mark.parametrize("spec", ["all"])
+@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestUtils(TestAutomationBase):
     @fm.file_revert("UtilTest_Physmaterial_Editor_TestLibrary.physmaterial", r"AutomatedTesting\Levels\Physics\Physmaterial_Editor_Test")
-    def test_physmaterial_editor(self, request, workspace, editor):
+    def test_physmaterial_editor(self, request, workspace, launcher_platform, editor):
         """
         Tests functionality of physmaterial editing utility
         :param workspace: Fixture containing platform and project detail
@@ -35,11 +32,11 @@ class TestUtils(TestAutomationBase):
         unexpected_lines = ["Assert"]
         self._run_test(request, workspace, editor, physmaterial_editor_test_module, expected_lines, unexpected_lines)
     
-    def test_UtilTest_Tracer_PicksErrorsAndWarnings(self, request, workspace, editor):
+    def test_UtilTest_Tracer_PicksErrorsAndWarnings(self, request, workspace, launcher_platform, editor):
         from .utils import UtilTest_Tracer_PicksErrorsAndWarnings as testcase_module
         self._run_test(request, workspace, editor, testcase_module, [], [])
 
-    def test_FileManagement_FindingFiles(self, workspace):
+    def test_FileManagement_FindingFiles(self, workspace, launcher_platform):
         """
         Tests the functionality of "searching for files" with FileManagement._find_files()
         :param workspace: ly_test_tools workspace fixture
@@ -110,7 +107,7 @@ class TestUtils(TestAutomationBase):
             find_me_too_path, found_me["FindMeToo.txt"]
         )
 
-    def test_FileManagement_FileBackup(self, workspace):
+    def test_FileManagement_FileBackup(self, workspace, launcher_platform):
         """
         Tests the functionality of the file back up system via the FileManagement class
         :param workspace: ly_test_tools workspace fixture
@@ -167,7 +164,7 @@ class TestUtils(TestAutomationBase):
         del file_map[target_file_path]
         fm._save_file_map(file_map)
 
-    def test_FileManagement_FileRestoration(self, workspace):
+    def test_FileManagement_FileRestoration(self, workspace, launcher_platform):
         """
         Tests the restore file system via the FileManagement class
         :param workspace: ly_test_tools workspace fixture
@@ -261,7 +258,7 @@ class TestUtils(TestAutomationBase):
         ["FindMe.txt", "FindMeToo.txt"], parent_path=r"AutomatedTesting\levels\Utils\Managed_files", search_subdirs=True
     )
     @fm.file_override("default.physxconfiguration", "UtilTest_PhysxConfig_Override.physxconfiguration")
-    def test_UtilTest_Managed_Files(self, request, workspace, editor):
+    def test_UtilTest_Managed_Files(self, request, workspace, editor, launcher_platform):
         from .utils import UtilTest_Managed_Files as test_module
 
         expected_lines = []

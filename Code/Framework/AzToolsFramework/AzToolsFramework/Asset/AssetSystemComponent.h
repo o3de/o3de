@@ -56,8 +56,6 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
             // AzToolsFramework::AssetSystemRequestBus::Handler overrides
             bool GetAbsoluteAssetDatabaseLocation(AZStd::string& result) override;
-            const char* GetAbsoluteDevGameFolderPath() override;
-            const char* GetAbsoluteDevRootFolderPath() override;
             bool GetRelativeProductPathFromFullSourceOrProductPath(const AZStd::string& fullPath, AZStd::string& outputPath) override;
             bool GenerateRelativeSourcePath(
                 const AZStd::string& sourcePath, AZStd::string& outputPath, AZStd::string& watchFolder) override;

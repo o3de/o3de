@@ -25,7 +25,6 @@
 #include <Mocks/ISystemMock.h>
 #include <Mocks/IConsoleMock.h>
 #include <Mocks/ILogMock.h>
-#include <Mocks/ITimerMock.h>
 #include <Mocks/IConsoleMock.h>
 #include "IEditorMock.h"
 

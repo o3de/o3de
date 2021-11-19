@@ -18,6 +18,7 @@ import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.o3de.asset_processor_utils as asset_processor_utils
 
 from AWS.common import constants
+from AWS.common.resource_mappings import AWS_RESOURCE_MAPPINGS_ACCOUNT_ID_KEY
 
 # fixture imports
 from assetpipeline.ap_fixtures.asset_processor_fixture import asset_processor
@@ -122,6 +123,54 @@ class TestAWSCoreAWSResourceInteraction(object):
         Verification: Script canvas nodes can communicate with AWS services successfully.
         """
 
+        log_monitor, s3_download_dir = setup(launcher, asset_processor)
+        write_test_data_to_dynamodb_table(resource_mappings, aws_utils)
+
+        launcher.args = ['+LoadLevel', level]
+        launcher.args.extend(['-rhi=null'])
+
+        with launcher.start(launch_ap=False):
+            result = log_monitor.monitor_log_for_lines(
+                expected_lines=expected_lines,
+                unexpected_lines=unexpected_lines,
+                halt_on_unexpected=True
+                )
+
+            assert result, "Expected lines weren't found."
+
+        assert os.path.exists(os.path.join(s3_download_dir, 'output.txt')), \
+            'The expected file wasn\'t successfully downloaded.'
+        # clean up the file directories.
+        shutil.rmtree(s3_download_dir)
+
+    @pytest.mark.parametrize('expected_lines', [
+        ['(Script) - [S3] Head object request is done',
+         '(Script) - [S3] Head object success: Object example.txt is found.',
+         '(Script) - [S3] Get object success: Object example.txt is downloaded.',
+         '(Script) - [Lambda] Completed Invoke',
+         '(Script) - [Lambda] Invoke success: {"statusCode": 200, "body": {}}',
+         '(Script) - [DynamoDB] Results finished']])
+    @pytest.mark.parametrize('unexpected_lines', [
+        ['(Script) - [S3] Head object error: No response body.',
+         '(Script) - [S3] Get object error: Request validation failed, output file directory doesn\'t exist.',
+         '(Script) - Request validation failed, output file miss full path.',
+         '(Script) - ']])
+    def test_scripting_behavior_no_global_accountid(self,
+                                                    level: str,
+                                                    launcher: pytest.fixture,
+                                                    workspace: pytest.fixture,
+                                                    asset_processor: pytest.fixture,
+                                                    resource_mappings: pytest.fixture,
+                                                    aws_utils: pytest.fixture,
+                                                    expected_lines: typing.List[str],
+                                                    unexpected_lines: typing.List[str]):
+        """
+        Setup: Updates resource mapping file using existing CloudFormation stacks.
+        Tests: Interact with AWS S3, DynamoDB and Lambda services.
+        Verification: Script canvas nodes can communicate with AWS services successfully.
+        """
+
+        resource_mappings.clear_select_keys([AWS_RESOURCE_MAPPINGS_ACCOUNT_ID_KEY])
         log_monitor, s3_download_dir = setup(launcher, asset_processor)
         write_test_data_to_dynamodb_table(resource_mappings, aws_utils)
 

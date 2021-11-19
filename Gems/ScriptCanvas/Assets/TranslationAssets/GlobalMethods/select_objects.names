@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "select_objects",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "select_objects",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke select_objects"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after select_objects is invoked"
+                    },
+                    "details": {
+                        "name": "select_objects",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
+                            "details": {
+                                "name": "const AZStd::vector<AZStd::basic_string<char, AZStd::char_trait"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

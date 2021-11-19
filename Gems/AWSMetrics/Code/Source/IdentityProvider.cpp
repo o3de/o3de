@@ -8,10 +8,10 @@
 
 #include <DefaultClientIdProvider.h>
 
-#include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
-#include <AzCore/IO/Path/Path.h>
-#include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 
 namespace AWSMetrics
 {
@@ -22,37 +22,23 @@ namespace AWSMetrics
 
     AZStd::string IdentityProvider::GetEngineVersion()
     {
-        static constexpr const char* EngineConfigFilePath = "@root@/engine.json";
-        static constexpr const char* EngineVersionJsonKey = "O3DEVersion";
-
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetDirectInstance();
-        if (!fileIO)
+        constexpr auto engineVersionKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey) + "/" + EngineVersionJsonKey;
+        AZStd::string engineVersion;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr && settingsRegistry->Get(engineVersion, engineVersionKey))
         {
-            AZ_Error("AWSMetrics", false, "No FileIoBase Instance");
-            return "";
+            return engineVersion;
         }
 
-        char resolvedPath[AZ_MAX_PATH_LEN] = { 0 };
-        if (!fileIO->ResolvePath(EngineConfigFilePath, resolvedPath, AZ_MAX_PATH_LEN))
+        auto engineSettingsPath = AZ::IO::FixedMaxPath{ AZ::Utils::GetEnginePath() } / "engine.json";
+        if (AZ::IO::SystemFile::Exists(engineSettingsPath.c_str()))
         {
-            AZ_Error("AWSMetrics", false, "Failed to resolve the engine config file directory");
-            return "";
+            AZ::SettingsRegistryImpl settingsRegistry;
+            if (settingsRegistry.MergeSettingsFile(
+                    engineSettingsPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey))
+            {
+                settingsRegistry.Get(engineVersion, engineVersionKey);
+            }
         }
-
-        auto readOutcome = AZ::JsonSerializationUtils::ReadJsonFile(resolvedPath);
-        if (!readOutcome.IsSuccess())
-        {
-            AZ_Error("AWSMetrics", false, readOutcome.GetError().c_str());
-            return "";
-        }
-
-        rapidjson_ly::Document& jsonDoc = readOutcome.GetValue();
-        auto memberIt = jsonDoc.FindMember(EngineVersionJsonKey);
-        if (memberIt != jsonDoc.MemberEnd())
-        {
-            return memberIt->value.GetString();
-        }
-
-        return "";
+        return engineVersion;
     }
 }

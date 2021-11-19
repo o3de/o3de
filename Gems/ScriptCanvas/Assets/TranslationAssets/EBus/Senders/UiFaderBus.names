@@ -1,0 +1,163 @@
+{
+    "entries": [
+        {
+            "key": "UiFaderBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiFaderBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "GetUseRenderToTexture",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Use Render To Texture"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Use Render To Texture is invoked"
+                    },
+                    "details": {
+                        "name": "Get Use Render To Texture",
+                        "tooltip": "Get the flag that indicates whether the fader should use render to texture"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsFading",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Fading"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Fading is invoked"
+                    },
+                    "details": {
+                        "name": "Is Fading",
+                        "tooltip": "Returns whether a fade is taking place"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Fade",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Fade"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Fade is invoked"
+                    },
+                    "details": {
+                        "name": "Fade",
+                        "tooltip": "Triggers a fade"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Target Value",
+                                "tooltip": "The value at which to end the fade [0-1]. One means no fade; zero means complete fade to invisible"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Speed",
+                                "tooltip": "The speed of the fade in full fade amount per second; 0 means instant"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetFadeValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Fade Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Fade Value is invoked"
+                    },
+                    "details": {
+                        "name": "Set Fade Value",
+                        "tooltip": "Sets the fade value"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Fade Value",
+                                "tooltip": "The fade value [0-1]. One means no fade; zero means complete fade to invisible"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetFadeValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Fade Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Fade Value is invoked"
+                    },
+                    "details": {
+                        "name": "Get Fade Value",
+                        "tooltip": "Gets the fade value"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetUseRenderToTexture",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Use Render To Texture"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Use Render To Texture is invoked"
+                    },
+                    "details": {
+                        "name": "Set Use Render To Texture",
+                        "tooltip": "Set the flag that indicates whether the fader should use render to texture"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Use Render To Texture",
+                                "tooltip": "Whether the fader should use render to texture"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

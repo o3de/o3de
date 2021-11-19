@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "InvalidTemplateId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "InvalidTemplateId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -169,7 +169,7 @@ namespace AZ::IO
         size = m_archive->FGetSize(filePath, true);
         if (!size)
         {
-            return m_archive->IsFileExist(filePath, IArchive::eFileLocation_Any) ? IO::ResultCode::Success : IO::ResultCode::Error;
+            return m_archive->IsFileExist(filePath, FileSearchLocation::Any) ? IO::ResultCode::Success : IO::ResultCode::Error;
         }
 
         return IO::ResultCode::Success;
@@ -544,6 +544,16 @@ namespace AZ::IO
             return;
         }
         realUnderlyingFileIO->GetAlias(alias);
+    }
+
+    void ArchiveFileIO::SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias)
+    {
+        FileIOBase* realUnderlyingFileIO = FileIOBase::GetDirectInstance();
+        if (!realUnderlyingFileIO)
+        {
+            return;
+        }
+        realUnderlyingFileIO->SetDeprecatedAlias(oldAlias, newAlias);
     }
 
     AZStd::optional<AZ::u64> ArchiveFileIO::ConvertToAlias(char* inOutBuffer, AZ::u64 bufferLength) const

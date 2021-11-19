@@ -55,7 +55,7 @@ namespace AzToolsFramework
                 GetEntityComponentIdPair(), elementIdsToDisplay);
             // create the component mode border with the specific name for this component mode
             ViewportUi::ViewportUiRequestBus::Event(
-                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateComponentModeBorder,
+                ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder,
                 GetComponentModeName());
             // set the EntityComponentId for this ComponentMode to active in the ComponentModeViewportUi system
             ComponentModeViewportUiRequestBus::Event(

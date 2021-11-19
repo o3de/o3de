@@ -20,9 +20,9 @@
             "CubemapSettings": {
                 "RequiresConvolve": false,
                 "GenerateIBLSpecular": true,
-                "IBLSpecularPreset": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
+                "IBLSpecularPreset": "IBLSpecular",
                 "GenerateIBLDiffuse": true,
-                "IBLDiffusePreset": "{E3706342-BF21-4D9C-AE28-9670EB3EF3C5}"
+                "IBLDiffusePreset": "IBLDiffuse"
             }
         },
         "PlatformsPresets": {
@@ -42,9 +42,9 @@
                 "CubemapSettings": {
                     "RequiresConvolve": false,
                     "GenerateIBLSpecular": true,
-                    "IBLSpecularPreset": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
+                    "IBLSpecularPreset": "IBLSpecular",
                     "GenerateIBLDiffuse": true,
-                    "IBLDiffusePreset": "{E3706342-BF21-4D9C-AE28-9670EB3EF3C5}"
+                    "IBLDiffusePreset": "IBLDiffuse"
                 }
             },
             "ios": {
@@ -63,9 +63,9 @@
                 "CubemapSettings": {
                     "RequiresConvolve": false,
                     "GenerateIBLSpecular": true,
-                    "IBLSpecularPreset": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
+                    "IBLSpecularPreset": "IBLSpecular",
                     "GenerateIBLDiffuse": true,
-                    "IBLDiffusePreset": "{E3706342-BF21-4D9C-AE28-9670EB3EF3C5}"
+                    "IBLDiffusePreset": "IBLDiffuse"
                 }
             },
             "mac": {
@@ -84,9 +84,9 @@
                 "CubemapSettings": {
                     "RequiresConvolve": false,
                     "GenerateIBLSpecular": true,
-                    "IBLSpecularPreset": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
+                    "IBLSpecularPreset": "IBLSpecular",
                     "GenerateIBLDiffuse": true,
-                    "IBLDiffusePreset": "{E3706342-BF21-4D9C-AE28-9670EB3EF3C5}"
+                    "IBLDiffusePreset": "IBLDiffuse"
                 }
             },
             "provo": {
@@ -105,9 +105,9 @@
                 "CubemapSettings": {
                     "RequiresConvolve": false,
                     "GenerateIBLSpecular": true,
-                    "IBLSpecularPreset": "{908DA68C-97FB-4C4A-97BC-5A55F30F14FA}",
+                    "IBLSpecularPreset": "IBLSpecular",
                     "GenerateIBLDiffuse": true,
-                    "IBLDiffusePreset": "{E3706342-BF21-4D9C-AE28-9670EB3EF3C5}"
+                    "IBLDiffusePreset": "IBLDiffuse"
                 }
             }
         }

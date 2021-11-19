@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionScreenSpaceBlurVertical",
+    "Source" : "ReflectionScreenSpaceBlurVertical.azsl",
 
     "RasterState" :
     {

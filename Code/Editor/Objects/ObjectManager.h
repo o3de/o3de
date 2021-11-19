@@ -20,8 +20,8 @@
 #include "ObjectManagerEventBus.h"
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Component/Component.h>
 #include <Include/SandboxAPI.h>
 
 // forward declarations.
@@ -52,47 +52,12 @@ public:
     }
 };
 
-//////////////////////////////////////////////////////////////////////////
-// Array of editor objects.
-//////////////////////////////////////////////////////////////////////////
-class CBaseObjectsCache
-{
-public:
-    int GetObjectCount() const { return static_cast<int>(m_objects.size()); }
-    CBaseObject* GetObject(int nIndex) const { return m_objects[nIndex]; }
-    void AddObject(CBaseObject* object);
-
-    void ClearObjects()
-    {
-        m_objects.clear();
-        m_entityIds.clear();
-    }
-
-    void Reserve(int nCount)
-    {
-        m_objects.reserve(nCount);
-        m_entityIds.reserve(nCount);
-    }
-
-    const AZStd::vector<AZ::EntityId>& GetEntityIdCache() const { return m_entityIds; }
-
-    /// Checksum is used as a dirty flag.
-    unsigned int GetSerialNumber() { return m_serialNumber; }
-    void SetSerialNumber(unsigned int serialNumber) { m_serialNumber = serialNumber; }
-private:
-    //! List of objects that was displayed at last frame.
-    std::vector<_smart_ptr<CBaseObject> > m_objects;
-    AZStd::vector<AZ::EntityId> m_entityIds;
-    unsigned int m_serialNumber = 0;
-};
-
 /*!
  *  CObjectManager is a singleton object that
  *  manages global set of objects in level.
  */
 class CObjectManager
     : public IObjectManager
-    , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
 {
 public:
     //! Selection functor callback.
@@ -362,10 +327,6 @@ private:
     void NotifyObjectListeners(CBaseObject* pObject, CBaseObject::EObjectListenerEvent event);
 
     void FindDisplayableObjects(DisplayContext& dc, bool bDisplay);
-
-    // EditorComponentModeNotificationBus
-    void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-    void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
 
 private:
     typedef std::map<GUID, CBaseObjectPtr, guid_less_predicate> Objects;

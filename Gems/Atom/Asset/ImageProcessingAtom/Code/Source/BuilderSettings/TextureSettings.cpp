@@ -23,7 +23,7 @@ namespace ImageProcessingAtom
     const char* TextureSettings::ExtensionName = ".assetinfo";
 
     TextureSettings::TextureSettings()
-        : m_preset(0)
+        : m_presetId(0)
         , m_sizeReduceLevel(0)
         , m_suppressEngineReduce(false)
         , m_enableMipmap(true)
@@ -45,8 +45,9 @@ namespace ImageProcessingAtom
         if (serialize)
         {
             serialize->Class<TextureSettings>()
-                ->Version(1)
-                ->Field("PresetID", &TextureSettings::m_preset)
+                ->Version(2)
+                ->Field("PresetID", &TextureSettings::m_presetId)
+                ->Field("Preset", &TextureSettings::m_preset)
                 ->Field("SizeReduceLevel", &TextureSettings::m_sizeReduceLevel)
                 ->Field("EngineReduce", &TextureSettings::m_suppressEngineReduce)
                 ->Field("EnableMipmap", &TextureSettings::m_enableMipmap)
@@ -169,9 +170,9 @@ namespace ImageProcessingAtom
         return 0.5f - fVal / 100.0f;
     }
 
-    void TextureSettings::ApplyPreset(AZ::Uuid presetId)
+    void TextureSettings::ApplyPreset(PresetName presetName)
     {
-        const PresetSettings* presetSetting = BuilderSettingManager::Instance()->GetPreset(presetId);
+        const PresetSettings* presetSetting = BuilderSettingManager::Instance()->GetPreset(presetName);
         if (presetSetting != nullptr)
         {
             m_sizeReduceLevel = presetSetting->m_sizeReduceLevel;
@@ -181,11 +182,11 @@ namespace ImageProcessingAtom
                 m_mipGenType = presetSetting->m_mipmapSetting->m_type;
             }
 
-            m_preset = presetId;
+            m_preset = presetName;
         }
         else
         {
-            AZ_Error("Image Processing", false, "Cannot set an invalid preset %s!", presetId.ToString<AZStd::string>().c_str());
+            AZ_Error("Image Processing", false, "Cannot set an invalid preset %s!", presetName.GetCStr());
         }
     }
 
@@ -199,6 +200,14 @@ namespace ImageProcessingAtom
         }
 
         textureSettingPtrOut = *loadedTextureSettingPtr;
+
+        // In old format, the preset name doesn't exist. Using preset id to get preset name
+        // We can remove this when we fully deprecate the preset uuid
+        if (textureSettingPtrOut.m_preset.IsEmpty())
+        {
+            textureSettingPtrOut.m_preset = BuilderSettingManager::Instance()->GetPresetNameFromId(textureSettingPtrOut.m_presetId);
+        }
+
         return AZ::Success(AZStd::string());
     }
 
@@ -216,7 +225,7 @@ namespace ImageProcessingAtom
     {
         MultiplatformTextureSettings settings;
         PlatformNameList platformsList = BuilderSettingManager::Instance()->GetPlatformList();
-        AZ::Uuid suggestedPreset = BuilderSettingManager::Instance()->GetSuggestedPreset(imageFilepath);
+        PresetName suggestedPreset = BuilderSettingManager::Instance()->GetSuggestedPreset(imageFilepath);
         for (PlatformName& platform : platformsList)
         {
             TextureSettings textureSettings;
@@ -234,7 +243,7 @@ namespace ImageProcessingAtom
         if (overrideIter == baseTextureSettings.m_platfromOverrides.end())
         {
             return STRING_OUTCOME_ERROR(AZStd::string::format("TextureSettings preset [%s] does not have override for platform [%s]",
-                baseTextureSettings.m_preset.ToString<AZStd::string>().c_str(), platformName.c_str()));
+                baseTextureSettings.m_preset.GetCStr(), platformName.c_str()));
         }
         AZ::DataPatch& platformOverride = const_cast<AZ::DataPatch&>(overrideIter->second);
 

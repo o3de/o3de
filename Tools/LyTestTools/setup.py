@@ -48,7 +48,8 @@ if __name__ == '__main__':
                 'ly_test_tools=ly_test_tools._internal.pytest_plugin.test_tools_fixtures',
                 'testrail_filter=ly_test_tools._internal.pytest_plugin.case_id',
                 'terminal_report=ly_test_tools._internal.pytest_plugin.terminal_report',
-                'editor_test=ly_test_tools._internal.pytest_plugin.editor_test'
+                'editor_test=ly_test_tools._internal.pytest_plugin.editor_test',
+                'pytester=_pytest.pytester'
             ],
         },
     )

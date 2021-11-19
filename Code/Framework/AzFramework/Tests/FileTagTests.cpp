@@ -27,7 +27,7 @@ namespace UnitTest
 
     const char DummyFile[] = "dummy.txt";
     const char AnotherDummyFile[] = "Foo/Dummy.txt";
-    
+
     const char DummyPattern[] = R"(^(.+)_([a-z]+)\..+$)";
     const char MatchingPatternFile[] = "Foo/dummy_abc.txt";
     const char NonMatchingPatternFile[] = "Foo/dummy_a8c.txt";
@@ -75,7 +75,7 @@ namespace UnitTest
         : public AllocatorsFixture
     {
     public:
-        
+
         void SetUp() override
         {
             AllocatorsFixture::SetUp();
@@ -89,7 +89,7 @@ namespace UnitTest
             const char* testAssetRoot = m_tempDirectory.GetDirectory();
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
@@ -98,7 +98,7 @@ namespace UnitTest
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_data->m_localFileIO.get());
 
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", testAssetRoot);
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", testAssetRoot);
 
             m_data->m_excludeFileQueryManager = AZStd::make_unique<FileTagQueryManagerTest>(FileTagType::Exclude);
             m_data->m_includeFileQueryManager = AZStd::make_unique<FileTagQueryManagerTest>(FileTagType::Include);
@@ -114,7 +114,7 @@ namespace UnitTest
 
             AZStd::vector<AZStd::string> includedWildcardTags = { DummyFileTags[DummyFileTagIndex::GIdx] };
             EXPECT_TRUE(m_data->m_fileTagManager.AddFilePatternTags(DummyWildcard, FilePatternType::Wildcard, FileTagType::Include, includedWildcardTags).IsSuccess());
-            
+
             AzFramework::StringFunc::Path::Join(testAssetRoot, AZStd::string::format("%s.%s", ExcludeFile, FileTagAsset::Extension()).c_str(), m_data->m_excludeFile);
 
             AzFramework::StringFunc::Path::Join(testAssetRoot, AZStd::string::format("%s.%s", IncludeFile, FileTagAsset::Extension()).c_str(), m_data->m_includeFile);
@@ -184,7 +184,7 @@ namespace UnitTest
     TEST_F(FileTagTest, FileTags_QueryByAbsoluteFilePath_Valid)
     {
         AZStd::string absoluteDummyFilePath = DummyFile;
-        EXPECT_TRUE(AzFramework::StringFunc::AssetDatabasePath::Join("@assets@", absoluteDummyFilePath.c_str(), absoluteDummyFilePath));
+        EXPECT_TRUE(AzFramework::StringFunc::AssetDatabasePath::Join("@products@", absoluteDummyFilePath.c_str(), absoluteDummyFilePath));
 
         AZStd::set<AZStd::string> tags = m_data->m_excludeFileQueryManager->GetTags(absoluteDummyFilePath);
 
@@ -196,7 +196,7 @@ namespace UnitTest
         ASSERT_EQ(tags.size(), 0);
 
         AZStd::string absoluteAnotherDummyFilePath = AnotherDummyFile;
-        EXPECT_TRUE(AzFramework::StringFunc::AssetDatabasePath::Join("@assets@", absoluteAnotherDummyFilePath.c_str(), absoluteAnotherDummyFilePath));
+        EXPECT_TRUE(AzFramework::StringFunc::AssetDatabasePath::Join("@products@", absoluteAnotherDummyFilePath.c_str(), absoluteAnotherDummyFilePath));
 
         tags = m_data->m_includeFileQueryManager->GetTags(absoluteAnotherDummyFilePath);
         ASSERT_EQ(tags.size(), 2);
@@ -213,7 +213,7 @@ namespace UnitTest
 
         // Set the customized alias
         AZStd::string customizedAliasFilePath;
-        const char* assetsAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@assets@");
+        const char* assetsAlias = AZ::IO::FileIOBase::GetInstance()->GetAlias("@products@");
         AzFramework::StringFunc::AssetDatabasePath::Join(assetsAlias, "foo", customizedAliasFilePath);
         AZ::IO::FileIOBase::GetInstance()->SetAlias("@customizedalias@", customizedAliasFilePath.c_str());
 
@@ -305,7 +305,7 @@ namespace UnitTest
 
         m_data->m_excludeFileQueryManager->ClearData();
         EXPECT_TRUE(m_data->m_excludeFileQueryManager->Load(m_data->m_excludeFile));
-        
+
         AZStd::set<AZStd::string> outputTags = m_data->m_excludeFileQueryManager->GetTags(MatchingWildcardFile);
 
         EXPECT_EQ(outputTags.size(), 2);

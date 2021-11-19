@@ -65,7 +65,7 @@ CDraw2d::~CDraw2d()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapScene)
+void CDraw2d::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
 {
     // At this point the RPI is ready for use
 
@@ -74,16 +74,16 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
     AZ::Data::Instance<AZ::RPI::Shader> shader = AZ::RPI::LoadCriticalShader(shaderFilepath);
 
     // Set scene to be associated with the dynamic draw context
-    AZ::RPI::ScenePtr scene;
+    AZ::RPI::Scene* scene = nullptr;
     if (m_viewportContext)
     {
         // Use scene associated with the specified viewport context
-        scene = m_viewportContext->GetRenderScene();
+        scene = m_viewportContext->GetRenderScene().get();
     }
     else
     {
-        // No viewport context specified, use default scene
-        scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
+        // No viewport context specified, use main scene
+        scene = bootstrapScene;
     }
     AZ_Assert(scene != nullptr, "Attempting to create a DynamicDrawContext for a viewport context that has not been associated with a scene yet.");
 
@@ -113,7 +113,7 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
     else
     {
         // Render target support is disabled
-        m_dynamicDraw->SetOutputScope(scene.get());
+        m_dynamicDraw->SetOutputScope(scene);
     }
     m_dynamicDraw->EndInit();
 

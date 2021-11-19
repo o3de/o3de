@@ -8,6 +8,11 @@
 #include <ProjectUtils.h>
 
 #include <QProcess>
+#include <QStandardPaths>
+#include <QDir>
+
+#include <AzCore/Utils/Utils.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 namespace O3DE::ProjectManager
 {
@@ -61,5 +66,81 @@ namespace O3DE::ProjectManager
 
             return AZ::Success(xcodeBuilderVersionNumber);
         }       
+
+        AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath)
+        {
+            const QString cmakeHelp = QObject::tr("Please verify you've installed CMake.app from " 
+                            "<a href=\"https://cmake.org\">cmake.org</a> or, if using HomeBrew, "
+                            "have installed it with <pre>brew install --cask cmake</pre>");
+            QString cmakeAppPath = QStandardPaths::locate(QStandardPaths::ApplicationsLocation, "CMake.app", QStandardPaths::LocateDirectory);
+            if (cmakeAppPath.isEmpty())
+            {
+                return AZ::Failure(QObject::tr("CMake.app not found.") + cmakeHelp);
+            }
+
+            QString projectBuildPath = QDir(projectPath).filePath(ProjectBuildPathPostfix);
+            AZ::Outcome result = GetProjectBuildPath(projectPath);
+            if (result.IsSuccess())
+            {
+                projectBuildPath = result.GetValue();
+            }
+
+            QProcess process;
+
+            // if the project build path is relative, it should be relative to the project path 
+            process.setWorkingDirectory(projectPath);
+            process.setProgram("open");
+            process.setArguments({"-a", "CMake", "--args", "-S", projectPath, "-B", projectBuildPath});
+            if(!process.startDetached())
+            {
+                return AZ::Failure(QObject::tr("CMake.app failed to open.") + cmakeHelp);
+            }
+
+            return AZ::Success();
+        }
+        
+        AZ::Outcome<QString, QString> RunGetPythonScript(const QString& engineRoot)
+        {
+            return ExecuteCommandResultModalDialog(
+                QString("%1/python/get_python.sh").arg(engineRoot),
+                {},
+                QProcessEnvironment::systemEnvironment(),
+                QObject::tr("Running get_python script..."));
+        }
+
+        AZ::IO::FixedMaxPath GetEditorDirectory()
+        {
+            AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
+            AZ::IO::FixedMaxPath editorPath{ executableDirectory };
+            editorPath /= "../../../Editor.app/Contents/MacOS";
+            editorPath = editorPath.LexicallyNormal();
+            if (!AZ::IO::SystemFile::IsDirectory(editorPath.c_str()))
+            {
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+                {
+                    if (AZ::IO::FixedMaxPath installedBinariesPath;
+                        settingsRegistry->Get(installedBinariesPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_InstalledBinaryFolder))
+                    {
+                        if (AZ::IO::FixedMaxPath engineRootFolder;
+                            settingsRegistry->Get(engineRootFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
+                        {
+                            editorPath = engineRootFolder / installedBinariesPath / "Editor.app/Contents/MacOS";
+                        }
+                    }
+                }
+
+                if (!AZ::IO::SystemFile::IsDirectory(editorPath.c_str()))
+                {
+                    AZ_Error("ProjectManager", false, "Unable to find the Editor app bundle!");
+                }
+            }
+
+            return editorPath;
+        }
+
+        AZ::Outcome<QString, QString> CreateDesktopShortcut([[maybe_unused]] const QString& filename, [[maybe_unused]] const QString& targetPath, [[maybe_unused]] const QStringList& arguments)
+        {
+            return AZ::Failure(QObject::tr("Creating desktop shortcuts functionality not implemented for this platform yet."));
+        }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

@@ -9,12 +9,14 @@
 #include "EditorHelpers.h"
 
 #include <AzCore/Console/Console.h>
+#include <AzCore/Math/VectorConversions.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzFramework/Visibility/BoundsBus.h>
-#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
@@ -42,6 +44,13 @@ AZ_CVAR(
     nullptr,
     AZ::ConsoleFunctorFlags::Null,
     "Display the aggregate world bounds for a given entity (the union of all world component Aabbs)");
+AZ_CVAR(
+    bool,
+    ed_useCursorLockIconInFocusMode,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "Use a lock icon when the cursor is over entities that cannot be interacted with");
 
 namespace AzToolsFramework
 {
@@ -113,6 +122,33 @@ namespace AzToolsFramework
         }
     }
 
+    CursorEntityIdQuery::CursorEntityIdQuery(AZ::EntityId entityId, AZ::EntityId rootEntityId)
+        : m_entityId(entityId)
+        , m_containerAncestorEntityId(rootEntityId)
+    {
+    }
+
+    AZ::EntityId CursorEntityIdQuery::EntityIdUnderCursor() const
+    {
+        return m_entityId;
+    }
+
+    AZ::EntityId CursorEntityIdQuery::ContainerAncestorEntityId() const
+    {
+        return m_containerAncestorEntityId;
+    }
+
+    bool CursorEntityIdQuery::HasContainerAncestorEntityId() const
+    {
+        if (m_entityId.IsValid())
+        {
+            return m_entityId != m_containerAncestorEntityId;
+        }
+
+        return false;
+    }
+
+
     EditorHelpers::EditorHelpers(const EditorVisibleEntityDataCache* entityDataCache)
         : m_entityDataCache(entityDataCache)
     {
@@ -122,9 +158,14 @@ namespace AzToolsFramework
             "EditorHelpers - "
             "Focus Mode Interface could not be found. "
             "Check that it is being correctly initialized.");
+
+        AZStd::vector<AZStd::unique_ptr<InvalidClick>> invalidClicks;
+        invalidClicks.push_back(AZStd::make_unique<FadingText>("Not in focus"));
+        invalidClicks.push_back(AZStd::make_unique<ExpandingFadingCircles>());
+        m_invalidClicks = AZStd::make_unique<InvalidClicks>(AZStd::move(invalidClicks));
     }
 
-    AZ::EntityId EditorHelpers::HandleMouseInteraction(
+    CursorEntityIdQuery EditorHelpers::FindEntityIdUnderCursor(
         const AzFramework::CameraState& cameraState, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(AzToolsFramework);
@@ -185,13 +226,44 @@ namespace AzToolsFramework
             }
         }
 
-        // Verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
-        if (!m_focusModeInterface->IsInFocusSubTree(entityIdUnderCursor))
+        // verify if the entity Id corresponds to an entity that is focused; if not, halt selection.
+        if (entityIdUnderCursor.IsValid() && !IsSelectableAccordingToFocusMode(entityIdUnderCursor))
         {
-            return AZ::EntityId();
+            if (ed_useCursorLockIconInFocusMode)
+            {
+                ViewportInteraction::ViewportMouseCursorRequestBus::Event(
+                    viewportId, &ViewportInteraction::ViewportMouseCursorRequestBus::Events::SetOverrideCursor,
+                    ViewportInteraction::CursorStyleOverride::Forbidden);
+            }
+                
+            if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
+                    mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down ||
+                mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::DoubleClick)
+            {
+                m_invalidClicks->AddInvalidClick(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
+            }
+
+            return CursorEntityIdQuery(AZ::EntityId(), AZ::EntityId());
         }
 
-        return entityIdUnderCursor;
+        ViewportInteraction::ViewportMouseCursorRequestBus::Event(
+            viewportId, &ViewportInteraction::ViewportMouseCursorRequestBus::Events::ClearOverrideCursor);
+
+        // container entity support - if the entity that is being selected is part of a closed container,
+        // change the selection to the container instead.
+        if (ContainerEntityInterface* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
+        {
+            const auto highestSelectableEntity = containerEntityInterface->FindHighestSelectableEntity(entityIdUnderCursor);
+            return CursorEntityIdQuery(entityIdUnderCursor, highestSelectableEntity);
+        }
+
+        return CursorEntityIdQuery(entityIdUnderCursor, AZ::EntityId());
+    }
+
+    void EditorHelpers::Display2d(
+        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
+    {
+        m_invalidClicks->Display2d(viewportInfo, debugDisplay);
     }
 
     void EditorHelpers::DisplayHelpers(
@@ -208,7 +280,7 @@ namespace AzToolsFramework
             {
                 const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
 
-                if (!m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex))
+                if (!m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex) || !IsSelectableInViewport(entityId))
                 {
                     continue;
                 }
@@ -253,5 +325,25 @@ namespace AzToolsFramework
                                                              AZ::Vector2{ iconSize, iconSize } });
             }
         }
+    }
+
+    bool EditorHelpers::IsSelectableInViewport(const AZ::EntityId entityId) const
+    {
+        return IsSelectableAccordingToFocusMode(entityId) && IsSelectableAccordingToContainerEntities(entityId);
+    }
+
+    bool EditorHelpers::IsSelectableAccordingToFocusMode(const AZ::EntityId entityId) const
+    {
+        return m_focusModeInterface->IsInFocusSubTree(entityId);
+    }
+
+    bool EditorHelpers::IsSelectableAccordingToContainerEntities(const AZ::EntityId entityId) const
+    {
+        if (const auto* containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get())
+        {
+            return !containerEntityInterface->IsUnderClosedContainerEntity(entityId);
+        }
+
+        return true;
     }
 } // namespace AzToolsFramework

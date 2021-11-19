@@ -35,6 +35,9 @@ namespace AZ
 {
     namespace RHI
     {
+        static constexpr const char* frameTimeMetricName = "Frame to Frame Time";
+        static constexpr AZ::Crc32 frameTimeMetricId = AZ_CRC_CE(frameTimeMetricName);
+
         ResultCode FrameScheduler::Init(Device& device, const FrameSchedulerDescriptor& descriptor)
         {
             ResultCode resultCode = ResultCode::Success;
@@ -80,6 +83,14 @@ namespace AZ
             m_device = &device;
 
             m_taskGraphActive = AZ::Interface<AZ::TaskGraphActiveInterface>::Get();
+
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
+            {
+                statsProfiler->ActivateProfiler(rhiMetricsId, true);
+
+                auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
+                rhiMetrics.GetStatsManager().AddStatistic(frameTimeMetricId, frameTimeMetricName, /*units=*/"clocks", /*failIfExist=*/false);
+            }
 
             m_lastFrameEndTime = AZStd::GetTimeNowTicks();
 
@@ -141,8 +152,6 @@ namespace AZ
 
         ResultCode FrameScheduler::ImportScopeProducer(ScopeProducer& scopeProducer)
         {
-            AZ_PROFILE_SCOPE(RHI, "FrameScheduler: ImportScopeProducer");
-
             if (!ValidateIsProcessing())
             {
                 return RHI::ResultCode::InvalidOperation;
@@ -255,7 +264,6 @@ namespace AZ
 
             // Execute all queued resource invalidations, which will mark SRG's for compilation.
             {
-                AZ_PROFILE_SCOPE(RHI, "Invalidate Resources");
                 ResourceInvalidateBus::ExecuteQueuedEvents();
             }
 
@@ -278,7 +286,7 @@ namespace AZ
                         AZ::TaskDescriptor srgCompileEndDesc{"SrgCompileEnd", "Graphics"};
 
                         auto srgCompileEndTask = taskGraph.AddTask(
-                            srgCompileEndDesc, 
+                            srgCompileEndDesc,
                             [srgPool]()
                             {
                                 srgPool->CompileGroupsEnd();
@@ -370,7 +378,7 @@ namespace AZ
 
             //It is possible for certain back ends to run out of SRG memory (due to fragmentation) in which case
             //we try to compact and re-compile SRGs.
-            RHI::ResultCode resultCode = m_device->CompactSRGMemory();
+            [[maybe_unused]] RHI::ResultCode resultCode = m_device->CompactSRGMemory();
             AZ_Assert(resultCode == RHI::ResultCode::Success, "SRG compaction failed and this can lead to a gpu crash.");
         }
 
@@ -449,7 +457,7 @@ namespace AZ
                 m_device->CompileMemoryStatistics(m_memoryStatistics, MemoryStatisticsReportFlags::Detail);
             }
 
-            m_device->UpdateCpuTimingStatistics(m_cpuTimingStatistics);
+            m_device->UpdateCpuTimingStatistics();
 
             m_scopeProducers.clear();
             m_scopeProducerLookup.clear();
@@ -460,7 +468,10 @@ namespace AZ
             }
 
             const AZStd::sys_time_t timeNowTicks = AZStd::GetTimeNowTicks();
-            m_cpuTimingStatistics.m_frameToFrameTime = timeNowTicks - m_lastFrameEndTime;
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
+            {
+                statsProfiler->PushSample(rhiMetricsId, frameTimeMetricId, static_cast<double>(timeNowTicks - m_lastFrameEndTime));
+            }
             m_lastFrameEndTime = timeNowTicks;
 
             return ResultCode::Success;
@@ -588,12 +599,15 @@ namespace AZ
                 : nullptr;
         }
 
-        const CpuTimingStatistics* FrameScheduler::GetCpuTimingStatistics() const
+        double FrameScheduler::GetCpuFrameTime() const
         {
-            return
-                CheckBitsAny(m_compileRequest.m_statisticsFlags, FrameSchedulerStatisticsFlags::GatherCpuTimingStatistics)
-                ? &m_cpuTimingStatistics
-                : nullptr;
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
+            {
+                auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
+                const auto* frameTimeStat = rhiMetrics.GetStatistic(frameTimeMetricId);
+                return (frameTimeStat->GetMostRecentSample() * 1000) / aznumeric_cast<double>(AZStd::GetTimeTicksPerSecond());
+            }
+            return 0;
         }
 
         ScopeId FrameScheduler::GetRootScopeId() const

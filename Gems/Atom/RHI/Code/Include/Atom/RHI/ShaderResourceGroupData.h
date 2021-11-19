@@ -166,6 +166,10 @@ namespace AZ
             AZStd::array_view<ConstPtr<ImageView>> GetImageGroup() const;
             AZStd::array_view<ConstPtr<BufferView>> GetBufferGroup() const;
             AZStd::array_view<SamplerState> GetSamplerGroup() const;
+            
+            //! Reset image and buffer views setup for this ShaderResourceGroupData
+            //! So it won't hold references for any RHI resources
+            void ResetViews();
 
             //! Returns the opaque constant data populated by calls to SetConstant and SetConstantData.
             //! 
@@ -178,6 +182,42 @@ namespace AZ
 
             //! Returns the shader resource layout for this group.
             const ShaderResourceGroupLayout* GetLayout() const;
+
+            enum class ResourceType : uint32_t
+            {
+                ConstantData,
+                BufferView,
+                ImageView,
+                BufferViewUnboundedArray,
+                ImageViewUnboundedArray,
+                Sampler,
+                Count
+            };
+
+            enum class ResourceTypeMask : uint32_t
+            {
+                None = 0,
+                ConstantDataMask = AZ_BIT(static_cast<uint32_t>(ResourceType::ConstantData)),
+                BufferViewMask = AZ_BIT(static_cast<uint32_t>(ResourceType::BufferView)),
+                ImageViewMask = AZ_BIT(static_cast<uint32_t>(ResourceType::ImageView)),
+                BufferViewUnboundedArrayMask = AZ_BIT(static_cast<uint32_t>(ResourceType::BufferViewUnboundedArray)),
+                ImageViewUnboundedArrayMask = AZ_BIT(static_cast<uint32_t>(ResourceType::ImageViewUnboundedArray)),
+                SamplerMask = AZ_BIT(static_cast<uint32_t>(ResourceType::Sampler))
+            };
+
+            //! Returns true if a resource type specified by resourceTypeMask is enabled for compilation
+            bool IsResourceTypeEnabledForCompilation(uint32_t resourceTypeMask) const;
+
+            //! Disables all resource types for compilation after m_updateMaskResetLatency number of compiles
+            //! This allows higher level code to ensure that if SRG is multi-buffered it can compile multiple
+            //! times in order to ensure all SRG buffers are updated.
+            void DisableCompilationForAllResourceTypes();
+
+            //! Returns true if any of the resource type has been enabled for compilation. 
+            bool IsAnyResourceTypeUpdated() const;
+
+            //! Enable compilation for a resourceType specified by resourceType/resourceTypeMask
+            void EnableResourceTypeCompilation(ResourceTypeMask resourceTypeMask, ResourceType resourceType);
 
         private:
             static const ConstPtr<ImageView> s_nullImageView;
@@ -203,23 +243,43 @@ namespace AZ
 
             //! The backing data store of constants for the shader resource group.
             ConstantsData m_constantsData;
+
+            //! Mask used to check whether to compile a specific resource type
+            uint32_t m_updateMask = 0;
+
+            //! Track iteration for each resource type in order to keep compiling it for m_updateMaskResetLatency number of times
+            uint32_t m_resourceTypeIteration[static_cast<uint32_t>(ResourceType::Count)] = { 0 };
+            uint32_t m_updateMaskResetLatency = RHI::Limits::Device::FrameCountMax;
         };
 
         template <typename T>
         bool ShaderResourceGroupData::SetConstant(ShaderInputConstantIndex inputIndex, const T& value)
         {
+            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
             return m_constantsData.SetConstant(inputIndex, value);
         }
 
         template <typename T>
         bool ShaderResourceGroupData::SetConstant(ShaderInputConstantIndex inputIndex, const T& value, uint32_t arrayIndex)
         {
+            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
             return m_constantsData.SetConstant(inputIndex, value, arrayIndex);
+        }
+        
+        template<typename T>
+        bool ShaderResourceGroupData::SetConstantMatrixRows(ShaderInputConstantIndex inputIndex, const T& value, uint32_t rowCount)
+        {
+            EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
+            return m_constantsData.SetConstantMatrixRows(inputIndex, value, rowCount);
         }
 
         template <typename T>
         bool ShaderResourceGroupData::SetConstantArray(ShaderInputConstantIndex inputIndex, AZStd::array_view<T> values)
         {
+            if (!values.empty())
+            {
+                EnableResourceTypeCompilation(ResourceTypeMask::ConstantDataMask, ResourceType::ConstantData);
+            }
             return m_constantsData.SetConstantArray(inputIndex, values);
         }
 
@@ -239,12 +299,6 @@ namespace AZ
         T ShaderResourceGroupData::GetConstant(ShaderInputConstantIndex inputIndex, uint32_t arrayIndex) const
         {
             return m_constantsData.GetConstant<T>(inputIndex, arrayIndex);
-        }
-
-        template <typename T>
-        bool ShaderResourceGroupData::SetConstantMatrixRows(ShaderInputConstantIndex inputIndex, const T& value, uint32_t rowCount)
-        {
-            return m_constantsData.SetConstantMatrixRows(inputIndex, value, rowCount);
         }
 
         template<typename TShaderInput, typename TShaderInputDescriptor>

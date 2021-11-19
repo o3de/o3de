@@ -7,10 +7,14 @@
 
 #pragma once
 
+#include <../Materials/Types/MaterialInputs/BaseColorInput.azsli>
+#include <../Materials/Types/MaterialInputs/RoughnessInput.azsli>
+#include <../Materials/Types/MaterialInputs/MetallicInput.azsli>
+#include <../Materials/Types/MaterialInputs/SpecularInput.azsli>
+#include <../Materials/Types/MaterialInputs/NormalInput.azsli>
+
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
-    row_major float3x4 m_modelToWorld;
-
     struct TerrainData
     {
         float2 m_uvMin;
@@ -20,7 +24,25 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         float m_heightScale;
     };
 
+    struct MacroMaterialData
+    {
+        float2 m_uvMin;
+        float2 m_uvMax;
+        float m_normalFactor;
+        bool m_flipNormalX;
+        bool m_flipNormalY;
+        uint m_mapsInUse;
+    };
+
+    row_major float3x4 m_modelToWorld;
+
     TerrainData m_terrainData;
+
+    MacroMaterialData m_macroMaterialData[4];
+    uint m_macroMaterialCount;
+
+    Texture2D m_macroColorMap[4];
+    Texture2D m_macroNormalMap[4];
 
     // The below shouldn't be in this SRG but needs to be for now because the lighting functions depend on them.
 
@@ -34,6 +56,7 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
         float m_padding;
         bool m_useReflectionProbe;
         bool m_useParallaxCorrection;
+        float m_exposure;
     };
 
     ReflectionProbeData m_reflectionProbeData;
@@ -70,20 +93,38 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 
 ShaderResourceGroup TerrainMaterialSrg : SRG_PerMaterial
 {
-    Texture2D<float> m_heightmapImage;
+    float m_detailTextureMultiplier;
+    float m_detailFadeDistance;
+    float m_detailFadeLength;
 
-    Sampler HeightmapSampler
+    Sampler m_sampler
     {
+        AddressU = Wrap;
+        AddressV = Wrap;
         MinFilter = Linear;
         MagFilter = Linear;
-        MipFilter = Point;
-        AddressU = Clamp;
-        AddressV = Clamp;
-        AddressW = Clamp;
+        MipFilter = Linear;
+        MaxAnisotropy = 16;
     };
 
+    // Base Color
     float3 m_baseColor;
-    float m_roughness;
+    float m_baseColorFactor;
+    Texture2D m_baseColorMap;
+
+    // Normal
+    Texture2D m_normalMap;
+    bool m_flipNormalX;
+    bool m_flipNormalY;
+    float m_normalFactor;
+
+    // Roughness
+    Texture2D m_roughnessMap;
+    float m_roughnessFactor;
+
+    // Specular
+    Texture2D m_specularF0Map;
+    float m_specularF0Factor;
 }
 
 option bool o_useTerrainSmoothing = false;
@@ -98,7 +139,7 @@ struct VertexInput
 // This function samples a 4x4 neighborhood around the uv. Normally this would take 16 samples, but by taking
 // advantage of bilinear filtering this can be done with 9 taps on the edges between pixels. The cost is further
 // reduced by dropping the diagonals.
-float SampleBSpline5Tap(Texture2D<float> texture, SamplerState textureSampler, float2 uv, float2 textureSize, float2 rcpTextureSize)
+float SampleBSpline5Tap(Texture2D texture, SamplerState textureSampler, float2 uv, float2 textureSize, float2 rcpTextureSize)
 {
     // Think of sample locations in the 4x4 neighborhood as having a top left coordinate of 0,0 and
     // a bottom right coordinate of 3,3.
@@ -162,18 +203,19 @@ float4x4 GetObject_WorldMatrix()
 
 float GetHeight(float2 origUv)
 {
-    float2 uv = clamp(origUv + (ObjectSrg::m_terrainData.m_uvStep * 0.5f), 0.0f, 1.0f);
-    float height = 0.0f;
+    float2 halfStep = ObjectSrg::m_terrainData.m_uvStep * 0.5;
+    float2 uv = origUv * (1.0 - ObjectSrg::m_terrainData.m_uvStep) + halfStep;
 
+    float height = 0.0f;
     if (o_useTerrainSmoothing)
     {
         float2 textureSize;
-        TerrainMaterialSrg::m_heightmapImage.GetDimensions(textureSize.x, textureSize.y);
-        height = SampleBSpline5Tap(TerrainMaterialSrg::m_heightmapImage, TerrainMaterialSrg::HeightmapSampler, uv, textureSize, rcp(textureSize));
+        ViewSrg::m_heightmapImage.GetDimensions(textureSize.x, textureSize.y);
+        height = SampleBSpline5Tap(ViewSrg::m_heightmapImage, ViewSrg::HeightmapSampler, uv, textureSize, rcp(textureSize));
     }
     else
     {
-        height = TerrainMaterialSrg::m_heightmapImage.SampleLevel(TerrainMaterialSrg::HeightmapSampler, uv, 0).r;
+        height = ViewSrg::m_heightmapImage.SampleLevel(ViewSrg::HeightmapSampler, uv, 0).r;
     }
 
     return ObjectSrg::m_terrainData.m_heightScale * (height - 0.5f);

@@ -7,5 +7,5 @@
 #
 
 set(FILES
-    AzToolsFramework/Archive/ArchiveComponent_Linux.cpp
+    AzToolsFramework/API/PythonLoader_Linux.cpp
 )

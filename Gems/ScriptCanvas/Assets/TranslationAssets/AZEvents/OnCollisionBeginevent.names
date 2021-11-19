@@ -1,0 +1,62 @@
+{
+    "entries": [
+        {
+            "key": "On Collision Begin event",
+            "context": "AZEventHandler",
+            "variant": "",
+            "details": {
+                "name": "On Collision Begin event"
+            },
+            "slots": [
+                {
+                    "key": "Simulated Body Handle",
+                    "details": {
+                        "name": "Simulated Body Handle"
+                    }
+                },
+                {
+                    "key": "Collision Event",
+                    "details": {
+                        "name": "Collision Event"
+                    }
+                },
+                {
+                    "key": "On Collision Begin event",
+                    "details": {
+                        "name": "On Collision Begin event"
+                    }
+                },
+                {
+                    "key": "Connect",
+                    "details": {
+                        "name": "Connect"
+                    }
+                },
+                {
+                    "key": "Disconnect",
+                    "details": {
+                        "name": "Disconnect"
+                    }
+                },
+                {
+                    "key": "On Connected",
+                    "details": {
+                        "name": "On Connected"
+                    }
+                },
+                {
+                    "key": "On Disconnected",
+                    "details": {
+                        "name": "On Disconnected"
+                    }
+                },
+                {
+                    "key": "OnEvent",
+                    "details": {
+                        "name": "OnEvent"
+                    }
+                }
+            ]
+        }
+    ]
+}

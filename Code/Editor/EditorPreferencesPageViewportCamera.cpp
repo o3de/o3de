@@ -61,7 +61,7 @@ static AZStd::vector<AZStd::string> GetEditorInputNames()
 void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serialize)
 {
     serialize.Class<CameraMovementSettings>()
-        ->Version(3)
+        ->Version(4)
         ->Field("TranslateSpeed", &CameraMovementSettings::m_translateSpeed)
         ->Field("RotateSpeed", &CameraMovementSettings::m_rotateSpeed)
         ->Field("BoostMultiplier", &CameraMovementSettings::m_boostMultiplier)
@@ -73,9 +73,11 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
         ->Field("TranslateSmoothing", &CameraMovementSettings::m_translateSmoothing)
         ->Field("TranslateSmoothness", &CameraMovementSettings::m_translateSmoothness)
         ->Field("CaptureCursorLook", &CameraMovementSettings::m_captureCursorLook)
-        ->Field("PivotYawRotationInverted", &CameraMovementSettings::m_pivotYawRotationInverted)
+        ->Field("OrbitYawRotationInverted", &CameraMovementSettings::m_orbitYawRotationInverted)
         ->Field("PanInvertedX", &CameraMovementSettings::m_panInvertedX)
-        ->Field("PanInvertedY", &CameraMovementSettings::m_panInvertedY);
+        ->Field("PanInvertedY", &CameraMovementSettings::m_panInvertedY)
+        ->Field("DefaultPosition", &CameraMovementSettings::m_defaultPosition)
+        ->Field("DefaultOrbitDistance", &CameraMovementSettings::m_defaultOrbitDistance);
 
     serialize.Class<CameraInputSettings>()
         ->Version(2)
@@ -86,12 +88,13 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
         ->Field("TranslateUp", &CameraInputSettings::m_translateUpChannelId)
         ->Field("TranslateDown", &CameraInputSettings::m_translateDownChannelId)
         ->Field("Boost", &CameraInputSettings::m_boostChannelId)
-        ->Field("Pivot", &CameraInputSettings::m_pivotChannelId)
+        ->Field("Orbit", &CameraInputSettings::m_orbitChannelId)
         ->Field("FreeLook", &CameraInputSettings::m_freeLookChannelId)
         ->Field("FreePan", &CameraInputSettings::m_freePanChannelId)
-        ->Field("PivotLook", &CameraInputSettings::m_pivotLookChannelId)
-        ->Field("PivotDolly", &CameraInputSettings::m_pivotDollyChannelId)
-        ->Field("PivotPan", &CameraInputSettings::m_pivotPanChannelId);
+        ->Field("OrbitLook", &CameraInputSettings::m_orbitLookChannelId)
+        ->Field("OrbitDolly", &CameraInputSettings::m_orbitDollyChannelId)
+        ->Field("OrbitPan", &CameraInputSettings::m_orbitPanChannelId)
+        ->Field("Focus", &CameraInputSettings::m_focusChannelId);
 
     serialize.Class<CEditorPreferencesPage_ViewportCamera>()
         ->Version(1)
@@ -143,8 +146,8 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
             ->Attribute(AZ::Edit::Attributes::Min, minValue)
             ->Attribute(AZ::Edit::Attributes::Visibility, &CameraMovementSettings::TranslateSmoothingVisibility)
             ->DataElement(
-                AZ::Edit::UIHandlers::CheckBox, &CameraMovementSettings::m_pivotYawRotationInverted, "Camera Pivot Yaw Inverted",
-                "Inverted yaw rotation while pivoting")
+                AZ::Edit::UIHandlers::CheckBox, &CameraMovementSettings::m_orbitYawRotationInverted, "Camera Orbit Yaw Inverted",
+                "Inverted yaw rotation while orbiting")
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &CameraMovementSettings::m_panInvertedX, "Invert Pan X",
                 "Invert direction of pan in local X axis")
@@ -153,7 +156,14 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
                 "Invert direction of pan in local Y axis")
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &CameraMovementSettings::m_captureCursorLook, "Camera Capture Look Cursor",
-                "Should the cursor be captured (hidden) while performing free look");
+                "Should the cursor be captured (hidden) while performing free look")
+            ->DataElement(
+                AZ::Edit::UIHandlers::Vector3, &CameraMovementSettings::m_defaultPosition, "Default Camera Position",
+                "Default Camera Position when a level is first opened")
+            ->DataElement(
+                AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_defaultOrbitDistance, "Default Orbit Distance",
+                "The default distance to orbit about when there is no entity selected")
+            ->Attribute(AZ::Edit::Attributes::Min, minValue);
 
         editContext->Class<CameraInputSettings>("Camera Input Settings", "")
             ->DataElement(
@@ -185,8 +195,8 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
                 "Key/button to move the camera more quickly")
             ->Attribute(AZ::Edit::Attributes::StringList, &GetEditorInputNames)
             ->DataElement(
-                AZ::Edit::UIHandlers::ComboBox, &CameraInputSettings::m_pivotChannelId, "Pivot",
-                "Key/button to begin the camera pivot behavior")
+                AZ::Edit::UIHandlers::ComboBox, &CameraInputSettings::m_orbitChannelId, "Orbit",
+                "Key/button to begin the camera orbit behavior")
             ->Attribute(AZ::Edit::Attributes::StringList, &GetEditorInputNames)
             ->DataElement(
                 AZ::Edit::UIHandlers::ComboBox, &CameraInputSettings::m_freeLookChannelId, "Free Look",
@@ -196,24 +206,27 @@ void CEditorPreferencesPage_ViewportCamera::Reflect(AZ::SerializeContext& serial
                 AZ::Edit::UIHandlers::ComboBox, &CameraInputSettings::m_freePanChannelId, "Free Pan", "Key/button to begin camera free pan")
             ->Attribute(AZ::Edit::Attributes::StringList, &GetEditorInputNames)
             ->DataElement(
-                AZ::Edit::UIHandlers::ComboBox, &CameraInputSettings::m_pivotLookChannelId, "Pivot Look",
-                "Key/button to begin camera pivot look")
+                AZ::Edit::UIHandlers::ComboBox, &CameraInputSettings::m_orbitLookChannelId, "Orbit Look",
+                "Key/button to begin camera orbit look")
             ->Attribute(AZ::Edit::Attributes::StringList, &GetEditorInputNames)
             ->DataElement(
-                AZ::Edit::UIHandlers::ComboBox, &CameraInputSettings::m_pivotDollyChannelId, "Pivot Dolly",
-                "Key/button to begin camera pivot dolly")
+                AZ::Edit::UIHandlers::ComboBox, &CameraInputSettings::m_orbitDollyChannelId, "Orbit Dolly",
+                "Key/button to begin camera orbit dolly")
             ->Attribute(AZ::Edit::Attributes::StringList, &GetEditorInputNames)
             ->DataElement(
-                AZ::Edit::UIHandlers::ComboBox, &CameraInputSettings::m_pivotPanChannelId, "Pivot Pan",
-                "Key/button to begin camera pivot pan")
+                AZ::Edit::UIHandlers::ComboBox, &CameraInputSettings::m_orbitPanChannelId, "Orbit Pan",
+                "Key/button to begin camera orbit pan")
+            ->Attribute(AZ::Edit::Attributes::StringList, &GetEditorInputNames)
+            ->DataElement(
+                AZ::Edit::UIHandlers::ComboBox, &CameraInputSettings::m_focusChannelId, "Focus", "Key/button to focus camera orbit")
             ->Attribute(AZ::Edit::Attributes::StringList, &GetEditorInputNames);
 
         editContext->Class<CEditorPreferencesPage_ViewportCamera>("Viewport Preferences", "Viewport Preferences")
             ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ_CRC("PropertyVisibility_ShowChildrenOnly", 0xef428f20))
             ->DataElement(
-                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportCamera::m_cameraMovementSettings,
-                "Camera Movement Settings", "Camera Movement Settings")
+                AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportCamera::m_cameraMovementSettings, "Camera Movement Settings",
+                "Camera Movement Settings")
             ->DataElement(
                 AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_ViewportCamera::m_cameraInputSettings, "Camera Input Settings",
                 "Camera Input Settings");
@@ -264,9 +277,11 @@ void CEditorPreferencesPage_ViewportCamera::OnApply()
     SandboxEditor::SetCameraTranslateSmoothness(m_cameraMovementSettings.m_translateSmoothness);
     SandboxEditor::SetCameraTranslateSmoothingEnabled(m_cameraMovementSettings.m_translateSmoothing);
     SandboxEditor::SetCameraCaptureCursorForLook(m_cameraMovementSettings.m_captureCursorLook);
-    SandboxEditor::SetCameraPivotYawRotationInverted(m_cameraMovementSettings.m_pivotYawRotationInverted);
+    SandboxEditor::SetCameraOrbitYawRotationInverted(m_cameraMovementSettings.m_orbitYawRotationInverted);
     SandboxEditor::SetCameraPanInvertedX(m_cameraMovementSettings.m_panInvertedX);
     SandboxEditor::SetCameraPanInvertedY(m_cameraMovementSettings.m_panInvertedY);
+    SandboxEditor::SetCameraDefaultEditorPosition(m_cameraMovementSettings.m_defaultPosition);
+    SandboxEditor::SetCameraDefaultOrbitDistance(m_cameraMovementSettings.m_defaultOrbitDistance);
 
     SandboxEditor::SetCameraTranslateForwardChannelId(m_cameraInputSettings.m_translateForwardChannelId);
     SandboxEditor::SetCameraTranslateBackwardChannelId(m_cameraInputSettings.m_translateBackwardChannelId);
@@ -275,12 +290,13 @@ void CEditorPreferencesPage_ViewportCamera::OnApply()
     SandboxEditor::SetCameraTranslateUpChannelId(m_cameraInputSettings.m_translateUpChannelId);
     SandboxEditor::SetCameraTranslateDownChannelId(m_cameraInputSettings.m_translateDownChannelId);
     SandboxEditor::SetCameraTranslateBoostChannelId(m_cameraInputSettings.m_boostChannelId);
-    SandboxEditor::SetCameraPivotChannelId(m_cameraInputSettings.m_pivotChannelId);
+    SandboxEditor::SetCameraOrbitChannelId(m_cameraInputSettings.m_orbitChannelId);
     SandboxEditor::SetCameraFreeLookChannelId(m_cameraInputSettings.m_freeLookChannelId);
     SandboxEditor::SetCameraFreePanChannelId(m_cameraInputSettings.m_freePanChannelId);
-    SandboxEditor::SetCameraPivotLookChannelId(m_cameraInputSettings.m_pivotLookChannelId);
-    SandboxEditor::SetCameraPivotDollyChannelId(m_cameraInputSettings.m_pivotDollyChannelId);
-    SandboxEditor::SetCameraPivotPanChannelId(m_cameraInputSettings.m_pivotPanChannelId);
+    SandboxEditor::SetCameraOrbitLookChannelId(m_cameraInputSettings.m_orbitLookChannelId);
+    SandboxEditor::SetCameraOrbitDollyChannelId(m_cameraInputSettings.m_orbitDollyChannelId);
+    SandboxEditor::SetCameraOrbitPanChannelId(m_cameraInputSettings.m_orbitPanChannelId);
+    SandboxEditor::SetCameraFocusChannelId(m_cameraInputSettings.m_focusChannelId);
 
     SandboxEditor::EditorModularViewportCameraComposerNotificationBus::Broadcast(
         &SandboxEditor::EditorModularViewportCameraComposerNotificationBus::Events::OnEditorModularViewportCameraComposerSettingsChanged);
@@ -299,9 +315,11 @@ void CEditorPreferencesPage_ViewportCamera::InitializeSettings()
     m_cameraMovementSettings.m_translateSmoothness = SandboxEditor::CameraTranslateSmoothness();
     m_cameraMovementSettings.m_translateSmoothing = SandboxEditor::CameraTranslateSmoothingEnabled();
     m_cameraMovementSettings.m_captureCursorLook = SandboxEditor::CameraCaptureCursorForLook();
-    m_cameraMovementSettings.m_pivotYawRotationInverted = SandboxEditor::CameraPivotYawRotationInverted();
+    m_cameraMovementSettings.m_orbitYawRotationInverted = SandboxEditor::CameraOrbitYawRotationInverted();
     m_cameraMovementSettings.m_panInvertedX = SandboxEditor::CameraPanInvertedX();
     m_cameraMovementSettings.m_panInvertedY = SandboxEditor::CameraPanInvertedY();
+    m_cameraMovementSettings.m_defaultPosition = SandboxEditor::CameraDefaultEditorPosition();
+    m_cameraMovementSettings.m_defaultOrbitDistance = SandboxEditor::CameraDefaultOrbitDistance();
 
     m_cameraInputSettings.m_translateForwardChannelId = SandboxEditor::CameraTranslateForwardChannelId().GetName();
     m_cameraInputSettings.m_translateBackwardChannelId = SandboxEditor::CameraTranslateBackwardChannelId().GetName();
@@ -310,10 +328,11 @@ void CEditorPreferencesPage_ViewportCamera::InitializeSettings()
     m_cameraInputSettings.m_translateUpChannelId = SandboxEditor::CameraTranslateUpChannelId().GetName();
     m_cameraInputSettings.m_translateDownChannelId = SandboxEditor::CameraTranslateDownChannelId().GetName();
     m_cameraInputSettings.m_boostChannelId = SandboxEditor::CameraTranslateBoostChannelId().GetName();
-    m_cameraInputSettings.m_pivotChannelId = SandboxEditor::CameraPivotChannelId().GetName();
+    m_cameraInputSettings.m_orbitChannelId = SandboxEditor::CameraOrbitChannelId().GetName();
     m_cameraInputSettings.m_freeLookChannelId = SandboxEditor::CameraFreeLookChannelId().GetName();
     m_cameraInputSettings.m_freePanChannelId = SandboxEditor::CameraFreePanChannelId().GetName();
-    m_cameraInputSettings.m_pivotLookChannelId = SandboxEditor::CameraPivotLookChannelId().GetName();
-    m_cameraInputSettings.m_pivotDollyChannelId = SandboxEditor::CameraPivotDollyChannelId().GetName();
-    m_cameraInputSettings.m_pivotPanChannelId = SandboxEditor::CameraPivotPanChannelId().GetName();
+    m_cameraInputSettings.m_orbitLookChannelId = SandboxEditor::CameraOrbitLookChannelId().GetName();
+    m_cameraInputSettings.m_orbitDollyChannelId = SandboxEditor::CameraOrbitDollyChannelId().GetName();
+    m_cameraInputSettings.m_orbitPanChannelId = SandboxEditor::CameraOrbitPanChannelId().GetName();
+    m_cameraInputSettings.m_focusChannelId = SandboxEditor::CameraFocusChannelId().GetName();
 }

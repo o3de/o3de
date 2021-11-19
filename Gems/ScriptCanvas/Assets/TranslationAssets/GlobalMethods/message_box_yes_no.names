@@ -1,0 +1,47 @@
+{
+    "entries": [
+        {
+            "key": "message_box_yes_no",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "message_box_yes_no",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke message_box_yes_no"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after message_box_yes_no is invoked"
+                    },
+                    "details": {
+                        "name": "message_box_yes_no",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

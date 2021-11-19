@@ -11,5 +11,6 @@
         "${Name}"
     ],
     "icon_path": "preview.png",
-    "engine": "o3de"
+    "engine": "o3de",
+    "external_subdirectories": []
 }

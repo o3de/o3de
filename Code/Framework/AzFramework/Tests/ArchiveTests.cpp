@@ -45,12 +45,14 @@ namespace UnitTest
 
             auto projectPathKey =
                 AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::IO::FixedMaxPath enginePath;
+            registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
             m_application->Start({});
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
         }
@@ -262,7 +264,7 @@ namespace UnitTest
             pArchive.reset();
             EXPECT_TRUE(IsPackValid(testArchivePath_withSubfolders.c_str()));
 
-            EXPECT_TRUE(archive->OpenPack("@assets@", testArchivePath_withSubfolders.c_str()));
+            EXPECT_TRUE(archive->OpenPack("@products@", testArchivePath_withSubfolders.c_str()));
 
             EXPECT_TRUE(archive->IsFileExist(fileInArchiveFile));
         }
@@ -271,7 +273,7 @@ namespace UnitTest
         // Also enable extra verbosity in the AZ::IO::Archive code
         CVarIntValueScope previousLocationPriority{ *console, "sys_pakPriority" };
         CVarIntValueScope oldArchiveVerbosity{ *console, "az_archive_verbosity" };
-        console->PerformCommand("sys_PakPriority", { AZ::CVarFixedString::format("%d", aznumeric_cast<int>(AZ::IO::ArchiveLocationPriority::ePakPriorityPakOnly)) });
+        console->PerformCommand("sys_PakPriority", { AZ::CVarFixedString::format("%d", aznumeric_cast<int>(AZ::IO::FileSearchPriority::PakOnly)) });
         console->PerformCommand("az_archive_verbosity", { "1" });
 
         // ---- Archive FGetCachedFileDataTests (these leverage Archive CachedFile mechanism for caching data ---
@@ -353,7 +355,7 @@ namespace UnitTest
         // and be able to IMMEDIATELY
         // * read the file in the subfolder
         // * enumerate the folders (including that subfolder) even though they are 'virtual', not real folders on physical media
-        // * all of the above even though the mount point for the archive is @assets@ wheras the physical pack lives in @usercache@
+        // * all of the above even though the mount point for the archive is @products@ wheras the physical pack lives in @usercache@
         // finally, we're going to repeat the above test but with files mounted with subfolders
         // so for example, the pack will contain levelinfo.xml at the root of it
         // but it will be mounted at a subfolder (levels/mylevel).
@@ -388,7 +390,7 @@ namespace UnitTest
         pArchive.reset();
         EXPECT_TRUE(IsPackValid(testArchivePath_withSubfolders));
 
-        EXPECT_TRUE(archive->OpenPack("@assets@", testArchivePath_withSubfolders));
+        EXPECT_TRUE(archive->OpenPack("@products@", testArchivePath_withSubfolders));
         // ---- BARRAGE OF TESTS
         EXPECT_TRUE(archive->IsFileExist("levels\\mylevel\\levelinfo.xml"));
         EXPECT_TRUE(archive->IsFileExist("levels//mylevel//levelinfo.xml"));
@@ -457,7 +459,7 @@ namespace UnitTest
 
         // Once the archive has been deleted it should no longer be searched
         CVarIntValueScope previousLocationPriority{ *console, "sys_pakPriority" };
-        console->PerformCommand("sys_PakPriority", { AZ::CVarFixedString::format("%d", aznumeric_cast<int>(AZ::IO::ArchiveLocationPriority::ePakPriorityPakOnly)) });
+        console->PerformCommand("sys_PakPriority", { AZ::CVarFixedString::format("%d", aznumeric_cast<int>(AZ::IO::FileSearchPriority::PakOnly)) });
 
         handle = archive->FindFirst("levels\\*");
         EXPECT_FALSE(static_cast<bool>(handle));
@@ -484,7 +486,7 @@ namespace UnitTest
         pArchive.reset();
         EXPECT_TRUE(IsPackValid(testArchivePath_withMountPoint));
 
-        EXPECT_TRUE(archive->OpenPack("@assets@\\uniquename\\mylevel2", testArchivePath_withMountPoint));
+        EXPECT_TRUE(archive->OpenPack("@products@\\uniquename\\mylevel2", testArchivePath_withMountPoint));
 
         // ---- BARRAGE OF TESTS
         EXPECT_TRUE(archive->IsFileExist("uniquename\\mylevel2\\levelinfo.xml"));
@@ -543,7 +545,7 @@ namespace UnitTest
         archive->ClosePack(testArchivePath_withMountPoint);
 
         // --- test to make sure that when you iterate only the first component is found, so bury it deep and ask for the root
-        EXPECT_TRUE(archive->OpenPack("@assets@\\uniquename\\mylevel2\\mylevel3\\mylevel4", testArchivePath_withMountPoint));
+        EXPECT_TRUE(archive->OpenPack("@products@\\uniquename\\mylevel2\\mylevel3\\mylevel4", testArchivePath_withMountPoint));
 
         found_mylevel_folder = false;
         handle = archive->FindFirst("uniquename\\*");
@@ -574,9 +576,9 @@ namespace UnitTest
         found_mylevel_folder = false;
 
         // now make sure no red herrings appear
-        // for example, if a file is mounted at "@assets@\\uniquename\\mylevel2\\mylevel3\\mylevel4"
-        // and the file "@assets@\\somethingelse" is requested it should not be found
-        // in addition if the file "@assets@\\uniquename\\mylevel3" is requested it should not be found
+        // for example, if a file is mounted at "@products@\\uniquename\\mylevel2\\mylevel3\\mylevel4"
+        // and the file "@products@\\somethingelse" is requested it should not be found
+        // in addition if the file "@products@\\uniquename\\mylevel3" is requested it should not be found
         handle = archive->FindFirst("somethingelse\\*");
         EXPECT_FALSE(static_cast<bool>(handle));
 
@@ -610,7 +612,7 @@ namespace UnitTest
         cpfio.Remove(genericArchiveFileName);
 
         // create the asset alias directory
-        cpfio.CreatePath("@assets@");
+        cpfio.CreatePath("@products@");
 
         // create generic file
 
@@ -635,11 +637,11 @@ namespace UnitTest
         pArchive.reset();
         EXPECT_TRUE(IsPackValid(genericArchiveFileName));
 
-        EXPECT_TRUE(archive->OpenPack("@assets@", genericArchiveFileName));
+        EXPECT_TRUE(archive->OpenPack("@products@", genericArchiveFileName));
 
         // ---- BARRAGE OF TESTS
         EXPECT_TRUE(cpfio.Exists("testfile.xml"));
-        EXPECT_TRUE(cpfio.Exists("@assets@/testfile.xml"));  // this should be hte same file
+        EXPECT_TRUE(cpfio.Exists("@products@/testfile.xml"));  // this should be hte same file
         EXPECT_TRUE(!cpfio.Exists("@log@/testfile.xml"));
         EXPECT_TRUE(!cpfio.Exists("@usercache@/testfile.xml"));
         EXPECT_TRUE(cpfio.Exists("@log@/unittesttemp/realfileforunittest.xml"));
@@ -685,9 +687,9 @@ namespace UnitTest
         EXPECT_EQ(ResultCode::Success, cpfio.Close(normalFileHandle));
 
         EXPECT_TRUE(!cpfio.IsDirectory("testfile.xml"));
-        EXPECT_TRUE(cpfio.IsDirectory("@assets@"));
+        EXPECT_TRUE(cpfio.IsDirectory("@products@"));
         EXPECT_TRUE(cpfio.IsReadOnly("testfile.xml"));
-        EXPECT_TRUE(cpfio.IsReadOnly("@assets@/testfile.xml"));
+        EXPECT_TRUE(cpfio.IsReadOnly("@products@/testfile.xml"));
         EXPECT_TRUE(!cpfio.IsReadOnly("@log@/unittesttemp/realfileforunittest.xml"));
 
 
@@ -714,10 +716,10 @@ namespace UnitTest
 
         // find files test.
         AZ::IO::FixedMaxPath resolvedTestFilePath;
-        EXPECT_TRUE(cpfio.ResolvePath(resolvedTestFilePath, AZ::IO::PathView("@assets@/testfile.xml")));
+        EXPECT_TRUE(cpfio.ResolvePath(resolvedTestFilePath, AZ::IO::PathView("@products@/testfile.xml")));
         bool foundIt = false;
         // note that this file exists only in the archive.
-        cpfio.FindFiles("@assets@", "*.xml", [&foundIt, &cpfio, &resolvedTestFilePath](const char* foundName)
+        cpfio.FindFiles("@products@", "*.xml", [&foundIt, &cpfio, &resolvedTestFilePath](const char* foundName)
             {
                 AZ::IO::FixedMaxPath resolvedFoundPath;
                 EXPECT_TRUE(cpfio.ResolvePath(resolvedFoundPath, AZ::IO::PathView(foundName)));
@@ -734,10 +736,10 @@ namespace UnitTest
 
 
         // The following test is disabled because it will trigger an AZ_ERROR which will affect the outcome of this entire test
-        // EXPECT_NE(ResultCode::Success, cpfio.Remove("@assets@/testfile.xml")); // may not delete archive files
+        // EXPECT_NE(ResultCode::Success, cpfio.Remove("@products@/testfile.xml")); // may not delete archive files
 
         // make sure it works with and without alias:
-        EXPECT_TRUE(cpfio.Exists("@assets@/testfile.xml"));
+        EXPECT_TRUE(cpfio.Exists("@products@/testfile.xml"));
         EXPECT_TRUE(cpfio.Exists("testfile.xml"));
 
         EXPECT_TRUE(cpfio.Exists("@log@/unittesttemp/realfileforunittest.xml"));
@@ -783,27 +785,27 @@ namespace UnitTest
 
         EXPECT_TRUE(archive->OpenPack("@usercache@", realNameBuf));
         EXPECT_TRUE(archive->IsFileExist("@usercache@/foundit.dat"));
-        EXPECT_FALSE(archive->IsFileExist("@usercache@/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
+        EXPECT_FALSE(archive->IsFileExist("@usercache@/foundit.dat", AZ::IO::FileSearchLocation::OnDisk));
         EXPECT_FALSE(archive->IsFileExist("@usercache@/notfoundit.dat"));
         EXPECT_TRUE(archive->ClosePack(realNameBuf));
 
         // change its actual location:
-        EXPECT_TRUE(archive->OpenPack("@assets@", realNameBuf));
-        EXPECT_TRUE(archive->IsFileExist("@assets@/foundit.dat"));
+        EXPECT_TRUE(archive->OpenPack("@products@", realNameBuf));
+        EXPECT_TRUE(archive->IsFileExist("@products@/foundit.dat"));
         EXPECT_FALSE(archive->IsFileExist("@usercache@/foundit.dat")); // do not find it in the previous location!
-        EXPECT_FALSE(archive->IsFileExist("@assets@/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
-        EXPECT_FALSE(archive->IsFileExist("@assets@/notfoundit.dat"));
+        EXPECT_FALSE(archive->IsFileExist("@products@/foundit.dat", AZ::IO::FileSearchLocation::OnDisk));
+        EXPECT_FALSE(archive->IsFileExist("@products@/notfoundit.dat"));
         EXPECT_TRUE(archive->ClosePack(realNameBuf));
 
         // try sub-folders
-        EXPECT_TRUE(archive->OpenPack("@assets@/mystuff", realNameBuf));
-        EXPECT_TRUE(archive->IsFileExist("@assets@/mystuff/foundit.dat"));
-        EXPECT_FALSE(archive->IsFileExist("@assets@/foundit.dat")); // do not find it in the previous locations!
+        EXPECT_TRUE(archive->OpenPack("@products@/mystuff", realNameBuf));
+        EXPECT_TRUE(archive->IsFileExist("@products@/mystuff/foundit.dat"));
+        EXPECT_FALSE(archive->IsFileExist("@products@/foundit.dat")); // do not find it in the previous locations!
         EXPECT_FALSE(archive->IsFileExist("@usercache@/foundit.dat")); // do not find it in the previous locations!
-        EXPECT_FALSE(archive->IsFileExist("@assets@/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
-        EXPECT_FALSE(archive->IsFileExist("@assets@/mystuff/foundit.dat", AZ::IO::IArchive::eFileLocation_OnDisk));
-        EXPECT_FALSE(archive->IsFileExist("@assets@/notfoundit.dat")); // non-existent file
-        EXPECT_FALSE(archive->IsFileExist("@assets@/mystuff/notfoundit.dat")); // non-existent file
+        EXPECT_FALSE(archive->IsFileExist("@products@/foundit.dat", AZ::IO::FileSearchLocation::OnDisk));
+        EXPECT_FALSE(archive->IsFileExist("@products@/mystuff/foundit.dat", AZ::IO::FileSearchLocation::OnDisk));
+        EXPECT_FALSE(archive->IsFileExist("@products@/notfoundit.dat")); // non-existent file
+        EXPECT_FALSE(archive->IsFileExist("@products@/mystuff/notfoundit.dat")); // non-existent file
         EXPECT_TRUE(archive->ClosePack(realNameBuf));
     }
 
@@ -861,7 +863,7 @@ namespace UnitTest
         AZ::IO::FileIOBase* ioBase = AZ::IO::FileIOBase::GetInstance();
         ASSERT_NE(nullptr, ioBase);
 
-        const char* assetsPath = ioBase->GetAlias("@assets@");
+        const char* assetsPath = ioBase->GetAlias("@products@");
         ASSERT_NE(nullptr, assetsPath);
 
         auto stringToAdd = AZ::IO::Path(assetsPath) / "textures" / "test.dds";
@@ -872,7 +874,7 @@ namespace UnitTest
         // it normalizes the string, so the slashes flip and everything is lowercased.
         AZ::IO::FixedMaxPath resolvedAddedPath;
         AZ::IO::FixedMaxPath resolvedResourcePath;
-        EXPECT_TRUE(ioBase->ReplaceAlias(resolvedAddedPath, "@assets@/textures/test.dds"));
+        EXPECT_TRUE(ioBase->ReplaceAlias(resolvedAddedPath, "@products@/textures/test.dds"));
         EXPECT_TRUE(ioBase->ReplaceAlias(resolvedResourcePath, reslist->GetFirst()));
         EXPECT_EQ(resolvedAddedPath, resolvedResourcePath);
         reslist->Clear();

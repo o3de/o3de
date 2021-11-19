@@ -1,0 +1,147 @@
+{
+    "entries": [
+        {
+            "key": "QuadShapeComponentRequestsBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "QuadShapeComponentRequestsBus"
+            },
+            "methods": [
+                {
+                    "key": "SetQuadHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetQuadHeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetQuadHeight is invoked"
+                    },
+                    "details": {
+                        "name": "SetQuadHeight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetQuadWidth",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetQuadWidth"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetQuadWidth is invoked"
+                    },
+                    "details": {
+                        "name": "GetQuadWidth"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetQuadHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetQuadHeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetQuadHeight is invoked"
+                    },
+                    "details": {
+                        "name": "GetQuadHeight"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetQuadConfiguration",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetQuadConfiguration"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetQuadConfiguration is invoked"
+                    },
+                    "details": {
+                        "name": "GetQuadConfiguration"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{35CA7415-DB12-4630-B0D0-4A140CE1B9A7}",
+                            "details": {
+                                "name": "Configuration",
+                                "tooltip": "Quad shape configuration parameters"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetQuadWidth",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetQuadWidth"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetQuadWidth is invoked"
+                    },
+                    "details": {
+                        "name": "SetQuadWidth"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetQuadOrientation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetQuadOrientation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetQuadOrientation is invoked"
+                    },
+                    "details": {
+                        "name": "GetQuadOrientation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Quaternion"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -157,7 +157,7 @@ public:
 
     virtual Vec3 SnapToGrid(const Vec3& vec) = 0;
 
-    //! Get selection procision tolerance.
+    //! Get selection precision tolerance.
     virtual float GetSelectionTolerance() const = 0;
 
     //////////////////////////////////////////////////////////////////////////
@@ -491,10 +491,6 @@ public:
     void ResetCursor() override;
     void SetSupplementaryCursorStr(const QString& str) override;
 
-    //////////////////////////////////////////////////////////////////////////
-    // Return visble objects cache.
-    CBaseObjectsCache* GetVisibleObjectsCache()  override { return m_pVisibleObjectsCache; };
-
     void RegisterRenderListener(IRenderListener*    piListener) override;
     bool UnregisterRenderListener(IRenderListener*  piListener) override;
     bool IsRenderListenerRegistered(IRenderListener*    piListener) override;
@@ -611,8 +607,6 @@ protected:
 
     int m_nLastUpdateFrame;
     int m_nLastMouseMoveFrame;
-
-    CBaseObjectsCache* m_pVisibleObjectsCache;
 
     QRect m_rcClient;
 

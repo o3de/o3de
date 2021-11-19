@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiParticleInitialDirectionType_RelativeToEmitterCenter",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiParticleInitialDirectionType_RelativeToEmitterCenter::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

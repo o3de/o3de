@@ -192,9 +192,9 @@ class TestRegisterGem:
     def test_register_gem_auto_detects_manifest_update(self, gem_path, expected_manifest_file,expected_result):
 
         def save_o3de_manifest(manifest_data: dict, manifest_path: pathlib.Path = None) -> bool:
-            if manifest_path == TestRegisterGem.project_path / 'project.json':
+            if manifest_path == pathlib.Path(TestRegisterGem.project_path).resolve() / 'project.json':
                 self.project_data = manifest_data
-            elif manifest_path == TestRegisterGem.engine_path / 'engine.json':
+            elif manifest_path == pathlib.Path(TestRegisterGem.engine_path).resolve() / 'engine.json':
                 self.engine_data = manifest_data
             else:
                 self.o3de_manifest_data = manifest_data
@@ -240,11 +240,11 @@ class TestRegisterGem:
             assert result == expected_result
 
             if expected_manifest_file == pathlib.PurePath('o3de_manifest.json'):
-                assert gem_path in map(lambda subdir: pathlib.PurePath(subdir),
+                assert pathlib.Path(gem_path).resolve() in map(lambda subdir: pathlib.PurePath(subdir),
                                        self.o3de_manifest_data.get('external_subdirectories', []))
             elif expected_manifest_file == pathlib.PurePath('project.json'):
-                assert gem_path in map(lambda subdir: pathlib.PurePath(TestRegisterGem.project_path) / subdir,
+                assert gem_path in map(lambda subdir: TestRegisterGem.project_path / subdir,
                                        self.project_data.get('external_subdirectories', []))
             elif expected_manifest_file == pathlib.PurePath('engine.json'):
-                assert gem_path in map(lambda subdir: pathlib.PurePath(TestRegisterGem.engine_path) / subdir,
+                assert gem_path in map(lambda subdir: TestRegisterGem.engine_path / subdir,
                                        self.engine_data.get('external_subdirectories', []))

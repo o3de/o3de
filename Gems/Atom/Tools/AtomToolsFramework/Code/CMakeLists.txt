@@ -10,6 +10,8 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
+ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+
 ly_add_target(
     NAME AtomToolsFramework.Static STATIC
     NAMESPACE Gem
@@ -18,9 +20,11 @@ ly_add_target(
     AUTORCC
     FILES_CMAKE
         atomtoolsframework_files.cmake
+        ${pal_source_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
+            ${pal_source_dir}
         PUBLIC
             Include
     BUILD_DEPENDENCIES
@@ -36,6 +40,7 @@ ly_add_target(
             Gem::Atom_RPI.Edit
             Gem::Atom_RPI.Public
             Gem::Atom_RHI.Reflect
+            Gem::Atom_Feature_Common.Static
             Gem::Atom_Bootstrap.Headers
 )
 
@@ -56,3 +61,31 @@ ly_add_target(
         PRIVATE
             Gem::AtomToolsFramework.Static
 )
+
+################################################################################
+# Tests
+################################################################################
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
+
+    ly_add_target(
+        NAME AtomToolsFramework.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAMESPACE Gem
+        FILES_CMAKE
+            atomtoolsframework_tests_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+                Tests
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzTest
+                AZ::AzTestShared
+                Gem::AtomToolsFramework.Static
+                Gem::Atom_Utils.TestUtils.Static
+    )
+
+    ly_add_googletest(
+        NAME Gem::AtomToolsFramework.Tests
+    )
+
+endif()

@@ -13,6 +13,9 @@
 #include <QFileInfo>
 #include <QProcess>
 #include <QProcessEnvironment>
+#include <QStandardPaths>
+
+#include <AzCore/Utils/Utils.h>
 
 namespace O3DE::ProjectManager
 {
@@ -92,12 +95,78 @@ namespace O3DE::ProjectManager
                 }
             }
 
-            return AZ::Failure(QObject::tr("Visual Studio 2019 version 16.9.2 or higher not found.\n\n"
+            return AZ::Failure(QObject::tr("Visual Studio 2019 version 16.9.2 or higher not found.<br><br>"
                 "Visual Studio 2019 is required to build this project."
                 " Install any edition of <a href='https://visualstudio.microsoft.com/downloads/'>Visual Studio 2019</a>"
                 " or update to a newer version before proceeding to the next step."
                 " While installing configure Visual Studio with these <a href='https://o3de.org/docs/welcome-guide/setup/requirements/#visual-studio-configuration'>workloads</a>."));
         }
         
+        AZ::Outcome<void, QString> OpenCMakeGUI(const QString& projectPath)
+        {
+            AZ::Outcome processEnvResult = GetCommandLineProcessEnvironment();
+            if (!processEnvResult.IsSuccess())
+            {
+                return AZ::Failure(processEnvResult.GetError());
+            }
+
+            QString projectBuildPath = QDir(projectPath).filePath(ProjectBuildPathPostfix);
+            AZ::Outcome projectBuildPathResult = GetProjectBuildPath(projectPath);
+            if (projectBuildPathResult.IsSuccess())
+            {
+                projectBuildPath = projectBuildPathResult.GetValue();
+            }
+
+            QProcess process;
+            process.setProcessEnvironment(processEnvResult.GetValue());
+
+            // if the project build path is relative, it should be relative to the project path 
+            process.setWorkingDirectory(projectPath);
+
+            process.setProgram("cmake-gui");
+            process.setArguments({ "-S", projectPath, "-B", projectBuildPath });
+            if(!process.startDetached())
+            {
+                return AZ::Failure(QObject::tr("Failed to start CMake GUI"));
+            }
+
+            return AZ::Success();
+        }
+
+        AZ::Outcome<QString, QString> RunGetPythonScript(const QString& engineRoot)
+        {
+            const QString batPath = QString("%1/python/get_python.bat").arg(engineRoot);
+            return ExecuteCommandResultModalDialog(
+                "cmd.exe",
+                QStringList{"/c", batPath},
+                QProcessEnvironment::systemEnvironment(),
+                QObject::tr("Running get_python script..."));
+        }
+
+        AZ::IO::FixedMaxPath GetEditorDirectory()
+        {
+            return AZ::Utils::GetExecutableDirectory();
+        }
+
+        AZ::Outcome<QString, QString> CreateDesktopShortcut(const QString& filename, const QString& targetPath, const QStringList& arguments)
+        {
+            const QString cmd{"powershell.exe"};
+            const QString desktopPath = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+            const QString shortcutPath = QString("%1/%2.lnk").arg(desktopPath).arg(filename);
+            const QString arg = QString("$s=(New-Object -COM WScript.Shell).CreateShortcut('%1');$s.TargetPath='%2';$s.Arguments='%3';$s.Save();")
+                    .arg(shortcutPath)
+                    .arg(targetPath)
+                    .arg(arguments.join(' '));
+            auto createShortcutResult = ExecuteCommandResult(cmd, QStringList{"-Command", arg}, QProcessEnvironment::systemEnvironment());
+            if (!createShortcutResult.IsSuccess())
+            {
+                return AZ::Failure(QObject::tr("Failed to create desktop shortcut %1 <br><br>"
+                                               "Please verify you have permission to create files at the specified location.<br><br> %2")
+                                    .arg(shortcutPath)
+                                    .arg(createShortcutResult.GetError()));
+            }
+
+            return AZ::Success(QObject::tr("Desktop shortcut created at<br><a href=\"%1\">%2</a>").arg(desktopPath).arg(shortcutPath));
+        }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

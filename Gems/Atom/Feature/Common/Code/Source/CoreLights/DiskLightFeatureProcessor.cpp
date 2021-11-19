@@ -322,11 +322,6 @@ namespace AZ
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowFilterMethod, method);
         }
-            
-        void DiskLightFeatureProcessor::SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetSofteningBoundaryWidthAngle, boundaryWidthRadians);
-        }
         
         void DiskLightFeatureProcessor::SetFilteringSampleCount(LightHandle handle, uint16_t count)
         {

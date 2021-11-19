@@ -82,8 +82,6 @@ namespace AZ
             void SetShadowmapMaxSize(ShadowmapSize size) override;
             ShadowFilterMethod GetShadowFilterMethod() const override;
             void SetShadowFilterMethod(ShadowFilterMethod method) override;
-            float GetSofteningBoundaryWidthAngle() const override;
-            void SetSofteningBoundaryWidthAngle(float width) override;
             uint32_t GetFilteringSampleCount() const override;
             void SetFilteringSampleCount(uint32_t count) override;
             float GetEsmExponent() const override;

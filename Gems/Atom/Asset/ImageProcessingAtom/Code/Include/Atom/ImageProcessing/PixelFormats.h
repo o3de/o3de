@@ -39,16 +39,7 @@ namespace ImageProcessingAtom
         ePixelFormat_ASTC_10x8,
         ePixelFormat_ASTC_10x10,
         ePixelFormat_ASTC_12x10,
-        ePixelFormat_ASTC_12x12,
-        //Formats supported by PowerVR GPU. Mainly for ios devices.
-        ePixelFormat_PVRTC2,        //2bpp
-        ePixelFormat_PVRTC4,        //4bpp
-        //formats for opengl and opengles 3.0 (android devices)
-        ePixelFormat_EAC_R11,       //one channel unsigned data
-        ePixelFormat_EAC_RG11,      //two channel unsigned data
-        ePixelFormat_ETC2,          //Compresses RGB888 data, it taks 4x4 groups of pixel data and compresses each into a 64-bit
-        ePixelFormat_ETC2a1,        //Compresses RGB888A1 data, it taks 4x4 groups of pixel data and compresses each into a 64-bit
-        ePixelFormat_ETC2a,         //Compresses RGBA8888 data with full alpha support
+        ePixelFormat_ASTC_12x12,       
 
         // Standardized Compressed DXGI Formats (DX10+)
         // Data in these compressed formats is hardware decodable on all DX10 chips, and manageable with the DX10-API.
@@ -88,7 +79,6 @@ namespace ImageProcessingAtom
     };
 
     bool IsASTCFormat(EPixelFormat fmt);
-    bool IsETCFormat(EPixelFormat fmt);
 } // namespace ImageProcessingAtom
 
 namespace AZ

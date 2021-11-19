@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DepthWriteMask_Invalid",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DepthWriteMask_Invalid::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

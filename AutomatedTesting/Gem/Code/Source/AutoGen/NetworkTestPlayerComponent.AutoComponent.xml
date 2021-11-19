@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+
+<Component
+    Name="NetworkTestPlayerComponent"
+    Namespace="AutomatedTesting"
+    OverrideComponent="false"
+    OverrideController="false"
+    OverrideInclude=""
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    
+    <ComponentRelation Constraint="Required" HasController="true" Name="NetworkTransformComponent" Namespace="Multiplayer" Include="Multiplayer/Components/NetworkTransformComponent.h" />
+    
+    <NetworkInput Type="float" Name="FwdBack" Init="0.0f" ExposeToScript="true"/>
+    <NetworkInput Type="float" Name="LeftRight" Init="0.0f" ExposeToScript="true"/>
+
+</Component>

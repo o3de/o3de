@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiTextOverflowMode_Ellipsis",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiTextOverflowMode_Ellipsis::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

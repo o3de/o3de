@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/list.h>
@@ -38,7 +39,8 @@ namespace ImageProcessingAtom
 #define STRING_OUTCOME_ERROR(error) AZ::Failure(AZStd::string(error))
 
     // Common typedefs (with dependent forward-declarations)
-    typedef AZStd::string PlatformName, PresetName, FileMask;
+    typedef AZStd::string PlatformName, FileMask;
+    typedef AZ::Name PresetName;
     typedef AZStd::vector<PlatformName> PlatformNameVector;
     typedef AZStd::list<PlatformName> PlatformNameList;
 

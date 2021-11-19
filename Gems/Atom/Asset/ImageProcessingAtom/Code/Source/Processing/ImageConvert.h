@@ -115,7 +115,6 @@ namespace ImageProcessingAtom
 
         //get output images
         IImageObjectPtr GetOutputImage();
-        IImageObjectPtr GetOutputAlphaImage();
         IImageObjectPtr GetOutputIBLSpecularCubemap();
         IImageObjectPtr GetOutputIBLDiffuseCubemap();
 
@@ -131,8 +130,6 @@ namespace ImageProcessingAtom
         //for alpha
         //to indicate the current alpha channel content
         EAlphaContent m_alphaContent;
-        //An image object to hold alpha channel in a separate image
-        IImageObjectPtr m_alphaImage;
 
         //output results of IBL cubemap generation, used in unit tests
         IImageObjectPtr m_iblSpecularCubemapImage;
@@ -163,16 +160,13 @@ namespace ImageProcessingAtom
         bool FillCubemapMipmaps();
 
         //IBL cubemap generation, this creates a separate ImageConvertProcess
-        void CreateIBLCubemap(AZ::Uuid presetUUID, const char* fileNameSuffix, IImageObjectPtr& cubemapImage);
+        void CreateIBLCubemap(PresetName preset, const char* fileNameSuffix, IImageObjectPtr& cubemapImage);
 
         //convert color space to linear with pixel format rgba32f
         bool ConvertToLinear();
 
         //convert to output color space before compression
         bool ConvertToOuputColorSpace();
-
-        //create alpha image if it's needed
-        void CreateAlphaImage();
 
         //pixel format convertion/compression
         bool ConvertPixelformat();

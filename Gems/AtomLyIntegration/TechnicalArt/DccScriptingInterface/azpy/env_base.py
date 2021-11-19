@@ -10,7 +10,7 @@
 # -- This line is 75 characters -------------------------------------------
 from __future__ import unicode_literals
 '''
-Module: <DCCsi>\azpy\shared\common\base_env.py
+Module: <DCCsi>\\azpy\\shared\\common\\base_env.py
 
 This module packs the most basic set of environment variables.
 
@@ -57,7 +57,7 @@ _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 
 #  global space
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 # set up base totally non-functional defauls (denoted with $<ENVAR>)
@@ -65,15 +65,15 @@ _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 _BASE_ENVVAR_DICT = OrderedDict()
 
 #  project tag
-_BASE_ENVVAR_DICT[ENVAR_LY_PROJECT] = '${0}'.format(ENVAR_LY_PROJECT)
+_BASE_ENVVAR_DICT[ENVAR_O3DE_PROJECT] = '${0}'.format(ENVAR_O3DE_PROJECT)
 
 #  paths
-_BASE_ENVVAR_DICT[ENVAR_LY_DEV] = Path('${0}'.format(ENVAR_LY_DEV))
-_BASE_ENVVAR_DICT[ENVAR_LY_PROJECT_PATH] = Path('${0}'.format(ENVAR_LY_PROJECT_PATH))
+_BASE_ENVVAR_DICT[ENVAR_O3DE_DEV] = Path('${0}'.format(ENVAR_O3DE_DEV))
+_BASE_ENVVAR_DICT[ENVAR_O3DE_PROJECT_PATH] = Path('${0}'.format(ENVAR_O3DE_PROJECT_PATH))
 _BASE_ENVVAR_DICT[ENVAR_DCCSIG_PATH] = Path('${0}'.format(ENVAR_DCCSIG_PATH))
 _BASE_ENVVAR_DICT[ENVAR_DCCSI_LOG_PATH] = Path('${0}'.format(ENVAR_DCCSI_LOG_PATH))
 _BASE_ENVVAR_DICT[ENVAR_DCCSI_AZPY_PATH] = Path('${0}'.format(ENVAR_DCCSI_AZPY_PATH))
-_BASE_ENVVAR_DICT[ENVAR_DCCSI_SDK_PATH] = Path('${0}'.format(ENVAR_DCCSI_SDK_PATH))
+_BASE_ENVVAR_DICT[ENVAR_DCCSI_TOOLS_PATH] = Path('${0}'.format(ENVAR_DCCSI_TOOLS_PATH))
 
 # dev env flags
 _BASE_ENVVAR_DICT[ENVAR_DCCSI_GDEBUG] = '${0}'.format(ENVAR_DCCSI_GDEBUG)
@@ -110,16 +110,16 @@ if __name__ == '__main__':
     # print(setEnvarDefaults(), '\r') #<-- not necissary, already called
     # print(BASE_ENVVAR_VALUES, '\r')
     _LOGGER.info('Pretty print: _BASE_ENVVAR_DICT')
-    print(json.dumps(_BASE_ENVVAR_DICT,
-                     indent=4, sort_keys=False,
-                     ensure_ascii=False), '\r')
+    _LOGGER.debug(json.dumps(_BASE_ENVVAR_DICT,
+                             indent=4, sort_keys=False,
+                             ensure_ascii=False), '\r')
 
     #  retreive a Path type key from the Box
-    foo = _BASE_ENVVAR_DICT[ENVAR_LY_DEV]
+    foo = _BASE_ENVVAR_DICT[ENVAR_O3DE_DEV]
     _LOGGER.info('~ foo is: {0}'.format(type(foo), foo))
 
     # simple tests
-    _ENV_TAG = 'LY_DEV'
+    _ENV_TAG = 'O3DE_DEV'
     foo = get_envar_default(_ENV_TAG)
     _LOGGER.info("~ Results of getVar on tag, '{0}':'{1}'\r".format(_ENV_TAG, foo))
 

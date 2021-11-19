@@ -35,7 +35,7 @@ from azpy.constants import ENVAR_DCCSI_GDEBUG
 from azpy.constants import ENVAR_DCCSI_DEV_MODE
 
 # set up global space, logging etc.
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, settings.DCCSI_GDEBUG)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, settings.DCCSI_GDEBUG)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, settings.DCCSI_GDEBUG)
 
 for handler in _logging.root.handlers[:]:
@@ -44,7 +44,7 @@ for handler in _logging.root.handlers[:]:
 _MODULENAME = 'DCCsi.SDK.substance.builder.sb_gui_main'
 
 _log_level = _logging.INFO
-if _G_DEBUG:
+if _DCCSI_GDEBUG:
     _log_level = _logging.DEBUG
 
 _LOGGER = azpy.initialize_logger(name=_MODULENAME,
@@ -71,12 +71,12 @@ import config
 _LOGGER.debug('config.py is: {}'.format(config))
 
 # initialize the Lumberyard Qt / PySide2
-config.init_ly_pyside(settings.LY_DEV)  # for standalone
+config.init_o3de_pyside(settings.O3DE_DEV)  # for standalone
 settings.setenv()  # for standalone
 
 # log debug info about Qt/PySide2
 _LOGGER.debug('QTFORPYTHON_PATH: {}'.format(settings.QTFORPYTHON_PATH))
-_LOGGER.debug('LY_BIN_PATH: {}'.format(settings.LY_BIN_PATH))
+_LOGGER.debug('O3DE_BIN_PATH: {}'.format(settings.O3DE_BIN_PATH))
 _LOGGER.debug('QT_PLUGIN_PATH: {}'.format(settings.QT_PLUGIN_PATH))
 _LOGGER.debug('QT_QPA_PLATFORM_PLUGIN_PATH: {}'.format(settings.QT_QPA_PLATFORM_PLUGIN_PATH))
 # -------------------------------------------------------------------------
@@ -123,26 +123,26 @@ from atom_material import AtomMaterial
 
 # -------------------------------------------------------------------------
 # To Do: still should manage via dynaconf (dynamic config and settings)
-from azpy.constants import ENVAR_LY_DEV
-_LY_DEV = Path(os.getenv(ENVAR_LY_DEV, None)).resolve()
+from azpy.constants import ENVAR_O3DE_DEV
+_O3DE_DEV = Path(os.getenv(ENVAR_O3DE_DEV, None)).resolve()
 
-from azpy.constants import ENVAR_LY_PROJECT
-_LY_PROJECT = os.getenv(ENVAR_LY_PROJECT, None)
+from azpy.constants import ENVAR_O3DE_PROJECT
+_O3DE_PROJECT = os.getenv(ENVAR_O3DE_PROJECT, None)
 
-from azpy.constants import ENVAR_LY_PROJECT_PATH
-_LY_PROJECT_PATH = Path(os.getenv(ENVAR_LY_PROJECT_PATH, None)).resolve()
+from azpy.constants import ENVAR_O3DE_PROJECT_PATH
+_O3DE_PROJECT_PATH = Path(os.getenv(ENVAR_O3DE_PROJECT_PATH, None)).resolve()
 
 from azpy.constants import ENVAR_DCCSI_SDK_PATH
 _DCCSI_SDK_PATH = Path(os.getenv(ENVAR_DCCSI_SDK_PATH, None)).resolve()
 
 # build some reuseable path parts
-_PROJECT_ASSET_PATH = Path(_LY_PROJECT_PATH).resolve()
-_PROJECT_ASSETS_PATH = Path(_LY_PROJECT_PATH, 'Materials').resolve()
+_PROJECT_ASSET_PATH = Path(_O3DE_PROJECT_PATH).resolve()
+_PROJECT_ASSETS_PATH = Path(_O3DE_PROJECT_PATH, 'Materials').resolve()
 
 # To Do: figure out a proper way to deal with Lumberyard game projects
-_GEM_MATPLAY_PATH = Path(_LY_DEV, 'Gems', 'AtomContent', 'AtomMaterialPlayground').resolve()
-_GEM_ROYALTYFREE = Path(_LY_DEV, 'Gems', 'AtomContent', 'RoyaltyFreeAssets').resolve()
-_GEM_SUBSOURCELIBRARY = Path(_LY_DEV, 'Gems', 'AtomContent', 'SubstanceSourceLibrary').resolve()
+_GEM_MATPLAY_PATH = Path(_O3DE_DEV, 'Gems', 'AtomContent', 'AtomMaterialPlayground').resolve()
+_GEM_ROYALTYFREE = Path(_O3DE_DEV, 'Gems', 'AtomContent', 'RoyaltyFreeAssets').resolve()
+_GEM_SUBSOURCELIBRARY = Path(_O3DE_DEV, 'Gems', 'AtomContent', 'SubstanceSourceLibrary').resolve()
 _SUB_LIBRARY_PATH = Path(_GEM_SUBSOURCELIBRARY, 'Assets', 'SubstanceSource', 'Library').resolve()
 # ^ This hard codes a bunch of known asset gems, again bad
 # To Do: figure out a proper way to scrap the gem registry from project
@@ -150,9 +150,9 @@ _SUB_LIBRARY_PATH = Path(_GEM_SUBSOURCELIBRARY, 'Assets', 'SubstanceSource', 'Li
 # path to watcher script
 _WATCHER_SCRIPT_PATH = Path(_DCCSI_SDK_PATH, 'substance', 'builder', 'watchdog', '__init__.py').resolve()
 
-_TEX_RNDR_PATH = Path(_LY_PROJECT_PATH, 'Materials', 'Substance').resolve()
-_MAT_OUTPUT_PATH = Path(_LY_PROJECT_PATH, 'Materials', 'Substance').resolve()
-_SBSAR_COOK_PATH = Path(_LY_PROJECT_PATH, 'Materials', 'Substance').resolve()
+_TEX_RNDR_PATH = Path(_O3DE_PROJECT_PATH, 'Materials', 'Substance').resolve()
+_MAT_OUTPUT_PATH = Path(_O3DE_PROJECT_PATH, 'Materials', 'Substance').resolve()
+_SBSAR_COOK_PATH = Path(_O3DE_PROJECT_PATH, 'Materials', 'Substance').resolve()
 # -------------------------------------------------------------------------
 
 
@@ -171,7 +171,7 @@ class Window(QtWidgets.QDialog):
 
         # we should really init non-Qt stuff and set things up as properties
         if project_path is None:
-            self.project_path = str(_LY_PROJECT_PATH)
+            self.project_path = str(_O3DE_PROJECT_PATH)
         else:
             self.project_path = Path(project_path)
 
@@ -213,7 +213,7 @@ class Window(QtWidgets.QDialog):
         self.matOutputPathComboBox = self.createComboBox(str(_MAT_OUTPUT_PATH))
 
         # self.directoryComboBox = self.createComboBox(QtCore.QDir.currentPath())
-        #  I changed this to scan the _LY_PROJECT
+        #  I changed this to scan the _O3DE_PROJECT
         # self.sbsarDirectory = self.return_1st_sbsar(Path(self.project_path, 'Assets')).resolve().parent
         self.sbsarDirectory = QtCore.QDir()
         self.sbsarDirectory.setCurrent(str(_PROJECT_ASSET_PATH))
@@ -672,13 +672,13 @@ class Window(QtWidgets.QDialog):
 
         # if you want relative paths here is a better way
         # first of all, assume we know the project we are in
-        #_LY_PROJECT_PATH
+        #_O3DE_PROJECT_PATH
 
         texture_output_path = Path(self.texRenderPathComboBox.currentText()).resolve()
         rel_tex_path = None
         for p in texture_output_path.parts:
-            if _LY_PROJECT == p:
-                index = texture_output_path.parts.index(_LY_PROJECT)
+            if _O3DE_PROJECT == p:
+                index = texture_output_path.parts.index(_O3DE_PROJECT)
                 rel_tuple = texture_output_path.parts[index + 1:]
                 rel_tex_path = Path(*list(rel_tuple))
 

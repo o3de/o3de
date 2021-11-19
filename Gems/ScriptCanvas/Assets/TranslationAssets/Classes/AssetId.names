@@ -1,0 +1,145 @@
+{
+    "entries": [
+        {
+            "key": "AssetId",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Asset Id",
+                "category": "Asset"
+            },
+            "methods": [
+                {
+                    "key": "CreateString",
+                    "context": "AssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateString is invoked"
+                    },
+                    "details": {
+                        "name": "Create String"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "String"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsValid",
+                    "context": "AssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsValid"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsValid is invoked"
+                    },
+                    "details": {
+                        "name": "Is Valid"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Asset Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Valid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ToString",
+                    "context": "AssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToString is invoked"
+                    },
+                    "details": {
+                        "name": "To String"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Asset Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "String"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsEqual",
+                    "context": "AssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsEqual"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsEqual is invoked"
+                    },
+                    "details": {
+                        "name": "Is Equal"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Asset Id"
+                            }
+                        },
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Asset Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Equal"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

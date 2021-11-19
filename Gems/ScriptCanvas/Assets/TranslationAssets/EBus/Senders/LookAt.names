@@ -1,0 +1,81 @@
+{
+    "entries": [
+        {
+            "key": "LookAt",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "LookAt"
+            },
+            "methods": [
+                {
+                    "key": "SetTarget",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTarget"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTarget is invoked"
+                    },
+                    "details": {
+                        "name": "SetTarget"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTargetPosition",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTargetPosition"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTargetPosition is invoked"
+                    },
+                    "details": {
+                        "name": "SetTargetPosition"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetAxis",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetAxis"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetAxis is invoked"
+                    },
+                    "details": {
+                        "name": "SetAxis"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

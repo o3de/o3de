@@ -33,14 +33,14 @@ namespace PhysX
             if (auto* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<EditorBallJointComponent>(
-                    "PhysX Ball Joint", "The ball joint supports a cone limiting the maximum rotation around the y and z axes.")
+                    "PhysX Ball Joint", "A dynamic joint constraint with swing rotation limits around the Y and Z axes of the joint.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/ball-joint/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->DataElement(0, &EditorBallJointComponent::m_swingLimit, "Swing Limit", "Limitations for the swing (Y and Z axis) about joint")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorBallJointComponent::m_componentModeDelegate, "Component Mode", "Ball Joint Component Mode")
+                    ->DataElement(0, &EditorBallJointComponent::m_swingLimit, "Swing Limit", "The rotation angle limit around the joint's Y and Z axes.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorBallJointComponent::m_componentModeDelegate, "Component Mode", "Ball Joint Component Mode.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }

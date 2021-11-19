@@ -38,6 +38,14 @@ namespace O3DE::ProjectManager
          */
         virtual bool PythonStarted() = 0;
 
+        /**
+         * Attempt to start Python. Normally, Python is started when the bindings are created,
+         * but this method allows you to attempt to retry starting Python in case the configuration
+         * has changed.
+         * @return true if Python was started successfully, false on failure 
+         */
+        virtual bool StartPython() = 0;
+
         // Engine
 
         /**
@@ -82,6 +90,22 @@ namespace O3DE::ProjectManager
          * @return A list of gem names of all the enabled gems for a given project or a error message on failure.
          */
         virtual AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) = 0;
+
+        /**
+         * Registers the gem to the specified project, or to the o3de_manifest.json if no project path is given
+         * @param gemPath the path to the gem
+         * @param projectPath the path to the project. If empty, will register the external path in o3de_manifest.json
+         * @return An outcome with the success flag as well as an error message in case of a failure.
+         */
+        virtual AZ::Outcome<void, AZStd::string> RegisterGem(const QString& gemPath, const QString& projectPath = {}) = 0;
+
+        /**
+         * Unregisters the gem from the specified project, or from the o3de_manifest.json if no project path is given
+         * @param gemPath the path to the gem
+         * @param projectPath the path to the project. If empty, will unregister the external path in o3de_manifest.json
+         * @return An outcome with the success flag as well as an error message in case of a failure.
+         */
+        virtual AZ::Outcome<void, AZStd::string> UnregisterGem(const QString& gemPath, const QString& projectPath = {}) = 0;
 
 
         // Projects 
@@ -161,17 +185,66 @@ namespace O3DE::ProjectManager
         // Gem Repos
 
         /**
-         * A gem repo to engine. Registers this gem repo with the current engine.
-         * @param repoUri the absolute filesystem path or url to the gem repo manifest file.
+         * Refresh gem repo in the current engine.
+         * @param repoUri the absolute filesystem path or url to the gem repo.
          * @return An outcome with the success flag as well as an error message in case of a failure.
          */
-        virtual AZ::Outcome<void, AZStd::string> AddGemRepo(const QString& repoUri) = 0;
+        virtual AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri) = 0;
+
+        /**
+         * Refresh all gem repos in the current engine.
+         * @return true on success, false on failure.
+         */
+        virtual bool RefreshAllGemRepos() = 0;
+
+        /**
+         * Registers this gem repo with the current engine.
+         * @param repoUri the absolute filesystem path or url to the gem repo.
+         * @return true on success, false on failure.
+         */
+        virtual bool AddGemRepo(const QString& repoUri) = 0;
+
+        /**
+         * Unregisters this gem repo with the current engine.
+         * @param repoUri the absolute filesystem path or url to the gem repo.
+         * @return true on success, false on failure.
+         */
+        virtual bool RemoveGemRepo(const QString& repoUri) = 0;
 
         /**
          * Get all available gem repo infos. Gathers all repos registered with the engine.
          * @return A list of gem repo infos.
          */
         virtual AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() = 0;
+
+        /**
+         * Gathers all gem infos for all gems registered from repos.
+         * @return A list of gem infos.
+         */
+        virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemRepoGemsInfos() = 0;
+
+        /**
+         * Downloads and registers a Gem.
+         * @param gemName the name of the Gem to download.
+         * @param gemProgressCallback a callback function that is called with an int percentage download value.
+         * @param force should we forcibly overwrite the old version of the gem.
+         * @return an outcome with a string error message on failure.
+         */
+        virtual AZ::Outcome<void, AZStd::string> DownloadGem(
+            const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force = false) = 0;
+
+        /**
+         * Cancels the current download.
+         */
+        virtual void CancelDownload() = 0;
+
+        /**
+         * Checks if there is an update avaliable for a gem on a repo.
+         * @param gemName the name of the gem to check.
+         * @param lastUpdated last time the gem was update.
+         * @return true if update is avaliable, false if not.
+         */
+        virtual bool IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated) = 0;
     };
 
     using PythonBindingsInterface = AZ::Interface<IPythonBindings>;

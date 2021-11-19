@@ -36,7 +36,7 @@ namespace AWSCore
     class RequestBuilder
     {
     public:
-        RequestBuilder() = default;
+        RequestBuilder();
 
         /// Converts the provided object to JSON and sends it as the
         /// body of the request. The object can implement the following

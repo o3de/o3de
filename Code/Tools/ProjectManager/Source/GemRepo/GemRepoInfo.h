@@ -30,13 +30,13 @@ namespace O3DE::ProjectManager
         bool operator<(const GemRepoInfo& gemRepoInfo) const;
 
         QString m_path = "";
-        QString m_name = "Unknown Gem Repo Name";
+        QString m_name = "Unknown Repo Name";
         QString m_creator = "Unknown Creator";
         bool m_isEnabled = false; //! Is the repo currently enabled for this engine?
         QString m_summary = "No summary provided.";
         QString m_additionalInfo = "";
         QString m_directoryLink = "";
-        QString m_repoLink = "";
+        QString m_repoUri = "";
         QStringList m_includedGemPaths = {};
         QDateTime m_lastUpdated;
     };

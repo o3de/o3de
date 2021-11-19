@@ -29,7 +29,6 @@ namespace O3DE::ProjectManager
         void OnTextChanged();
 
     private:
-        FormLineEditWidget* m_engineVersion;
         FormBrowseEditWidget* m_thirdParty;
         FormBrowseEditWidget* m_defaultProjects;
         FormBrowseEditWidget* m_defaultGems;

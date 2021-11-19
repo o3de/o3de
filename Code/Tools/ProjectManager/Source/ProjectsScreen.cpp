@@ -185,6 +185,15 @@ namespace O3DE::ProjectManager
         connect(projectButton, &ProjectButton::RemoveProject, this, &ProjectsScreen::HandleRemoveProject);
         connect(projectButton, &ProjectButton::DeleteProject, this, &ProjectsScreen::HandleDeleteProject);
         connect(projectButton, &ProjectButton::BuildProject, this, &ProjectsScreen::QueueBuildProject);
+        connect(projectButton, &ProjectButton::OpenCMakeGUI, this, 
+            [this](const ProjectInfo& projectInfo)
+            {
+                AZ::Outcome result = ProjectUtils::OpenCMakeGUI(projectInfo.m_path);
+                if (!result)
+                {
+                    QMessageBox::critical(this, tr("Failed to open CMake GUI"), result.GetError(), QMessageBox::Ok);
+                }
+            });
 
         return projectButton;
     }
@@ -308,7 +317,7 @@ namespace O3DE::ProjectManager
                     }
                     else
                     {
-                        projectIter.value()->SetProjectBuildButtonAction();
+                        projectIter.value()->ShowBuildRequired();
                     }
                 }
             }
@@ -383,11 +392,11 @@ namespace O3DE::ProjectManager
         {
             if (!WarnIfInBuildQueue(projectPath))
             {
-                AZ::IO::FixedMaxPath executableDirectory = AZ::Utils::GetExecutableDirectory();
+                AZ::IO::FixedMaxPath executableDirectory = ProjectUtils::GetEditorDirectory();
                 AZStd::string executableFilename = "Editor";
                 AZ::IO::FixedMaxPath editorExecutablePath = executableDirectory / (executableFilename + AZ_TRAIT_OS_EXECUTABLE_EXTENSION);
                 auto cmdPath = AZ::IO::FixedMaxPathString::format(
-                    "%s -regset=\"/Amazon/AzCore/Bootstrap/project_path=%s\"", editorExecutablePath.c_str(),
+                    "%s --regset=\"/Amazon/AzCore/Bootstrap/project_path=%s\"", editorExecutablePath.c_str(),
                     projectPath.toStdString().c_str());
 
                 AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;

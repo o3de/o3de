@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DisplaySettings_HideHelpers",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DisplaySettings_HideHelpers::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -12,6 +12,8 @@
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Component/EntityId.h>
+#include <Atom/Feature/ColorGrading/LutResolution.h>
+#include <ACES/Aces.h>
 
 namespace AZ
 {

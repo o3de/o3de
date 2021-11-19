@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "InvalidComponentId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "InvalidComponentId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

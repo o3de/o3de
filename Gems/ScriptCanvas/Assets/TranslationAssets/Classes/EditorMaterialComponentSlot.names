@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "EditorMaterialComponentSlot",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "EditorMaterialComponentSlot"
+            }
+        }
+    ]
+}

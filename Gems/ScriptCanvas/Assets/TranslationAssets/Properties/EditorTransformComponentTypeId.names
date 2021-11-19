@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorTransformComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorTransformComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

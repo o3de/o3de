@@ -30,12 +30,22 @@ namespace AzFramework
         
         //! Called when the root spawnable has been assigned a new value. This may be called several times without a call to release
         //!     in between.
+        //! @note: The callback is not queued but immediately called from a random thread. This is done because this callback is typically
+        //!     used before entities are spawned and if it's queued then the entities spawn before this callback is called.
         //! @param rootSpawnable The new root spawnable that was assigned.
         //! @param generation The generation of the root spawnable. This will increment every time a new spawnable is assigned.
         virtual void OnRootSpawnableAssigned([[maybe_unused]] AZ::Data::Asset<Spawnable> rootSpawnable,
             [[maybe_unused]] uint32_t generation) {}
+        //! Called when the root spawnable has completed spawning of entities. This may be called several times without a call to release
+        //!     in between.
+        //! @note: This callback is queued and will be called with a delay and from the main thread.
+        //! @param rootSpawnable The new root spawnable that was used to spawn entities from.
+        //! @param generation The generation of the root spawnable. This will increment every time a new spawnable is assigned.
+        virtual void OnRootSpawnableReady(
+            [[maybe_unused]] AZ::Data::Asset<Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation) {}
         //! Called when the root spawnable has Released. This will only be called if there's no root spawnable assigned to take the
         //!     place of the original root spawnable.
+        //! Note: This callback is queued and will be called with a delay and from the main thread.
         //! @param generation The generation of the root spawnable that was released.
         virtual void OnRootSpawnableReleased([[maybe_unused]] uint32_t generation) {}
     };
@@ -61,6 +71,10 @@ namespace AzFramework
         //! be deleted and the spawnable asset to be released. This call is automatically done when
         //! AssignRootSpawnable is called while a root spawnable is assigned.
         virtual void ReleaseRootSpawnable() = 0;
+        //! Force processing all SpawnableEntitiesManager requests immediately
+        //! This is useful when loading a different level while SpawnableEntitiesManager still has
+        //! pending requests
+        virtual void ProcessSpawnableQueue() = 0;
     };
 
     using RootSpawnableInterface = AZ::Interface<RootSpawnableDefinition>;

@@ -1,0 +1,338 @@
+{
+    "entries": [
+        {
+            "key": "AtomToolsDocumentSystemRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "AtomToolsDocumentSystemRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "SaveDocument",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SaveDocument"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SaveDocument is invoked"
+                    },
+                    "details": {
+                        "name": "SaveDocument"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ::Uuid"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SaveDocumentAsChild",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SaveDocumentAsChild"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SaveDocumentAsChild is invoked"
+                    },
+                    "details": {
+                        "name": "SaveDocumentAsChild"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ::Uuid"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "OpenDocument",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke OpenDocument"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after OpenDocument is invoked"
+                    },
+                    "details": {
+                        "name": "OpenDocument"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ::Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateDocumentFromFile",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateDocumentFromFile"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateDocumentFromFile is invoked"
+                    },
+                    "details": {
+                        "name": "CreateDocumentFromFile"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ::Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CloseDocument",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CloseDocument"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CloseDocument is invoked"
+                    },
+                    "details": {
+                        "name": "CloseDocument"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ::Uuid"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CloseAllDocuments",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CloseAllDocuments"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CloseAllDocuments is invoked"
+                    },
+                    "details": {
+                        "name": "CloseAllDocuments"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CloseAllDocumentsExcept",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CloseAllDocumentsExcept"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CloseAllDocumentsExcept is invoked"
+                    },
+                    "details": {
+                        "name": "CloseAllDocumentsExcept"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ::Uuid"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateDocument",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateDocument"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateDocument is invoked"
+                    },
+                    "details": {
+                        "name": "CreateDocument"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ::Uuid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DestroyDocument",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DestroyDocument"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DestroyDocument is invoked"
+                    },
+                    "details": {
+                        "name": "DestroyDocument"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ::Uuid"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SaveDocumentAsCopy",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SaveDocumentAsCopy"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SaveDocumentAsCopy is invoked"
+                    },
+                    "details": {
+                        "name": "SaveDocumentAsCopy"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ::Uuid"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SaveAllDocuments",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SaveAllDocuments"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SaveAllDocuments is invoked"
+                    },
+                    "details": {
+                        "name": "SaveAllDocuments"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

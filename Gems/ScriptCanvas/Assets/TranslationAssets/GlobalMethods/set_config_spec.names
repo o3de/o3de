@@ -1,0 +1,45 @@
+{
+    "entries": [
+        {
+            "key": "set_config_spec",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "set_config_spec",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke set_config_spec"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after set_config_spec is invoked"
+                    },
+                    "details": {
+                        "name": "set_config_spec",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

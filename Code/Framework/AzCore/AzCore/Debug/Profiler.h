@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Debug/Budget.h>
+#include <AzCore/Statistics/StatisticalProfilerProxy.h>
 
 #ifdef USE_PIX
 #include <AzCore/PlatformIncl.h>
@@ -44,7 +45,10 @@
 #define AZ_PROFILE_INTERVAL_START(...)
 #define AZ_PROFILE_INTERVAL_START_COLORED(...)
 #define AZ_PROFILE_INTERVAL_END(...)
-#define AZ_PROFILE_INTERVAL_SCOPED(...)
+#define AZ_PROFILE_INTERVAL_SCOPED(budget, scopeNameId, ...) \
+    static constexpr AZ::Crc32 AZ_JOIN(blockId, __LINE__)(scopeNameId); \
+    AZ::Statistics::StatisticalProfilerProxy::TimedScope AZ_JOIN(scope, __LINE__)(AZ_CRC_CE(#budget), AZ_JOIN(blockId, __LINE__));
+
 #endif
 
 #ifndef AZ_PROFILE_DATAPOINT

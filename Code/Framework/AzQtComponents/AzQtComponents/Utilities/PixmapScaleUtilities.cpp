@@ -28,4 +28,21 @@ namespace AzQtComponents
 
         return scaledPixmap;
     }
+
+    QPixmap CropPixmapForScreenDpi(
+        QPixmap pixmap, QScreen* screen, QRect rect)
+    {
+        qreal screenDpiFactor = QHighDpiScaling::factor(screen);
+        pixmap.setDevicePixelRatio(screenDpiFactor);
+
+        QRect cropRect(
+            aznumeric_cast<int>(aznumeric_cast<qreal>(rect.left()) * screenDpiFactor),
+            aznumeric_cast<int>(aznumeric_cast<qreal>(rect.top()) * screenDpiFactor),
+            aznumeric_cast<int>(aznumeric_cast<qreal>(rect.width()) * screenDpiFactor),
+            aznumeric_cast<int>(aznumeric_cast<qreal>(rect.height()) * screenDpiFactor)
+        );
+
+        QPixmap croppedPixmap = pixmap.copy(cropRect);
+        return croppedPixmap;
+    }
 }

@@ -4,7 +4,7 @@
     "PARAMETERS": {
       "CONFIGURATION":"profile",
       "OUTPUT_DIRECTORY":"windows_vs2019",
-      "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_UNITY_BUILD=TRUE",
+      "CMAKE_OPTIONS":"-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0",
       "CMAKE_LY_PROJECTS":"AtomTest;AtomSampleViewer",
       "CMAKE_TARGET":"ALL_BUILD",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo"

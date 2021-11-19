@@ -105,7 +105,7 @@ namespace EMotionFX
 
     TEST_P(RagdollRootNodeFixture, RagdollRootNodeIsSimulatedTests)
     {
-        Physics::RagdollConfiguration& ragdollConfig = m_actor->GetPhysicsSetup()->GetRagdollConfig();
+        Physics::RagdollConfiguration& ragdollConfig = GetActor()->GetPhysicsSetup()->GetRagdollConfig();
         AZStd::vector<Physics::RagdollNodeConfiguration>& ragdollNodes = ragdollConfig.m_nodes;
         const RagdollRootNodeParam& param = GetParam();
         const AZStd::string ragdollRootNodeName = param.m_ragdollRootNode.c_str();

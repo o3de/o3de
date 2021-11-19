@@ -30,6 +30,7 @@ namespace AZ::Render
         void Clear();
         IndexType GetFreeSlotIndex();
         void RemoveIndex(IndexType index);
+        void RemoveData(DataType* data);
 
         DataType& GetData(IndexType index);
         const DataType& GetData(IndexType index) const;
@@ -42,6 +43,7 @@ namespace AZ::Render
         const AZStd::vector<IndexType>& GetIndexVector() const;
 
         IndexType GetRawIndex(IndexType index) const;
+        IndexType GetIndexForData(const DataType* data) const;
 
     private:
         constexpr static size_t InitialReservedSize = 128;

@@ -36,7 +36,7 @@ namespace ScriptCanvas
                 azrtti_typeid<RuntimeAsset>(),
                 "Script Canvas Runtime",
                 "Script Canvas Runtime Graph",
-                "@devassets@/scriptcanvas",
+                "@projectroot@/scriptcanvas",
                 ".scriptcanvas_compiled",
                 "Script Canvas Runtime",
                 "Untitled-%i",
@@ -75,6 +75,9 @@ namespace ScriptCanvas
         AZStd::vector<Execution::CloneSource> m_cloneSources;
         AZStd::vector<AZ::BehaviorValueParameter> m_activationInputStorage;
         Execution::ActivationInputRange m_activationInputRange;
+
+        // used to initialize statics only once, and not necessarily on the loading thread
+        bool m_areStaticsInitialized = false;
 
         bool RequiresStaticInitialization() const;
 
@@ -177,7 +180,7 @@ namespace ScriptCanvas
                 azrtti_typeid<SubgraphInterfaceAsset>(),
                 "Script Canvas Function Interface",
                 "Script Canvas Function Interface",
-                "@devassets@/scriptcanvas",
+                "@projectroot@/scriptcanvas",
                 ".scriptcanvas_fn_compiled",
                 "Script Canvas Function Interface",
                 "Untitled-Function-%i",

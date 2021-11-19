@@ -21,7 +21,7 @@ namespace AWSCore
     {
     public:
         AWSCVarCredentialHandler() = default;
-        ~AWSCVarCredentialHandler() = default;
+        ~AWSCVarCredentialHandler() override = default;
 
         //! Activate handler and its credentials provider, make sure activation
         //! invoked after AWSNativeSDK init to avoid memory leak

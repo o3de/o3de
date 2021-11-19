@@ -57,7 +57,7 @@ namespace AzToolsFramework
         //! Returns true if the file at filePath was successfully injected into the bundle at sourcePak
         static bool InjectFile(const AZStd::string& filePath, const AZStd::string& sourcePak, const char* workingDirectory);
 
-        //! Inject the files with relative filePaths which espect to the working directory into the bundle at sourcePak
+        //! Inject the files with relative filePaths with respect to the working directory into the bundle at sourcePak
         //! Returns true if the file at filePath was successfully injected into the bundle at sourcePak
         static bool InjectFiles(const AZStd::vector<AZStd::string>& fileEntries, const AZStd::string& sourcePak, const char* workingDirectory);
 
@@ -86,7 +86,7 @@ namespace AzToolsFramework
 
         //! Adds the manifest file to all the bundles
         //! The parent bundle manifest file is special since it will contain information of all dependent bundles names.
-        bool AddManifestFileToBundles(const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& bundlePathDeltaCatalogPair, const AZStd::vector<AZStd::string>& dependentBundleNames, const AZStd::string& bundleFolder, const AzToolsFramework::AssetBundleSettings& assetBundleSettings, const AZStd::vector<AZStd::string>& levelDirs);
+        bool AddManifestFileToBundles(const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& bundlePathDeltaCatalogPair, const AZStd::vector<AZStd::string>& dependentBundleNames, const AZStd::string& bundleFolder, const AzToolsFramework::AssetBundleSettings& assetBundleSettings, const AZStd::vector<AZ::IO::Path>& levelDirs);
 
         //! Adds the delta catalog and any remaining files to the bundle
         //! We only create the delta catalog once we are sure about what all the files that will go in it. 

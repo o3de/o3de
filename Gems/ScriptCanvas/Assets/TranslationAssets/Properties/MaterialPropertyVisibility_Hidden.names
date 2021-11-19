@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "MaterialPropertyVisibility_Hidden",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "MaterialPropertyVisibility_Hidden::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

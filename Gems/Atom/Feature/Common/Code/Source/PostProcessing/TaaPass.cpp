@@ -168,7 +168,6 @@ namespace AZ::Render
         // The ImageViewDescriptor must be specified to make sure the frame graph compiler doesn't treat this as a transient image.
         RHI::ImageViewDescriptor viewDesc = RHI::ImageViewDescriptor::Create(imageDesc.m_format, 0, 0);
         viewDesc.m_aspectFlags = RHI::ImageAspectFlags::Color;
-        viewDesc.m_overrideBindFlags = RHI::ImageBindFlags::ShaderReadWrite;
 
         // The full path name is needed for the attachment image so it's not deduplicated from accumulation images in different pipelines.
         AZStd::string imageName = RPI::ConcatPassString(GetPathName(), attachment->m_path);

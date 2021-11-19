@@ -63,6 +63,7 @@ ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
     // Position, Normal, Roughness
     surface.position = IN.m_worldPosition.xyz;
     surface.normal = normalize(IN.m_normal);
+    surface.vertexNormal = normalize(IN.m_normal);
     surface.roughnessLinear = MinimalPBRSrg::m_roughness;
     surface.CalculateRoughnessA();
 

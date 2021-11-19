@@ -1,0 +1,1510 @@
+{
+    "entries": [
+        {
+            "key": "HDRColorGradingRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "HDRColorGradingRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "SetCustomMinExposure",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetCustomMinExposure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetCustomMinExposure is invoked"
+                    },
+                    "details": {
+                        "name": "SetCustomMinExposure"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetFinalAdjustmentWeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetFinalAdjustmentWeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetFinalAdjustmentWeight is invoked"
+                    },
+                    "details": {
+                        "name": "GetFinalAdjustmentWeight"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSmhHighlightsColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSmhHighlightsColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSmhHighlightsColor is invoked"
+                    },
+                    "details": {
+                        "name": "SetSmhHighlightsColor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLutResolution",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetLutResolution"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetLutResolution is invoked"
+                    },
+                    "details": {
+                        "name": "SetLutResolution"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSmhMidtonesColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSmhMidtonesColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSmhMidtonesColor is invoked"
+                    },
+                    "details": {
+                        "name": "GetSmhMidtonesColor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSmhHighlightsEnd",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSmhHighlightsEnd"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSmhHighlightsEnd is invoked"
+                    },
+                    "details": {
+                        "name": "GetSmhHighlightsEnd"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCustomMinExposure",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCustomMinExposure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCustomMinExposure is invoked"
+                    },
+                    "details": {
+                        "name": "GetCustomMinExposure"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSmhHighlightsEnd",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSmhHighlightsEnd"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSmhHighlightsEnd is invoked"
+                    },
+                    "details": {
+                        "name": "SetSmhHighlightsEnd"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetChannelMixingGreen",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetChannelMixingGreen"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetChannelMixingGreen is invoked"
+                    },
+                    "details": {
+                        "name": "GetChannelMixingGreen"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSmhShadowsEnd",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSmhShadowsEnd"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSmhShadowsEnd is invoked"
+                    },
+                    "details": {
+                        "name": "SetSmhShadowsEnd"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSmhWeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSmhWeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSmhWeight is invoked"
+                    },
+                    "details": {
+                        "name": "SetSmhWeight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetShaperPresetType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetShaperPresetType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetShaperPresetType is invoked"
+                    },
+                    "details": {
+                        "name": "SetShaperPresetType"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetShaperPresetType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetShaperPresetType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetShaperPresetType is invoked"
+                    },
+                    "details": {
+                        "name": "GetShaperPresetType"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "SetEnabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSmhShadowsColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSmhShadowsColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSmhShadowsColor is invoked"
+                    },
+                    "details": {
+                        "name": "GetSmhShadowsColor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColorGradingPreSaturation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColorGradingPreSaturation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColorGradingPreSaturation is invoked"
+                    },
+                    "details": {
+                        "name": "GetColorGradingPreSaturation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSplitToneHighlightsColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSplitToneHighlightsColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSplitToneHighlightsColor is invoked"
+                    },
+                    "details": {
+                        "name": "GetSplitToneHighlightsColor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColorGradingHueShift",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColorGradingHueShift"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColorGradingHueShift is invoked"
+                    },
+                    "details": {
+                        "name": "GetColorGradingHueShift"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetColorGradingExposure",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetColorGradingExposure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetColorGradingExposure is invoked"
+                    },
+                    "details": {
+                        "name": "SetColorGradingExposure"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColorFilterSwatch",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColorFilterSwatch"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColorFilterSwatch is invoked"
+                    },
+                    "details": {
+                        "name": "GetColorFilterSwatch"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetWhiteBalanceTint",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetWhiteBalanceTint"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetWhiteBalanceTint is invoked"
+                    },
+                    "details": {
+                        "name": "GetWhiteBalanceTint"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColorGradingExposure",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColorGradingExposure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColorGradingExposure is invoked"
+                    },
+                    "details": {
+                        "name": "GetColorGradingExposure"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSmhWeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSmhWeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSmhWeight is invoked"
+                    },
+                    "details": {
+                        "name": "GetSmhWeight"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSmhMidtonesColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSmhMidtonesColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSmhMidtonesColor is invoked"
+                    },
+                    "details": {
+                        "name": "SetSmhMidtonesColor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetChannelMixingBlue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetChannelMixingBlue"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetChannelMixingBlue is invoked"
+                    },
+                    "details": {
+                        "name": "SetChannelMixingBlue"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetGenerateLut",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetGenerateLut"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetGenerateLut is invoked"
+                    },
+                    "details": {
+                        "name": "GetGenerateLut"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSplitToneBalance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSplitToneBalance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSplitToneBalance is invoked"
+                    },
+                    "details": {
+                        "name": "SetSplitToneBalance"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetLutResolution",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetLutResolution"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetLutResolution is invoked"
+                    },
+                    "details": {
+                        "name": "GetLutResolution"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetColorGradingContrast",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetColorGradingContrast"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetColorGradingContrast is invoked"
+                    },
+                    "details": {
+                        "name": "SetColorGradingContrast"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetWhiteBalanceKelvin",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetWhiteBalanceKelvin"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetWhiteBalanceKelvin is invoked"
+                    },
+                    "details": {
+                        "name": "GetWhiteBalanceKelvin"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSplitToneHighlightsColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSplitToneHighlightsColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSplitToneHighlightsColor is invoked"
+                    },
+                    "details": {
+                        "name": "SetSplitToneHighlightsColor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSmhShadowsEnd",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSmhShadowsEnd"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSmhShadowsEnd is invoked"
+                    },
+                    "details": {
+                        "name": "GetSmhShadowsEnd"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSmhHighlightsStart",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSmhHighlightsStart"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSmhHighlightsStart is invoked"
+                    },
+                    "details": {
+                        "name": "SetSmhHighlightsStart"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetColorFilterSwatch",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetColorFilterSwatch"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetColorFilterSwatch is invoked"
+                    },
+                    "details": {
+                        "name": "SetColorFilterSwatch"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColorGradingFilterIntensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColorGradingFilterIntensity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColorGradingFilterIntensity is invoked"
+                    },
+                    "details": {
+                        "name": "GetColorGradingFilterIntensity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetWhiteBalanceWeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetWhiteBalanceWeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetWhiteBalanceWeight is invoked"
+                    },
+                    "details": {
+                        "name": "SetWhiteBalanceWeight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSmhShadowsStart",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSmhShadowsStart"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSmhShadowsStart is invoked"
+                    },
+                    "details": {
+                        "name": "SetSmhShadowsStart"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetChannelMixingRed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetChannelMixingRed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetChannelMixingRed is invoked"
+                    },
+                    "details": {
+                        "name": "GetChannelMixingRed"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColorGradingFilterMultiply",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColorGradingFilterMultiply"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColorGradingFilterMultiply is invoked"
+                    },
+                    "details": {
+                        "name": "GetColorGradingFilterMultiply"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetColorGradingFilterMultiply",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetColorGradingFilterMultiply"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetColorGradingFilterMultiply is invoked"
+                    },
+                    "details": {
+                        "name": "SetColorGradingFilterMultiply"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSplitToneShadowsColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSplitToneShadowsColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSplitToneShadowsColor is invoked"
+                    },
+                    "details": {
+                        "name": "SetSplitToneShadowsColor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSplitToneWeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSplitToneWeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSplitToneWeight is invoked"
+                    },
+                    "details": {
+                        "name": "SetSplitToneWeight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSplitToneShadowsColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSplitToneShadowsColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSplitToneShadowsColor is invoked"
+                    },
+                    "details": {
+                        "name": "GetSplitToneShadowsColor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSmhHighlightsStart",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSmhHighlightsStart"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSmhHighlightsStart is invoked"
+                    },
+                    "details": {
+                        "name": "GetSmhHighlightsStart"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetChannelMixingRed",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetChannelMixingRed"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetChannelMixingRed is invoked"
+                    },
+                    "details": {
+                        "name": "SetChannelMixingRed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetChannelMixingGreen",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetChannelMixingGreen"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetChannelMixingGreen is invoked"
+                    },
+                    "details": {
+                        "name": "SetChannelMixingGreen"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetColorGradingFilterIntensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetColorGradingFilterIntensity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetColorGradingFilterIntensity is invoked"
+                    },
+                    "details": {
+                        "name": "SetColorGradingFilterIntensity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetGenerateLut",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetGenerateLut"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetGenerateLut is invoked"
+                    },
+                    "details": {
+                        "name": "SetGenerateLut"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetColorAdjustmentWeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetColorAdjustmentWeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetColorAdjustmentWeight is invoked"
+                    },
+                    "details": {
+                        "name": "SetColorAdjustmentWeight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSmhShadowsStart",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSmhShadowsStart"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSmhShadowsStart is invoked"
+                    },
+                    "details": {
+                        "name": "GetSmhShadowsStart"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSmhShadowsColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSmhShadowsColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSmhShadowsColor is invoked"
+                    },
+                    "details": {
+                        "name": "SetSmhShadowsColor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetFinalAdjustmentWeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetFinalAdjustmentWeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetFinalAdjustmentWeight is invoked"
+                    },
+                    "details": {
+                        "name": "SetFinalAdjustmentWeight"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColorGradingPostSaturation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColorGradingPostSaturation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColorGradingPostSaturation is invoked"
+                    },
+                    "details": {
+                        "name": "GetColorGradingPostSaturation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetColorGradingPreSaturation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetColorGradingPreSaturation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetColorGradingPreSaturation is invoked"
+                    },
+                    "details": {
+                        "name": "SetColorGradingPreSaturation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetColorGradingHueShift",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetColorGradingHueShift"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetColorGradingHueShift is invoked"
+                    },
+                    "details": {
+                        "name": "SetColorGradingHueShift"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSplitToneBalance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSplitToneBalance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSplitToneBalance is invoked"
+                    },
+                    "details": {
+                        "name": "GetSplitToneBalance"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColorAdjustmentWeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColorAdjustmentWeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColorAdjustmentWeight is invoked"
+                    },
+                    "details": {
+                        "name": "GetColorAdjustmentWeight"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSmhHighlightsColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSmhHighlightsColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSmhHighlightsColor is invoked"
+                    },
+                    "details": {
+                        "name": "GetSmhHighlightsColor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSplitToneWeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSplitToneWeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSplitToneWeight is invoked"
+                    },
+                    "details": {
+                        "name": "GetSplitToneWeight"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetColorGradingPostSaturation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetColorGradingPostSaturation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetColorGradingPostSaturation is invoked"
+                    },
+                    "details": {
+                        "name": "SetColorGradingPostSaturation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetWhiteBalanceKelvin",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetWhiteBalanceKelvin"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetWhiteBalanceKelvin is invoked"
+                    },
+                    "details": {
+                        "name": "SetWhiteBalanceKelvin"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetWhiteBalanceWeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetWhiteBalanceWeight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetWhiteBalanceWeight is invoked"
+                    },
+                    "details": {
+                        "name": "GetWhiteBalanceWeight"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColorGradingContrast",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColorGradingContrast"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColorGradingContrast is invoked"
+                    },
+                    "details": {
+                        "name": "GetColorGradingContrast"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "GetEnabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCustomMaxExposure",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCustomMaxExposure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCustomMaxExposure is invoked"
+                    },
+                    "details": {
+                        "name": "GetCustomMaxExposure"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetWhiteBalanceTint",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetWhiteBalanceTint"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetWhiteBalanceTint is invoked"
+                    },
+                    "details": {
+                        "name": "SetWhiteBalanceTint"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetChannelMixingBlue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetChannelMixingBlue"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetChannelMixingBlue is invoked"
+                    },
+                    "details": {
+                        "name": "GetChannelMixingBlue"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetCustomMaxExposure",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetCustomMaxExposure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetCustomMaxExposure is invoked"
+                    },
+                    "details": {
+                        "name": "SetCustomMaxExposure"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -18,7 +18,6 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <TerrainSystem/TerrainSystemBus.h>
 
-#include <AzCore/Component/TransformBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <AzCore/Math/Aabb.h>
 
@@ -56,7 +55,6 @@ namespace Terrain
 
     class TerrainLayerSpawnerComponent
         : public AZ::Component
-        , private AZ::TransformNotificationBus::Handler
         , private LmbrCentral::ShapeComponentNotificationsBus::Handler
         , private Terrain::TerrainSpawnerRequestBus::Handler
     {
@@ -81,10 +79,6 @@ namespace Terrain
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
     protected:
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::TransformNotificationBus::Handler
-        void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
-
         // ShapeComponentNotificationsBus
         void OnShapeChanged(ShapeChangeReasons changeReason) override;
 

@@ -27,7 +27,6 @@ def valid_o3de_repo_json(file_name: str or pathlib.Path) -> bool:
             test = json_data['origin']
         except (json.JSONDecodeError, KeyError) as e:
             return False
-
     return True
 
 

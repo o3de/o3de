@@ -108,7 +108,7 @@ namespace AZ
 
             AZStd::thread_desc threadDesc{ "Fence WaitOnCpu Thread" };
 
-            m_waitThread = AZStd::thread([this, callback]()
+            m_waitThread = AZStd::thread(threadDesc, [this, callback]()
             {
                 ResultCode resultCode = WaitOnCpu();
                 if (resultCode != ResultCode::Success)
@@ -116,7 +116,7 @@ namespace AZ
                     AZ_Error("Fence", false, "Failed to call WaitOnCpu in async thread.");
                 }
                 callback();
-            }, &threadDesc);
+            });
 
             return ResultCode::Success;
         }

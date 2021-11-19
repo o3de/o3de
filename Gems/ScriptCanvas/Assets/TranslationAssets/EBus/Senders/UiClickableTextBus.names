@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "key": "UiClickableTextBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiClickableTextBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "SetClickableTextColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Clickable Text Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Clickable Text Color is invoked"
+                    },
+                    "details": {
+                        "name": "Set Clickable Text Color",
+                        "tooltip": "Sets the color of the clickable text, overriding the value from the markup button"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "ID",
+                                "tooltip": "The markup ID of the clickable text"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color",
+                                "tooltip": "The color for the clickable text"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

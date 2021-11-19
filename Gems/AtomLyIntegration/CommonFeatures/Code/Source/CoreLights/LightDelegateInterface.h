@@ -75,8 +75,6 @@ namespace AZ
             virtual void SetShadowmapMaxSize(ShadowmapSize size) = 0;
             //! Sets the filter method for the shadow
             virtual void SetShadowFilterMethod(ShadowFilterMethod method) = 0;
-            //! Sets the width of boundary between shadowed area and lit area in degrees.
-            virtual void SetSofteningBoundaryWidthAngle(float widthInDegrees) = 0;
             //! Sets the sample count for filtering of the shadow boundary, max 64.
             virtual void SetFilteringSampleCount(uint32_t count) = 0;
             //! Sets the Esm exponent to use. Higher values produce a steeper falloff between light and shadow.

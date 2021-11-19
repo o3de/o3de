@@ -14,6 +14,7 @@
 
 #pragma once
 #include <AzCore/std/containers/map.h>
+#include <AzCore/Time/ITime.h>
 
 #include <CryCommon/TimeValue.h>
 #include <CryCommon/StaticInstance.h>
@@ -235,7 +236,7 @@ private:
     IMovieUser* m_pUser;
     IMovieCallback* m_pCallback;
 
-    CTimeValue m_lastUpdateTime;
+    AZ::TimeUs m_lastUpdateTime;
 
     typedef AZStd::vector<AZStd::intrusive_ptr<IAnimSequence> > Sequences;
     Sequences m_sequences;
@@ -268,15 +269,10 @@ private:
     int m_captureFrame;
     bool m_bEndCapture;
     ICaptureKey m_captureKey;
-    float m_fixedTimeStepBackUp;
-    float m_maxStepBackUp;
-    float m_smoothingBackUp;
+    AZ::TimeMs m_fixedTimeStepBackUp;
     float m_maxTimeStepForMovieSystemBackUp;
     ICVar* m_cvar_capture_frame_once;
     ICVar* m_cvar_capture_folder;
-    ICVar* m_cvar_t_FixedStep;
-    ICVar* m_cvar_t_MaxStep;
-    ICVar* m_cvar_t_Smoothing;
     ICVar* m_cvar_sys_maxTimeStepForMovieSystem;
     ICVar* m_cvar_capture_frames;
     ICVar* m_cvar_capture_file_prefix;

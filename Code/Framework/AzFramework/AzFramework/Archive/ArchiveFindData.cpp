@@ -78,9 +78,9 @@ namespace AZ::IO
     {
         // get the priority into local variable to avoid it changing in the course of
         // this function execution
-        ArchiveLocationPriority nVarPakPriority = archive->GetPakPriority();
+        FileSearchPriority nVarPakPriority = archive->GetPakPriority();
 
-        if (nVarPakPriority == ArchiveLocationPriority::ePakPriorityFileFirst)
+        if (nVarPakPriority == FileSearchPriority::FileFirst)
         {
             // first, find the file system files
             ScanFS(archive, szDir);
@@ -96,7 +96,7 @@ namespace AZ::IO
             {
                 ScanZips(archive, szDir);
             }
-            if (bAllowUseFS || nVarPakPriority != ArchiveLocationPriority::ePakPriorityPakOnly)
+            if (bAllowUseFS || nVarPakPriority != FileSearchPriority::PakOnly)
             {
                 ScanFS(archive, szDir);
             }
@@ -186,8 +186,8 @@ namespace AZ::IO
         {
             // filter out the stuff which does not match.
 
-            // the problem here is that szDir might be something like "@assets@/levels/*"
-            // but our archive might be mounted at the root, or at some other folder at like "@assets@" or "@assets@/levels/mylevel"
+            // the problem here is that szDir might be something like "@products@/levels/*"
+            // but our archive might be mounted at the root, or at some other folder at like "@products@" or "@products@/levels/mylevel"
             // so there's really no way to filter out opening the pack and looking at the files inside.
             // however, the bind root is not part of the inner zip entry name either
             // and the ZipDir::FindFile actually expects just the chopped off piece.
@@ -202,22 +202,22 @@ namespace AZ::IO
 
 
             // Example:
-            // "@assets@\\levels\\*" <--- szDir
-            // "@assets@\\" <--- mount point
+            // "@products@\\levels\\*" <--- szDir
+            // "@products@\\" <--- mount point
             // ~~~~~~~~~~~ Common part
             // "levels\\*" <---- remainder that is not in common
             // "" <--- mount point remainder.  In this case, we should scan the contents of the pak for the remainder
 
             // Example:
-            // "@assets@\\levels\\*" <--- szDir
-            // "@assets@\\levels\\mylevel\\" <--- mount point (its level.pak)
+            // "@products@\\levels\\*" <--- szDir
+            // "@products@\\levels\\mylevel\\" <--- mount point (its level.pak)
             //  ~~~~~~~~~~~~~~~~~~ common part
             // "*" <----  remainder that is not in common
             // "mylevel\\" <--- mount point remainder.
 
             // example:
-            // "@assets@\\levels\\otherlevel\\*" <--- szDir
-            // "@assets@\\levels\\mylevel\\" <--- mount point (its level.pak)
+            // "@products@\\levels\\otherlevel\\*" <--- szDir
+            // "@products@\\levels\\mylevel\\" <--- mount point (its level.pak)
             // "otherlevel\\*" <----  remainder
             // "mylevel\\" <--- mount point remainder.
 
@@ -249,7 +249,7 @@ namespace AZ::IO
                 // which means we may search inside the pack.
                 ScanInZip(it->pZip.get(), sourcePathRemainder.Native());
             }
-          
+
         }
     }
 

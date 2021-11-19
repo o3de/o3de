@@ -71,11 +71,10 @@ void InitCRTHandlers()
 void InitCRTHandlers() {}
 #endif
 
-#ifndef SOFTCODE
 //////////////////////////////////////////////////////////////////////////
 // This is an entry to DLL initialization function that must be called for each loaded module
 //////////////////////////////////////////////////////////////////////////
-extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused]] const char* moduleName)
+void ModuleInitISystem(ISystem* pSystem, [[maybe_unused]] const char* moduleName)
 {
     if (gEnv) // Already registered.
     {
@@ -97,25 +96,9 @@ extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused
     } // if pSystem
 }
 
-extern "C" AZ_DLL_EXPORT void ModuleShutdownISystem([[maybe_unused]] ISystem* pSystem)
+void ModuleShutdownISystem([[maybe_unused]] ISystem* pSystem)
 {
     // Unregister with AZ environment.
-    AZ::Environment::Detach();
-}
-
-extern "C" AZ_DLL_EXPORT void InjectEnvironment(void* env)
-{
-    static bool injected = false;
-    if (!injected)
-    {
-        AZ::Environment::Attach(reinterpret_cast<AZ::EnvironmentInstance>(env));
-        AZ::AllocatorManager::Instance();  // Force the AllocatorManager to instantiate and register any allocators defined in data sections
-        injected = true;
-    }
-}
-
-extern "C" AZ_DLL_EXPORT void DetachEnvironment()
-{
     AZ::Environment::Detach();
 }
 
@@ -127,18 +110,6 @@ void* GetModuleShutdownISystemSymbol()
 {
     return reinterpret_cast<void*>(&ModuleShutdownISystem);
 }
-void* GetInjectEnvironmentSymbol()
-{
-    return reinterpret_cast<void*>(&InjectEnvironment);
-}
-void* GetDetachEnvironmentSymbol()
-{
-    return reinterpret_cast<void*>(&DetachEnvironment);
-}
-
-#endif // !defined(SOFTCODE)
-
-bool g_bProfilerEnabled = false;
 
 //////////////////////////////////////////////////////////////////////////
 // global random number generator used by cry_random functions

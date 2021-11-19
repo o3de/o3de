@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "DitherGradientComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "DitherGradientComponent"
+            }
+        }
+    ]
+}

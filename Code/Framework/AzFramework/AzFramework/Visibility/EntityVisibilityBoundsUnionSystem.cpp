@@ -128,6 +128,24 @@ namespace AzFramework
         return AZ::Aabb::CreateNull();
     }
 
+    AZ::Aabb EntityVisibilityBoundsUnionSystem::GetEntityWorldBoundsUnion(const AZ::EntityId entityId) const
+    {
+        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
+        if (entity != nullptr)
+        {
+            // if the entity is not found in the mapping then return a null Aabb, this is to mimic 
+            // as closely as possible the behavior of an individual GetLocalBounds call to an Entity that
+            // had been deleted (there would be no response, leaving the default value assigned)
+            if (auto instance_it = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
+                instance_it != m_entityVisibilityBoundsUnionInstanceMapping.end())
+            {
+                return instance_it->second.m_localEntityBoundsUnion.GetTranslated(entity->GetTransform()->GetWorldTranslation());
+            }
+        }
+
+        return AZ::Aabb::CreateNull();
+    }
+
     void EntityVisibilityBoundsUnionSystem::ProcessEntityBoundsUnionRequests()
     {
         AZ_PROFILE_FUNCTION(AzFramework);

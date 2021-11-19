@@ -39,13 +39,14 @@ namespace AZ
             AZStd::intrusive_ptr<SkinnedMeshOutputStreamAllocation> Allocate(size_t byteCount) override;
             void DeAllocate(RHI::VirtualAddress allocation) override;
             void DeAllocateNoSignal(RHI::VirtualAddress allocation) override;
-            Data::Asset<RPI::BufferAsset> GetBufferAsset() const override;
+            Data::Asset<RPI::BufferAsset> GetBufferAsset() override;
             Data::Instance<RPI::Buffer> GetBuffer() override;
 
         private:
             // SystemTickBus
             void OnSystemTick() override;
 
+            void EnsureInit();
             void GarbageCollect();
             void CalculateAlignment();
             void CreateBufferAsset();
@@ -58,6 +59,7 @@ namespace AZ
             size_t m_sizeInBytes = 0;
             bool m_memoryWasFreed = false;
             bool m_broadcastMemoryAvailableEvent = false;
+            bool m_needsInit = true;
         };
     } // namespace Render
 } // namespace AZ

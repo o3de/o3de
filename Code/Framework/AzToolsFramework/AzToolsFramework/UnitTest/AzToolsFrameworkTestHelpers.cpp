@@ -129,7 +129,7 @@ namespace UnitTest
         using AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus;
 
         AzToolsFramework::EditorActionRequestBus::Handler::BusConnect();
-        EditorComponentModeNotificationBus::Handler::BusConnect(GetEntityContextId());
+        ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
         m_defaultWidget.setFocus();
     }
 
@@ -137,18 +137,26 @@ namespace UnitTest
     {
         using AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus;
 
-        EditorComponentModeNotificationBus::Handler::BusDisconnect();
+        ViewportEditorModeNotificationsBus::Handler::BusDisconnect();
         AzToolsFramework::EditorActionRequestBus::Handler::BusDisconnect();
     }
 
-    void TestEditorActions::EnteredComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentTypes)
+    void TestEditorActions::OnEditorModeActivated(
+        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
-        m_componentModeWidget.setFocus();
+        if (mode == ViewportEditorMode::Component)
+        {
+            m_componentModeWidget.setFocus();
+        }
     }
 
-    void TestEditorActions::LeftComponentMode([[maybe_unused]] const AZStd::vector<AZ::Uuid>& componentTypes)
+    void TestEditorActions::OnEditorModeDeactivated(
+        [[maybe_unused]] const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode)
     {
-        m_defaultWidget.setFocus();
+        if (mode == ViewportEditorMode::Component)
+        {
+            m_defaultWidget.setFocus();
+        }
     }
 
     void TestEditorActions::AddActionViaBus(int id, QAction* action)

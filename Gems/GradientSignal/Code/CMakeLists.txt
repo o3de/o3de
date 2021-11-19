@@ -107,7 +107,16 @@ endif()
 # Tests
 ################################################################################
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-
+    ly_add_target(
+        NAME GradientSignal.Mocks HEADERONLY
+        NAMESPACE Gem
+        FILES_CMAKE
+            gradientsignal_mocks_files.cmake
+        INCLUDE_DIRECTORIES
+            INTERFACE
+                Mocks
+    )
+    
     ly_add_target(
         NAME GradientSignal.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
@@ -122,6 +131,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 Gem::GradientSignal.Static
                 Gem::LmbrCentral
+                Gem::GradientSignal.Mocks
     )
     ly_add_googletest(
         NAME Gem::GradientSignal.Tests

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "TransformMode_Rotation",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "TransformMode_Rotation::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

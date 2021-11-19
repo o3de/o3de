@@ -14,6 +14,7 @@
 
 #include <AzTest/AzTest.h>
 
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/FocusMode/FocusModeInterface.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
@@ -24,16 +25,20 @@ namespace AzToolsFramework
     {
     protected:
         void SetUpEditorFixtureImpl() override;
+        void TearDownEditorFixtureImpl() override;
 
         void GenerateTestHierarchy();
         AZ::EntityId CreateEditorEntity(const char* name, AZ::EntityId parentId);
 
         AZStd::unordered_map<AZStd::string, AZ::EntityId> m_entityMap;
+
+        ContainerEntityInterface* m_containerEntityInterface = nullptr;
         FocusModeInterface* m_focusModeInterface = nullptr;
 
     public:
-        AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EntityIdList GetSelectedEntities();
 
+        AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
         AzFramework::CameraState m_cameraState;
 
         inline static const AZ::Vector3 CameraPosition = AZ::Vector3(10.0f, 15.0f, 10.0f);
@@ -45,6 +50,7 @@ namespace AzToolsFramework
         inline static const char* Passenger1EntityName = "Passenger1";
         inline static const char* Passenger2EntityName = "Passenger2";
 
-        inline static AZ::Vector3 CarEntityPosition = AZ::Vector3(5.0f, 15.0f, 0.0f);
+        inline static AZ::Vector3 WorldCarEntityPosition = AZ::Vector3(5.0f, 15.0f, 0.0f);
     };
+
 }

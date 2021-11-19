@@ -104,8 +104,8 @@ namespace AzNetworking
         bool WasPacketAcked(ConnectionId connectionId, PacketId packetId) override;
         bool StopListening() override;
         bool Disconnect(ConnectionId connectionId, DisconnectReason reason) override;
-        void SetTimeoutEnabled(bool timeoutEnabled) override;
-        bool IsTimeoutEnabled() const override;
+        void SetTimeoutMs(AZ::TimeMs timeoutMs) override;
+        AZ::TimeMs GetTimeoutMs() const override;
         //! @}
 
         //! Returns true if this is an encrypted socket, false if not.
@@ -149,39 +149,29 @@ namespace AzNetworking
         //! @param endpoint   whether the disconnection was initiated locally or remotely
         void RequestDisconnect(UdpConnection* connection, DisconnectReason reason, TerminationEndpoint endpoint);
 
-        //! Internal helper to check if a packet's type is for connection handshake
+        //! Internal helper to check if a packet's type is for connection handshake.
         //! @param  endpoint   DTLS endpoint participating in the handshake
         //! @param  packetType type of the packet
         //! @return if the packet is for handshake
         bool IsHandshakePacket(const DtlsEndpoint& endpoint, AzNetworking::PacketType packetType) const;
 
+        //! Internal helper to manage connection timeout behaviour.
+        //! @param item the timeout item corresponding to the timed out connection
+        //! @return whether to delete or persist the timeout item
+        TimeoutResult HandleConnectionTimeout(TimeoutQueue::TimeoutItem& item);
+
+        //! Internal helper to manage packet timeout behaviour.
+        //! @param item the timeout item corresponding to the timed out packet
+        //! @return whether to delete or persist the timeout item
+        TimeoutResult HandlePacketTimeout(TimeoutQueue::TimeoutItem& item);
+
         AZ_DISABLE_COPY_MOVE(UdpNetworkInterface);
-
-        struct ConnectionTimeoutFunctor final
-            : public ITimeoutHandler
-        {
-            ConnectionTimeoutFunctor(UdpNetworkInterface& networkInterface);
-            TimeoutResult HandleTimeout(TimeoutQueue::TimeoutItem& item) override;
-        private:
-            AZ_DISABLE_COPY_MOVE(ConnectionTimeoutFunctor);
-            UdpNetworkInterface& m_networkInterface;
-        };
-
-        struct PacketTimeoutFunctor final
-            : public ITimeoutHandler
-        {
-            PacketTimeoutFunctor(UdpNetworkInterface& networkInterface);
-            TimeoutResult HandleTimeout(TimeoutQueue::TimeoutItem& item) override;
-        private:
-            AZ_DISABLE_COPY_MOVE(PacketTimeoutFunctor);
-            UdpNetworkInterface& m_networkInterface;
-        };
 
         AZ::Name m_name;
         TrustZone m_trustZone;
         uint16_t m_port = 0;
         bool m_allowIncomingConnections = false;
-        bool m_timeoutEnabled = true;
+        AZ::TimeMs m_timeoutMs = AZ::Time::ZeroTimeMs;
         IConnectionListener& m_connectionListener;
         UdpConnectionSet m_connectionSet;
         TimeoutQueue m_connectionTimeoutQueue;

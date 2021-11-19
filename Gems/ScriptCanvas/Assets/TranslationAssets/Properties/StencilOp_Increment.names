@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "StencilOp_Increment",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "StencilOp_Increment::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

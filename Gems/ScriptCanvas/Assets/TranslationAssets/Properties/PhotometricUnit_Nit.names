@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "PhotometricUnit_Nit",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "PhotometricUnit_Nit::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

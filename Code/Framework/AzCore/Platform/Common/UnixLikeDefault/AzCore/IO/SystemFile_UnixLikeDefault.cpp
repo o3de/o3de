@@ -249,6 +249,16 @@ namespace Platform
     {
         return access(fileName, F_OK) == 0;
     }
+
+    bool IsDirectory(const char* filePath)
+    {
+        struct stat result;
+        if (stat(filePath, &result) == 0)
+        {
+            return S_ISDIR(result.st_mode);
+        }
+        return false;
+    }
 }
 
 } // namespace AZ::IO

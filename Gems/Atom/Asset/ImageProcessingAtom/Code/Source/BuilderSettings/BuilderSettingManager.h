@@ -49,7 +49,6 @@ namespace ImageProcessingAtom
         static void DestroyInstance();
         static void Reflect(AZ::ReflectContext* context);
         
-        const PresetSettings* GetPreset(const AZ::Uuid presetId, const PlatformName& platform = "", AZStd::string_view* settingsFilePathOut = nullptr);
         const PresetSettings* GetPreset(const PresetName& presetName, const PlatformName& platform = "", AZStd::string_view* settingsFilePathOut = nullptr);
 
         const BuilderSettings* GetBuilderSetting(const PlatformName& platform);
@@ -60,10 +59,7 @@ namespace ImageProcessingAtom
         //! Return A map of preset settings based on their filemasks.
         //!      @key filemask string, empty string means no filemask
         //!      @value set of preset setting names supporting the specified filemask
-        const AZStd::map<FileMask, AZStd::set<PresetName>>& GetPresetFilterMap();
-
-        //!Find preset id list based on the preset name.
-        const AZ::Uuid GetPresetIdFromName(const PresetName& presetName);
+        const AZStd::map<FileMask, AZStd::unordered_set<PresetName>>& GetPresetFilterMap();
 
         //! Find preset name based on the preset id.
         const PresetName GetPresetNameFromId(const AZ::Uuid& presetId);
@@ -84,8 +80,10 @@ namespace ImageProcessingAtom
         //! Find a suitable preset a given image file.
         //! @param imageFilePath: Filepath string of the image file. The function may load the image from the path for better detection
         //! @param image: an optional image object which can be used for preset selection if there is no match based file mask.
-        //! @return suggested preset uuid.
-        AZ::Uuid GetSuggestedPreset(AZStd::string_view imageFilePath, IImageObjectPtr image = nullptr);
+        //! @return suggested preset name.
+        PresetName GetSuggestedPreset(AZStd::string_view imageFilePath, IImageObjectPtr image = nullptr);
+
+        bool IsValidPreset(PresetName presetName) const;
 
         bool DoesSupportPlatform(AZStd::string_view platformId);
 
@@ -131,27 +129,27 @@ namespace ImageProcessingAtom
         // Builder settings for each platform
         AZStd::map <PlatformName, BuilderSettings> m_builderSettings;
 
-        AZStd::map<PresetName, PresetEntry> m_presets;
+        AZStd::unordered_map<PresetName, PresetEntry> m_presets;
 
         // Cached list of presets mapped by their file masks.
         // @Key file mask, use empty string to indicate all presets without filtering
         // @Value set of preset names that matches the file mask
-        AZStd::map <FileMask, AZStd::set<PresetName>> m_presetFilterMap;
+        AZStd::map <FileMask, AZStd::unordered_set<PresetName>> m_presetFilterMap;
 
         // A mutex to protect when modifying any map in this manager        
         AZStd::recursive_mutex m_presetMapLock;
 
         // Default presets for certain file masks
-        AZStd::map <FileMask, AZ::Uuid > m_defaultPresetByFileMask;
+        AZStd::map <FileMask, PresetName > m_defaultPresetByFileMask;
 
         // Default preset for none power of two image
-        AZ::Uuid m_defaultPresetNonePOT;
+        PresetName m_defaultPresetNonePOT;
 
         // Default preset for power of two
-        AZ::Uuid m_defaultPreset;
+        PresetName m_defaultPreset;
 
         // Default preset for power of two with alpha
-        AZ::Uuid m_defaultPresetAlpha;
+        PresetName m_defaultPresetAlpha;
 
         // Image builder's version
         AZStd::string m_analysisFingerprint;

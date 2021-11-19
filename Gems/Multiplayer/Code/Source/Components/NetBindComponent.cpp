@@ -13,6 +13,7 @@
 #include <Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h>
 #include <Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h>
 #include <Multiplayer/NetworkInput/NetworkInput.h>
+#include <Source/NetworkEntity/NetworkEntityTracker.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
 #include <AzCore/Interface/Interface.h>
@@ -59,7 +60,7 @@ namespace Multiplayer
                         return false;
                     }
 
-                    NetBindComponent* netBindComponent = entity-> FindComponent<NetBindComponent>();
+                    NetBindComponent* netBindComponent = GetNetworkEntityTracker()->GetNetBindComponent(entity);
                     if (!netBindComponent)
                     {
                         AZ_Warning( "NetBindComponent", false, "NetBindComponent IsNetEntityRoleAuthority failed. Entity '%s' (id: %s) is missing a NetBindComponent, make sure this entity contains a component which derives from NetBindComponent.", entity->GetName().c_str(), id.ToString().c_str())
@@ -76,7 +77,7 @@ namespace Multiplayer
                         return false;
                     }
 
-                    NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                    NetBindComponent* netBindComponent = GetNetworkEntityTracker()->GetNetBindComponent(entity);
                     if (!netBindComponent)
                     {
                         AZ_Warning("NetBindComponent", false, "NetBindComponent IsNetEntityRoleAutonomous failed. Entity '%s' (id: %s) is missing a NetBindComponent, make sure this entity contains a component which derives from NetBindComponent.", entity->GetName().c_str(), id.ToString().c_str())
@@ -93,7 +94,7 @@ namespace Multiplayer
                         return false;
                     }
 
-                    NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                    NetBindComponent* netBindComponent = GetNetworkEntityTracker()->GetNetBindComponent(entity);
                     if (!netBindComponent)
                     {
                         AZ_Warning("NetBindComponent", false, "NetBindComponent IsNetEntityRoleClient failed. Entity '%s' (id: %s) is missing a NetBindComponent, make sure this entity contains a component which derives from NetBindComponent.", entity->GetName().c_str(), id.ToString().c_str())
@@ -110,7 +111,7 @@ namespace Multiplayer
                         return false;
                     }
 
-                    NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
+                    NetBindComponent* netBindComponent = GetNetworkEntityTracker()->GetNetBindComponent(entity);
                     if (!netBindComponent)
                     {
                         AZ_Warning("NetBindComponent", false, "NetBindComponent IsNetEntityRoleServer failed. Entity '%s' (id: %s) is missing a NetBindComponent, make sure this entity contains a component which derives from NetBindComponent.", entity->GetName().c_str(), id.ToString().c_str())
@@ -172,6 +173,8 @@ namespace Multiplayer
         {
             GetNetworkEntityManager()->NotifyControllersDeactivated(m_netEntityHandle, EntityIsMigrating::False);
         }
+
+        GetNetworkEntityTracker()->UnregisterNetBindComponent(this);
     }
 
     NetEntityRole NetBindComponent::GetNetEntityRole() const
@@ -314,7 +317,7 @@ namespace Multiplayer
         return false;
     }
 
-    bool NetBindComponent::HandlePropertyChangeMessage([[maybe_unused]] AzNetworking::ISerializer& serializer, [[maybe_unused]] bool notifyChanges)
+    bool NetBindComponent::HandlePropertyChangeMessage(AzNetworking::ISerializer& serializer, bool notifyChanges)
     {
         const NetEntityRole netEntityRole = m_netEntityRole;
         ReplicationRecord replicationRecord(netEntityRole);
@@ -391,19 +394,9 @@ namespace Multiplayer
         m_syncRewindEvent.Signal();
     }
 
-    void NetBindComponent::NotifyMigrationStart(ClientInputId migratedInputId)
+    void NetBindComponent::NotifyServerMigration(const HostId& remoteHostId)
     {
-        m_entityMigrationStartEvent.Signal(migratedInputId);
-    }
-
-    void NetBindComponent::NotifyMigrationEnd()
-    {
-        m_entityMigrationEndEvent.Signal();
-    }
-
-    void NetBindComponent::NotifyServerMigration(HostId hostId, AzNetworking::ConnectionId connectionId)
-    {
-        m_entityServerMigrationEvent.Signal(m_netEntityHandle, hostId, connectionId);
+        m_entityServerMigrationEvent.Signal(m_netEntityHandle, remoteHostId);
     }
 
     void NetBindComponent::NotifyPreRender(float deltaTime)
@@ -429,16 +422,6 @@ namespace Multiplayer
     void NetBindComponent::AddEntitySyncRewindEventHandler(EntitySyncRewindEvent::Handler& eventHandler)
     {
         eventHandler.Connect(m_syncRewindEvent);
-    }
-
-    void NetBindComponent::AddEntityMigrationStartEventHandler(EntityMigrationStartEvent::Handler& eventHandler)
-    {
-        eventHandler.Connect(m_entityMigrationStartEvent);
-    }
-
-    void NetBindComponent::AddEntityMigrationEndEventHandler(EntityMigrationEndEvent::Handler& eventHandler)
-    {
-        eventHandler.Connect(m_entityMigrationEndEvent);
     }
 
     void NetBindComponent::AddEntityServerMigrationEventHandler(EntityServerMigrationEvent::Handler& eventHandler)
@@ -509,7 +492,7 @@ namespace Multiplayer
     void NetBindComponent::FillTotalReplicationRecord(ReplicationRecord& replicationRecord) const
     {
         replicationRecord.Append(m_totalRecord);
-        // if we have any outstanding changes yet to be logged, grab those as well
+        // If we have any outstanding changes yet to be logged, grab those as well
         if (m_currentRecord.HasChanges())
         {
             replicationRecord.Append(m_currentRecord);
@@ -523,6 +506,9 @@ namespace Multiplayer
         m_netEntityId = netEntityId;
         m_netEntityRole = netEntityRole;
         m_prefabEntityId = prefabEntityId;
+
+        GetNetworkEntityTracker()->RegisterNetBindComponent(entity, this);
+
         m_netEntityHandle = GetNetworkEntityManager()->AddEntityToEntityMap(m_netEntityId, entity);
 
         for (AZ::Component* component : entity->GetComponents())

@@ -53,7 +53,7 @@ import pysbs.context as pysbs_context
 
 # -------------------------------------------------------------------------
 # set up global space, logging etc.
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
@@ -71,8 +71,8 @@ _LOGGER.debug('Starting up:  {0}.'.format({_PACKAGENAME}))
 from collections import OrderedDict
 _SYNTH_ENV_DICT = OrderedDict()
 _SYNTH_ENV_DICT = azpy.synthetic_env.stash_env(_SYNTH_ENV_DICT)
-_LY_DEV = _SYNTH_ENV_DICT[ENVAR_LY_DEV]
-_LY_PROJECT_PATH = _SYNTH_ENV_DICT[ENVAR_LY_PROJECT_PATH]
+_O3DE_DEV = _SYNTH_ENV_DICT[ENVAR_O3DE_DEV]
+_O3DE_PROJECT_PATH = _SYNTH_ENV_DICT[ENVAR_O3DE_PROJECT_PATH]
 
 
 # -------------------------------------------------------------------------
@@ -90,7 +90,7 @@ class MyHandler(PatternMatchingEventHandler):
         """
         self.outputName = event.src_path.split(".sbsar")[0].split("/")[-1]
         self.outputCookPath = event.src_path.split(self.outputName)
-        self.outputRenderPath = Path(_LY_PROJECT_PATH, 'Assets', 'Textures', 'Substance').norm()
+        self.outputRenderPath = Path(_O3DE_PROJECT_PATH, 'Assets', 'Textures', 'Substance').norm()
         _LOGGER.debug(self.outputCookPath, self.outputName, self.outputRenderPath)
 
         pysbs_batch.sbsrender_info(input=event.src_path)

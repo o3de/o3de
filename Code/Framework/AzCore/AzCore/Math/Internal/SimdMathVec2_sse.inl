@@ -383,31 +383,32 @@ namespace AZ
 
         AZ_MATH_INLINE bool Vec2::CmpAllEq(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllEq(arg1, arg2, 0x00FF);
+            // Only check the first two bits for Vector2
+            return Sse::CmpAllEq(arg1, arg2, 0b0011);
         }
 
 
         AZ_MATH_INLINE bool Vec2::CmpAllLt(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllLt(arg1, arg2, 0x00FF);
+            return Sse::CmpAllLt(arg1, arg2, 0b0011);
         }
 
 
         AZ_MATH_INLINE bool Vec2::CmpAllLtEq(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllLtEq(arg1, arg2, 0x00FF);
+            return Sse::CmpAllLtEq(arg1, arg2, 0b0011);
         }
 
 
         AZ_MATH_INLINE bool Vec2::CmpAllGt(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllGt(arg1, arg2, 0x00FF);
+            return Sse::CmpAllGt(arg1, arg2, 0b0011);
         }
 
 
         AZ_MATH_INLINE bool Vec2::CmpAllGtEq(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllGtEq(arg1, arg2, 0x00FF);
+            return Sse::CmpAllGtEq(arg1, arg2, 0b0011);
         }
 
 

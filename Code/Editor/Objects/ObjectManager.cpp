@@ -30,12 +30,10 @@
 #include "Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h"
 
 #include <AzCore/Console/Console.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 
 AZ_CVAR_EXTERNED(bool, ed_visibility_logTiming);
-
-AZ_CVAR(
-    bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
-    "Enable/disable using the new IVisibilitySystem for Entity visibility determination");
 
 /*!
  *  Class Description used for object templates.
@@ -76,17 +74,6 @@ public:
     int GameCreationOrder() override { return superType->GameCreationOrder(); };
 };
 
-void CBaseObjectsCache::AddObject(CBaseObject* object)
-{
-    m_objects.push_back(object);
-    if (object->GetType() == OBJTYPE_AZENTITY)
-    {
-        auto componentEntityObject = static_cast<CComponentEntityObject*>(object);
-        m_entityIds.push_back(componentEntityObject->GetAssociatedEntityId());
-    }
-}
-
-
 //////////////////////////////////////////////////////////////////////////
 // CObjectManager implementation.
 //////////////////////////////////////////////////////////////////////////
@@ -121,16 +108,11 @@ CObjectManager::CObjectManager()
 
     m_objectsByName.reserve(1024);
     LoadRegistry();
-
-    AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusConnect(
-        AzToolsFramework::GetEntityContextId());
 }
 
 //////////////////////////////////////////////////////////////////////////
 CObjectManager::~CObjectManager()
 {
-    AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler::BusDisconnect();
-
     m_bExiting = true;
     SaveRegistry();
     DeleteAllObjects();
@@ -626,7 +608,7 @@ bool CObjectManager::AddObject(CBaseObject* obj)
         if (CEntityObject* entityObj = qobject_cast<CEntityObject*>(obj))
         {
             CEntityObject::EAttachmentType attachType = entityObj->GetAttachType();
-            if (attachType == CEntityObject::EAttachmentType::eAT_GeomCacheNode || attachType == CEntityObject::EAttachmentType::eAT_CharacterBone)
+            if (attachType == CEntityObject::EAttachmentType::eAT_CharacterBone)
             {
                 m_animatedAttachedEntities.insert(entityObj);
             }
@@ -846,7 +828,7 @@ void CObjectManager::ShowLastHiddenObject()
 {
     uint64 mostRecentID = CBaseObject::s_invalidHiddenID;
     CBaseObject* mostRecentObject = nullptr;
-    for (auto it : m_objects)
+    for (const auto& it : m_objects)
     {
         CBaseObject* obj = it.second;
 
@@ -1267,25 +1249,8 @@ void CObjectManager::Display(DisplayContext& dc)
         UpdateVisibilityList();
     }
 
-    bool viewIsDirty = dc.settings->IsDisplayHelpers(); // displaying helpers require computing all the bound boxes and things anyway.
-
-    if (!viewIsDirty)
+    if (dc.settings->IsDisplayHelpers())
     {
-        if (CBaseObjectsCache* cache = dc.view->GetVisibleObjectsCache())
-        {
-            // if the current rendering viewport has an out-of-date cache serial number, it needs to be refreshed too.
-            // views set their cache empty when they indicate they need to force a refresh.
-            if ((cache->GetObjectCount() == 0) || (cache->GetSerialNumber() != m_visibilitySerialNumber))
-            {
-                viewIsDirty = true;
-            }
-        }
-    }
-
-    if (viewIsDirty)
-    {
-        FindDisplayableObjects(dc, true);  // this also actually draws the helpers.
-
         // Also broadcast for anyone else that needs to draw global debug to do so now
         AzFramework::DebugDisplayEventBus::Broadcast(&AzFramework::DebugDisplayEvents::DrawGlobalDebugInfo);
     }
@@ -1296,94 +1261,14 @@ void CObjectManager::Display(DisplayContext& dc)
     }
 }
 
-void CObjectManager::ForceUpdateVisibleObjectCache(DisplayContext& dc)
+void CObjectManager::ForceUpdateVisibleObjectCache([[maybe_unused]] DisplayContext& dc)
 {
-    FindDisplayableObjects(dc, false);
+    AZ_Assert(false, "CObjectManager::ForceUpdateVisibleObjectCache is legacy/deprecated and should not be used.");
 }
 
-void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]] bool bDisplay)
+void CObjectManager::FindDisplayableObjects([[maybe_unused]] DisplayContext& dc, [[maybe_unused]] bool bDisplay)
 {
-    // if the new IVisibilitySystem is being used, do not run this logic
-    if (ed_visibility_use)
-    {
-        return;
-    }
-
-    AZ_PROFILE_FUNCTION(Editor);
-
-    auto start = std::chrono::steady_clock::now();
-    CBaseObjectsCache* pDispayedViewObjects = dc.view->GetVisibleObjectsCache();
-    if (!pDispayedViewObjects)
-    {
-        return;
-    }
-
-    pDispayedViewObjects->SetSerialNumber(m_visibilitySerialNumber); // update viewport to be latest serial number
-
-    AABB bbox;
-    bbox.min.zero();
-    bbox.max.zero();
-
-    pDispayedViewObjects->ClearObjects();
-    pDispayedViewObjects->Reserve(static_cast<int>(m_visibleObjects.size()));
-
-    if (dc.flags & DISPLAY_2D)
-    {
-        int numVis = static_cast<int>(m_visibleObjects.size());
-        for (int i = 0; i < numVis; i++)
-        {
-            CBaseObject* obj = m_visibleObjects[i];
-
-            obj->GetBoundBox(bbox);
-            if (dc.box.IsIntersectBox(bbox))
-            {
-                pDispayedViewObjects->AddObject(obj);
-            }
-        }
-    }
-    else
-    {
-        CSelectionGroup* pSelection = GetSelection();
-        if (pSelection && pSelection->GetCount() > 1)
-        {
-            AABB mergedAABB;
-            mergedAABB.Reset();
-            for (int i = 0, iCount(pSelection->GetCount()); i < iCount; ++i)
-            {
-                CBaseObject* pObj(pSelection->GetObject(i));
-                if (pObj == nullptr)
-                {
-                    continue;
-                }
-                AABB aabb;
-                pObj->GetBoundBox(aabb);
-                mergedAABB.Add(aabb);
-            }
-
-            pSelection->GetObject(0)->CBaseObject::DrawDimensions(dc, &mergedAABB);
-        }
-
-        int numVis = static_cast<int>(m_visibleObjects.size());
-        for (int i = 0; i < numVis; i++)
-        {
-            CBaseObject* obj = m_visibleObjects[i];
-
-            if (obj)
-            {
-                if ((dc.flags & DISPLAY_SELECTION_HELPERS) || obj->IsSelected())
-                {
-                    pDispayedViewObjects->AddObject(obj);
-                }
-            }
-        }
-    }
-
-    if (ed_visibility_logTiming && !ed_visibility_use)
-    {
-        auto stop = std::chrono::steady_clock::now();
-        std::chrono::duration<double> diff = stop - start;
-        AZ_Printf("Visibility", "FindDisplayableObjects (old) - Duration: %f", diff);
-    }
+    AZ_Assert(false, "CObjectManager::FindDisplayableObjects is legacy/deprecated and should not be used.");
 }
 
 void CObjectManager::BeginEditParams(CBaseObject* obj, int flags)
@@ -1603,11 +1488,7 @@ bool CObjectManager::HitTestObject(CBaseObject* obj, HitContext& hc)
     if (!bSelectionHelperHit)
     {
         // Fast checking.
-        if (hc.camera && !obj->IsInCameraView(*hc.camera))
-        {
-            return false;
-        }
-        else if (hc.bounds && !obj->IntersectRectBounds(*hc.bounds))
+        if (hc.bounds && !obj->IntersectRectBounds(*hc.bounds))
         {
             return false;
         }
@@ -1630,214 +1511,24 @@ bool CObjectManager::HitTestObject(CBaseObject* obj, HitContext& hc)
     return (bSelectionHelperHit || obj->HitTest(hc));
 }
 
-
 //////////////////////////////////////////////////////////////////////////
-bool CObjectManager::HitTest(HitContext& hitInfo)
+bool CObjectManager::HitTest([[maybe_unused]] HitContext& hitInfo)
 {
-    AZ_PROFILE_FUNCTION(Editor);
-
-    hitInfo.object = nullptr;
-    hitInfo.dist = FLT_MAX;
-    hitInfo.axis = 0;
-    hitInfo.manipulatorMode = 0;
-
-    HitContext hcOrg = hitInfo;
-    if (hcOrg.view)
-    {
-        hcOrg.view->GetPerpendicularAxis(nullptr, &hcOrg.b2DViewport);
-    }
-    hcOrg.rayDir = hcOrg.rayDir.GetNormalized();
-
-    HitContext hc = hcOrg;
-
-    float mindist = FLT_MAX;
-
-    if (!hitInfo.bIgnoreAxis && !hc.bUseSelectionHelpers)
-    {
-        // Test gizmos.
-        if (m_gizmoManager->HitTest(hc))
-        {
-            if (hc.axis != 0)
-            {
-                hitInfo.object = hc.object;
-                hitInfo.gizmo = hc.gizmo;
-                hitInfo.axis = hc.axis;
-                hitInfo.manipulatorMode = hc.manipulatorMode;
-                hitInfo.dist = hc.dist;
-                return true;
-            }
-        }
-    }
-
-    if (hitInfo.bOnlyGizmo)
-    {
-        return false;
-    }
-
-    // Only HitTest objects, that where previously Displayed.
-    CBaseObjectsCache* pDispayedViewObjects = hitInfo.view->GetVisibleObjectsCache();
-
-    const bool iconsPrioritized = true; // Force icons to always be prioritized over other things you hit. Can change to be a configurable option in the future.
-
-    CBaseObject* selected = nullptr;
-    const char* name = nullptr;
-    bool iconHit = false;
-    int numVis = pDispayedViewObjects->GetObjectCount();
-    for (int i = 0; i < numVis; i++)
-    {
-        CBaseObject* obj = pDispayedViewObjects->GetObject(i);
-
-        if (obj == hitInfo.pExcludedObject)
-        {
-            continue;
-        }
-
-        if (HitTestObject(obj, hc))
-        {
-            if (m_selectCallback && !m_selectCallback->CanSelectObject(obj))
-            {
-                continue;
-            }
-
-            // Check if this object is nearest.
-            if (hc.axis != 0)
-            {
-                hitInfo.object = obj;
-                hitInfo.axis = hc.axis;
-                hitInfo.dist = hc.dist;
-                return true;
-            }
-
-            // When prioritizing icons, we don't allow non-icon hits to beat icon hits
-            if (iconsPrioritized && iconHit && !hc.iconHit)
-            {
-                continue;
-            }
-
-            if (hc.dist < mindist || (!iconHit && hc.iconHit))
-            {
-                if (hc.iconHit)
-                {
-                    iconHit = true;
-                }
-
-                mindist = hc.dist;
-                name = hc.name;
-                selected = obj;
-            }
-
-            // Clear the object pointer if an object was hit, not just if the collision
-            // was closer than any previous. Not all paths from HitTestObject set the object pointer and so you could get
-            // an object from a previous (rejected) result but with collision information about a closer hit.
-            hc.object = nullptr;
-            hc.iconHit = false;
-
-            // If use deep selection
-            if (hitInfo.pDeepSelection)
-            {
-                hitInfo.pDeepSelection->AddObject(hc.dist, obj);
-            }
-        }
-    }
-
-    if (selected)
-    {
-        hitInfo.object = selected;
-        hitInfo.dist = mindist;
-        hitInfo.name = name;
-        hitInfo.iconHit = iconHit;
-        return true;
-    }
+    AZ_Assert(false, "CObjectManager::HitTest is legacy/deprecated and should not be used.");
     return false;
 }
-void CObjectManager::FindObjectsInRect(CViewport* view, const QRect& rect, std::vector<GUID>& guids)
+
+void CObjectManager::FindObjectsInRect(
+    [[maybe_unused]] CViewport* view, [[maybe_unused]] const QRect& rect, [[maybe_unused]] std::vector<GUID>& guids)
 {
-    AZ_PROFILE_FUNCTION(Editor);
-
-    if (rect.width() < 1 || rect.height() < 1)
-    {
-        return;
-    }
-
-    HitContext hc;
-    hc.view = view;
-    hc.b2DViewport = view->GetType() != ET_ViewportCamera;
-    hc.rect = rect;
-    hc.bUseSelectionHelpers = view->GetAdvancedSelectModeFlag();
-
-    guids.clear();
-
-    CBaseObjectsCache* pDispayedViewObjects = view->GetVisibleObjectsCache();
-
-    int numVis = pDispayedViewObjects->GetObjectCount();
-    for (int i = 0; i < numVis; ++i)
-    {
-        CBaseObject* pObj = pDispayedViewObjects->GetObject(i);
-
-        HitTestObjectAgainstRect(pObj, view, hc, guids);
-    }
+    AZ_Assert(false, "CObjectManager::FindObjectsInRect is legacy/deprecated and should not be used.");
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CObjectManager::SelectObjectsInRect(CViewport* view, const QRect& rect, bool bSelect)
+void CObjectManager::SelectObjectsInRect(
+    [[maybe_unused]] CViewport* view, [[maybe_unused]] const QRect& rect, [[maybe_unused]] bool bSelect)
 {
-    AZ_PROFILE_FUNCTION(Editor);
-
-    // Ignore too small rectangles.
-    if (rect.width() < 1 || rect.height() < 1)
-    {
-        return;
-    }
-
-    CUndo undo("Select Object(s)");
-
-    HitContext hc;
-    hc.view = view;
-    hc.b2DViewport = view->GetType() != ET_ViewportCamera;
-    hc.rect = rect;
-    hc.bUseSelectionHelpers = view->GetAdvancedSelectModeFlag();
-
-    bool isUndoRecording = GetIEditor()->IsUndoRecording();
-    if (isUndoRecording)
-    {
-        m_processingBulkSelect = true;
-    }
-
-    CBaseObjectsCache* displayedViewObjects = view->GetVisibleObjectsCache();
-    int numVis = displayedViewObjects->GetObjectCount();
-
-    // Tracking the previous selection allows proper undo/redo functionality of additional
-    // selections (CTRL + drag select)
-    AZStd::unordered_set<const CBaseObject*> previousSelection;
-
-    for (int i = 0; i < numVis; ++i)
-    {
-        CBaseObject* object = displayedViewObjects->GetObject(i);
-
-        if (object->IsSelected())
-        {
-            previousSelection.insert(object);
-        }
-        else
-        {
-            // This will update m_currSelection
-            SelectObjectInRect(object, view, hc, bSelect);
-
-            // Legacy undo/redo does not go through the Ebus system and must be done individually
-            if (isUndoRecording && object->GetType() != OBJTYPE_AZENTITY)
-            {
-                GetIEditor()->RecordUndo(new CUndoBaseObjectSelect(object, true));
-            }
-        }
-    }
-
-    if (isUndoRecording && m_currSelection)
-    {
-        // Component Entities can handle undo/redo in bulk due to Ebuses
-        GetIEditor()->RecordUndo(new CUndoBaseObjectBulkSelect(previousSelection, *m_currSelection));
-    }
-
-    m_processingBulkSelect = false;
+    AZ_Assert(false, "CObjectManager::SelectObjectsInRect is legacy/deprecated and should not be used.");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2608,29 +2299,6 @@ void CObjectManager::SelectObjectInRect(CBaseObject* pObj, CViewport* view, HitC
     }
 }
 
-void CObjectManager::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
-{
-    // hide current gizmo for entity (translate/rotate/scale)
-    IGizmoManager* gizmoManager = GetGizmoManager();
-    const size_t gizmoCount = static_cast<size_t>(gizmoManager->GetGizmoCount());
-    for (size_t i = 0; i < gizmoCount; ++i)
-    {
-        gizmoManager->RemoveGizmo(gizmoManager->GetGizmoByIndex(static_cast<int>(i)));
-    }
-}
-
-void CObjectManager::LeftComponentMode(const AZStd::vector<AZ::Uuid>& /*componentModeTypes*/)
-{
-    // show translate/rotate/scale gizmo again
-    if (IGizmoManager* gizmoManager = GetGizmoManager())
-    {
-        if (CBaseObject* selectedObject = GetIEditor()->GetSelectedObject())
-        {
-            gizmoManager->AddGizmo(new CAxisGizmo(selectedObject));
-        }
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 namespace
 {
@@ -3011,6 +2679,4 @@ namespace AzToolsFramework
 
         }
     }
-}
-
-
+} // namespace AzToolsFramework

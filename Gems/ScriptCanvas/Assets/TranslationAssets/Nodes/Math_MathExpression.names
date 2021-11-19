@@ -1,0 +1,37 @@
+{
+    "entries": [
+        {
+            "key": "{A5841DE8-CA11-4364-9C34-5ECE8B9623D7}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Math Expression",
+                "category": "Math",
+                "tooltip": "Will evaluate a series of math operations, allowing users to specify inputs using {}.",
+                "subtitle": "Math"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Output signal"
+                    }
+                }
+            ]
+        }
+    ]
+}

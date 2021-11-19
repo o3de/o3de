@@ -23,6 +23,7 @@ namespace AZ
             if (ValidateIsReady())
             {
                 m_asset->m_materialTypeAsset = parentMaterial.m_materialTypeAsset;
+                m_asset->m_materialTypeVersion = m_asset->m_materialTypeAsset->GetVersion();
 
                 if (!m_asset->m_materialTypeAsset)
                 {
@@ -69,6 +70,7 @@ namespace AZ
                     ReportError("MaterialTypeAsset is null");
                     return;
                 }
+                m_asset->m_materialTypeVersion = m_asset->m_materialTypeAsset->GetVersion();
 
                 m_materialPropertiesLayout = m_asset->GetMaterialPropertiesLayout();
                 if (includeMaterialPropertyNames)

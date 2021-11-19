@@ -10,7 +10,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Cry_Camera.h>
 
 #include <QSet>
 
@@ -38,6 +37,7 @@
 
 #include <AzFramework/Windowing/WindowBus.h>
 #include <AzFramework/Visibility/EntityVisibilityQuery.h>
+#include <AzFramework/Viewport/ViewportBus.h>
 
 // forward declarations.
 class CBaseObject;
@@ -78,6 +78,7 @@ struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::Vi
     float ManipulatorLineBoundWidth() const override;
     float ManipulatorCircleBoundWidth() const override;
     bool StickySelectEnabled() const override;
+    AZ::Vector3 DefaultEditorCameraPosition() const override;
 };
 
 // EditorViewportWidget window
@@ -85,6 +86,7 @@ AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 class SANDBOX_API EditorViewportWidget final
     : public QtViewport
+    , public AzFramework::ViewportBorderRequestBus::Handler
     , private IEditorNotifyListener
     , private IUndoManagerListener
     , private Camera::EditorCameraRequestBus::Handler
@@ -118,6 +120,9 @@ public:
     // These methods are made public in the derived class because they are called with an object whose static type is known to be this class type.
     void SetFOV(float fov) override;
     float GetFOV() const override;
+
+    // AzFramework::ViewportBorderRequestBus overrides ...
+    AZStd::optional<AzFramework::ViewportBorderPadding> GetViewportBorderPadding() const override;
 
 private:
     ////////////////////////////////////////////////////////////////////////
@@ -166,7 +171,6 @@ private:
     void ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& rayDir) const override;
     Vec3 ViewToWorldNormal(const QPoint& vp, bool onlyTerrain, bool bTestRenderMesh = false) override;
     float GetScreenScaleFactor(const Vec3& worldPoint) const override;
-    float GetScreenScaleFactor(const CCamera& camera, const Vec3& object_position) override;
     float GetAspectRatio() const override;
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
     bool IsBoundsVisible(const AABB& box) const override;

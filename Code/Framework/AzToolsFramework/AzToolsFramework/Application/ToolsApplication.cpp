@@ -27,6 +27,7 @@
 #include <AzToolsFramework/ToolsComponents/EditorAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/ComponentAssetMimeDataContainer.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntitySystemComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityContextComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/FocusMode/FocusModeSystemComponent.h>
@@ -68,6 +69,8 @@
 #include <AzToolsFramework/UI/EditorEntityUi/EditorEntityUiSystemComponent.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
 #include <AzToolsFramework/Prefab/PrefabPublicInterface.h>
+#include <Entity/EntityUtilityComponent.h>
+#include <AzToolsFramework/Script/LuaSymbolsReporterSystemComponent.h>
 
 #include <QtWidgets/QMessageBox>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
@@ -173,7 +176,7 @@ namespace AzToolsFramework
             , public AZ::BehaviorEBusHandler
         {
             AZ_EBUS_BEHAVIOR_BINDER(ToolsApplicationNotificationBusHandler, "{7EB67956-FF86-461A-91E2-7B08279CFACF}", AZ::SystemAllocator,
-                EntityRegistered, EntityDeregistered);
+                EntityRegistered, EntityDeregistered, AfterEntitySelectionChanged);
 
             void EntityRegistered(AZ::EntityId entityId) override
             {
@@ -183,6 +186,11 @@ namespace AzToolsFramework
             void EntityDeregistered(AZ::EntityId entityId) override
             {
                 Call(FN_EntityDeregistered, entityId);
+            }
+
+            void AfterEntitySelectionChanged(const EntityIdList& newlySelectedEntities, const EntityIdList& newlyDeselectedEntities) override
+            {
+                Call(FN_AfterEntitySelectionChanged, newlySelectedEntities, newlyDeselectedEntities);
             }
         };
 
@@ -207,11 +215,16 @@ namespace AzToolsFramework
             , public AZ::BehaviorEBusHandler
         {
             AZ_EBUS_BEHAVIOR_BINDER(EditorEventsBusHandler, "{352F80BB-469A-40B6-B322-FE57AB51E4DA}", AZ::SystemAllocator,
-                NotifyRegisterViews);
+                NotifyRegisterViews, NotifyEditorInitialized);
 
             void NotifyRegisterViews() override
             {
                 Call(FN_NotifyRegisterViews);
+            }
+
+            void NotifyEditorInitialized() override
+            {
+                Call(FN_NotifyEditorInitialized);
             }
         };
 
@@ -251,6 +264,7 @@ namespace AzToolsFramework
                 azrtti_typeid<EditorEntityContextComponent>(),
                 azrtti_typeid<Components::EditorEntityUiSystemComponent>(),
                 azrtti_typeid<FocusModeSystemComponent>(),
+                azrtti_typeid<ContainerEntitySystemComponent>(),
                 azrtti_typeid<SliceMetadataEntityContextComponent>(),
                 azrtti_typeid<Prefab::PrefabSystemComponent>(),
                 azrtti_typeid<EditorEntityFixupComponent>(),
@@ -269,7 +283,9 @@ namespace AzToolsFramework
                 azrtti_typeid<AzToolsFramework::EditorInteractionSystemComponent>(),
                 azrtti_typeid<Components::EditorEntitySearchComponent>(),
                 azrtti_typeid<Components::EditorIntersectorComponent>(),
-                azrtti_typeid<AzToolsFramework::SliceRequestComponent>()
+                azrtti_typeid<AzToolsFramework::SliceRequestComponent>(),
+                azrtti_typeid<AzToolsFramework::EntityUtilityComponent>(),
+                azrtti_typeid<AzToolsFramework::Script::LuaSymbolsReporterSystemComponent>(),
             });
 
         return components;
@@ -404,6 +420,7 @@ namespace AzToolsFramework
                 ->Handler<Internal::ToolsApplicationNotificationBusHandler>()
                 ->Event("EntityRegistered", &ToolsApplicationEvents::EntityRegistered)
                 ->Event("EntityDeregistered", &ToolsApplicationEvents::EntityDeregistered)
+                ->Event("AfterEntitySelectionChanged", &ToolsApplicationEvents::AfterEntitySelectionChanged)
                 ;
 
             behaviorContext->Class<ViewPaneOptions>()
@@ -414,6 +431,8 @@ namespace AzToolsFramework
                 ->Property("showInMenu", BehaviorValueProperty(&ViewPaneOptions::showInMenu))
                 ->Property("canHaveMultipleInstances", BehaviorValueProperty(&ViewPaneOptions::canHaveMultipleInstances))
                 ->Property("isPreview", BehaviorValueProperty(&ViewPaneOptions::isPreview))
+                ->Property("showOnToolsToolbar", BehaviorValueProperty(&ViewPaneOptions::showOnToolsToolbar))
+                ->Property("toolbarIcon", BehaviorValueProperty(&ViewPaneOptions::toolbarIcon))
                 ;
 
             behaviorContext->EBus<EditorRequestBus>("EditorRequestBus")
@@ -422,6 +441,7 @@ namespace AzToolsFramework
                 ->Attribute(AZ::Script::Attributes::Module, "editor")
                 ->Event("RegisterCustomViewPane", &EditorRequests::RegisterCustomViewPane)
                 ->Event("UnregisterViewPane", &EditorRequests::UnregisterViewPane)
+                ->Event("GetComponentTypeEditorIcon", &EditorRequests::GetComponentTypeEditorIcon)
                 ;
 
             behaviorContext->EBus<EditorEventsBus>("EditorEventBus")
@@ -430,6 +450,7 @@ namespace AzToolsFramework
                 ->Attribute(AZ::Script::Attributes::Module, "editor")
                 ->Handler<Internal::EditorEventsBusHandler>()
                 ->Event("NotifyRegisterViews", &EditorEvents::NotifyRegisterViews)
+                ->Event("NotifyEditorInitialized", &EditorEvents::NotifyEditorInitialized)
                 ;
 
             behaviorContext->EBus<ViewPaneCallbackBus>("ViewPaneCallbackBus")

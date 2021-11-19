@@ -43,7 +43,7 @@ namespace ImageProcessingAtom
             m_inputImage = IImageObjectPtr(LoadImageFromFile(m_imageFileName));
         }
         // Get preset if the setting in texture is changed
-        if (m_presetSetting == nullptr || m_presetSetting->m_uuid != m_textureSetting->m_preset)
+        if (m_presetSetting == nullptr || m_presetSetting->m_name != m_textureSetting->m_preset)
         {
             m_presetSetting = BuilderSettingManager::Instance()->GetPreset(m_textureSetting->m_preset);
         }
@@ -101,6 +101,8 @@ namespace ImageProcessingAtom
     void ImagePreview::InitializeJobSettings()
     {
         AZ::JobManagerDesc desc;
+        desc.m_jobManagerName = "ImagePreview";
+
         AZ::JobManagerThreadDesc threadDesc;
         desc.m_workerThreads.push_back(threadDesc);
         // Check to ensure these have not already been initialized.

@@ -24,18 +24,8 @@ namespace AzToolsFramework
                 : public EditorComponentModeNotificationBus::Handler
                 , public AZ::BehaviorEBusHandler
             {
-                AZ_EBUS_BEHAVIOR_BINDER(EditorComponentModeNotificationBusHandler, "{AD2F4204-0913-4FC9-9A10-492538F60C70}", AZ::SystemAllocator,
-                    EnteredComponentMode, LeftComponentMode, ActiveComponentModeChanged);
-
-                void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentTypes) override
-                {
-                    Call(FN_EnteredComponentMode, componentTypes);
-                }
-
-                void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentTypes) override
-                {
-                    Call(FN_LeftComponentMode, componentTypes);
-                }
+                AZ_EBUS_BEHAVIOR_BINDER(
+                    EditorComponentModeNotificationBusHandler, "{AD2F4204-0913-4FC9-9A10-492538F60C70}", AZ::SystemAllocator, ActiveComponentModeChanged);
 
                 void ActiveComponentModeChanged(const AZ::Uuid& componentType) override
                 {
@@ -171,8 +161,6 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
                     ->Attribute(AZ::Script::Attributes::Module, "editor")
                     ->Handler<Internal::EditorComponentModeNotificationBusHandler>()
-                    ->Event("EnteredComponentMode", &EditorComponentModeNotifications::EnteredComponentMode)
-                    ->Event("LeftComponentMode", &EditorComponentModeNotifications::LeftComponentMode)
                     ->Event("ActiveComponentModeChanged", &EditorComponentModeNotifications::ActiveComponentModeChanged)
                     ;
             }

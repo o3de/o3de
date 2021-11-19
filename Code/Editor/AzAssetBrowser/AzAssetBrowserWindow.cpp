@@ -96,10 +96,6 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         connect(
             m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
             &AzAssetBrowserWindow::SetTableViewVisibleAfterFilter);
-
-        connect(
-            m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
-            &AzAssetBrowserWindow::UpdateTableModelAfterFilter);
         connect(
             m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::selectionChangedSignal, this,
             &AzAssetBrowserWindow::SelectionChangedSlot);
@@ -251,24 +247,6 @@ void AzAssetBrowserWindow::SetExpandedAssetBrowserMode()
 
     m_assetBrowserDisplayState = AzAssetBrowser::AssetBrowserDisplayState::ExpandedMode;
 
-    disconnect(
-        m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
-        &AzAssetBrowserWindow::UpdateTableModelAfterFilter);
-    disconnect(
-        m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
-        &AzAssetBrowserWindow::SetTableViewVisibleAfterFilter);
-
-    disconnect(
-        m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::selectionChangedSignal, this,
-        &AzAssetBrowserWindow::SelectionChangedSlot);
-    disconnect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
-    disconnect(
-        m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearStringFilter, m_ui->m_searchWidget,
-        &AzAssetBrowser::SearchWidget::ClearStringFilter);
-    disconnect(
-        m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearTypeFilter, m_ui->m_searchWidget,
-        &AzAssetBrowser::SearchWidget::ClearTypeFilter);
-
     if (m_ui->m_assetBrowserTableViewWidget->isVisible())
     {
         m_ui->m_assetBrowserTableViewWidget->setVisible(false);
@@ -281,37 +259,9 @@ void AzAssetBrowserWindow::SetDefaultAssetBrowserMode()
     namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;
 
     m_assetBrowserDisplayState = AzAssetBrowser::AssetBrowserDisplayState::DefaultMode;
-
-    connect(
-        m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
-        &AzAssetBrowserWindow::SetTableViewVisibleAfterFilter);
-
-    connect(
-        m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterChanged, this,
-        &AzAssetBrowserWindow::UpdateTableModelAfterFilter);
-    connect(
-        m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::selectionChangedSignal, this,
-        &AzAssetBrowserWindow::SelectionChangedSlot);
-    connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
-    connect(
-        m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearStringFilter, m_ui->m_searchWidget,
-        &AzAssetBrowser::SearchWidget::ClearStringFilter);
-    connect(
-        m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearTypeFilter, m_ui->m_searchWidget,
-        &AzAssetBrowser::SearchWidget::ClearTypeFilter);
-
-    //If the filter is not empty we want to switch views and Update the model
-    UpdateTableModelAfterFilter();
     SetTableViewVisibleAfterFilter();
 }
 
-void AzAssetBrowserWindow::UpdateTableModelAfterFilter()
-{
-    if (!m_ui->m_searchWidget->GetFilterString().isEmpty())
-    {
-        m_tableModel->UpdateTableModelMaps();
-    }
-}
 
 void AzAssetBrowserWindow::SetTableViewVisibleAfterFilter()
 {
@@ -389,8 +339,8 @@ void AzAssetBrowserWindow::SelectionChangedSlot(const QItemSelection& /*selected
     UpdatePreview();
 }
 
-// while its tempting to use Activated here, we dont actually want it to count as activation
-// just becuase on some OS clicking once is activation.
+// while its tempting to use Activated here, we don't actually want it to count as activation
+// just because on some OS clicking once is activation.
 void AzAssetBrowserWindow::DoubleClickedItem([[maybe_unused]] const QModelIndex& element)
 {
     namespace AzAssetBrowser = AzToolsFramework::AssetBrowser;

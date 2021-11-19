@@ -103,6 +103,7 @@ namespace Multiplayer
         // Non-serialized RPC metadata
         ReliabilityType m_isReliable = ReliabilityType::Reliable;
     };
+    using NetworkEntityRpcVector = AZStd::fixed_vector<NetworkEntityRpcMessage, MaxAggregateRpcMessages>;
 
     struct IRpcParamStruct
     {

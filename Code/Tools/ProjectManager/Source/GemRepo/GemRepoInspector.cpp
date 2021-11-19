@@ -60,8 +60,8 @@ namespace O3DE::ProjectManager
 
         // Repo name and url link
         m_nameLabel->setText(m_model->GetName(modelIndex));
-        m_repoLinkLabel->setText(m_model->GetRepoLink(modelIndex));
-        m_repoLinkLabel->SetUrl(m_model->GetRepoLink(modelIndex));
+        m_repoLinkLabel->setText(m_model->GetRepoUri(modelIndex));
+        m_repoLinkLabel->SetUrl(m_model->GetRepoUri(modelIndex));
 
         // Repo summary
         m_summaryLabel->setText(m_model->GetSummary(modelIndex));
@@ -86,7 +86,7 @@ namespace O3DE::ProjectManager
         }
 
         // Included Gems
-        m_includedGems->Update(tr("Included Gems"), "", m_model->GetIncludedGemNames(modelIndex));
+        m_includedGems->Update(tr("Included Gems"), "", m_model->GetIncludedGemTags(modelIndex));
 
         m_mainWidget->adjustSize();
         m_mainWidget->show();
@@ -99,7 +99,7 @@ namespace O3DE::ProjectManager
         m_nameLabel->setObjectName("gemRepoInspectorNameLabel");
         m_mainLayout->addWidget(m_nameLabel);
 
-        m_repoLinkLabel = new LinkLabel(tr("Repo Url"), QUrl(""), 12, this);
+        m_repoLinkLabel = new LinkLabel(tr("Repo Url"), QUrl(), 12, this);
         m_mainLayout->addWidget(m_repoLinkLabel);
         m_mainLayout->addSpacing(5);
 

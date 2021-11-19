@@ -86,7 +86,7 @@ void ApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout LightingDat
                 light.m_position,
                 surface.position,
                 -dirToConeTip,
-                surface.normal);
+                surface.vertexNormal);
              
             // Use backShadowRatio to carry thickness from shadow map for thick mode
             backShadowRatio = 1.0 - litRatio;

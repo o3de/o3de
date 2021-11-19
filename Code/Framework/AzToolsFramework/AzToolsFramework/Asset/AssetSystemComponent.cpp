@@ -354,26 +354,6 @@ namespace AzToolsFramework
             }
         }
 
-        const char* AssetSystemComponent::GetAbsoluteDevGameFolderPath()
-        {
-            AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-            if (fileIO)
-            {
-                return fileIO->GetAlias("@devassets@");
-            }
-            return "";
-        }
-
-        const char* AssetSystemComponent::GetAbsoluteDevRootFolderPath()
-        {
-            AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-            if (fileIO)
-            {
-                return fileIO->GetAlias("@devroot@");
-            }
-            return "";
-        }
-
         void AssetSystemComponent::OnSystemTick()
         {
             AssetSystemBus::ExecuteQueuedEvents();

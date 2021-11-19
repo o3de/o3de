@@ -120,13 +120,6 @@ namespace AZ
             //! Sets the filter method of shadows.
             virtual void SetShadowFilterMethod(ShadowFilterMethod method) = 0;
 
-            //! Gets the width of softening boundary between shadowed area and lit area in degrees.
-            virtual float GetSofteningBoundaryWidthAngle() const = 0;
-            
-            //! Sets the width of softening boundary between shadowed area and lit area in degrees.
-            //! 0 disables softening.
-            virtual void SetSofteningBoundaryWidthAngle(float degrees) = 0;
-
             //! Gets the sample count for filtering of the shadow boundary.
             virtual uint32_t GetFilteringSampleCount() const = 0;
 

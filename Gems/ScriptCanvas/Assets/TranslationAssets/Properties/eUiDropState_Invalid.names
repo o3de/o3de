@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiDropState_Invalid",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiDropState_Invalid::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

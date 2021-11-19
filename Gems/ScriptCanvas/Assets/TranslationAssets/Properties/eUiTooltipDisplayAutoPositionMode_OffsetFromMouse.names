@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiTooltipDisplayAutoPositionMode_OffsetFromMouse",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiTooltipDisplayAutoPositionMode_OffsetFromMouse::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

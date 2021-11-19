@@ -42,28 +42,6 @@ namespace AZ
             return m_lightTypeName;
         }
 
-        void EsmShadowmapsPass::SetFilterParameters(const AZStd::array_view<float>& standardDeviations)
-        {
-            // Set descriptor for Gaussian filters for given set of standard deviations.
-            MathFilterDescriptor descriptor;
-            descriptor.m_kind = MathFilterKind::Gaussian;
-            descriptor.m_gaussians.reserve(standardDeviations.size());
-            for (const float standardDeviation : standardDeviations)
-            {
-                descriptor.m_gaussians.emplace_back(GaussianFilterDescriptor{ standardDeviation });
-            }
-
-            // Set filter paramter buffer along with element counts for each filter.
-            MathFilter::BufferWithElementCounts bufferCounts = MathFilter::FindOrCreateFilterBuffer(descriptor);
-            m_filterTableBuffer = bufferCounts.first;
-            m_filterCounts = AZStd::move(bufferCounts.second);
-        }
-
-        AZStd::array_view<uint32_t> EsmShadowmapsPass::GetFilterCounts() const
-        {
-            return m_filterCounts;
-        }
-
         void EsmShadowmapsPass::SetShadowmapIndexTableBuffer(const Data::Instance<RPI::Buffer>& tableBuffer)
         {
             m_shadowmapIndexTableBuffer = tableBuffer;

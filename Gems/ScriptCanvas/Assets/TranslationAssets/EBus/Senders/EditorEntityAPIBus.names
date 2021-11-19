@@ -1,0 +1,125 @@
+{
+    "entries": [
+        {
+            "key": "EditorEntityAPIBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "EditorEntityAPIBus"
+            },
+            "methods": [
+                {
+                    "key": "SetVisibilityState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetVisibilityState"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetVisibilityState is invoked"
+                    },
+                    "details": {
+                        "name": "SetVisibilityState"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLockState",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetLockState"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetLockState is invoked"
+                    },
+                    "details": {
+                        "name": "SetLockState"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetStartStatus",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetStartStatus"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetStartStatus is invoked"
+                    },
+                    "details": {
+                        "name": "SetStartStatus"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetName"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetName is invoked"
+                    },
+                    "details": {
+                        "name": "SetName"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetParent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetParent"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetParent is invoked"
+                    },
+                    "details": {
+                        "name": "SetParent"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -92,13 +92,14 @@ namespace AZ
 
             // PassSystemInterface library related functions...
             bool HasPassesForTemplateName(const Name& templateName) const override;
-            const AZStd::vector<Pass*>& GetPassesForTemplateName(const Name& templateName) const override;
             bool AddPassTemplate(const Name& name, const AZStd::shared_ptr<PassTemplate>& passTemplate) override;
             const AZStd::shared_ptr<PassTemplate> GetPassTemplate(const Name& name) const override;
+            void RemovePassTemplate(const Name& name) override;
             void RemovePassFromLibrary(Pass* pass) override;
             void RegisterPass(Pass* pass) override;
             void UnregisterPass(Pass* pass) override;
-            AZStd::vector<Pass*> FindPasses(const PassFilter& passFilter) const override;
+            void ForEachPass(const PassFilter& filter, AZStd::function<PassFilterExecutionFlow(Pass*)> passFunction) override;
+            Pass* FindFirstPass(const PassFilter& filter) override;
 
         private:
             // Returns the root of the pass tree hierarchy

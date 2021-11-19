@@ -6,8 +6,11 @@
  *
  */
 
-
 #include <AzCore/Component/Entity.h>
+#include <AzCore/std/allocator_stateless.h>
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/Time/ITime.h>
 #include <AzFramework/Components/CameraBus.h>
 #include <Maestro/Bus/SequenceComponentBus.h>
 #include "Movie.h"
@@ -32,9 +35,7 @@
 #include <ISystem.h>
 #include <ILog.h>
 #include <IConsole.h>
-#include <ITimer.h>
 #include <IRenderer.h>
-#include <IViewSystem.h>
 #include <Maestro/Types/AnimNodeType.h>
 #include <Maestro/Types/SequenceType.h>
 #include <Maestro/Types/AnimParamType.h>
@@ -73,22 +74,32 @@ static SMovieSequenceAutoComplete s_movieSequenceAutoComplete;
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-// Serialization for anim nodes & param types
-#define REGISTER_NODE_TYPE(name) assert(g_animNodeEnumToStringMap.find(AnimNodeType::name) == g_animNodeEnumToStringMap.end()); \
-    g_animNodeEnumToStringMap[AnimNodeType::name] = AZ_STRINGIZE(name);                                                         \
-    g_animNodeStringToEnumMap[AZStd::string(AZ_STRINGIZE(name))] = AnimNodeType::name;
+namespace
+{
+    using AnimParamSystemString = AZStd::basic_string<char, AZStd::char_traits<char>, AZStd::stateless_allocator>;
 
-#define REGISTER_PARAM_TYPE(name) assert(g_animParamEnumToStringMap.find(AnimParamType::name) == g_animParamEnumToStringMap.end()); \
-    g_animParamEnumToStringMap[AnimParamType::name] = AZ_STRINGIZE(name);                                                           \
-    g_animParamStringToEnumMap[AZStd::string(AZ_STRINGIZE(name))] = AnimParamType::name;
+    template <typename KeyType, typename MappedType, typename Compare = AZStd::less<KeyType>>
+    using AnimSystemOrderedMap = AZStd::map<KeyType, MappedType, Compare, AZStd::stateless_allocator>;
+    template <typename KeyType, typename MappedType, typename Hasher = AZStd::hash<KeyType>, typename EqualKey = AZStd::equal_to<KeyType>>
+    using AnimSystemUnorderedMap = AZStd::unordered_map<KeyType, MappedType, Hasher, EqualKey, AZStd::stateless_allocator>;
+}
+
+// Serialization for anim nodes & param types
+#define REGISTER_NODE_TYPE(name) assert(!g_animNodeEnumToStringMap.contains(AnimNodeType::name)); \
+    g_animNodeEnumToStringMap[AnimNodeType::name] = AZ_STRINGIZE(name);                          \
+    g_animNodeStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimNodeType::name;
+
+#define REGISTER_PARAM_TYPE(name) assert(!g_animParamEnumToStringMap.contains(AnimParamType::name)); \
+    g_animParamEnumToStringMap[AnimParamType::name] = AZ_STRINGIZE(name);                           \
+    g_animParamStringToEnumMap[AnimParamSystemString(AZ_STRINGIZE(name))] = AnimParamType::name;
 
 namespace
 {
-    AZStd::unordered_map<AnimNodeType, AZStd::string> g_animNodeEnumToStringMap;
-    StaticInstance<std::map<AZStd::string, AnimNodeType, stl::less_stricmp<AZStd::string> >> g_animNodeStringToEnumMap;
+    AnimSystemUnorderedMap<AnimNodeType, AnimParamSystemString> g_animNodeEnumToStringMap;
+    AnimSystemOrderedMap<AnimParamSystemString, AnimNodeType, stl::less_stricmp<AnimParamSystemString>> g_animNodeStringToEnumMap;
 
-    AZStd::unordered_map<AnimParamType, AZStd::string> g_animParamEnumToStringMap;
-    StaticInstance<std::map<AZStd::string, AnimParamType, stl::less_stricmp<AZStd::string> >> g_animParamStringToEnumMap;
+    AnimSystemUnorderedMap<AnimParamType, AnimParamSystemString> g_animParamEnumToStringMap;
+    AnimSystemOrderedMap<AnimParamSystemString, AnimParamType, stl::less_stricmp<AnimParamSystemString>> g_animParamStringToEnumMap;
 
     // If you get an assert in this function, it means two node types have the same enum value.
     void RegisterNodeTypes()
@@ -195,6 +206,22 @@ namespace
     }
 }
 
+namespace Internal
+{
+    float ApplyDeltaTimeOverrideIfEnabled(float deltaTime)
+    {
+        if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
+        {
+            const AZ::TimeMs deltatimeOverride = timeSystem->GetSimulationTickDeltaOverride();
+            if (deltatimeOverride != AZ::Time::ZeroTimeMs)
+            {
+                deltaTime = AZ::TimeMsToSeconds(deltatimeOverride);
+            }
+        }
+        return deltaTime;
+    }
+} // namespace Internal
+
 //////////////////////////////////////////////////////////////////////////
 CMovieSystem::CMovieSystem(ISystem* pSystem)
 {
@@ -206,18 +233,13 @@ CMovieSystem::CMovieSystem(ISystem* pSystem)
     m_bEnableCameraShake = true;
     m_bCutscenesPausedInEditor = true;
     m_sequenceStopBehavior = eSSB_GotoEndTime;
-    m_lastUpdateTime.SetValue(0);
+    m_lastUpdateTime = AZ::Time::ZeroTimeUs;
     m_bStartCapture = false;
     m_captureFrame = -1;
     m_bEndCapture = false;
-    m_fixedTimeStepBackUp = 0;
-    m_maxStepBackUp = 0;
-    m_smoothingBackUp = 0;
+    m_fixedTimeStepBackUp = AZ::Time::ZeroTimeMs;
     m_cvar_capture_frame_once = nullptr;
     m_cvar_capture_folder = nullptr;
-    m_cvar_t_FixedStep = nullptr;
-    m_cvar_t_MaxStep = nullptr;
-    m_cvar_t_Smoothing = nullptr;
     m_cvar_sys_maxTimeStepForMovieSystem = nullptr;
     m_cvar_capture_frames = nullptr;
     m_cvar_capture_file_prefix = nullptr;
@@ -822,20 +844,6 @@ bool CMovieSystem::InternalStopSequence(IAnimSequence* sequence, bool bAbort, bo
 //////////////////////////////////////////////////////////////////////////
 bool CMovieSystem::AbortSequence(IAnimSequence* sequence, bool bLeaveTime)
 {
-    assert(sequence);
-
-    // to avoid any camera blending after aborting a cut scene
-    IViewSystem* pViewSystem = gEnv->pSystem->GetIViewSystem();
-    if (pViewSystem)
-    {
-        pViewSystem->SetBlendParams(0, 0, 0);
-        IView* pView = pViewSystem->GetActiveView();
-        if (pView)
-        {
-            pView->ResetBlending();
-        }
-    }
-
     return InternalStopSequence(sequence, true, !bLeaveTime);
 }
 
@@ -1028,13 +1036,13 @@ void CMovieSystem::PreUpdate(float deltaTime)
     }
     m_newlyActivatedSequences.clear();
 
-    UpdateInternal(m_cvar_t_FixedStep ? m_cvar_t_FixedStep->GetFVal() : deltaTime, true);
+    UpdateInternal(Internal::ApplyDeltaTimeOverrideIfEnabled(deltaTime), true);
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CMovieSystem::PostUpdate(float deltaTime)
 {
-    UpdateInternal(m_cvar_t_FixedStep ? m_cvar_t_FixedStep->GetFVal() : deltaTime, false);
+    UpdateInternal(Internal::ApplyDeltaTimeOverrideIfEnabled(deltaTime), false);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1048,7 +1056,7 @@ void CMovieSystem::UpdateInternal(const float deltaTime, const bool bPreUpdate)
     }
 
     // don't update more than once if dt==0.0
-    CTimeValue curTime = gEnv->pTimer->GetFrameStartTime();
+    const AZ::TimeUs curTime = AZ::GetLastSimulationTickTime();
     if (deltaTime == 0.0f && curTime == m_lastUpdateTime && !gEnv->IsEditor())
     {
         return;
@@ -1500,34 +1508,11 @@ void CMovieSystem::GoToFrame(const char* seqName, float targetFrame)
 
 void CMovieSystem::EnableFixedStepForCapture(float step)
 {
-    if (nullptr == m_cvar_t_FixedStep)
+    if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
     {
-        m_cvar_t_FixedStep = gEnv->pConsole->GetCVar("t_FixedStep");
+        m_fixedTimeStepBackUp = timeSystem->GetSimulationTickDeltaOverride();
+        timeSystem->SetSimulationTickDeltaOverride(AZ::SecondsToTimeMs(step));
     }
-
-    m_fixedTimeStepBackUp = m_cvar_t_FixedStep->GetFVal();
-    m_cvar_t_FixedStep->Set(step);
-
-    if (nullptr == m_cvar_t_MaxStep)
-    {
-        m_cvar_t_MaxStep = gEnv->pConsole->GetCVar("t_MaxStep");
-    }
-
-    // Make sure to make the max step large enough
-    m_maxStepBackUp = m_cvar_t_MaxStep->GetFVal();
-    if (step > m_maxStepBackUp)
-    {
-        m_cvar_t_MaxStep->Set(step);
-    }
-
-    if (nullptr == m_cvar_t_Smoothing)
-    {
-        m_cvar_t_Smoothing = gEnv->pConsole->GetCVar("t_Smoothing");
-    }
-
-    // Turn off framerate smoothing
-    m_smoothingBackUp = m_cvar_t_Smoothing->GetFVal();
-    m_cvar_t_Smoothing->Set(0);
 
     if (nullptr == m_cvar_sys_maxTimeStepForMovieSystem)
     {
@@ -1544,9 +1529,10 @@ void CMovieSystem::EnableFixedStepForCapture(float step)
 
 void CMovieSystem::DisableFixedStepForCapture()
 {
-    m_cvar_t_FixedStep->Set(m_fixedTimeStepBackUp);
-    m_cvar_t_MaxStep->Set(m_maxStepBackUp);
-    m_cvar_t_Smoothing->Set(m_smoothingBackUp);
+    if (auto* timeSystem = AZ::Interface<AZ::ITime>::Get())
+    {
+        timeSystem->SetSimulationTickDeltaOverride(m_fixedTimeStepBackUp);
+    }
     m_cvar_sys_maxTimeStepForMovieSystem->Set(m_maxTimeStepForMovieSystemBackUp);
 }
 

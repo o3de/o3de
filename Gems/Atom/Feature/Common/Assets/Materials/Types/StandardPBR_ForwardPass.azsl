@@ -98,6 +98,8 @@ VSOutput StandardPbr_ForwardPassVS(VSInput IN)
 
 PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float depthNDC)
 {
+    const float3 vertexNormal = normalize(IN.m_normal);
+
     // ------- Tangents & Bitangets -------
     float3 tangents[UvSetCount] = { IN.m_tangent.xyz, IN.m_tangent.xyz };
     float3 bitangents[UvSetCount] = { IN.m_bitangent.xyz, IN.m_bitangent.xyz };
@@ -128,7 +130,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
             const uint shadowIndex = ViewSrg::m_shadowIndexDirectionalLight;
             if (o_enableShadows && shadowIndex < SceneSrg::m_directionalLightCount)
             {
-                DirectionalLightShadow::GetShadowCoords(shadowIndex, IN.m_worldPosition, IN.m_shadowCoords);
+                DirectionalLightShadow::GetShadowCoords(shadowIndex, IN.m_worldPosition, vertexNormal, IN.m_shadowCoords);
             }
         }
     }
@@ -146,7 +148,7 @@ PbrLightingOutput ForwardPassPS_Common(VSOutput IN, bool isFrontFace, out float 
 
     float2 normalUv = IN.m_uv[MaterialSrg::m_normalMapUvIndex];
     float3x3 uvMatrix = MaterialSrg::m_normalMapUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3(); // By design, only UV0 is allowed to apply transforms.
-
+    surface.vertexNormal = vertexNormal;
     surface.normal = GetNormalInputWS(MaterialSrg::m_normalMap, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, isFrontFace, IN.m_normal,
                                        tangents[MaterialSrg::m_normalMapUvIndex], bitangents[MaterialSrg::m_normalMapUvIndex], uvMatrix, o_normal_useTexture, MaterialSrg::m_normalFactor);
 

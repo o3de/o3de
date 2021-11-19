@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "FloatEpsilon",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "FloatEpsilon::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

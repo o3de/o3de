@@ -37,7 +37,7 @@ namespace O3DE::ProjectManager
         item->setData(gemRepoInfo.m_summary, RoleSummary);
         item->setData(gemRepoInfo.m_isEnabled, RoleIsEnabled);
         item->setData(gemRepoInfo.m_directoryLink, RoleDirectoryLink);
-        item->setData(gemRepoInfo.m_repoLink, RoleRepoLink);
+        item->setData(gemRepoInfo.m_repoUri, RoleRepoUri);
         item->setData(gemRepoInfo.m_lastUpdated, RoleLastUpdated);
         item->setData(gemRepoInfo.m_path, RolePath);
         item->setData(gemRepoInfo.m_additionalInfo, RoleAdditionalInfo);
@@ -83,9 +83,9 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleDirectoryLink).toString();
     }
 
-    QString GemRepoModel::GetRepoLink(const QModelIndex& modelIndex)
+    QString GemRepoModel::GetRepoUri(const QModelIndex& modelIndex)
     {
-        return modelIndex.data(RoleRepoLink).toString();
+        return modelIndex.data(RoleRepoUri).toString();
     }
 
     QDateTime GemRepoModel::GetLastUpdated(const QModelIndex& modelIndex)
@@ -103,17 +103,17 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleIncludedGems).toStringList();
     }
 
-    QStringList GemRepoModel::GetIncludedGemNames(const QModelIndex& modelIndex)
+    QVector<Tag> GemRepoModel::GetIncludedGemTags(const QModelIndex& modelIndex)
     {
-        QStringList gemNames;
-        QVector<GemInfo> gemInfos = GetIncludedGemInfos(modelIndex);
-
+        QVector<Tag> tags;
+        const QVector<GemInfo>& gemInfos = GetIncludedGemInfos(modelIndex);
+        tags.reserve(gemInfos.size());
         for (const GemInfo& gemInfo : gemInfos)
         {
-            gemNames.append(gemInfo.m_displayName);
+            tags.append({ gemInfo.m_displayName, gemInfo.m_name });
         }
 
-        return gemNames;
+        return tags;
     }
 
     QVector<GemInfo> GemRepoModel::GetIncludedGemInfos(const QModelIndex& modelIndex)

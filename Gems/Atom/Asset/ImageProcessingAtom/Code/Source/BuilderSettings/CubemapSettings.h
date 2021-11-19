@@ -43,14 +43,14 @@ namespace ImageProcessingAtom
         // generate an IBL specular cubemap
         bool m_generateIBLSpecular = false;
 
-        // the UUID of the preset to be used for generating the IBL specular cubemap
-        AZ::Uuid m_iblSpecularPreset = AZ::Uuid::CreateNull();
+        // the name of the preset to be used for generating the IBL specular cubemap
+        PresetName m_iblSpecularPreset;
 
         // generate an IBL diffuse cubemap
         bool m_generateIBLDiffuse = false;
 
-        // the UUID of the preset to be used for generating the IBL diffuse cubemap
-        AZ::Uuid m_iblDiffusePreset = AZ::Uuid::CreateNull();
+        // the name of the preset to be used for generating the IBL diffuse cubemap
+        PresetName m_iblDiffusePreset;
 
         // "cm_requiresconvolve", convolve the cubemap mips
         bool m_requiresConvolve = true;

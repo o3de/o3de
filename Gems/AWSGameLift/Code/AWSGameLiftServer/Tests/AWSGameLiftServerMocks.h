@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AWSGameLiftPlayer.h>
 #include <AWSGameLiftServerSystemComponent.h>
 #include <AWSGameLiftServerManager.h>
 #include <GameLiftServerSDKWrapper.h>
@@ -40,17 +41,25 @@ namespace UnitTest
 
         MOCK_METHOD1(AcceptPlayerSession, GenericOutcome(const std::string&));
         MOCK_METHOD0(ActivateGameSession, GenericOutcome());
+        MOCK_METHOD1(DescribePlayerSessions, DescribePlayerSessionsOutcome(
+            const Aws::GameLift::Server::Model::DescribePlayerSessionsRequest&));
         MOCK_METHOD0(InitSDK, Server::InitSDKOutcome());
         MOCK_METHOD1(ProcessReady, GenericOutcome(const Server::ProcessParameters& processParameters));
         MOCK_METHOD0(ProcessEnding, GenericOutcome());
         MOCK_METHOD1(RemovePlayerSession, GenericOutcome(const AZStd::string& playerSessionId));
         MOCK_METHOD0(GetTerminationTime, AZStd::string());
+        MOCK_METHOD1(StartMatchBackfill, StartMatchBackfillOutcome(
+            const Aws::GameLift::Server::Model::StartMatchBackfillRequest&));
+        MOCK_METHOD1(StopMatchBackfill, GenericOutcome(
+            const Aws::GameLift::Server::Model::StopMatchBackfillRequest&));
+
 
         GenericOutcome ProcessReadyMock(const Server::ProcessParameters& processParameters)
         {
             m_healthCheckFunc = processParameters.getOnHealthCheck();
             m_onStartGameSessionFunc = processParameters.getOnStartGameSession();
             m_onProcessTerminateFunc = processParameters.getOnProcessTerminate();
+            m_onUpdateGameSessionFunc = processParameters.getOnUpdateGameSession();
 
             GenericOutcome successOutcome(nullptr);
             return successOutcome;
@@ -59,6 +68,7 @@ namespace UnitTest
         AZStd::function<bool()> m_healthCheckFunc;
         AZStd::function<void()> m_onProcessTerminateFunc;
         AZStd::function<void(Aws::GameLift::Server::Model::GameSession)> m_onStartGameSessionFunc;
+        AZStd::function<void(Aws::GameLift::Server::Model::UpdateGameSession)> m_onUpdateGameSessionFunc;
     };
 
     class AWSGameLiftServerManagerMock
@@ -78,12 +88,25 @@ namespace UnitTest
             m_gameLiftServerSDKWrapperMockPtr = nullptr;
         }
 
+        void SetupTestMatchmakingData(const AZStd::string& matchmakingData, int maxPlayer = 10)
+        {
+            m_testGameSession.SetMatchmakerData(matchmakingData.c_str());
+            m_testGameSession.SetMaximumPlayerSessionCount(maxPlayer);
+            UpdateGameSessionData(m_testGameSession);
+        }
+
         bool AddConnectedTestPlayer(const AzFramework::PlayerConnectionConfig& playerConnectionConfig)
         {
             return AddConnectedPlayer(playerConnectionConfig);
         }
 
+        AZStd::vector<AWSGameLiftPlayer> GetTestServerMatchBackfillPlayers()
+        {
+            return GetActiveServerMatchBackfillPlayers();
+        }
+
         NiceMock<GameLiftServerSDKWrapperMock>* m_gameLiftServerSDKWrapperMockPtr;
+        Aws::GameLift::Server::Model::GameSession m_testGameSession;
     };
 
     class AWSGameLiftServerSystemComponentMock

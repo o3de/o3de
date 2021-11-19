@@ -690,7 +690,6 @@ namespace AssetBuilderSDK
     static const char* textureExtensions = ".dds";
     static const char* staticMeshExtensions = ".cgf";
     static const char* skinnedMeshExtensions = ".skin";
-    static const char* materialExtensions = ".mtl";
 
     // MIPS
     static const int c_MaxMipsCount = 11; // 11 is for 8k textures non-compressed. When not compressed it is using one file per mip.
@@ -699,7 +698,6 @@ namespace AssetBuilderSDK
 
     // XML files may contain generic data (avoid this in new builders - use a custom extension!)
     static const char* xmlExtensions = ".xml";
-    static const char* geomCacheExtensions = ".cax";
     static const char* skeletonExtensions = ".chr";
 
     static AZ::Data::AssetType unknownAssetType = AZ::Data::AssetType::CreateNull();
@@ -710,7 +708,6 @@ namespace AssetBuilderSDK
     static AZ::Data::AssetType textureMipsAssetType("{3918728C-D3CA-4D9E-813E-A5ED20C6821E}");
     static AZ::Data::AssetType skinnedMeshLodsAssetType("{58E5824F-C27B-46FD-AD48-865BA41B7A51}");
     static AZ::Data::AssetType staticMeshLodsAssetType("{9AAE4926-CB6A-4C60-9948-A1A22F51DB23}");
-    static AZ::Data::AssetType geomCacheAssetType("{EBC96071-E960-41B6-B3E3-328F515AE5DA}");
     static AZ::Data::AssetType skeletonAssetType("{60161B46-21F0-4396-A4F0-F2CCF0664CDE}");
     static AZ::Data::AssetType entityIconAssetType("{3436C30E-E2C5-4C3B-A7B9-66C94A28701B}");
 
@@ -807,11 +804,6 @@ namespace AssetBuilderSDK
             return textureAssetType;
         }
 
-        if (AzFramework::StringFunc::Find(materialExtensions, extension.c_str()) != AZStd::string::npos)
-        {
-            return materialAssetType;
-        }
-
         if (AzFramework::StringFunc::Find(staticMeshExtensions, extension.c_str()) != AZStd::string::npos)
         {
             return meshAssetType;
@@ -820,11 +812,6 @@ namespace AssetBuilderSDK
         if (AzFramework::StringFunc::Find(skinnedMeshExtensions, extension.c_str()) != AZStd::string::npos)
         {
             return skinnedMeshAssetType;
-        }
-
-        if (AzFramework::StringFunc::Find(geomCacheExtensions, extension.c_str()) != AZStd::string::npos)
-        {
-            return geomCacheAssetType;
         }
 
         if (AzFramework::StringFunc::Find(skeletonExtensions, extension.c_str()) != AZStd::string::npos)

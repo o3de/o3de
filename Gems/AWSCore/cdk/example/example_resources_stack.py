@@ -118,19 +118,29 @@ class ExampleResources(core.Stack):
         #    https://docs.aws.amazon.com/AmazonS3/latest/userguide/serv-side-encryption.html
         # 3. Enable Amazon S3 server access logging
         #    https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html
-        server_access_logs_bucket = s3.Bucket.from_bucket_name(
-            self,
-            f'{self._project_name}-{self._feature_name}-ImportedAccessLogsBucket',
-            core.Fn.import_value(f"{self._project_name}:ServerAccessLogsBucket")
-        )
+        server_access_logs_bucket = None
+        if self.node.try_get_context('disable_access_log') != 'true':
+            server_access_logs_bucket = s3.Bucket.from_bucket_name(
+                self,
+                f'{self._project_name}-{self._feature_name}-ImportedAccessLogsBucket',
+                core.Fn.import_value(f"{self._project_name}:ServerAccessLogsBucket")
+            )
+
+        # Auto cleanup bucket and data if requested
+        _remove_storage = self.node.try_get_context('remove_all_storage_on_destroy') == 'true'
+        _removal_policy = core.RemovalPolicy.DESTROY if _remove_storage else core.RemovalPolicy.RETAIN
 
         example_bucket = s3.Bucket(
             self,
             f'{self._project_name}-{self._feature_name}-Example-S3bucket',
+            auto_delete_objects=_remove_storage,
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
             encryption=s3.BucketEncryption.S3_MANAGED,
-            server_access_logs_bucket=server_access_logs_bucket,
-            server_access_logs_prefix=f'{self._project_name}-{self._feature_name}-{self.region}-AccessLogs'
+            removal_policy=_removal_policy,
+            server_access_logs_bucket=
+            server_access_logs_bucket if server_access_logs_bucket else None,
+            server_access_logs_prefix=
+            f'{self._project_name}-{self._feature_name}-{self.region}-AccessLogs' if server_access_logs_bucket else None
         )
 
         s3_deployment.BucketDeployment(
@@ -166,6 +176,11 @@ class ExampleResources(core.Stack):
                 type=dynamo.AttributeType.STRING
             )
         )
+
+        # Auto-delete the table when requested
+        if self.node.try_get_context('remove_all_storage_on_destroy') == 'true':
+            demo_table.apply_removal_policy(core.RemovalPolicy.DESTROY)
+
         return demo_table
 
     def __create_outputs(self) -> None:

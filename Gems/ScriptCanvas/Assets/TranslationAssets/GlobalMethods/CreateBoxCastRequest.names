@@ -1,0 +1,77 @@
+{
+    "entries": [
+        {
+            "key": "CreateBoxCastRequest",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "CreateBoxCastRequest",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateBoxCastRequest"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateBoxCastRequest is invoked"
+                    },
+                    "details": {
+                        "name": "CreateBoxCastRequest",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        },
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "const Transform&"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "const Vector3&"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        },
+                        {
+                            "typeid": "{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}",
+                            "details": {
+                                "name": "unsigned char"
+                            }
+                        },
+                        {
+                            "typeid": "{E6DA080B-7ED1-4135-A78C-A6A5E495A43E}",
+                            "details": {
+                                "name": "CollisionGroup"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{52F6C536-92F6-4C05-983D-0A74800AE56D}",
+                            "details": {
+                                "name": "ShapeCastRequest"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

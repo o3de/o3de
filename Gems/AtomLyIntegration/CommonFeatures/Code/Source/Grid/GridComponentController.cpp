@@ -79,7 +79,7 @@ namespace AZ
             m_entityId = entityId;
             m_dirty = true;
 
-            RPI::ScenePtr scene = RPI::RPISystemInterface::Get()->GetDefaultScene();
+            RPI::Scene* scene = RPI::Scene::GetSceneForEntityId(m_entityId);
             if (scene)
             {
                 AZ::RPI::SceneNotificationBus::Handler::BusConnect(scene->GetId());
@@ -175,6 +175,10 @@ namespace AZ
         void GridComponentController::OnBeginPrepareRender()
         {
             auto* auxGeomFP = AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::RPI::AuxGeomFeatureProcessorInterface>(m_entityId);
+            if (!auxGeomFP)
+            {
+                return;
+            }
             if (auto auxGeom = auxGeomFP->GetDrawQueue())
             {
                 BuildGrid();

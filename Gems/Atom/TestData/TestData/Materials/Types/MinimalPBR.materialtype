@@ -1,7 +1,7 @@
 {
     "description": "Base Material with properties used to define Standard PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
+    "version": 3,
     "propertyLayout": {
-        "version": 3,
         "groups": [
             {
                 "name": "settings",

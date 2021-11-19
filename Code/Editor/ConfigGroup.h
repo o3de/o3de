@@ -8,8 +8,12 @@
 
 
 #pragma once
-#ifndef CRYINCLUDE_EDITOR_CONFIGGROUP_H
-#define CRYINCLUDE_EDITOR_CONFIGGROUP_H
+#include <AzCore/base.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
+
+struct ICVar;
+class XmlNodeRef;
 
 namespace Config
 {
@@ -32,7 +36,7 @@ namespace Config
             eFlag_DoNotSave = 1 << 2,
         };
 
-        IConfigVar(const char* szName, const char* szDescription, EType varType, uint8 flags)
+        IConfigVar(const char* szName, const char* szDescription, EType varType, AZ::u8 flags)
             : m_name(szName)
             , m_description(szDescription)
             , m_type(varType)
@@ -42,22 +46,22 @@ namespace Config
 
         virtual ~IConfigVar() = default;
 
-        ILINE EType GetType() const
+        AZ_FORCE_INLINE EType GetType() const
         {
             return m_type;
         }
 
-        ILINE const AZStd::string& GetName() const
+        AZ_FORCE_INLINE const AZStd::string& GetName() const
         {
             return m_name;
         }
 
-        ILINE const AZStd::string& GetDescription() const
+        AZ_FORCE_INLINE const AZStd::string& GetDescription() const
         {
             return m_description;
         }
 
-        ILINE bool IsFlagSet(EFlags flag) const
+        AZ_FORCE_INLINE bool IsFlagSet(EFlags flag) const
         {
             return 0 != (m_flags & flag);
         }
@@ -68,73 +72,28 @@ namespace Config
         virtual void GetDefault(void* outPtr) const = 0;
         virtual void Reset() = 0;
 
-        static EType TranslateType(const bool&) { return eType_BOOL; }
-        static EType TranslateType(const int&) { return eType_INT; }
-        static EType TranslateType(const float&) { return eType_FLOAT; }
-        static EType TranslateType(const AZStd::string&) { return eType_STRING; }
+        static constexpr EType TranslateType(const bool&) { return eType_BOOL; }
+        static constexpr EType TranslateType(const int&) { return eType_INT; }
+        static constexpr EType TranslateType(const float&) { return eType_FLOAT; }
+        static constexpr EType TranslateType(const AZStd::string&) { return eType_STRING; }
 
     protected:
         EType m_type;
-        uint8 m_flags;
+        AZ::u8 m_flags;
         AZStd::string m_name;
         AZStd::string m_description;
         void* m_ptr;
         ICVar* m_pCVar;
     };
 
-    // Typed wrapper for config variable
-    template<class T>
-    class TConfigVar
-        : public IConfigVar
-    {
-    private:
-        T m_default;
-
-    public:
-        TConfigVar(const char* szName, const char* szDescription, uint8 flags, T& ptr, const T& defaultValue)
-            : IConfigVar(szName, szDescription, IConfigVar::TranslateType(ptr), flags)
-            , m_default(defaultValue)
-        {
-            m_ptr = &ptr;
-
-            // reset to default value on initializations
-            ptr = defaultValue;
-        }
-
-        virtual void Get(void* outPtr) const
-        {
-            *reinterpret_cast<T*>(outPtr) = *reinterpret_cast<const T*>(m_ptr);
-        }
-
-        virtual void Set(const void* ptr)
-        {
-            *reinterpret_cast<T*>(m_ptr) = *reinterpret_cast<const T*>(ptr);
-        }
-
-        virtual void Reset()
-        {
-            *reinterpret_cast<T*>(m_ptr) = m_default;
-        }
-
-        virtual void GetDefault(void* outPtr) const
-        {
-            *reinterpret_cast<T*>(outPtr) = m_default;
-        }
-
-        virtual bool IsDefault() const
-        {
-            return *reinterpret_cast<const T*>(m_ptr) == m_default;
-        }
-    };
-
     // Group of configuration variables with optional mapping to CVars
     class CConfigGroup
     {
     private:
-        typedef std::vector<IConfigVar*> TConfigVariables;
+        using TConfigVariables = AZStd::vector<IConfigVar*> ;
         TConfigVariables m_vars;
 
-        typedef std::vector<ICVar*> TConsoleVariables;
+        using TConsoleVariables = AZStd::vector<ICVar*>;
         TConsoleVariables m_consoleVars;
 
     public:
@@ -142,20 +101,13 @@ namespace Config
         virtual ~CConfigGroup();
 
         void AddVar(IConfigVar* var);
-        uint32 GetVarCount();
+        AZ::u32 GetVarCount();
         IConfigVar* GetVar(const char* szName);
-        IConfigVar* GetVar(uint index);
+        IConfigVar* GetVar(AZ::u32 index);
         const IConfigVar* GetVar(const char* szName) const;
-        const IConfigVar* GetVar(uint index) const;
+        const IConfigVar* GetVar(AZ::u32 index) const;
 
         void SaveToXML(XmlNodeRef node);
         void LoadFromXML(XmlNodeRef node);
-
-        template<class T>
-        void AddVar(const char* szName, const char* szDescription, T& var, const T& defaultValue, uint8 flags = 0)
-        {
-            AddVar(new TConfigVar<T>(szName, szDescription, flags, var, defaultValue));
-        }
     };
 };
-#endif // CRYINCLUDE_EDITOR_CONFIGGROUP_H

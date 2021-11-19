@@ -32,6 +32,23 @@ namespace AZ
 {
     namespace Render
     {
+        namespace Internal
+        {
+            struct MeshComponentNotificationBusHandler final
+                : public MeshComponentNotificationBus::Handler
+                , public AZ::BehaviorEBusHandler
+            {
+                AZ_EBUS_BEHAVIOR_BINDER(
+                    MeshComponentNotificationBusHandler, "{8B8F4977-817F-4C7C-9141-0E5FF899E1BC}", AZ::SystemAllocator, OnModelReady);
+
+                void OnModelReady(
+                    [[maybe_unused]] const Data::Asset<RPI::ModelAsset>& modelAsset,
+                    [[maybe_unused]] const Data::Instance<RPI::Model>& model) override
+                {
+                    Call(FN_OnModelReady);
+                }
+            };
+        } // namespace Internal
 
         namespace MeshComponentControllerVersionUtility
         {
@@ -173,6 +190,12 @@ namespace AZ
                     ->VirtualProperty("MinimumScreenCoverage", "GetMinimumScreenCoverage", "SetMinimumScreenCoverage")
                     ->VirtualProperty("QualityDecayRate", "GetQualityDecayRate", "SetQualityDecayRate")
                     ;
+                
+                behaviorContext->EBus<MeshComponentNotificationBus>("MeshComponentNotificationBus")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "render")
+                    ->Attribute(AZ::Script::Attributes::Module, "render")
+                    ->Handler<Internal::MeshComponentNotificationBusHandler>();
             }
         }
 
@@ -306,7 +329,7 @@ namespace AZ
             return model ? model->GetUvNames() : AZStd::unordered_set<AZ::Name>();
         }
 
-        void MeshComponentController::OnMaterialsUpdated([[maybe_unused]] const MaterialAssignmentMap& materials)
+        void MeshComponentController::OnMaterialsUpdated(const MaterialAssignmentMap& materials)
         {
             if (m_meshFeatureProcessor)
             {

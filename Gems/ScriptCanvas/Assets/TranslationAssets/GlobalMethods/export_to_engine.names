@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "export_to_engine",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "export_to_engine",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke export_to_engine"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after export_to_engine is invoked"
+                    },
+                    "details": {
+                        "name": "export_to_engine",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

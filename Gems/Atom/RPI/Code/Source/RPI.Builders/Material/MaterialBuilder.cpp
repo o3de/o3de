@@ -47,7 +47,7 @@ namespace AZ
         {
             AssetBuilderSDK::AssetBuilderDesc materialBuilderDescriptor;
             materialBuilderDescriptor.m_name = JobKey;
-            materialBuilderDescriptor.m_version = 109; // Changed "id" to "name" in serialization
+            materialBuilderDescriptor.m_version = 110; // Material version auto update feature
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.material", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.materialtype", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             materialBuilderDescriptor.m_busId = azrtti_typeid<MaterialBuilder>();
@@ -283,6 +283,11 @@ namespace AZ
             auto material = LoadSourceData<MaterialSourceData>(json, materialSourceFilePath);
 
             if (!material.IsSuccess())
+            {
+                return {};
+            }
+
+            if (MaterialSourceData::ApplyVersionUpdatesResult::Failed == material.GetValue().ApplyVersionUpdates(materialSourceFilePath))
             {
                 return {};
             }

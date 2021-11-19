@@ -29,7 +29,7 @@ namespace ImageProcessingAtomEditor
         m_presetList.clear();
         auto& presetFilterMap = BuilderSettingManager::Instance()->GetPresetFilterMap();
 
-        AZStd::set<AZStd::string> noFilterPresetList;
+        AZStd::unordered_set<ImageProcessingAtom::PresetName> noFilterPresetList;
 
         // Check if there is any filtered preset list first
         for(auto& presetFilter : presetFilterMap)
@@ -40,7 +40,7 @@ namespace ImageProcessingAtomEditor
             }
             else if (IsMatchingWithFileMask(m_textureSetting->m_textureName, presetFilter.first))
             {
-                for(const AZStd::string& presetName : presetFilter.second)
+                for(const auto& presetName : presetFilter.second)
                 {
                     m_presetList.insert(presetName);
                 }
@@ -52,18 +52,18 @@ namespace ImageProcessingAtomEditor
             m_presetList = noFilterPresetList;
         }
 
-        foreach (const AZStd::string& presetName, m_presetList)
+        foreach (const auto& presetName, m_presetList)
         {
-            m_ui->presetComboBox->addItem(QString(presetName.c_str()));
+            m_ui->presetComboBox->addItem(QString(presetName.GetCStr()));
         }
 
         // Set current preset
-        const AZ::Uuid& currPreset = m_textureSetting->GetMultiplatformTextureSetting().m_preset;
+        const auto& currPreset = m_textureSetting->GetMultiplatformTextureSetting().m_preset;
         const PresetSettings* presetSetting = BuilderSettingManager::Instance()->GetPreset(currPreset);
 
         if (presetSetting)
         {
-            m_ui->presetComboBox->setCurrentText(presetSetting->m_name.c_str());
+            m_ui->presetComboBox->setCurrentText(presetSetting->m_name.GetCStr());
             QObject::connect(m_ui->presetComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &TexturePresetSelectionWidget::OnChangePreset);
 
             // Suppress engine reduction checkbox
@@ -109,20 +109,20 @@ namespace ImageProcessingAtomEditor
 
     void TexturePresetSelectionWidget::OnRestButton()
     {
-        m_textureSetting->SetToPreset(AZStd::string(m_ui->presetComboBox->currentText().toUtf8().data()));
+        m_textureSetting->SetToPreset(PresetName(m_ui->presetComboBox->currentText().toUtf8().data()));
         EditorInternalNotificationBus::Broadcast(&EditorInternalNotificationBus::Events::OnEditorSettingsChanged, true, BuilderSettingManager::s_defaultPlatform);
     }
 
     void TexturePresetSelectionWidget::OnChangePreset(int index)
     {
         QString text = m_ui->presetComboBox->itemText(index);
-        m_textureSetting->SetToPreset(AZStd::string(text.toUtf8().data()));
+        m_textureSetting->SetToPreset(PresetName(text.toUtf8().data()));
         EditorInternalNotificationBus::Broadcast(&EditorInternalNotificationBus::Events::OnEditorSettingsChanged, true, BuilderSettingManager::s_defaultPlatform);
     }
 
     void ImageProcessingAtomEditor::TexturePresetSelectionWidget::OnPresetInfoButton()
     {
-        const AZ::Uuid& currPreset = m_textureSetting->GetMultiplatformTextureSetting().m_preset;
+        const auto& currPreset = m_textureSetting->GetMultiplatformTextureSetting().m_preset;
         const PresetSettings* presetSetting = BuilderSettingManager::Instance()->GetPreset(currPreset);
         m_presetPopup.reset(new PresetInfoPopup(presetSetting, this));
         m_presetPopup->installEventFilter(this);
@@ -136,7 +136,7 @@ namespace ImageProcessingAtomEditor
             bool oldState = m_ui->serCheckBox->blockSignals(true);
             m_ui->serCheckBox->setChecked(m_textureSetting->GetMultiplatformTextureSetting().m_suppressEngineReduce);
             // If the preset's SER is true, texture setting should not override
-            const AZ::Uuid& currPreset = m_textureSetting->GetMultiplatformTextureSetting().m_preset;
+            const auto& currPreset = m_textureSetting->GetMultiplatformTextureSetting().m_preset;
             const PresetSettings* presetSetting = BuilderSettingManager::Instance()->GetPreset(currPreset);
             if (presetSetting)
             {

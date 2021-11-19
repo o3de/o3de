@@ -40,7 +40,7 @@ namespace AzToolsFramework::AssetUtils
     //! Also note that if the project has any "game project gems", then those will also be inserted last, 
     //! and thus have a higher priority than the root or non - project gems.
     //! Also note that the game project could be in a different location to the engine therefore we need the assetRoot param.
-    AZStd::vector<AZ::IO::Path> GetConfigFiles(AZStd::string_view engineRoot, AZStd::string_view assetRoot, AZStd::string_view projectPath,
+    AZStd::vector<AZ::IO::Path> GetConfigFiles(AZStd::string_view engineRoot, AZStd::string_view projectPath,
         bool addPlatformConfigs = true, bool addGemsConfigs = true, AZ::SettingsRegistryInterface* settingsRegistry = nullptr);
 
     //! A utility function which checks the given path starting at the root and updates the relative path to be the actual case correct path.

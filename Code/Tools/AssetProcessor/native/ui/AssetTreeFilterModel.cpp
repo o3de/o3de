@@ -62,7 +62,10 @@ namespace AssetProcessor
         {
             searchStr = searchStr.mid(0, subidPos);
         }
-        AZ::Uuid filterAsUuid = AZ::Uuid::CreateStringPermissive(searchStr.toUtf8(), 0);
+
+         // Cap the string to some reasonable length, we don't want to try parsing an entire book
+        size_t cappedStringLength = searchStr.length() > 60 ? 60 : searchStr.length();
+        AZ::Uuid filterAsUuid = AZ::Uuid::CreateStringPermissive(searchStr.toUtf8(), cappedStringLength);
 
         return DescendantMatchesFilter(*assetTreeItem, filter, filterAsUuid);
     }
