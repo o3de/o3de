@@ -193,7 +193,12 @@ namespace ScriptCanvasEditor
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Level", 0x9aeacc13))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/scripting/script-canvas/")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorScriptCanvasComponent::m_sourceHandle, "Script Canvas Source File", "Script Canvas source file associated with this component")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")
+                    ->Attribute("EditButton", "")
+                    ->Attribute("EditDescription", "Open in Script Canvas Editor")
+                    ->Attribute("EditCallback", &EditorScriptCanvasComponent::OpenEditor)
+                    ->Attribute(AZ::Edit::Attributes::AssetPickerTitle, "Script Canvas")
+                    ->Attribute(AZ::Edit::Attributes::SourceAssetFilterPattern, "*.scriptcanvas")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorScriptCanvasComponent::m_variableOverrides, "Properties", "Script Canvas Graph Properties")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
@@ -227,7 +232,7 @@ namespace ScriptCanvasEditor
         SetName(m_sourceHandle.Path().Filename().Native());
     }
 
-    void EditorScriptCanvasComponent::OpenEditor()
+    void EditorScriptCanvasComponent::OpenEditor(const AZ::Data::AssetId&, const AZ::Data::AssetType&)
     {
         AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
          

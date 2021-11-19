@@ -39,7 +39,12 @@ namespace AzToolsFramework
         typeFilter->SetAssetType(filterType);
         typeFilter->SetFilterPropagation(AssetBrowserEntryFilter::PropagateDirection::Down);
 
-        m_assetBrowserFilterModel->SetFilter(FilterConstType(typeFilter));
+        SetFilter(FilterConstType(typeFilter));
+    }
+
+    void AssetCompleterModel::SetFilter(FilterConstType filter)
+    {
+        m_assetBrowserFilterModel->SetFilter(filter);
 
         RefreshAssetList();
     }
