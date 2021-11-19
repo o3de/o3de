@@ -19,15 +19,15 @@
 
 namespace TestImpact
 {
-    //! Container for unique set of sorted build target types.
-    //! @tparam Target The specialized build target type.
+    //! Container for unique set of sorted target types.
+    //! @tparam Target The specialized target type.
     template<typename Target>
-    class BuildTargetList
+    class TargetList
     {
     public:
         using TargetType = Target;
 
-        BuildTargetList(AZStd::vector<typename Target::Descriptor>&& descriptors);
+        TargetList(AZStd::vector<typename Target::Descriptor>&& descriptors);
 
         //! Returns the targets in the collection.
         const AZStd::vector<Target>& GetTargets() const;
@@ -49,7 +49,7 @@ namespace TestImpact
     };
 
     template<typename Target>
-    BuildTargetList<Target>::BuildTargetList(AZStd::vector<typename Target::Descriptor>&& descriptors)
+    TargetList<Target>::TargetList(AZStd::vector<typename Target::Descriptor>&& descriptors)
     {
         AZ_TestImpact_Eval(!descriptors.empty(), TargetException, "Target list is empty");
 
@@ -75,19 +75,19 @@ namespace TestImpact
     }
 
     template<typename Target>
-    const AZStd::vector<Target>& BuildTargetList<Target>::GetTargets() const
+    const AZStd::vector<Target>& TargetList<Target>::GetTargets() const
     {
         return m_targets;
     }
 
     template<typename Target>
-    size_t BuildTargetList<Target>::GetNumTargets() const
+    size_t TargetList<Target>::GetNumTargets() const
     {
         return m_targets.size();
     }
 
     template<typename Target>
-    const Target* BuildTargetList<Target>::GetTarget(const AZStd::string& name) const
+    const Target* TargetList<Target>::GetTarget(const AZStd::string& name) const
     {
         struct TargetComparator
         {
@@ -115,7 +115,7 @@ namespace TestImpact
     }
 
     template<typename Target>
-    const Target* BuildTargetList<Target>::GetTargetOrThrow(const AZStd::string& name) const
+    const Target* TargetList<Target>::GetTargetOrThrow(const AZStd::string& name) const
     {
         const Target* target = GetTarget(name);
         AZ_TestImpact_Eval(target, TargetException, AZStd::string::format("Couldn't find target %s", name.c_str()).c_str());
@@ -123,7 +123,7 @@ namespace TestImpact
     }
 
     template<typename Target>
-    bool BuildTargetList<Target>::HasTarget(const AZStd::string& name) const
+    bool TargetList<Target>::HasTarget(const AZStd::string& name) const
     {
         return GetTarget(name) != nullptr;
     }

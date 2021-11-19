@@ -83,10 +83,13 @@ set(FILES
     Source/Dependency/TestImpactSourceCoveringTestsSerializer.h
     Source/Target/TestImpactBuildTarget.cpp
     Source/Target/TestImpactBuildTarget.h
-    Source/Target/TestImpactBuildTargetList.h
+    Source/Target/TestImpactTargetList.h
     Source/Target/TestImpactProductionTarget.cpp
     Source/Target/TestImpactProductionTarget.h
     Source/Target/TestImpactProductionTargetList.h
+    Source/Target/TestImpactTestScriptTarget.cpp
+    Source/Target/TestImpactTestScriptTarget.h
+    Source/Target/TestImpactTestScriptTargetList.h
     Source/Target/TestImpactTargetException.h
     Source/Target/TestImpactTestTarget.cpp
     Source/Target/TestImpactTestTarget.h

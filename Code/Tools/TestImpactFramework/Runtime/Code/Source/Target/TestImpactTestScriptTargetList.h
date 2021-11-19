@@ -9,10 +9,10 @@
 #pragma once
 
 #include <Target/TestImpactTargetList.h>
-#include <Target/TestImpactTestTarget.h>
+#include <Target/TestImpactTestScriptTarget.h>
 
 namespace TestImpact
 {
     //! Container for set of sorted test targets containing no duplicates.
-    using TestTargetList = TargetList<TestTarget>;
+    using TestScriptTargetList = TargetList<TestScriptTarget>;
 } // namespace TestImpact

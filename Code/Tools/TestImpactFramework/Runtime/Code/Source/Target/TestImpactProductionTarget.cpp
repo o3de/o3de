@@ -6,7 +6,7 @@
  *
  */
 
-#include "TestImpactProductionTarget.h"
+#include <Target/TestImpactProductionTarget.h>
 
 namespace TestImpact
 {
