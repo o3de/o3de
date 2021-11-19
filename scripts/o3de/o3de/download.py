@@ -48,6 +48,11 @@ def validate_downloaded_zip_sha256(download_uri_json_data: dict, download_zip_pa
                     ' We cannot verify this is the actually the advertised object!!!')
         return 1
     else:
+        if len(sha256A) == 0:
+            logger.warning('SECURITY WARNING: The advertised o3de object you downloaded has no "sha256"!!! Be VERY careful!!!'
+                        ' We cannot verify this is the actually the advertised object!!!')
+            return 1
+
         with download_zip_path.open('rb') as f:
             sha256B = hashlib.sha256(f.read()).hexdigest()
             if sha256A != sha256B:
