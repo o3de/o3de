@@ -43,14 +43,14 @@ def setup_qt_environment(bin_path: str) -> None:
     if platform.system() == 'Linux':
         import ctypes
 
-    preload_shared_libs = [f'{bin_path}/libpyside2.abi3.so.5.14',
-                           f'{bin_path}/libQt5Widgets.so.5']
+        preload_shared_libs = [f'{bin_path}/libpyside2.abi3.so.5.14',
+                            f'{bin_path}/libQt5Widgets.so.5']
 
-    for preload_shared_lib in preload_shared_libs:
-        if not os.path.exists(preload_shared_lib):
-            logger.error(f"Cannot find required shared library at {preload_shared_lib}")
-            exit(-1)
-        ctypes.CDLL(preload_shared_lib)
+        for preload_shared_lib in preload_shared_libs:
+            if not os.path.exists(preload_shared_lib):
+                logger.error(f"Cannot find required shared library at {preload_shared_lib}")
+                exit(-1)
+            ctypes.CDLL(preload_shared_lib)
 
     global qt_binaries_linked
     qt_binaries_linked = True
