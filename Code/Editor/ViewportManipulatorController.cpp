@@ -262,7 +262,8 @@ namespace SandboxEditor
             const bool insideTimeThreshold =
                 (m_currentTime.GetMilliseconds() - clickIt->second.m_time.GetMilliseconds()) < doubleClickThresholdMilliseconds;
             const bool insideDistanceThreshold =
-                AzFramework::ScreenVectorLength(clickIt->second.m_position - m_mouseInteraction.m_mousePick.m_screenCoordinates) < 2.0f;
+                AzFramework::ScreenVectorLength(clickIt->second.m_position - m_mouseInteraction.m_mousePick.m_screenCoordinates) <
+                AzFramework::DefaultMouseMoveDeadZone;
             return insideTimeThreshold && insideDistanceThreshold;
         }
 
