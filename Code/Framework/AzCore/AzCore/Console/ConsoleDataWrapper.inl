@@ -32,7 +32,12 @@ namespace AZ
     template <typename BASE_TYPE, ThreadSafety THREAD_SAFETY>
     inline void ConsoleDataWrapper<BASE_TYPE, THREAD_SAFETY>::operator =(const BASE_TYPE& rhs)
     {
+        const BASE_TYPE currentValue = this->m_value;
         this->m_value = rhs;
+        if(currentValue != rhs)
+        {
+            InvokeCallback();
+        }
     }
 
     template <typename BASE_TYPE, ThreadSafety THREAD_SAFETY>
