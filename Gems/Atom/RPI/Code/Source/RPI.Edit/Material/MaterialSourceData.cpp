@@ -119,8 +119,8 @@ namespace AZ
                 AZ_Warning(
                     "MaterialSourceData", false,
                     "This material is based on version '%u' of '%s', but the material type is now at version '%u'. "
-                    "Automatic updates are available. Consider updating '%s'.",
-                    m_materialTypeVersion, materialTypeFullPath.c_str(), materialTypeSourceData.m_version, materialSourceFilePath);
+                    "Automatic updates are available. Consider updating the .material source file: '%s'.",
+                    m_materialTypeVersion, materialTypeFullPath.c_str(), materialTypeSourceData.m_version, materialSourceFilePath.data());
             }
 
             m_materialTypeVersion = materialTypeSourceData.m_version;
