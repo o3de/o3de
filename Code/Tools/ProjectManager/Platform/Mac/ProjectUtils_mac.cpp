@@ -18,7 +18,7 @@ namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
-        AZ::Outcome<void, QString> GetCommandLineProcessEnvironment()
+        AZ::Outcome<void, QString> SetupCommandLineProcessEnvironment()
         {
             // For CMake on Mac, if its installed through home-brew, then it will be installed
             // under /usr/local/bin, which may not be in the system PATH environment. 
@@ -36,13 +36,14 @@ namespace O3DE::ProjectManager
 
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
         {
-            QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());
-            QString pathValue = currentEnvironment.value("PATH");
-            pathValue += ":/usr/local/bin";
-            currentEnvironment.insert("PATH", pathValue);
+            AZ::Outcome processEnvResult = SetupCommandLineProcessEnvironment();
+            if (!processEnvResult.IsSuccess())
+            {
+                return AZ::Failure(processEnvResult.GetError());
+            }
 
             // Validate that we have cmake installed first
-            auto queryCmakeInstalled = ExecuteCommandResult("which", QStringList{ProjectCMakeCommand}, currentEnvironment);
+            auto queryCmakeInstalled = ExecuteCommandResult("which", QStringList{ProjectCMakeCommand});
             if (!queryCmakeInstalled.IsSuccess())
             {
                 return AZ::Failure(QObject::tr("Unable to detect CMake on this host."));
@@ -50,7 +51,7 @@ namespace O3DE::ProjectManager
             QString cmakeInstalledPath = queryCmakeInstalled.GetValue().split("\n")[0];
 
             // Query the version of the installed cmake
-            auto queryCmakeVersionQuery = ExecuteCommandResult(cmakeInstalledPath, QStringList{"-version"}, currentEnvironment);
+            auto queryCmakeVersionQuery = ExecuteCommandResult(cmakeInstalledPath, QStringList{"-version"});
             if (!queryCmakeVersionQuery.IsSuccess())
             {
                 return AZ::Failure(QObject::tr("Unable to determine the version of CMake on this host."));
@@ -58,7 +59,7 @@ namespace O3DE::ProjectManager
             AZ_TracePrintf("Project Manager", "Cmake version %s detected.", queryCmakeVersionQuery.GetValue().split("\n")[0].toUtf8().constData());
 
             // Query for the version of xcodebuild (if installed)
-            auto queryXcodeBuildVersion = ExecuteCommandResult("xcodebuild", QStringList{"-version"}, currentEnvironment);
+            auto queryXcodeBuildVersion = ExecuteCommandResult("xcodebuild", QStringList{"-version"});
             if (!queryCmakeInstalled.IsSuccess())
             {
                 return AZ::Failure(QObject::tr("Unable to detect XCodeBuilder on this host."));
@@ -107,7 +108,6 @@ namespace O3DE::ProjectManager
             return ExecuteCommandResultModalDialog(
                 QString("%1/python/get_python.sh").arg(engineRoot),
                 {},
-                QProcessEnvironment::systemEnvironment(),
                 QObject::tr("Running get_python script..."));
         }
 
