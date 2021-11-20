@@ -15,6 +15,11 @@
 #include <Integration/Rendering/RenderActorInstance.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 
+namespace AzFramework
+{
+    class DebugDisplayRequests;
+}
+
 namespace EMotionFX
 {
     class Mesh;
@@ -42,6 +47,7 @@ namespace AZ::Render
         float CalculateBoneScale(EMotionFX::ActorInstance* actorInstance, EMotionFX::Node* node);
         float CalculateScaleMultiplier(EMotionFX::ActorInstance* instance) const;
         void PrepareForMesh(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM);
+        AzFramework::DebugDisplayRequests* GetDebugDisplay(AZ::s32 viewportId);
 
         void RenderAABB(EMotionFX::ActorInstance* instance, const AZ::Color& aabbColor);
         void RenderLineSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor);
@@ -63,6 +69,14 @@ namespace AZ::Render
         void RenderWireframe(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM, float wireframeScale, float scaleMultiplier,
             const AZ::Color& wireframeColor);
         void RenderJointNames(EMotionFX::ActorInstance* actorInstance, RPI::ViewportContextPtr viewportContext, const AZ::Color& jointNameColor);
+        void RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, AzFramework::DebugDisplayRequests* debugDisplay, float scale = 1.0f);
+        void RenderLineAxis(
+            AzFramework::DebugDisplayRequests* debugDisplay,
+            AZ::Transform worldTM,      /**< The world space transformation matrix to visualize. */
+            float size,                /**< The size value in units is used to control the scaling of the axis. */
+            bool selected,              /**< Set to true if you want to render the axis using the selection color. */
+            bool renderAxis = true,
+            bool renderAxisName = false);
 
         EMotionFX::Mesh* m_currentMesh = nullptr; /**< A pointer to the mesh whose world space positions are in the pre-calculated positions buffer.
                                            NULL in case we haven't pre-calculated any positions yet. */
@@ -75,6 +89,7 @@ namespace AZ::Render
         RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
         AZStd::vector<AZ::Vector3> m_auxVertices;
         AZStd::vector<AZ::Color> m_auxColors;
+        EntityId m_entityId;
 
         AzFramework::TextDrawParameters m_drawParams;
         AzFramework::FontDrawInterface* m_fontDrawInterface = nullptr;
