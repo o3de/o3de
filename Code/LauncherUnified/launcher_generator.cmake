@@ -19,19 +19,10 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
     # Otherwise the the absolute project_path is returned with symlinks resolved
     file(REAL_PATH ${project_path} project_real_path BASE_DIRECTORY ${LY_ROOT_FOLDER})
     if(NOT project_name)
-        if(NOT EXISTS ${project_real_path}/project.json)
-            message(FATAL_ERROR "The specified project path of ${project_real_path} does not contain a project.json file")
-        else()
-            # Add the project_name to global LY_PROJECTS_TARGET_NAME property
-            ly_file_read("${project_real_path}/project.json" project_json)
-            string(JSON project_name ERROR_VARIABLE json_error GET ${project_json} "project_name")
-            if(json_error)
-                message(FATAL_ERROR "There is an error reading the \"project_name\" key from the '${project_real_path}/project.json' file: ${json_error}")
-            endif()
-            message(WARNING "The project located at path ${project_real_path} has a valid \"project name\" of '${project_name}' read from it's project.json file."
-                " This indicates that the ${project_real_path}/CMakeLists.txt is not properly appending the \"project name\" "
-                "to the LY_PROJECTS_TARGET_NAME global property. Other configuration errors might occur")
-        endif()
+        o3de_read_json_key(project_name ${project_real_path}/project.json "project_name")
+        message(WARNING "The project located at path ${project_real_path} has a valid \"project name\" of '${project_name}' read from it's project.json file."
+            " This indicates that the ${project_real_path}/CMakeLists.txt is not properly appending the \"project name\" "
+            "to the LY_PROJECTS_TARGET_NAME global property. Other configuration errors might occur")
     endif()
 
     ################################################################################
@@ -84,6 +75,12 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
         set(game_runtime_dependencies
             Legacy::CrySystem
         )
+
+        if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
+            set(server_runtime_dependencies
+                Legacy::CrySystem
+            )
+        endif()
 
     endif()
 

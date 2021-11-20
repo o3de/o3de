@@ -19,6 +19,7 @@
 #include <AzCore/IO/CompressionBus.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/lock.h>
@@ -206,7 +207,7 @@ namespace AZ::IO
         uint64_t FTell(AZ::IO::HandleType handle) override;
         int FFlush(AZ::IO::HandleType handle) override;
         int FClose(AZ::IO::HandleType handle) override;
-        AZ::IO::ArchiveFileIterator FindFirst(AZStd::string_view pDir, EFileSearchType searchType = eFileSearchType_AllowInZipsOnly) override;
+        AZ::IO::ArchiveFileIterator FindFirst(AZStd::string_view pDir, FileSearchLocation searchType = FileSearchLocation::InPak) override;
         AZ::IO::ArchiveFileIterator FindNext(AZ::IO::ArchiveFileIterator fileIterator) override;
         bool FindClose(AZ::IO::ArchiveFileIterator fileIterator) override;
         int FEof(AZ::IO::HandleType handle) override;
@@ -218,7 +219,7 @@ namespace AZ::IO
         bool RemoveDir(AZStd::string_view pName) override;  // remove directory from FS (if supported)
         bool IsAbsPath(AZStd::string_view pPath) override;
 
-        bool IsFileExist(AZStd::string_view sFilename, EFileSearchLocation fileLocation = eFileLocation_Any) override;
+        bool IsFileExist(AZStd::string_view sFilename, FileSearchLocation fileLocation = FileSearchLocation::Any) override;
         bool IsFolder(AZStd::string_view sPath) override;
         IArchive::SignedFileSize GetFileSizeOnDisk(AZStd::string_view filename) override;
 
@@ -254,7 +255,7 @@ namespace AZ::IO
         bool DisableRuntimeFileAccess(bool status, AZStd::thread_id threadId) override;
 
         // gets the current archive priority
-        ArchiveLocationPriority GetPakPriority() const override;
+        FileSearchPriority GetPakPriority() const override;
 
         uint64_t GetFileOffsetOnMedia(AZStd::string_view szName) const override;
 
@@ -270,6 +271,11 @@ namespace AZ::IO
         ZipDir::FileEntry* FindPakFileEntry(AZStd::string_view szPath, uint32_t& nArchiveFlags,
             ZipDir::CachePtr* pZip = {}) const;
     private:
+
+        // Archives can't be fully mounted until the system entity has been activated,
+        // because mounting them requires the BundlingSystemComponent and the serialization system
+        // to both be available.
+        void OnSystemEntityActivated();
 
         bool OpenPackCommon(AZStd::string_view szBindRoot, AZStd::string_view pName, AZStd::intrusive_ptr<AZ::IO::MemoryBlock> pData = nullptr, bool addLevels = true);
         bool OpenPacksCommon(AZStd::string_view szDir, AZStd::string_view pWildcardIn, AZStd::vector<AZ::IO::FixedMaxPathString>* pFullPaths = nullptr, bool addLevels = true);
@@ -299,7 +305,7 @@ namespace AZ::IO
         AZStd::shared_ptr<AzFramework::AssetRegistry> GetBundleCatalog(ZipDir::CachePtr pZip, const AZStd::string& catalogName);
 
         // [LYN-2376] Remove once legacy slice support is removed
-        AZStd::vector<AZStd::string> ScanForLevels(ZipDir::CachePtr pZip);
+        AZStd::vector<AZ::IO::Path> ScanForLevels(ZipDir::CachePtr pZip);
 
         mutable AZStd::shared_mutex m_csOpenFiles;
         ZipPseudoFileArray m_arrOpenFiles;
@@ -312,6 +318,8 @@ namespace AZ::IO
 
         mutable AZStd::shared_mutex m_csZips;
         ZipArray m_arrZips;
+
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_componentApplicationLifecycleHandler;
 
         //////////////////////////////////////////////////////////////////////////
         // Opened files collector.
@@ -339,5 +347,34 @@ namespace AZ::IO
         // [LYN-2376] Remove once legacy slice support is removed
         LevelPackOpenEvent m_levelOpenEvent;
         LevelPackCloseEvent m_levelCloseEvent;
+
+         // If pak files are loaded before the serialization and bundling system
+        // are ready to go, their asset catalogs can't be loaded.
+        // In this case, cache information about those archives,
+        // and attempt to load the catalogs later, when the required systems are enabled.
+        struct ArchivesWithCatalogsToLoad
+        {
+            ArchivesWithCatalogsToLoad(
+                AZStd::string_view fullPath,
+                AZStd::string_view bindRoot,
+                int flags,
+                AZ::IO::PathView nextBundle,
+                AZ::IO::Path strFileName)
+                : m_fullPath(fullPath)
+                , m_bindRoot(bindRoot)
+                , m_flags(flags)
+                , m_nextBundle(nextBundle)
+                , m_strFileName(strFileName)
+            {
+            }
+
+            AZ::IO::Path m_strFileName;
+            AZStd::string m_fullPath;
+            AZStd::string m_bindRoot;
+            AZ::IO::PathView m_nextBundle;
+            int m_flags;
+        };
+
+        AZStd::vector<ArchivesWithCatalogsToLoad> m_archivesWithCatalogsToLoad;
     };
 }

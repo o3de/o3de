@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiScrollerOrientation_Horizontal",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiScrollerOrientation_Horizontal::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -57,12 +57,19 @@ namespace AZ
             AZStd::string m_azslcAdditionalFreeArguments;
             // note: if you add new sort of arguments here, don't forget to update HasDifferentAzslcArguments()
 
-            //! DXC
-            bool m_dxcDisableWarnings = false;
-            bool m_dxcWarningAsError = false;
-            bool m_dxcDisableOptimizations = false;
-            bool m_dxcGenerateDebugInfo = false;
-            uint8_t m_dxcOptimizationLevel = LevelUnset;
+            //! Remark: To the user, the following parameters are exposed without the
+            //! "Dxc" prefix because these are common options for the "main" compiler
+            //! for the given RHI. At the moment the only "main" compiler is Dxc, but in
+            //! the future AZSLc may transpile from AZSL to some other proprietary language
+            //! and in that case the "main" compiler won't be DXC
+            bool m_disableWarnings = false;
+            bool m_warningAsError = false;
+            bool m_disableOptimizations = false;
+            bool m_generateDebugInfo = false;
+            uint8_t m_optimizationLevel = LevelUnset;
+            //! "DxcAdditionalFreeArguments" keeps the "Dxc" prefix because these arguments
+            //! are specific to DXC, and it will be relevant only if DXC is the "main" compiler
+            //! for a given RHI, otherwise this parameter won't matter.
             AZStd::string m_dxcAdditionalFreeArguments;
 
             //! both

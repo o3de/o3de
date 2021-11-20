@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiFillType_RadialCorner",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiFillType_RadialCorner::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -52,7 +52,7 @@ namespace WwiseBuilder
             {
                 fileNames.push_back(dependenciesArray[dependencyIndex].GetString());
             }
-            
+
             // The dependency array is empty, which likely means it was modified by hand. However, every bank is dependent
             //  on init.bnk (other than itself), so just force add it as a dependency here. and emit a warning.
             if (fileNames.size() == 0)
@@ -93,7 +93,7 @@ namespace WwiseBuilder
 
     void WwiseBuilderWorker::Initialize()
     {
-        AZ::IO::Path configFile("@devassets@");
+        AZ::IO::Path configFile("@projectroot@");
         configFile /= Audio::Wwise::DefaultBanksPath;
         configFile /= Audio::Wwise::ConfigFile;
 
@@ -180,7 +180,7 @@ namespace WwiseBuilder
     {
         AZ_TracePrintf(AssetBuilderSDK::InfoWindow, "Starting Job.\n");
         AZ::IO::PathView fullPath(request.m_fullPath);
-        
+
         if (m_isShuttingDown)
         {
             AZ_TracePrintf(AssetBuilderSDK::ErrorWindow, "Cancelled job %s because shutdown was requested.\n", request.m_fullPath.c_str());
@@ -204,7 +204,7 @@ namespace WwiseBuilder
                 AZ::Outcome<AZStd::string, AZStd::string> gatherProductDependenciesResponse = GatherProductDependencies(request.m_fullPath, request.m_sourceFile, dependencyPaths);
                 if (!gatherProductDependenciesResponse.IsSuccess())
                 {
-                    AZ_Error(WwiseBuilderWindowName, false, "Dependency gathering for %s failed. %s", 
+                    AZ_Error(WwiseBuilderWindowName, false, "Dependency gathering for %s failed. %s",
                         request.m_fullPath.c_str(), gatherProductDependenciesResponse.GetError().c_str());
                 }
                 else

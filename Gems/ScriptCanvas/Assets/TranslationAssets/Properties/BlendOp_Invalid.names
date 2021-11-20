@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "BlendOp_Invalid",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "BlendOp_Invalid::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

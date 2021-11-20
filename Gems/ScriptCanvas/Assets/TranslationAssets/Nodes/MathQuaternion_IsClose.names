@@ -1,0 +1,52 @@
+{
+    "entries": [
+        {
+            "key": "{7CF70E06-039B-5DFB-BA6D-A94DBB010A91}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Is Close",
+                "category": "Math/Quaternion",
+                "tooltip": "Returns true if A and B are within Tolerance of each other"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_A",
+                    "details": {
+                        "name": "A"
+                    }
+                },
+                {
+                    "key": "DataInput_B",
+                    "details": {
+                        "name": "B"
+                    }
+                },
+                {
+                    "key": "DataInput_Tolerance",
+                    "details": {
+                        "name": "Tolerance"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

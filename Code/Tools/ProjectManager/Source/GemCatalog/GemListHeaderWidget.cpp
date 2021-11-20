@@ -103,11 +103,11 @@ namespace O3DE::ProjectManager
         QSpacerItem* horizontalSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
         columnHeaderLayout->addSpacerItem(horizontalSpacer);
 
-        QLabel* gemSelectedLabel = new QLabel(tr("Selected"));
+        QLabel* gemSelectedLabel = new QLabel(tr("Status"));
         gemSelectedLabel->setObjectName("GemCatalogHeaderLabel");
         columnHeaderLayout->addWidget(gemSelectedLabel);
 
-        columnHeaderLayout->addSpacing(65);
+        columnHeaderLayout->addSpacing(72);
 
         vLayout->addLayout(columnHeaderLayout);
     }

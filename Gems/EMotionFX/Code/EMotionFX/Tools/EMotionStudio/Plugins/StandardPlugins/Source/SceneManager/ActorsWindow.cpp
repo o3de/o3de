@@ -123,12 +123,6 @@ namespace EMStudio
                 continue;
             }
 
-            // ignore engine actors
-            if (actor->GetIsOwnedByRuntime())
-            {
-                continue;
-            }
-
             // create a tree item for the new attachment
             QTreeWidgetItem* newItem = new QTreeWidgetItem(m_treeWidget);
 

@@ -25,8 +25,7 @@ namespace MaterialEditor
             m_iblEntityId,
             &MaterialEditorViewportInputControllerRequestBus::Handler::GetIblEntityId);
         AZ_Assert(m_iblEntityId.IsValid(), "Failed to find m_iblEntityId");
-        AZ::RPI::ScenePtr scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
-        m_skyBoxFeatureProcessorInterface = scene->GetFeatureProcessor<AZ::Render::SkyBoxFeatureProcessorInterface>();
+        m_skyBoxFeatureProcessorInterface = AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::Render::SkyBoxFeatureProcessorInterface>(m_iblEntityId);
     }
 
     void RotateEnvironmentBehavior::TickInternal(float x, float y, float z)

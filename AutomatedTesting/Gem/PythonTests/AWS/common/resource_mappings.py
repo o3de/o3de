@@ -102,3 +102,17 @@ class ResourceMappings:
 
     def get_resource_name_id(self, resource_key: str):
         return self._resource_mappings[AWS_RESOURCE_MAPPINGS_KEY][resource_key]['Name/ID']
+
+    def clear_select_keys(self, resource_keys=None) -> None:
+        """
+        Clears values from select resource mapping keys.
+        :param resource_keys: list of keys to clear out
+        """
+        with open(self._resource_mapping_file_path) as file_content:
+            resource_mappings = json.load(file_content)
+
+        for key in resource_keys:
+            resource_mappings[key] = ''
+
+        with open(self._resource_mapping_file_path, 'w') as file_content:
+            json.dump(resource_mappings, file_content, indent=4)

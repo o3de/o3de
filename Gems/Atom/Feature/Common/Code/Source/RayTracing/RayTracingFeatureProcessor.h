@@ -281,6 +281,10 @@ namespace AZ
 
             using BlasInstanceMap = AZStd::unordered_map<AZ::Data::AssetId, MeshBlasInstance>;
             BlasInstanceMap m_blasInstanceMap;
+
+            // Cache view pointers so we dont need to update them if none changed from frame to frame.
+            AZStd::vector<const RHI::BufferView*> m_meshBuffers;
+            AZStd::vector<const RHI::ImageView*> m_materialTextures;
         };
     }
 }

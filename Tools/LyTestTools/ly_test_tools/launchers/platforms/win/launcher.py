@@ -172,8 +172,6 @@ class WinLauncher(Launcher):
         self.args.append('--regset="/Amazon/AzCore/Bootstrap/wait_for_connect=1"')
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/allowed_list={host_ip}"')
 
-        self.workspace.settings.modify_platform_setting("r_AssetProcessorShaderCompiler", 1)
-        self.workspace.settings.modify_platform_setting("r_ShaderCompilerServer", host_ip)
         self.workspace.settings.modify_platform_setting("log_RemoteConsoleAllowedAddresses", host_ip)
 
 

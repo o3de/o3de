@@ -16,12 +16,27 @@ namespace AZ
     {
         static const uint32_t s_minVulkanSupportedVersion = VK_API_VERSION_1_0;
 
+        static EnvironmentVariable<Instance> s_vulkanInstance;
+        static constexpr const char* s_vulkanInstanceKey = "VulkanInstance";
+
         Instance& Instance::GetInstance()
         {
-            static Instance s_instance;
-            return s_instance;
+            if (!s_vulkanInstance)
+            {
+                s_vulkanInstance = Environment::FindVariable<Instance>(s_vulkanInstanceKey);
+                if (!s_vulkanInstance)
+                {
+                    s_vulkanInstance = Environment::CreateVariable<Instance>(s_vulkanInstanceKey);
+                }
+            }
+
+            return s_vulkanInstance.Get();
         }
 
+        void Instance::Reset()
+        {
+            s_vulkanInstance.Reset();
+        }
 
         Instance::~Instance()
         {

@@ -120,13 +120,6 @@ namespace AZ
             //! Sets the filter method of shadows.
             virtual void SetShadowFilterMethod(ShadowFilterMethod method) = 0;
 
-            //! Gets the width of softening boundary between shadowed area and lit area in degrees.
-            virtual float GetSofteningBoundaryWidthAngle() const = 0;
-            
-            //! Sets the width of softening boundary between shadowed area and lit area in degrees.
-            //! 0 disables softening.
-            virtual void SetSofteningBoundaryWidthAngle(float degrees) = 0;
-
             //! Gets the sample count for filtering of the shadow boundary.
             virtual uint32_t GetFilteringSampleCount() const = 0;
 
@@ -139,6 +132,13 @@ namespace AZ
             //! Sets the Esm exponent. Higher values produce a steeper falloff between light and shadow.
             virtual void SetEsmExponent(float exponent) = 0;
 
+            //! Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            //! @return Returns the amount of bias to apply.
+            virtual float GetNormalShadowBias() const = 0;
+
+            //! Reduces acne by biasing the shadowmap lookup along the geometric normal.
+            //! @param normalShadowBias Sets the amount of normal shadow bias to apply.
+            virtual void SetNormalShadowBias(float normalShadowBias) = 0;
         };
 
         //! The EBus for requests to for setting and getting light component properties.

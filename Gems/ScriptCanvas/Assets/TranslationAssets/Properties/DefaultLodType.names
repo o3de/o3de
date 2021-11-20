@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DefaultLodType",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DefaultLodType::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

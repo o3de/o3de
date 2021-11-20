@@ -10,12 +10,11 @@
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/Shadow/ShadowmapAtlasLib.azsli>
 #include <Atom/RPI/Math.azsli>
 #include "BicubicPcfFilters.azsli"
-#include "JitterTablePcf.azsli"
 #include "Shadow.azsli"
+#include "NormalOffsetShadows.azsli"
 
 // ProjectedShadow calculates shadowed area projected from a light.
 class ProjectedShadow
@@ -45,11 +44,6 @@ class ProjectedShadow
     float GetThickness();
 
     bool IsShadowed(float3 shadowPosition);
-    bool IsShadowedWithJitter(
-        float3 jitterUnitX,
-        float3 jitterUnitY,
-        float jitterDepthDiffBase,
-        uint jitterIndex);
     void SetShadowPosition();
     float3 GetAtlasPosition(float2 texturePosition);
     static float UnprojectDepth(uint shadowIndex, float depthBufferValue);
@@ -130,6 +124,7 @@ float ProjectedShadow::GetThickness(uint shadowIndex, float3 worldPosition)
 
     ProjectedShadow shadow;
     shadow.m_worldPosition = worldPosition;
+    shadow.m_normalVector = 0; // The normal vector is used to reduce acne, this is not an issue when using the shadowmap to determine thickness. 
     shadow.m_shadowIndex = shadowIndex;
     shadow.SetShadowPosition();
     return shadow.GetThickness();
@@ -322,39 +317,15 @@ bool ProjectedShadow::IsShadowed(float3 shadowPosition)
     return false;
 }
 
-bool ProjectedShadow::IsShadowedWithJitter(
-    float3 jitterUnitX,
-    float3 jitterUnitY,
-    float jitterDepthDiffBase,
-    uint jitterIndex)
-{    
-    ViewSrg::ProjectedShadow shadow = ViewSrg::m_projectedShadows[m_shadowIndex];
-    const float4x4 depthBiasMatrix = shadow.m_depthBiasMatrix;
-    const float boundaryScale = shadow.m_boundaryScale;
-
-    const float2 jitterXY = g_jitterTablePcf[jitterIndex];
-
-    const float dist = distance(m_worldPosition, m_viewPosition);
-    const float boundaryRadius = dist * tan(boundaryScale);
-    // jitterWorldXY is the jittering diff vector from the lighted point on the surface
-    // in the world space.  It is remarked as "v_J" in the comment
-    // named "Calculate depth adjusting diff for jittered samples"
-    // just before the function GetJitterUnitVectorDepthDiffBase.
-    const float3 jitterWorldXY = jitterUnitX * (jitterXY.x * boundaryRadius) + jitterUnitY * (jitterXY.y * boundaryRadius);
-    // The adjusting diff of depth ("d" in the comment) is calculated by
-    //   jitterXY.y * boundaryRadius * jitterDepthDiffBase.
-    const float3 jitterWorldZ = m_lightDirection * (jitterXY.y * boundaryRadius * jitterDepthDiffBase);
-
-    const float3 jitteredWorldPosition = m_worldPosition + jitterWorldXY + jitterWorldZ;
-    const float4 jitteredShadowmapHomogeneous = mul(depthBiasMatrix, float4(jitteredWorldPosition, 1));
-
-    return IsShadowed(jitteredShadowmapHomogeneous.xyz / jitteredShadowmapHomogeneous.w);
-}
-
 void ProjectedShadow::SetShadowPosition()
 {
+    const float normalBias = ViewSrg::m_projectedShadows[m_shadowIndex].m_normalShadowBias;
+    const float shadowmapSize = ViewSrg::m_projectedFilterParams[m_shadowIndex].m_shadowmapSize;
+    const float3 shadowOffset = ComputeNormalShadowOffset(normalBias, m_normalVector, shadowmapSize);
     const float4x4 depthBiasMatrix = ViewSrg::m_projectedShadows[m_shadowIndex].m_depthBiasMatrix;
-    float4 shadowPositionHomogeneous = mul(depthBiasMatrix, float4(m_worldPosition, 1));
+    
+    float4 shadowPositionHomogeneous = mul(depthBiasMatrix, float4(m_worldPosition + shadowOffset, 1));
+         
     m_shadowPosition = shadowPositionHomogeneous.xyz / shadowPositionHomogeneous.w;
     
     m_bias = ViewSrg::m_projectedShadows[m_shadowIndex].m_bias / shadowPositionHomogeneous.w;

@@ -1,7 +1,7 @@
 {
     "description": "A material for rendering terrain with a physically-based rendering (PBR) material shading model.",
+    "version": 1,
     "propertyLayout": {
-        "version": 1,
         "groups": [
             {
                 "id": "settings",
@@ -90,35 +90,36 @@
             ],
             "settings": [
                 {
-                    "id": "heightmapImage",
-                    "displayName": "Heightmap Image",
-                    "description": "Heightmap of the terrain, controlled by the runtime.",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_heightmapImage"
-                    }
-                },
-                {
-                    "id": "baseColor",
-                    "displayName": "Base Color",
-                    "type": "Color",
-                    "defaultValue": [ 0.18, 0.18, 0.18 ],
-                    "connection": {
-                        "type": "ShaderInput",
-                        "id": "m_baseColor"
-                    }
-                },
-                {
-                    "id": "roughness",
-                    "displayName": "Roughness",
+                    "id": "detailTextureMultiplier",
+                    "displayName": "Detail Texture UV Multiplier",
+                    "description": "How many times to repeat the detail texture per sector",
                     "type": "Float",
-                    "defaultValue": 1.0,
-                    "min": 0.0,
-                    "max": 1.0,
+                    "defaultValue": 8.0,
                     "connection": {
                         "type": "ShaderInput",
-                        "id": "m_roughness"
+                        "id": "m_detailTextureMultiplier"
+                    }
+                },
+                {
+                    "id": "detailFadeDistance",
+                    "displayName": "Detail Fade Distance (meters)",
+                    "description": "The distance in meters that the detail texture starts to fade",
+                    "type": "Float",
+                    "defaultValue": 100.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailFadeDistance"
+                    }
+                },
+                {
+                    "id": "detailFadeLength",
+                    "displayName": "Detail Fade Length",
+                    "description": "How far beyond Detail Fade Distance where the detail texture no longer applies.",
+                    "type": "Float",
+                    "defaultValue": 50.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailFadeLength"
                     }
                 }
             ]

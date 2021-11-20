@@ -14,15 +14,25 @@ ly_add_target(
     FILES_CMAKE
         automatedtesting_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        automatedtesting_autogen_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
         PUBLIC
             Include
     BUILD_DEPENDENCIES
+        PUBLIC
+            AZ::AzNetworking
+            Gem::Multiplayer
         PRIVATE
             AZ::AzCore
             Gem::Atom_AtomBridge.Static
+            Gem::Multiplayer.Static
+    AUTOGEN_RULES
+        *.AutoComponent.xml,AutoComponent_Header.jinja,$path/$fileprefix.AutoComponent.h
+        *.AutoComponent.xml,AutoComponent_Source.jinja,$path/$fileprefix.AutoComponent.cpp
+        *.AutoComponent.xml,AutoComponentTypes_Header.jinja,$path/AutoComponentTypes.h
+        *.AutoComponent.xml,AutoComponentTypes_Source.jinja,$path/AutoComponentTypes.cpp
 )
 
 # if enabled, AutomatedTesting is used by all kinds of applications

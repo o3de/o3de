@@ -80,35 +80,48 @@ namespace AZ
             }
 
             // update the size multiplier on the DiffuseProbeGridDownsamplePass output
-            AZStd::vector<Name> downsamplePassHierarchy = { Name("DiffuseGlobalIlluminationPass"), Name("DiffuseProbeGridDownsamplePass") };
-            RPI::PassHierarchyFilter downsamplePassFilter(downsamplePassHierarchy);
-            const AZStd::vector<RPI::Pass*>& downsamplePasses = RPI::PassSystemInterface::Get()->FindPasses(downsamplePassFilter);
-            for (RPI::Pass* pass : downsamplePasses)
+            // NOTE: The ownerScene wasn't added to both filters. This is because the passes from the non-owner scene may have invalid SRG values which could lead to
+            // GPU error if the scene doesn't have this feature processor enabled.
+            // For example, the ASV MultiScene sample may have TDR.
             {
-                for (uint32_t outputIndex = 0; outputIndex < pass->GetOutputCount(); ++outputIndex)
-                {
-                    RPI::Ptr<RPI::PassAttachment> outputAttachment = pass->GetOutputBinding(outputIndex).m_attachment;
-                    RPI::PassAttachmentSizeMultipliers& sizeMultipliers = outputAttachment->m_sizeMultipliers;
+                AZStd::vector<Name> downsamplePassHierarchy = { Name("DiffuseGlobalIlluminationPass"), Name("DiffuseProbeGridDownsamplePass") };
+                RPI::PassFilter downsamplePassFilter = RPI::PassFilter::CreateWithPassHierarchy(downsamplePassHierarchy);
+                RPI::PassSystemInterface::Get()->ForEachPass(
+                    downsamplePassFilter,
+                    [sizeMultiplier](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                    {
+                        for (uint32_t outputIndex = 0; outputIndex < pass->GetOutputCount(); ++outputIndex)
+                        {
+                            RPI::Ptr<RPI::PassAttachment> outputAttachment = pass->GetOutputBinding(outputIndex).m_attachment;
+                            RPI::PassAttachmentSizeMultipliers& sizeMultipliers = outputAttachment->m_sizeMultipliers;
 
-                    sizeMultipliers.m_widthMultiplier = sizeMultiplier;
-                    sizeMultipliers.m_heightMultiplier = sizeMultiplier;
-                }
+                            sizeMultipliers.m_widthMultiplier = sizeMultiplier;
+                            sizeMultipliers.m_heightMultiplier = sizeMultiplier;
+                        }
 
-                // set the output scale on the PassSrg
-                RPI::FullscreenTrianglePass* downsamplePass = static_cast<RPI::FullscreenTrianglePass*>(pass);
-                auto constantIndex = downsamplePass->GetShaderResourceGroup()->FindShaderInputConstantIndex(Name("m_outputImageScale"));
-                downsamplePass->GetShaderResourceGroup()->SetConstant(constantIndex, aznumeric_cast<uint32_t>(1.0f / sizeMultiplier));
+                        // set the output scale on the PassSrg
+                        RPI::FullscreenTrianglePass* downsamplePass = static_cast<RPI::FullscreenTrianglePass*>(pass);
+                        RHI::ShaderInputNameIndex outputImageScaleShaderInput = "m_outputImageScale";
+                        downsamplePass->GetShaderResourceGroup()->SetConstant(
+                            outputImageScaleShaderInput, aznumeric_cast<uint32_t>(1.0f / sizeMultiplier));
+
+                        // handle all downsample passes
+                        return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                    });
             }
 
             // update the image scale on the DiffuseComposite pass
-            AZStd::vector<Name> compositePassHierarchy = { Name("DiffuseGlobalIlluminationPass"), Name("DiffuseCompositePass") };
-            RPI::PassHierarchyFilter compositePassFilter(compositePassHierarchy);
-            const AZStd::vector<RPI::Pass*>& compositePasses = RPI::PassSystemInterface::Get()->FindPasses(compositePassFilter);
-            for (RPI::Pass* pass : compositePasses)
             {
-                RPI::FullscreenTrianglePass* compositePass = static_cast<RPI::FullscreenTrianglePass*>(pass);
-                auto constantIndex = compositePass->GetShaderResourceGroup()->FindShaderInputConstantIndex(Name("m_imageScale"));
-                compositePass->GetShaderResourceGroup()->SetConstant(constantIndex, aznumeric_cast<uint32_t>(1.0f / sizeMultiplier));
+                AZStd::vector<Name> compositePassHierarchy = { Name("DiffuseGlobalIlluminationPass"), Name("DiffuseCompositePass") };
+                RPI::PassFilter compositePassFilter = RPI::PassFilter::CreateWithPassHierarchy(compositePassHierarchy);
+                RPI::PassSystemInterface::Get()->ForEachPass(compositePassFilter, [sizeMultiplier](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                    {
+                        RPI::FullscreenTrianglePass* compositePass = static_cast<RPI::FullscreenTrianglePass*>(pass);
+                        RHI::ShaderInputNameIndex imageScaleShaderInput = "m_imageScale";
+                        compositePass->GetShaderResourceGroup()->SetConstant(imageScaleShaderInput, aznumeric_cast<uint32_t>(1.0f / sizeMultiplier));
+
+                        return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                    });
             }
         }
     } // namespace Render

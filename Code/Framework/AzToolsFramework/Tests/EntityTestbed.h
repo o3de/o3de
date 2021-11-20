@@ -181,8 +181,8 @@ namespace UnitTest
 
             const char* dir = m_componentApplication->GetExecutableFolder();
 
-            m_localFileIO.SetAlias("@assets@", dir);
-            m_localFileIO.SetAlias("@devassets@", dir);
+            m_localFileIO.SetAlias("@products@", dir);
+            m_localFileIO.SetAlias("@projectroot@", dir);
         }
 
         void Destroy()

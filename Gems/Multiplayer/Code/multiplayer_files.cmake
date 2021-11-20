@@ -13,6 +13,7 @@ set(FILES
     Include/Multiplayer/MultiplayerConstants.h
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
+    Include/Multiplayer/MultiplayerEditorServerBus.h
     Include/Multiplayer/Components/LocalPredictionPlayerInputComponent.h
     Include/Multiplayer/Components/MultiplayerComponent.h
     Include/Multiplayer/Components/MultiplayerComponentRegistry.h
@@ -33,6 +34,9 @@ set(FILES
     Include/Multiplayer/MultiplayerConstants.h
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.inl
     Include/Multiplayer/NetworkEntity/EntityReplication/ReplicationRecord.h
     Include/Multiplayer/NetworkEntity/IFilterEntityManager.h
     Include/Multiplayer/NetworkEntity/INetworkEntityManager.h
@@ -42,6 +46,10 @@ set(FILES
     Include/Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h
     Include/Multiplayer/NetworkInput/IMultiplayerComponentInput.h
     Include/Multiplayer/NetworkInput/NetworkInput.h
+    Include/Multiplayer/NetworkInput/NetworkInputArray.h
+    Include/Multiplayer/NetworkInput/NetworkInputChild.h
+    Include/Multiplayer/NetworkInput/NetworkInputHistory.h
+    Include/Multiplayer/NetworkInput/NetworkInputMigrationVector.h
     Include/Multiplayer/NetworkTime/INetworkTime.h
     Include/Multiplayer/NetworkTime/RewindableArray.h
     Include/Multiplayer/NetworkTime/RewindableArray.inl
@@ -60,6 +68,7 @@ set(FILES
     Source/AutoGen/Multiplayer.AutoPackets.xml
     Source/AutoGen/MultiplayerEditor.AutoPackets.xml
     Source/AutoGen/NetworkCharacterComponent.AutoComponent.xml
+    Source/AutoGen/NetworkConnectionComponent.AutoComponent.xml
     Source/AutoGen/NetworkHitVolumesComponent.AutoComponent.xml
     Source/AutoGen/NetworkRigidBodyComponent.AutoComponent.xml
     Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
@@ -86,14 +95,13 @@ set(FILES
     Source/Editor/MultiplayerEditorConnection.h
     Source/EntityDomains/FullOwnershipEntityDomain.cpp
     Source/EntityDomains/FullOwnershipEntityDomain.h
+    Source/EntityDomains/NullEntityDomain.cpp
+    Source/EntityDomains/NullEntityDomain.h
     Source/MultiplayerStats.cpp
     Source/MultiplayerSystemComponent.cpp
     Source/MultiplayerSystemComponent.h
     Source/NetworkEntity/EntityReplication/EntityReplicationManager.cpp
-    Source/NetworkEntity/EntityReplication/EntityReplicationManager.h
     Source/NetworkEntity/EntityReplication/EntityReplicator.cpp
-    Source/NetworkEntity/EntityReplication/EntityReplicator.h
-    Source/NetworkEntity/EntityReplication/EntityReplicator.inl
     Source/NetworkEntity/EntityReplication/PropertyPublisher.cpp
     Source/NetworkEntity/EntityReplication/PropertyPublisher.h
     Source/NetworkEntity/EntityReplication/PropertySubscriber.cpp
@@ -113,13 +121,9 @@ set(FILES
     Source/NetworkEntity/NetworkSpawnableLibrary.h
     Source/NetworkInput/NetworkInput.cpp
     Source/NetworkInput/NetworkInputArray.cpp
-    Source/NetworkInput/NetworkInputArray.h
     Source/NetworkInput/NetworkInputChild.cpp
-    Source/NetworkInput/NetworkInputChild.h
     Source/NetworkInput/NetworkInputHistory.cpp
-    Source/NetworkInput/NetworkInputHistory.h
     Source/NetworkInput/NetworkInputMigrationVector.cpp
-    Source/NetworkInput/NetworkInputMigrationVector.h
     Source/NetworkTime/NetworkTime.cpp
     Source/NetworkTime/NetworkTime.h
     Source/Pipeline/NetworkSpawnableHolderComponent.cpp

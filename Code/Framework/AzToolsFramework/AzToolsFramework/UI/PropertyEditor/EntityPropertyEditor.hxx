@@ -26,6 +26,7 @@
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
@@ -59,6 +60,7 @@ namespace AzToolsFramework
 {
     class ComponentEditor;
     class ComponentPaletteWidget;
+    class ComponentModeCollectionInterface;
     struct SourceControlFileInfo;
 
     namespace AssetBrowser
@@ -108,6 +110,7 @@ namespace AzToolsFramework
         , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
         , public AzToolsFramework::EntityPropertyEditorRequestBus::Handler
         , public AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
+        , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
         , public EditorInspectorComponentNotificationBus::MultiHandler
         , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
         , public AZ::EntitySystemBus::Handler
@@ -231,9 +234,13 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         // EditorComponentModeNotificationBus
-        void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-        void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
         void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
+
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
 
         // EntityPropertEditorRequestBus
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
@@ -347,7 +354,8 @@ namespace AzToolsFramework
             OnlyLayerEntities,
             OnlyPrefabEntities,
             Mixed,
-            LevelEntity
+            LevelEntity,
+            ContainerEntityOfFocusedPrefab
         };
         /**
          * Returns what kinds of entities are in the current selection. This is used because mixed selection
@@ -357,7 +365,7 @@ namespace AzToolsFramework
         SelectionEntityTypeInfo GetSelectionEntityTypeInfo(const EntityIdList& selection) const;
 
         /**
-         * Returns true if a selection matching the passed in selection informatation allows components to be added.
+         * Returns true if a selection matching the passed in selection information allows components to be added.
          */
         bool CanAddComponentsToSelection(const SelectionEntityTypeInfo& selectionEntityTypeInfo) const;
 
@@ -574,9 +582,10 @@ namespace AzToolsFramework
 
         enum class InspectorLayout
         {
-            ENTITY = 0,     // All selected entities are regular entities
-            LEVEL,          // The selected entity is the level prefab container entity
-            INVALID         // Other entities are selected alongside the level prefab container entity
+            Entity = 0,                     // All selected entities are regular entities.
+            Level,                          // The selected entity is the prefab container entity for the level prefab, or the slice level entity.
+            ContainerEntityOfFocusedPrefab, // The selected entity is the prefab container entity for the focused prefab.
+            Invalid                         // Other entities are selected alongside the level prefab container entity.
         };
 
         InspectorLayout GetCurrentInspectorLayout() const;
@@ -626,6 +635,8 @@ namespace AzToolsFramework
         QPixmap m_reorderRowImage;
         float m_moveFadeSecondsRemaining;
         AZStd::vector<int> m_indexMapOfMovedRow;
+
+        AzToolsFramework::ComponentModeCollectionInterface* m_componentModeCollection = nullptr;
 
         // When m_initiatingPropertyChangeNotification is set to true, it means this EntityPropertyEditor is
         // broadcasting a change to all listeners about a property change for a given entity.  This is needed

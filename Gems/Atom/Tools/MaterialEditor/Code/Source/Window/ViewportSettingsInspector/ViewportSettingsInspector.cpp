@@ -346,7 +346,7 @@ namespace MaterialEditor
 
     AZStd::string ViewportSettingsInspector::GetDefaultUniqueSaveFilePath(const AZStd::string& baseName) const
     {
-        AZStd::string savePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        AZStd::string savePath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
         savePath += AZ_CORRECT_FILESYSTEM_SEPARATOR;
         savePath += "Materials";
         savePath += AZ_CORRECT_FILESYSTEM_SEPARATOR;

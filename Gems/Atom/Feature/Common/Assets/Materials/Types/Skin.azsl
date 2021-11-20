@@ -9,7 +9,7 @@
 #include "Skin_Common.azsli"
 
 // SRGs
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+#include <Atom/Features/Skin/SkinObjectSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 
 // Pass Output
@@ -237,6 +237,7 @@ PbrLightingOutput SkinPS_Common(VSOutput IN)
         normalMapSample = ApplyNormalWrinkleMap(o_wrinkleLayers_normal_useTexture4, normalMapSample, MaterialSrg::m_wrinkle_normal_texture4, MaterialSrg::m_sampler, normalUv, MaterialSrg::m_flipNormalX, MaterialSrg::m_flipNormalY, IN.m_wrinkleBlendFactors.a);
     }
 
+    surface.vertexNormal = normalize(IN.m_normal);
     if(o_detail_normal_useTexture)
     {
         float3 normalTS = GetTangentSpaceNormal(normalMapSample, uvMatrix, MaterialSrg::m_normalFactor);

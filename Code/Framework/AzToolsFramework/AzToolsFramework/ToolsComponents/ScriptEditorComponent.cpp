@@ -1025,7 +1025,7 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/LuaScript.svg")
                         ->Attribute(AZ::Edit::Attributes::PrimaryAssetType, AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid())
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Script.png")
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/lua-script/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/scripting/lua-script/")
                         ->DataElement("AssetRef", &ScriptEditorComponent::m_scriptAsset, "Script", "Which script to use")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &ScriptEditorComponent::ScriptHasChanged)
                             ->Attribute("BrowseIcon", ":/stylesheet/img/UI20/browse-edit-select-files.svg")

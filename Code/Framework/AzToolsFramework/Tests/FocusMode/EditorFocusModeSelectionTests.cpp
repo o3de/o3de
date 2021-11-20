@@ -6,64 +6,14 @@
  *
  */
 
-#include <Tests/FocusMode/EditorFocusModeFixture.h>
-
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/std/string/string.h>
-
-#include <AzFramework/Viewport/ViewportScreen.h>
-
-#include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
-#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
-#include <AzManipulatorTestFramework/DirectManipulatorViewportInteraction.h>
-#include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
-#include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
-
-#include <AzToolsFramework/Component/EditorComponentAPIBus.h>
-#include <AzToolsFramework/Manipulators/LinearManipulator.h>
-#include <AzToolsFramework/Manipulators/ManipulatorManager.h>
-#include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
-
+#include <Tests/FocusMode/EditorFocusModeSelectionFixture.h>
 
 namespace AzToolsFramework
 {
-    class EditorFocusModeSelectionFixture
-        : public UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<EditorFocusModeFixture>
-    {
-    public:
-        void ClickAtWorldPositionOnViewport(const AZ::Vector3& worldPosition)
-        {
-            // Calculate the world position in screen space
-            const auto carScreenPosition = AzFramework::WorldToScreen(worldPosition, m_cameraState);
-
-            // Click the entity in the viewport
-            m_actionDispatcher->CameraState(m_cameraState)->MousePosition(carScreenPosition)->MouseLButtonDown()->MouseLButtonUp();
-        }
-    };
-
-    void ClearSelectedEntities()
-    {
-        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-            &AzToolsFramework::ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList());
-    }
-
-    AzToolsFramework::EntityIdList GetSelectedEntities()
-    {
-        AzToolsFramework::EntityIdList selectedEntities;
-        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
-            selectedEntities, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetSelectedEntities);
-        return selectedEntities;
-    }
-
     TEST_F(EditorFocusModeSelectionFixture, EditorFocusModeSelectionTests_SelectEntityWithFocusOnLevel)
     {
-        // Clear the focus, disabling focus mode
-        m_focusModeInterface->ClearFocusRoot();
-        // Clear selection
-        ClearSelectedEntities();
-
         // Click on Car Entity
-        ClickAtWorldPositionOnViewport(CarEntityPosition);
+        ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
 
         // Verify entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
@@ -75,11 +25,9 @@ namespace AzToolsFramework
     {
         // Set the focus on the Street Entity (parent of the test entity)
         m_focusModeInterface->SetFocusRoot(m_entityMap[StreetEntityName]);
-        // Clear selection
-        ClearSelectedEntities();
 
         // Click on Car Entity
-        ClickAtWorldPositionOnViewport(CarEntityPosition);
+        ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
 
         // Verify entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
@@ -91,11 +39,9 @@ namespace AzToolsFramework
     {
         // Set the focus on the Car Entity (test entity)
         m_focusModeInterface->SetFocusRoot(m_entityMap[CarEntityName]);
-        // Clear selection
-        ClearSelectedEntities();
 
         // Click on Car Entity
-        ClickAtWorldPositionOnViewport(CarEntityPosition);
+        ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
 
         // Verify entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
@@ -107,13 +53,11 @@ namespace AzToolsFramework
     {
         // Set the focus on the SportsCar Entity (sibling of the test entity)
         m_focusModeInterface->SetFocusRoot(m_entityMap[SportsCarEntityName]);
-        // Clear selection
-        ClearSelectedEntities();
 
         // Click on Car Entity
-        ClickAtWorldPositionOnViewport(CarEntityPosition);
+        ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
 
-        // entity is selected
+        // Verify entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
         EXPECT_EQ(selectedEntitiesAfter.size(), 0);
     }
@@ -122,13 +66,11 @@ namespace AzToolsFramework
     {
         // Set the focus on the Passenger1 Entity (child of the entity)
         m_focusModeInterface->SetFocusRoot(m_entityMap[Passenger1EntityName]);
-        // Clear selection
-        ClearSelectedEntities();
 
         // Click on Car Entity
-        ClickAtWorldPositionOnViewport(CarEntityPosition);
+        ClickAtWorldPositionOnViewport(WorldCarEntityPosition);
 
-        // entity is selected
+        // Verify entity is selected
         auto selectedEntitiesAfter = GetSelectedEntities();
         EXPECT_EQ(selectedEntitiesAfter.size(), 0);
     }

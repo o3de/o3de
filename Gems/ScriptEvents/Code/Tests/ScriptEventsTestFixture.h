@@ -26,7 +26,7 @@
 
 #include <ScriptEvents/Internal/VersionedProperty.h>
 #include <ScriptEvents/ScriptEventParameter.h>
-#include <ScriptEvents/ScriptEventMethod.h>
+#include <ScriptEvents/ScriptEventsMethod.h>
 #include <ScriptEvents/ScriptEventsAsset.h>
 
 #include "ScriptEventTestUtilities.h"

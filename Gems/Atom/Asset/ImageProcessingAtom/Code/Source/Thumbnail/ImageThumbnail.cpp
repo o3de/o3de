@@ -67,7 +67,7 @@ namespace ImageProcessingAtom
             m_renderWait.acquire();
         }
 
-        void ImageThumbnail::ThumbnailRendered(QPixmap& thumbnailImage)
+        void ImageThumbnail::ThumbnailRendered(const QPixmap& thumbnailImage)
         {
             m_pixmap = thumbnailImage;
             m_renderWait.release();

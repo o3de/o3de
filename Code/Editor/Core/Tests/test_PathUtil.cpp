@@ -5,22 +5,29 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "EditorDefs.h"
-#include <AzTest/AzTest.h>
-#include "Util/PathUtil.h"
-#include <CrySystemBus.h>
-
-TEST(PathUtil, GamePathToFullPath_DoesNotBufferOverflow)
+#include <AzCore/UnitTest/TestTypes.h>
+#include <Util/PathUtil.h>
+namespace UnitTest
 {
-    // There are no test assertions in this test because the purpose is just to verify that the test runs without crashing
-    QString pngExtension(".png");
+    class PathUtil
+        : public ScopedAllocatorSetupFixture
+    {
+    };
 
-    // Create a string of lenth AZ_MAX_PATH_LEN that ends in .png
-    QString longStringMaxPath(AZ_MAX_PATH_LEN, 'x');
-    longStringMaxPath.replace(longStringMaxPath.length() - pngExtension.length(), longStringMaxPath.length(), pngExtension);
-    Path::GamePathToFullPath(longStringMaxPath);
+    TEST_F(PathUtil, GamePathToFullPath_DoesNotBufferOverflow)
+    {
+        // There are no test assertions in this test because the purpose is just to verify that the test runs without crashing
+        QString pngExtension(".png");
 
-    QString longStringMaxPathPlusOne(AZ_MAX_PATH_LEN + 1, 'x');
-    longStringMaxPathPlusOne.replace(longStringMaxPathPlusOne.length() - pngExtension.length(), longStringMaxPathPlusOne.length(), pngExtension);
-    Path::GamePathToFullPath(longStringMaxPathPlusOne);
+        // Create a string of length AZ_MAX_PATH_LEN that ends in .png
+        QString longStringMaxPath(AZ_MAX_PATH_LEN, 'x');
+        longStringMaxPath.replace(longStringMaxPath.length() - pngExtension.length(), longStringMaxPath.length(), pngExtension);
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        Path::GamePathToFullPath(longStringMaxPath);
+        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
+
+        QString longStringMaxPathPlusOne(AZ_MAX_PATH_LEN + 1, 'x');
+        longStringMaxPathPlusOne.replace(longStringMaxPathPlusOne.length() - pngExtension.length(), longStringMaxPathPlusOne.length(), pngExtension);
+        Path::GamePathToFullPath(longStringMaxPathPlusOne);
+    }
 }

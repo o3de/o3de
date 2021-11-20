@@ -10,6 +10,7 @@
 #include <Common/RPITestFixture.h>
 #include <Common/JsonTestUtils.h>
 #include <Common/ShaderAssetTestUtils.h>
+#include <Common/ErrorMessageFinder.h>
 #include <Material/MaterialAssetTestUtils.h>
 
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
@@ -978,6 +979,165 @@ namespace UnitTest
         const AZStd::string inputJson = R"(
             {
                 "description": "This is a general description about the material",
+                "version": 2,
+                "versionUpdates": [
+                    {
+                        "toVersion": 2,
+                        "actions": [
+                            { "op": "rename", "from": "groupA.fooPrev", "to": "groupA.foo" }
+                        ]
+                    }
+                ],
+                "propertyLayout": {
+                    "groups": [
+                        {
+                            "name": "groupA",
+                            "displayName": "Property Group A",
+                            "description": "Description of property group A"
+                        },
+                        {
+                            "name": "groupB",
+                            "displayName": "Property Group B",
+                            "description": "Description of property group B"
+                        }
+                    ],
+                    "properties": {
+                        "groupA": [
+                            {
+                                "name": "foo",
+                                "type": "Bool",
+                                "defaultValue": true
+                            },
+                            {
+                                "name": "bar",
+                                "type": "Image",
+                                "defaultValue": "Default.png",
+                                "visibility": "Hidden"
+                            }
+                        ],
+                        "groupB": [
+                            {
+                                "name": "foo",
+                                "type": "Float",
+                                "defaultValue": 0.5
+                            },
+                            {
+                                "name": "bar",
+                                "type": "Color",
+                                "defaultValue": [0.5, 0.5, 0.5],
+                                "visibility": "Disabled"
+                            }
+                        ]
+                    }
+                },
+                "shaders": [
+                    {
+                        "file": "ForwardPass.shader",
+                        "tag": "ForwardPass",
+                        "options": {
+                            "o_optionA": "False",
+                            "o_optionB": "True"
+                        }
+                    },
+                    {
+                        "file": "DepthPass.shader",
+                        "options": {
+                            "o_optionC": "1",
+                            "o_optionD": "2"
+                        }
+                    }
+                ],
+                "functors": [
+                    {
+                        "type": "EnableShader",
+                        "args": {
+                            "enablePassProperty": "groupA.foo",
+                            "shaderIndex": 1
+                        }
+                    },
+                    {
+                        "type": "Splat3",
+                        "args": {
+                            "floatPropertyInput": "groupB.foo",
+                            "float3ShaderSettingOutput": "m_someFloat3"
+                        }
+                    }
+                ]
+            }
+        )";
+
+        MaterialTypeSourceData material;
+        JsonTestResult loadResult = LoadTestDataFromJson(material, inputJson);
+
+        EXPECT_EQ(material.m_description, "This is a general description about the material");
+
+        EXPECT_EQ(material.m_version, 2);
+        EXPECT_EQ(material.m_versionUpdates.size(), 1);
+        EXPECT_EQ(material.m_versionUpdates[0].m_toVersion, 2);
+        EXPECT_EQ(material.m_versionUpdates[0].m_actions[0].m_operation, "rename");
+        EXPECT_EQ(material.m_versionUpdates[0].m_actions[0].m_renameFrom, "groupA.fooPrev");
+        EXPECT_EQ(material.m_versionUpdates[0].m_actions[0].m_renameTo, "groupA.foo");
+
+        EXPECT_EQ(material.m_propertyLayout.m_groups.size(), 2);
+        EXPECT_TRUE(material.FindGroup("groupA") != nullptr);
+        EXPECT_TRUE(material.FindGroup("groupB") != nullptr);
+        EXPECT_EQ(material.FindGroup("groupA")->m_displayName, "Property Group A");
+        EXPECT_EQ(material.FindGroup("groupB")->m_displayName, "Property Group B");
+        EXPECT_EQ(material.FindGroup("groupA")->m_description, "Description of property group A");
+        EXPECT_EQ(material.FindGroup("groupB")->m_description, "Description of property group B");
+
+        EXPECT_EQ(material.m_propertyLayout.m_properties.size(), 2);
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"].size(), 2);
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupB"].size(), 2);
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"][0].m_name, "foo");
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"][1].m_name, "bar");
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupB"][0].m_name, "foo");
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupB"][1].m_name, "bar");
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"][0].m_dataType, MaterialPropertyDataType::Bool);
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"][1].m_dataType, MaterialPropertyDataType::Image);
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupB"][0].m_dataType, MaterialPropertyDataType::Float);
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupB"][1].m_dataType, MaterialPropertyDataType::Color);
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"][0].m_visibility, MaterialPropertyVisibility::Enabled);
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"][1].m_visibility, MaterialPropertyVisibility::Hidden);
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupB"][0].m_visibility, MaterialPropertyVisibility::Enabled);
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupB"][1].m_visibility, MaterialPropertyVisibility::Disabled);
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"][0].m_value, true);
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupA"][1].m_value, AZStd::string{"Default.png"});
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupB"][0].m_value, 0.5f);
+        EXPECT_EQ(material.m_propertyLayout.m_properties["groupB"][1].m_value, AZ::Color(0.5f, 0.5f, 0.5f, 1.0f));
+
+        EXPECT_EQ(material.m_shaderCollection.size(), 2);
+        EXPECT_EQ(material.m_shaderCollection[0].m_shaderFilePath, "ForwardPass.shader");
+        EXPECT_EQ(material.m_shaderCollection[1].m_shaderFilePath, "DepthPass.shader");
+        EXPECT_EQ(material.m_shaderCollection[0].m_shaderOptionValues.size(), 2);
+        EXPECT_EQ(material.m_shaderCollection[1].m_shaderOptionValues.size(), 2);
+        EXPECT_EQ(material.m_shaderCollection[0].m_shaderOptionValues[Name{"o_optionA"}], Name{"False"});
+        EXPECT_EQ(material.m_shaderCollection[0].m_shaderOptionValues[Name{"o_optionB"}], Name{"True"});
+        EXPECT_EQ(material.m_shaderCollection[1].m_shaderOptionValues[Name{"o_optionC"}], Name{"1"});
+        EXPECT_EQ(material.m_shaderCollection[1].m_shaderOptionValues[Name{"o_optionD"}], Name{"2"});
+        EXPECT_EQ(material.m_shaderCollection[0].m_shaderTag, Name{"ForwardPass"});
+
+        EXPECT_EQ(material.m_materialFunctorSourceData.size(), 2);
+        EXPECT_TRUE(azrtti_cast<const EnableShaderFunctorSourceData*>(material.m_materialFunctorSourceData[0]->GetActualSourceData().get()));
+        EXPECT_EQ(azrtti_cast<const EnableShaderFunctorSourceData*>(material.m_materialFunctorSourceData[0]->GetActualSourceData().get())->m_enablePassPropertyId, "groupA.foo");
+        EXPECT_EQ(azrtti_cast<const EnableShaderFunctorSourceData*>(material.m_materialFunctorSourceData[0]->GetActualSourceData().get())->m_shaderIndex, 1);
+        EXPECT_TRUE(azrtti_cast<const Splat3FunctorSourceData*>(material.m_materialFunctorSourceData[1]->GetActualSourceData().get()));
+        EXPECT_EQ(azrtti_cast<const Splat3FunctorSourceData*>(material.m_materialFunctorSourceData[1]->GetActualSourceData().get())->m_floatPropertyInputId, "groupB.foo");
+        EXPECT_EQ(azrtti_cast<const Splat3FunctorSourceData*>(material.m_materialFunctorSourceData[1]->GetActualSourceData().get())->m_float3ShaderSettingOutputId, "m_someFloat3");
+        
+        AZStd::string outputJson;
+        JsonTestResult storeResult = StoreTestDataToJson(material, outputJson);
+        ExpectSimilarJson(inputJson, outputJson);
+    }
+    
+    TEST_F(MaterialTypeSourceDataTests, LoadAllFieldsUsingOldFormat)
+    {
+        // The content of this test was copied from LoadAndStoreJson_AllFields to prove backward compatibility.
+        // (The "store" part of the test was not included because the saved data will be the new format).
+
+        const AZStd::string inputJson = R"(
+            {
+                "description": "This is a general description about the material",
                 "propertyLayout": {
                     "version": 2,
                     "groups": [
@@ -1208,8 +1368,6 @@ namespace UnitTest
 
         EXPECT_EQ(material.m_description, "This is a general description about the material");
 
-        EXPECT_EQ(material.m_propertyLayout.m_version, 2);
-
         EXPECT_EQ(material.m_propertyLayout.m_groups.size(), 2);
         EXPECT_TRUE(material.FindGroup("groupA") != nullptr);
         EXPECT_TRUE(material.FindGroup("groupB") != nullptr);
@@ -1266,7 +1424,6 @@ namespace UnitTest
                 {
                     "description": "",
                     "propertyLayout": {
-                        "version": 2,
                         "groups": [
                             {
                                 "name": "general",
@@ -1304,5 +1461,203 @@ namespace UnitTest
         Data::Asset<MaterialTypeAsset> materialTypeAsset = materialTypeOutcome.GetValue();
         CheckPropertyValue<Data::Asset<ImageAsset>>(materialTypeAsset, Name{ "general.absolute" }, m_testImageAsset2);
         CheckPropertyValue<Data::Asset<ImageAsset>>(materialTypeAsset, Name{ "general.relative" }, m_testImageAsset2);
+    }
+
+
+    TEST_F(MaterialTypeSourceDataTests, FindPropertyUsingOldName)
+    {
+        const AZStd::string inputJson = R"(
+            {
+                "version": 10,
+                "versionUpdates": [
+                    {
+                        "toVersion": 2,
+                        "actions": [
+                            { "op": "rename", "from": "general.fooA", "to": "general.fooB" }
+                        ]
+                    },
+                    {
+                        "toVersion": 4,
+                        "actions": [
+                            { "op": "rename", "from": "general.barA", "to": "general.barB" }
+                        ]
+                    },
+                    {
+                        "toVersion": 6,
+                        "actions": [
+                            { "op": "rename", "from": "general.fooB", "to": "general.fooC" },
+                            { "op": "rename", "from": "general.barB", "to": "general.barC" }
+                        ]
+                    },
+                    {
+                        "toVersion": 7,
+                        "actions": [
+                            { "op": "rename", "from": "general.bazA", "to": "otherGroup.bazB" },
+                            { "op": "rename", "from": "onlyOneProperty.bopA", "to": "otherGroup.bopB" } // This tests a group 'onlyOneProperty' that no longer exists in the material type
+                        ]
+                    }
+                ],
+                "propertyLayout": {
+                    "properties": {
+                        "general": [
+                            {
+                                "name": "fooC",
+                                "type": "Bool"
+                            },
+                            {
+                                "name": "barC",
+                                "type": "Float"
+                            }
+                        ],
+                        "otherGroup": [
+                            {
+                                "name": "dontMindMe",
+                                "type": "Bool"
+                            },
+                            {
+                                "name": "bazB",
+                                "type": "Float"
+                            },
+                            {
+                                "name": "bopB",
+                                "type": "Float"
+                            }
+                        ]
+                    }
+                }
+            }
+        )";
+
+        MaterialTypeSourceData materialType;
+        JsonTestResult loadResult = LoadTestDataFromJson(materialType, inputJson);
+
+        EXPECT_EQ(materialType.m_version, 10);
+
+        // First find the properties using their correct current names
+        const MaterialTypeSourceData::PropertyDefinition* foo = materialType.FindProperty("general", "fooC");
+        const MaterialTypeSourceData::PropertyDefinition* bar = materialType.FindProperty("general", "barC");
+        const MaterialTypeSourceData::PropertyDefinition* baz = materialType.FindProperty("otherGroup", "bazB");
+        const MaterialTypeSourceData::PropertyDefinition* bop = materialType.FindProperty("otherGroup", "bopB");
+        
+        EXPECT_TRUE(foo);
+        EXPECT_TRUE(bar);
+        EXPECT_TRUE(baz);
+        EXPECT_TRUE(bop);
+        EXPECT_EQ(foo->m_name, "fooC");
+        EXPECT_EQ(bar->m_name, "barC");
+        EXPECT_EQ(baz->m_name, "bazB");
+        EXPECT_EQ(bop->m_name, "bopB");
+
+        // Now try doing the property lookup using old versions of the name and make sure the same property can be found
+
+        EXPECT_EQ(foo, materialType.FindProperty("general", "fooA"));
+        EXPECT_EQ(foo, materialType.FindProperty("general", "fooB"));
+        EXPECT_EQ(bar, materialType.FindProperty("general", "barA"));
+        EXPECT_EQ(bar, materialType.FindProperty("general", "barB"));
+        EXPECT_EQ(baz, materialType.FindProperty("general", "bazA"));
+        EXPECT_EQ(bop, materialType.FindProperty("onlyOneProperty", "bopA"));
+        
+        EXPECT_EQ(nullptr, materialType.FindProperty("general", "fooX"));
+        EXPECT_EQ(nullptr, materialType.FindProperty("general", "barX"));
+        EXPECT_EQ(nullptr, materialType.FindProperty("general", "bazX"));
+        EXPECT_EQ(nullptr, materialType.FindProperty("general", "bazB"));
+        EXPECT_EQ(nullptr, materialType.FindProperty("otherGroup", "bazA"));
+        EXPECT_EQ(nullptr, materialType.FindProperty("onlyOneProperty", "bopB"));
+        EXPECT_EQ(nullptr, materialType.FindProperty("otherGroup", "bopA"));
+    }
+    
+    TEST_F(MaterialTypeSourceDataTests, FindPropertyUsingOldName_Error_UnsupportedVersionUpdate)
+    {
+        const AZStd::string inputJson = R"(
+            {
+                "version": 10,
+                "versionUpdates": [
+                    {
+                        "toVersion": 2,
+                        "actions": [
+                            { "op": "notRename", "from": "general.fooA", "to": "general.fooB" }
+                        ]
+                    }
+                ],
+                "propertyLayout": {
+                    "properties": {
+                        "general": [
+                            {
+                                "name": "fooB",
+                                "type": "Bool"
+                            }
+                        ]
+                    }
+                }
+            }
+        )";
+
+        MaterialTypeSourceData materialType;
+        JsonTestResult loadResult = LoadTestDataFromJson(materialType, inputJson);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("Unsupported material version update operation 'notRename'");
+
+
+        const MaterialTypeSourceData::PropertyDefinition* foo = materialType.FindProperty("general", "fooA");
+
+        EXPECT_EQ(nullptr, foo);
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+    }
+
+    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_Error_UnsupportedVersionUpdate)
+    {
+        MaterialTypeSourceData sourceData;
+        
+        MaterialTypeSourceData::PropertyDefinition propertySource;
+        propertySource.m_name = "a";
+        propertySource.m_dataType = MaterialPropertyDataType::Int;
+        propertySource.m_value = 0;
+        sourceData.m_propertyLayout.m_properties["general"].push_back(propertySource);
+
+        sourceData.m_version = 2;
+
+        MaterialTypeSourceData::VersionUpdateDefinition versionUpdate;
+        versionUpdate.m_toVersion = 2;
+        MaterialTypeSourceData::VersionUpdatesRenameOperationDefinition updateAction;
+        updateAction.m_operation = "operationNotKnown";
+        versionUpdate.m_actions.push_back(updateAction);
+        sourceData.m_versionUpdates.push_back(versionUpdate);
+
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("Unsupported material version update operation 'operationNotKnown'");
+        errorMessageFinder.AddIgnoredErrorMessage("Failed to build MaterialTypeAsset", true);
+
+        auto materialTypeOutcome = sourceData.CreateMaterialTypeAsset(Uuid::CreateRandom());
+        EXPECT_FALSE(materialTypeOutcome.IsSuccess());
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+    }
+    
+    TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_Error_VersionInWrongLocation)
+    {
+        // The version field used to be under the propertyLayout section, but it has been moved up to the top level.
+        // If any users have their own custom .materialtype with an older format that has the version in the wrong place
+        // then we will report an error with instructions to move it to the correct location.
+        
+        ErrorMessageFinder errorMessageFinder;
+        errorMessageFinder.AddExpectedErrorMessage("The field '/propertyLayout/version' is deprecated and moved to '/version'. Please edit this material type source file and move the '\"version\": 4' setting up one level");
+
+        const AZStd::string inputJson = R"(
+            {
+                "propertyLayout": {
+                    "version": 4
+                }
+            }
+        )";
+
+        MaterialTypeSourceData materialType;
+        JsonTestResult loadResult = LoadTestDataFromJson(materialType, inputJson);
+
+        auto materialTypeOutcome = materialType.CreateMaterialTypeAsset(Uuid::CreateRandom());
+        EXPECT_FALSE(materialTypeOutcome.IsSuccess());
+
+        errorMessageFinder.CheckExpectedErrorsFound();
     }
 }

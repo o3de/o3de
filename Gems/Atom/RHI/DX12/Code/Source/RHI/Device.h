@@ -147,7 +147,7 @@ namespace AZ
 
             void ShutdownInternal() override;
             void CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) override;
-            void UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const override;
+            void UpdateCpuTimingStatisticsInternal() const override;
             void BeginFrameInternal() override;
             void EndFrameInternal() override;
             void WaitForIdleInternal() override;

@@ -74,11 +74,11 @@
         },
         {
             "file": "Gem/Platform/Mac/PAL_mac.cmake",
-            "isTemplated": true            
+            "isTemplated": true
         },
         {
             "file": "Gem/Platform/Windows/${NameLower}_shared_windows_files.cmake",
-            "isTemplated": true            
+            "isTemplated": true
         },
         {
             "file": "Gem/Platform/Windows/${NameLower}_windows_files.cmake",

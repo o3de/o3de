@@ -131,7 +131,6 @@ public:
     enum EAttachmentType
     {
         eAT_Pivot,
-        eAT_GeomCacheNode,
         eAT_CharacterBone,
     };
 

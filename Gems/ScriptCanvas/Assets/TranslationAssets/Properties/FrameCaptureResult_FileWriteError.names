@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "FrameCaptureResult_FileWriteError",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "FrameCaptureResult_FileWriteError::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

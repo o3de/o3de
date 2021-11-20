@@ -23,7 +23,6 @@
 */Code/Framework/AzCore/AzCore/std/parallel/binary_semaphore.h
 */Code/Framework/AzCore/AzCore/std/parallel/semaphore.h
 */Code/Framework/AzCore/Platform/Android/AzCore/AzCore_Traits_Android.h
-*/Code/Framework/AzCore/Platform/AppleTV/AzCore/AzCore_Traits_AppleTV.h
 */Code/Framework/AzCore/Platform/iOS/AzCore/AzCore_Traits_iOS.h
 */Code/Framework/AzCore/Platform/Jasper/AzCore/AzCore_Traits_Jasper.h
 */Code/Framework/AzCore/Platform/Linux/AzCore/AzCore_Traits_Linux.h
@@ -49,7 +48,6 @@
 */Code/Tools/*
 */Gems/*/3rdParty/*
 */Gems/*/External/*
-*/Gems/CryLegacy*
 */Gems/EMotionFX/Code/EMotionFX/Rendering/OpenGL2/Source/GLInclude.h
 */Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/MainWindow.cpp
 */Gems/EMotionFX/Code/EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/PluginManager.cpp
@@ -61,4 +59,3 @@
 */Gems/SaveData/Code/Tests/SaveDataTest.cpp
 */Gems/WhiteBox/Code/Source/Rendering/Legacy/WhiteBoxLegacyRenderMesh.cpp
 */restricted/*/Code/Framework/AzCore/AzCore/AzCore_Traits_*.h
-*/Tools/CryDeprecation/precompile_check_defines.h

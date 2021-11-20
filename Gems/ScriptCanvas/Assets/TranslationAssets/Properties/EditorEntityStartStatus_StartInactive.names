@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorEntityStartStatus_StartInactive",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorEntityStartStatus_StartInactive::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

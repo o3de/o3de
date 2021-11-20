@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "HDRiSkyboxComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "HDRiSkyboxComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

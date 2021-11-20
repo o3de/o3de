@@ -39,11 +39,20 @@ namespace AzToolsFramework
         AZ_Assert((m_editorEntityFrameworkInterface != nullptr),
             "EntityOutlinerTreeView requires a EditorEntityFrameworkInterface instance on Construction.");
 
+        
+        AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
+        FocusModeNotificationBus::Handler::BusConnect(editorEntityContextId);
+
         viewport()->setMouseTracking(true);
     }
 
     EntityOutlinerTreeView::~EntityOutlinerTreeView()
     {
+        FocusModeNotificationBus::Handler::BusDisconnect();
+
         ClearQueuedMouseEvent();
     }
 
@@ -63,7 +72,9 @@ namespace AzToolsFramework
 
     void EntityOutlinerTreeView::leaveEvent([[maybe_unused]] QEvent* event)
     {
-        m_mousePosition = QPoint();
+        m_mousePosition = QPoint(-1, -1);
+        m_currentHoveredIndex = QModelIndex();
+        update();
     }
 
     void EntityOutlinerTreeView::mousePressEvent(QMouseEvent* event)
@@ -120,6 +131,11 @@ namespace AzToolsFramework
         }
 
         m_mousePosition = event->pos();
+        if (QModelIndex hoveredIndex = indexAt(m_mousePosition); m_currentHoveredIndex != indexAt(m_mousePosition))
+        {
+            m_currentHoveredIndex = hoveredIndex;
+            update();
+        }
 
         //process mouse movement as normal, potentially triggering drag and drop
         QTreeView::mouseMoveEvent(event);
@@ -184,7 +200,7 @@ namespace AzToolsFramework
         const bool isEnabled = (this->model()->flags(index) & Qt::ItemIsEnabled);
 
         const bool isSelected = selectionModel()->isSelected(index);
-        const bool isHovered = (index == indexAt(m_mousePosition)) && isEnabled;
+        const bool isHovered = (index == indexAt(m_mousePosition).siblingAtColumn(0)) && isEnabled;
 
         // Paint the branch Selection/Hover Rect
         PaintBranchSelectionHoverRect(painter, rect, isSelected, isHovered);
@@ -302,6 +318,12 @@ namespace AzToolsFramework
         });
 
         StyledTreeView::StartCustomDrag(indexListSorted, supportedActions);
+    }
+
+    void EntityOutlinerTreeView::OnEditorFocusChanged(
+        [[maybe_unused]] AZ::EntityId previousFocusEntityId, [[maybe_unused]] AZ::EntityId newFocusEntityId)
+    {
+        viewport()->repaint();
     }
 }
 

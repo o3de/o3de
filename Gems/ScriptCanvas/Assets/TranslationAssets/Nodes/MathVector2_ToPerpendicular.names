@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "key": "{78889490-B826-5682-9464-117DB8083AF4}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "To Perpendicular",
+                "category": "Math/Vector2",
+                "tooltip": "Returns the vector (-Source.y, Source.x), a 90 degree, positive rotation"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

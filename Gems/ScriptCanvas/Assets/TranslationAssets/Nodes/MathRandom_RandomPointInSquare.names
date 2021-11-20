@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "key": "{4CF31307-D138-5021-A5AE-F352C95DC212}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Random Point In Square",
+                "category": "Math/Random",
+                "tooltip": "Returns a random point in a square"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Dimensions",
+                    "details": {
+                        "name": "Dimensions"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

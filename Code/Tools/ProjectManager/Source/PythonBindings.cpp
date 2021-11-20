@@ -23,6 +23,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <QDir>
@@ -53,6 +54,8 @@ namespace Platform
 
 #define Py_To_String(obj) pybind11::str(obj).cast<std::string>().c_str()
 #define Py_To_String_Optional(dict, key, default_string) dict.contains(key) ? Py_To_String(dict[key]) : default_string
+#define Py_To_Int(obj) obj.cast<int>()
+#define Py_To_Int_Optional(dict, key, default_int) dict.contains(key) ? Py_To_Int(dict[key]) : default_int
 #define QString_To_Py_String(value) pybind11::str(value.toStdString())
 #define QString_To_Py_Path(value) m_pathlib.attr("Path")(value.toStdString())
 
@@ -208,6 +211,16 @@ namespace RedirectOutput
         });
 
         SetRedirection("stderr", g_redirect_stderr_saved, g_redirect_stderr, []([[maybe_unused]] const char* msg) {
+            AZStd::string lastPythonError = msg;
+            constexpr const char* pythonErrorPrefix = "ERROR:root:";
+            constexpr size_t lengthOfErrorPrefix = AZStd::char_traits<char>::length(pythonErrorPrefix);
+            auto errorPrefix = lastPythonError.find(pythonErrorPrefix);
+            if (errorPrefix != AZStd::string::npos)
+            {
+                lastPythonError.erase(errorPrefix, lengthOfErrorPrefix);
+            }
+            O3DE::ProjectManager::PythonBindingsInterface::Get()->AddErrorString(lastPythonError);
+
             AZ_TracePrintf("Python", msg);
         });
 
@@ -222,6 +235,7 @@ namespace RedirectOutput
         s_RedirectModule = nullptr;
     }
 } // namespace RedirectOutput
+
 
 namespace O3DE::ProjectManager
 {
@@ -246,8 +260,10 @@ namespace O3DE::ProjectManager
         if (Py_IsInitialized())
         {
             AZ_Warning("python", false, "Python is already active");
-            return false;
+            return m_pythonStarted;
         }
+
+        m_pythonStarted = false;
 
         // set PYTHON_HOME
         AZStd::string pyBasePath = Platform::GetPythonHomePath(PY_PACKAGE, m_enginePath.c_str());
@@ -299,12 +315,15 @@ namespace O3DE::ProjectManager
             m_enableGemProject = pybind11::module::import("o3de.enable_gem");
             m_disableGemProject = pybind11::module::import("o3de.disable_gem");
             m_editProjectProperties = pybind11::module::import("o3de.project_properties");
+            m_download = pybind11::module::import("o3de.download");
+            m_repo = pybind11::module::import("o3de.repo");
             m_pathlib = pybind11::module::import("pathlib");
 
             // make sure the engine is registered
             RegisterThisEngine();
 
-            return !PyErr_Occurred();
+            m_pythonStarted = !PyErr_Occurred();
+            return m_pythonStarted;
         }
         catch ([[maybe_unused]] const std::exception& e)
         {
@@ -367,6 +386,8 @@ namespace O3DE::ProjectManager
         AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
         pybind11::gil_scoped_release release;
         pybind11::gil_scoped_acquire acquire;
+
+        ClearErrorStrings();
 
         try
         {
@@ -507,7 +528,11 @@ namespace O3DE::ProjectManager
             auto pyProjectPath = QString_To_Py_Path(projectPath);
             for (auto path : m_manifest.attr("get_all_gems")(pyProjectPath))
             {
-                gems.push_back(GemInfoFromPath(path, pyProjectPath));
+                GemInfo gemInfo = GemInfoFromPath(path, pyProjectPath);
+                // Mark as downloaded because this gem was registered with an existing directory
+                gemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
+
+                gems.push_back(AZStd::move(gemInfo));
             }
         });
         if (!result.IsSuccess())
@@ -550,6 +575,59 @@ namespace O3DE::ProjectManager
         }
 
         return AZ::Success(AZStd::move(gemNames));
+    }
+
+    AZ::Outcome<void, AZStd::string> PythonBindings::GemRegistration(const QString& gemPath, const QString& projectPath, bool remove)
+    {
+        bool registrationResult = false;
+        auto result = ExecuteWithLockErrorHandling(
+            [&]
+        {
+            auto externalProjectPath = projectPath.isEmpty() ? pybind11::none() : QString_To_Py_Path(projectPath);
+            auto pythonRegistrationResult = m_register.attr("register")(
+                pybind11::none(), // engine_path
+                pybind11::none(), // project_path
+                QString_To_Py_Path(gemPath), // gem folder
+                pybind11::none(), // external subdirectory
+                pybind11::none(), // template_path
+                pybind11::none(), // restricted folder 
+                pybind11::none(), // repo uri 
+                pybind11::none(), // default_engines_folder
+                pybind11::none(), // default_projects_folder
+                pybind11::none(), // default_gems_folder
+                pybind11::none(), // default_templates_folder
+                pybind11::none(), // default_restricted_folder
+                pybind11::none(), // default_third_party_folder
+                pybind11::none(), // external_subdir_engine_path
+                externalProjectPath, // external_subdir_project_path
+                remove            // remove
+                );
+
+            // Returns an exit code so boolify it then invert result
+            registrationResult = !pythonRegistrationResult.cast<bool>();
+        });
+
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure<AZStd::string>(result.GetError().c_str());
+        }
+        else if (!registrationResult)
+        {
+            return AZ::Failure<AZStd::string>(AZStd::string::format(
+                "Failed to %s gem path %s", remove ? "unregister" : "register", gemPath.toUtf8().constData()));
+        }
+
+        return AZ::Success();
+    }
+
+    AZ::Outcome<void, AZStd::string> PythonBindings::RegisterGem(const QString& gemPath, const QString& projectPath)
+    {
+        return GemRegistration(gemPath, projectPath);
+    }
+
+    AZ::Outcome<void, AZStd::string> PythonBindings::UnregisterGem(const QString& gemPath, const QString& projectPath)
+    {
+        return GemRegistration(gemPath, projectPath, /*remove*/true);
     }
 
     bool PythonBindings::AddProject(const QString& path)
@@ -658,14 +736,38 @@ namespace O3DE::ProjectManager
                 // optional
                 gemInfo.m_displayName = Py_To_String_Optional(data, "display_name", gemInfo.m_name);
                 gemInfo.m_summary = Py_To_String_Optional(data, "summary", "");
-                gemInfo.m_version = "";
+                gemInfo.m_version = Py_To_String_Optional(data, "version", gemInfo.m_version);
+                gemInfo.m_lastUpdatedDate = Py_To_String_Optional(data, "last_updated", gemInfo.m_lastUpdatedDate);
+                gemInfo.m_binarySizeInKB = Py_To_Int_Optional(data, "binary_size", gemInfo.m_binarySizeInKB);
                 gemInfo.m_requirement = Py_To_String_Optional(data, "requirements", "");
                 gemInfo.m_creator = Py_To_String_Optional(data, "origin", "");
                 gemInfo.m_documentationLink = Py_To_String_Optional(data, "documentation_url", "");
+                gemInfo.m_licenseText = Py_To_String_Optional(data, "license", "Unspecified License");
+                gemInfo.m_licenseLink = Py_To_String_Optional(data, "license_url", "");
+                gemInfo.m_repoUri = Py_To_String_Optional(data, "repo_uri", "");
 
                 if (gemInfo.m_creator.contains("Open 3D Engine"))
                 {
-                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEEngine;
+                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEngine;
+                }
+                else if (gemInfo.m_creator.contains("Amazon Web Services"))
+                {
+                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Local;
+                }
+                else if (data.contains("origin"))
+                {
+                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Remote;
+                }
+                // If no origin was provided this cannot be remote and would be specified if O3DE so it should be local
+                else
+                {
+                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Local;
+                }
+
+                // As long Base Open3DEngine gems are installed before first startup non-remote gems will be downloaded
+                if (gemInfo.m_gemOrigin != GemInfo::GemOrigin::Remote)
+                {
+                    gemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
                 }
 
                 if (data.contains("user_tags"))
@@ -922,20 +1024,150 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::AddGemRepo(const QString& repoUri)
+    AZ::Outcome<void, AZStd::string> PythonBindings::RefreshGemRepo(const QString& repoUri)
     {
-        // o3de scripts need method added
-        (void)repoUri;
-        return AZ::Failure<AZStd::string>("Adding Gem Repo not implemented yet in o3de scripts.");
+        bool refreshResult = false;
+        AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(
+            [&]
+            {
+                auto pyUri = QString_To_Py_String(repoUri);
+                auto pythonRefreshResult = m_repo.attr("refresh_repo")(pyUri);
+
+                // Returns an exit code so boolify it then invert result
+                refreshResult = !pythonRefreshResult.cast<bool>();
+            });
+
+        if (!result.IsSuccess())
+        {
+            return result;
+        }
+        else if (!refreshResult)
+        {
+            return AZ::Failure<AZStd::string>("Failed to refresh repo.");
+        }
+
+        return AZ::Success();
     }
 
-    GemRepoInfo PythonBindings::GemRepoInfoFromPath(pybind11::handle path, pybind11::handle pyEnginePath)
+    bool PythonBindings::RefreshAllGemRepos()
     {
-        /* Placeholder Logic */
-        (void)path;
-        (void)pyEnginePath;
+        bool refreshResult = false;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                auto pythonRefreshResult = m_repo.attr("refresh_repos")();
 
-        return GemRepoInfo();
+                // Returns an exit code so boolify it then invert result
+                refreshResult = !pythonRefreshResult.cast<bool>();
+            });
+
+        return result && refreshResult;
+    }
+
+    AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> PythonBindings::AddGemRepo(const QString& repoUri)
+    {
+        bool registrationResult = false;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                auto pyUri = QString_To_Py_String(repoUri);
+                auto pythonRegistrationResult = m_register.attr("register")(
+                    pybind11::none(), pybind11::none(), pybind11::none(), pybind11::none(), pybind11::none(), pybind11::none(), pyUri);
+
+                // Returns an exit code so boolify it then invert result
+                registrationResult = !pythonRegistrationResult.cast<bool>();
+            });
+
+        if (!result || !registrationResult)
+        {
+            return AZ::Failure<AZStd::pair<AZStd::string, AZStd::string>>(GetSimpleDetailedErrorPair());
+        }
+
+        return AZ::Success();
+    }
+
+    bool PythonBindings::RemoveGemRepo(const QString& repoUri)
+    {
+        bool registrationResult = false;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                auto pythonRegistrationResult = m_register.attr("register")(
+                    pybind11::none(), // engine_path
+                    pybind11::none(), // project_path
+                    pybind11::none(), // gem_path
+                    pybind11::none(), // external_subdir_path
+                    pybind11::none(), // template_path
+                    pybind11::none(), // restricted_path
+                    QString_To_Py_String(repoUri), // repo_uri
+                    pybind11::none(), // default_engines_folder
+                    pybind11::none(), // default_projects_folder
+                    pybind11::none(), // default_gems_folder
+                    pybind11::none(), // default_templates_folder
+                    pybind11::none(), // default_restricted_folder
+                    pybind11::none(), // default_third_party_folder
+                    pybind11::none(), // external_subdir_engine_path
+                    pybind11::none(), // external_subdir_project_path
+                    true, // remove
+                    false // force
+                );
+
+                // Returns an exit code so boolify it then invert result
+                registrationResult = !pythonRegistrationResult.cast<bool>();
+            });
+
+        return result && registrationResult;
+    }
+
+    GemRepoInfo PythonBindings::GetGemRepoInfo(pybind11::handle repoUri)
+    {
+        GemRepoInfo gemRepoInfo;
+        gemRepoInfo.m_repoUri = Py_To_String(repoUri);
+
+        auto data = m_manifest.attr("get_repo_json_data")(repoUri);
+        if (pybind11::isinstance<pybind11::dict>(data))
+        {
+            try
+            {
+                // required
+                gemRepoInfo.m_repoUri = Py_To_String(data["repo_uri"]);
+                gemRepoInfo.m_name = Py_To_String(data["repo_name"]);
+                gemRepoInfo.m_creator = Py_To_String(data["origin"]);
+
+                // optional
+                gemRepoInfo.m_summary = Py_To_String_Optional(data, "summary", "No summary provided.");
+                gemRepoInfo.m_additionalInfo = Py_To_String_Optional(data, "additional_info", "");
+
+                auto repoPath = m_manifest.attr("get_repo_path")(repoUri);
+                gemRepoInfo.m_path = gemRepoInfo.m_directoryLink = Py_To_String(repoPath);
+
+                QString lastUpdated = Py_To_String_Optional(data, "last_updated", "");
+                gemRepoInfo.m_lastUpdated = QDateTime::fromString(lastUpdated, RepoTimeFormat);
+
+                if (data.contains("enabled"))
+                {
+                    gemRepoInfo.m_isEnabled = data["enabled"].cast<bool>();
+                }
+                else
+                {
+                    gemRepoInfo.m_isEnabled = false;
+                }
+
+                if (data.contains("gems"))
+                {
+                    for (auto gemPath : data["gems"])
+                    {
+                        gemRepoInfo.m_includedGemUris.push_back(Py_To_String(gemPath));
+                    }
+                }
+            }
+            catch ([[maybe_unused]] const std::exception& e)
+            {
+                AZ_Warning("PythonBindings", false, "Failed to get GemRepoInfo for repo %s", Py_To_String(repoUri));
+            }
+        }
+
+        return gemRepoInfo;
     }
 
 //#define MOCK_GEM_REPO_INFO true
@@ -948,14 +1180,10 @@ namespace O3DE::ProjectManager
         auto result = ExecuteWithLockErrorHandling(
             [&]
             {
-                /* Placeholder Logic, o3de scripts need method added
-                * 
-                for (auto path : m_manifest.attr("get_gem_repos")())
+                for (auto repoUri : m_manifest.attr("get_repos")())
                 {
-                    gemRepos.push_back(GemRepoInfoFromPath(path, pybind11::none()));
+                    gemRepos.push_back(GetGemRepoInfo(repoUri));
                 }
-                *
-                */
             });
         if (!result.IsSuccess())
         {
@@ -964,17 +1192,152 @@ namespace O3DE::ProjectManager
 #else
         GemRepoInfo mockJohnRepo("JohnCreates", "John Smith", QDateTime(QDate(2021, 8, 31), QTime(11, 57)), true);
         mockJohnRepo.m_summary = "John's Summary. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sollicitudin dapibus urna";
-        mockJohnRepo.m_repoLink = "https://github.com/o3de/o3de";
+        mockJohnRepo.m_repoUri = "https://github.com/o3de/o3de";
         mockJohnRepo.m_additionalInfo = "John's additional info. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce sollicitu.";
         gemRepos.push_back(mockJohnRepo);
 
         GemRepoInfo mockJaneRepo("JanesGems", "Jane Doe", QDateTime(QDate(2021, 9, 10), QTime(18, 23)), false);
         mockJaneRepo.m_summary = "Jane's Summary.";
-        mockJaneRepo.m_repoLink = "https://github.com/o3de/o3de.org";
+        mockJaneRepo.m_repoUri = "https://github.com/o3de/o3de.org";
         gemRepos.push_back(mockJaneRepo);
 #endif // MOCK_GEM_REPO_INFO
 
         std::sort(gemRepos.begin(), gemRepos.end());
         return AZ::Success(AZStd::move(gemRepos));
+    }
+
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetGemInfosForRepo(const QString& repoUri)
+    {
+        QVector<GemInfo> gemInfos;
+        AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(
+            [&]
+            {
+                auto pyUri = QString_To_Py_String(repoUri);
+                auto gemPaths = m_repo.attr("get_gem_json_paths_from_cached_repo")(pyUri);
+
+                if (pybind11::isinstance<pybind11::set>(gemPaths))
+                {
+                    for (auto path : gemPaths)
+                    {
+                        GemInfo gemInfo = GemInfoFromPath(path, pybind11::none());
+                        gemInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
+                        gemInfos.push_back(gemInfo);
+                    }
+                }
+            });
+
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure(result.GetError());
+        }
+
+        return AZ::Success(AZStd::move(gemInfos));
+    }
+
+    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetGemInfosForAllRepos()
+    {
+        QVector<GemInfo> gemInfos;
+        AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(
+            [&]
+            {
+                auto gemPaths = m_repo.attr("get_gem_json_paths_from_all_cached_repos")();
+
+                if (pybind11::isinstance<pybind11::set>(gemPaths))
+                {
+                    for (auto path : gemPaths)
+                    {
+                        GemInfo gemInfo = GemInfoFromPath(path, pybind11::none());
+                        gemInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
+                        gemInfos.push_back(gemInfo);
+                    }
+                }
+            });
+
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure(result.GetError());
+        }
+
+        return AZ::Success(AZStd::move(gemInfos));
+    }
+
+    AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>> PythonBindings::DownloadGem(
+        const QString& gemName, std::function<void(int, int)> gemProgressCallback, bool force)
+    {
+        // This process is currently limited to download a single gem at a time.
+        bool downloadSucceeded = false;
+
+        m_requestCancelDownload = false;
+        auto result = ExecuteWithLockErrorHandling(
+            [&]
+            {
+                auto downloadResult = m_download.attr("download_gem")(
+                    QString_To_Py_String(gemName), // gem name
+                    pybind11::none(), // destination path
+                    false, // skip auto register
+                    force, // force overwrite
+                    pybind11::cpp_function(
+                        [this, gemProgressCallback](int bytesDownloaded, int totalBytes)
+                        {
+                            gemProgressCallback(bytesDownloaded, totalBytes);
+
+                            return m_requestCancelDownload;
+                        }) // Callback for download progress and cancelling
+                    );
+                downloadSucceeded = (downloadResult.cast<int>() == 0);
+            });
+
+
+        if (!result.IsSuccess())
+        {
+            AZStd::pair<AZStd::string, AZStd::string> pythonRunError(result.GetError(), result.GetError());
+            return AZ::Failure<AZStd::pair<AZStd::string, AZStd::string>>(AZStd::move(pythonRunError));
+        }
+        else if (!downloadSucceeded)
+        {
+            return AZ::Failure<AZStd::pair<AZStd::string, AZStd::string>>(GetSimpleDetailedErrorPair());
+        }
+
+        return AZ::Success();
+    }
+
+    void PythonBindings::CancelDownload()
+    {
+        m_requestCancelDownload = true;
+    }
+
+    bool PythonBindings::IsGemUpdateAvaliable(const QString& gemName, const QString& lastUpdated)
+    {
+        bool updateAvaliableResult = false;
+        bool result = ExecuteWithLock(
+            [&]
+            {
+                auto pyGemName = QString_To_Py_String(gemName);
+                auto pyLastUpdated = QString_To_Py_String(lastUpdated);
+                auto pythonUpdateAvaliableResult = m_download.attr("is_o3de_gem_update_available")(pyGemName, pyLastUpdated);
+
+                updateAvaliableResult = pythonUpdateAvaliableResult.cast<bool>();
+            });
+
+        return result && updateAvaliableResult;
+    }
+
+    AZStd::pair<AZStd::string, AZStd::string> PythonBindings::GetSimpleDetailedErrorPair()
+    {
+        AZStd::string detailedString = m_pythonErrorStrings.size() == 1
+            ? ""
+            : AZStd::accumulate(m_pythonErrorStrings.begin(), m_pythonErrorStrings.end(), AZStd::string(""));
+
+        return AZStd::pair<AZStd::string, AZStd::string>(m_pythonErrorStrings.front(), detailedString);
+    }
+
+    void PythonBindings::AddErrorString(AZStd::string errorString)
+    {
+        m_pythonErrorStrings.push_back(errorString);
+    }
+
+    void PythonBindings::ClearErrorStrings()
+    {
+        m_pythonErrorStrings.clear();
     }
 }

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiHorizontalOrder_LeftToRight",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiHorizontalOrder_LeftToRight::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

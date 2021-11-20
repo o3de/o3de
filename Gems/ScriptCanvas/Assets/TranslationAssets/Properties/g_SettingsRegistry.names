@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "g_SettingsRegistry",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "g_SettingsRegistry::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

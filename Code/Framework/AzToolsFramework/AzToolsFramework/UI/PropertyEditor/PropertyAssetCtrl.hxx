@@ -168,7 +168,9 @@ namespace AzToolsFramework
 
         bool IsCorrectMimeData(const QMimeData* pData, AZ::Data::AssetId* pAssetId = nullptr, AZ::Data::AssetType* pAssetType = nullptr) const;
         void ClearErrorButton();
-        void UpdateErrorButton(const AZStd::string& errorLog);
+        void UpdateErrorButton();
+        void UpdateErrorButtonWithLog(const AZStd::string& errorLog);
+        void UpdateErrorButtonWithMessage(const AZStd::string& message);
         virtual const AZStd::string GetFolderSelection() const { return AZStd::string(); }
         virtual void SetFolderSelection(const AZStd::string& /* folderPath */) {}
         virtual void ClearAssetInternal();
@@ -217,11 +219,16 @@ namespace AzToolsFramework
         void SetHideProductFilesInAssetPicker(bool hide);
         bool GetHideProductFilesInAssetPicker() const;
 
+        // Enable and configure a thumbnail widget that displays an asset preview and dropdown arrow for a dropdown menu
         void SetShowThumbnail(bool enable);
         bool GetShowThumbnail() const;
         void SetShowThumbnailDropDownButton(bool enable);
         bool GetShowThumbnailDropDownButton() const;
         void SetThumbnailCallback(EditCallbackType* editNotifyCallback);
+
+        // If enabled, replaces the thumbnail widget content with a custom pixmap
+        void SetCustomThumbnailEnabled(bool enabled);
+        void SetCustomThumbnailPixmap(const QPixmap& pixmap);
 
         void SetSelectedAssetID(const AZ::Data::AssetId& newID);
         void SetCurrentAssetType(const AZ::Data::AssetType& newType);

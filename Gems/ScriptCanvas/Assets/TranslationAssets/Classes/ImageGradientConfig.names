@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "ImageGradientConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ImageGradientConfig"
+            }
+        }
+    ]
+}

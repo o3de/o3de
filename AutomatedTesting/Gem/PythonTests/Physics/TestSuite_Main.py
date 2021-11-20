@@ -92,3 +92,15 @@ class TestAutomation(TestAutomationBase):
     def test_C15425929_Undo_Redo(self, request, workspace, editor, launcher_platform):
         from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
         self._run_test(request, workspace, editor, test_module)
+
+    @pytest.mark.GROUP_tick
+    @pytest.mark.xfail(reason="Test still under development.")
+    def test_Tick_InterpolatedRigidBodyMotionIsSmooth(self, request, workspace, editor, launcher_platform):
+        from .tests.tick import Tick_InterpolatedRigidBodyMotionIsSmooth as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    @pytest.mark.GROUP_tick
+    @pytest.mark.xfail(reason="Test still under development.")
+    def test_Tick_CharacterGameplayComponentMotionIsSmooth(self, request, workspace, editor, launcher_platform):
+        from .tests.tick import Tick_CharacterGameplayComponentMotionIsSmooth as test_module
+        self._run_test(request, workspace, editor, test_module)

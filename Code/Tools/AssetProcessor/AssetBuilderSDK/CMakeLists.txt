@@ -32,6 +32,7 @@ ly_add_target(
         PUBLIC
             AZ::AzFramework
             AZ::AzToolsFramework
+            3rdParty::xxhash
 )
 ly_add_source_properties(
     SOURCES AssetBuilderSDK/AssetBuilderSDK.cpp

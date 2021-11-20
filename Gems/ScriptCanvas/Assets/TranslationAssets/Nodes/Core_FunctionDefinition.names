@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "key": "{4EE28D9F-67FB-4E61-B777-5DC5B059710F}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Function Definition",
+                "category": "Core",
+                "tooltip": "Represents either an execution entry or exit node.",
+                "subtitle": "Core"
+            },
+            "slots": [
+                {
+                    "key": "Input_ ",
+                    "details": {
+                        "name": " "
+                    }
+                },
+                {
+                    "key": "Output_ ",
+                    "details": {
+                        "name": " "
+                    }
+                }
+            ]
+        }
+    ]
+}

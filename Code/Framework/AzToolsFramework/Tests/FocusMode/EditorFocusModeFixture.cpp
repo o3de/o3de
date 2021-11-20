@@ -14,6 +14,20 @@
 
 namespace AzToolsFramework
 {
+    void ClearSelectedEntities()
+    {
+        AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+            &AzToolsFramework::ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList());
+    }
+
+    AzToolsFramework::EntityIdList EditorFocusModeFixture::GetSelectedEntities()
+    {
+        AzToolsFramework::EntityIdList selectedEntities;
+        AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+            selectedEntities, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetSelectedEntities);
+        return selectedEntities;
+    }
+
     void EditorFocusModeFixture::SetUpEditorFixtureImpl()
     {
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
@@ -21,13 +35,37 @@ namespace AzToolsFramework
         // in the unit tests.
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
+        m_containerEntityInterface = AZ::Interface<ContainerEntityInterface>::Get();
+        ASSERT_TRUE(m_containerEntityInterface != nullptr);
+
         m_focusModeInterface = AZ::Interface<FocusModeInterface>::Get();
         ASSERT_TRUE(m_focusModeInterface != nullptr);
 
         // register a simple component implementing BoundsRequestBus and EditorComponentSelectionRequestsBus
         GetApplication()->RegisterComponentDescriptor(UnitTest::BoundsTestComponent::CreateDescriptor());
 
+        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+            m_editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+
         GenerateTestHierarchy();
+
+        // Clear the focus, disabling focus mode
+        m_focusModeInterface->ClearFocusRoot(m_editorEntityContextId);
+
+        // Clear selection
+        ClearSelectedEntities();
+    }
+
+    void EditorFocusModeFixture::TearDownEditorFixtureImpl()
+    {
+        // Clear Container Entity preserved open states
+        m_containerEntityInterface->Clear(m_editorEntityContextId);
+
+        // Clear the focus, disabling focus mode
+        m_focusModeInterface->ClearFocusRoot(m_editorEntityContextId);
+
+        // Clear selection
+        ClearSelectedEntities();
     }
 
     void EditorFocusModeFixture::GenerateTestHierarchy() 
@@ -56,7 +94,7 @@ namespace AzToolsFramework
         entity->Activate();
 
         // Move the CarEntity so it's out of the way.
-        AZ::TransformBus::Event(m_entityMap[CarEntityName], &AZ::TransformBus::Events::SetWorldTranslation, CarEntityPosition);
+        AZ::TransformBus::Event(m_entityMap[CarEntityName], &AZ::TransformBus::Events::SetWorldTranslation, WorldCarEntityPosition);
 
         // Setup the camera so the Car entity is in view.
         AzFramework::SetCameraTransform(

@@ -14,7 +14,7 @@
 
 namespace Multiplayer
 {
-    void NetworkTransformComponent::NetworkTransformComponent::Reflect(AZ::ReflectContext* context)
+    void NetworkTransformComponent::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)
@@ -43,6 +43,11 @@ namespace Multiplayer
         GetNetBindComponent()->AddEntityPreRenderEventHandler(m_entityPreRenderEventHandler);
         GetNetBindComponent()->AddEntityCorrectionEventHandler(m_entityCorrectionEventHandler);
         ParentEntityIdAddEvent(m_parentChangedEventHandler);
+
+        if (!GetNetBindComponent()->IsNetEntityRoleAuthority())
+        {
+            OnParentChanged(GetParentEntityId());
+        }
     }
 
     void NetworkTransformComponent::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
@@ -77,9 +82,20 @@ namespace Multiplayer
                 }
             }
 
-            if (!GetTransformComponent()->GetWorldTM().IsClose(blendTransform))
+            AzFramework::TransformComponent* transformComponent = GetTransformComponent();
+            if (GetParentEntityId() == InvalidNetEntityId)
             {
-                GetTransformComponent()->SetWorldTM(blendTransform);
+                if (!transformComponent->GetWorldTM().IsClose(blendTransform))
+                {
+                    transformComponent->SetWorldTM(blendTransform);
+                }
+            }
+            else
+            {
+                if (!transformComponent->GetLocalTM().IsClose(blendTransform))
+                {
+                    transformComponent->SetLocalTM(blendTransform);
+                }
             }
         }
     }
@@ -93,31 +109,45 @@ namespace Multiplayer
         targetTransform.SetUniformScale(GetScale());
 
         // Hard set the entities transform
-        if (!GetTransformComponent()->GetWorldTM().IsClose(targetTransform))
+        AzFramework::TransformComponent* transformComponent = GetTransformComponent();
+        if (GetParentEntityId() == InvalidNetEntityId)
         {
-            GetTransformComponent()->SetWorldTM(targetTransform);
+            if (!transformComponent->GetWorldTM().IsClose(targetTransform))
+            {
+                transformComponent->SetWorldTM(targetTransform);
+            }
+        }
+        else
+        {
+            if (!transformComponent->GetLocalTM().IsClose(targetTransform))
+            {
+                transformComponent->SetLocalTM(targetTransform);
+            }
         }
     }
 
     void NetworkTransformComponent::OnParentChanged(NetEntityId parentId)
     {
-        const ConstNetworkEntityHandle parentEntityHandle = GetNetworkEntityManager()->GetEntity(parentId);
-        if (parentEntityHandle.Exists())
+        if (AZ::TransformInterface* transformComponent = GetEntity()->GetTransform())
         {
-            if (const AZ::Entity* parentEntity = parentEntityHandle.GetEntity())
+            const ConstNetworkEntityHandle parentEntityHandle = GetNetworkEntityManager()->GetEntity(parentId);
+            if (parentEntityHandle.Exists())
             {
-                GetEntity()->GetTransform()->SetParent(parentEntity->GetId());
+                if (const AZ::Entity* parentEntity = parentEntityHandle.GetEntity())
+                {
+                    transformComponent->SetParent(parentEntity->GetId());
+                }
             }
-        }
-        else
-        {
-            GetEntity()->GetTransform()->SetParent(AZ::EntityId());
+            else
+            {
+                transformComponent->SetParent(AZ::EntityId());
+            }
         }
     }
 
     NetworkTransformComponentController::NetworkTransformComponentController(NetworkTransformComponent& parent)
         : NetworkTransformComponentControllerBase(parent)
-        , m_transformChangedHandler([this](const AZ::Transform&, const AZ::Transform& worldTm) { OnTransformChangedEvent(worldTm); })
+        , m_transformChangedHandler([this](const AZ::Transform& localTm, const AZ::Transform& worldTm) { OnTransformChangedEvent(localTm, worldTm); })
         , m_parentIdChangedHandler([this](AZ::EntityId oldParent, AZ::EntityId newParent) { OnParentIdChangedEvent(oldParent, newParent); })
     {
         ;
@@ -125,11 +155,14 @@ namespace Multiplayer
 
     void NetworkTransformComponentController::OnActivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
     {
-        GetParent().GetTransformComponent()->BindTransformChangedEventHandler(m_transformChangedHandler);
-        OnTransformChangedEvent(GetParent().GetTransformComponent()->GetWorldTM());
+        if (AzFramework::TransformComponent* parentTransform = GetParent().GetTransformComponent())
+        {
+            parentTransform->BindTransformChangedEventHandler(m_transformChangedHandler);
+            OnTransformChangedEvent(parentTransform->GetLocalTM(), parentTransform->GetWorldTM());
 
-        GetParent().GetTransformComponent()->BindParentChangedEventHandler(m_parentIdChangedHandler);
-        OnParentIdChangedEvent(AZ::EntityId(), GetParent().GetTransformComponent()->GetParentId());
+            parentTransform->BindParentChangedEventHandler(m_parentIdChangedHandler);
+            OnParentIdChangedEvent(AZ::EntityId(), parentTransform->GetParentId());
+        }
     }
 
     void NetworkTransformComponentController::OnDeactivate([[maybe_unused]] Multiplayer::EntityIsMigrating entityIsMigrating)
@@ -137,11 +170,12 @@ namespace Multiplayer
         ;
     }
 
-    void NetworkTransformComponentController::OnTransformChangedEvent(const AZ::Transform& worldTm)
+    void NetworkTransformComponentController::OnTransformChangedEvent(const AZ::Transform& localTm, const AZ::Transform& worldTm)
     {
-        SetRotation(worldTm.GetRotation());
-        SetTranslation(worldTm.GetTranslation());
-        SetScale(worldTm.GetUniformScale());
+        const AZ::Transform& localOrWorld = GetParentEntityId() == InvalidNetEntityId ? worldTm : localTm;
+        SetRotation(localOrWorld.GetRotation());
+        SetTranslation(localOrWorld.GetTranslation());
+        SetScale(localOrWorld.GetUniformScale());
     }
 
     void NetworkTransformComponentController::OnParentIdChangedEvent([[maybe_unused]] AZ::EntityId oldParent, AZ::EntityId newParent)
@@ -150,7 +184,10 @@ namespace Multiplayer
         if (parentEntity)
         {
             const ConstNetworkEntityHandle parentHandle(parentEntity, GetNetworkEntityTracker());
-            SetParentEntityId(parentHandle.GetNetEntityId());
+            if (parentHandle.Exists())
+            {
+                SetParentEntityId(parentHandle.GetNetEntityId());
+            }
         }
     }
 }

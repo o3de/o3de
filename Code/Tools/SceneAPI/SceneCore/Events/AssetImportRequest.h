@@ -78,6 +78,8 @@ namespace AZ
                 virtual void GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions);
                 //! Gets the file extension for the manifest.
                 virtual void GetManifestExtension(AZStd::string& result);
+                //! Gets the file extension for the generated manifest.
+                virtual void GetGeneratedManifestExtension(AZStd::string& result);
 
                 //! Before asset loading starts this is called to allow for any required initialization.
                 virtual ProcessingResult PrepareForAssetLoading(Containers::Scene& scene, RequestingApplication requester);
@@ -96,6 +98,23 @@ namespace AZ
 
                 // Get scene processing project setting: UseCustomNormal 
                 virtual void AreCustomNormalsUsed(bool & value);
+
+                /*!
+                    Optional method for reporting source file dependencies that may exist in the scene manifest
+                    Paths is a vector of JSON Path strings, relative to the IRule object
+                    For example, the following path: /scriptFilename
+                    Would match with this manifest:
+                
+                    {
+                        "values": [
+                            {
+                                "$type": "Test",
+                                "scriptFilename": "file.py"
+                            }
+                        ]
+                    }
+                 */
+                virtual void GetManifestDependencyPaths(AZStd::vector<AZStd::string>& paths);
 
                 //! Utility function to load an asset and manifest from file by using the EBus functions above.
                 //! @param assetFilePath The absolute path to the source file (not the manifest).

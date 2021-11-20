@@ -16,6 +16,7 @@
 
 #include <AzCore/std/string/wildcard.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/XML/rapidxml.h>
 
 namespace AzFramework
@@ -66,7 +67,8 @@ namespace AzFramework
             m_excludeFileQueryManager.reset(aznew FileTagQueryManager(FileTagType::Exclude));
             if (!m_excludeFileQueryManager.get()->Load())
             {
-                AZ_Error("FileTagQueryComponent", false, "Not able to load default exclude file (%s). Please make sure that it exists on disk.\n", FileTagQueryManager::GetDefaultFileTagFilePath(FileTagType::Exclude).c_str());
+                AZ_Error("FileTagQueryComponent", false, "Not able to load default exclude file (%s). Please make sure that it exists on disk.\n",
+                    FileTagQueryManager::GetDefaultFileTagFilePath(FileTagType::Exclude).c_str());
             }
 
             AzFramework::AssetCatalogEventBus::Handler::BusConnect();

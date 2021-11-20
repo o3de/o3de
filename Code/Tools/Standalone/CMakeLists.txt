@@ -38,3 +38,5 @@ ly_add_target(
         PRIVATE
             STANDALONETOOLS_ENABLE_LUA_IDE
 )
+
+ly_add_dependencies(Editor LuaIDE)

@@ -1,0 +1,62 @@
+{
+    "entries": [
+        {
+            "key": "On Trigger Enter event",
+            "context": "AZEventHandler",
+            "variant": "",
+            "details": {
+                "name": "On Trigger Enter event"
+            },
+            "slots": [
+                {
+                    "key": "Simulated Body Handle",
+                    "details": {
+                        "name": "Simulated Body Handle"
+                    }
+                },
+                {
+                    "key": "Trigger Event",
+                    "details": {
+                        "name": "Trigger Event"
+                    }
+                },
+                {
+                    "key": "On Trigger Enter event",
+                    "details": {
+                        "name": "On Trigger Enter event"
+                    }
+                },
+                {
+                    "key": "Connect",
+                    "details": {
+                        "name": "Connect"
+                    }
+                },
+                {
+                    "key": "Disconnect",
+                    "details": {
+                        "name": "Disconnect"
+                    }
+                },
+                {
+                    "key": "On Connected",
+                    "details": {
+                        "name": "On Connected"
+                    }
+                },
+                {
+                    "key": "On Disconnected",
+                    "details": {
+                        "name": "On Disconnected"
+                    }
+                },
+                {
+                    "key": "OnEvent",
+                    "details": {
+                        "name": "OnEvent"
+                    }
+                }
+            ]
+        }
+    ]
+}

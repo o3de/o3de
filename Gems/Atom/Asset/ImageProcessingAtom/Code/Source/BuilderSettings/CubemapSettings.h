@@ -26,31 +26,31 @@ namespace ImageProcessingAtom
         static void Reflect(AZ::ReflectContext* context);
 
         // "cm_ftype", cubemap angular filter type: gaussian, cone, disc, cosine, cosine_power, ggx
-        CubemapFilterType m_filter;
+        CubemapFilterType m_filter = CubemapFilterType::ggx;
 
         // "cm_fangle", base filter angle for cubemap filtering(degrees), 0 - disabled
-        float m_angle;
+        float m_angle = 0;
 
         // "cm_fmipangle", initial mip filter angle for cubemap filtering(degrees), 0 - disabled
-        float m_mipAngle;
+        float m_mipAngle = 0;
 
         // "cm_fmipslope", mip filter angle multiplier for cubemap filtering, 1 - default"
-        float m_mipSlope;
+        float m_mipSlope = 1;
 
         // "cm_edgefixup", cubemap edge fix-up width, 0 - disabled
-        float m_edgeFixup;
+        float m_edgeFixup = 0;
 
         // generate an IBL specular cubemap
         bool m_generateIBLSpecular = false;
 
-        // the UUID of the preset to be used for generating the IBL specular cubemap
-        AZ::Uuid m_iblSpecularPreset = AZ::Uuid::CreateNull();
+        // the name of the preset to be used for generating the IBL specular cubemap
+        PresetName m_iblSpecularPreset;
 
         // generate an IBL diffuse cubemap
         bool m_generateIBLDiffuse = false;
 
-        // the UUID of the preset to be used for generating the IBL diffuse cubemap
-        AZ::Uuid m_iblDiffusePreset = AZ::Uuid::CreateNull();
+        // the name of the preset to be used for generating the IBL diffuse cubemap
+        PresetName m_iblDiffusePreset;
 
         // "cm_requiresconvolve", convolve the cubemap mips
         bool m_requiresConvolve = true;

@@ -1,0 +1,169 @@
+{
+    "entries": [
+        {
+            "key": "GameEntityContextRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Game Entity Context",
+                "category": "Game Entity"
+            },
+            "methods": [
+                {
+                    "key": "DeactivateGameEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Deactivate Game Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Deactivate Game Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Deactivate Game Entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEntityName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Entity Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Entity Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Entity Name"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "ActivateGameEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Activate Game Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Activate Game Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Activate Game Entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DestroyGameEntityAndDescendants",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Destroy Game Entity And Descendants"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Destroy Game Entity And Descendants is invoked"
+                    },
+                    "details": {
+                        "name": "Destroy Game Entity And Descendants"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DestroyGameEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Destroy Game Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Destroy Game Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Destroy Game Entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateGameEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create Game Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create Game Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Create Game Entity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Name"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Entity",
+                                "tooltip": "Entity"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

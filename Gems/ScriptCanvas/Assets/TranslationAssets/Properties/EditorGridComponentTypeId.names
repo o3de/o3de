@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorGridComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorGridComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

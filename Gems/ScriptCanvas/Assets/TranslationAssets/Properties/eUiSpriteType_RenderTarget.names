@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiSpriteType_RenderTarget",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiSpriteType_RenderTarget::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,170 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "NewDepthOfFieldTemplate",
+            "PassClass": "NewDepthOfFieldParentPass",
+            "Slots": [
+                {
+                    "Name": "Depth",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "LightingBuffer",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "AutoFocus",
+                    "TemplateName": "DepthOfFieldReadBackFocusDepthTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "Downsample",
+                    "TemplateName": "NewDepthOfFieldDownsampleTemplate",
+
+                    "Connections": [
+                        {
+                            "LocalSlot": "ColorInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightingBuffer"
+                            }
+                        },
+                        {
+                            "LocalSlot": "DepthInput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "TileReduce",
+                    "TemplateName": "NewDepthOfFieldTileReduceTemplate",
+
+                    "Connections": [
+                        {
+                            "LocalSlot": "ColorAndCocInput",
+                            "AttachmentRef": {
+                                "Pass": "Downsample",
+                                "Attachment": "OutputColorAndCoC"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "Tile3x3",
+                    "TemplateName": "NewDepthOfFieldTile3x3Template",
+
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "TileReduce",
+                                "Attachment": "MinMaxCoC"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "Tile5x5",
+                    "TemplateName": "NewDepthOfFieldTile3x3Template",
+
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "Tile3x3",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "LargeFilter",
+                    "TemplateName": "NewDepthOfFieldFilterLargeTemplate",
+
+                    "Connections": [
+                        {
+                            "LocalSlot": "ColorAndCoc",
+                            "AttachmentRef": {
+                                "Pass": "Downsample",
+                                "Attachment": "OutputColorAndCoC"
+                            }
+                        },
+                        {
+                            "LocalSlot": "CocTile",
+                            "AttachmentRef": {
+                                "Pass": "Tile5x5",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "SmallFilter",
+                    "TemplateName": "NewDepthOfFieldFilterSmallTemplate",
+
+                    "Connections": [
+                        {
+                            "LocalSlot": "ColorAndCoc",
+                            "AttachmentRef": {
+                                "Pass": "LargeFilter",
+                                "Attachment": "OutputColorAndCoc"
+                            }
+                        },
+                        {
+                            "LocalSlot": "CocTile",
+                            "AttachmentRef": {
+                                "Pass": "Tile3x3",
+                                "Attachment": "Output"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "Composite",
+                    "TemplateName": "NewDepthOfFieldCompositeTemplate",
+
+                    "Connections": [
+                        {
+                            "LocalSlot": "Depth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "HalfResColorAndCoC",
+                            "AttachmentRef": {
+                                "Pass": "SmallFilter",
+                                "Attachment": "OutputColorAndCoc"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ColorInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "LightingBuffer"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,43 @@
+{
+    "entries": [
+        {
+            "key": "AtomToolsMainWindowFactoryRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Main Window Factory",
+                "category": "Atom Tools"
+            },
+            "methods": [
+                {
+                    "key": "CreateMainWindow",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create Main Window"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create Main Window is invoked"
+                    },
+                    "details": {
+                        "name": "Create Main Window"
+                    }
+                },
+                {
+                    "key": "DestroyMainWindow",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Destroy Main Window"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Destroy Main Window is invoked"
+                    },
+                    "details": {
+                        "name": "Destroy Main Window"
+                    }
+                }
+            ]
+        }
+    ]
+}

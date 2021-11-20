@@ -68,19 +68,19 @@ namespace AWSCore
         AZ_Assert(fileIO, "File IO is not initialized.");
 
         // Resolve path to editor_aws_preferences.setreg
-        AZStd::string editorAWSPreferencesFilePath =
+        const AZStd::string editorAWSPreferencesFilePath =
             AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
-        AZStd::array<char, AZ::IO::MaxPathLength> resolvedPathAWSPreference{};
-        if (!fileIO->ResolvePath(editorAWSPreferencesFilePath.c_str(), resolvedPathAWSPreference.data(), resolvedPathAWSPreference.size()))
+        AZ::IO::FixedMaxPath resolvedPathAWSPreference;
+        if (!fileIO->ResolvePath(resolvedPathAWSPreference, AZ::IO::PathView(editorAWSPreferencesFilePath)))
         {
-            AZ_Warning("AWSAttributionManager", false, "Error resolving path %s", resolvedPathAWSPreference.data());
+            AZ_Warning("AWSAttributionManager", false, "Error resolving path %s", resolvedPathAWSPreference.c_str());
             return;
         }
 
-        if (fileIO->Exists(resolvedPathAWSPreference.data()))
+        if (fileIO->Exists(resolvedPathAWSPreference.c_str()))
         {
             m_settingsRegistry->MergeSettingsFile(
-                resolvedPathAWSPreference.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
+                resolvedPathAWSPreference.String(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         }
     }
 
@@ -136,8 +136,8 @@ namespace AWSCore
             return true;
         }
 
-        AZStd::chrono::seconds lastSendTimeStamp = AZStd::chrono::seconds(lastSendTimeStampSeconds);
-        AZStd::chrono::seconds secondsSinceLastSend =
+        const AZStd::chrono::seconds lastSendTimeStamp = AZStd::chrono::seconds(lastSendTimeStampSeconds);
+        const AZStd::chrono::seconds secondsSinceLastSend =
             AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now().time_since_epoch()) - lastSendTimeStamp;
         if (static_cast<AZ::u64>(secondsSinceLastSend.count()) >= delayInSeconds)
         {
@@ -154,7 +154,7 @@ namespace AWSCore
         if (credentialResult.result)
         {
             std::shared_ptr<Aws::Auth::AWSCredentialsProvider> provider = credentialResult.result;
-            auto creds = provider->GetAWSCredentials();
+            const auto creds = provider->GetAWSCredentials();
             if (!creds.IsEmpty())
             {
                 return true;
@@ -200,9 +200,13 @@ namespace AWSCore
                 AZ_Assert(fileIO, "File IO is not initialized.");
 
                 // Resolve path to editor_aws_preferences.setreg
-                AZStd::string editorPreferencesFilePath = AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
-                AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath {};
-                fileIO->ResolvePath(editorPreferencesFilePath.c_str(), resolvedPath.data(), resolvedPath.size());
+                const AZStd::string editorPreferencesFilePath = AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
+                AZ::IO::FixedMaxPath resolvedPathAWSPreference;
+                if (!fileIO->ResolvePath(resolvedPathAWSPreference, AZ::IO::PathView(editorPreferencesFilePath)))
+                {
+                    AZ_Warning("AWSAttributionManager", false, "Error resolving path %s", editorPreferencesFilePath.c_str());
+                    return;
+                }
 
                 AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
                 dumperSettings.m_prettifyOutput = true;
@@ -215,14 +219,14 @@ namespace AWSCore
                 {
                     AZ_Warning(
                         "AWSAttributionManager", false, R"(Unable to save changes to the Editor AWS Preferences registry file at "%s"\n)",
-                        resolvedPath.data());
+                        resolvedPathAWSPreference.c_str());
                     return;
                 }
 
                 bool saved {};
                 constexpr auto configurationMode =
                     AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
-                if (AZ::IO::SystemFile outputFile; outputFile.Open(resolvedPath.data(), configurationMode))
+                if (AZ::IO::SystemFile outputFile; outputFile.Open(resolvedPathAWSPreference.c_str(), configurationMode))
                 {
                     saved = outputFile.Write(stringBuffer.data(), stringBuffer.size()) == stringBuffer.size();
                 }

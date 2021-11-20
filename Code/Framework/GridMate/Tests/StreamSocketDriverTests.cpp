@@ -308,7 +308,7 @@ namespace UnitTest
         }
     };
 
-    class Integ_StreamSocketDriverTestsTooManyConnections
+    class DISABLED_StreamSocketDriverTestsTooManyConnections
         : public GridMateMPTestFixture
     {
     public:
@@ -529,7 +529,7 @@ GM_TEST_SUITE(StreamSocketDriverTests)
     GM_TEST(StreamSocketDriverTestsSimpleLockStepConnection);
     GM_TEST(StreamSocketDriverTestsEstablishConnectAndSend);
     GM_TEST(StreamSocketDriverTestsManyRandomPackets);
-    GM_TEST(Integ_StreamSocketDriverTestsTooManyConnections);
+    GM_TEST(DISABLED_StreamSocketDriverTestsTooManyConnections);
     GM_TEST(StreamSocketDriverTestsClientToInvalidServer);
     GM_TEST(StreamSocketDriverTestsManySends);
 

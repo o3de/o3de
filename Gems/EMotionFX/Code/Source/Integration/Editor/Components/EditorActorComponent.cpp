@@ -107,7 +107,7 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, ":/EMotionFX/Viewport/ActorComponent.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/actor/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/animation/actor/")
                         ->DataElement(0, &EditorActorComponent::m_actorAsset,
                             "Actor asset", "Assigned actor asset")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorActorComponent::OnAssetSelected)
@@ -180,6 +180,7 @@ namespace EMotionFX
             , m_lodLevel(0)
             , m_actorAsset(AZ::Data::AssetLoadBehavior::NoLoad)
         {
+            m_debugRenderFlags[RENDER_SOLID] = true;
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -195,6 +196,8 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void EditorActorComponent::Activate()
         {
+            AzToolsFramework::Components::EditorComponentBase::Activate();
+
             LoadActorAsset();
 
             const AZ::EntityId entityId = GetEntityId();
@@ -225,6 +228,8 @@ namespace EMotionFX
 
             DestroyActorInstance();
             m_actorAsset.Release();
+
+            AzToolsFramework::Components::EditorComponentBase::Deactivate();
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -244,6 +249,14 @@ namespace EMotionFX
         }
 
         //////////////////////////////////////////////////////////////////////////
+        bool EditorActorComponent::GetRenderActorVisible() const
+        {
+            if (m_renderActorInstance)
+            {
+                return m_renderActorInstance->IsVisible();
+            }
+            return false;
+        }
         size_t EditorActorComponent::GetNumJoints() const
         {
             const Actor* actor = m_actorAsset->GetActor();
@@ -579,7 +592,15 @@ namespace EMotionFX
             if (asset)
             {
                 m_actorAsset = asset;
-                OnAssetSelected();
+
+                // SetPrimaryAsset function can be called while this component is not activated
+                // due to incompatible services. For example by dragging and dropping a FBX to an
+                // entity that already has an actor or mesh component in it. Only proceed to load actor
+                // asset if the component is activated (by checking if it's connected to EditorActorComponentRequestBus).
+                if (EditorActorComponentRequestBus::Handler::BusIsConnected())
+                {
+                    OnAssetSelected();
+                }
             }
         }
 
@@ -596,11 +617,10 @@ namespace EMotionFX
                 m_renderActorInstance->OnTick(deltaTime);
                 m_renderActorInstance->UpdateBounds();
 
-                RenderActorInstance::DebugOptions debugOptions;
-                debugOptions.m_drawAABB = m_renderBounds;
-                debugOptions.m_drawSkeleton = m_renderSkeleton;
-                debugOptions.m_emfxDebugDraw = true;
-                m_renderActorInstance->DebugDraw(debugOptions);
+                m_debugRenderFlags[RENDER_AABB] = m_renderBounds;
+                m_debugRenderFlags[RENDER_LINESKELETON] = m_renderSkeleton;
+                m_debugRenderFlags[RENDER_EMFX_DEBUG] = true;
+                m_renderActorInstance->DebugDraw(m_debugRenderFlags);
             }
         }
 
@@ -942,6 +962,11 @@ namespace EMotionFX
             {
                 LmbrCentral::AttachmentComponentRequestBus::Event(attachment, &LmbrCentral::AttachmentComponentRequestBus::Events::Reattach, true);
             }
+        }
+
+        void EditorActorComponent::SetRenderFlag(ActorRenderFlagBitset renderFlags)
+        {
+            m_debugRenderFlags = renderFlags;
         }
     } //namespace Integration
 } // namespace EMotionFX

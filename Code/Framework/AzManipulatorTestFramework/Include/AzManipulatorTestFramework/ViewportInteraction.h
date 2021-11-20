@@ -36,12 +36,13 @@ namespace AzManipulatorTestFramework
         int GetViewportId() const override;
         void UpdateVisibility() override;
         void SetStickySelect(bool enabled) override;
+        AZ::Vector3 DefaultEditorCameraPosition() const override;
 
         // ViewportInteractionRequestBus overrides ...
         AzFramework::CameraState GetCameraState() override;
         AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) override;
-        AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) override;
-        AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> ViewportScreenToWorldRay(
+        AZ::Vector3 ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition) override;
+        AzToolsFramework::ViewportInteraction::ProjectedViewportRay ViewportScreenToWorldRay(
             const AzFramework::ScreenPoint& screenPosition) override;
         float DeviceScalingFactor() override;
 

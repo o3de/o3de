@@ -268,7 +268,7 @@ print ('entityId invalid is ' + str(entityId.id))
         {
             Skip = 0,
             ImportModule,
-            TestCallHit, 
+            TestCallHit,
             TestTypeDoCall1
         };
 
@@ -302,7 +302,7 @@ print ('entityId invalid is ' + str(entityId.id))
             pybind11::exec(R"(
                 import sys, os
                 import azlmbr.paths
-                sys.path.append(os.path.join(azlmbr.paths.devroot,'Gems','EditorPythonBindings','Code','Tests'))
+                sys.path.append(os.path.join(azlmbr.paths.engroot,'Gems','EditorPythonBindings','Code','Tests'))
                 from test_package import import_test as itest
                 print('ImportModule')
                 itest.test_call()
@@ -401,8 +401,8 @@ print ('entityId invalid is ' + str(entityId.id))
             pybind11::exec(R"(
                 import sys, os
                 import azlmbr.paths
-                sys.path.append(os.path.join(azlmbr.paths.devroot,'Gems','EditorPythonBindings','Code','Tests'))
-                sys.path.append(os.path.join(azlmbr.paths.devroot,'Gems','EditorPythonBindings','Code','Tests','test_package'))
+                sys.path.append(os.path.join(azlmbr.paths.engroot,'Gems','EditorPythonBindings','Code','Tests'))
+                sys.path.append(os.path.join(azlmbr.paths.engroot,'Gems','EditorPythonBindings','Code','Tests','test_package'))
 
                 from test_package import import_many
                 import_many.test_many_entity_id()

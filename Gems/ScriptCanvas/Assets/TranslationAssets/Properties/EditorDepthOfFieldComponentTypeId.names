@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorDepthOfFieldComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorDepthOfFieldComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

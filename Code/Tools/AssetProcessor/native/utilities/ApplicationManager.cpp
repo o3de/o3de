@@ -505,6 +505,14 @@ bool ApplicationManager::StartAZFramework()
     AzFramework::Application::Descriptor appDescriptor;
     AZ::ComponentApplication::StartupParameters params;
 
+    QDir projectPath{ AssetUtilities::ComputeProjectPath() };
+    if (!projectPath.exists("project.json"))
+    {
+        AZStd::string errorMsg = AZStd::string::format("Path '%s' is not a valid project path.", projectPath.path().toUtf8().constData());
+        AssetProcessor::MessageInfoBus::Broadcast(&AssetProcessor::MessageInfoBus::Events::OnErrorMessage, errorMsg.c_str());
+        return false;
+    }
+
     QString projectName = AssetUtilities::ComputeProjectName();
 
     // Prevent loading of gems in the Create method of the ComponentApplication
@@ -519,7 +527,6 @@ bool ApplicationManager::StartAZFramework()
 
     //Registering all the Components
     m_frameworkApp.RegisterComponentDescriptor(AzFramework::LogComponent::CreateDescriptor());
-
 
     Reflect();
 

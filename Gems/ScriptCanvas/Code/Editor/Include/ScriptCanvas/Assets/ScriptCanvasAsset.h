@@ -41,7 +41,7 @@ namespace ScriptCanvasEditor
                 azrtti_typeid<ScriptCanvasAsset>(),
                 "Script Canvas",
                 "Script Canvas Graph Asset",
-                "@devassets@/scriptcanvas",
+                "@projectroot@/scriptcanvas",
                 ".scriptcanvas",
                 "Script Canvas",
                 "Untitled-%i",

@@ -119,19 +119,28 @@ namespace AZ::IO::ZipDir
         const char* m_szDescription;
     };
 
+#if defined(_RELEASE)
+    inline static constexpr bool IsReleaseConfig{ true };
+#else
+    inline static constexpr bool IsReleaseConfig{};
+#endif // _RELEASE
+
     // possible initialization methods
-    enum InitMethodEnum
+    enum class InitMethod
     {
-        // initialize as fast as possible, with minimal validation
-        ZD_INIT_FAST,
-        // after initialization, scan through all file headers, precache the actual file data offset values and validate the headers
-        ZD_INIT_FULL,
-        // scan all file headers and try to decompress the data, searching for corrupted files
-        ZD_INIT_VALIDATE_IN_MEMORY,
-        // store archive in memory
-        ZD_INIT_VALIDATE,
-        // maximum level of validation, checks for integrity of the archive
-        ZD_INIT_VALIDATE_MAX = ZD_INIT_VALIDATE
+        // initializes without any sort of extra validation steps
+        Default,
+
+        // initializes with extra validation steps
+        // not available in RELEASE
+        // will check CDR and local headers data match
+        ValidateHeaders,
+
+        // initializes with extra validation steps
+        // not available in RELEASE
+        // will check CDR and local headers data match
+        // will check file data CRC matches (when file is read)
+        FullValidation,
     };
 
     // Uncompresses raw (without wrapping) data that is compressed with method 8 (deflated) in the Zip file
@@ -184,7 +193,11 @@ namespace AZ::IO::ZipDir
         // the offset to the start of the next file's header - this
         // can be used to calculate the available space in zip file
         uint32_t nEOFOffset{};
+
+        // whether to check the CRC upon the next data read
+        bool bCheckCRCNextRead{};
     };
+
     // this is the record about the file in the Zip file.
     struct FileEntry
         : FileEntryBase

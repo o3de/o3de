@@ -74,7 +74,7 @@ namespace ImageProcessingAtom
         builderDescriptor.m_busId = azrtti_typeid<ImageBuilderWorker>();
         builderDescriptor.m_createJobFunction = AZStd::bind(&ImageBuilderWorker::CreateJobs, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
         builderDescriptor.m_processJobFunction = AZStd::bind(&ImageBuilderWorker::ProcessJob, &m_imageBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        builderDescriptor.m_version = 24;   // [SPEC-7821]
+        builderDescriptor.m_version = 26;   // [ATOM-15086]
         builderDescriptor.m_analysisFingerprint = ImageProcessingAtom::BuilderSettingManager::Instance()->GetAnalysisFingerprint();
         m_imageBuilder.BusConnect(builderDescriptor.m_busId);
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBusTraits::RegisterBuilderInformation, builderDescriptor);
@@ -164,7 +164,7 @@ namespace ImageProcessingAtom
         AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
 
         AZStd::string_view presetFilePath;
-        const PresetSettings* preset = BuilderSettingManager::Instance()->GetPreset(presetName, platformName, &presetFilePath);
+        const PresetSettings* preset = BuilderSettingManager::Instance()->GetPreset(PresetName(presetName), platformName, &presetFilePath);
         if (preset == nullptr)
         {
             AZ_Assert(false, "Cannot find preset with name %s.", presetName.c_str());
@@ -173,7 +173,7 @@ namespace ImageProcessingAtom
 
         AZStd::unique_ptr<ImageConvertProcessDescriptor> desc = AZStd::make_unique<ImageConvertProcessDescriptor>();
         TextureSettings& textureSettings = desc->m_textureSetting;
-        textureSettings.m_preset = preset->m_uuid;
+        textureSettings.m_preset = preset->m_name;
         desc->m_inputImage = imageObject;
         desc->m_presetSetting = *preset;
         desc->m_isPreview = false;
@@ -204,7 +204,7 @@ namespace ImageProcessingAtom
     bool BuilderPluginComponent::IsPresetFormatSquarePow2(const AZStd::string& presetName, const AZStd::string& platformName)
     {
         AZStd::string_view filePath;
-        const PresetSettings* preset = BuilderSettingManager::Instance()->GetPreset(presetName, platformName, &filePath);
+        const PresetSettings* preset = BuilderSettingManager::Instance()->GetPreset(PresetName(presetName), platformName, &filePath);
         if (preset == nullptr)
         {
             AZ_Assert(false, "Cannot find preset with name %s.", presetName.c_str());
@@ -219,6 +219,58 @@ namespace ImageProcessingAtom
     {
         // it is important to note that this will be called on a different thread than your process job thread
         m_isShuttingDown = true;
+    }
+
+    PresetName GetImagePreset(const AZStd::string& filepath)
+    {
+        // first let preset from asset info
+        TextureSettings textureSettings;
+        StringOutcome output = TextureSettings::LoadTextureSetting(filepath, textureSettings);
+
+        if (!textureSettings.m_preset.IsEmpty())
+        {
+            return textureSettings.m_preset;
+        }
+
+        return BuilderSettingManager::Instance()->GetSuggestedPreset(filepath);
+    }
+
+    void HandlePresetDependency(PresetName presetName, AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceDependencyList)
+    {
+        // Reload preset if it was changed
+        ImageProcessingAtom::BuilderSettingManager::Instance()->ReloadPreset(presetName);
+        
+        AZStd::string_view filePath;
+        auto presetSettings = BuilderSettingManager::Instance()->GetPreset(presetName, /*default platform*/"", &filePath);
+
+        AssetBuilderSDK::SourceFileDependency sourceFileDependency;
+        sourceFileDependency.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
+
+        // Need to watch any possibe preset paths 
+        AZStd::vector<AZStd::string> possiblePresetPaths = BuilderSettingManager::Instance()->GetPossiblePresetPaths(presetName);
+        for (const auto& path:possiblePresetPaths)
+        {
+            sourceFileDependency.m_sourceFileDependencyPath = path;
+            sourceDependencyList.push_back(sourceFileDependency);
+        }
+
+        if (presetSettings)
+        {
+            // handle special case here
+            // Cubemap setting may reference some other presets
+            if (presetSettings->m_cubemapSetting)
+            {
+                if (presetSettings->m_cubemapSetting->m_generateIBLDiffuse && !presetSettings->m_cubemapSetting->m_iblDiffusePreset.IsEmpty())
+                {
+                    HandlePresetDependency(presetSettings->m_cubemapSetting->m_iblDiffusePreset, sourceDependencyList);
+                }
+            
+                if (presetSettings->m_cubemapSetting->m_generateIBLSpecular && !presetSettings->m_cubemapSetting->m_iblSpecularPreset.IsEmpty())
+                {
+                    HandlePresetDependency(presetSettings->m_cubemapSetting->m_iblSpecularPreset, sourceDependencyList);
+                }
+            }
+        }
     }
 
     // this happens early on in the file scanning pass
@@ -242,12 +294,25 @@ namespace ImageProcessingAtom
             if (ImageProcessingAtom::BuilderSettingManager::Instance()->DoesSupportPlatform(platformInfo.m_identifier))
             {
                 AssetBuilderSDK::JobDescriptor descriptor;
-                descriptor.m_jobKey = ext + " Atom Compile";
+                descriptor.m_jobKey = "Image Compile: " + ext;
                 descriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
                 descriptor.m_critical = false;
+                descriptor.m_additionalFingerprintInfo = "";
                 response.m_createJobOutputs.push_back(descriptor);
             }
         }
+
+        // add source dependency for .assetinfo file
+        AssetBuilderSDK::SourceFileDependency sourceFileDependency;
+        sourceFileDependency.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute;
+        sourceFileDependency.m_sourceFileDependencyPath = request.m_sourceFile;
+        AZ::StringFunc::Path::ReplaceExtension(sourceFileDependency.m_sourceFileDependencyPath, TextureSettings::ExtensionName);
+        response.m_sourceFileDependencyList.push_back(sourceFileDependency);
+
+        // add source dependencies for .preset files
+        // Get the preset for this file 
+        auto presetName = GetImagePreset(request.m_sourceFile);
+        HandlePresetDependency(presetName, response.m_sourceFileDependencyList);
 
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
         return;

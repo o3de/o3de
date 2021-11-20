@@ -1,9 +1,0 @@
-<Material MtlFlags="524288" Shader="Illum" GenMask="81" StringGenMask="%ALLOW_SILHOUETTE_POM%BUMP_MAP" SurfaceType="mat_metal" MatTemplate="" Diffuse="1,1,1" Specular="0.027755279,0.027755279,0.027755279" Emissive="0,0,0" Shininess="255" Opacity="1" LayerAct="1">
- <Textures>
-  <Texture Map="Diffuse" File="materials/pbs_reference/rust_diff.tif">
-   <TexMod TileU="3" TileV="3"/>
-  </Texture>
-  <Texture Map="Bumpmap" File="materials/pbs_reference/rust_ddna.tif"/>
- </Textures>
- <PublicParams SubsurfaceScatteringAmount="0" IndirectColor="0.25,0.25,0.25"/>
-</Material>

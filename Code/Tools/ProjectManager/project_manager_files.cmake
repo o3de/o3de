@@ -29,6 +29,10 @@ set(FILES
     Source/FormImageBrowseEditWidget.cpp
     Source/GemsSubWidget.h
     Source/GemsSubWidget.cpp
+    Source/DownloadController.h
+    Source/DownloadController.cpp
+    Source/DownloadWorker.h
+    Source/DownloadWorker.cpp
     Source/PathValidator.h
     Source/PathValidator.cpp
     Source/ProjectManagerWindow.h
@@ -54,6 +58,8 @@ set(FILES
     Source/CreateProjectCtrl.cpp
     Source/UpdateProjectCtrl.h
     Source/UpdateProjectCtrl.cpp
+    Source/ProjectManagerSettings.h
+    Source/ProjectManagerSettings.cpp
     Source/ProjectsScreen.h
     Source/ProjectsScreen.cpp
     Source/ProjectSettingsScreen.h
@@ -92,6 +98,12 @@ set(FILES
     Source/GemCatalog/GemListHeaderWidget.cpp
     Source/GemCatalog/GemModel.h
     Source/GemCatalog/GemModel.cpp
+    Source/GemCatalog/GemUninstallDialog.h
+    Source/GemCatalog/GemUninstallDialog.cpp
+    Source/GemCatalog/GemUpdateDialog.h
+    Source/GemCatalog/GemUpdateDialog.cpp
+    Source/GemCatalog/GemDependenciesDialog.h
+    Source/GemCatalog/GemDependenciesDialog.cpp
     Source/GemCatalog/GemRequirementDialog.h
     Source/GemCatalog/GemRequirementDialog.cpp
     Source/GemCatalog/GemRequirementDelegate.h

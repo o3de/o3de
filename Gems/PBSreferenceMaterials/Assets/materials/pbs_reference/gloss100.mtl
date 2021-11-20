@@ -1,7 +1,0 @@
-<Material MtlFlags="524288" Shader="Illum" GenMask="81" StringGenMask="%ALLOW_SILHOUETTE_POM%BUMP_MAP" SurfaceType="mat_metal" MatTemplate="" Diffuse="1,1,1" Specular="1,1,1" Emissive="0,0,0" Shininess="255" Opacity="1" LayerAct="1">
- <Textures>
-  <Texture Map="Diffuse" File="materials/pbs_reference/conductor_diff.tif"/>
-  <Texture Map="Bumpmap" File="materials/pbs_reference/gloss100_ddna.tif"/>
- </Textures>
- <PublicParams SubsurfaceScatteringAmount="0" IndirectColor="0.25,0.25,0.25"/>
-</Material>

@@ -8,6 +8,7 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Components/TransformComponent.h>
+#include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/AnimGraphMotionNode.h>
 #include <EMotionFX/Source/MotionSet.h>
 #include <EMotionFX/Source/Motion.h>

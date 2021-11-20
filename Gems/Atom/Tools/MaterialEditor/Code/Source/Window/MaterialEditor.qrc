@@ -19,6 +19,7 @@
         <file>Icons/texture_edit.png</file>
         <file>Icons/grid.svg</file>
         <file>Icons/shadow.svg</file>
+        <file>Icons/skybox.svg</file>
         <file>Icons/toneMapping.svg</file>
         <file>Icons/View.svg</file>
     </qresource>

@@ -1,0 +1,37 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "HairShortCutResolveDepthPassTemplate",
+            "PassClass": "FullScreenTriangle",
+            "Slots": [
+                //------ General Input/Output resources and Render Target ------
+                {
+                    "Name": "Depth",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "Store"
+                    }
+                },
+                {   // This holds the K nearset depths. The furthest depth will be taken to be written in the depth buffer.
+                    "Name": "HairDepthsTextureArray",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_fragmentDepthsTexture"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    // Looking for it in the Shaders directory relative to the Assets directory
+                    "FilePath": "Shaders/HairShortCutResolveDepth.shader"
+                }
+            }
+        }
+    }
+}
+

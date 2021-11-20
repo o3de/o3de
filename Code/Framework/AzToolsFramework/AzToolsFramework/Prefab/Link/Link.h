@@ -48,8 +48,8 @@ namespace AzToolsFramework
 
             bool IsValid() const;
 
-            const TemplateId& GetSourceTemplateId() const;
-            const TemplateId& GetTargetTemplateId() const;
+            TemplateId GetSourceTemplateId() const;
+            TemplateId GetTargetTemplateId() const;
 
             LinkId GetId() const;
 

@@ -37,6 +37,10 @@ namespace AZ
 
             static Data::Instance<Model> FindOrCreate(const Data::Asset<ModelAsset>& modelAsset);
 
+            //! Orphan the model, its lods, and all their buffers so that they can be replaced in the instance database
+            //! This is a temporary function, that will be removed once the Model/ModelAsset classes no longer need it
+            static void TEMPOrphanFromDatabase(const Data::Asset<ModelAsset>& modelAsset);
+
             ~Model() = default;
 
             //! Blocks the CPU until the streaming upload is complete. Returns immediately if no

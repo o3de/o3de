@@ -39,7 +39,7 @@ namespace AZ::IO::ZipDir
 
         // initializes the internal structures
         // nFlags can have FLAGS_READ_ONLY flag, in this case the object will be opened only for reading
-        CacheFactory(InitMethodEnum nInitMethod, uint32_t nFlags = 0);
+        CacheFactory(InitMethod nInitMethod, uint32_t nFlags = 0);
         ~CacheFactory();
 
         // the new function creates a new cache
@@ -66,28 +66,6 @@ namespace AZ::IO::ZipDir
         // This function can actually modify strFilePath variable, make sure you use a copy of the real path.
         void AddFileEntry(char* strFilePath, const ZipFile::CDRFileHeader* pFileHeader, const SExtraZipFileData& extra);// throw (ErrorEnum);
 
-        // extracts the file path from the file header with subsequent information
-        // may, or may not, put all letters to lower-case (depending on whether the system is to be case-sensitive or not)
-        // it's the responsibility of the caller to ensure that the file name is in readable valid memory
-        char* GetFilePath(const ZipFile::CDRFileHeader* pFileHeader)
-        {
-            return GetFilePath((const char*)(pFileHeader + 1), pFileHeader->nFileNameLength);
-        }
-        // extracts the file path from the file header with subsequent information
-        // may, or may not, put all letters to lower-case (depending on whether the system is to be case-sensitive or not)
-        // it's the responsibility of the caller to ensure that the file name is in readable valid memory
-        char* GetFilePath(const ZipFile::LocalFileHeader* pFileHeader)
-        {
-            return GetFilePath((const char*)(pFileHeader + 1), pFileHeader->nFileNameLength);
-        }
-        // extracts the file path from the file header with subsequent information
-        // may, or may not, put all letters to lower-case (depending on whether the system is to be case-sensitive or not)
-        // it's the responsibility of the caller to ensure that the file name is in readable valid memory
-        char* GetFilePath(const char* pFileName, uint16_t nFileNameLength);
-
-        // validates (if the init method has the corresponding value) the given file/header
-        void Validate(const FileEntryBase& fileEntry);
-
         // initializes the actual data offset in the file in the fileEntry structure
         // searches to the local file header, reads it and calculates the actual offset in the file
         void InitDataOffset(FileEntryBase& fileEntry, const ZipFile::CDRFileHeader* pFileHeader);
@@ -104,7 +82,7 @@ namespace AZ::IO::ZipDir
         AZStd::string m_szFilename;
         CZipFile m_fileExt;
 
-        InitMethodEnum m_nInitMethod;
+        InitMethod m_nInitMethod;
         uint32_t m_nFlags;
         ZipFile::CDREnd m_CDREnd;
 
@@ -129,7 +107,7 @@ namespace AZ::IO::ZipDir
         ZipFile::CryCustomEncryptionHeader m_headerEncryption;
         ZipFile::CrySignedCDRHeader m_headerSignature;
         ZipFile::CryCustomExtendedHeader m_headerExtended;
-
     };
+
 }
 

@@ -48,11 +48,7 @@ namespace AZ
 
         void DiffuseGlobalIlluminationComponentController::Activate(EntityId entityId)
         {
-            AZ_UNUSED(entityId);
-
-            const RPI::Scene* scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get();
-            m_featureProcessor = scene->GetFeatureProcessor<DiffuseGlobalIlluminationFeatureProcessorInterface>();
-
+            m_featureProcessor = AZ::RPI::Scene::GetFeatureProcessorForEntity<DiffuseGlobalIlluminationFeatureProcessorInterface>(entityId);
             OnConfigChanged();
         }
 

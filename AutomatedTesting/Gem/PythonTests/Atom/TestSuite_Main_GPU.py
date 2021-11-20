@@ -13,10 +13,10 @@ import zipfile
 import pytest
 
 import ly_test_tools.environment.file_system as file_system
-from ly_test_tools.image.screenshot_compare_qssim import qssim as compare_screenshots
 from ly_test_tools.benchmark.data_aggregator import BenchmarkDataAggregator
 
 import editor_python_test_tools.hydra_test_utils as hydra
+from .atom_utils.atom_component_helper import compare_screenshot_similarity, ImageComparisonTestFailure
 
 logger = logging.getLogger(__name__)
 DEFAULT_SUBFOLDER_PATH = 'user/PythonTests/Automated/Screenshots'
@@ -69,10 +69,11 @@ def create_screenshots_archive(screenshot_path):
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ["windows_editor"])
-@pytest.mark.parametrize("level", ["auto_test"])
+@pytest.mark.parametrize("level", ["Base"])
 class TestAllComponentsIndepthTests(object):
 
     @pytest.mark.parametrize("screenshot_name", ["AtomBasicLevelSetup.ppm"])
+    @pytest.mark.test_case_id("C34603773")
     def test_BasicLevelSetup_SetsUpLevel(
             self, request, editor, workspace, project, launcher_platform, level, screenshot_name):
         """
@@ -88,14 +89,9 @@ class TestAllComponentsIndepthTests(object):
 
         level_creation_expected_lines = [
             "Viewport is set to the expected size: True",
-            "Basic level created"
+            "Exited game mode"
         ]
-        unexpected_lines = [
-            "Trace::Assert",
-            "Trace::Error",
-            "Traceback (most recent call last):",
-            "Screenshot failed"
-        ]
+        unexpected_lines = ["Traceback (most recent call last):"]
 
         hydra.launch_and_validate_results(
             request,
@@ -110,11 +106,14 @@ class TestAllComponentsIndepthTests(object):
             null_renderer=False,
         )
 
-        for test_screenshot, golden_screenshot in zip(test_screenshots, golden_images):
-            compare_screenshots(test_screenshot, golden_screenshot)
+        similarity_threshold = 0.99
+        for test_screenshot, golden_image in zip(test_screenshots, golden_images):
+            screenshot_comparison_result = compare_screenshot_similarity(
+                test_screenshot, golden_image, similarity_threshold, True, screenshot_directory)
+            if screenshot_comparison_result != "Screenshots match":
+                raise Exception(f"Screenshot test failed: {screenshot_comparison_result}")
 
-        create_screenshots_archive(screenshot_directory)
-
+    @pytest.mark.test_case_id("C34525095")
     def test_LightComponent_ScreenshotMatchesGoldenImage(
             self, request, editor, workspace, project, launcher_platform, level):
         """
@@ -146,13 +145,8 @@ class TestAllComponentsIndepthTests(object):
             golden_image_path = os.path.join(golden_images_directory(), golden_image)
             golden_images.append(golden_image_path)
 
-        expected_lines = ["Light component tests completed."]
-        unexpected_lines = [
-            "Trace::Assert",
-            "Trace::Error",
-            "Traceback (most recent call last):",
-            "Screenshot failed",
-        ]
+        expected_lines = ["spot_light Controller|Configuration|Shadows|Shadowmap size: SUCCESS"]
+        unexpected_lines = ["Traceback (most recent call last):"]
         hydra.launch_and_validate_results(
             request,
             TEST_DIRECTORY,
@@ -166,10 +160,12 @@ class TestAllComponentsIndepthTests(object):
             null_renderer=False,
         )
 
-        for test_screenshot, golden_screenshot in zip(test_screenshots, golden_images):
-            compare_screenshots(test_screenshot, golden_screenshot)
-
-        create_screenshots_archive(screenshot_directory)
+        similarity_threshold = 0.99
+        for test_screenshot, golden_image in zip(test_screenshots, golden_images):
+            screenshot_comparison_result = compare_screenshot_similarity(
+                test_screenshot, golden_image, similarity_threshold, True, screenshot_directory)
+            if screenshot_comparison_result != "Screenshots match":
+                raise ImageComparisonTestFailure(f"Screenshot test failed: {screenshot_comparison_result}")
 
 
 @pytest.mark.parametrize('rhi', ['dx12', 'vulkan'])
@@ -187,8 +183,8 @@ class TestPerformanceBenchmarkSuite(object):
             "Benchmark metadata captured.",
             "Pass timestamps captured.",
             "CPU frame time captured.",
-            "Capturing complete.",
-            "Captured data successfully."
+            "Captured data successfully.",
+            "Exited game mode"
         ]
 
         unexpected_lines = [
@@ -217,23 +213,22 @@ class TestPerformanceBenchmarkSuite(object):
 
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_generic'])
-@pytest.mark.system
 class TestMaterialEditor(object):
 
-    @pytest.mark.parametrize("cfg_args", ["-rhi=dx12", "-rhi=Vulkan"])
+    @pytest.mark.parametrize("cfg_args,expected_lines", [
+        pytest.param("-rhi=dx12", ["Registering dx12 RHI"]),
+        pytest.param("-rhi=Vulkan", ["Registering vulkan RHI"])
+    ])
     @pytest.mark.parametrize("exe_file_name", ["MaterialEditor"])
+    @pytest.mark.test_case_id("C30973986")  # Material Editor Launching in Dx12
+    @pytest.mark.test_case_id("C30973987")  # Material Editor Launching in Vulkan
     def test_MaterialEditorLaunch_AllRHIOptionsSucceed(
-            self, request, workspace, project, launcher_platform, generic_launcher, exe_file_name, cfg_args):
+            self, request, workspace, project, launcher_platform, generic_launcher, exe_file_name, cfg_args,
+            expected_lines):
         """
         Tests each valid RHI option (Null RHI excluded) can be launched with the MaterialEditor.
-        Checks for the "Finished loading viewport configurtions." success message post lounch.
+        Checks for the specific expected_lines messaging for each RHI type.
         """
-        expected_lines = ["Finished loading viewport configurtions."]
-        unexpected_lines = [
-            # "Trace::Assert",
-            # "Trace::Error",
-            "Traceback (most recent call last):",
-        ]
 
         hydra.launch_and_validate_results(
             request,
@@ -241,9 +236,9 @@ class TestMaterialEditor(object):
             generic_launcher,
             editor_script="",
             run_python="--runpython",
-            timeout=30,
+            timeout=60,
             expected_lines=expected_lines,
-            unexpected_lines=unexpected_lines,
+            unexpected_lines=[],
             halt_on_unexpected=False,
             null_renderer=False,
             cfg_args=[cfg_args],

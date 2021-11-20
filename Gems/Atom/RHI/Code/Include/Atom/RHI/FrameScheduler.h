@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
 #include <Atom/RHI.Reflect/FrameSchedulerEnums.h>
 #include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RHI/FrameGraphBuilder.h>
@@ -168,8 +167,8 @@ namespace AZ
             /// Returns the timing statistics for the previous frame.
             const TransientAttachmentStatistics* GetTransientAttachmentStatistics() const;
 
-            /// Returns cpu timing statistics for the previous frame.
-            const CpuTimingStatistics* GetCpuTimingStatistics() const;
+            /// Returns current CPU frame to frame time in milliseconds.
+            double GetCpuFrameTime() const;
 
             /// Returns memory statistics for the previous frame.
             const MemoryStatistics* GetMemoryStatistics() const;
@@ -216,7 +215,6 @@ namespace AZ
 
             Ptr<TransientAttachmentPool> m_transientAttachmentPool;
 
-            CpuTimingStatistics m_cpuTimingStatistics;
             AZStd::sys_time_t m_lastFrameEndTime{};
             MemoryStatistics m_memoryStatistics;
 

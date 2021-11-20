@@ -13,6 +13,7 @@ import subprocess
 
 import ly_test_tools.environment.waiter
 import ly_test_tools.launchers.exceptions
+import ly_test_tools.environment.process_utils as process_utils
 
 from ly_test_tools.launchers.platforms.base import Launcher
 from ly_test_tools.launchers.exceptions import TeardownError, ProcessNotStartedError
@@ -68,7 +69,7 @@ class LinuxLauncher(Launcher):
         """
         command = [self.binary_path()] + self.args
         self._tmpout = TemporaryFile()
-        self._proc = subprocess.Popen(command, stdout=self._tmpout, stderr=self._tmpout, universal_newlines=True)
+        self._proc = subprocess.Popen(command, stdout=self._tmpout, stderr=self._tmpout, universal_newlines=True, env=process_utils.get_display_env())
         log.debug(f"Started Linux Launcher with command: {command}")
 
     def get_output(self, encoding="utf-8"):
@@ -172,7 +173,6 @@ class LinuxLauncher(Launcher):
         self.args.append('--regset="/Amazon/AzCore/Bootstrap/wait_for_connect=1"')
         self.args.append(f'--regset="/Amazon/AzCore/Bootstrap/allowed_list={host_ip}"')
 
-        self.workspace.settings.modify_platform_setting("r_AssetProcessorShaderCompiler", 1)
         self.workspace.settings.modify_platform_setting("r_ShaderCompilerServer", host_ip)
         self.workspace.settings.modify_platform_setting("log_RemoteConsoleAllowedAddresses", host_ip)
 
@@ -222,3 +222,28 @@ class LinuxEditor(LinuxLauncher):
         """
         assert self.workspace.project is not None
         return os.path.join(self.workspace.paths.build_directory(), "Editor")
+
+
+class LinuxGenericLauncher(LinuxLauncher):
+
+    def __init__(self, build, exe_file_name, args=None):
+        super(LinuxLauncher, self).__init__(build, args)
+        self.exe_file_name = exe_file_name
+        self.expected_executable_path = os.path.join(
+            self.workspace.paths.build_directory(), f"{self.exe_file_name}")
+
+        if not os.path.exists(self.expected_executable_path):
+            raise ProcessNotStartedError(
+                f"Unable to locate executable '{self.exe_file_name}' "
+                f"in path: '{self.expected_executable_path}'")
+
+    def binary_path(self):
+        """
+        Return full path to the executable file for this build's configuration and project
+        Relies on the build_directory() in self.workspace.paths to be accurate
+
+        :return: full path to the given exe file
+        """
+        assert self.workspace.project is not None, (
+            'Project cannot be NoneType - please specify a project name string.')
+        return self.expected_executable_path

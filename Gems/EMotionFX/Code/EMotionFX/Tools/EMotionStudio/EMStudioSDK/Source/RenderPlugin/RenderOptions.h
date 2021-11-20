@@ -18,6 +18,11 @@
 
 QT_FORWARD_DECLARE_CLASS(QSettings);
 
+namespace AZ::Render
+{
+    class RenderActorSettings;
+}
+
 namespace EMStudio
 {
     class EMSTUDIO_API RenderOptions 
@@ -313,6 +318,9 @@ namespace EMStudio
         void OnSelectedClothColliderColorChangedCallback() const;
         void OnLastUsedLayoutChangedCallback() const;
         void OnRenderSelectionBoxChangedCallback() const;
+
+        // Copy render actor related settings to the global settings in emfx.
+        void CopyToRenderActorSettings(AZ::Render::RenderActorSettings& settings) const;
 
         // Maintain the order between here and the reflect method.
         // The order in the SerializeContext defines the order it is shown in the UI

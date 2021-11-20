@@ -103,6 +103,11 @@ class TestJsonUtils(TestCase):
         invalid_json_dict.pop(json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME)
         self.assertRaises(KeyError, json_utils.validate_json_dict_according_to_json_schema, invalid_json_dict)
 
+    def test_validate_json_dict_according_to_json_schema_raise_error_when_json_dict_has_empty_accountid(self) -> None:
+        valid_json_dict: Dict[str, any] = copy.deepcopy(TestJsonUtils._expected_json_dict)
+        valid_json_dict[json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME] = ''
+        json_utils.validate_json_dict_according_to_json_schema(valid_json_dict)
+
     def test_validate_json_dict_according_to_json_schema_pass_when_json_dict_has_template_accountid(self) -> None:
         valid_json_dict: Dict[str, any] = copy.deepcopy(TestJsonUtils._expected_json_dict)
         valid_json_dict[json_utils.RESOURCE_MAPPING_ACCOUNTID_JSON_KEY_NAME] = \

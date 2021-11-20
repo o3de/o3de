@@ -60,7 +60,6 @@ ly_add_target(
             Gem::AtomToolsFramework.Editor
             Gem::Atom_RPI.Public
             Gem::Atom_Feature_Common.Public
-            Gem::ImageProcessingAtom.Headers
 )
 
 ly_add_target(
@@ -113,7 +112,6 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::AtomToolsFramework.Editor
         Gem::EditorPythonBindings.Editor
-        Gem::ImageProcessingAtom.Editor
 )
 
 ly_set_gem_variant_to_load(TARGETS MaterialEditor VARIANTS Tools)

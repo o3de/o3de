@@ -16,7 +16,7 @@ ALL_PLATFORM_OPTIONS = ['android', 'ios', 'linux', 'mac', 'windows']
 ALL_LAUNCHER_OPTIONS = ['android', 'base', 'linux', 'mac', 'windows', 'windows_editor', 'windows_dedicated', 'windows_generic']
 ANDROID = False
 IOS = False  # Not implemented - see SPEC-2505
-LINUX = sys.platform.startswith('linux')  # Not implemented - see SPEC-2501
+LINUX = sys.platform.startswith('linux')
 MAC = sys.platform.startswith('darwin')
 WINDOWS = sys.platform.startswith('win')
 
@@ -54,9 +54,11 @@ elif LINUX:
     HOST_OS_PLATFORM = 'linux'
     HOST_OS_EDITOR = 'linux_editor'
     HOST_OS_DEDICATED_SERVER = 'linux_dedicated'
-    from ly_test_tools.launchers.platforms.linux.launcher import (LinuxLauncher, LinuxEditor, DedicatedLinuxLauncher)
+    HOST_OS_GENERIC_EXECUTABLE = 'linux_generic'
+    from ly_test_tools.launchers.platforms.linux.launcher import (LinuxLauncher, LinuxEditor, DedicatedLinuxLauncher, LinuxGenericLauncher)
     LAUNCHERS['linux'] = LinuxLauncher
     LAUNCHERS['linux_editor'] = LinuxEditor
     LAUNCHERS['linux_dedicated'] = DedicatedLinuxLauncher
+    LAUNCHERS['linux_generic'] = LinuxGenericLauncher
 else:
     logger.warning(f'WARNING: LyTestTools only supports Windows, Mac, and Linux. Unexpectedly detected HOST_OS_PLATFORM: "{HOST_OS_PLATFORM}".')

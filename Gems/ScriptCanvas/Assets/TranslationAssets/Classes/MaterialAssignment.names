@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "key": "MaterialAssignment",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "MaterialAssignment"
+            },
+            "methods": [
+                {
+                    "key": "ToString",
+                    "context": "MaterialAssignment",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToString is invoked"
+                    },
+                    "details": {
+                        "name": "MaterialAssignment::ToString",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C66E5214-A24B-4722-B7F0-5991E6F8F163}",
+                            "details": {
+                                "name": "AZ::Render::MaterialAssignment*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::basic_string<char, AZStd::char_traits<char>, allocator>"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

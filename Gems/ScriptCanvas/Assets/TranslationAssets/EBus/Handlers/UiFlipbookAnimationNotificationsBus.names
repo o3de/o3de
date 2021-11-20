@@ -1,0 +1,36 @@
+{
+    "entries": [
+        {
+            "key": "UiFlipbookAnimationNotificationsBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "UI Flipbook Animation",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "OnAnimationStarted",
+                    "details": {
+                        "name": "On Animation Started",
+                        "tooltip": "Executes when the flipbook animation has begun playing"
+                    }
+                },
+                {
+                    "key": "OnAnimationStopped",
+                    "details": {
+                        "name": "On Animation Stopped",
+                        "tooltip": "Executes when the flipbook animation has stopped playing"
+                    }
+                },
+                {
+                    "key": "OnLoopSequenceCompleted",
+                    "details": {
+                        "name": "On Loop Sequence Completed",
+                        "tooltip": "Executes when the flipbook animation has completed one loop iteration. This triggers only when the \"Loop Type\" of the flipbook animation is configured to anything other than \"None\".\n\nFor \"Linear\" loops, this triggers when \"End Frame\" is displayed.\n\nFor \"Ping Pong\" loops, this triggers when either \"Start Frame\" or \"End Frame\" is displayed (depending on the current loop direction of the loop)"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -28,6 +28,7 @@ set(FILES
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h
     Include/AtomToolsFramework/Viewport/RenderViewportWidget.h
+    Include/AtomToolsFramework/Viewport/ViewportInteractionImpl.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraController.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindow.h
@@ -55,7 +56,24 @@ set(FILES
     Source/Util/Util.cpp
     Source/Viewport/RenderViewportWidget.cpp
     Source/Viewport/ModularViewportCameraController.cpp
+    Source/Viewport/ViewportInteractionImpl.cpp
     Source/Window/AtomToolsMainWindow.cpp
     Source/Window/AtomToolsMainWindowSystemComponent.cpp
     Source/Window/AtomToolsMainWindowSystemComponent.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewContent.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewRendererCaptureRequest.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewRendererInterface.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewRendererSystemRequestBus.h
+    Include/AtomToolsFramework/PreviewRenderer/PreviewerFeatureProcessorProviderBus.h
+    Source/PreviewRenderer/PreviewRenderer.cpp
+    Source/PreviewRenderer/PreviewRenderer.h
+    Source/PreviewRenderer/PreviewRendererState.h
+    Source/PreviewRenderer/PreviewRendererIdleState.cpp
+    Source/PreviewRenderer/PreviewRendererIdleState.h
+    Source/PreviewRenderer/PreviewRendererLoadState.cpp
+    Source/PreviewRenderer/PreviewRendererLoadState.h
+    Source/PreviewRenderer/PreviewRendererCaptureState.cpp
+    Source/PreviewRenderer/PreviewRendererCaptureState.h
+    Source/PreviewRenderer/PreviewRendererSystemComponent.cpp
+    Source/PreviewRenderer/PreviewRendererSystemComponent.h
 )

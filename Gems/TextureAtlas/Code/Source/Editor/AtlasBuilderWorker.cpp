@@ -757,9 +757,7 @@ namespace TextureAtlasBuilder
 
         if (input.m_presetName.empty())
         {
-            // Default to the TextureAtlas preset which is currently set to use compression for all platforms except for iOS.
-            // Currently the only fully supported compression for iOS is PVRTC which requires the texture to be square and a power of 2.
-            // Due to this limitation, we default to using no compression for iOS until ASTC is fully supported
+            // Default to the TextureAtlas preset which is currently set to use compression
             const AZStd::string defaultPresetName = "UserInterface_Compressed";
             input.m_presetName = defaultPresetName;
         }

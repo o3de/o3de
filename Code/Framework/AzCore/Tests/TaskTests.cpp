@@ -610,15 +610,16 @@ namespace UnitTest
         g.Follows(e, f);
         g.Precedes(d);
 
-        TaskGraphEvent ev;
-        graph.SubmitOnExecutor(*m_executor, &ev);
-        ev.Wait();
+        TaskGraphEvent ev1;
+        graph.SubmitOnExecutor(*m_executor, &ev1);
+        ev1.Wait();
 
         EXPECT_EQ(3 | 0b100000, x);
         x = 0;
 
-        graph.SubmitOnExecutor(*m_executor, &ev);
-        ev.Wait();
+        TaskGraphEvent ev2;
+        graph.SubmitOnExecutor(*m_executor, &ev2);
+        ev2.Wait();
 
         EXPECT_EQ(3 | 0b100000, x);
     }

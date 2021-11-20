@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "log",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "log",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke log"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after log is invoked"
+                    },
+                    "details": {
+                        "name": "log",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

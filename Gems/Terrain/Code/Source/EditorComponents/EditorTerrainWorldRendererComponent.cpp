@@ -29,10 +29,10 @@ namespace Terrain
                 editContext->Class<EditorTerrainWorldRendererComponent>(
                     "Terrain World Renderer", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::Category, "Terrain")
-                    ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/TerrainWorldRenderer.svg")
-                    ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/TerrainWorldRenderer.svg")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level") }))
+                        ->Attribute(AZ::Edit::Attributes::Category, "Terrain")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/TerrainWorldRenderer.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/TerrainWorldRenderer.svg")
+                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level") }))
                 ;
             }
         }

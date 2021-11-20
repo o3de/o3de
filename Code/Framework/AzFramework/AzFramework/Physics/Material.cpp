@@ -360,6 +360,11 @@ namespace Physics
                 ->Field("MaterialId", &Physics::MaterialId::m_id)
                 ;
         }
+
+        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<Physics::MaterialId>()->Attribute(AZ::Script::Attributes::Category, "Physics");
+        }
     }
 
     MaterialId MaterialId::Create()

@@ -136,6 +136,44 @@ static const char* PLATFORM_INDEPENDENT_LANGUAGE_NAMES[ ILocalizationManager::eP
     "da-DK"   // Danish (Denmark)
 };
 
+#if defined(WIN32) || defined(WIN64)
+namespace
+{
+#if defined(WIN32)
+    time_t gmt_to_local_win32(void)
+    {
+        TIME_ZONE_INFORMATION tzinfo;
+        DWORD dwStandardDaylight;
+        long bias;
+
+        dwStandardDaylight = GetTimeZoneInformation(&tzinfo);
+        bias = tzinfo.Bias;
+
+        if (dwStandardDaylight == TIME_ZONE_ID_STANDARD)
+        {
+            bias += tzinfo.StandardBias;
+        }
+
+        if (dwStandardDaylight == TIME_ZONE_ID_DAYLIGHT)
+        {
+            bias += tzinfo.DaylightBias;
+        }
+
+        return (-bias * 60);
+    }
+#endif // #if defined(WIN32)
+
+    time_t DateToSecondsUTC(struct tm& inDate)
+    {
+#if defined(WIN32)
+        return mktime(&inDate) + gmt_to_local_win32();
+#else
+        return mktime(&inDate);
+#endif // #if defined(WIN32)
+    }
+}
+#endif // #if defined(WIN32) || defined(WIN64)
+
 //////////////////////////////////////////////////////////////////////////
 #if !defined(_RELEASE)
 static void ReloadDialogData([[maybe_unused]] IConsoleCmdArgs* pArgs)
@@ -2656,7 +2694,7 @@ void CLocalizedStringsManager::LocalizeTime(time_t t, bool bMakeLocalTime, bool 
     {
         struct tm thetime;
         localtime_s(&thetime, &t);
-        t = gEnv->pTimer->DateToSecondsUTC(thetime);
+        t = DateToSecondsUTC(thetime);
     }
     outTimeString.clear();
     LCID lcID = g_currentLanguageID.lcID ? g_currentLanguageID.lcID : LOCALE_USER_DEFAULT;
@@ -2680,7 +2718,7 @@ void CLocalizedStringsManager::LocalizeDate(time_t t, bool bMakeLocalTime, bool 
     {
         struct tm thetime;
         localtime_s(&thetime, &t);
-        t = gEnv->pTimer->DateToSecondsUTC(thetime);
+        t = DateToSecondsUTC(thetime);
     }
     outDateString.resize(0);
     LCID lcID = g_currentLanguageID.lcID ? g_currentLanguageID.lcID : LOCALE_USER_DEFAULT;

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "CHARLIE",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "CHARLIE::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -18,7 +18,6 @@ namespace Multiplayer
         m_canSendUpdates = canSendUpdates;
     }
 
-
     inline NetworkEntityHandle ServerToClientConnectionData::GetPrimaryPlayerEntity()
     {
         return m_controlledEntity;
@@ -37,5 +36,15 @@ namespace Multiplayer
     inline void ServerToClientConnectionData::SetProviderTicket(const AZStd::string& ticket)
     {
         m_providerTicket = ticket;
+    }
+
+    inline bool ServerToClientConnectionData::DidHandshake() const
+    {
+        return m_didHandshake;
+    }
+
+    inline void ServerToClientConnectionData::SetDidHandshake(bool didHandshake)
+    {
+        m_didHandshake = didHandshake;
     }
 }

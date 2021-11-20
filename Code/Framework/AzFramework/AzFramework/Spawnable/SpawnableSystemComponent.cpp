@@ -45,8 +45,7 @@ namespace AzFramework
 
     void SpawnableSystemComponent::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
     {
-        m_entitiesManager.ProcessQueue(
-            SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
+        ProcessSpawnableQueue();
         RootSpawnableNotificationBus::ExecuteQueuedEvents();
     }
 
@@ -73,7 +72,7 @@ namespace AzFramework
 
     uint64_t SpawnableSystemComponent::AssignRootSpawnable(AZ::Data::Asset<Spawnable> rootSpawnable)
     {
-        uint64_t generation = 0;
+        uint32_t generation = 0;
 
         if (m_rootSpawnableId == rootSpawnable.GetId())
         {
@@ -88,16 +87,25 @@ namespace AzFramework
             // Suspend and resume processing in the container that completion calls aren't received until
             // everything has been setup to accept callbacks from the call.
             m_rootSpawnableContainer.Reset(rootSpawnable);
-            m_rootSpawnableContainer.SpawnAllEntities();
             generation = m_rootSpawnableContainer.GetCurrentGeneration();
-            AZ_TracePrintf("Spawnables", "Root spawnable set to '%s' at generation %zu.\n", rootSpawnable.GetHint().c_str(),
-                generation);
+
+            // Don't send out the alert that the root spawnable has been assigned until the spawnable itself is ready. The common
+            // use case is for handlers to do something with the information in the spawnable before the entities get spawned.
+            m_rootSpawnableContainer.Alert(
+                [rootSpawnable](uint32_t generation)
+                {
+                    RootSpawnableNotificationBus::Broadcast(
+                        &RootSpawnableNotificationBus::Events::OnRootSpawnableAssigned, AZStd::move(rootSpawnable), generation);
+                }, SpawnableEntitiesContainer::CheckIfSpawnableIsLoaded::Yes);
+            m_rootSpawnableContainer.SpawnAllEntities();
             m_rootSpawnableContainer.Alert(
                 [newSpawnable = AZStd::move(rootSpawnable)](uint32_t generation)
                 {
                     RootSpawnableNotificationBus::QueueBroadcast(
-                        &RootSpawnableNotificationBus::Events::OnRootSpawnableAssigned, newSpawnable, generation);
+                        &RootSpawnableNotificationBus::Events::OnRootSpawnableReady, AZStd::move(newSpawnable), generation);
                 });
+
+            AZ_TracePrintf("Spawnables", "Root spawnable set to '%s' at generation %zu.\n", rootSpawnable.GetHint().c_str(), generation);     
         }
         else
         {
@@ -121,10 +129,22 @@ namespace AzFramework
         m_rootSpawnableId = AZ::Data::AssetId();
     }
 
+    void SpawnableSystemComponent::ProcessSpawnableQueue()
+    {
+        m_entitiesManager.ProcessQueue(
+            SpawnableEntitiesManager::CommandQueuePriority::High | SpawnableEntitiesManager::CommandQueuePriority::Regular);
+    }
+
     void SpawnableSystemComponent::OnRootSpawnableAssigned([[maybe_unused]] AZ::Data::Asset<Spawnable> rootSpawnable,
         [[maybe_unused]] uint32_t generation)
     {
         AZ_TracePrintf("Spawnables", "New root spawnable '%s' assigned (generation: %i).\n", rootSpawnable.GetHint().c_str(), generation);
+    }
+
+    void SpawnableSystemComponent::OnRootSpawnableReady(
+        [[maybe_unused]] AZ::Data::Asset<Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
+    {
+        AZ_TracePrintf("Spawnables", "Entities from new root spawnable '%s' are ready (generation: %i).\n", rootSpawnable.GetHint().c_str(), generation);
     }
 
     void SpawnableSystemComponent::OnRootSpawnableReleased([[maybe_unused]] uint32_t generation)
@@ -161,6 +181,8 @@ namespace AzFramework
 
     void SpawnableSystemComponent::Deactivate()
     {
+        ProcessSpawnableQueue();
+
         m_registryChangeHandler.Disconnect();
 
         AZ::TickBus::Handler::BusDisconnect();

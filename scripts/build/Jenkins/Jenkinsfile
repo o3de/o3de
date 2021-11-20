@@ -16,7 +16,7 @@ EMPTY_JSON = readJSON text: '{}'
 ENGINE_REPOSITORY_NAME = 'o3de'
 
 // Branches with build snapshots
-BUILD_SNAPSHOTS = ['development', 'stabilization/2106']
+BUILD_SNAPSHOTS = ['development', 'stabilization/2110']
 
 // Build snapshots with empty snapshot (for use with 'SNAPSHOT' pipeline paramater)
 BUILD_SNAPSHOTS_WITH_EMPTY = BUILD_SNAPSHOTS + ''
@@ -267,7 +267,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
     palRm('commitdate')
 }
 
-def HandleDriveMount(String snapshot, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean recreateVolume = false) {   
+def HandleDriveMount(String snapshot, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean recreateVolume = false) {
     unstash name: 'incremental_build_script'
 
     def pythonCmd = ''
@@ -277,9 +277,7 @@ def HandleDriveMount(String snapshot, String repositoryName, String projectName,
     if(recreateVolume) {
         palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action delete --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Deleting volume', winSlashReplacement=false)
     }
-    timeout(5) {
-        palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action mount --snapshot ${snapshot} --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Mounting volume', winSlashReplacement=false)
-    }
+    palSh("${pythonCmd} ${INCREMENTAL_BUILD_SCRIPT_PATH} --action mount --snapshot ${snapshot} --repository_name ${repositoryName} --project ${projectName} --pipeline ${pipeline} --branch ${branchName} --platform ${platform} --build_type ${buildType}", 'Mounting volume', winSlashReplacement=false)
 
     if(env.IS_UNIX) {
         sh label: 'Setting volume\'s ownership',
@@ -416,16 +414,48 @@ def ExportTestResults(Map options, String platform, String type, String workspac
     }
 }
 
-def ExportTestScreenshots(Map options, String workspace, String platformName, String jobName, Map params) {
+def ExportTestScreenshots(Map options, String branchName, String platformName, String jobName, String workspace, Map params) {
     catchError(message: "Error exporting test screenshots (this won't fail the build)", buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-        def screenshotsFolder = '${workspace}/${ENGINE_REPOSITORY_NAME}/AutomatedTesting/user/PythonTests/Automated/Screenshots'
-        def s3Uploader = '${workspace}/${ENGINE_REPOSITORY_NAME}/scripts/build/tools/upload_to_s3.py'
-        def command = '${options.PYTHON_DIR}/python.cmd -u ${s3Uploader} --base_dir ${screenshotsFolder} ' +
-                      '--file_regex "(.*zip$)" --bucket ${env.TEST_SCREENSHOT_BUCKET} ' +
-                      '--search_subdirectories True --key_prefix ${branchName}_${env.BUILD_NUMBER}' +
-                      '--extra-args {"ACL": "bucket-owner-full-control"}'
-        bat label: "Uploading test screenshots for ${jobName}",
-            script: command
+        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+            def screenshotsFolder = "AutomatedTesting/user/PythonTests/Automated/Screenshots"
+            def s3Uploader = "scripts/build/tools/upload_to_s3.py"
+            def command = "${options.PYTHON_DIR}/python.cmd -u ${s3Uploader} --base_dir ${screenshotsFolder} " +
+                          '--file_regex \\"(.*zip\$)\\" ' +
+                          "--bucket ${env.TEST_SCREENSHOT_BUCKET} " +
+                          "--search_subdirectories True --key_prefix ${branchName}_${env.BUILD_NUMBER} " +
+                          '--extra_args {\\"ACL\\":\\"bucket-owner-full-control\\"}'
+            palSh(command, "Uploading test screenshots for ${jobName}")
+        }
+    }
+}
+
+// All files are included by default.
+// --include will only re-include files that have been excluded from an --exclude filter.
+//See more details at https://docs.aws.amazon.com/cli/latest/reference/s3/#use-of-exclude-and-include-filters
+def ArchiveArtifactsOnS3(String artifactsSource, String s3Prefix="", boolean recursive=false, List<String> includes=[], List<String> excludes=[]) {
+    if (!fileExists(s3Prefix)) {
+        palMkdir(s3Prefix)
+    }
+    palSh("echo ${env.BUILD_URL} > ${s3Prefix}/build_url.txt")
+    // archiveArtifacts is very slow, so we only archive one file and upload the rest artifacts to the same bucket using S3 CLI.
+    archiveArtifacts artifacts: "${s3Prefix}/build_url.txt"
+    def command = "aws s3 cp ${artifactsSource} s3://${env.JENKINS_ARTIFACTS_S3_BUCKET}/${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix} "
+    excludes.each{ exclude ->
+        command += "--exclude \"${exclude}\" "
+    }
+    includes.each{ include ->
+        command += "--include \"${include}\" "
+    }
+    if (recursive) command += "--recursive "
+    palSh(command, "Archiving artifacts to ${env.JENKINS_JOB_NAME}/${env.BUILD_NUMBER}/artifacts/${s3Prefix}", false)
+}
+
+def UploadAPLogs(String platformName, String jobName, String workspace, Map params) {
+    dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+        projects = params.CMAKE_LY_PROJECTS.split(",")
+        projects.each{ project ->
+            ArchiveArtifactsOnS3("${project}/user/log", "ap_logs/${platformName}/${jobName}/${project}", true)
+        }
     }
 }
 
@@ -484,10 +514,18 @@ def CreateExportTestResultsStage(Map pipelineConfig, String platformName, String
     }
 }
 
-def CreateExportTestScreenshotsStage(Map pipelineConfig, String platformName, String jobName, Map environmentVars, Map params) {
+def CreateExportTestScreenshotsStage(Map pipelineConfig, String branchName, String platformName, String jobName, Map environmentVars, Map params) {
     return {
         stage("${jobName}_screenshots") {
-            ExportTestScreenshots(pipelineConfig, platformName, jobName, environmentVars['WORKSPACE'], params)
+            ExportTestScreenshots(pipelineConfig, branchName, platformName, jobName, environmentVars['WORKSPACE'], params)
+        }
+    }
+}
+
+def CreateUploadAPLogsStage(String platformName, String jobName, String workspace, Map params) {
+    return {
+        stage("${jobName}_upload_ap_logs") {
+            UploadAPLogs(platformName, jobName, workspace, params)
         }
     }
 }
@@ -516,9 +554,11 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                         CreateSetupStage(pipelineConfig, snapshot, repositoryName, projectName, pipelineName, branchName, platform.key, build_job.key, envVars, onlyMountEBSVolume).call()
 
                         if(build_job.value.steps) { //this is a pipe with many steps so create all the build stages
+                            pipelineEnvVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                             build_job.value.steps.each { build_step ->
                                 build_job_name = build_step
-                                envVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, platform.value.build_types[build_step].PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
+                                // This addition of maps makes it that the right operand will override entries if they overlap with the left operand
+                                envVars = pipelineEnvVars + GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, platform.value.build_types[build_step].PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
                                 try {
                                     CreateBuildStage(pipelineConfig,  platform.key, build_step, envVars).call()
                                 }
@@ -541,6 +581,9 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                                 error "Node disconnected during build: ${e}"  // Error raised to retry stage on a new node
                             }
                         }
+                        if (build_job_name.toLowerCase().contains('asset') && env.IS_UPLOAD_AP_LOGS?.toBoolean()) {
+                            CreateUploadAPLogsStage(platform.key, build_job_name, envVars['WORKSPACE'], platform.value.build_types[build_job_name].PARAMETERS).call()
+                        }
                         // All other errors will be raised outside the retry block
                         currentResult = envVars['ON_FAILURE_MARK'] ?: 'FAILURE'
                         currentException = e.toString()
@@ -553,10 +596,10 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                             CreateTestMetricsStage(pipelineConfig, branchName, envVars, build_job_name, output_directory, configuration).call()
                         }
                         if (params && params.containsKey('TEST_RESULTS') && params.TEST_RESULTS == 'True') {
-                            CreateExportTestResultsStage(pipelineConfig,  platform.key, build_job_name, envVars, params).call()
+                            CreateExportTestResultsStage(pipelineConfig, platform.key, build_job_name, envVars, params).call()
                         }
                         if (params && params.containsKey('TEST_SCREENSHOTS') && params.TEST_SCREENSHOTS == 'True' && currentResult == 'FAILURE') {
-                            CreateExportTestScreenshotsStage(pipelineConfig,  platform.key, build_job_name, envVars, params).call()
+                            CreateExportTestScreenshotsStage(pipelineConfig, branchName, platform.key, build_job_name, envVars, params).call()
                         }
                         CreateTeardownStage(envVars).call()
                     }
@@ -768,6 +811,7 @@ try {
         platform.value.build_types.each { build_job ->
             if (IsJobEnabled(branchName, build_job, pipelineName, platform.key)) {   // User can filter jobs, jobs are tagged by pipeline
                 def envVars = GetBuildEnvVars(platform.value.PIPELINE_ENV ?: EMPTY_JSON, build_job.value.PIPELINE_ENV ?: EMPTY_JSON, pipelineName)
+                envVars['JENKINS_JOB_NAME'] = env.JOB_NAME // Save original Jenkins job name to JENKINS_JOB_NAME
                 envVars['JOB_NAME'] = "${branchName}_${platform.key}_${build_job.key}" // backwards compatibility, some scripts rely on this
                 someBuildHappened = true
 
@@ -793,27 +837,32 @@ catch(Exception e) {
 }
 finally {
     try {
-        if(env.SNS_TOPIC) {
-            snsPublish(
-                topicArn: env.SNS_TOPIC,
-                subject:'Build Result',
-                message:"${currentBuild.currentResult}:${BUILD_URL}:${env.RECREATE_VOLUME}:${env.CLEAN_OUTPUT_DIRECTORY}:${env.CLEAN_ASSETS}"
-            )
-        }
         node('controller') {
             if("${currentBuild.currentResult}" == "SUCCESS") {
+                buildFailure = ""
                 emailBody = "${BUILD_URL}\nSuccess!"
             } else {
                 buildFailure = tm('${BUILD_FAILURE_ANALYZER}')
                 emailBody = "${BUILD_URL}\n${buildFailure}!"
-                if(env.SNS_TOPIC_BUILD_FAILURE) {
-                    message_json = ["build_url":env.BUILD_URL, "repository_name":env.REPOSITORY_NAME, "branch_name":env.BRANCH_NAME, "build_failure":buildFailure]
-                    snsPublish(
-                        topicArn: env.SNS_TOPIC_BUILD_FAILURE,
-                        subject:'Build Failure',
-                        message:JsonOutput.toJson(message_json)
-                    )
-                }
+
+            }
+            if(env.POST_AR_BUILD_SNS_TOPIC) {
+                message_json = [
+                    "build_url": env.BUILD_URL,
+                    "build_number": env.BUILD_NUMBER,
+                    "repository_name": env.REPOSITORY_NAME,
+                    "branch_name": env.BRANCH_NAME,
+                    "build_result": "${currentBuild.currentResult}",
+                    "build_failure": buildFailure,
+                    "recreate_volume": env.RECREATE_VOLUME,
+                    "clean_output_directory": env.CLEAN_OUTPUT_DIRECTORY,
+                    "clean_assets": env.CLEAN_ASSETS
+                ]
+                snsPublish(
+                    topicArn: env.POST_AR_BUILD_SNS_TOPIC,
+                    subject:'Build Result',
+                    message:JsonOutput.toJson(message_json)
+                )
             }
             emailext (
                 body: "${emailBody}",

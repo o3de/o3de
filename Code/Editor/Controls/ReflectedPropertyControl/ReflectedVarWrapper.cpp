@@ -446,41 +446,54 @@ void ReflectedVarUserAdapter::SetVariable(IVariable *pVariable)
     m_reflectedVar.reset(new CReflectedVarUser( pVariable->GetHumanName().toUtf8().data()));
 }
 
-void ReflectedVarUserAdapter::SyncReflectedVarToIVar(IVariable *pVariable)
+void ReflectedVarUserAdapter::SyncReflectedVarToIVar(IVariable* pVariable)
 {
     QString value;
     pVariable->Get(value);
     m_reflectedVar->m_value = value.toUtf8().data();
 
-    //extract the list of custom items from the IVariable user data
-    IVariable::IGetCustomItems* pGetCustomItems = static_cast<IVariable::IGetCustomItems*> (pVariable->GetUserData().value<void *>());
-    if (pGetCustomItems != nullptr)
-    {
-        std::vector<IVariable::IGetCustomItems::SItem> items;
-        QString dlgTitle;
-        // call the user supplied callback to fill-in items and get dialog title
-        bool bShowIt = pGetCustomItems->GetItems(pVariable, items, dlgTitle);
-        if (bShowIt) // if func didn't veto, show the dialog
-        {
-            m_reflectedVar->m_enableEdit = true;
-            m_reflectedVar->m_useTree = pGetCustomItems->UseTree();
-            m_reflectedVar->m_treeSeparator = pGetCustomItems->GetTreeSeparator();
-            m_reflectedVar->m_dialogTitle = dlgTitle.toUtf8().data();
-            m_reflectedVar->m_itemNames.resize(items.size());
-            m_reflectedVar->m_itemDescriptions.resize(items.size());
-
-            QByteArray ba;
-            int i = -1;
-            std::generate(m_reflectedVar->m_itemNames.begin(), m_reflectedVar->m_itemNames.end(), [&items, &i, &ba]() { ++i; ba = items[i].name.toUtf8(); return ba.data(); });
-            i = -1;
-            std::generate(m_reflectedVar->m_itemDescriptions.begin(), m_reflectedVar->m_itemDescriptions.end(), [&items, &i, &ba]() { ++i; ba = items[i].desc.toUtf8(); return ba.data(); });
-
-        }
-    }
-    else
+    // extract the list of custom items from the IVariable user data
+    IVariable::IGetCustomItems* pGetCustomItems = static_cast<IVariable::IGetCustomItems*>(pVariable->GetUserData().value<void*>());
+    if (pGetCustomItems == nullptr)
     {
         m_reflectedVar->m_enableEdit = false;
+        return;
     }
+
+    std::vector<IVariable::IGetCustomItems::SItem> items;
+    QString dlgTitle;
+    // call the user supplied callback to fill-in items and get dialog title
+    bool bShowIt = pGetCustomItems->GetItems(pVariable, items, dlgTitle);
+    if (!bShowIt) // if func vetoed it, don't show the dialog
+    {
+        return;
+    }
+    m_reflectedVar->m_enableEdit = true;
+    m_reflectedVar->m_useTree = pGetCustomItems->UseTree();
+    m_reflectedVar->m_treeSeparator = pGetCustomItems->GetTreeSeparator();
+    m_reflectedVar->m_dialogTitle = dlgTitle.toUtf8().data();
+    m_reflectedVar->m_itemNames.resize(items.size());
+    m_reflectedVar->m_itemDescriptions.resize(items.size());
+
+    QByteArray ba;
+    int i = -1;
+    AZStd::generate(
+        m_reflectedVar->m_itemNames.begin(), m_reflectedVar->m_itemNames.end(),
+        [&items, &i, &ba]()
+        {
+            ++i;
+            ba = items[i].name.toUtf8();
+            return ba.data();
+        });
+    i = -1;
+    AZStd::generate(
+        m_reflectedVar->m_itemDescriptions.begin(), m_reflectedVar->m_itemDescriptions.end(),
+        [&items, &i, &ba]()
+        {
+            ++i;
+            ba = items[i].desc.toUtf8();
+            return ba.data();
+        });
 }
 
 void ReflectedVarUserAdapter::SyncIVarToReflectedVar(IVariable *pVariable)

@@ -153,7 +153,7 @@ namespace LmbrCentral
         m_intersectionDataCache.UpdateIntersectionParams(m_currentTransform, m_diskShapeConfig);
 
         return AZ::Intersect::IntersectRayDisk(
-            src, dir, m_intersectionDataCache.m_position, m_intersectionDataCache.m_radius, m_intersectionDataCache.m_normal, distance) > 0;
+            src, dir, m_intersectionDataCache.m_position, m_intersectionDataCache.m_radius, m_intersectionDataCache.m_normal, distance);
     }
 
     void DiskShape::DiskIntersectionDataCache::UpdateIntersectionParamsImpl(

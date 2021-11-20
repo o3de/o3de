@@ -395,7 +395,7 @@ namespace LUAEditor
 
     void LUAEditorMainWindow::OnLuaDocumentation()
     {
-        QDesktopServices::openUrl(QUrl("http://docs.aws.amazon.com/lumberyard/latest/developerguide/lua-scripting-intro.html"));
+        QDesktopServices::openUrl(QUrl("https://o3de.org/docs/user-guide/scripting/lua/"));
     }
 
     void LUAEditorMainWindow::OnMenuCloseCurrentWindow()

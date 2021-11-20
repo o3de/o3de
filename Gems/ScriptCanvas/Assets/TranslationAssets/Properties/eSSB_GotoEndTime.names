@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eSSB_GotoEndTime",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eSSB_GotoEndTime::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

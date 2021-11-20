@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "BlendOp_Minimum",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "BlendOp_Minimum::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -10,7 +10,6 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
-#include <AzCore/Console/IConsole.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/AttributeReader.h>
@@ -38,6 +37,7 @@
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Commands/SelectionCommand.h>
 #include <AzToolsFramework/Commands/SliceDetachEntityCommand.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -56,6 +56,7 @@
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
 #include <AzToolsFramework/ViewportSelection/EditorHelpers.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <MathConversion.h>
 
 #include <Atom/RPI.Public/ViewportContext.h>
@@ -142,8 +143,7 @@ void GetSelectedEntitiesSetWithFlattenedHierarchy(AzToolsFramework::EntityIdSet&
 }
 
 SandboxIntegrationManager::SandboxIntegrationManager()
-    : m_inObjectPickMode(false)
-    , m_startedUndoRecordingNestingLevel(0)
+    : m_startedUndoRecordingNestingLevel(0)
     , m_dc(nullptr)
     , m_notificationWindowManager(new AzToolsFramework::SliceOverridesNotificationWindowManager())
 {
@@ -643,6 +643,9 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
     AzToolsFramework::EntityIdList selected;
     GetSelectedOrHighlightedEntities(selected);
 
+    bool prefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
     QAction* action = nullptr;
 
     // when nothing is selected, entity is created at root level
@@ -659,17 +662,19 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
     // when a single entity is selected, entity is created as its child
     else if (selected.size() == 1)
     {
-        action = menu->addAction(QObject::tr("Create entity"));
-        QObject::connect(
-            action, &QAction::triggered, action,
-            [selected]
-            {
-                EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, CreateNewEntityAsChild, selected.front());
-            });
+        auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
+        if (!prefabSystemEnabled || (containerEntityInterface && containerEntityInterface->IsContainerOpen(selected.front())))
+        {
+            action = menu->addAction(QObject::tr("Create entity"));
+            QObject::connect(
+                action, &QAction::triggered, action,
+                [selected]
+                {
+                    AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Handler::CreateNewEntityAsChild, selected.front());
+                }
+            );
+        }
     }
-
-    bool prefabSystemEnabled = false;
-    AzFramework::ApplicationRequests::Bus::BroadcastResult(prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
     if (!prefabSystemEnabled)
     {
@@ -998,62 +1003,6 @@ void SandboxIntegrationManager::SetupSliceContextMenu_Modify(QMenu* menu, const 
     });
 
     revertAction->setEnabled(canRevert);
-}
-
-void SandboxIntegrationManager::HandleObjectModeSelection(const AZ::Vector2& point, [[maybe_unused]] int flags, bool& handled)
-{
-    // Todo - Use a custom "edit tool". This will eliminate the need for this bus message entirely, which technically
-    // makes this feature less intrusive on Sandbox.
-    // UPDATE: This is now provided by EditorPickEntitySelection when the new Viewport Interaction Model changes are enabled.
-    if (m_inObjectPickMode)
-    {
-        CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
-        const QPoint viewPoint(static_cast<int>(point.GetX()), static_cast<int>(point.GetY()));
-
-        HitContext hitInfo;
-        hitInfo.view = view;
-        if (view->HitTest(viewPoint, hitInfo))
-        {
-            if (hitInfo.object && (hitInfo.object->GetType() == OBJTYPE_AZENTITY))
-            {
-                CComponentEntityObject* entityObject = static_cast<CComponentEntityObject*>(hitInfo.object);
-                AzToolsFramework::EditorPickModeRequestBus::Broadcast(
-                    &AzToolsFramework::EditorPickModeRequests::PickModeSelectEntity, entityObject->GetAssociatedEntityId());
-            }
-        }
-
-        AzToolsFramework::EditorPickModeRequestBus::Broadcast(
-            &AzToolsFramework::EditorPickModeRequests::StopEntityPickMode);
-
-        handled = true;
-    }
-}
-
-void SandboxIntegrationManager::UpdateObjectModeCursor(AZ::u32& cursorId, AZStd::string& cursorStr)
-{
-    if (m_inObjectPickMode)
-    {
-        cursorId = static_cast<AZ::u64>(STD_CURSOR_HAND);
-        cursorStr = "Pick an entity...";
-    }
-}
-
-void SandboxIntegrationManager::OnEntityPickModeStarted()
-{
-    m_inObjectPickMode = true;
-
-    // Currently this object pick mode is activated only via PropertyEntityIdCtrl picker.
-    // When the picker button is clicked, we transfer focus to the viewport so the
-    // spacebar can still be used to activate selection helpers.
-    if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport())
-    {
-        view->SetFocus();
-    }
-}
-
-void SandboxIntegrationManager::OnEntityPickModeStopped()
-{
-    m_inObjectPickMode = false;
 }
 
 void SandboxIntegrationManager::CreateEditorRepresentation(AZ::Entity* entity)
@@ -1445,13 +1394,13 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
 {
     AZ::Vector3 worldPosition = AZ::Vector3::CreateZero();
 
-    CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
     // If we don't have a viewport active to aid in placement, the object
     // will be created at the origin.
-    if (view)
+    if (CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport())
     {
-        const QPoint viewPoint(static_cast<int>(m_contextMenuViewPoint.GetX()), static_cast<int>(m_contextMenuViewPoint.GetY()));
-        worldPosition = view->GetHitLocation(viewPoint);
+        worldPosition = AzToolsFramework::FindClosestPickIntersection(
+            view->GetViewportId(), AzFramework::ScreenPointFromVector2(m_contextMenuViewPoint), AzToolsFramework::EditorPickRayLength,
+            GetDefaultEntityPlacementDistance());
     }
 
     CreateNewEntityAtPosition(worldPosition);
@@ -1726,6 +1675,12 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
         if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
         {
             const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
+            // do not attempt to interpolate to where we currently are
+            if (cameraTransform.GetTranslation().IsClose(center))
+            {
+                continue;
+            }
+
             const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
 
             // move camera 25% further back than required
@@ -1845,6 +1800,11 @@ AZStd::string SandboxIntegrationManager::GetComponentEditorIcon(const AZ::Uuid& 
     return iconPath;
 }
 
+AZStd::string SandboxIntegrationManager::GetComponentTypeEditorIcon(const AZ::Uuid& componentType)
+{
+    return GetComponentEditorIcon(componentType, nullptr);
+}
+
 AZStd::string SandboxIntegrationManager::GetComponentIconPath(const AZ::Uuid& componentType,
     AZ::Crc32 componentIconAttrib, AZ::Component* component)
 {
@@ -1952,7 +1912,7 @@ void SandboxIntegrationManager::MakeSliceFromEntities(const AzToolsFramework::En
     AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(entitiesAndDescendants,
         &AzToolsFramework::ToolsApplicationRequestBus::Events::GatherEntitiesAndAllDescendents, entities);
 
-    const AZStd::string slicesAssetsPath = "@devassets@/Slices";
+    const AZStd::string slicesAssetsPath = "@projectroot@/Slices";
 
     if (!gEnv->pFileIO->Exists(slicesAssetsPath.c_str()))
     {

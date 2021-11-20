@@ -114,6 +114,10 @@ namespace AZ
         void ShaderResourceGroup::Compile()
         {
             m_shaderResourceGroup->Compile(m_data);
+
+            //Disable compilation for all resource types as a performance optimization
+            //No need to re-update SRG data on GPU timeline if nothing was updated.
+            m_data.DisableCompilationForAllResourceTypes();
         }
 
         bool ShaderResourceGroup::IsQueuedForCompile() const
@@ -578,6 +582,11 @@ namespace AZ
                 return AZStd::array_view<Data::Instance<Buffer>>(&m_bufferGroup[interval.m_min], interval.m_max - interval.m_min);
             }
             return {};
+        }
+
+        void ShaderResourceGroup::ResetViews()
+        {
+            m_data.ResetViews();
         }
 
         const RHI::SamplerState& ShaderResourceGroup::GetSampler(RHI::ShaderInputNameIndex& inputIndex, uint32_t arrayIndex) const

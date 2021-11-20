@@ -1,0 +1,34 @@
+{
+    "entries": [
+        {
+            "key": "MeshComponentNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "MeshComponentNotificationBus"
+            },
+            "methods": [
+                {
+                    "key": "OnModelReady",
+                    "details": {
+                        "name": "OnModelReady"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A1F6761B-B5CA-59E6-89FF-EB0ABDF6BD68}",
+                            "details": {
+                                "name": "Asset"
+                            }
+                        },
+                        {
+                            "typeid": "{2B7F6107-B177-5C17-9408-823396E6D8B8}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

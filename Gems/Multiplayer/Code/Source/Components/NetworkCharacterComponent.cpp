@@ -96,6 +96,17 @@ namespace Multiplayer
         NetworkCharacterComponentController::Reflect(context);
     }
 
+    void NetworkCharacterComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    {
+        NetworkCharacterComponentBase::GetRequiredServices(required);
+        required.push_back(AZ_CRC_CE("PhysXCharacterControllerService"));
+    }
+
+    void NetworkCharacterComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
+    {
+        incompatible.push_back(AZ_CRC_CE("NetworkRigidBodyService"));
+    }
+
     NetworkCharacterComponent::NetworkCharacterComponent()
         : m_translationEventHandler([this](const AZ::Vector3& translation) { OnTranslationChangedEvent(translation); })
     {
@@ -196,7 +207,7 @@ namespace Multiplayer
         // Ensure any entities that we might interact with are properly synchronized to their rewind state
         if (IsAuthority())
         {
-            const AZ::Aabb entityStartBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityLocalBoundsUnion(GetEntity()->GetId());
+            const AZ::Aabb entityStartBounds = AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->GetEntityWorldBoundsUnion(GetEntity()->GetId());
             const AZ::Aabb entityFinalBounds = entityStartBounds.GetTranslated(velocity);
             AZ::Aabb entitySweptBounds = entityStartBounds;
             entitySweptBounds.AddAabb(entityFinalBounds);

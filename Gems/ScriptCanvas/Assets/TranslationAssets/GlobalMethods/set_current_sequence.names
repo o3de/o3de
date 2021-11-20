@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "set_current_sequence",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "set_current_sequence",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke set_current_sequence"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after set_current_sequence is invoked"
+                    },
+                    "details": {
+                        "name": "set_current_sequence",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

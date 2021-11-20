@@ -8,7 +8,9 @@
 
 #include <AzToolsFramework/UI/Prefab/PrefabViewportFocusPathHandler.h>
 
-#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
+
+#include <QTimer>
 
 namespace AzToolsFramework::Prefab
 {
@@ -31,8 +33,8 @@ namespace AzToolsFramework::Prefab
     void PrefabViewportFocusPathHandler::Initialize(AzQtComponents::BreadCrumbs* breadcrumbsWidget, QToolButton* backButton)
     {
         // Get reference to the PrefabFocusInterface handler
-        m_prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
-        if (m_prefabFocusInterface == nullptr)
+        m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
+        if (m_prefabFocusPublicInterface == nullptr)
         {
             AZ_Assert(false, "Prefab - could not get PrefabFocusInterface on PrefabViewportFocusPathHandler construction.");
             return;
@@ -46,7 +48,10 @@ namespace AzToolsFramework::Prefab
         connect(m_breadcrumbsWidget, &AzQtComponents::BreadCrumbs::linkClicked, this,
             [&](const QString&, int linkIndex)
             {
-                m_prefabFocusInterface->FocusOnPathIndex(m_editorEntityContextId, linkIndex);
+                m_prefabFocusPublicInterface->FocusOnPathIndex(m_editorEntityContextId, linkIndex);
+
+                // Manually refresh path
+                QTimer::singleShot(0, [&]() { OnPrefabFocusChanged(); });
             }
         );
 
@@ -54,18 +59,20 @@ namespace AzToolsFramework::Prefab
         connect(m_backButton, &QToolButton::clicked, this,
             [&]()
             {
-                if (int length = m_prefabFocusInterface->GetPrefabFocusPathLength(m_editorEntityContextId); length > 1)
-                {
-                    m_prefabFocusInterface->FocusOnPathIndex(m_editorEntityContextId, length - 2);
-                }
+                m_prefabFocusPublicInterface->FocusOnParentOfFocusedPrefab(m_editorEntityContextId);
             }
         );
+
+        m_backButton->setToolTip("Up one level (-)");
+
+        // Currently hide this button until we can correctly disable/enable it based on context.
+        m_backButton->hide();
     }
 
     void PrefabViewportFocusPathHandler::OnPrefabFocusChanged()
     {
         // Push new Path
-        m_breadcrumbsWidget->pushPath(m_prefabFocusInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());
+        m_breadcrumbsWidget->pushPath(m_prefabFocusPublicInterface->GetPrefabFocusPath(m_editorEntityContextId).c_str());
     }
 
 } // namespace AzToolsFramework::Prefab

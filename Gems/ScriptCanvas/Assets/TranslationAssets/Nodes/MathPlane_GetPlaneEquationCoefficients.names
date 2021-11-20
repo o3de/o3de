@@ -1,0 +1,58 @@
+{
+    "entries": [
+        {
+            "key": "{9F5030EF-15D1-5AEC-988E-8BE2D9C6DD64}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Get Plane Equation Coefficients",
+                "category": "Math/Plane",
+                "tooltip": "Returns Source's coefficient's (A, B, C, D) in the equation Ax + By + Cz + D = 0"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "key": "DataOutput_A",
+                    "details": {
+                        "name": "A"
+                    }
+                },
+                {
+                    "key": "DataOutput_B",
+                    "details": {
+                        "name": "B"
+                    }
+                },
+                {
+                    "key": "DataOutput_C",
+                    "details": {
+                        "name": "C"
+                    }
+                },
+                {
+                    "key": "DataOutput_D",
+                    "details": {
+                        "name": "D"
+                    }
+                }
+            ]
+        }
+    ]
+}

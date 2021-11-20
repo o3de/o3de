@@ -67,6 +67,9 @@ namespace AZ
             virtual ViewportContextPtr GetViewportContextByName(const Name& contextName) const = 0;
             //! Gets the registered ViewportContext with the corresponding ID, if any.
             virtual ViewportContextPtr GetViewportContextById(AzFramework::ViewportId id) const = 0;
+            //! Gets the registered ViewportContext with matching RPI::Scene, if any.
+            //! This function will return the first result.
+            virtual ViewportContextPtr GetViewportContextByScene(const Scene* scene) const = 0;
             //! Maps a ViewportContext to a new name, inheriting the View stack (if any) registered to that context name.
             //! This can be used to switch "default" viewports by registering a viewport with the default ViewportContext name
             //! but note that only one ViewportContext can be mapped to a context name at a time.

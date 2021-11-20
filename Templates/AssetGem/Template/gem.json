@@ -1,15 +1,15 @@
 {
     "gem_name": "${Name}",
     "display_name": "${Name}",
-    "license": "What license ${Name} uses goes here: i.e. https://opensource.org/licenses/Apache-2.0 Or https://opensource.org/licenses/MIT etc.",
+    "license": "What license ${Name} uses goes here: i.e. https://opensource.org/licenses/MIT",
     "origin": "The primary repo for ${Name} goes here: i.e. http://www.mydomain.com",
     "type": "Asset",
     "summary": "A short description of ${Name}.",
     "canonical_tags": [
-        "Gem",
-        "Asset"
+        "Gem"
     ],
     "user_tags": [
+        "Assets",
         "${Name}"
     ],
     "icon_path": "preview.png",

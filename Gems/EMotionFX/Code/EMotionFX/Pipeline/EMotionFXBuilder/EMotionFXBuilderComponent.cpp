@@ -9,6 +9,8 @@
 #include <EMotionFX/Pipeline/EMotionFXBuilder/EMotionFXBuilderComponent.h>
 
 #include <EMotionFX/Source/Allocators.h>
+#include <Integration/Assets/ActorAsset.h>
+#include <Integration/Assets/MotionAsset.h>
 #include <Integration/Assets/MotionSetAsset.h>
 #include <Integration/Assets/AnimGraphAsset.h>
 
@@ -38,6 +40,8 @@ namespace EMotionFX
             s_EMotionFXAllocator = AZ::Environment::CreateVariable<EMotionFXAllocatorInitializer>(EMotionFXAllocatorInitializer::EMotionFXAllocatorInitializerTag);
 
             // Initialize asset handlers.
+            m_assetHandlers.emplace_back(aznew EMotionFX::Integration::ActorAssetHandler);
+            m_assetHandlers.emplace_back(aznew EMotionFX::Integration::MotionAssetHandler);
             m_assetHandlers.emplace_back(aznew EMotionFX::Integration::MotionSetAssetBuilderHandler);
             m_assetHandlers.emplace_back(aznew EMotionFX::Integration::AnimGraphAssetBuilderHandler);
 
@@ -45,9 +49,13 @@ namespace EMotionFX
             auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler();
             if (assetCatalog)
             {
+                assetCatalog->EnableCatalogForAsset(azrtti_typeid<EMotionFX::Integration::ActorAsset>());
+                assetCatalog->EnableCatalogForAsset(azrtti_typeid<EMotionFX::Integration::MotionAsset>());
                 assetCatalog->EnableCatalogForAsset(azrtti_typeid<EMotionFX::Integration::MotionSetAsset>());
                 assetCatalog->EnableCatalogForAsset(azrtti_typeid<EMotionFX::Integration::AnimGraphAsset>());
 
+                assetCatalog->AddExtension("actor");        // Actor
+                assetCatalog->AddExtension("motion");       // Motion
                 assetCatalog->AddExtension("motionset");    // Motion set
                 assetCatalog->AddExtension("animgraph");    // Anim graph
             }

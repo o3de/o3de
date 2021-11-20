@@ -49,7 +49,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/AreaLight.svg")
                             ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
-                            ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/area-light/")
+                            ->Attribute(Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/atom/light/")
                         ;
 
                     editContext->Class<AreaLightComponentController>(
@@ -136,7 +136,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Min, 0.0f)
                             ->Attribute(Edit::Attributes::Max, 100.0f)
                             ->Attribute(Edit::Attributes::SoftMin, 0.0f)
-                            ->Attribute(Edit::Attributes::SoftMax, 1.0f)
+                            ->Attribute(Edit::Attributes::SoftMax, 10.0f)
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
@@ -154,15 +154,6 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
-                        ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_boundaryWidthInDegrees, "Softening boundary width",
-                            "Width of the boundary between shadowed area and lit one. "
-                            "Units are in degrees. "
-                            "If this is 0, softening edge is disabled.")
-                            ->Attribute(Edit::Attributes::Min, 0.f)
-                            ->Attribute(Edit::Attributes::Max, 1.f)
-                            ->Attribute(Edit::Attributes::Suffix, " deg")
-                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
-                            ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsEsmDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_filteringSampleCount, "Filtering sample count",
                             "This is only used when the pixel is predicted to be on the boundary. Specific to PCF and ESM+PCF.")
                             ->Attribute(Edit::Attributes::Min, 4)
@@ -180,7 +171,16 @@ namespace AZ
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
                             ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
                             ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::IsEsmDisabled)
-                            ;
+                        ->DataElement(
+                            Edit::UIHandlers::Slider, &AreaLightComponentConfig::m_normalShadowBias, "Normal Shadow Bias\n",
+                            "Reduces acne by biasing the shadowmap lookup along the geometric normal.\n"
+                            "If this is 0, no biasing is applied.")
+                            ->Attribute(Edit::Attributes::Min, 0.f)
+                            ->Attribute(Edit::Attributes::Max, 10.0f)
+                            ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                            ->Attribute(Edit::Attributes::Visibility, &AreaLightComponentConfig::SupportsShadows)
+                            ->Attribute(Edit::Attributes::ReadOnly, &AreaLightComponentConfig::ShadowsDisabled)
+                                ;
                 }
             }
 

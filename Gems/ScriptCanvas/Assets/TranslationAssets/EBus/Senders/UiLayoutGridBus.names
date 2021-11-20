@@ -1,0 +1,297 @@
+{
+    "entries": [
+        {
+            "key": "UiLayoutGridBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UiLayoutGridBus",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "GetStartingDirection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Starting Direction"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Starting Direction is invoked"
+                    },
+                    "details": {
+                        "name": "Get Starting Direction",
+                        "tooltip": "Gets the starting direction for the layout"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetHorizontalOrder",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Horizontal Order"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Horizontal Order is invoked"
+                    },
+                    "details": {
+                        "name": "Set Horizontal Order",
+                        "tooltip": "Sets the horizontal order for the layout"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Horizontal Order",
+                                "tooltip": "The horizontal order for the layout (0=Left to Right, 1=Right to Left)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetCellSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Cell Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Cell Size is invoked"
+                    },
+                    "details": {
+                        "name": "Set Cell Size",
+                        "tooltip": "Sets the size of a child element"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Cell Size",
+                                "tooltip": "The size of a child element in pixels"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSpacing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Spacing"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Spacing is invoked"
+                    },
+                    "details": {
+                        "name": "Set Spacing",
+                        "tooltip": "Sets the spacing between child elements"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Spacing",
+                                "tooltip": "The spacing between child elements in pixels"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSpacing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Spacing"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Spacing is invoked"
+                    },
+                    "details": {
+                        "name": "Get Spacing",
+                        "tooltip": "Gets the spacing between child elements"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCellSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Cell Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Cell Size is invoked"
+                    },
+                    "details": {
+                        "name": "Get Cell Size",
+                        "tooltip": "Gets the size of a child element"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPadding",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Padding"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Padding is invoked"
+                    },
+                    "details": {
+                        "name": "Get Padding",
+                        "tooltip": "Gets the padding inside the edges of the element"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPadding",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Padding"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Padding is invoked"
+                    },
+                    "details": {
+                        "name": "Set Padding",
+                        "tooltip": "Sets the padding inside the edges of the element"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding",
+                                "tooltip": "The padding inside the edges of the element in pixels"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetHorizontalOrder",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Horizontal Order"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Horizontal Order is invoked"
+                    },
+                    "details": {
+                        "name": "Get Horizontal Order",
+                        "tooltip": "Gets the horizontal order for the layout"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetVerticalOrder",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Vertical Order"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Vertical Order is invoked"
+                    },
+                    "details": {
+                        "name": "Get Vertical Order",
+                        "tooltip": "Gets the vertical order for the layout"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetVerticalOrder",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Vertical Order"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Vertical Order is invoked"
+                    },
+                    "details": {
+                        "name": "Set Vertical Order",
+                        "tooltip": "Sets the vertical order for the layout"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Vertical Order",
+                                "tooltip": "The vertical order for the layout (0=Top to Bottom, 1=Bottom to Top)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetStartingDirection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Starting Direction"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Starting Direction is invoked"
+                    },
+                    "details": {
+                        "name": "Set Starting Direction",
+                        "tooltip": "Sets the starting direction for the layout"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Starting Direction",
+                                "tooltip": "The starting direction for the layout (0=Horizontal Order, 1=Vertical Order)"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -16,7 +16,7 @@ import time
 import azlmbr.math as math
 import azlmbr.paths
 
-sys.path.append(os.path.join(azlmbr.paths.devassets, "Gem", "PythonTests"))
+sys.path.append(os.path.join(azlmbr.paths.projectroot, "Gem", "PythonTests"))
 
 import Atom.atom_utils.material_editor_utils as material_editor
 
@@ -27,10 +27,10 @@ TEST_MATERIAL_1 = "001_DefaultWhite.material"
 TEST_MATERIAL_2 = "002_BaseColorLerp.material"
 TEST_MATERIAL_3 = "003_MetalMatte.material"
 TEST_DATA_PATH = os.path.join(
-    azlmbr.paths.devroot, "Gems", "Atom", "TestData", "TestData", "Materials", "StandardPbrTestCases"
+    azlmbr.paths.engroot, "Gems", "Atom", "TestData", "TestData", "Materials", "StandardPbrTestCases"
 )
 MATERIAL_TYPE_PATH = os.path.join(
-    azlmbr.paths.devroot, "Gems", "Atom", "Feature", "Common", "Assets",
+    azlmbr.paths.engroot, "Gems", "Atom", "Feature", "Common", "Assets",
     "Materials", "Types", "StandardPBR.materialtype",
 )
 CACHE_FILE_EXTENSION = ".azmaterial"
@@ -61,7 +61,7 @@ def run():
     print(f"Material opened: {material_editor.is_open(document_id)}")
 
     # Verify if the test material exists initially
-    target_path = os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Materials", NEW_MATERIAL)
+    target_path = os.path.join(azlmbr.paths.projectroot, "Materials", NEW_MATERIAL)
     print(f"Test asset doesn't exist initially: {not os.path.exists(target_path)}")
 
     # 2) Test Case: Creating a New Material Using Existing One
@@ -109,10 +109,10 @@ def run():
     # Assign new color to the material file and save the document as copy
     expected_color_1 = math.Color(0.5, 0.5, 0.5, 1.0)
     material_editor.set_property(document_id, property_name, expected_color_1)
-    target_path_1 = os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Materials", NEW_MATERIAL_1)
+    target_path_1 = os.path.join(azlmbr.paths.projectroot, "Materials", NEW_MATERIAL_1)
     cache_file_name_1 = os.path.splitext(NEW_MATERIAL_1)  # Example output: ('test_material_1', '.material')
     cache_file_1 = f"{cache_file_name_1[0]}{CACHE_FILE_EXTENSION}"
-    target_path_1_cache = os.path.join(azlmbr.paths.devassets, "Cache", "pc", "materials", cache_file_1)
+    target_path_1_cache = os.path.join(azlmbr.paths.products, "materials", cache_file_1)
     material_editor.save_document_as_copy(document_id, target_path_1)
     material_editor.wait_for_condition(lambda: os.path.exists(target_path_1_cache), 4.0)
 
@@ -120,10 +120,10 @@ def run():
     # Assign new color to the material file save the document as child
     expected_color_2 = math.Color(0.75, 0.75, 0.75, 1.0)
     material_editor.set_property(document_id, property_name, expected_color_2)
-    target_path_2 = os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Materials", NEW_MATERIAL_2)
+    target_path_2 = os.path.join(azlmbr.paths.projectroot, "Materials", NEW_MATERIAL_2)
     cache_file_name_2 = os.path.splitext(NEW_MATERIAL_1)  # Example output: ('test_material_2', '.material')
     cache_file_2 = f"{cache_file_name_2[0]}{CACHE_FILE_EXTENSION}"
-    target_path_2_cache = os.path.join(azlmbr.paths.devassets, "Cache", "pc", "materials", cache_file_2)
+    target_path_2_cache = os.path.join(azlmbr.paths.products, "materials", cache_file_2)
     material_editor.save_document_as_child(document_id, target_path_2)
     material_editor.wait_for_condition(lambda: os.path.exists(target_path_2_cache), 4.0)
 

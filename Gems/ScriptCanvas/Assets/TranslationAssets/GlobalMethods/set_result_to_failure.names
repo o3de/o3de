@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "set_result_to_failure",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "set_result_to_failure",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke set_result_to_failure"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after set_result_to_failure is invoked"
+                    },
+                    "details": {
+                        "name": "set_result_to_failure",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

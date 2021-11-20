@@ -107,8 +107,8 @@ class AWSCoreFixture
     : public UnitTest::ScopedAllocatorSetupFixture
 {
 public:
-    AWSCoreFixture() {}
-    virtual ~AWSCoreFixture() = default;
+    AWSCoreFixture() = default;
+    ~AWSCoreFixture() override = default;
 
     void SetUp() override
     {

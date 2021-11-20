@@ -519,7 +519,7 @@ namespace ScriptCanvasEditor
 
         if (validationResults.HasErrors())
         {
-            AZ::Interface<IUpgradeRequests>::Get()->GraphNeedsManualUpgrade(sm->m_asset.GetId());
+            sm->MarkError("Failed to Parse");
 
             for (auto& err : validationResults.GetEvents())
             {
@@ -686,7 +686,7 @@ namespace ScriptCanvasEditor
 
     void EditorGraphUpgradeMachine::OnComplete(IState::ExitStatus exitStatus)
     {
-        UpgradeNotifications::Bus::Broadcast(&UpgradeNotifications::OnGraphUpgradeComplete, m_asset, exitStatus == IState::ExitStatus::Skipped);
+        UpgradeNotificationsBus::Broadcast(&UpgradeNotifications::OnGraphUpgradeComplete, m_asset, exitStatus == IState::ExitStatus::Skipped);
 
         m_asset = {};
     }
@@ -735,7 +735,7 @@ namespace ScriptCanvasEditor
         {
             AZ::SystemTickBus::Handler::BusDisconnect();
 
-            OnComplete(exitStatus);
+            OnComplete(m_error.empty() ? exitStatus : IState::ExitStatus::Skipped);
         }
     }
 

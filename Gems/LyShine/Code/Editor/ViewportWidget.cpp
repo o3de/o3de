@@ -220,6 +220,7 @@ ViewportWidget::ViewportWidget(EditorWindow* parent)
     InitUiRenderer();
 
     SetupShortcuts();
+    installEventFilter(m_editorWindow);
 
     // Setup a timer for the maximum refresh rate we want.
     // Refresh is actually triggered by interaction events and by the IdleUpdate. This avoids the UI
@@ -257,6 +258,8 @@ ViewportWidget::~ViewportWidget()
     AZ::TickBus::Handler::BusDisconnect();
     LyShinePassDataRequestBus::Handler::BusDisconnect();
     AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
+
+    removeEventFilter(m_editorWindow);
 
     m_uiRenderer.reset();
 
@@ -688,9 +691,9 @@ void ViewportWidget::wheelEvent(QWheelEvent* ev)
     Refresh();
 }
 
-bool ViewportWidget::event(QEvent* ev)
+bool ViewportWidget::eventFilter([[maybe_unused]] QObject* watched, QEvent* event)
 {
-    if (ev->type() == QEvent::ShortcutOverride)
+    if (event->type() == QEvent::ShortcutOverride)
     {
         // When a shortcut is matched, Qt's event processing sends out a shortcut override event
         // to allow other systems to override it. If it's not overridden, then the key events
@@ -698,40 +701,48 @@ bool ViewportWidget::event(QEvent* ev)
         // handler. In our case this causes a problem in preview mode for the Key_Delete event.
         // So, if we are preview mode avoid treating Key_Delete as a shortcut.
 
-        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(ev);
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
         int key = keyEvent->key();
 
         // Override the space bar shortcut so that the key gets handled by the viewport's KeyPress/KeyRelease
         // events when the viewport has the focus. The space bar is set up as a shortcut in order to give the
         // viewport the focus and activate the space bar when another widget has the focus. Once the shortcut
         // is pressed and focus is given to the viewport, the viewport takes over handling the space bar via
-        // the KeyPress/KeyRelease events
-        if (key == Qt::Key_Space)
+        // the KeyPress/KeyRelease events.
+        // Also ignore nudge shortcuts in edit/preview mode so that the KeyPressEvent will be sent.
+        switch (key)
         {
-            ev->accept();
+        case Qt::Key_Space:
+        case Qt::Key_Up:
+        case Qt::Key_Down:
+        case Qt::Key_Left:
+        case Qt::Key_Right:
+        {
+            event->accept();
             return true;
+        }
+        default:
+        {
+            break;
+        }
         }
 
         UiEditorMode editorMode = m_editorWindow->GetEditorMode();
         if (editorMode == UiEditorMode::Preview)
         {
-            switch (key)
+            if (key == Qt::Key_Delete)
             {
-            case Qt::Key_Delete:
-                // Ignore nudge shortcuts in preview mode so that the KeyPressEvent will be sent
-            case Qt::Key_Up:
-            case Qt::Key_Down:
-            case Qt::Key_Left:
-            case Qt::Key_Right:
-            {
-                ev->accept();
+                event->accept();
                 return true;
             }
-            break;
-            };
         }
     }
-    
+
+    return false;
+}
+
+bool ViewportWidget::event(QEvent* ev)
+{
     bool result = RenderViewportWidget::event(ev);
     return result;
 }
@@ -742,8 +753,7 @@ void ViewportWidget::keyPressEvent(QKeyEvent* event)
     if (editorMode == UiEditorMode::Edit)
     {
         // in Edit mode just send input to ViewportInteraction
-        bool handled = m_viewportInteraction->KeyPressEvent(event);
-        if (!handled)
+        if (!m_viewportInteraction->KeyPressEvent(event))
         {
             RenderViewportWidget::keyPressEvent(event);
         }
@@ -1245,115 +1255,6 @@ void ViewportWidget::RenderViewportBackground()
 void ViewportWidget::SetupShortcuts()
 {
     // Actions with shortcuts are created instead of direct shortcuts because the shortcut dispatcher only looks for matching actions
-
-    // Create nudge shortcuts that are active across the entire UI Editor window. Any widgets (such as the spin box widget) that
-    // handle the same keys and want the shortcut to be ignored need to handle that with a shortcut override event.
-    // In preview mode, the nudge shortcuts are ignored via the shortcut override event. KeyPressEvents are sent instead,
-    // and passed along to the canvas
-
-    // Nudge up
-    {
-        QAction* action = new QAction("Up", this);
-        action->setShortcut(QKeySequence(Qt::Key_Up));
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Up, ViewportInteraction::NudgeSpeed::Slow);
-        });
-        addAction(action);
-    }
-
-    // Nudge up fast
-    {
-        QAction* action = new QAction("Up Fast", this);
-        action->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Up));
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Up, ViewportInteraction::NudgeSpeed::Fast);
-        });
-        addAction(action);
-    }
-
-    // Nudge down
-    {
-        QAction* action = new QAction("Down", this);
-        action->setShortcut(QKeySequence(Qt::Key_Down));
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Down, ViewportInteraction::NudgeSpeed::Slow);
-        });
-        addAction(action);
-    }
-
-    // Nudge down fast
-    {
-        QAction* action = new QAction("Down Fast", this);
-        action->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Down));       
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Down, ViewportInteraction::NudgeSpeed::Fast);
-        });
-        addAction(action);
-    }
-
-    // Nudge left
-    {
-        QAction* action = new QAction("Left", this);
-        action->setShortcut(QKeySequence(Qt::Key_Left));
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Left, ViewportInteraction::NudgeSpeed::Slow);
-        });
-        addAction(action);
-    }
-
-    // Nudge left fast
-    {
-        QAction* action = new QAction("Left Fast", this);
-        action->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Left));
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Left, ViewportInteraction::NudgeSpeed::Fast);
-        });
-        addAction(action);
-    }
-
-    // Nudge right
-    {
-        QAction* action = new QAction("Right", this);
-        action->setShortcut(QKeySequence(Qt::Key_Right));
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Right, ViewportInteraction::NudgeSpeed::Slow);
-        });
-        addAction(action);
-    }
-
-    // Nudge right fast
-    {
-        QAction* action = new QAction("Right Fast", this);
-        action->setShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Right));
-        QObject::connect(action,
-            &QAction::triggered,
-            [this]()
-        {
-            m_viewportInteraction->Nudge(ViewportInteraction::NudgeDirection::Right, ViewportInteraction::NudgeSpeed::Fast);
-        });
-        addAction(action);
-    }
 
     // Give the viewport focus and activate the space bar
     {

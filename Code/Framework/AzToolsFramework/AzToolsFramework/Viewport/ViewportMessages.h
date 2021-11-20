@@ -162,12 +162,11 @@ namespace AzToolsFramework
             //! Multiply by DeviceScalingFactor to get the position in viewport pixel space.
             virtual AzFramework::ScreenPoint ViewportWorldToScreen(const AZ::Vector3& worldPosition) = 0;
             //! Transforms a point from Qt widget screen space to world space based on the given clip space depth.
-            //! Depth specifies a relative camera depth to project in the range of [0.f, 1.f].
             //! Returns the world space position if successful.
-            virtual AZStd::optional<AZ::Vector3> ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth) = 0;
+            virtual AZ::Vector3 ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition) = 0;
             //! Casts a point in screen space to a ray in world space originating from the viewport camera frustum's near plane.
             //! Returns a ray containing the ray's origin and a direction normal, if successful.
-            virtual AZStd::optional<ProjectedViewportRay> ViewportScreenToWorldRay(const AzFramework::ScreenPoint& screenPosition) = 0;
+            virtual ProjectedViewportRay ViewportScreenToWorldRay(const AzFramework::ScreenPoint& screenPosition) = 0;
             //! Gets the DPI scaling factor that translates Qt widget space into viewport pixel space.
             virtual float DeviceScalingFactor() = 0;
 
@@ -198,6 +197,8 @@ namespace AzToolsFramework
             virtual float ManipulatorCircleBoundWidth() const = 0;
             //! Returns if sticky select is enabled or not.
             virtual bool StickySelectEnabled() const = 0;
+            //! Returns the default viewport camera position.
+            virtual AZ::Vector3 DefaultEditorCameraPosition() const = 0;
 
         protected:
             ~ViewportSettingsRequests() = default;
@@ -227,9 +228,6 @@ namespace AzToolsFramework
         class MainEditorViewportInteractionRequests
         {
         public:
-            //! Given a point in screen space, return the picked entity (if any).
-            //! Picked EntityId will be returned, InvalidEntityId will be returned on failure.
-            virtual AZ::EntityId PickEntity(const AzFramework::ScreenPoint& point) = 0;
             //! Given a point in screen space, return the terrain position in world space.
             virtual AZ::Vector3 PickTerrain(const AzFramework::ScreenPoint& point) = 0;
             //! Return the terrain height given a world position in 2d (xy plane).
@@ -264,7 +262,6 @@ namespace AzToolsFramework
         {
         public:
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
             //! Returns the current state of the keyboard modifier keys.
             virtual KeyboardModifiers QueryKeyboardModifiers() = 0;
@@ -288,7 +285,6 @@ namespace AzToolsFramework
         {
         public:
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
             //! Returns the current time in seconds.
             //! This interface can be overridden for the purposes of testing to simplify viewport input requests.
@@ -300,6 +296,12 @@ namespace AzToolsFramework
 
         using EditorViewportInputTimeNowRequestBus = AZ::EBus<EditorViewportInputTimeNowRequests>;
 
+        //! The style of cursor override.
+        enum class CursorStyleOverride
+        {
+            Forbidden
+        };
+
         //! Viewport requests for managing the viewport cursor state.
         class ViewportMouseCursorRequests
         {
@@ -310,6 +312,10 @@ namespace AzToolsFramework
             virtual void EndCursorCapture() = 0;
             //! Is the mouse over the viewport.
             virtual bool IsMouseOver() const = 0;
+            //! Set the cursor style override.
+            virtual void SetOverrideCursor(CursorStyleOverride cursorStyleOverride) = 0;
+            //! Clear the cursor style override.
+            virtual void ClearOverrideCursor() = 0;
 
         protected:
             ~ViewportMouseCursorRequests() = default;
@@ -327,6 +333,12 @@ namespace AzToolsFramework
 
         return entityContextId;
     }
+
+    //! Performs an intersection test against meshes in the scene, if there is a hit (the ray intersects
+    //! a mesh), that position is returned, otherwise a point projected defaultDistance from the
+    //! origin of the ray will be returned.
+    AZ::Vector3 FindClosestPickIntersection(
+        AzFramework::ViewportId viewportId, const AzFramework::ScreenPoint& screenPoint, float rayLength, float defaultDistance);
 
     //! Maps a mouse interaction event to a ClickDetector event.
     //! @note Function only cares about up or down events, all other events are mapped to Nil (ignored).

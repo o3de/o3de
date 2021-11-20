@@ -1,0 +1,35 @@
+{
+    "entries": [
+        {
+            "key": "{0D5B9544-C36B-490F-899A-E260D8351620}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Add Success",
+                "category": "Utilities/Unit Testing",
+                "tooltip": "adds a success directly to the unit testing framework"
+            },
+            "slots": [
+                {
+                    "key": "DataInput_Report",
+                    "details": {
+                        "name": "Report"
+                    }
+                },
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                }
+            ]
+        }
+    ]
+}

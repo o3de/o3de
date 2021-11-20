@@ -14,7 +14,7 @@
 
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
@@ -41,6 +41,7 @@ namespace AzToolsFramework
 {
     class EditorEntityUiInterface;
     class EntityOutlinerListModel;
+    class EntityOutlinerContainerProxyModel;
     class EntityOutlinerSortFilterProxyModel;
 
     namespace EntityOutliner
@@ -58,7 +59,7 @@ namespace AzToolsFramework
         , private ToolsApplicationEvents::Bus::Handler
         , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityInfoNotificationBus::Handler
-        , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+        , private ViewportEditorModeNotificationsBus::Handler
         , private Prefab::PrefabPublicNotificationBus::Handler
         , private EditorWindowUIRequestBus::Handler
     {
@@ -100,9 +101,11 @@ namespace AzToolsFramework
         void OnEntityInfoUpdatedAddChildEnd(AZ::EntityId /*parentId*/, AZ::EntityId /*childId*/) override;
         void OnEntityInfoUpdatedName(AZ::EntityId entityId, const AZStd::string& /*name*/) override;
 
-        // EditorComponentModeNotificationBus
-        void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-        void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
 
         // PrefabPublicNotificationBus
         void OnPrefabInstancePropagationBegin() override;
@@ -117,6 +120,7 @@ namespace AzToolsFramework
 
         Ui::EntityOutlinerWidgetUI* m_gui;
         EntityOutlinerListModel* m_listModel;
+        EntityOutlinerContainerProxyModel* m_containerModel;
         EntityOutlinerSortFilterProxyModel* m_proxyModel;
         AZ::u64 m_selectionContextId;
         AZStd::vector<AZ::EntityId> m_selectedEntityIds;

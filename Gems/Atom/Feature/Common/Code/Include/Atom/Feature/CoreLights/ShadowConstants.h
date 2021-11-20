@@ -42,7 +42,6 @@ namespace AZ
             // [GFX TODO][ATOM-2408] Make the max number of cascade modifiable at runtime.
             static constexpr uint16_t MaxNumberOfCascades = 4;
             static constexpr uint16_t MaxPcfSamplingCount = 64;
-            static constexpr float MaxSofteningBoundaryWidth = 0.1f;
         } // namespace Shadow
 
     } // namespace Render

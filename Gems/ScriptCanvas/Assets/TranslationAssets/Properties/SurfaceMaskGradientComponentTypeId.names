@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "SurfaceMaskGradientComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "SurfaceMaskGradientComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

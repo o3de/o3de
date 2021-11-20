@@ -22,6 +22,9 @@ namespace AzToolsFramework::ViewportUi
     using SwitcherId = IdType<struct SwitcherIdType>;
     using TextFieldId = IdType<struct TextFieldIdType>;
 
+    //! Callback function for viewport UI back button.
+    using ViewportUiBackButtonCallback = AZStd::function<void()>;
+
     inline const ViewportUiElementId InvalidViewportUiElementId = ViewportUiElementId(0);
     inline const ButtonId InvalidButtonId = ButtonId(0);
     inline const ClusterId InvalidClusterId = ClusterId(0);
@@ -78,7 +81,7 @@ namespace AzToolsFramework::ViewportUi
         virtual void RegisterSwitcherEventHandler(SwitcherId switcherId, AZ::Event<ButtonId>::Handler& handler) = 0;
         //! Removes a cluster from the Viewport UI system.
         virtual void RemoveCluster(ClusterId clusterId) = 0;
-        //!
+        //! Removes a switcher from the Viewport UI system.
         virtual void RemoveSwitcher(SwitcherId switcherId) = 0;
         //! Sets the visibility of the cluster.
         virtual void SetClusterVisible(ClusterId clusterId, bool visible) = 0;
@@ -95,13 +98,13 @@ namespace AzToolsFramework::ViewportUi
         virtual void RemoveTextField(TextFieldId textFieldId) = 0;
         //! Sets the visibility of the text field.
         virtual void SetTextFieldVisible(TextFieldId textFieldId, bool visible) = 0;
-        //! Create the highlight border for Component Mode.
-        virtual void CreateComponentModeBorder(const AZStd::string& borderTitle) = 0;
-        //! Remove the highlight border for Component Mode.
-        virtual void RemoveComponentModeBorder() = 0;
-        //! Invoke a button press in a cluster.
+        //! Create the highlight border with optional back button to exit the given editor mode.
+        virtual void CreateViewportBorder(const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback) = 0;
+        //! Remove the highlight border.
+        virtual void RemoveViewportBorder() = 0;
+        //! Invoke a button press on a cluster.
         virtual void PressButton(ClusterId clusterId, ButtonId buttonId) = 0;
-        //!
+        //! Invoke a button press on a switcher.
         virtual void PressButton(SwitcherId switcherId, ButtonId buttonId) = 0;
     };
 

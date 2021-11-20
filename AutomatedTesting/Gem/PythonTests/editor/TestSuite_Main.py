@@ -41,3 +41,15 @@ class TestAutomation(TestAutomationBase):
         from .EditorScripts import BasicEditorWorkflows_LevelEntityComponentCRUD as test_module
         self._run_test(request, workspace, editor, test_module, batch_mode=False, autotest_mode=False,
                        use_null_renderer=False)
+
+    def test_EntityOutlienr_EntityOrdering(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import EntityOutliner_EntityOrdering as test_module
+        self._run_test(
+            request, 
+            workspace, 
+            editor, 
+            test_module, 
+            batch_mode=False, 
+            autotest_mode=True,
+            extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"]
+        )

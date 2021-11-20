@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "exit",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "exit",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke exit"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after exit is invoked"
+                    },
+                    "details": {
+                        "name": "exit",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

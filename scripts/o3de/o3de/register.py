@@ -596,7 +596,7 @@ def register(engine_path: pathlib.Path = None,
     :param default_third_party_folder: default 3rd party cache folder
     :param external_subdir_engine_path: Path to the engine to use when registering an external subdirectory.
      The registration occurs in the engine.json file in this case
-    :param external_subdir_engine_path: Path to the project to use when registering an external subdirectory.
+    :param external_subdir_project_path: Path to the project to use when registering an external subdirectory.
      The registrations occurs in the project.json in this case
     :param remove: add/remove the entries
     :param force: force update of the engine_path for specified "engine_name" from the engine.json file
@@ -604,7 +604,18 @@ def register(engine_path: pathlib.Path = None,
     :return: 0 for success or non 0 failure code
     """
 
-    json_data = manifest.load_o3de_manifest()
+    try:
+        json_data = manifest.load_o3de_manifest()
+    except json.JSONDecodeError:
+        if not force:
+            logger.error('O3DE object registration has halted due to JSON Decode Error in manifest at path:'
+                         f' "{manifest.get_o3de_manifest()}".'
+                         '\n      Registration can be forced using the --force option,'
+                         ' but that will result in the manifest using default data')
+            return 1
+        else:
+            # Use a default manifest data an proceed
+            json_data = manifest.get_default_o3de_manifest_json_data()
 
     result = 0
 
@@ -621,6 +632,7 @@ def register(engine_path: pathlib.Path = None,
             return 1
         result = result or register_gem_path(json_data, gem_path, remove,
                                    external_subdir_engine_path, external_subdir_project_path)
+
     if isinstance(external_subdir_path, pathlib.PurePath):
         if not external_subdir_path:
             logger.error(f'External Subdirectory path is None.')

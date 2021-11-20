@@ -10,12 +10,15 @@
 #include <IMultiplayerConnectionMock.h>
 #include <MockInterfaces.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/EBus/EventSchedulerSystemComponent.h>
 #include <AzCore/Console/Console.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
+#include <AzCore/UnitTest/Mocks/MockITime.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
@@ -25,10 +28,11 @@
 #include <Multiplayer/Components/NetworkHierarchyChildComponent.h>
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <Multiplayer/Components/NetworkTransformComponent.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h>
+#include <Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h>
 #include <NetworkEntity/NetworkEntityAuthorityTracker.h>
 #include <NetworkEntity/NetworkEntityTracker.h>
-#include <NetworkEntity/EntityReplication/EntityReplicationManager.h>
-#include <NetworkEntity/EntityReplication/EntityReplicator.h>
+#include <Tests/TestMultiplayerComponent.h>
 
 namespace Multiplayer
 {
@@ -92,6 +96,12 @@ namespace Multiplayer
             m_netTransformDescriptor.reset(NetworkTransformComponent::CreateDescriptor());
             m_netTransformDescriptor->Reflect(m_serializeContext.get());
 
+            m_testMultiplayerComponentDescriptor.reset(MultiplayerTest::TestMultiplayerComponent::CreateDescriptor());
+            m_testMultiplayerComponentDescriptor->Reflect(m_serializeContext.get());
+
+            m_testInputDriverComponentDescriptor.reset(MultiplayerTest::TestInputDriverComponent::CreateDescriptor());
+            m_testInputDriverComponentDescriptor->Reflect(m_serializeContext.get());
+
             m_mockMultiplayer = AZStd::make_unique<NiceMock<MockMultiplayer>>();
             AZ::Interface<IMultiplayer>::Register(m_mockMultiplayer.get());
 
@@ -102,13 +112,15 @@ namespace Multiplayer
             GetMultiplayer()->GetStats().ReserveComponentStats(Multiplayer::InvalidNetComponentId, 50, 0);
 
             m_mockNetworkEntityManager = AZStd::make_unique<NiceMock<MockNetworkEntityManager>>();
+            AZ::Interface<INetworkEntityManager>::Register(m_mockNetworkEntityManager.get());
 
             ON_CALL(*m_mockNetworkEntityManager, AddEntityToEntityMap(_, _)).WillByDefault(Invoke(this, &HierarchyTests::AddEntityToEntityMap));
             ON_CALL(*m_mockNetworkEntityManager, GetEntity(_)).WillByDefault(Invoke(this, &HierarchyTests::GetEntity));
             ON_CALL(*m_mockNetworkEntityManager, GetNetEntityIdById(_)).WillByDefault(Invoke(this, &HierarchyTests::GetNetEntityIdById));
 
-            m_mockTime = AZStd::make_unique<NiceMock<MockTime>>();
-            AZ::Interface<AZ::ITime>::Register(m_mockTime.get());
+            m_mockTime = AZStd::make_unique<AZ::NiceTimeSystemMock>();
+
+            m_eventScheduler = AZStd::make_unique<AZ::EventSchedulerSystemComponent>();
 
             m_mockNetworkTime = AZStd::make_unique<NiceMock<MockNetworkTime>>();
             AZ::Interface<INetworkTime>::Register(m_mockNetworkTime.get());
@@ -135,6 +147,7 @@ namespace Multiplayer
             m_multiplayerComponentRegistry = AZStd::make_unique<MultiplayerComponentRegistry>();
             ON_CALL(*m_mockNetworkEntityManager, GetMultiplayerComponentRegistry()).WillByDefault(Return(m_multiplayerComponentRegistry.get()));
             RegisterMultiplayerComponents();
+            MultiplayerTest::RegisterMultiplayerComponents();
         }
 
         void TearDown() override
@@ -155,15 +168,18 @@ namespace Multiplayer
             m_networkEntityAuthorityTracker.reset();
 
             AZ::Interface<INetworkTime>::Unregister(m_mockNetworkTime.get());
-            AZ::Interface<AZ::ITime>::Unregister(m_mockTime.get());
+            AZ::Interface<INetworkEntityManager>::Unregister(m_mockNetworkEntityManager.get());
             AZ::Interface<IMultiplayer>::Unregister(m_mockMultiplayer.get());
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(m_mockComponentApplicationRequests.get());
 
+            m_eventScheduler.reset();
             m_mockTime.reset();
 
             m_mockNetworkEntityManager.reset();
             m_mockMultiplayer.reset();
 
+            m_testInputDriverComponentDescriptor.reset();
+            m_testMultiplayerComponentDescriptor.reset();
             m_transformDescriptor.reset();
             m_netTransformDescriptor.reset();
             m_hierarchyRootDescriptor.reset();
@@ -185,10 +201,13 @@ namespace Multiplayer
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_hierarchyRootDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_hierarchyChildDescriptor;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_netTransformDescriptor;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_testMultiplayerComponentDescriptor;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_testInputDriverComponentDescriptor;
 
         AZStd::unique_ptr<NiceMock<MockMultiplayer>> m_mockMultiplayer;
         AZStd::unique_ptr<MockNetworkEntityManager> m_mockNetworkEntityManager;
-        AZStd::unique_ptr<NiceMock<MockTime>> m_mockTime;
+        AZStd::unique_ptr<AZ::EventSchedulerSystemComponent> m_eventScheduler;
+        AZStd::unique_ptr<AZ::NiceTimeSystemMock> m_mockTime;
         AZStd::unique_ptr<NiceMock<MockNetworkTime>> m_mockNetworkTime;
 
         AZStd::unique_ptr<NiceMock<IMultiplayerConnectionMock>> m_mockConnection;
@@ -205,7 +224,7 @@ namespace Multiplayer
         NetworkEntityHandle AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity)
         {
             m_networkEntityMap[netEntityId] = entity;
-            return NetworkEntityHandle(entity, netEntityId, m_networkEntityTracker.get());
+            return NetworkEntityHandle(entity, m_networkEntityTracker.get());
         }
 
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const
@@ -248,17 +267,19 @@ namespace Multiplayer
 
         void SetupEntity(const AZStd::unique_ptr<AZ::Entity>& entity, NetEntityId netId, NetEntityRole role)
         {
-            const auto netBindComponent = entity->FindComponent<Multiplayer::NetBindComponent>();
-            EXPECT_NE(netBindComponent, nullptr);
-            netBindComponent->PreInit(entity.get(), PrefabEntityId{ AZ::Name("test"), 1 }, netId, role);
-            entity->Init();
+            if (const auto netBindComponent = entity->FindComponent<Multiplayer::NetBindComponent>())
+            {
+                netBindComponent->PreInit(entity.get(), PrefabEntityId{ AZ::Name("test"), 1 }, netId, role);
+                entity->Init();
+            }
         }
 
         static void StopEntity(const AZStd::unique_ptr<AZ::Entity>& entity)
         {
-            const auto netBindComponent = entity->FindComponent<Multiplayer::NetBindComponent>();
-            EXPECT_NE(netBindComponent, nullptr);
-            netBindComponent->StopEntity();
+            if (const auto netBindComponent = entity->FindComponent<Multiplayer::NetBindComponent>())
+            {
+                netBindComponent->StopEntity();
+            }
         }
 
         static void StopAndDeactivateEntity(AZStd::unique_ptr<AZ::Entity>& entity)
@@ -300,9 +321,31 @@ namespace Multiplayer
             constexpr uint32_t bufferSize = 100;
             AZStd::array<uint8_t, bufferSize> buffer = {};
             NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
-            inSerializer.Serialize(reinterpret_cast<uint32_t&>(netParentId),
-                "parentEntityId", /* Derived from NetworkTransformComponent.AutoComponent.xml */
-                AZStd::numeric_limits<uint32_t>::min(), AZStd::numeric_limits<uint32_t>::max());
+            ISerializer& serializer = inSerializer;
+            serializer.Serialize(netParentId, "parentEntityId"); // Derived from NetworkTransformComponent.AutoComponent.xml
+
+            NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
+
+            ReplicationRecord notifyRecord = currentRecord;
+            entity->FindComponent<NetworkTransformComponent>()->SerializeStateDeltaMessage(currentRecord, outSerializer);
+            entity->FindComponent<NetworkTransformComponent>()->NotifyStateDeltaChanges(notifyRecord);
+        }
+
+        void SetTranslationOnNetworkTransform(const AZStd::unique_ptr<AZ::Entity>& entity, AZ::Vector3 translation)
+        {
+            /* Derived from NetworkTransformComponent.AutoComponent.xml */
+            constexpr int totalBits = 6 /*NetworkTransformComponentInternal::AuthorityToClientDirtyEnum::Count*/;
+            constexpr int translationBit = 1 /*NetworkTransformComponentInternal::AuthorityToClientDirtyEnum::translation_DirtyFlag*/;
+
+            ReplicationRecord currentRecord;
+            currentRecord.m_authorityToClient.AddBits(totalBits);
+            currentRecord.m_authorityToClient.SetBit(translationBit, true);
+
+            constexpr uint32_t bufferSize = 100;
+            AZStd::array<uint8_t, bufferSize> buffer = {};
+            NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
+            static_cast<ISerializer*>(&inSerializer)->Serialize(translation,
+                "translation" /* Derived from NetworkTransformComponent.AutoComponent.xml */);
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 
@@ -325,9 +368,8 @@ namespace Multiplayer
             constexpr uint32_t bufferSize = 100;
             AZStd::array<uint8_t, bufferSize> buffer = {};
             NetworkInputSerializer inSerializer(buffer.begin(), bufferSize);
-            inSerializer.Serialize(reinterpret_cast<uint32_t&>(value),
-                "hierarchyRoot", /* Derived from NetworkHierarchyChildComponent.AutoComponent.xml */
-                AZStd::numeric_limits<uint32_t>::min(), AZStd::numeric_limits<uint32_t>::max());
+            ISerializer& serializer = inSerializer;
+            serializer.Serialize(value, "hierarchyRoot"); // Derived from NetworkHierarchyChildComponent.AutoComponent.xml
 
             NetworkOutputSerializer outSerializer(buffer.begin(), bufferSize);
 
@@ -368,6 +410,9 @@ namespace Multiplayer
             entityInfo.m_entity->CreateComponent<AzFramework::TransformComponent>();
             entityInfo.m_entity->CreateComponent<NetBindComponent>();
             entityInfo.m_entity->CreateComponent<NetworkTransformComponent>();
+            entityInfo.m_entity->CreateComponent<MultiplayerTest::TestMultiplayerComponent>();
+            entityInfo.m_entity->CreateComponent<MultiplayerTest::TestInputDriverComponent>();
+
             switch (entityInfo.m_role)
             {
             case EntityInfo::Role::Root:

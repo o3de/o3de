@@ -1,0 +1,55 @@
+{
+    "entries": [
+        {
+            "key": "{02A3A3E6-9D80-432B-8AF5-F3AF24CF6959}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Equal To (==)",
+                "category": "Math/Comparisons",
+                "tooltip": "Checks if Value A and Value B are equal to each other"
+            },
+            "slots": [
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                },
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Signal to perform the evaluation when desired."
+                    }
+                },
+                {
+                    "key": "Output_True",
+                    "details": {
+                        "name": "True",
+                        "tooltip": "Signaled if the result of the operation is true."
+                    }
+                },
+                {
+                    "key": "Output_False",
+                    "details": {
+                        "name": "False",
+                        "tooltip": "Signaled if the result of the operation is false."
+                    }
+                },
+                {
+                    "key": "DataInput_Value A",
+                    "details": {
+                        "name": "Value A"
+                    }
+                },
+                {
+                    "key": "DataInput_Value B",
+                    "details": {
+                        "name": "Value B"
+                    }
+                }
+            ]
+        }
+    ]
+}

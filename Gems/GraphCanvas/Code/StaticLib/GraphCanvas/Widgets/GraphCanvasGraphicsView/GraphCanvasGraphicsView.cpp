@@ -12,6 +12,7 @@
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 
 #include <GraphCanvas/Widgets/GraphCanvasGraphicsView/GraphCanvasGraphicsView.h>
 
@@ -46,6 +47,7 @@ namespace GraphCanvas
         , m_queuedFocus(nullptr)
     {
         m_viewId = AZ::Entity::MakeId();
+        m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC(m_viewId.ToString()));
 
         setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -603,8 +605,8 @@ namespace GraphCanvas
         const int maxSize = 17500;
         if (windowSize.width() > maxSize || windowSize.height() > maxSize)
         {
-            ToastConfiguration toastConfiguration(ToastType::Information, "Screenshot", "Screenshot attempted to capture an area too large. Some down-ressing may occur.");
-            ShowToastNotification(toastConfiguration);
+            AzQtComponents::ToastConfiguration toastConfiguration(AzQtComponents::ToastType::Information, "Screenshot", "Screenshot attempted to capture an area too large. Some down-ressing may occur.");
+            m_notificationsView->ShowToastNotification(toastConfiguration);
 
             if (windowSize.width() > maxSize)
             {
@@ -825,64 +827,24 @@ namespace GraphCanvas
         invalidateScene(GetViewableAreaInSceneCoordinates());
     }
 
-    void GraphCanvasGraphicsView::HideToastNotification(const ToastId& toastId)
+    void GraphCanvasGraphicsView::HideToastNotification(const AzToolsFramework::ToastId& toastId)
     {
-        auto notificationIter = m_notifications.find(toastId);
-
-        if (notificationIter != m_notifications.end())
-        {
-            auto queuedIter = AZStd::find(m_queuedNotifications.begin(), m_queuedNotifications.end(), toastId);
-
-            if (queuedIter != m_queuedNotifications.end())
-            {
-                m_queuedNotifications.erase(queuedIter);
-            }
-
-            notificationIter->second->reject();
-        }
+        m_notificationsView->HideToastNotification(toastId);
     }
 
-    ToastId GraphCanvasGraphicsView::ShowToastNotification(const ToastConfiguration& toastConfiguration)
+    AzToolsFramework::ToastId GraphCanvasGraphicsView::ShowToastNotification(const AzQtComponents::ToastConfiguration& toastConfiguration)
     {
-        ToastNotification* notification = aznew ToastNotification(this, toastConfiguration);
-
-        ToastId toastId = notification->GetToastId();
-        m_notifications[toastId] = notification;
-
-        m_queuedNotifications.emplace_back(toastId);
-
-        if (!m_activeNotification.IsValid())
-        {
-            DisplayQueuedNotification();
-        }
-
-        return toastId;
+        return m_notificationsView->ShowToastNotification(toastConfiguration);
     }
 
-    ToastId GraphCanvasGraphicsView::ShowToastAtCursor(const ToastConfiguration& toastConfiguration)
+    AzToolsFramework::ToastId GraphCanvasGraphicsView::ShowToastAtCursor(const AzQtComponents::ToastConfiguration& toastConfiguration)
     {
-        ToastNotification* notification = aznew ToastNotification(this, toastConfiguration);
-
-        notification->ShowToastAtCursor();
-
-        ToastId toastId = notification->GetToastId();
-
-        m_notifications[toastId] = notification;
-
-        return toastId;
+        return m_notificationsView->ShowToastAtCursor(toastConfiguration);
     }
 
-    ToastId GraphCanvasGraphicsView::ShowToastAtPoint(const QPoint& screenPosition, const QPointF& anchorPoint, const ToastConfiguration& toastConfiguration)
+    AzToolsFramework::ToastId GraphCanvasGraphicsView::ShowToastAtPoint(const QPoint& screenPosition, const QPointF& anchorPoint, const AzQtComponents::ToastConfiguration& toastConfiguration)
     {
-        ToastNotification* notification = aznew ToastNotification(this, toastConfiguration);
-
-        notification->ShowToastAtPoint(screenPosition, anchorPoint);
-
-        ToastId toastId = notification->GetToastId();
-
-        m_notifications[toastId] = notification;
-
-        return toastId;
+        return m_notificationsView->ShowToastAtPoint(screenPosition, anchorPoint, toastConfiguration);
     }
 
     bool GraphCanvasGraphicsView::IsShowing() const
@@ -1245,14 +1207,14 @@ namespace GraphCanvas
 
         CalculateInternalRectangle();
 
-        UpdateToastPosition();
+        m_notificationsView->UpdateToastPosition();
     }
 
     void GraphCanvasGraphicsView::moveEvent(QMoveEvent* event)
     {
         QGraphicsView::moveEvent(event);
 
-        UpdateToastPosition();
+        m_notificationsView->UpdateToastPosition();
     }
 
     void GraphCanvasGraphicsView::scrollContentsBy(int dx, int dy)
@@ -1266,25 +1228,14 @@ namespace GraphCanvas
     {
         QGraphicsView::showEvent(showEvent);
 
-        if (m_activeNotification.IsValid())
-        {
-            DisplayQueuedNotification();
-        }
+        m_notificationsView->OnShow();
     }
 
     void GraphCanvasGraphicsView::hideEvent(QHideEvent* hideEvent)
     {
         QGraphicsView::hideEvent(hideEvent);
 
-        if (m_activeNotification.IsValid())
-        {
-            auto notificationIter = m_notifications.find(m_activeNotification);
-
-            if (notificationIter != m_notifications.end())
-            {
-                notificationIter->second->hide();
-            }
-        }
+        m_notificationsView->OnHide();
     }
 
     void GraphCanvasGraphicsView::OnSettingsChanged()
@@ -1376,25 +1327,6 @@ namespace GraphCanvas
     {
         AZ::EntityId sceneId = GetScene();
         BookmarkManagerRequestBus::Event(sceneId, &BookmarkManagerRequests::ActivateShortcut, bookmarkShortcut);
-    }
-
-    void GraphCanvasGraphicsView::UpdateToastPosition()
-    {
-        if (m_activeNotification.IsValid())
-        {
-            auto notificationIter = m_notifications.find(m_activeNotification);
-
-            if (notificationIter != m_notifications.end())
-            {
-                // Want this to be roughly in the top right corner of the graphics view.
-                QPoint globalPoint = mapToGlobal(QPoint(width() - 10, 10));
-
-                // Anchor point will be top right
-                QPointF anchorPoint = QPointF(1, 0);
-
-                notificationIter->second->UpdatePosition(globalPoint, anchorPoint);
-            }
-        }
     }
 
     void GraphCanvasGraphicsView::CenterOnSceneMembers(const AZStd::vector<AZ::EntityId>& memberIds)
@@ -1640,50 +1572,6 @@ namespace GraphCanvas
         else if (AZ::TickBus::Handler::BusIsConnected())
         {
             AZ::TickBus::Handler::BusDisconnect();
-        }
-    }
-
-    void GraphCanvasGraphicsView::OnNotificationHidden()
-    {
-        m_activeNotification.SetInvalid();
-
-        if (!m_queuedNotifications.empty())
-        {
-            DisplayQueuedNotification();
-        }
-    }
-
-    void GraphCanvasGraphicsView::DisplayQueuedNotification()
-    {        
-        if (m_queuedNotifications.empty() && isVisible())
-        {
-            return;
-        }
-
-        ToastId toastId = m_queuedNotifications.front();
-        m_queuedNotifications.erase(m_queuedNotifications.begin());
-
-        auto notificationIter = m_notifications.find(toastId);
-
-        if (notificationIter != m_notifications.end())
-        {
-            m_activeNotification = toastId;
-
-            // Want this to be roughly in the top right corner of the graphics view.
-            QPoint globalPoint = mapToGlobal(QPoint(width() - 10, 10));
-
-            // Anchor point will be top right
-            QPointF anchorPoint = QPointF(1, 0);
-
-            notificationIter->second->ShowToastAtPoint(globalPoint, anchorPoint);
-
-            QObject::connect(notificationIter->second, &ToastNotification::ToastNotificationHidden, this, &GraphCanvasGraphicsView::OnNotificationHidden);
-        }
-
-        // If we didn't actually show something, recurse to avoid things getting stuck in the queue.
-        if (!m_activeNotification.IsValid())
-        {
-            DisplayQueuedNotification();
         }
     }
 }

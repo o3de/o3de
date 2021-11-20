@@ -25,8 +25,6 @@
 
 #include <AzCore/Utils/Utils.h>
 
-// AzFramework
-#include <AzFramework/API/ApplicationAPI.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
@@ -172,9 +170,6 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
     }
 
     m_pRecentList = pList;
-
-    const char* engineRoot;
-    EBUS_EVENT_RESULT(engineRoot, AzFramework::ApplicationRequests::Bus, GetEngineRoot);
 
     auto projectPath = AZ::Utils::GetProjectPath();
     QString gamePath{projectPath.c_str()};

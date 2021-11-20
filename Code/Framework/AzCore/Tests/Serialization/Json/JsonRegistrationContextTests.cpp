@@ -327,7 +327,7 @@ namespace JsonSerializationTests
         SerializerWithOneType::Unreflect(m_jsonRegistrationContext.get());
     }
 
-#if GTEST_OS_SUPPORTS_DEATH_TEST
+#if GTEST_HAS_DEATH_TEST
     using JsonSerializationDeathTests = JsonRegistrationContextTests;
     TEST_F(JsonSerializationDeathTests, DoubleUnregisterSerializer_Asserts)
     {
@@ -338,5 +338,6 @@ namespace JsonSerializationTests
             }, ".*"
         );
     }
-#endif // GTEST_OS_SUPPORTS_DEATH_TEST
+#endif // GTEST_HAS_DEATH_TEST
+
 } //namespace JsonSerializationTests

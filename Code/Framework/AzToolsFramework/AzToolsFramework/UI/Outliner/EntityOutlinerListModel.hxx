@@ -17,6 +17,7 @@
 
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityRuntimeActivationBus.h>
@@ -54,6 +55,7 @@ namespace AzToolsFramework
         , private EntityCompositionNotificationBus::Handler
         , private EditorEntityRuntimeActivationChangeNotificationBus::Handler
         , private AZ::EntitySystemBus::Handler
+        , private ContainerEntityNotificationBus::Handler
     {
         Q_OBJECT;
 
@@ -68,6 +70,13 @@ namespace AzToolsFramework
             ColumnLockToggle,           //!< Lock Icons
             ColumnSortIndex,            //!< Index of sort order
             ColumnCount                 //!< Total number of columns
+        };
+
+        enum ReparentForInvalid 
+        {
+            None,                       //!< For an invalid location the entity does not change location
+            AppendEnd,                  //!< Append Item to end of target parent list
+            AppendBeginning,            //!< Append Item to the beginning of target parent list
         };
 
         // Note: the ColumnSortIndex column isn't shown, hence the -1 and the need for a separate counter.
@@ -143,6 +152,8 @@ namespace AzToolsFramework
 
         void SetSortMode(EntityOutliner::DisplaySortMode sortMode) { m_sortMode = sortMode; }
         void SetDropOperationInProgress(bool inProgress);
+        void ProcessEntityUpdates();
+
     Q_SIGNALS:
         void ExpandEntity(const AZ::EntityId& entityId, bool expand);
         void SelectEntity(const AZ::EntityId& entityId, bool select);
@@ -158,7 +169,7 @@ namespace AzToolsFramework
 
         // Buffer Processing Slots - These are called using single-shot events when the buffers begin to fill.
         bool CanReparentEntities(const AZ::EntityId& newParentId, const EntityIdList& selectedEntityIds) const;
-        bool ReparentEntities(const AZ::EntityId& newParentId, const EntityIdList& selectedEntityIds, const AZ::EntityId& beforeEntityId = AZ::EntityId());
+        bool ReparentEntities(const AZ::EntityId& newParentId, const EntityIdList& selectedEntityIds, const AZ::EntityId& beforeEntityId = AZ::EntityId(), ReparentForInvalid forInvalid = None);
 
         //! Use the current filter setting and re-evaluate the filter.
         void InvalidateFilter();
@@ -176,7 +187,6 @@ namespace AzToolsFramework
         void QueueEntityUpdate(AZ::EntityId entityId);
         void QueueAncestorUpdate(AZ::EntityId entityId);
         void QueueEntityToExpand(AZ::EntityId entityId, bool expand);
-        void ProcessEntityUpdates();
         void ProcessEntityInfoResetEnd();
         AZStd::unordered_set<AZ::EntityId> m_entitySelectQueue;
         AZStd::unordered_set<AZ::EntityId> m_entityExpandQueue;
@@ -215,6 +225,9 @@ namespace AzToolsFramework
 
         // EditorEntityRuntimeActivationChangeNotificationBus::Handler
         void OnEntityRuntimeActivationChanged(AZ::EntityId entityId, bool activeOnStart) override;
+
+        // ContainerEntityNotificationBus overrides ...
+        void OnContainerEntityStatusChanged(AZ::EntityId entityId, bool open) override;
 
         // Drag/Drop of components from Component Palette.
         bool dropMimeDataComponentPalette(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);

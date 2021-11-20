@@ -15,6 +15,7 @@
 #include "ViewportTitleDlg.h"
 
 // Qt
+#include <QLabel>
 #include <QInputDialog>
 
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
@@ -39,6 +40,7 @@
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/algorithm.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
@@ -136,16 +138,18 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
 
     connect(this, &CViewportTitleDlg::ActionTriggered, MainWindow::instance()->GetActionManager(), &ActionManager::ActionTriggered);
 
-    AZ::VR::VREventBus::Handler::BusConnect();
-
     OnInitDialog();
 }
 
 CViewportTitleDlg::~CViewportTitleDlg()
 {
-    AZ::VR::VREventBus::Handler::BusDisconnect();
     GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
+
+    if (m_prefabViewportFocusPathHandler)
+    {
+        delete m_prefabViewportFocusPathHandler;
+    }
 }
 
 void CViewportTitleDlg::SetupCameraDropdownMenu()
@@ -229,10 +233,6 @@ void CViewportTitleDlg::SetupOverflowMenu()
     connect(m_audioMuteAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedMuteAudio);
     overFlowMenu->addAction(m_audioMuteAction);
 
-    m_enableVRAction = new QAction("Enable VR Preview", overFlowMenu);
-    connect(m_enableVRAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedEnableVR);
-    overFlowMenu->addAction(m_enableVRAction);
-
     overFlowMenu->addSeparator();
 
     m_enableGridSnappingAction = new QAction("Enable Grid Snapping", overFlowMenu);
@@ -298,22 +298,27 @@ void CViewportTitleDlg::OnInitDialog()
     connect(displayInfoHelper, &CViewportTitleDlgDisplayInfoHelper::ViewportInfoStatusUpdated, this, &CViewportTitleDlg::UpdateDisplayInfo);
     UpdateDisplayInfo();
 
-    // This is here just in case this class hasn't been created before
-    // a VR headset was initialized
-    m_enableVRAction->setEnabled(false);
-    if (AZ::VR::HMDDeviceRequestBus::GetTotalNumOfEventHandlers() != 0)
-    {
-        m_enableVRAction->setEnabled(true);
-    }
-
-    AZ::VR::VREventBus::Handler::BusConnect();
-
     QFontMetrics metrics({});
     int width = static_cast<int>(metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier);
 
     m_cameraSpeed->setFixedWidth(width);
 
-    m_prefabViewportFocusPathHandler.Initialize(m_ui->m_prefabFocusPath, m_ui->m_prefabFocusBackButton);
+    bool isPrefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+    if (isPrefabSystemEnabled)
+    {
+        m_prefabViewportFocusPathHandler = new AzToolsFramework::Prefab::PrefabViewportFocusPathHandler();
+        m_prefabViewportFocusPathHandler->Initialize(m_ui->m_prefabFocusPath, m_ui->m_prefabFocusBackButton);
+    }
+    else
+    {
+        m_ui->m_prefabFocusPath->setEnabled(false);
+        m_ui->m_prefabFocusBackButton->setEnabled(false);
+        m_ui->m_prefabFocusPath->hide();
+        m_ui->m_prefabFocusBackButton->hide();
+    }
+    
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -907,23 +912,6 @@ void CViewportTitleDlg::UpdateMuteActionText()
         m_audioMuteAction->setEnabled(false);
         m_audioMuteAction->setText(tr("Mute Audio: Enable Audio Gem"));
     }
-}
-
-void CViewportTitleDlg::OnHMDInitialized()
-{
-    m_enableVRAction->setEnabled(true);
-}
-
-void CViewportTitleDlg::OnHMDShutdown()
-{
-    m_enableVRAction->setEnabled(false);
-}
-
-void CViewportTitleDlg::OnBnClickedEnableVR()
-{
-    gSettings.bEnableGameModeVR = !gSettings.bEnableGameModeVR;
-
-    m_enableVRAction->setText(gSettings.bEnableGameModeVR ? tr("Disable VR Preview") : tr("Enable VR Preview"));
 }
 
 inline double Round(double fVal, double fStep)

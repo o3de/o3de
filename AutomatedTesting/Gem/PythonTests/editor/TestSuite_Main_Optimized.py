@@ -43,7 +43,6 @@ class TestAutomationNoAutoTestMode(EditorTestSuite):
     class test_InputBindings_Add_Remove_Input_Events(EditorSharedTest):
         from .EditorScripts import InputBindings_Add_Remove_Input_Events as test_module
 
-    @pytest.mark.skip(reason="Crashes Editor: ATOM-15493")
     class test_AssetPicker_UI_UX(EditorSharedTest):
         from .EditorScripts import AssetPicker_UI_UX as test_module
 
@@ -60,7 +59,6 @@ class TestAutomationAutoTestMode(EditorTestSuite):
     class test_AssetBrowser_TreeNavigation(EditorSharedTest):
         from .EditorScripts import AssetBrowser_TreeNavigation as test_module
 
-    @pytest.mark.skip(reason="Crashes Editor: ATOM-15493")
     class test_AssetBrowser_SearchFiltering(EditorSharedTest):
         from .EditorScripts import AssetBrowser_SearchFiltering as test_module
 
@@ -73,3 +71,6 @@ class TestAutomationAutoTestMode(EditorTestSuite):
     @pytest.mark.skip(reason="Times out due to dialogs failing to dismiss: LYN-4208")
     class test_Menus_FileMenuOptions_Work(EditorSharedTest):
         from .EditorScripts import Menus_FileMenuOptions as test_module
+
+    class test_BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD(EditorSharedTest):
+        from .EditorScripts import BasicEditorWorkflows_ExistingLevel_EntityComponentCRUD as test_module

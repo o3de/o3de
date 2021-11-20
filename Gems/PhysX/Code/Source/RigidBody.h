@@ -109,17 +109,15 @@ namespace PhysX
         void RemoveShape(AZStd::shared_ptr<Physics::Shape> shape) override;
 
         void UpdateMassProperties(AzPhysics::MassComputeFlags flags = AzPhysics::MassComputeFlags::DEFAULT,
-            const AZ::Vector3* centerOfMassOffsetOverride = nullptr,
-            const AZ::Matrix3x3* inertiaTensorOverride = nullptr,
-            const float* massOverride = nullptr) override;
+            const AZ::Vector3& centerOfMassOffsetOverride = AZ::Vector3::CreateZero(),
+            const AZ::Matrix3x3& inertiaTensorOverride = AZ::Matrix3x3::CreateIdentity(),
+            const float massOverride = 1.0f) override;
 
     private:
         void CreatePhysXActor(const AzPhysics::RigidBodyConfiguration& configuration);
 
-        void UpdateComputedCenterOfMass();
-        void ComputeInertia();
+        void UpdateCenterOfMass(bool includeAllShapesInMassCalculation);
         void SetInertia(const AZ::Matrix3x3& inertia);
-        void SetZeroCenterOfMass();
 
         AZStd::shared_ptr<physx::PxRigidDynamic> m_pxRigidActor;
         AZStd::vector<AZStd::shared_ptr<PhysX::Shape>> m_shapes;

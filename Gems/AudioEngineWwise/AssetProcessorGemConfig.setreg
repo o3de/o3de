@@ -3,10 +3,10 @@
         "AssetProcessor": {
             "Settings": {
                 "Exclude AudioProject": {
-                    "pattern": ".*\\\\/Sounds\\\\/.+_project.*"
+                    "pattern": "(^|.+/)Sounds/.+_project.*"
                 },
                 "Exclude AudioTemp": {
-                    "pattern": ".*\\\\/Sounds\\\\/.+\\\\.(txt|xml|dat)"
+                    "pattern": "(^|.+/)Sounds/.+\\\\.(txt|xml|dat)"
                 },
                 "RC audio": {
                     "pattern": ".*\\\\.(wav|pcm)",

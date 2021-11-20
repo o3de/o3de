@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "set_recording",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "set_recording",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke set_recording"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after set_recording is invoked"
+                    },
+                    "details": {
+                        "name": "set_recording",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

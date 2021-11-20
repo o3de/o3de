@@ -292,11 +292,6 @@ namespace AZ
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowFilterMethod, method);
         }
 
-        void PointLightFeatureProcessor::SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians)
-        {
-            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetSofteningBoundaryWidthAngle, boundaryWidthRadians);
-        }
-
         void PointLightFeatureProcessor::SetFilteringSampleCount(LightHandle handle, uint16_t count)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetFilteringSampleCount, count);
@@ -305,6 +300,11 @@ namespace AZ
         void PointLightFeatureProcessor::SetEsmExponent(LightHandle handle, float esmExponent)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetEsmExponent, esmExponent);
+        }
+
+        void PointLightFeatureProcessor::SetNormalShadowBias(LightHandle handle, float bias)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetNormalShadowBias, bias);
         }
 
     } // namespace Render

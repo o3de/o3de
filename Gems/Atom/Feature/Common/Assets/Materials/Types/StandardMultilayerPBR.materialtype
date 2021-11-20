@@ -1,7 +1,7 @@
 {
     "description": "Similar to StandardPBR but supports multiple layers blended together.",
+    "version": 3,
     "propertyLayout": {
-        "version": 3,
         "groups": [
             {
                 "name": "blend",
@@ -2698,16 +2698,12 @@
             }
         },
         {
-            "type": "UseTexture",
+            "type": "Lua",
             "args": {
-                "textureProperty": "layer1_metallic.textureMap",
-                "useTextureProperty": "layer1_metallic.useTexture",
-                "dependentProperties": ["layer1_metallic.textureMapUv"],
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
-                "shaderOption": "o_layer1_o_metallic_useTexture"
+                "file": "StandardPBR_Metallic.lua",
+                "propertyNamePrefix": "layer1_",
+                "srgNamePrefix": "m_layer1_",
+                "optionsNamePrefix": "o_layer1_"
             }
         },
         {
@@ -2835,16 +2831,12 @@
             }
         },
         {
-            "type": "UseTexture",
+            "type": "Lua",
             "args": {
-                "textureProperty": "layer2_metallic.textureMap",
-                "useTextureProperty": "layer2_metallic.useTexture",
-                "dependentProperties": ["layer2_metallic.textureMapUv"],
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
-                "shaderOption": "o_layer2_o_metallic_useTexture"
+                "file": "StandardPBR_Metallic.lua",
+                "propertyNamePrefix": "layer2_",
+                "srgNamePrefix": "m_layer2_",
+                "optionsNamePrefix": "o_layer2_"
             }
         },
         {
@@ -2963,8 +2955,8 @@
             "args": {
                 "textureProperty": "layer3_baseColor.textureMap",
                 "useTextureProperty": "layer3_baseColor.useTexture",
-                "dependentProperties": ["layer3_baseColor.textureMapUv", "layer3_baseColor.textureBlendMode"],
-                "shaderTags": [ 
+                "dependentProperties": [ "layer3_baseColor.textureMapUv", "layer3_baseColor.textureBlendMode" ],
+                "shaderTags": [
                     "ForwardPass",
                     "ForwardPass_EDS"
                 ],
@@ -2972,16 +2964,12 @@
             }
         },
         {
-            "type": "UseTexture",
+            "type": "Lua",
             "args": {
-                "textureProperty": "layer3_metallic.textureMap",
-                "useTextureProperty": "layer3_metallic.useTexture",
-                "dependentProperties": ["layer3_metallic.textureMapUv"],
-                "shaderTags": [ 
-                    "ForwardPass",
-                    "ForwardPass_EDS"
-                ],
-                "shaderOption": "o_layer3_o_metallic_useTexture"
+                "file": "StandardPBR_Metallic.lua",
+                "propertyNamePrefix": "layer3_",
+                "srgNamePrefix": "m_layer3_",
+                "optionsNamePrefix": "o_layer3_"
             }
         },
         {

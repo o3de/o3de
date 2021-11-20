@@ -13,6 +13,7 @@
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/set.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
@@ -34,6 +35,9 @@
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IAnimationData.h>
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <rapidjson/pointer.h>
 #include <SceneBuilder/SceneBuilderWorker.h>
 #include <SceneBuilder/TraceMessageHook.h>
 
@@ -81,6 +85,93 @@ namespace SceneBuilder
         return m_cachedFingerprint.c_str();
     }
 
+    void SceneBuilderWorker::PopulateSourceDependencies(const AZStd::string& manifestJson, AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencies)
+    {
+        auto readJsonOutcome = AZ::JsonSerializationUtils::ReadJsonString(manifestJson);
+        AZStd::string errorMsg;
+        if (!readJsonOutcome.IsSuccess())
+        {
+            // This may be an old format xml file.  We don't have any dependencies in the old format so there's no point trying to parse an xml
+            return;
+        }
+
+        rapidjson::Document document = readJsonOutcome.TakeValue();
+
+        auto manifestObject = document.GetObject();
+        auto valuesIterator = manifestObject.FindMember("values");
+        auto valuesArray = valuesIterator->value.GetArray();
+
+        AZStd::vector<AZStd::string> paths;
+        AZ::SceneAPI::Events::AssetImportRequestBus::Broadcast(
+            &AZ::SceneAPI::Events::AssetImportRequestBus::Events::GetManifestDependencyPaths, paths);
+
+        for (const auto& value : valuesArray)
+        {
+            auto object = value.GetObject();
+
+            for (const auto& path : paths)
+            {
+                rapidjson::Pointer pointer(path.c_str());
+
+                auto dependencyValue = pointer.Get(object);
+
+                if (dependencyValue && dependencyValue->IsString())
+                {
+                    AZStd::string dependency = dependencyValue->GetString();
+
+                    sourceFileDependencies.emplace_back(AssetBuilderSDK::SourceFileDependency(
+                        dependency, AZ::Uuid::CreateNull(), AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Absolute));
+                }
+            }
+        }
+    }
+
+    bool SceneBuilderWorker::ManifestDependencyCheck(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
+    {
+        AZStd::string manifestExtension;
+        AZStd::string generatedManifestExtension;
+
+        AZ::SceneAPI::Events::AssetImportRequestBus::Broadcast(
+            &AZ::SceneAPI::Events::AssetImportRequestBus::Events::GetManifestExtension, manifestExtension);
+        AZ::SceneAPI::Events::AssetImportRequestBus::Broadcast(
+            &AZ::SceneAPI::Events::AssetImportRequestBus::Events::GetGeneratedManifestExtension, generatedManifestExtension);
+
+        if (manifestExtension.empty() || generatedManifestExtension.empty())
+        {
+            AZ_Error("SceneBuilderWorker", false, "Failed to get scene manifest extension");
+            return false;
+        }
+
+        AZ::SettingsRegistryInterface::FixedValueString assetCacheRoot;
+        AZ::SettingsRegistry::Get()->Get(assetCacheRoot, AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+
+        auto manifestPath = (AZ::IO::Path(request.m_watchFolder) / (request.m_sourceFile + manifestExtension));
+        auto generatedManifestPath = (AZ::IO::Path(assetCacheRoot) / (request.m_sourceFile + generatedManifestExtension));
+
+        auto populateDependenciesFunc = [&response](const AZStd::string& path)
+        {
+            auto readFileOutcome = AZ::Utils::ReadFile(path, AZ::SceneAPI::Containers::SceneManifest::MaxSceneManifestFileSizeInBytes);
+            if (!readFileOutcome.IsSuccess())
+            {
+                AZ_Error("SceneBuilderWorker", false, "%s", readFileOutcome.GetError().c_str());
+                return;
+            }
+
+            PopulateSourceDependencies(readFileOutcome.TakeValue(), response.m_sourceFileDependencyList);
+        };
+
+        if (AZ::IO::FileIOBase::GetInstance()->Exists(manifestPath.Native().c_str()))
+        {
+            populateDependenciesFunc(manifestPath.Native());
+        }
+        else if (AZ::IO::FileIOBase::GetInstance()->Exists(generatedManifestPath.Native().c_str()))
+        {
+            populateDependenciesFunc(generatedManifestPath.Native());
+        }
+
+        return true;
+    }
+
     void SceneBuilderWorker::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
     {
         // Check for shutdown
@@ -117,6 +208,11 @@ namespace SceneBuilder
         sourceFileDependencyInfo.m_sourceFileDependencyPath = relPath;
         sourceFileDependencyInfo.m_sourceDependencyType = AssetBuilderSDK::SourceFileDependency::SourceFileDependencyType::Wildcards;
         response.m_sourceFileDependencyList.push_back(sourceFileDependencyInfo);
+
+        if (!ManifestDependencyCheck(request, response))
+        {
+            return;
+        }
 
         response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
     }

@@ -10,14 +10,14 @@
 ----------------------------------------------------------------------------------------------------
 
 function GetMaterialPropertyDependencies()
-    return {"opacity.doubleSided"}
+    return {"general.doubleSided"}
 end
  
 ForwardPassIndex = 0
 ForwardPassEdsIndex = 1
 
 function Process(context)
-    local doubleSided = context:GetMaterialPropertyValue_bool("opacity.doubleSided")
+    local doubleSided = context:GetMaterialPropertyValue_bool("general.doubleSided")
     local lastShader = context:GetShaderCount() - 1;
 
     if(doubleSided) then

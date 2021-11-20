@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiFlipbookAnimationLoopType_PingPong",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiFlipbookAnimationLoopType_PingPong::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

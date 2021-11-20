@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "QuadShapeComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "QuadShapeComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

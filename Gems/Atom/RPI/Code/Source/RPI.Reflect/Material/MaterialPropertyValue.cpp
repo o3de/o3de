@@ -118,12 +118,16 @@ namespace AZ
             else if (value.is<Data::Asset<Data::AssetData>>())
             {
                 result.m_value = Data::Asset<RPI::ImageAsset>(
-                    AZStd::any_cast<Data::Asset<Data::AssetData>>(value).GetId(), azrtti_typeid<RPI::StreamingImageAsset>());
+                    AZStd::any_cast<Data::Asset<Data::AssetData>>(value).GetId(),
+                    azrtti_typeid<RPI::StreamingImageAsset>(),
+                    AZStd::any_cast<Data::Asset<Data::AssetData>>(value).GetHint());
             }
             else if (value.is<Data::Asset<StreamingImageAsset>>())
             {
                 result.m_value = Data::Asset<RPI::ImageAsset>(
-                    AZStd::any_cast<Data::Asset<StreamingImageAsset>>(value).GetId(), azrtti_typeid<RPI::StreamingImageAsset>());
+                    AZStd::any_cast<Data::Asset<StreamingImageAsset>>(value).GetId(),
+                    azrtti_typeid<RPI::StreamingImageAsset>(),
+                    AZStd::any_cast<Data::Asset<StreamingImageAsset>>(value).GetHint());
             }
             else if (value.is<Data::Asset<ImageAsset>>())
             {

@@ -60,7 +60,6 @@ struct IFileUtil
         EFILE_TYPE_GEOMETRY,
         EFILE_TYPE_TEXTURE,
         EFILE_TYPE_SOUND,
-        EFILE_TYPE_GEOMCACHE,
         EFILE_TYPE_LAST,
     };
 
@@ -114,9 +113,7 @@ struct IFileUtil
 
     virtual void ShowInExplorer(const QString& path) = 0;
 
-    virtual bool CompileLuaFile(const char* luaFilename) = 0;
     virtual bool ExtractFile(QString& file, bool bMsgBoxAskForExtraction = true, const char* pDestinationFilename = nullptr) = 0;
-    virtual void EditTextFile(const char* txtFile, int line = 0, ETextFileType fileType = FILE_TYPE_SCRIPT) = 0;
     virtual void EditTextureFile(const char* txtureFile, bool bUseGameFolder) = 0;
 
     //! dcc filename calculation and extraction sub-routines

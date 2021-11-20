@@ -43,10 +43,12 @@ namespace AZ::IO
 
             m_mainLoopDesc = threadDesc;
             m_mainLoopDesc.m_name = "IO Scheduler";
-            m_mainLoop = AZStd::thread([this]()
-            {
-                Thread_MainLoop();
-            }, &m_mainLoopDesc);
+            m_mainLoop = AZStd::thread(
+                m_mainLoopDesc,
+                [this]()
+                {
+                    Thread_MainLoop();
+                });
         }
     }
 
