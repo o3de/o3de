@@ -77,64 +77,11 @@ public:
 
     bool OnPreAssert(const char* fileName, int line, const char* func, const char* message) override
     {
-#if defined(USE_CRY_ASSERT) && AZ_LEGACY_CRYSYSTEM_TRAIT_DO_PREASSERT
-        AZ::Crc32 crc;
-        crc.Add(&line, sizeof(line));
-        if (fileName)
-        {
-            crc.Add(fileName, strlen(fileName));
-        }
-
-        bool* ignore = nullptr;
-        auto foundIter = m_ignoredAsserts->find(crc);
-        if (foundIter == m_ignoredAsserts->end())
-        {
-            ignore = &((*m_ignoredAsserts)[crc]);
-            *ignore = false;
-        }
-        else
-        {
-            ignore = &((*m_ignoredAsserts)[crc]);
-        }
-
-        if (!(*ignore))
-        {
-            using namespace AZ::Debug;
-
-            Trace::Output(nullptr, "\n==================================================================\n");
-            AZ::OSString outputMsg = AZ::OSString::format("Trace::Assert\n %s(%d): '%s'\n%s\n", fileName, line, func, message);
-            Trace::Output(nullptr, outputMsg.c_str());
-
-            // Suppress 3 in stack depth - this function, the bus broadcast that got us here, and Trace::Assert
-            Trace::Output(nullptr, "------------------------------------------------\n");
-            Trace::PrintCallstack(nullptr, 3);
-            Trace::Output(nullptr, "\n==================================================================\n");
-
-            AZ::EnvironmentVariable<bool> inEditorBatchMode = AZ::Environment::FindVariable<bool>("InEditorBatchMode");
-            if (!inEditorBatchMode.IsConstructed() || !inEditorBatchMode.Get())
-            {
-                // Note - CryAssertTrace doesn't actually print any info to logging
-                // it just stores the message internally for the message box in CryAssert to use
-                CryAssertTrace("%s", message);
-                if (CryAssert("Assertion failed", fileName, line, ignore) || Trace::IsDebuggerPresent())
-                {
-                    Trace::Break();
-                }
-            }
-        }
-        else
-        {
-            CryLogAlways("%s", message);
-        }
-
-        return m_suppressSystemOutput;
-#else
         AZ_UNUSED(fileName);
         AZ_UNUSED(line);
         AZ_UNUSED(func);
         AZ_UNUSED(message);
         return false; // allow AZCore to do its default behavior.   This usually results in an application shutdown.
-#endif
     }
 
     bool OnPreError(const char* window, const char* fileName, int line, const char* func, const char* message) override

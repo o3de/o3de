@@ -157,18 +157,12 @@ void __stl_debug_message(const char* format_str, ...)
 #include <intrin.h>
 #endif
 
-#if defined(APPLE) || defined(LINUX)
-#include "CryAssert_impl.h"
-#endif
-
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_CRY_SYSTEM_FUNCTIONS
     #include AZ_RESTRICTED_FILE(platform_impl_h)
 #endif
 
 #if defined (_WIN32)
-
-#include "CryAssert_impl.h"
 
 //////////////////////////////////////////////////////////////////////////
 void CrySleep(unsigned int dwMilliseconds)

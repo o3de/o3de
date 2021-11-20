@@ -238,12 +238,6 @@ ILINE DestinationType alias_cast(SourceType pPtr)
 // Assert dialog box macros
 #include "CryAssert.h"
 
-// Replace standard assert calls by our custom one
-// Works only ifdef USE_CRY_ASSERT && _DEBUG && WIN32
-#ifndef assert
-#define assert CRY_ASSERT
-#endif
-
 //////////////////////////////////////////////////////////////////////////
 // Platform dependent functions that emulate Win32 API.
 // Mostly used only for debugging!

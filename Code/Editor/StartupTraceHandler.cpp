@@ -37,26 +37,10 @@ namespace SandboxEditor
 
     bool StartupTraceHandler::OnPreAssert(const char* fileName, int line, const char* func, const char* message)
     {
-        // Asserts are more fatal than errors, and need to be displayed right away.
-        // After the assert occurs, nothing else may be functional enough to collect and display messages.
-
-        // Only use Cry message boxes if we aren't using native dialog boxes
-#ifndef USE_AZ_ASSERT
-        if (message == nullptr || message[0] == 0)
-        {
-            AZStd::string emptyText = AZStd::string::format("Assertion failed in %s %s:%i", func, fileName, line);
-            OnMessage(emptyText.c_str(), nullptr, MessageDisplayBehavior::AlwaysShow);
-        }
-        else
-        {
-            OnMessage(message, nullptr, MessageDisplayBehavior::AlwaysShow);
-        }
-#else
         AZ_UNUSED(fileName);
         AZ_UNUSED(line);
         AZ_UNUSED(func);
         AZ_UNUSED(message);
-#endif // !USE_AZ_ASSERT
 
         // Return false so other listeners can handle this. The StartupTraceHandler won't report messages
         // will probably crash before that occurs, because this is an assert.

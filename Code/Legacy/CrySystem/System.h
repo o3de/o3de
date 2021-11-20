@@ -53,11 +53,6 @@ class CWatchdogThread;
 #define AZ_LEGACY_CRYSYSTEM_TRAIT_ALLOW_CREATE_BACKUP_LOG_FILE 1
 #endif
 
-//////////////////////////////////////////////////////////////////////////
-#if defined(WIN32) || defined(APPLE) || defined(LINUX)
-#define AZ_LEGACY_CRYSYSTEM_TRAIT_DO_PREASSERT 1
-#endif
-
 #if defined(LINUX) || defined(APPLE)
 #define AZ_LEGACY_CRYSYSTEM_TRAIT_FORWARD_EXCEPTION_POINTERS 1
 #endif
@@ -72,9 +67,7 @@ class CWatchdogThread;
 #define AZ_LEGACY_CRYSYSTEM_TRAIT_DEBUGCALLSTACK_APPEND_MODULENAME 1
 #endif
 
-#if 1
 #define AZ_LEGACY_CRYSYSTEM_TRAIT_USE_EXCLUDEUPDATE_ON_CONSOLE 0
-#endif
 #if defined(WIN32)
 #define AZ_LEGACY_CRYSYSTEM_TRAIT_USE_MESSAGE_HANDLER 1
 #endif

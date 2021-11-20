@@ -6,9 +6,6 @@
  *
  */
 
-
-#include "ColorUtils.h"
-
 // Qt
 #include <QColor>
 
