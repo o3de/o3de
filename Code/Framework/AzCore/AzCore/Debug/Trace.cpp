@@ -535,10 +535,10 @@ namespace AZ::Debug
             EBUS_EVENT(TraceMessageDrillerBus, OnOutput, window, message);
             TraceMessageResult result;
             EBUS_EVENT_RESULT(result, TraceMessageBus, OnOutput, window, message);
-            /* if (result.m_value)
+            if (result.m_value)
             {
                 return;
-            }*/
+            }
         }
 
         RawOutput(window, message);

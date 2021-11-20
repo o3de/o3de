@@ -180,6 +180,17 @@ public:
             CryLog("(%s) - %s", window, message);
         }
 
+        // If this is an editor-server, then allow the default trace behavior (fwrites to stdout) to occur
+        // The editor will being listening to the stdout of this server
+        if (const auto console = AZ::Interface<AZ::IConsole>::Get())
+        {
+            bool editorsv_isDedicated = false;
+            if (console->GetCvarValue("editorsv_isDedicated", editorsv_isDedicated) == AZ::GetValueResult::Success)
+            {
+                return !editorsv_isDedicated;
+            }
+        }
+
         return true; // suppress default AzCore behavior.
     }
 
