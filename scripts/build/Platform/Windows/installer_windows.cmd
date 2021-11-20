@@ -7,6 +7,7 @@ REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
 REM
 
+SETLOCAL EnableExtensions
 SETLOCAL EnableDelayedExpansion
 
 CALL %~dp0env_windows.cmd
@@ -17,9 +18,9 @@ IF NOT EXIST %OUTPUT_DIRECTORY% (
 )
 PUSHD %OUTPUT_DIRECTORY%
 
-REM Override the temporary directory used by wix to the workspace (if we have a WORKSPACE_TMP)
-IF NOT "%WORKSPACE_TMP%"=="" (
-    SET "WIX_TEMP=!WORKSPACE_TMP!/wix"
+REM Set the temporary directory used by wix if not defined
+IF "%WIX_TEMP%"=="" (
+    SET "WIX_TEMP=!TMP!/wix"
     IF NOT EXIST "!WIX_TEMP!" (
         MKDIR "!WIX_TEMP!"
     )

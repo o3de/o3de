@@ -22,18 +22,10 @@ IF NOT "%COMMAND_CWD%"=="" (
     CD %COMMAND_CWD%
 )
 
-REM Jenkins reports MSB8029 when TMP/TEMP is not defined, define a dummy folder
-IF NOT "%TMP%"=="" (
-    IF NOT "%WORKSPACE_TMP%"=="" (
-        SET TMP=%WORKSPACE_TMP%
-        SET TEMP=%WORKSPACE_TMP%
-    ) ELSE (
-        SET TMP=%cd%/temp
-        SET TEMP=%cd%/temp
-    )
-)
-IF NOT EXIST "!TMP!" (
-    MKDIR "!TMP!"
+REM Jenkins does not defined TMP
+IF "%TMP%"=="" (
+    SET TMP=%APPDATA%\Local\Temp
+    SET TEMP=%APPDATA%\Local\Temp
 )
 
 EXIT /b 0
