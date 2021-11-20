@@ -121,6 +121,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
         )
         ly_add_dependencies(AWSCore.Editor AWSCore.ResourceMappingTool)
+
+        ly_install_directory(DIRECTORIES Tools/ResourceMappingTool)
         
     endif()
 
@@ -199,4 +201,3 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     endif()
 endif()
 
-ly_install_directory(DIRECTORIES Tools/ResourceMappingTool)
