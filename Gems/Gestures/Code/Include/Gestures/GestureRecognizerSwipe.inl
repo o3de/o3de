@@ -45,8 +45,8 @@ inline Gestures::RecognizerSwipe::RecognizerSwipe(const Config& config)
     : m_config(config)
     , m_startPosition()
     , m_endPosition()
-    , m_startTime(0)
-    , m_endTime(0)
+    , m_startTime(AZ::Time::ZeroTimeMs)
+    , m_endTime(AZ::Time::ZeroTimeMs)
     , m_currentState(State::Idle)
 {
 }
@@ -68,7 +68,7 @@ inline bool Gestures::RecognizerSwipe::OnPressedEvent(const AZ::Vector2& screenP
     {
     case State::Idle:
     {
-        m_startTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime().GetValue() : 0;
+        m_startTime = AZ::GetRealElapsedTimeMs();
         m_startPosition = screenPosition;
         m_endPosition = screenPosition;
         m_currentState = State::Pressed;
@@ -98,8 +98,8 @@ inline bool Gestures::RecognizerSwipe::OnDownEvent([[maybe_unused]] const AZ::Ve
     {
     case State::Pressed:
     {
-        const CTimeValue currentTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime() : CTimeValue();
-        if (currentTime.GetDifferenceInSeconds(m_startTime) > m_config.maxSecondsHeld)
+        const AZ::TimeMs currentTime = AZ::GetRealElapsedTimeMs();
+        if (AZ::TimeMsToSeconds(currentTime - m_startTime) > m_config.maxSecondsHeld)
         {
             // Swipe recognition failed because we took too long.
             m_currentState = State::Idle;
@@ -134,12 +134,12 @@ inline bool Gestures::RecognizerSwipe::OnReleasedEvent(const AZ::Vector2& screen
     {
     case State::Pressed:
     {
-        const CTimeValue currentTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime() : CTimeValue();
-        if ((currentTime.GetDifferenceInSeconds(m_startTime) <= m_config.maxSecondsHeld) &&
+        const AZ::TimeMs currentTime = AZ::GetRealElapsedTimeMs();
+        if ((AZ::TimeMsToSeconds(currentTime - m_startTime) <= m_config.maxSecondsHeld) &&
             (screenPosition.GetDistance(m_startPosition) >= m_config.minPixelsMoved))
         {
             // Swipe recognition succeeded.
-            m_endTime = currentTime.GetValue();
+            m_endTime = currentTime;
             m_endPosition = screenPosition;
             OnDiscreteGestureRecognized();
             m_currentState = State::Idle;

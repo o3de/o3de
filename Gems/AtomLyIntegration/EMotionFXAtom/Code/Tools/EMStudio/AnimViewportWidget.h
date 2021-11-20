@@ -38,6 +38,7 @@ namespace EMStudio
 
         void CalculateCameraProjection();
         void RenderCustomPluginData();
+        void FollowCharacter();
 
         void SetupCameras();
         void SetupCameraController();
@@ -48,6 +49,7 @@ namespace EMStudio
         // AnimViewportRequestBus::Handler overrides
         void ResetCamera();
         void SetCameraViewMode(CameraViewMode mode);
+        void SetFollowCharacter(bool follow);
         void ToggleRenderFlag(EMotionFX::ActorRenderFlag flag);
 
         // ViewportPluginRequestBus::Handler overrides
@@ -61,5 +63,7 @@ namespace EMStudio
         AZStd::shared_ptr<AzFramework::TranslateCameraInput> m_translateCamera;
         AZStd::shared_ptr<AzFramework::OrbitDollyScrollCameraInput> m_orbitDollyScrollCamera;
         EMotionFX::ActorRenderFlagBitset m_renderFlags;
+        bool m_followCharacter = false;
+        AZ::Vector3 m_prevCharacterPos;
     };
 }

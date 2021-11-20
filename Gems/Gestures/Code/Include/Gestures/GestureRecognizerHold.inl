@@ -8,7 +8,6 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <CryCommon/ITimer.h>
 #include <CryCommon/ISystem.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,7 +43,7 @@ inline void Gestures::RecognizerHold::Config::Reflect(AZ::ReflectContext* contex
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline Gestures::RecognizerHold::RecognizerHold(const Config& config)
     : m_config(config)
-    , m_startTime(0)
+    , m_startTime(AZ::Time::ZeroTimeUs)
     , m_startPosition()
     , m_currentPosition()
     , m_currentState(State::Idle)
@@ -68,7 +67,7 @@ inline bool Gestures::RecognizerHold::OnPressedEvent(const AZ::Vector2& screenPo
     {
     case State::Idle:
     {
-        m_startTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime().GetValue() : 0;
+        m_startTime = AZ::GetLastSimulationTickTime();
         m_startPosition = screenPosition;
         m_currentPosition = screenPosition;
         m_currentState = State::Pressed;
@@ -101,13 +100,13 @@ inline bool Gestures::RecognizerHold::OnDownEvent(const AZ::Vector2& screenPosit
     {
     case State::Pressed:
     {
-        const CTimeValue currentTime = (gEnv && gEnv->pTimer) ? gEnv->pTimer->GetFrameStartTime() : CTimeValue();
         if (screenPosition.GetDistance(m_startPosition) > m_config.maxPixelsMoved)
         {
             // Hold recognition failed.
             m_currentState = State::Idle;
         }
-        else if (currentTime.GetDifferenceInSeconds(m_startTime) >= m_config.minSecondsHeld)
+        else if (const AZ::TimeUs currentTime = AZ::GetLastSimulationTickTime();
+                 AZ::TimeUsToSeconds(currentTime - m_startTime) >= m_config.minSecondsHeld)
         {
             // Hold recognition succeeded.
             OnContinuousGestureInitiated();

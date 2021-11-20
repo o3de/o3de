@@ -8,19 +8,16 @@
 
 #include <AzCore/Platform.h>
 
-namespace AZ
+namespace AZ::Platform
 {
-    namespace Platform
-    {
-        MachineId s_machineId = MachineId(0);
+    MachineId s_machineId = MachineId(0);
 
-        void SetLocalMachineId(AZ::u32 machineId)
+    void SetLocalMachineId(AZ::u32 machineId)
+    {
+        AZ_Assert(machineId != 0, "0 machine ID is reserved!");
+        if (s_machineId != 0)
         {
-            AZ_Assert(machineId != 0, "0 machine ID is reserved!");
-            if (s_machineId != 0)
-            {
-                s_machineId = machineId;
-            }
+            s_machineId = machineId;
         }
     }
-}
+} // namespace AZ::Platform

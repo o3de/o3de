@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "SmoothStepGradientComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "SmoothStepGradientComponent"
+            }
+        }
+    ]
+}

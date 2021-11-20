@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "SlopeAlignmentModifierComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": ""
+            },
+            "methods": [
+                {
+                    "key": "SlopeAlignmentModifierComponentTypeId",
+                    "details": {
+                        "name": "SlopeAlignmentModifierComponentTypeId::Getter"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ::Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

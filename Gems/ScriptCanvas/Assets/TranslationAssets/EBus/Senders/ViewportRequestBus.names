@@ -1,0 +1,146 @@
+{
+    "entries": [
+        {
+            "key": "ViewportRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "ViewportRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "SetCameraTransform",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetCameraTransform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetCameraTransform is invoked"
+                    },
+                    "details": {
+                        "name": "SetCameraTransform"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCameraProjectionMatrix",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCameraProjectionMatrix"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCameraProjectionMatrix is invoked"
+                    },
+                    "details": {
+                        "name": "GetCameraProjectionMatrix"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
+                            "details": {
+                                "name": "Matrix4x4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetCameraViewMatrix",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetCameraViewMatrix"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetCameraViewMatrix is invoked"
+                    },
+                    "details": {
+                        "name": "SetCameraViewMatrix"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
+                            "details": {
+                                "name": "Matrix4x4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCameraViewMatrix",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCameraViewMatrix"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCameraViewMatrix is invoked"
+                    },
+                    "details": {
+                        "name": "GetCameraViewMatrix"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
+                            "details": {
+                                "name": "Matrix4x4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetCameraProjectionMatrix",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetCameraProjectionMatrix"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetCameraProjectionMatrix is invoked"
+                    },
+                    "details": {
+                        "name": "SetCameraProjectionMatrix"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
+                            "details": {
+                                "name": "Matrix4x4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCameraTransform",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCameraTransform"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCameraTransform is invoked"
+                    },
+                    "details": {
+                        "name": "GetCameraTransform"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

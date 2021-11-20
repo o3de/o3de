@@ -1,0 +1,59 @@
+{
+    "entries": [
+        {
+            "key": "FlyCameraInputBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Fly Camera",
+                "category": "Camera"
+            },
+            "methods": [
+                {
+                    "key": "SetIsEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Enabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Enabled"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetIsEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Is Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Is Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Get Is Enabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Enabled"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

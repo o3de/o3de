@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "InputDeviceGamepad",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "InputDeviceGamepad"
+            }
+        }
+    ]
+}

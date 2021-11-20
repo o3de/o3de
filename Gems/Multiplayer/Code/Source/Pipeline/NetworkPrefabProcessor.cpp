@@ -53,7 +53,7 @@ namespace Multiplayer
             ;
 
             serializeContext->Class<NetworkPrefabProcessor, PrefabProcessor>()
-                ->Version(3)
+                ->Version(4)
                 ->Field("SerializationFormat", &NetworkPrefabProcessor::m_serializationFormat)
             ;
         }
@@ -146,6 +146,8 @@ namespace Multiplayer
         networkSpawnableAsset.Create(networkSpawnable->GetId());
         networkSpawnableAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
 
+        AZStd::unordered_set<AZ::EntityId> prefabNetEntityIds;
+
         for (auto* prefabEntity : prefabNetEntities)
         {
             Instance* instance = netEntityToInstanceMap[prefabEntity];
@@ -157,6 +159,22 @@ namespace Multiplayer
 
             netEntity->InvalidateDependencies();
             netEntity->EvaluateDependencies();
+
+            auto* transformComponent = netEntity->FindComponent<AzFramework::TransformComponent>();
+            if (transformComponent)
+            {
+                AZ::EntityId parentId = transformComponent->GetParentId();
+                if (parentId.IsValid() && !prefabNetEntityIds.contains(parentId))
+                {
+                    // Clear parent ID for net entities parented to a non-net entity.
+                    // To be addressed by the spawnable aliases system where non-net entities
+                    // will be spawned together with the networked ones in which case we'll keep
+                    // the cross-spawnable references.
+                    transformComponent->SetParent(AZ::EntityId());
+                }
+            }
+
+            prefabNetEntityIds.insert(netEntity->GetId());
 
             // Insert the entity into the target net spawnable
             netSpawnableEntities.emplace_back(netEntity);

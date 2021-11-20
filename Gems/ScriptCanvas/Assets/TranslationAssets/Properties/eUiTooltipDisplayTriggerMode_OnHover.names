@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiTooltipDisplayTriggerMode_OnHover",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiTooltipDisplayTriggerMode_OnHover::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

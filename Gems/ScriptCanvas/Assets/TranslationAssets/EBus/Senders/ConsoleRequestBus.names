@@ -1,0 +1,37 @@
+{
+    "entries": [
+        {
+            "key": "ConsoleRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Console",
+                "category": "Utilities"
+            },
+            "methods": [
+                {
+                    "key": "ExecuteConsoleCommand",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Execute Console Command"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Execute Console Command is invoked"
+                    },
+                    "details": {
+                        "name": "Execute Console Command"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Command"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

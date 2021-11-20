@@ -1,0 +1,157 @@
+{
+    "entries": [
+        {
+            "key": "InputEventNotificationId",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Input Event Notification ID",
+                "category": "Gameplay/Input"
+            },
+            "methods": [
+                {
+                    "key": "ToString",
+                    "context": "InputEventNotificationId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToString"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToString is invoked"
+                    },
+                    "details": {
+                        "name": "InputEventNotificationId::ToString",
+                        "category": "Gameplay/Input"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "InputEventNotificationId*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "String"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Equal",
+                    "context": "InputEventNotificationId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Equal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Equal is invoked"
+                    },
+                    "details": {
+                        "name": "InputEventNotificationId::Equal",
+                        "category": "Gameplay/Input"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "InputEventNotificationId*"
+                            }
+                        },
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "const InputEventNotificationId&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Boolean"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Clone",
+                    "context": "InputEventNotificationId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clone"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clone is invoked"
+                    },
+                    "details": {
+                        "name": "InputEventNotificationId::Clone",
+                        "category": "Gameplay/Input"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "InputEventNotificationId*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "InputEventNotificationID"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateInputEventNotificationId",
+                    "context": "InputEventNotificationId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateInputEventNotificationId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateInputEventNotificationId is invoked"
+                    },
+                    "details": {
+                        "name": "InputEventNotificationId::CreateInputEventNotificationId",
+                        "category": "Gameplay/Input"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "localUserId",
+                                "tooltip": "Local user ID (0-3, or -1 for all users)"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": "actionName",
+                                "tooltip": "The name of the Input event action"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+                            "details": {
+                                "name": "InputEventNotificationID"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

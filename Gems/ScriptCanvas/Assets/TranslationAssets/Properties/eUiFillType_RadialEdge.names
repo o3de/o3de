@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiFillType_RadialEdge",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiFillType_RadialEdge::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,196 @@
+{
+    "entries": [
+        {
+            "key": "UiPadding",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "UI Padding",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "key": "SetPadding",
+                    "context": "UiPadding",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPadding"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPadding is invoked"
+                    },
+                    "details": {
+                        "name": "UiPadding::SetPadding",
+                        "category": "UI"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding",
+                                "tooltip": "The padding to set"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Left",
+                                "tooltip": "The padding inside the left edge of the element"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Top",
+                                "tooltip": "The padding inside the top edge of the element"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Right",
+                                "tooltip": "The padding inside the right edge of the element"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Bottom",
+                                "tooltip": "The padding inside the bottom edge of the element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetBottom",
+                    "context": "UiPadding",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetBottom"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetBottom is invoked"
+                    },
+                    "details": {
+                        "name": "UiPadding::SetBottom",
+                        "category": "UI"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding",
+                                "tooltip": "The padding for which to set the bottom padding"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Bottom",
+                                "tooltip": "The padding inside the bottom edge of the element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetRight",
+                    "context": "UiPadding",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetRight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetRight is invoked"
+                    },
+                    "details": {
+                        "name": "UiPadding::SetRight",
+                        "category": "UI"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding",
+                                "tooltip": "The padding for which to set the right padding"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Right",
+                                "tooltip": "The padding inside the right edge of the element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTop",
+                    "context": "UiPadding",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTop"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTop is invoked"
+                    },
+                    "details": {
+                        "name": "UiPadding::SetTop",
+                        "category": "UI"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding",
+                                "tooltip": "The padding for which to set the top padding"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Top",
+                                "tooltip": "The padding inside the top edge of the element"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLeft",
+                    "context": "UiPadding",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetLeft"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetLeft is invoked"
+                    },
+                    "details": {
+                        "name": "UiPadding::SetLeft",
+                        "category": "UI"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+                            "details": {
+                                "name": "Padding",
+                                "tooltip": "The padding for which to set the left padding"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Left",
+                                "tooltip": "The padding inside the left edge of the element"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

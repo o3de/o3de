@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "SettingsRegistry",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "SettingsRegistry",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SettingsRegistry"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SettingsRegistry is invoked"
+                    },
+                    "details": {
+                        "name": "SettingsRegistry",
+                        "category": "Other"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{795C80A0-D243-473B-972A-C32CA487BAA5}",
+                            "details": {
+                                "name": "SettingsRegistryScriptProxy"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

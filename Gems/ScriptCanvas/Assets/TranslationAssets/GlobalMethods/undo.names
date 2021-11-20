@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "undo",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "undo",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke undo"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after undo is invoked"
+                    },
+                    "details": {
+                        "name": "undo",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

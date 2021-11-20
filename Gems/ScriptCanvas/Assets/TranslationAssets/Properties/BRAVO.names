@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "BRAVO",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "BRAVO::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

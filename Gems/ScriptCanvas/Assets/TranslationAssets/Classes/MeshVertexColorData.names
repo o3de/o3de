@@ -1,0 +1,116 @@
+{
+    "entries": [
+        {
+            "key": "MeshVertexColorData",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "MeshVertexColorData"
+            },
+            "methods": [
+                {
+                    "key": "GetCustomName",
+                    "context": "MeshVertexColorData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCustomName"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCustomName is invoked"
+                    },
+                    "details": {
+                        "name": "MeshVertexColorData::GetCustomName",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{17477B86-B163-4574-8FB2-4916BC218B3D}",
+                            "details": {
+                                "name": "const MeshVertexColorData&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "const char*"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCount",
+                    "context": "MeshVertexColorData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCount"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCount is invoked"
+                    },
+                    "details": {
+                        "name": "MeshVertexColorData::GetCount",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{17477B86-B163-4574-8FB2-4916BC218B3D}",
+                            "details": {
+                                "name": "MeshVertexColorData*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetColor",
+                    "context": "MeshVertexColorData",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetColor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetColor is invoked"
+                    },
+                    "details": {
+                        "name": "MeshVertexColorData::GetColor",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{17477B86-B163-4574-8FB2-4916BC218B3D}",
+                            "details": {
+                                "name": "MeshVertexColorData*"
+                            }
+                        },
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{937E3BF8-5204-4D40-A8DA-C8F083C89F9F}",
+                            "details": {
+                                "name": "const SceneAPI::DataTypes::Color&"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

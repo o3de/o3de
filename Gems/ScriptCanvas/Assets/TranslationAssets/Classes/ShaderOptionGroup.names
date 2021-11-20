@@ -1,0 +1,116 @@
+{
+    "entries": [
+        {
+            "key": "ShaderOptionGroup",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "ShaderOptionGroup"
+            },
+            "methods": [
+                {
+                    "key": "GetValueByOptionName",
+                    "context": "ShaderOptionGroup",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetValueByOptionName"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetValueByOptionName is invoked"
+                    },
+                    "details": {
+                        "name": "ShaderOptionGroup::GetValueByOptionName",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{906F69F5-52F0-4095-9562-0E91DDDE6E2F}",
+                            "details": {
+                                "name": "ShaderOptionGroup*"
+                            }
+                        },
+                        {
+                            "typeid": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
+                            "details": {
+                                "name": "const Name&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{C10E7B12-BCB6-5872-810D-D597F123DB61}",
+                            "details": {
+                                "name": "AZ::RHI::Handle<unsigned int, RPI::ShaderOptionValueNamespace>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetShaderOptionDescriptors",
+                    "context": "ShaderOptionGroup",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetShaderOptionDescriptors"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetShaderOptionDescriptors is invoked"
+                    },
+                    "details": {
+                        "name": "ShaderOptionGroup::GetShaderOptionDescriptors",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{906F69F5-52F0-4095-9562-0E91DDDE6E2F}",
+                            "details": {
+                                "name": "ShaderOptionGroup*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{13D041F6-75FA-5093-AD85-827A2CEA1646}",
+                            "details": {
+                                "name": "const AZStd::vector<AZ::RPI::ShaderOptionDescriptor, allocator>"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetShaderVariantId",
+                    "context": "ShaderOptionGroup",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetShaderVariantId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetShaderVariantId is invoked"
+                    },
+                    "details": {
+                        "name": "ShaderOptionGroup::GetShaderVariantId",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{906F69F5-52F0-4095-9562-0E91DDDE6E2F}",
+                            "details": {
+                                "name": "ShaderOptionGroup*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{27B1FEC2-8C8A-47D7-A034-6609FA092B34}",
+                            "details": {
+                                "name": "const ShaderVariantId&"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

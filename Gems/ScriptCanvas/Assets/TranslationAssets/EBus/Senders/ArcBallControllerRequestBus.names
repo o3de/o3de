@@ -1,0 +1,429 @@
+{
+    "entries": [
+        {
+            "key": "ArcBallControllerRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Arc Ball Controller",
+                "subtitle": "Camera"
+            },
+            "methods": [
+                {
+                    "key": "GetPan",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPan"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPan is invoked"
+                    },
+                    "details": {
+                        "name": "Get Pan",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Pan"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCenter",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCenter"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCenter is invoked"
+                    },
+                    "details": {
+                        "name": "Get Center",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Center"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetZoomingSensitivity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetZoomingSensitivity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetZoomingSensitivity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Zooming Sensitivity",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Sensitivity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPitch",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPitch"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPitch is invoked"
+                    },
+                    "details": {
+                        "name": "Get Pitch",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Pitch"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPanningSensitivity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPanningSensitivity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPanningSensitivity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Panning Sensitivity",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Sensitivity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetZoomingSensitivity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetZoomingSensitivity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetZoomingSensitivity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Zooming Sensitivity",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Sensitivity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetHeading",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetHeading"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetHeading is invoked"
+                    },
+                    "details": {
+                        "name": "Set Heading",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Heading"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetMaxDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetMaxDistance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetMaxDistance is invoked"
+                    },
+                    "details": {
+                        "name": "Get Max Distance",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Max Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetDistance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetDistance is invoked"
+                    },
+                    "details": {
+                        "name": "Set Distance",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetMinDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetMinDistance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetMinDistance is invoked"
+                    },
+                    "details": {
+                        "name": "Set Min Distance",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Min Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetMaxDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetMaxDistance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetMaxDistance is invoked"
+                    },
+                    "details": {
+                        "name": "Set Max Distance",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Max Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetMinDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetMinDistance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetMinDistance is invoked"
+                    },
+                    "details": {
+                        "name": "Get Min Distance",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Min Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetHeading",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetHeading"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetHeading is invoked"
+                    },
+                    "details": {
+                        "name": "Get Heading",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Heading"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetPanningSensitivity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPanningSensitivity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPanningSensitivity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Panning Sensitivity",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Sensitivity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetCenter",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetCenter"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetCenter is invoked"
+                    },
+                    "details": {
+                        "name": "Set Center",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Center"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPan",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPan"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPan is invoked"
+                    },
+                    "details": {
+                        "name": "Set Pan",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Pan"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetPitch",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetPitch"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetPitch is invoked"
+                    },
+                    "details": {
+                        "name": "Set Pitch",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Pitch"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetDistance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetDistance is invoked"
+                    },
+                    "details": {
+                        "name": "Get Distance",
+                        "subtitle": "Arc Ball Controller"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Distance"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

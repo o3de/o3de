@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiImageSequenceImageType_Fixed",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiImageSequenceImageType_Fixed::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

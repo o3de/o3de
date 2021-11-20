@@ -1,0 +1,37 @@
+{
+    "entries": [
+        {
+            "key": "{B0E10176-5DFE-4D34-BEF8-7EB575929CE7}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Get First Element",
+                "category": "Containers",
+                "tooltip": "Retrieves the first element in the container",
+                "subtitle": "Containers"
+            },
+            "slots": [
+                {
+                    "key": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In",
+                        "tooltip": "Input signal"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Output signal"
+                    }
+                }
+            ]
+        }
+    ]
+}

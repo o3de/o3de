@@ -1144,6 +1144,10 @@ namespace AzToolsFramework
 
             AZ::EntityId firstEntityIdToDelete = entityIdsNoFocusContainer[0];
             InstanceOptionalReference commonOwningInstance = GetOwnerInstanceByEntityId(firstEntityIdToDelete);
+            if (!commonOwningInstance.has_value())
+            {
+                return AZ::Failure(AZStd::string("Cannot delete entities belonging to an invalid instance"));
+            }
 
             // If the first entity id is a container entity id, then we need to mark its parent as the common owning instance because you
             // cannot delete an instance from itself.

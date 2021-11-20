@@ -1,0 +1,190 @@
+{
+    "entries": [
+        {
+            "key": "PhysicalSkyRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "PhysicalSkyRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "SetSkyIntensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSkyIntensity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSkyIntensity is invoked"
+                    },
+                    "details": {
+                        "name": "SetSkyIntensity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSunIntensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSunIntensity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSunIntensity is invoked"
+                    },
+                    "details": {
+                        "name": "SetSunIntensity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSunIntensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSunIntensity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSunIntensity is invoked"
+                    },
+                    "details": {
+                        "name": "GetSunIntensity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSunRadiusFactor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSunRadiusFactor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSunRadiusFactor is invoked"
+                    },
+                    "details": {
+                        "name": "GetSunRadiusFactor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSunRadiusFactor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSunRadiusFactor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSunRadiusFactor is invoked"
+                    },
+                    "details": {
+                        "name": "SetSunRadiusFactor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTurbidity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTurbidity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTurbidity is invoked"
+                    },
+                    "details": {
+                        "name": "GetTurbidity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSkyIntensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSkyIntensity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSkyIntensity is invoked"
+                    },
+                    "details": {
+                        "name": "GetSkyIntensity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTurbidity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTurbidity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTurbidity is invoked"
+                    },
+                    "details": {
+                        "name": "SetTurbidity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

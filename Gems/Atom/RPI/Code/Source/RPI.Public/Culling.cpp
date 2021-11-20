@@ -20,7 +20,6 @@
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Debug/EventTrace.h>
-#include <AzCore/Debug/Timer.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/Job.h>
 #include <AzCore/Task/TaskGraph.h>

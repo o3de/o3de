@@ -185,8 +185,8 @@
             "isOptional": false
         },
         {
-            "file": "cmake/Platform/Linux/CompilerSettings.cmake",
-            "origin": "cmake/Platform/Linux/CompilerSettings.cmake",
+            "file": "cmake/Platform/Linux/CompilerSettings_linux.cmake",
+            "origin": "cmake/Platform/Linux/CompilerSettings_linux.cmake",
             "isTemplated": false,
             "isOptional": false
         },

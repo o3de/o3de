@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DecalComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DecalComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

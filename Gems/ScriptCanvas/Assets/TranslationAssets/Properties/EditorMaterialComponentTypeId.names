@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorMaterialComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorMaterialComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,468 @@
+{
+    "entries": [
+        {
+            "key": "ToolsApplicationRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "ToolsApplicationRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "MarkEntitySelected",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MarkEntitySelected"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MarkEntitySelected is invoked"
+                    },
+                    "details": {
+                        "name": "MarkEntitySelected"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsSelected",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsSelected"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsSelected is invoked"
+                    },
+                    "details": {
+                        "name": "IsSelected"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSelectedEntitiesCount",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSelectedEntitiesCount"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSelectedEntitiesCount is invoked"
+                    },
+                    "details": {
+                        "name": "GetSelectedEntitiesCount"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetSelectedEntities",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetSelectedEntities"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetSelectedEntities is invoked"
+                    },
+                    "details": {
+                        "name": "GetSelectedEntities"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DeleteEntitiesAndAllDescendants",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DeleteEntitiesAndAllDescendants"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DeleteEntitiesAndAllDescendants is invoked"
+                    },
+                    "details": {
+                        "name": "DeleteEntitiesAndAllDescendants"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetExistingEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetExistingEntity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetExistingEntity is invoked"
+                    },
+                    "details": {
+                        "name": "GetExistingEntity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u64"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetSelectedEntities",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSelectedEntities"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSelectedEntities is invoked"
+                    },
+                    "details": {
+                        "name": "SetSelectedEntities"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "MarkEntitiesSelected",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MarkEntitiesSelected"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MarkEntitiesSelected is invoked"
+                    },
+                    "details": {
+                        "name": "MarkEntitiesSelected"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "MarkEntityDeselected",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MarkEntityDeselected"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MarkEntityDeselected is invoked"
+                    },
+                    "details": {
+                        "name": "MarkEntityDeselected"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCurrentLevelEntityId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCurrentLevelEntityId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCurrentLevelEntityId is invoked"
+                    },
+                    "details": {
+                        "name": "GetCurrentLevelEntityId"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "AreAnyEntitiesSelected",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke AreAnyEntitiesSelected"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after AreAnyEntitiesSelected is invoked"
+                    },
+                    "details": {
+                        "name": "AreAnyEntitiesSelected"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateNewEntityAtPosition",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateNewEntityAtPosition"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateNewEntityAtPosition is invoked"
+                    },
+                    "details": {
+                        "name": "CreateNewEntityAtPosition"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DeleteEntityAndAllDescendants",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DeleteEntityAndAllDescendants"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DeleteEntityAndAllDescendants is invoked"
+                    },
+                    "details": {
+                        "name": "DeleteEntityAndAllDescendants"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateNewEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateNewEntity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateNewEntity is invoked"
+                    },
+                    "details": {
+                        "name": "CreateNewEntity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "EntityExists",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke EntityExists"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after EntityExists is invoked"
+                    },
+                    "details": {
+                        "name": "EntityExists"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DeleteEntityById",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DeleteEntityById"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DeleteEntityById is invoked"
+                    },
+                    "details": {
+                        "name": "DeleteEntityById"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DeleteEntities",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DeleteEntities"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DeleteEntities is invoked"
+                    },
+                    "details": {
+                        "name": "DeleteEntities"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "MarkEntitiesDeselected",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MarkEntitiesDeselected"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MarkEntitiesDeselected is invoked"
+                    },
+                    "details": {
+                        "name": "MarkEntitiesDeselected"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

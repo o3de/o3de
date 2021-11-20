@@ -1,0 +1,62 @@
+{
+    "entries": [
+        {
+            "key": "On Gravity Changed event",
+            "context": "AZEventHandler",
+            "variant": "",
+            "details": {
+                "name": "On Gravity Changed event"
+            },
+            "slots": [
+                {
+                    "key": "Scene Handle",
+                    "details": {
+                        "name": "Scene Handle"
+                    }
+                },
+                {
+                    "key": "Gravity Vector",
+                    "details": {
+                        "name": "Gravity Vector"
+                    }
+                },
+                {
+                    "key": "On Gravity Changed event",
+                    "details": {
+                        "name": "On Gravity Changed event"
+                    }
+                },
+                {
+                    "key": "Connect",
+                    "details": {
+                        "name": "Connect"
+                    }
+                },
+                {
+                    "key": "Disconnect",
+                    "details": {
+                        "name": "Disconnect"
+                    }
+                },
+                {
+                    "key": "On Connected",
+                    "details": {
+                        "name": "On Connected"
+                    }
+                },
+                {
+                    "key": "On Disconnected",
+                    "details": {
+                        "name": "On Disconnected"
+                    }
+                },
+                {
+                    "key": "OnEvent",
+                    "details": {
+                        "name": "OnEvent"
+                    }
+                }
+            ]
+        }
+    ]
+}

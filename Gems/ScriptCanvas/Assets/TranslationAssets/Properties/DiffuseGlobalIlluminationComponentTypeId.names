@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DiffuseGlobalIlluminationComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DiffuseGlobalIlluminationComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

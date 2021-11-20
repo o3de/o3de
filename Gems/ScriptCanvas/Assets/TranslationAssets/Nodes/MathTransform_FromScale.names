@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "key": "{5DAB6076-4F49-5163-9E3C-CE3DF59E710C}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "From Scale",
+                "category": "Math/Transform",
+                "tooltip": "Returns a transform which applies the specified uniform Scale, but no rotation or translation"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Scale",
+                    "details": {
+                        "name": "Scale"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

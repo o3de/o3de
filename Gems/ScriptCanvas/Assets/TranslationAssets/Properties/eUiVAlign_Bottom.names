@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiVAlign_Bottom",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiVAlign_Bottom::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

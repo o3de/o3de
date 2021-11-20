@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DisplaySettings_Physics",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DisplaySettings_Physics::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

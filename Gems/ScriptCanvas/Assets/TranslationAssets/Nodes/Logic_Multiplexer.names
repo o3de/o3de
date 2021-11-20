@@ -1,0 +1,85 @@
+{
+    "entries": [
+        {
+            "key": "{2FE432CB-9969-4273-BE04-DEF949C288F0}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Multiplexer",
+                "category": "Logic",
+                "tooltip": "Selects one of the [In#] inputs using [Index] and sends it to [Out]"
+            },
+            "slots": [
+                {
+                    "key": "DataInput_Index",
+                    "details": {
+                        "name": "Index"
+                    }
+                },
+                {
+                    "key": "Input_In0",
+                    "details": {
+                        "name": "In0",
+                        "tooltip": "Input 0"
+                    }
+                },
+                {
+                    "key": "Input_In1",
+                    "details": {
+                        "name": "In1",
+                        "tooltip": "Input 1"
+                    }
+                },
+                {
+                    "key": "Input_In2",
+                    "details": {
+                        "name": "In2",
+                        "tooltip": "Input 2"
+                    }
+                },
+                {
+                    "key": "Input_In3",
+                    "details": {
+                        "name": "In3",
+                        "tooltip": "Input 3"
+                    }
+                },
+                {
+                    "key": "Input_In4",
+                    "details": {
+                        "name": "In4",
+                        "tooltip": "Input 4"
+                    }
+                },
+                {
+                    "key": "Input_In5",
+                    "details": {
+                        "name": "In5",
+                        "tooltip": "Input 5"
+                    }
+                },
+                {
+                    "key": "Input_In6",
+                    "details": {
+                        "name": "In6",
+                        "tooltip": "Input 6"
+                    }
+                },
+                {
+                    "key": "Input_In7",
+                    "details": {
+                        "name": "In7",
+                        "tooltip": "Input 7"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out",
+                        "tooltip": "Signaled when the node receives a signal from the selected index"
+                    }
+                }
+            ]
+        }
+    ]
+}

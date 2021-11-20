@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "DepthWriteMask_All",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "DepthWriteMask_All::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

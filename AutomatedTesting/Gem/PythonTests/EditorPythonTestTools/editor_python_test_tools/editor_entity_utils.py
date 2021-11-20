@@ -132,6 +132,7 @@ class EditorEntity:
 
     def __init__(self, id: azlmbr.entity.EntityId):
         self.id: azlmbr.entity.EntityId = id
+        self.components: List[EditorComponent] = []
 
     # Creation functions
     @classmethod
@@ -279,7 +280,7 @@ class EditorEntity:
             ), f"Failure: Could not add component: '{new_comp.get_component_name()}' to entity: '{self.get_name()}'"
             new_comp.id = add_component_outcome.GetValue()[0]
             components.append(new_comp)
-
+            self.components.append(new_comp)
         return components
 
     def get_components_of_type(self, component_names: list) -> List[EditorComponent]:

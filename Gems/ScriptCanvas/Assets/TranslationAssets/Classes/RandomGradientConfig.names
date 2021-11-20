@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "RandomGradientConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "RandomGradientConfig"
+            }
+        }
+    ]
+}

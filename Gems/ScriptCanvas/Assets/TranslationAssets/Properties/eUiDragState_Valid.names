@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiDragState_Valid",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiDragState_Valid::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

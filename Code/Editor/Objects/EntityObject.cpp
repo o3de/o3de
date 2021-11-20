@@ -592,11 +592,11 @@ void CEntityObject::AdjustLightProperties(CVarBlockPtr& properties, const char* 
     if (IVariable* pCastShadowVarLegacy = FindVariableInSubBlock(properties, pSubBlockVar, "bCastShadow"))
     {
         pCastShadowVarLegacy->SetFlags(pCastShadowVarLegacy->GetFlags() | IVariable::UI_INVISIBLE);
-
-        if (pCastShadowVarLegacy->GetDisplayValue()[0] != '0')
+        const QString zeroPrefix("0");
+        if (!pCastShadowVarLegacy->GetDisplayValue().startsWith(zeroPrefix))
         {
             bCastShadowLegacy = true;
-            pCastShadowVarLegacy->SetDisplayValue("0");
+            pCastShadowVarLegacy->SetDisplayValue(zeroPrefix);
         }
     }
 
@@ -956,11 +956,7 @@ void CEntityObject::Serialize(CObjectArchive& ar)
         QString attachmentType;
         xmlNode->getAttr("AttachmentType", attachmentType);
 
-        if (attachmentType == "GeomCacheNode")
-        {
-            m_attachmentType = eAT_GeomCacheNode;
-        }
-        else if (attachmentType == "CharacterBone")
+        if (attachmentType == "CharacterBone")
         {
             m_attachmentType = eAT_CharacterBone;
         }
@@ -987,11 +983,7 @@ void CEntityObject::Serialize(CObjectArchive& ar)
     {
         if (m_attachmentType != eAT_Pivot)
         {
-            if (m_attachmentType == eAT_GeomCacheNode)
-            {
-                xmlNode->setAttr("AttachmentType", "GeomCacheNode");
-            }
-            else if (m_attachmentType == eAT_CharacterBone)
+            if (m_attachmentType == eAT_CharacterBone)
             {
                 xmlNode->setAttr("AttachmentType", "CharacterBone");
             }
@@ -1091,11 +1083,7 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
                 objNode->setAttr("ParentId", parentEntity->GetEntityId());
                 if (m_attachmentType != eAT_Pivot)
                 {
-                    if (m_attachmentType == eAT_GeomCacheNode)
-                    {
-                        objNode->setAttr("AttachmentType", "GeomCacheNode");
-                    }
-                    else if (m_attachmentType == eAT_CharacterBone)
+                    if (m_attachmentType == eAT_CharacterBone)
                     {
                         objNode->setAttr("AttachmentType", "CharacterBone");
                     }

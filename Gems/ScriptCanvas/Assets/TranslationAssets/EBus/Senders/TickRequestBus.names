@@ -1,0 +1,58 @@
+{
+    "entries": [
+        {
+            "key": "TickRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Tick"
+            },
+            "methods": [
+                {
+                    "key": "GetTickDeltaTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Tick Delta Time"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Tick Delta Time is invoked"
+                    },
+                    "details": {
+                        "name": "Get Tick Delta Time"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Delta Time"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetTimeAtCurrentTick",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Time At Current Tick"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Time At Current Tick is invoked"
+                    },
+                    "details": {
+                        "name": "Get Time At Current Tick"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{4C0F6AD4-0D4F-4354-AD4A-0C01E948245C}",
+                            "details": {
+                                "name": "Script Time Point"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

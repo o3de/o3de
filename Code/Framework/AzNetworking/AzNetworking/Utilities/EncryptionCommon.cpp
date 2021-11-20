@@ -94,7 +94,7 @@ namespace AzNetworking
     static const uint32_t MaxCookieHistory = 8;
     static bool g_encryptionInitialized = false;
     static int32_t g_azNetworkingTrustDataIndex = 0;
-    static AZ::TimeMs g_lastCookieTimestamp = AZ::TimeMs{0};
+    static AZ::TimeMs g_lastCookieTimestamp = AZ::Time::ZeroTimeMs;
     static uint64_t g_validCookieArray[MaxCookieHistory];
     static uint32_t g_cookieReplaceIndex = 0;
 

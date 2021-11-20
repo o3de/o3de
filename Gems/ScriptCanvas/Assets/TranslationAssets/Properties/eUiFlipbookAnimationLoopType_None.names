@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiFlipbookAnimationLoopType_None",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiFlipbookAnimationLoopType_None::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

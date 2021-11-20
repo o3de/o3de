@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "toggle_helpers",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "toggle_helpers",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke toggle_helpers"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after toggle_helpers is invoked"
+                    },
+                    "details": {
+                        "name": "toggle_helpers",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

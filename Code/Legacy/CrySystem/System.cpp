@@ -29,6 +29,7 @@
 #include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/Time/ITime.h>
 #include <AzFramework/Logging/MissingAssetLogger.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -128,7 +129,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include "LocalizedStringManager.h"
 #include "XML/XmlUtils.h"
 #include "SystemEventDispatcher.h"
-#include "HMDBus.h"
 
 #include "RemoteConsole/RemoteConsole.h"
 
@@ -153,11 +153,19 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 // Define global cvars.
 SSystemCVars g_cvars;
 
-#include <IViewSystem.h>
-
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include "AZCoreLogSink.h"
+
+namespace
+{
+    float GetMovieFrameDeltaTime()
+    {
+        // Use GetRealTickDeltaTimeUs for CryMovie, because it should not be affected by pausing game time
+        const AZ::TimeUs delta = AZ::GetRealTickDeltaTimeUs();
+        return AZ::TimeUsToSeconds(delta);
+    }
+}
 
 /////////////////////////////////////////////////////////////////////////////////
 // System Implementation.
@@ -195,7 +203,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     //////////////////////////////////////////////////////////////////////////
     // Initialize global environment interface pointers.
     m_env.pSystem = this;
-    m_env.pTimer = &m_Time;
     m_env.bIgnoreAllAsserts = false;
     m_env.bNoAssertDialog = false;
 
@@ -218,7 +225,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     m_pProcess = NULL;
     m_pCmdLine = NULL;
     m_pLevelSystem = NULL;
-    m_pViewSystem = NULL;
     m_pLocalizationManager = NULL;
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define AZ_RESTRICTED_SECTION SYSTEM_CPP_SECTION_2
@@ -434,9 +440,6 @@ void CSystem::ShutDown()
         m_pSystemEventDispatcher->OnSystemEvent(ESYSTEM_EVENT_FULL_SHUTDOWN, 0, 0);
     }
 
-    // Shutdown any running VR devices.
-    EBUS_EVENT(AZ::VR::HMDInitRequestBus, Shutdown);
-
     if (gEnv && gEnv->pLyShine)
     {
         gEnv->pLyShine->Release();
@@ -450,7 +453,6 @@ void CSystem::ShutDown()
     {
         ((CXConsole*)m_env.pConsole)->FreeRenderResources();
     }
-    SAFE_RELEASE(m_pViewSystem);
     SAFE_RELEASE(m_pLevelSystem);
 
     if (m_env.pLog)
@@ -571,14 +573,15 @@ ISystem* CSystem::GetCrySystem()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::SleepIfNeeded()
 {
-    ITimer* const pTimer = gEnv->pTimer;
     static bool firstCall = true;
 
     typedef MiniQueue<CTimeValue, 32> PrevNow;
     static PrevNow prevNow;
     if (firstCall)
     {
-        m_lastTickTime = pTimer->GetAsyncTime();
+        const AZ::TimeMs timeMs = AZ::GetRealElapsedTimeMs();
+        const double timeSec = AZ::TimeMsToSecondsDouble(timeMs);
+        m_lastTickTime = CTimeValue(timeSec);
         prevNow.Push(m_lastTickTime);
         firstCall = false;
         return;
@@ -586,8 +589,10 @@ void CSystem::SleepIfNeeded()
 
     const float maxRate = m_svDedicatedMaxRate->GetFVal();
     const float minTime = 1.0f / maxRate;
-    CTimeValue now = pTimer->GetAsyncTime();
-    float elapsed = (now - m_lastTickTime).GetSeconds();
+    const AZ::TimeMs nowTimeMs = AZ::GetRealElapsedTimeMs();
+    const double nowTimeSec = AZ::TimeMsToSecondsDouble(nowTimeMs);
+    const CTimeValue now = CTimeValue(nowTimeSec);
+    const float elapsed = (now - m_lastTickTime).GetSeconds();
 
     if (prevNow.Full())
     {
@@ -599,7 +604,9 @@ void CSystem::SleepIfNeeded()
     if (elapsed > minTime && allowStallCatchup)
     {
         allowStallCatchup = false;
-        m_lastTickTime = pTimer->GetAsyncTime();
+        const AZ::TimeMs lastTimeMs = AZ::GetRealElapsedTimeMs();
+        const double lastTimeSec = AZ::TimeMsToSecondsDouble(lastTimeMs);
+        m_lastTickTime = CTimeValue(lastTimeSec);
         return;
     }
     allowStallCatchup = true;
@@ -615,7 +622,9 @@ void CSystem::SleepIfNeeded()
         Sleep(sleepMS);
     }
 
-    m_lastTickTime = pTimer->GetAsyncTime();
+    const AZ::TimeMs lastTimeMs = AZ::GetRealElapsedTimeMs();
+    const double lastTimeSec = AZ::TimeMsToSecondsDouble(lastTimeMs);
+    m_lastTickTime = CTimeValue(lastTimeSec);
 }
 
 extern DWORD g_idDebugThreads[];
@@ -742,23 +751,20 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
 
             if (maxFPS > 0 && vSync == 0)
             {
-                CTimeValue timeFrameMax;
                 const float safeMarginFPS = 0.5f;//save margin to not drop below 30 fps
-                static CTimeValue sTimeLast = gEnv->pTimer->GetAsyncTime();
-                timeFrameMax.SetMilliSeconds((int64)(1000.f / ((float)maxFPS + safeMarginFPS)));
-                const CTimeValue timeLast = timeFrameMax + sTimeLast;
-                while (timeLast.GetValue() > gEnv->pTimer->GetAsyncTime().GetValue())
+                static AZ::TimeMs sTimeLast = AZ::GetRealElapsedTimeMs();
+                const AZ::TimeMs timeFrameMax(static_cast<AZ::TimeMs>(
+                    (int64)(1000.f / ((float)maxFPS + safeMarginFPS))
+                    ));
+                const AZ::TimeMs timeLast = timeFrameMax + sTimeLast;
+                while (timeLast > AZ::GetRealElapsedTimeMs())
                 {
                     CrySleep(0);
                 }
-                sTimeLast = gEnv->pTimer->GetAsyncTime();
+                sTimeLast = AZ::GetRealElapsedTimeMs();
             }
         }
     }
-
-    //////////////////////////////////////////////////////////////////////
-    //update time subsystem
-    m_Time.UpdateOnFrameStart();
 
     //////////////////////////////////////////////////////////////////////
     //update console system
@@ -773,13 +779,10 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         return false;
     }
 
-    // Use UI timer for CryMovie, because it should not be affected by pausing game time
-    const float fMovieFrameTime = m_Time.GetFrameTime(ITimer::ETIMER_UI);
-
     // Run movie system pre-update
     if (!bNoUpdate)
     {
-        UpdateMovieSystem(updateFlags, fMovieFrameTime, true);
+        UpdateMovieSystem(updateFlags, GetMovieFrameDeltaTime(), true);
     }
 
     return !IsQuitting();
@@ -788,13 +791,14 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
 //////////////////////////////////////////////////////////////////////
 bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
 {
-    CTimeValue updateStart = gEnv->pTimer->GetAsyncTime();
+    const AZ::TimeMs updateStartTimeMs = AZ::GetRealElapsedTimeMs();
+    const double updateStartTimeSec = AZ::TimeMsToSecondsDouble(updateStartTimeMs);
+    const CTimeValue updateStart(updateStartTimeSec);
 
     // Run movie system post-update
     if (!m_bNoUpdate)
     {
-        const float fMovieFrameTime = m_Time.GetFrameTime(ITimer::ETIMER_UI);
-        UpdateMovieSystem(updateFlags, fMovieFrameTime, false);
+        UpdateMovieSystem(updateFlags, GetMovieFrameDeltaTime(), false);
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -805,7 +809,9 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
     }
 
     //Now update frame statistics
-    CTimeValue cur_time = gEnv->pTimer->GetAsyncTime();
+    const AZ::TimeMs curTimeMs = AZ::GetRealElapsedTimeMs();
+    const double curTimeSec = AZ::TimeMsToSecondsDouble(curTimeMs);
+    const CTimeValue cur_time(curTimeSec);
 
     CTimeValue a_second(g_cvars.sys_update_profile_time);
     std::vector< std::pair<CTimeValue, float> >::iterator it = m_updateTimes.begin();
@@ -1374,19 +1380,16 @@ const char* CSystem::GetSystemGlobalStateName(const ESystemGlobalState systemGlo
 
 void CSystem::SetSystemGlobalState(const ESystemGlobalState systemGlobalState)
 {
-    static CTimeValue s_startTime = CTimeValue();
+    static AZ::TimeMs s_startTime = AZ::Time::ZeroTimeMs;
     if (systemGlobalState != m_systemGlobalState)
     {
-        if (gEnv && gEnv->pTimer)
-        {
-            const CTimeValue endTime = gEnv->pTimer->GetAsyncTime();
-            [[maybe_unused]] const float numSeconds = endTime.GetDifferenceInSeconds(s_startTime);
-            CryLog("SetGlobalState %d->%d '%s'->'%s' %3.1f seconds",
-                m_systemGlobalState, systemGlobalState,
-                CSystem::GetSystemGlobalStateName(m_systemGlobalState), CSystem::GetSystemGlobalStateName(systemGlobalState),
-                numSeconds);
-            s_startTime = gEnv->pTimer->GetAsyncTime();
-        }
+        const AZ::TimeMs endTime = AZ::GetRealElapsedTimeMs();
+        [[maybe_unused]] const double numSeconds = AZ::TimeMsToSecondsDouble(endTime - s_startTime);
+        CryLog("SetGlobalState %d->%d '%s'->'%s' %3.1f seconds",
+            m_systemGlobalState, systemGlobalState,
+            CSystem::GetSystemGlobalStateName(m_systemGlobalState), CSystem::GetSystemGlobalStateName(systemGlobalState),
+            numSeconds);
+        s_startTime = AZ::GetRealElapsedTimeMs();
     }
     m_systemGlobalState = systemGlobalState;
 
@@ -1601,11 +1604,6 @@ bool CSystem::HandleMessage([[maybe_unused]] HWND hWnd, UINT uMsg, WPARAM wParam
 std::shared_ptr<AZ::IO::FileIOBase> CSystem::CreateLocalFileIO()
 {
     return std::make_shared<AZ::IO::LocalFileIO>();
-}
-
-IViewSystem* CSystem::GetIViewSystem()
-{
-    return m_pViewSystem;
 }
 
 ILevelSystem* CSystem::GetILevelSystem()

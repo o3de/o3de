@@ -1,0 +1,53 @@
+{
+    "entries": [
+        {
+            "key": "CreateSphereOverlapRequest",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "CreateSphereOverlapRequest",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateSphereOverlapRequest"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateSphereOverlapRequest is invoked"
+                    },
+                    "details": {
+                        "name": "CreateSphereOverlapRequest",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        },
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "const Transform&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3DC986C2-316B-4C54-A0A6-8ABBB8ABCC4A}",
+                            "details": {
+                                "name": "OverlapRequest"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

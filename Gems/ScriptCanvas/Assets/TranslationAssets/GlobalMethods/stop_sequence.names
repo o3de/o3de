@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "stop_sequence",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "stop_sequence",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke stop_sequence"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after stop_sequence is invoked"
+                    },
+                    "details": {
+                        "name": "stop_sequence",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -31,6 +31,9 @@
 #include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <Atom/RPI.Public/Pass/RasterPass.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
@@ -50,18 +53,24 @@ namespace Terrain
         const char* TerrainDetailChars = "TerrainDetail";
     }
 
-    namespace MaterialInputs
+    namespace ViewSrgInputs
     {
-        // Terrain material
-        static const char* const HeightmapImage("settings.heightmapImage");
-        static const char* const DetailMaterialIdImage("settings.detailMaterialIdImage");
-        static const char* const DetailCenter("settings.detailMaterialIdCenter");
-        static const char* const DetailAabb("settings.detailAabb");
-        static const char* const DetailHalfPixelUv("settings.detailHalfPixelUv");
+        static const char* const HeightmapImage("m_heightmapImage");
+    }
+
+    namespace TerrainSrgInputs
+    {
+        static const char* const DetailMaterialIdImage("m_detailMaterialIdImage");
+        static const char* const DetailMaterialData("m_detailMaterialData");
+        static const char* const DetailMaterialIdImageCenter("m_detailMaterialIdImageCenter");
+        static const char* const DetailHalfPixelUv("m_detailHalfPixelUv");
+        static const char* const DetailAabb("m_detailAabb");
+        static const char* const DetailTextures("m_detailTextures");
     }
 
     namespace DetailMaterialInputs
     {
+        static const char* const BaseColorColor("baseColor.color");
         static const char* const BaseColorMap("baseColor.textureMap");
         static const char* const BaseColorUseTexture("baseColor.useTexture");
         static const char* const BaseColorFactor("baseColor.factor");
@@ -72,8 +81,8 @@ namespace Terrain
         static const char* const RoughnessMap("roughness.textureMap");
         static const char* const RoughnessUseTexture("roughness.useTexture");
         static const char* const RoughnessFactor("roughness.factor");
-        static const char* const RoughnessUpperBound("roughness.lowerBound");
-        static const char* const RoughnessLowerBound("roughness.upperBound");
+        static const char* const RoughnessLowerBound("roughness.lowerBound");
+        static const char* const RoughnessUpperBound("roughness.upperBound");
         static const char* const SpecularF0Map("specularF0.textureMap");
         static const char* const SpecularF0UseTexture("specularF0.useTexture");
         static const char* const SpecularF0Factor("specularF0.factor");
@@ -126,6 +135,9 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Activate()
     {
+        EnableSceneNotification();
+        CacheForwardPass();
+
         Initialize();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
         
@@ -138,6 +150,13 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Initialize()
     {
+        // Load indices for the View Srg.
+
+        auto viewSrgLayout = AZ::RPI::RPISystemInterface::Get()->GetViewSrgLayout();
+        
+        m_heightmapPropertyIndex = viewSrgLayout->FindShaderInputImageIndex(AZ::Name(ViewSrgInputs::HeightmapImage));
+        AZ_Error(TerrainFPName, m_heightmapPropertyIndex.IsValid(), "Failed to find view srg input constant %s.", ViewSrgInputs::HeightmapImage);
+        
         // Load the terrain material asynchronously
         const AZStd::string materialFilePath = "Materials/Terrain/DefaultPbrTerrain.azmaterial";
         m_materialAssetLoader = AZStd::make_unique<AZ::RPI::AssetUtils::AsyncAssetLoader>();
@@ -166,6 +185,7 @@ namespace Terrain
             return;
         }
         OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
+
     }
 
     void TerrainFeatureProcessor::Deactivate()
@@ -173,6 +193,8 @@ namespace Terrain
         TerrainMacroMaterialNotificationBus::Handler::BusDisconnect();
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
         AZ::RPI::MaterialReloadNotificationBus::Handler::BusDisconnect();
+        
+        DisableSceneNotification();
 
         m_patchModel = {};
         m_areaData = {};
@@ -181,6 +203,7 @@ namespace Terrain
         m_macroMaterials.Clear();
         m_materialAssetLoader = {};
         m_materialInstance = {};
+
     }
 
     void TerrainFeatureProcessor::Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet)
@@ -339,7 +362,45 @@ namespace Terrain
 
         uint16_t detailMaterialId = CreateOrUpdateDetailMaterial(material);
         materialRegion.m_materialsForSurfaces.push_back({ surfaceTag, detailMaterialId });
+        m_detailMaterials.GetData(detailMaterialId).refCount++;
         m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
+    }
+
+    void TerrainFeatureProcessor::OnRenderPipelinePassesChanged([[maybe_unused]] AZ::RPI::RenderPipeline* renderPipeline)
+    {
+        CacheForwardPass();
+    }
+
+    void TerrainFeatureProcessor::CheckDetailMaterialForDeletion(uint16_t detailMaterialId)
+    {
+        auto& detailMaterialData = m_detailMaterials.GetData(detailMaterialId);
+        if (--detailMaterialData.refCount == 0)
+        {
+            uint16_t bufferIndex = detailMaterialData.m_detailMaterialBufferIndex;
+            DetailMaterialShaderData& shaderData = m_detailMaterialShaderData.GetElement(bufferIndex);
+
+            for (uint16_t imageIndex :
+                {
+                    shaderData.m_colorImageIndex,
+                    shaderData.m_normalImageIndex,
+                    shaderData.m_roughnessImageIndex,
+                    shaderData.m_metalnessImageIndex,
+                    shaderData.m_specularF0ImageIndex,
+                    shaderData.m_occlusionImageIndex,
+                    shaderData.m_heightImageIndex
+                })
+            {
+                if (imageIndex != InvalidDetailImageIndex)
+                {
+                    m_detailImageViews.at(imageIndex) = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Magenta)->GetImageView();
+                    m_detailImageViewFreeList.push_back(imageIndex);
+                    m_detailImagesNeedUpdate = true;
+                }
+            }
+
+            m_detailMaterialShaderData.Release(bufferIndex);
+            m_detailMaterials.RemoveIndex(detailMaterialId);
+        }
     }
 
     void TerrainFeatureProcessor::OnTerrainSurfaceMaterialMappingDestroyed(AZ::EntityId entityId, SurfaceData::SurfaceTag surfaceTag)
@@ -350,6 +411,8 @@ namespace Terrain
         {
             if (surface.m_surfaceTag == surfaceTag)
             {
+                CheckDetailMaterialForDeletion(surface.m_detailMaterialId);
+
                 if (surface.m_surfaceTag != materialRegion.m_materialsForSurfaces.back().m_surfaceTag)
                 {
                     AZStd::swap(surface, materialRegion.m_materialsForSurfaces.back());
@@ -373,13 +436,19 @@ namespace Terrain
             if (surface.m_surfaceTag == surfaceTag)
             {
                 found = true;
-                surface.m_detailMaterialId = materialId;
+                if (surface.m_detailMaterialId != materialId)
+                {
+                    ++m_detailMaterials.GetData(materialId).refCount;
+                    CheckDetailMaterialForDeletion(surface.m_detailMaterialId);
+                    surface.m_detailMaterialId = materialId;
+                }
                 break;
             }
         }
 
         if (!found)
         {
+            ++m_detailMaterials.GetData(materialId).refCount;
             materialRegion.m_materialsForSurfaces.push_back({ surfaceTag, materialId });
         }
         m_dirtyDetailRegion.AddAabb(materialRegion.m_region);
@@ -398,138 +467,196 @@ namespace Terrain
         static constexpr uint16_t InvalidDetailMaterial = 0xFFFF;
         uint16_t detailMaterialId = InvalidDetailMaterial;
 
-        for (DetailMaterialData& detailMaterial : m_detailMaterials.GetDataVector())
+        for (auto& detailMaterialData : m_detailMaterials.GetDataVector())
         {
-            if (detailMaterial.m_assetId == material->GetAssetId())
+            if (detailMaterialData.m_assetId == material->GetAssetId())
             {
-                UpdateDetailMaterialData(detailMaterial, material);
-                detailMaterialId = m_detailMaterials.GetIndexForData(&detailMaterial);
+                detailMaterialId = m_detailMaterials.GetIndexForData(&detailMaterialData);
+                UpdateDetailMaterialData(detailMaterialId, material);
                 break;
             }
         }
 
-        if (detailMaterialId == InvalidDetailMaterial)
+        AZ_Assert(m_detailMaterialShaderData.GetSize() < 0xFF, "Only 255 detail materials supported.");
+
+        if (detailMaterialId == InvalidDetailMaterial && m_detailMaterialShaderData.GetSize() < 0xFF)
         {
             detailMaterialId = m_detailMaterials.GetFreeSlotIndex();
-            UpdateDetailMaterialData(m_detailMaterials.GetData(detailMaterialId), material);
+            auto& detailMaterialData = m_detailMaterials.GetData(detailMaterialId);
+            detailMaterialData.m_detailMaterialBufferIndex = aznumeric_cast<uint16_t>(m_detailMaterialShaderData.Reserve());
+            UpdateDetailMaterialData(detailMaterialId, material);
         }
         return detailMaterialId;
     }
 
-    void TerrainFeatureProcessor::UpdateDetailMaterialData(DetailMaterialData& materialData, MaterialInstance material)
+    void TerrainFeatureProcessor::UpdateDetailMaterialData(uint16_t detailMaterialIndex, MaterialInstance material)
     {
-        if (materialData.m_materialChangeId != material->GetCurrentChangeId())
+        DetailMaterialData& materialData = m_detailMaterials.GetData(detailMaterialIndex);
+        DetailMaterialShaderData& shaderData = m_detailMaterialShaderData.GetElement(materialData.m_detailMaterialBufferIndex);
+
+        if (materialData.m_materialChangeId == material->GetCurrentChangeId())
         {
-            materialData = DetailMaterialData();
-            DetailTextureFlags& flags = materialData.m_properties.m_flags;
-            materialData.m_materialChangeId = material->GetCurrentChangeId();
-            materialData.m_assetId = material->GetAssetId();
-            
-            auto getIndex = [&](const char* const indexName) -> AZ::RPI::MaterialPropertyIndex
-            {
-                const AZ::RPI::MaterialPropertyIndex index = material->FindPropertyIndex(AZ::Name(indexName));
-                AZ_Warning(TerrainFPName, index.IsValid(), "Failed to find shader input constant %s.", indexName);
-                return index;
-            };
-
-            auto applyProperty = [&](const char* const indexName, auto& ref) -> void
-            {
-                const auto index = getIndex(indexName);
-                if (index.IsValid())
-                {
-                    using TypeRefRemoved = AZStd::remove_cvref_t<decltype(ref)>;
-                    ref = material->GetPropertyValue(index).GetValue<TypeRefRemoved>();
-                }
-            };
-            
-            auto applyFlag = [&](const char* const indexName, DetailTextureFlags flagToSet) -> void
-            {
-                const auto index = getIndex(indexName);
-                if (index.IsValid())
-                {
-                    bool flagValue = material->GetPropertyValue(index).GetValue<bool>();
-                    flags = DetailTextureFlags(flagValue ? flags | flagToSet : flags);
-                }
-            };
-
-            auto getEnumName = [&](const char* const indexName) -> const AZStd::string_view
-            {
-                const auto index = getIndex(indexName);
-                if (index.IsValid())
-                {
-                    uint32_t enumIndex = material->GetPropertyValue(index).GetValue<uint32_t>();
-                    const AZ::Name& enumName = material->GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetEnumName(enumIndex);
-                    return enumName.GetStringView();
-                }
-                return "";
-            };
-
-            using namespace DetailMaterialInputs;
-            applyProperty(BaseColorMap, materialData.m_colorImage);
-            applyFlag(BaseColorUseTexture, DetailTextureFlags::UseTextureBaseColor);
-            applyProperty(BaseColorFactor, materialData.m_properties.m_baseColorFactor);
-
-            const AZStd::string_view& blendModeString = getEnumName(BaseColorBlendMode);
-            if (blendModeString == "Multiply")
-            {
-                flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeMultiply);
-            }
-            else if (blendModeString == "LinearLight")
-            {
-                flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeLinearLight);
-            }
-            else if (blendModeString == "Lerp")
-            {
-                flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeLerp);
-            }
-            else if (blendModeString == "Overlay")
-            {
-                flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeOverlay);
-            }
-            
-            applyProperty(MetallicMap, materialData.m_metalnessImage);
-            applyFlag(MetallicUseTexture, DetailTextureFlags::UseTextureMetallic);
-            applyProperty(MetallicFactor, materialData.m_properties.m_metalFactor);
-            
-            applyProperty(RoughnessMap, materialData.m_roughnessImage);
-            applyFlag(RoughnessUseTexture, DetailTextureFlags::UseTextureRoughness);
-
-            if ((flags & DetailTextureFlags::UseTextureRoughness) > 0)
-            {
-                float lowerBound = 0.0;
-                float upperBound = 1.0;
-                applyProperty(RoughnessLowerBound, lowerBound);
-                applyProperty(RoughnessUpperBound, upperBound);
-                materialData.m_properties.m_roughnessBias = lowerBound;
-                materialData.m_properties.m_roughnessScale = upperBound - lowerBound;
-            }
-            else
-            {
-                materialData.m_properties.m_roughnessBias = 0.0;
-                applyProperty(RoughnessFactor, materialData.m_properties.m_roughnessScale);
-            }
-            
-            applyProperty(SpecularF0Map, materialData.m_specularF0Image);
-            applyFlag(SpecularF0UseTexture, DetailTextureFlags::UseTextureSpecularF0);
-            applyProperty(SpecularF0Factor, materialData.m_properties.m_specularF0Factor);
-            
-            applyProperty(NormalMap, materialData.m_normalImage);
-            applyFlag(NormalUseTexture, DetailTextureFlags::UseTextureNormal);
-            applyProperty(NormalFactor, materialData.m_properties.m_normalFactor);
-            applyFlag(NormalFlipX, DetailTextureFlags::FlipNormalX);
-            applyFlag(NormalFlipY, DetailTextureFlags::FlipNormalY);
-            
-            applyProperty(DiffuseOcclusionMap, materialData.m_occlusionImage);
-            applyFlag(DiffuseOcclusionUseTexture, DetailTextureFlags::UseTextureOcclusion);
-            applyProperty(DiffuseOcclusionFactor, materialData.m_properties.m_occlusionFactor);
-            
-            applyProperty(HeightMap, materialData.m_heightImage);
-            applyFlag(HeightUseTexture, DetailTextureFlags::UseTextureHeight);
-            applyProperty(HeightFactor, materialData.m_properties.m_heightFactor);
-            applyProperty(HeightOffset, materialData.m_properties.m_heightOffset);
-            applyProperty(HeightBlendFactor, materialData.m_properties.m_heightBlendFactor);
-
+            return; // material hasn't changed, nothing to do
         }
+
+        materialData.m_materialChangeId = material->GetCurrentChangeId();
+        materialData.m_assetId = material->GetAssetId();
+            
+        DetailTextureFlags& flags = shaderData.m_flags;
+            
+        auto getIndex = [&](const char* const indexName) -> AZ::RPI::MaterialPropertyIndex
+        {
+            const AZ::RPI::MaterialPropertyIndex index = material->FindPropertyIndex(AZ::Name(indexName));
+            AZ_Warning(TerrainFPName, index.IsValid(), "Failed to find shader input constant %s.", indexName);
+            return index;
+        };
+
+        auto applyProperty = [&](const char* const indexName, auto& ref) -> void
+        {
+            const auto index = getIndex(indexName);
+            if (index.IsValid())
+            {
+                // GetValue<T>() expects the actaul type, not a reference type, so the reference needs to be removed.
+                using TypeRefRemoved = AZStd::remove_cvref_t<decltype(ref)>;
+                ref = material->GetPropertyValue(index).GetValue<TypeRefRemoved>();
+            }
+        };
+
+        auto applyImage = [&](const char* const indexName, AZ::Data::Instance<AZ::RPI::Image>& ref, const char* const usingFlagName, DetailTextureFlags flagToSet, uint16_t& imageIndex) -> void
+        {
+            // Determine if an image exists and if its using flag allows it to be used.
+            const auto index = getIndex(indexName);
+            const auto useTextureIndex = getIndex(usingFlagName);
+            bool useTextureValue = true;
+            if (useTextureIndex.IsValid())
+            {
+                useTextureValue = material->GetPropertyValue(useTextureIndex).GetValue<bool>();
+            }
+            if (index.IsValid() && useTextureValue)
+            {
+                ref = material->GetPropertyValue(index).GetValue<AZ::Data::Instance<AZ::RPI::Image>>();
+            }
+            useTextureValue = useTextureValue && ref;
+            flags = DetailTextureFlags(useTextureValue ? (flags | flagToSet) : (flags & ~flagToSet));
+
+            // Update queues to add/remove textures depending on if the image is used
+            if (ref)
+            {
+                if (imageIndex == InvalidDetailImageIndex)
+                {
+                    if (m_detailImageViewFreeList.size() > 0)
+                    {
+                        imageIndex = m_detailImageViewFreeList.back();
+                        m_detailImageViewFreeList.pop_back();
+                    }
+                    else
+                    {
+                        imageIndex = aznumeric_cast<uint16_t>(m_detailImageViews.size());
+                        m_detailImageViews.push_back();
+                    }
+                }
+                m_detailImageViews.at(imageIndex) = ref->GetImageView();
+                m_detailImagesNeedUpdate = true;
+            }
+            else if (imageIndex != InvalidDetailImageIndex)
+            {
+                m_detailImageViews.at(imageIndex) = AZ::RPI::ImageSystemInterface::Get()->GetSystemImage(AZ::RPI::SystemImage::Magenta)->GetImageView();
+                m_detailImageViewFreeList.push_back(imageIndex);
+                m_detailImagesNeedUpdate = true;
+                imageIndex = InvalidDetailImageIndex;
+            }
+        };
+            
+        auto applyFlag = [&](const char* const indexName, DetailTextureFlags flagToSet) -> void
+        {
+            const auto index = getIndex(indexName);
+            if (index.IsValid())
+            {
+                bool flagValue = material->GetPropertyValue(index).GetValue<bool>();
+                flags = DetailTextureFlags(flagValue ? flags | flagToSet : flags);
+            }
+        };
+
+        auto getEnumName = [&](const char* const indexName) -> const AZStd::string_view
+        {
+            const auto index = getIndex(indexName);
+            if (index.IsValid())
+            {
+                uint32_t enumIndex = material->GetPropertyValue(index).GetValue<uint32_t>();
+                const AZ::Name& enumName = material->GetMaterialPropertiesLayout()->GetPropertyDescriptor(index)->GetEnumName(enumIndex);
+                return enumName.GetStringView();
+            }
+            return "";
+        };
+
+        using namespace DetailMaterialInputs;
+        applyImage(BaseColorMap, materialData.m_colorImage, BaseColorUseTexture, DetailTextureFlags::UseTextureBaseColor, shaderData.m_colorImageIndex);
+        applyProperty(BaseColorFactor, shaderData.m_baseColorFactor);
+
+        const auto index = getIndex(BaseColorColor);
+        if (index.IsValid())
+        {
+            AZ::Color baseColor = material->GetPropertyValue(index).GetValue<AZ::Color>();
+            shaderData.m_baseColorRed = baseColor.GetR();
+            shaderData.m_baseColorGreen = baseColor.GetG();
+            shaderData.m_baseColorBlue = baseColor.GetB();
+        }
+
+        const AZStd::string_view& blendModeString = getEnumName(BaseColorBlendMode);
+        if (blendModeString == "Multiply")
+        {
+            flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeMultiply);
+        }
+        else if (blendModeString == "LinearLight")
+        {
+            flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeLinearLight);
+        }
+        else if (blendModeString == "Lerp")
+        {
+            flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeLerp);
+        }
+        else if (blendModeString == "Overlay")
+        {
+            flags = DetailTextureFlags(flags | DetailTextureFlags::BlendModeOverlay);
+        }
+            
+        applyImage(MetallicMap, materialData.m_metalnessImage, MetallicUseTexture, DetailTextureFlags::UseTextureMetallic, shaderData.m_metalnessImageIndex);
+        applyProperty(MetallicFactor, shaderData.m_metalFactor);
+            
+        applyImage(RoughnessMap, materialData.m_roughnessImage, RoughnessUseTexture, DetailTextureFlags::UseTextureRoughness, shaderData.m_roughnessImageIndex);
+
+        if ((flags & DetailTextureFlags::UseTextureRoughness) > 0)
+        {
+            float lowerBound = 0.0;
+            float upperBound = 1.0;
+            applyProperty(RoughnessLowerBound, lowerBound);
+            applyProperty(RoughnessUpperBound, upperBound);
+            shaderData.m_roughnessBias = lowerBound;
+            shaderData.m_roughnessScale = upperBound - lowerBound;
+        }
+        else
+        {
+            shaderData.m_roughnessBias = 0.0;
+            applyProperty(RoughnessFactor, shaderData.m_roughnessScale);
+        }
+            
+        applyImage(SpecularF0Map, materialData.m_specularF0Image, SpecularF0UseTexture, DetailTextureFlags::UseTextureSpecularF0, shaderData.m_specularF0ImageIndex);
+        applyProperty(SpecularF0Factor, shaderData.m_specularF0Factor);
+            
+        applyImage(NormalMap, materialData.m_normalImage, NormalUseTexture, DetailTextureFlags::UseTextureNormal, shaderData.m_normalImageIndex);
+        applyProperty(NormalFactor, shaderData.m_normalFactor);
+        applyFlag(NormalFlipX, DetailTextureFlags::FlipNormalX);
+        applyFlag(NormalFlipY, DetailTextureFlags::FlipNormalY);
+            
+        applyImage(DiffuseOcclusionMap, materialData.m_occlusionImage, DiffuseOcclusionUseTexture, DetailTextureFlags::UseTextureOcclusion, shaderData.m_occlusionImageIndex);
+        applyProperty(DiffuseOcclusionFactor, shaderData.m_occlusionFactor);
+            
+        applyImage(HeightMap, materialData.m_heightImage, HeightUseTexture, DetailTextureFlags::UseTextureHeight, shaderData.m_heightImageIndex);
+        applyProperty(HeightFactor, shaderData.m_heightFactor);
+        applyProperty(HeightOffset, shaderData.m_heightOffset);
+        applyProperty(HeightBlendFactor, shaderData.m_heightBlendFactor);
+
+        m_updateDetailMaterialBuffer = true;
     }
 
     void TerrainFeatureProcessor::CheckUpdateDetailTexture(const Aabb2i& newBounds, const Vector2i& newCenter)
@@ -765,7 +892,7 @@ namespace Terrain
                 {
                     if (materialSurface.m_surfaceTag == surfaceType)
                     {
-                        return materialSurface.m_detailMaterialId;
+                        return m_detailMaterials.GetData(materialSurface.m_detailMaterialId).m_detailMaterialBufferIndex;
                     }
                 }
             }
@@ -801,6 +928,7 @@ namespace Terrain
             
             // World size changed, so the whole height map needs updating.
             m_dirtyRegion = worldBounds;
+            m_imagesNeedUpdate = true;
         }
         
         int32_t xStart = aznumeric_cast<int32_t>(AZStd::ceilf(m_dirtyRegion.GetMin().GetX() / queryResolution));
@@ -889,21 +1017,48 @@ namespace Terrain
 
         m_macroNormalMapIndex = layout->FindShaderInputImageIndex(AZ::Name(ShaderInputs::MacroNormalMap));
         AZ_Error(TerrainFPName, m_macroNormalMapIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::MacroNormalMap);
-        
-        m_heightmapPropertyIndex = m_materialInstance->GetMaterialPropertiesLayout()->FindPropertyIndex(AZ::Name(MaterialInputs::HeightmapImage));
-        AZ_Error(TerrainFPName, m_heightmapPropertyIndex.IsValid(), "Failed to find material input constant %s.", MaterialInputs::HeightmapImage);
-        
-        m_detailMaterialIdPropertyIndex = m_materialInstance->GetMaterialPropertiesLayout()->FindPropertyIndex(AZ::Name(MaterialInputs::DetailMaterialIdImage));
-        AZ_Error(TerrainFPName, m_detailMaterialIdPropertyIndex.IsValid(), "Failed to find material input constant %s.", MaterialInputs::DetailMaterialIdImage);
-        
-        m_detailCenterPropertyIndex = m_materialInstance->GetMaterialPropertiesLayout()->FindPropertyIndex(AZ::Name(MaterialInputs::DetailCenter));
-        AZ_Error(TerrainFPName, m_detailCenterPropertyIndex.IsValid(), "Failed to find material input constant %s.", MaterialInputs::DetailCenter);
 
-        m_detailAabbPropertyIndex = m_materialInstance->GetMaterialPropertiesLayout()->FindPropertyIndex(AZ::Name(MaterialInputs::DetailAabb));
-        AZ_Error(TerrainFPName, m_detailAabbPropertyIndex.IsValid(), "Failed to find material input constant %s.", MaterialInputs::DetailAabb);
+        m_terrainSrg = {};
+        for (auto& shaderItem : m_materialInstance->GetShaderCollection())
+        {
+            if (shaderItem.GetShaderAsset()->GetDrawListName() == AZ::Name("forward"))
+            {
+                const auto& shaderAsset = shaderItem.GetShaderAsset();
+                m_terrainSrg = AZ::RPI::ShaderResourceGroup::Create(shaderItem.GetShaderAsset(), shaderAsset->GetSupervariantIndex(AZ::Name()), AZ::Name{"TerrainSrg"});
+                AZ_Error(TerrainFPName, m_terrainSrg, "Failed to create Terrain shader resource group");
+                break;
+            }
+        }
+
+        AZ_Error(TerrainFPName, m_terrainSrg, "Terrain Srg not found on any shader in the terrain material");
+
+        if (m_terrainSrg)
+        {
+            const AZ::RHI::ShaderResourceGroupLayout* terrainSrgLayout = m_terrainSrg->GetLayout();
+
+            m_detailMaterialIdPropertyIndex = terrainSrgLayout->FindShaderInputImageIndex(AZ::Name(TerrainSrgInputs::DetailMaterialIdImage));
+            AZ_Error(TerrainFPName, m_detailMaterialIdPropertyIndex.IsValid(), "Failed to find view srg input constant %s.", TerrainSrgInputs::DetailMaterialIdImage);
         
-        m_detailHalfPixelUvPropertyIndex = m_materialInstance->GetMaterialPropertiesLayout()->FindPropertyIndex(AZ::Name(MaterialInputs::DetailHalfPixelUv));
-        AZ_Error(TerrainFPName, m_detailHalfPixelUvPropertyIndex.IsValid(), "Failed to find material input constant %s.", MaterialInputs::DetailHalfPixelUv);
+            m_detailCenterPropertyIndex = terrainSrgLayout->FindShaderInputConstantIndex(AZ::Name(TerrainSrgInputs::DetailMaterialIdImageCenter));
+            AZ_Error(TerrainFPName, m_detailCenterPropertyIndex.IsValid(), "Failed to find view srg input constant %s.", TerrainSrgInputs::DetailMaterialIdImageCenter);
+
+            m_detailHalfPixelUvPropertyIndex = terrainSrgLayout->FindShaderInputConstantIndex(AZ::Name(TerrainSrgInputs::DetailHalfPixelUv));
+            AZ_Error(TerrainFPName, m_detailHalfPixelUvPropertyIndex.IsValid(), "Failed to find view srg input constant %s.", TerrainSrgInputs::DetailHalfPixelUv);
+        
+            m_detailAabbPropertyIndex = terrainSrgLayout->FindShaderInputConstantIndex(AZ::Name(TerrainSrgInputs::DetailAabb));
+            AZ_Error(TerrainFPName, m_detailAabbPropertyIndex.IsValid(), "Failed to find view srg input constant %s.", TerrainSrgInputs::DetailAabb);
+
+            m_detailTexturesIndex = terrainSrgLayout->FindShaderInputImageUnboundedArrayIndex(AZ::Name(TerrainSrgInputs::DetailTextures));
+            AZ_Error(TerrainFPName, m_detailTexturesIndex.IsValid(), "Failed to find view srg input constant %s.", TerrainSrgInputs::DetailTextures);
+
+            // Set up the gpu buffer for detail material data
+            AZ::Render::GpuBufferHandler::Descriptor desc;
+            desc.m_bufferName = "Detail Material Data";
+            desc.m_bufferSrgName = TerrainSrgInputs::DetailMaterialData;
+            desc.m_elementSize = sizeof(DetailMaterialShaderData);
+            desc.m_srgLayout = terrainSrgLayout;
+            m_detailMaterialDataBuffer = AZ::Render::GpuBufferHandler(desc);
+        }
 
         // Find any macro materials that have already been created.
         TerrainMacroMaterialRequestBus::EnumerateHandlers(
@@ -987,7 +1142,7 @@ namespace Terrain
                         auto objectSrg = AZ::RPI::ShaderResourceGroup::Create(shaderAsset, materialAsset->GetObjectSrgLayout()->GetName());
                         if (!objectSrg)
                         {
-                            AZ_Warning("TerrainFeatureProcessor", false, "Failed to create a new shader resource group, skipping.");
+                            AZ_Warning(TerrainFPName, false, "Failed to create a new shader resource group, skipping.");
                             continue;
                         }
                     
@@ -1003,7 +1158,7 @@ namespace Terrain
                             // set the shader option to select forward pass IBL specular if necessary
                             if (!drawPacket.SetShaderOption(AZ::Name("o_meshUseForwardPassIBLSpecular"), AZ::RPI::ShaderOptionValue{ false }))
                             {
-                                AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
+                                AZ_Warning(TerrainFPName, false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
                             }
                             const uint8_t stencilRef = AZ::Render::StencilRefs::UseDiffuseGIPass | AZ::Render::StencilRefs::UseIBLSpecularPass;
                             drawPacket.SetStencilRef(stencilRef);
@@ -1053,11 +1208,14 @@ namespace Terrain
             if (m_areaData.m_heightmapUpdated)
             {
                 UpdateTerrainData();
-                
-                const AZ::Data::Instance<AZ::RPI::Image> heightmapImage = m_areaData.m_heightmapImage; // cast StreamingImage to Image
-                m_materialInstance->SetPropertyValue(m_heightmapPropertyIndex, heightmapImage);
             }
             
+            if (m_updateDetailMaterialBuffer)
+            {
+                m_updateDetailMaterialBuffer = false;
+                m_detailMaterialDataBuffer.UpdateBuffer(m_detailMaterialShaderData.GetRawData(), aznumeric_cast<uint32_t>(m_detailMaterialShaderData.GetSize()));
+            }
+
             AZ::Vector3 cameraPosition = AZ::Vector3::CreateZero();
             for (auto& view : process.m_views)
             {
@@ -1068,7 +1226,7 @@ namespace Terrain
                 }
             }
 
-            if (m_dirtyDetailRegion.IsValid() || !cameraPosition.IsClose(m_previousCameraPosition))
+            if (m_dirtyDetailRegion.IsValid() || !cameraPosition.IsClose(m_previousCameraPosition) || m_detailImagesNeedUpdate)
             {
                 int32_t newDetailTexturePosX = aznumeric_cast<int32_t>(AZStd::roundf(cameraPosition.GetX() / DetailTextureScale));
                 int32_t newDetailTexturePosY = aznumeric_cast<int32_t>(AZStd::roundf(cameraPosition.GetY() / DetailTextureScale));
@@ -1091,8 +1249,6 @@ namespace Terrain
                 m_dirtyDetailRegion = AZ::Aabb::CreateNull();
 
                 m_previousCameraPosition = cameraPosition;
-                const AZ::Data::Instance<AZ::RPI::Image> detailTextureImage = m_detailTextureImage; // cast StreamingImage to Image
-                m_materialInstance->SetPropertyValue(m_detailMaterialIdPropertyIndex, detailTextureImage);
 
                 AZ::Vector4 detailAabb = AZ::Vector4(
                     m_detailTextureBounds.m_min.m_x * DetailTextureScale,
@@ -1100,11 +1256,16 @@ namespace Terrain
                     m_detailTextureBounds.m_max.m_x * DetailTextureScale,
                     m_detailTextureBounds.m_max.m_y * DetailTextureScale
                 );
-                m_materialInstance->SetPropertyValue(m_detailAabbPropertyIndex, detailAabb);
-                m_materialInstance->SetPropertyValue(m_detailHalfPixelUvPropertyIndex, 0.5f / DetailTextureSize);
-
                 AZ::Vector2 detailUvOffset = AZ::Vector2(float(newCenter.m_x) / DetailTextureSize, float(newCenter.m_y) / DetailTextureSize);
-                m_materialInstance->SetPropertyValue(m_detailCenterPropertyIndex, detailUvOffset);
+
+                if (m_terrainSrg)
+                {
+                    m_terrainSrg->SetConstant(m_detailAabbPropertyIndex, detailAabb);
+                    m_terrainSrg->SetConstant(m_detailHalfPixelUvPropertyIndex, 0.5f / DetailTextureSize);
+                    m_terrainSrg->SetConstant(m_detailCenterPropertyIndex, detailUvOffset);
+
+                    m_detailMaterialDataBuffer.UpdateSrg(m_terrainSrg.get());
+                }
             }
 
             if (m_areaData.m_heightmapUpdated || m_areaData.m_macroMaterialsUpdated)
@@ -1195,6 +1356,15 @@ namespace Terrain
                     sectorData.m_srg->Compile();
                 }
             }
+
+            // Currently there seems to be a bug in unbounded image arrays where flickering can occur if this isn't updated every frame.
+            if (m_terrainSrg/* && m_detailImagesUpdated*/)
+            {
+                AZStd::array_view<const AZ::RHI::ImageView*> imageViews(m_detailImageViews.data(), m_detailImageViews.size());
+                [[maybe_unused]] bool result = m_terrainSrg->SetImageViewUnboundedArray(m_detailTexturesIndex, imageViews);
+                AZ_Error(TerrainFPName, result, "Failed to set image view unbounded array into shader resource group.");
+                m_detailImagesNeedUpdate = false;
+            }
         }
 
         for (auto& sectorData : m_sectorData)
@@ -1236,9 +1406,29 @@ namespace Terrain
             }
         }
 
+        if (m_detailTextureImage && m_areaData.m_heightmapImage && m_imagesNeedUpdate)
+        {
+            m_imagesNeedUpdate = false;
+            for (auto& view : process.m_views)
+            {
+                auto viewSrg = view->GetShaderResourceGroup();
+                viewSrg->SetImage(m_heightmapPropertyIndex, m_areaData.m_heightmapImage);
+            }
+            if (m_terrainSrg)
+            {
+                m_terrainSrg->SetImage(m_detailMaterialIdPropertyIndex, m_detailTextureImage);
+            }
+        }
+
         if (m_materialInstance)
         {
             m_materialInstance->Compile();
+        }
+
+        if (m_terrainSrg && m_forwardPass)
+        {
+            m_terrainSrg->Compile();
+            m_forwardPass->BindSrg(m_terrainSrg->GetRHIShaderResourceGroup());
         }
     }
 
@@ -1368,6 +1558,7 @@ namespace Terrain
     
     void TerrainFeatureProcessor::OnMaterialReinitialized([[maybe_unused]] const MaterialInstance& material)
     {
+        PrepareMaterialData();
         for (auto& sectorData : m_sectorData)
         {
             for (auto& drawPacket : sectorData.m_drawPackets)
@@ -1375,6 +1566,8 @@ namespace Terrain
                 drawPacket.Update(*GetParentScene());
             }
         }
+        m_imagesNeedUpdate = true;
+        m_detailImagesNeedUpdate = true;
     }
 
     void TerrainFeatureProcessor::SetWorldSize([[maybe_unused]] AZ::Vector2 sizeInMeters)
@@ -1437,6 +1630,27 @@ namespace Terrain
                 callback(sectorData);
             }
         }
+    }
+
+    void TerrainFeatureProcessor::CacheForwardPass()
+    {
+        auto rasterPassFilter = AZ::RPI::PassFilter::CreateWithPassClass<AZ::RPI::RasterPass>();
+        rasterPassFilter.SetOwnerScene(GetParentScene());
+        AZ::RHI::RHISystemInterface* rhiSystem = AZ::RHI::RHISystemInterface::Get();
+        AZ::RHI::DrawListTag forwardTag = rhiSystem->GetDrawListTagRegistry()->AcquireTag(AZ::Name("forward"));
+        AZ::RPI::PassSystemInterface::Get()->ForEachPass(rasterPassFilter,
+            [&](AZ::RPI::Pass* pass) -> AZ::RPI::PassFilterExecutionFlow
+            {
+                auto* rasterPass = azrtti_cast<AZ::RPI::RasterPass*>(pass);
+                    
+                if (rasterPass && rasterPass->GetDrawListTag() == forwardTag)
+                {
+                    m_forwardPass = rasterPass;
+                    return AZ::RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                }
+                return AZ::RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+            }
+        );
     }
     
     auto TerrainFeatureProcessor::Vector2i::operator+(const Vector2i& rhs) const -> Vector2i

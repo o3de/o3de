@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "ImageGradientComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "ImageGradientComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

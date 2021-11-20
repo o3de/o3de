@@ -822,7 +822,7 @@ void CGameEngine::Update()
         if (gEnv->pSystem)
         {
             gEnv->pSystem->UpdatePreTickBus();
-            componentApplication->Tick(gEnv->pTimer->GetFrameTime(ITimer::ETIMER_GAME));
+            componentApplication->Tick();
             gEnv->pSystem->UpdatePostTickBus();
         }
 
@@ -838,7 +838,7 @@ void CGameEngine::Update()
         unsigned int updateFlags = ESYSUPDATE_EDITOR;
         GetIEditor()->GetAnimation()->Update();
         GetIEditor()->GetSystem()->UpdatePreTickBus(updateFlags);
-        componentApplication->Tick(gEnv->pTimer->GetFrameTime(ITimer::ETIMER_GAME));
+        componentApplication->Tick();
         GetIEditor()->GetSystem()->UpdatePostTickBus(updateFlags);
     }
 }

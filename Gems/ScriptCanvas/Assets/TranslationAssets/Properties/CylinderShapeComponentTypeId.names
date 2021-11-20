@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "CylinderShapeComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "CylinderShapeComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

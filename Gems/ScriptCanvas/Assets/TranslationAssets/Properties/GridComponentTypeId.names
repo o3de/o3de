@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "GridComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "GridComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "StencilOp_Replace",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "StencilOp_Replace::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

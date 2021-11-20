@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "InputDeviceKeyboard",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "InputDeviceKeyboard"
+            }
+        }
+    ]
+}

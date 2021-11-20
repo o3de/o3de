@@ -1,0 +1,266 @@
+{
+    "entries": [
+        {
+            "key": "ExposureControlConfig",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Exposure Control Config"
+            },
+            "methods": [
+                {
+                    "key": "GetautoExposureSpeedUp",
+                    "details": {
+                        "name": "Get Auto Exposure Speed Up"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}",
+                            "details": {
+                                "name": "Exposure Control Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Auto Exposure Speed Up"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetautoExposureSpeedUp",
+                    "details": {
+                        "name": "Set Auto Exposure Speed Up"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}",
+                            "details": {
+                                "name": "Exposure Control Config"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Auto Exposure Speed Up"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetautoExposureSpeedDown",
+                    "details": {
+                        "name": "Get Auto Exposure Speed Down"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}",
+                            "details": {
+                                "name": "Exposure Control Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Auto Exposure Speed Down"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetautoExposureSpeedDown",
+                    "details": {
+                        "name": "Setauto Exposure Speed Down"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}",
+                            "details": {
+                                "name": "Exposure Control Config"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Exposure Speed Down"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetautoExposureMax",
+                    "details": {
+                        "name": "Get Auto Exposure Max"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}",
+                            "details": {
+                                "name": "Exposure Control Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Auto Exposure Max"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetautoExposureMax",
+                    "details": {
+                        "name": "Set Auto Exposure Max"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}",
+                            "details": {
+                                "name": "Exposure Control Config"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Auto Exposure Max"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetautoExposureMin",
+                    "details": {
+                        "name": "Get Auto Exposure Min"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}",
+                            "details": {
+                                "name": "Exposure Control Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Auto Exposure Min"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetautoExposureMin",
+                    "details": {
+                        "name": "Set Auto Exposure Min"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}",
+                            "details": {
+                                "name": "Exposure Control Config"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Auto Exposure Min"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetexposureControlType",
+                    "details": {
+                        "name": "Get Exposure Control Type"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}",
+                            "details": {
+                                "name": "Exposure Control Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Exposure Control Type"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetexposureControlType",
+                    "details": {
+                        "name": "Set Exposure Control Type"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}",
+                            "details": {
+                                "name": "Exposure Control Config"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Exposure Control Type"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetcompensateValue",
+                    "details": {
+                        "name": "Get Compensate Value"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}",
+                            "details": {
+                                "name": "Exposure Control Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Compensate Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetcompensateValue",
+                    "details": {
+                        "name": "Set Compensate Value"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}",
+                            "details": {
+                                "name": "Exposure Control Config"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Compensate Value"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

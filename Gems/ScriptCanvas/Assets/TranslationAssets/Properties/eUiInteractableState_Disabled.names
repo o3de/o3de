@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiInteractableState_Disabled",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiInteractableState_Disabled::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

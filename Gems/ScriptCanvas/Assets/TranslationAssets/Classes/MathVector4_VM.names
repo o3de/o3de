@@ -1,0 +1,940 @@
+{
+    "entries": [
+        {
+            "key": "MathVector4_VM",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "MathVector4_VM"
+            },
+            "methods": [
+                {
+                    "key": "SetW",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetW"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetW is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::SetW",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetX",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetX"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetX is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::SetX",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsNormalized",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsNormalized"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsNormalized is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::IsNormalized",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "LengthSquared",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke LengthSquared"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after LengthSquared is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::LengthSquared",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "MultiplyByNumber",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MultiplyByNumber"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MultiplyByNumber is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::MultiplyByNumber",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Negate",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Negate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Negate is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::Negate",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Dot",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Dot"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Dot is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::Dot",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "FromValues",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke FromValues"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after FromValues is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::FromValues",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsFinite",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsFinite"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsFinite is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::IsFinite",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Length",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Length"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Length is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::Length",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "MultiplyByVector",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke MultiplyByVector"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after MultiplyByVector is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::MultiplyByVector",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DirectionTo",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DirectionTo"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DirectionTo is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::DirectionTo",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{F31AA4C4-5A73-510B-BFD3-20ACE0D9CE67}",
+                            "details": {
+                                "name": "tuple<Vector4 double >"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DivideByVector",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DivideByVector"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DivideByVector is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::DivideByVector",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "LengthReciprocal",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke LengthReciprocal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after LengthReciprocal is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::LengthReciprocal",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetZ",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetZ"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetZ is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::SetZ",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Normalize",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Normalize"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Normalize is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::Normalize",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DivideByNumber",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DivideByNumber"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DivideByNumber is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::DivideByNumber",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsClose",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsClose"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsClose is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::IsClose",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsZero",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsZero"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsZero is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::IsZero",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Add",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::Add",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetElement",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetElement"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetElement is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::GetElement",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Reciprocal",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Reciprocal"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Reciprocal is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::Reciprocal",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Subtract",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Subtract"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Subtract is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::Subtract",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "const Vector4&"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "const Vector4&"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Absolute",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Absolute"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Absolute is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::Absolute",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetY",
+                    "context": "MathVector4_VM",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetY"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetY is invoked"
+                    },
+                    "details": {
+                        "name": "MathVector4_VM::SetY",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "double"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

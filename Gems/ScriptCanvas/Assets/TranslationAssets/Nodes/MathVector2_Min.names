@@ -1,0 +1,46 @@
+{
+    "entries": [
+        {
+            "key": "{894F73E5-0447-5627-9B16-FDD649DA7A42}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Min",
+                "category": "Math/Vector2",
+                "tooltip": "Returns the vector (min(A.x, B.x), min(A.y, B.y))"
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_A",
+                    "details": {
+                        "name": "A"
+                    }
+                },
+                {
+                    "key": "DataInput_B",
+                    "details": {
+                        "name": "B"
+                    }
+                },
+                {
+                    "key": "DataOutput_Result",
+                    "details": {
+                        "name": "Result"
+                    }
+                }
+            ]
+        }
+    ]
+}

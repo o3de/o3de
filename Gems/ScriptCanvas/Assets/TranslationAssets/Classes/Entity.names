@@ -1,0 +1,657 @@
+{
+    "entries": [
+        {
+            "key": "Entity",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Behavior Entity",
+                "category": "Entity"
+            },
+            "methods": [
+                {
+                    "key": "GetComponentName",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Component Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Component Name is invoked"
+                    },
+                    "details": {
+                        "name": "Get Component Name",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        },
+                        {
+                            "typeid": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
+                            "details": {
+                                "name": "Behavior Component Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Component Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetComponentType",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Component Type"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Component Type is invoked"
+                    },
+                    "details": {
+                        "name": "Get Component Type",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        },
+                        {
+                            "typeid": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
+                            "details": {
+                                "name": "Behavior Component Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Type"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "CreateComponent",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create Component"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create Component is invoked"
+                    },
+                    "details": {
+                        "name": "Create Component",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        },
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Component Type"
+                            }
+                        },
+                        {
+                            "typeid": "{0A7929DF-2932-40EA-B2B3-79BC1C3490D0}",
+                            "details": {
+                                "name": "Component Config*"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
+                            "details": {
+                                "name": "Behavior Component Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "DestroyComponent",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Destroy Component"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Destroy Component is invoked"
+                    },
+                    "details": {
+                        "name": "Destroy Component",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        },
+                        {
+                            "typeid": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
+                            "details": {
+                                "name": "Behavior Component Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "FindComponentOfType",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Find Component Of Type"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Find Component Of Type is invoked"
+                    },
+                    "details": {
+                        "name": "Find Component Of Type",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        },
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Component Type"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
+                            "details": {
+                                "name": "Behavior Component Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetComponentConfiguration",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Component Configuration"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Component Configuration is invoked"
+                    },
+                    "details": {
+                        "name": "Set Component Configuration",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        },
+                        {
+                            "typeid": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
+                            "details": {
+                                "name": "Behavior Component Id"
+                            }
+                        },
+                        {
+                            "typeid": "{0A7929DF-2932-40EA-B2B3-79BC1C3490D0}",
+                            "details": {
+                                "name": "Component Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsValid",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Valid"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Valid is invoked"
+                    },
+                    "details": {
+                        "name": "Is Valid",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Valid"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetId",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetId is invoked"
+                    },
+                    "details": {
+                        "name": "Get Id",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetOwningContextId",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetOwningContextId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetOwningContextId is invoked"
+                    },
+                    "details": {
+                        "name": "Get Owning Context Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Context Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetComponents",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Components"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Components is invoked"
+                    },
+                    "details": {
+                        "name": "Get Components",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8293031B-ABC3-5CD2-A1CB-1DB6792ADD5C}",
+                            "details": {
+                                "name": "Components"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "FindAllComponentsOfType",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Find All Components Of Type"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Find All Components Of Type is invoked"
+                    },
+                    "details": {
+                        "name": "Find All Components Of Type",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        },
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "Component Type"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8293031B-ABC3-5CD2-A1CB-1DB6792ADD5C}",
+                            "details": {
+                                "name": "Components"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetComponentConfiguration",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Component Configuration"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Component Configuration is invoked"
+                    },
+                    "details": {
+                        "name": "Get Component Configuration",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        },
+                        {
+                            "typeid": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
+                            "details": {
+                                "name": "Behavior Component Id"
+                            }
+                        },
+                        {
+                            "typeid": "{0A7929DF-2932-40EA-B2B3-79BC1C3490D0}",
+                            "details": {
+                                "name": "Component Config"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Success"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetName",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Name is invoked"
+                    },
+                    "details": {
+                        "name": "Set Name",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "IsActivated",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Activated"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Activated is invoked"
+                    },
+                    "details": {
+                        "name": "Is Activated",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Activated"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Activate",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Activate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Activate is invoked"
+                    },
+                    "details": {
+                        "name": "Activate",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Deactivate",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Deactivate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Deactivate is invoked"
+                    },
+                    "details": {
+                        "name": "Deactivate",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetName",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Name is invoked"
+                    },
+                    "details": {
+                        "name": "GetName",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Exists",
+                    "context": "Entity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Exists"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Exists is invoked"
+                    },
+                    "details": {
+                        "name": "Exists",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+                            "details": {
+                                "name": "Behavior Entity",
+                                "tooltip": "Entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Exists"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

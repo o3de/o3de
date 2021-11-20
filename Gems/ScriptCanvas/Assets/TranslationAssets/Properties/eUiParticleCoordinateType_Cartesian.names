@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiParticleCoordinateType_Cartesian",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiParticleCoordinateType_Cartesian::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

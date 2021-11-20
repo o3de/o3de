@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "PerlinGradientComponentTypeId",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "PerlinGradientComponentTypeId::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

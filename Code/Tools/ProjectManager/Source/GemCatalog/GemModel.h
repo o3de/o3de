@@ -51,10 +51,13 @@ namespace O3DE::ProjectManager
             RoleRequirement,
             RoleDownloadStatus,
             RoleLicenseText,
-            RoleLicenseLink
+            RoleLicenseLink,
+            RoleRepoUri
         };
 
-        void AddGem(const GemInfo& gemInfo);
+        QModelIndex AddGem(const GemInfo& gemInfo);
+        void RemoveGem(const QModelIndex& modelIndex);
+        void RemoveGem(const QString& gemName);
         void Clear();
         void UpdateGemDependencies();
 
@@ -80,6 +83,7 @@ namespace O3DE::ProjectManager
         static QString GetRequirement(const QModelIndex& modelIndex);
         static QString GetLicenseText(const QModelIndex& modelIndex);
         static QString GetLicenseLink(const QModelIndex& modelIndex);
+        static QString GetRepoUri(const QModelIndex& modelIndex);
         static GemModel* GetSourceModel(QAbstractItemModel* model);
         static const GemModel* GetSourceModel(const QAbstractItemModel* model);
 
@@ -95,6 +99,7 @@ namespace O3DE::ProjectManager
         static bool NeedsToBeRemoved(const QModelIndex& modelIndex, bool includeDependencies = false);
         static bool HasRequirement(const QModelIndex& modelIndex);
         static void UpdateDependencies(QAbstractItemModel& model, const QString& gemName, bool isAdded);
+        static void DeactivateDependentGems(QAbstractItemModel& model, const QModelIndex& modelIndex);
         static void SetDownloadStatus(QAbstractItemModel& model, const QModelIndex& modelIndex, GemInfo::DownloadStatus status);
 
         bool DoGemsToBeAddedHaveRequirements() const;
@@ -109,6 +114,7 @@ namespace O3DE::ProjectManager
 
     signals:
         void gemStatusChanged(const QString& gemName, uint32_t numChangedDependencies);
+        void dependencyGemStatusChanged(const QString& gemName);
 
     protected slots: 
         void OnRowsAboutToBeRemoved(const QModelIndex& parent, int first, int last);

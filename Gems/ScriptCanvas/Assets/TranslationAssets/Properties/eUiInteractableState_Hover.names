@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiInteractableState_Hover",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiInteractableState_Hover::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "FrameCaptureResult_InvalidArgument",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "FrameCaptureResult_InvalidArgument::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

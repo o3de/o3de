@@ -1,0 +1,31 @@
+{
+    "entries": [
+        {
+            "key": "add_layer_node",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "add_layer_node",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke add_layer_node"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after add_layer_node is invoked"
+                    },
+                    "details": {
+                        "name": "add_layer_node",
+                        "category": "Other"
+                    }
+                }
+            ]
+        }
+    ]
+}

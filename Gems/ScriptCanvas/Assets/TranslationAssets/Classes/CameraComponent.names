@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "key": "CameraComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "CameraComponent"
+            }
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "eUiInteractableState_Normal",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "eUiInteractableState_Normal::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

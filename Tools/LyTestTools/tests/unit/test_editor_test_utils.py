@@ -74,9 +74,9 @@ class TestEditorTestUtils(unittest.TestCase):
     def test_RetrieveCrashOutput_CrashLogNotExists_ReturnsError(self, mock_retrieve_log_path):
         mock_retrieve_log_path.return_value = 'mock_log_path'
         mock_workspace = mock.MagicMock()
-        expected = "-- No crash log available --\n[Errno 2] No such file or directory: 'mock_log_path\\\\error.log'"
+        error_message = "No crash log available"
 
-        assert expected == editor_test_utils.retrieve_crash_output(0, mock_workspace, 0)
+        assert error_message in editor_test_utils.retrieve_crash_output(0, mock_workspace, 0)
 
     @mock.patch('os.path.getmtime', mock.MagicMock())
     @mock.patch('os.rename')
@@ -119,7 +119,7 @@ class TestEditorTestUtils(unittest.TestCase):
         mock_log = 'mock log info'
 
         with mock.patch('builtins.open', mock.mock_open(read_data=mock_log)) as mock_file:
-            assert f'[editor.log]  {mock_log}' == editor_test_utils.retrieve_editor_log_content(0, mock_logname, mock_workspace)
+            assert f'[{mock_logname}]  {mock_log}' == editor_test_utils.retrieve_editor_log_content(0, mock_logname, mock_workspace)
 
     @mock.patch('ly_test_tools.o3de.editor_test_utils.retrieve_log_path')
     @mock.patch('ly_test_tools.environment.waiter.wait_for', mock.MagicMock())
@@ -127,7 +127,7 @@ class TestEditorTestUtils(unittest.TestCase):
         mock_retrieve_log_path.return_value = 'mock_log_path'
         mock_logname = 'mock_log.log'
         mock_workspace = mock.MagicMock()
-        expected = f"-- Error reading editor.log"
+        expected = f"-- Error reading {mock_logname}"
 
         assert expected in editor_test_utils.retrieve_editor_log_content(0, mock_logname, mock_workspace)
 

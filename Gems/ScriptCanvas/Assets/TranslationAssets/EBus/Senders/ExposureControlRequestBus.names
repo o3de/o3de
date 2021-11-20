@@ -1,0 +1,718 @@
+{
+    "entries": [
+        {
+            "key": "ExposureControlRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "ExposureControlRequestBus"
+            },
+            "methods": [
+                {
+                    "key": "SetEyeAdaptationSpeedDownOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEyeAdaptationSpeedDownOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEyeAdaptationSpeedDownOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetEyeAdaptationSpeedDownOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "GetEnabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEnabledOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEnabledOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEnabledOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetEnabledOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetManualCompensation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetManualCompensation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetManualCompensation is invoked"
+                    },
+                    "details": {
+                        "name": "SetManualCompensation"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEyeAdaptationSpeedDown",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEyeAdaptationSpeedDown"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEyeAdaptationSpeedDown is invoked"
+                    },
+                    "details": {
+                        "name": "SetEyeAdaptationSpeedDown"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetExposureControlTypeOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetExposureControlTypeOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetExposureControlTypeOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetExposureControlTypeOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetHeatmapEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetHeatmapEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetHeatmapEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "GetHeatmapEnabled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEyeAdaptationSpeedUpOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEyeAdaptationSpeedUpOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEyeAdaptationSpeedUpOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetEyeAdaptationSpeedUpOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetExposureControlType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetExposureControlType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetExposureControlType is invoked"
+                    },
+                    "details": {
+                        "name": "SetExposureControlType"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "SetEnabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetExposureControlType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetExposureControlType"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetExposureControlType is invoked"
+                    },
+                    "details": {
+                        "name": "GetExposureControlType"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEyeAdaptationExposureMax",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEyeAdaptationExposureMax"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEyeAdaptationExposureMax is invoked"
+                    },
+                    "details": {
+                        "name": "SetEyeAdaptationExposureMax"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEyeAdaptationSpeedDownOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEyeAdaptationSpeedDownOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEyeAdaptationSpeedDownOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetEyeAdaptationSpeedDownOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetManualCompensationOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetManualCompensationOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetManualCompensationOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetManualCompensationOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetHeatmapEnabledOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetHeatmapEnabledOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetHeatmapEnabledOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetHeatmapEnabledOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEyeAdaptationSpeedUp",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEyeAdaptationSpeedUp"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEyeAdaptationSpeedUp is invoked"
+                    },
+                    "details": {
+                        "name": "SetEyeAdaptationSpeedUp"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEyeAdaptationSpeedUpOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEyeAdaptationSpeedUpOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEyeAdaptationSpeedUpOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetEyeAdaptationSpeedUpOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEyeAdaptationExposureMinOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEyeAdaptationExposureMinOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEyeAdaptationExposureMinOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetEyeAdaptationExposureMinOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEyeAdaptationExposureMaxOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEyeAdaptationExposureMaxOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEyeAdaptationExposureMaxOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetEyeAdaptationExposureMaxOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEnabledOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEnabledOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEnabledOverride is invoked"
+                    },
+                    "details": {
+                        "name": "GetEnabledOverride"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetExposureControlTypeOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetExposureControlTypeOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetExposureControlTypeOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetExposureControlTypeOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEyeAdaptationExposureMin",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEyeAdaptationExposureMin"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEyeAdaptationExposureMin is invoked"
+                    },
+                    "details": {
+                        "name": "GetEyeAdaptationExposureMin"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetManualCompensation",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetManualCompensation"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetManualCompensation is invoked"
+                    },
+                    "details": {
+                        "name": "GetManualCompensation"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEyeAdaptationExposureMinOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEyeAdaptationExposureMinOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEyeAdaptationExposureMinOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetEyeAdaptationExposureMinOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetManualCompensationOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetManualCompensationOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetManualCompensationOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetManualCompensationOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEyeAdaptationSpeedDown",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEyeAdaptationSpeedDown"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEyeAdaptationSpeedDown is invoked"
+                    },
+                    "details": {
+                        "name": "GetEyeAdaptationSpeedDown"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEyeAdaptationSpeedUp",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEyeAdaptationSpeedUp"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEyeAdaptationSpeedUp is invoked"
+                    },
+                    "details": {
+                        "name": "GetEyeAdaptationSpeedUp"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEyeAdaptationExposureMin",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEyeAdaptationExposureMin"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEyeAdaptationExposureMin is invoked"
+                    },
+                    "details": {
+                        "name": "SetEyeAdaptationExposureMin"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetHeatmapEnabled",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetHeatmapEnabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetHeatmapEnabled is invoked"
+                    },
+                    "details": {
+                        "name": "SetHeatmapEnabled"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetEyeAdaptationExposureMaxOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetEyeAdaptationExposureMaxOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetEyeAdaptationExposureMaxOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetEyeAdaptationExposureMaxOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetEyeAdaptationExposureMax",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetEyeAdaptationExposureMax"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetEyeAdaptationExposureMax is invoked"
+                    },
+                    "details": {
+                        "name": "GetEyeAdaptationExposureMax"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetHeatmapEnabledOverride",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetHeatmapEnabledOverride"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetHeatmapEnabledOverride is invoked"
+                    },
+                    "details": {
+                        "name": "SetHeatmapEnabledOverride"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

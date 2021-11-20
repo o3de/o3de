@@ -1,0 +1,196 @@
+{
+    "entries": [
+        {
+            "key": "UVCoords",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "UV Coords",
+                "category": "UI/LyShine Examples"
+            },
+            "methods": [
+                {
+                    "key": "SetUVCoords",
+                    "context": "UVCoords",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetUVCoords"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetUVCoords is invoked"
+                    },
+                    "details": {
+                        "name": "UVCoords::SetUVCoords",
+                        "category": "UI/LyShine Examples"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+                            "details": {
+                                "name": "UV Coords",
+                                "tooltip": "The UV coordinates to set"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Left",
+                                "tooltip": "The lower X UV coordinate [0-1]"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Top",
+                                "tooltip": "The higher Y UV coordinate [0-1]"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Right",
+                                "tooltip": "The higher X UV coordinate [0-1]"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Bottom",
+                                "tooltip": "The lower Y UV coordinate [0-1]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetBottom",
+                    "context": "UVCoords",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetBottom"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetBottom is invoked"
+                    },
+                    "details": {
+                        "name": "UVCoords::SetBottom",
+                        "category": "UI/LyShine Examples"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+                            "details": {
+                                "name": "UV Coords",
+                                "tooltip": "The UV coordinates to set"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Bottom",
+                                "tooltip": "The lower Y UV coordinate [0-1]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetRight",
+                    "context": "UVCoords",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetRight"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetRight is invoked"
+                    },
+                    "details": {
+                        "name": "UVCoords::SetRight",
+                        "category": "UI/LyShine Examples"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+                            "details": {
+                                "name": "UV Coords",
+                                "tooltip": "The UV coordinates to set"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Right",
+                                "tooltip": "The higher X UV coordinate [0-1]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetTop",
+                    "context": "UVCoords",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTop"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTop is invoked"
+                    },
+                    "details": {
+                        "name": "UVCoords::SetTop",
+                        "category": "UI/LyShine Examples"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+                            "details": {
+                                "name": "UV Coords",
+                                "tooltip": "The UV coordinates to set"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Top",
+                                "tooltip": "The higher Y UV coordinate [0-1]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "SetLeft",
+                    "context": "UVCoords",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetLeft"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetLeft is invoked"
+                    },
+                    "details": {
+                        "name": "UVCoords::SetLeft",
+                        "category": "UI/LyShine Examples"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+                            "details": {
+                                "name": "UV Coords",
+                                "tooltip": "The UV coordinates to set"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Left",
+                                "tooltip": "Sets the lower X UV coordinate [0-1]"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

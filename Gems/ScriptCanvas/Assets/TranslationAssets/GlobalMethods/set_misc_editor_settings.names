@@ -1,0 +1,39 @@
+{
+    "entries": [
+        {
+            "key": "set_misc_editor_settings",
+            "context": "Method",
+            "variant": "",
+            "details": {
+                "name": "",
+                "category": "Globals"
+            },
+            "methods": [
+                {
+                    "key": "set_misc_editor_settings",
+                    "context": "Global",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke set_misc_editor_settings"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after set_misc_editor_settings is invoked"
+                    },
+                    "details": {
+                        "name": "set_misc_editor_settings",
+                        "category": "Other"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

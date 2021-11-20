@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "TransformMode_Translation",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "TransformMode_Translation::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

@@ -1,0 +1,13 @@
+{
+    "entries": [
+        {
+            "key": "EditorPhysicsSceneName",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "EditorPhysicsSceneName::Getter",
+                "category": "Constants"
+            }
+        }
+    ]
+}

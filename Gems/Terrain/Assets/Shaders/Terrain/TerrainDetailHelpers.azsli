@@ -1,0 +1,250 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * 
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
+
+enum DetailTextureFlags
+{
+    UseTextureBaseColor =  0x00000001, //0b0000'0000'0000'0000'0000'0000'0000'0001
+    UseTextureNormal =     0x00000002, //0b0000'0000'0000'0000'0000'0000'0000'0010
+    UseTextureMetallic =   0x00000004, //0b0000'0000'0000'0000'0000'0000'0000'0100
+    UseTextureRoughness =  0x00000008, //0b0000'0000'0000'0000'0000'0000'0000'1000
+    UseTextureOcclusion =  0x00000010, //0b0000'0000'0000'0000'0000'0000'0001'0000
+    UseTextureHeight =     0x00000020, //0b0000'0000'0000'0000'0000'0000'0010'0000
+    UseTextureSpecularF0 = 0x00000040, //0b0000'0000'0000'0000'0000'0000'0100'0000
+
+    FlipNormalX =          0x00010000, //0b0000'0000'0000'0001'0000'0000'0000'0000
+    FlipNormalY =          0x00020000, //0b0000'0000'0000'0010'0000'0000'0000'0000
+
+    BlendModeMask =        0x000C0000, //0b0000'0000'0000'1100'0000'0000'0000'0000
+    BlendModeLerp =        0x00000000, //0b0000'0000'0000'0000'0000'0000'0000'0000
+    BlendModeLinearLight = 0x00040000, //0b0000'0000'0000'0100'0000'0000'0000'0000
+    BlendModeMultiply =    0x00080000, //0b0000'0000'0000'1000'0000'0000'0000'0000
+    BlendModeOverlay =     0x000C0000, //0b0000'0000'0000'1100'0000'0000'0000'0000
+};
+
+struct DetailSurface
+{
+    float3 m_color;
+    float3 m_normal;
+    float m_roughness;
+    float m_specularF0;
+    float m_metalness;
+    float m_occlusion;
+    float m_height;
+};
+
+option bool o_debugDetailMaterialIds = false;
+
+DetailSurface GetDefaultDetailSurface()
+{
+    DetailSurface surface;
+
+    surface.m_color = float3(0.5, 0.5, 0.5);
+    surface.m_normal = float3(0.0, 0.0, 1.0);
+    surface.m_roughness = 1.0;
+    surface.m_specularF0 = 0.5;
+    surface.m_metalness = 0.0;
+    surface.m_occlusion = 1.0;
+    surface.m_height = 0.5;
+
+    return surface;
+}
+
+// Detail material index getters
+uint GetDetailColorIndex(TerrainSrg::DetailMaterialData materialData)
+{
+    return materialData.m_colorNormalImageIndices & 0x0000FFFF;
+}
+
+uint GetDetailNormalIndex(TerrainSrg::DetailMaterialData materialData)
+{
+    return materialData.m_colorNormalImageIndices >> 16;
+}
+
+uint GetDetailRoughnessIndex(TerrainSrg::DetailMaterialData materialData)
+{
+    return materialData.m_roughnessMetalnessImageIndices & 0x0000FFFF;
+}
+
+uint GetDetailMetalnessIndex(TerrainSrg::DetailMaterialData materialData)
+{
+    return materialData.m_roughnessMetalnessImageIndices >> 16;
+}
+
+uint GetDetailSpecularF0Index(TerrainSrg::DetailMaterialData materialData)
+{
+    return materialData.m_specularF0OcclusionImageIndices & 0x0000FFFF;
+}
+
+uint GetDetailOcclusionIndex(TerrainSrg::DetailMaterialData materialData)
+{
+    return materialData.m_specularF0OcclusionImageIndices >> 16;
+}
+
+uint GetDetailHeightIndex(TerrainSrg::DetailMaterialData materialData)
+{
+    return materialData.m_heightImageIndex & 0x0000FFFF;
+}
+
+// Detail material value getters
+
+float3 GetDetailColor(TerrainSrg::DetailMaterialData materialData, float2 uv)
+{
+    float3 color = materialData.m_baseColor;
+    if ((materialData.m_flags & DetailTextureFlags::UseTextureBaseColor) > 0)
+    {
+        color = TerrainSrg::m_detailTextures[GetDetailColorIndex(materialData)].Sample(TerrainMaterialSrg::m_sampler, uv).rgb;
+    }
+    return color * materialData.m_baseColorFactor;
+}
+
+float3 GetDetailNormal(TerrainSrg::DetailMaterialData materialData, float2 uv)
+{
+    float2 normal = float2(0.0, 0.0);
+    if ((materialData.m_flags & DetailTextureFlags::UseTextureNormal) > 0)
+    {
+        normal = TerrainSrg::m_detailTextures[GetDetailNormalIndex(materialData)].Sample(TerrainMaterialSrg::m_sampler, uv).rg;
+    }
+    
+    // X and Y are inverted here to be consistent with SampleNormalXY in NormalInput.azsli.
+    if(materialData.m_flags & DetailTextureFlags::FlipNormalX)
+    {
+        normal.y = -normal.y;
+    }
+    if(materialData.m_flags & DetailTextureFlags::FlipNormalY)
+    {
+        normal.x = -normal.x;
+    }
+    return GetTangentSpaceNormal(normal, materialData.m_normalFactor);
+}
+
+float GetDetailRoughness(TerrainSrg::DetailMaterialData materialData, float2 uv)
+{
+    float roughness = materialData.m_roughnessScale;
+    if ((materialData.m_flags & DetailTextureFlags::UseTextureRoughness) > 0)
+    {
+        roughness = TerrainSrg::m_detailTextures[GetDetailRoughnessIndex(materialData)].Sample(TerrainMaterialSrg::m_sampler, uv).r;
+        roughness = materialData.m_roughnessBias + roughness * materialData.m_roughnessScale;
+    }
+    return roughness;
+}
+
+float GetDetailMetalness(TerrainSrg::DetailMaterialData materialData, float2 uv)
+{
+    float metalness = 1.0;
+    if ((materialData.m_flags & DetailTextureFlags::UseTextureMetallic) > 0)
+    {
+        metalness = TerrainSrg::m_detailTextures[GetDetailMetalnessIndex(materialData)].Sample(TerrainMaterialSrg::m_sampler, uv).r;
+    }
+    return metalness * materialData.m_metalFactor;
+}
+
+float GetDetailSpecularF0(TerrainSrg::DetailMaterialData materialData, float2 uv)
+{
+    float specularF0 = 1.0;
+    if ((materialData.m_flags & DetailTextureFlags::UseTextureSpecularF0) > 0)
+    {
+        specularF0 = TerrainSrg::m_detailTextures[GetDetailSpecularF0Index(materialData)].Sample(TerrainMaterialSrg::m_sampler, uv).r;
+    }
+    return specularF0 * materialData.m_specularF0Factor;
+}
+
+float GetDetailOcclusion(TerrainSrg::DetailMaterialData materialData, float2 uv)
+{
+    float occlusion = 1.0;
+    if ((materialData.m_flags & DetailTextureFlags::UseTextureOcclusion) > 0)
+    {
+        occlusion = TerrainSrg::m_detailTextures[GetDetailOcclusionIndex(materialData)].Sample(TerrainMaterialSrg::m_sampler, uv).r;
+    }
+    return occlusion * materialData.m_occlusionFactor;
+}
+
+float GetDetailHeight(TerrainSrg::DetailMaterialData materialData, float2 uv)
+{
+    float height = materialData.m_heightFactor;
+    if ((materialData.m_flags & DetailTextureFlags::UseTextureHeight) > 0)
+    {
+        height = TerrainSrg::m_detailTextures[GetDetailHeightIndex(materialData)].Sample(TerrainMaterialSrg::m_sampler, uv).r;
+        height = materialData.m_heightOffset + height * materialData.m_heightFactor;
+    }
+    return height;
+}
+
+void GetDetailSurfaceForMaterial(inout DetailSurface surface, uint materialId, float2 uv)
+{
+    TerrainSrg::DetailMaterialData detailMaterialData = TerrainSrg::m_detailMaterialData[materialId];
+
+    surface.m_color = GetDetailColor(detailMaterialData, uv);
+    surface.m_normal = GetDetailNormal(detailMaterialData, uv);
+    surface.m_roughness = GetDetailRoughness(detailMaterialData, uv);
+    surface.m_specularF0 = GetDetailSpecularF0(detailMaterialData, uv);
+    surface.m_metalness = GetDetailMetalness(detailMaterialData, uv);
+    surface.m_occlusion = GetDetailOcclusion(detailMaterialData, uv);
+    surface.m_height = GetDetailHeight(detailMaterialData, uv);
+}
+
+void GetDebugDetailSurface(inout DetailSurface surface, uint material1, uint material2, float blend, float2 idUv)
+{
+    float3 material1Color = float3(0.1, 0.1, 0.1);
+    float3 material2Color = float3(0.1, 0.1, 0.1);
+
+    // Get a reasonably random hue for the material id
+    if (material1 != 255)
+    {
+        float hue1 = (material1 * 25043 % 256) / 256.0;
+        material1Color = HsvToRgb(float3(hue1, 1.0, 1.0));
+    }
+    if (material2 != 255)
+    {
+        float hue2 = (material2 * 25043 % 256) / 256.0;
+        material2Color = HsvToRgb(float3(hue2, 1.0, 1.0));
+    }
+
+    surface.m_color = lerp(material1Color, material2Color, blend);
+    float seamBlend = 0.0;
+    const float halfLineWidth = 1.0 / 2048.0;
+    if (any(abs(idUv) % 1.0 < halfLineWidth) || any(abs(idUv) % 1.0 > 1.0 - halfLineWidth))
+    {
+        seamBlend = 1.0;
+    }
+    surface.m_color = lerp(surface.m_color, float3(0.0, 0.0, 0.0), seamBlend); // draw texture seams
+    surface.m_color = pow(surface.m_color , 2.2);
+    
+    surface.m_normal = float3(0.0, 0.0, 1.0);
+    surface.m_roughness = 1.0;
+    surface.m_specularF0 = 0.5;
+    surface.m_metalness = 0.0;
+    surface.m_occlusion = 1.0;
+    surface.m_height = 0.5;
+}
+
+bool GetDetailSurface(inout DetailSurface surface, float2 idUv, float2 uv)
+{
+    uint4 material1 = TerrainSrg::m_detailMaterialIdImage.GatherRed(TerrainSrg::DetailSampler, idUv, 0).xyzw;
+    uint4 material2 = TerrainSrg::m_detailMaterialIdImage.GatherGreen(TerrainSrg::DetailSampler, idUv, 0).xyzw;
+
+    const float maxBlendAmount = 0xFF;
+    // convert integer of 0-255 to float of 0-1.
+    float4 blends = float4(TerrainSrg::m_detailMaterialIdImage.GatherBlue(TerrainSrg::DetailSampler, idUv, 0).xyzw) / maxBlendAmount;
+
+    if (o_debugDetailMaterialIds)
+    {
+        GetDebugDetailSurface(surface, material1.x, material2.x, blends.x, idUv);
+        return true;
+    }
+
+    if (material1.x == 0xFF)
+    {
+        return false;
+    }
+
+    GetDetailSurfaceForMaterial(surface, material1.x, uv);
+    return true;
+}
