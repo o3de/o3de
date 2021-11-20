@@ -19,10 +19,9 @@ namespace O3DE::ProjectManager
         // The list of clang C/C++ compiler command lines to validate on the host Linux system
         const QStringList SupportedClangVersions = {"13", "12", "11", "10", "9", "8", "7", "6.0"};
 
-        AZ::Outcome<QProcessEnvironment, QString> GetCommandLineProcessEnvironment()
+        AZ::Outcome<void, QString> SetupCommandLineProcessEnvironment()
         {
-            QProcessEnvironment currentEnvironment(QProcessEnvironment::systemEnvironment());
-            return AZ::Success(currentEnvironment);
+            return AZ::Success();
         }
 
         AZ::Outcome<QString, QString> FindSupportedCompilerForPlatform()
