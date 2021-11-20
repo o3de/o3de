@@ -1137,7 +1137,6 @@ namespace Multiplayer
         AZStd::to_lower(sv_defaultPlayerSpawnAssetLowerCase.begin(), sv_defaultPlayerSpawnAssetLowerCase.end());
         PrefabEntityId playerPrefabEntityId(AZ::Name(static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAssetLowerCase).c_str()));
         INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity(), Multiplayer::AutoActivate::DoNotActivate);
-        AZ_TracePrintf("MultiplayerSystemComponent", "Server spawned the default player: %s", sv_defaultPlayerSpawnAssetLowerCase.c_str())
 
         for (NetworkEntityHandle subEntity : entityList)
         {

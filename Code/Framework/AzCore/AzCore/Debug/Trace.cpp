@@ -26,7 +26,6 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/std/chrono/chrono.h>
-#pragma optimize("", off) //< remember to place this after the #includes so that you only optimize the code you want
 
 namespace AZ::Debug
 {
@@ -645,4 +644,3 @@ namespace AZ::Debug
         }
     }
 } // namspace AZ::Debug
-#pragma optimize("", on)

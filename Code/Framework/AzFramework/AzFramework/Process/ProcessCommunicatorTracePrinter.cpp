@@ -8,7 +8,6 @@
 
 #include "ProcessCommunicatorTracePrinter.h"
 
-#pragma optimize("", off) //< remember to place this after the #includes so that you only optimize the code you want
 
 ProcessCommunicatorTracePrinter::ProcessCommunicatorTracePrinter(AzFramework::ProcessCommunicator* communicator, const char* window) :
     m_communicator(communicator),
@@ -86,4 +85,3 @@ void ProcessCommunicatorTracePrinter::WriteCurrentString(bool isFromStdErr)
         bufferToUse.clear();
     }
 }
-#pragma optimize("", on)
