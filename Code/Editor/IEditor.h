@@ -19,8 +19,6 @@
 #include "Util/UndoUtil.h"
 #include <CryVersion.h>
 
-#include <WinWidgetId.h>
-
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Debug/Budget.h>
 

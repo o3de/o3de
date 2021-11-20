@@ -64,7 +64,6 @@ set(FILES
     Undo/IUndoObject.h
     Undo/Undo.h
     Undo/UndoVariableChange.h
-    WinWidgetId.h
     QtUI/ColorButton.cpp
     QtUI/ColorButton.h
     QtUtil.h
