@@ -20,10 +20,6 @@ set(FILES
     UI/QComponentEntityEditorOutlinerWindow.cpp
     UI/AssetCatalogModel.h
     UI/AssetCatalogModel.cpp
-    UI/ComponentPalette/CategoriesList.h
-    UI/ComponentPalette/CategoriesList.cpp
-    UI/ComponentPalette/ComponentDataModel.h
-    UI/ComponentPalette/ComponentDataModel.cpp
     UI/ComponentPalette/ComponentPaletteSettings.h
     UI/Outliner/OutlinerDisplayOptionsMenu.h
     UI/Outliner/OutlinerDisplayOptionsMenu.cpp
