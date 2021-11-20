@@ -7,7 +7,6 @@ REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
 REM
 
-SETLOCAL EnableExtensions
 SETLOCAL EnableDelayedExpansion
 
 CALL %~dp0env_windows.cmd
