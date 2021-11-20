@@ -18,16 +18,6 @@ IF NOT EXIST %OUTPUT_DIRECTORY% (
 )
 PUSHD %OUTPUT_DIRECTORY%
 
-REM Set the temporary directory used by wix if not defined
-REM ECHO WIX_TEMP=%WIX_TEMP%
-REM IF "%WIX_TEMP%"=="" (
-REM    SET "WIX_TEMP=!TMP!/wix"
-REM    IF NOT EXIST "!WIX_TEMP!" (
-REM        MKDIR "!WIX_TEMP!"
-REM    )
-REM )
-REM ECHO WIX_TEMP=!WIX_TEMP!
-
 REM Make sure we are using the CMake version of CPack and not the one that comes with chocolatey
 SET CPACK_PATH=
 IF "%LY_CMAKE_PATH%"=="" (
