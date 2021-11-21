@@ -18,7 +18,7 @@
 #define UICANVASEDITOR_ANCHOR_ICON_PATH_SELECTED(presetIndex) (QString(":/Icons/AnchorIcon%1Selected.tif").arg(presetIndex, 2, 10, QChar('0')))
 
 #define UICANVASEDITOR_ANCHOR_WIDGET_FIXED_SIZE             (106)
-#define UICANVASEDITOR_ANCHOR_BUTTON_AND_ICON_FIXED_SIZE    (15)
+#define UICANVASEDITOR_ANCHOR_BUTTON_AND_ICON_FIXED_SIZE    (20)
 
 AnchorPresetsWidget::AnchorPresetsWidget(int defaultPresetIndex,
     PresetChanger presetChanger,
@@ -50,7 +50,7 @@ AnchorPresetsWidget::AnchorPresetsWidget(int defaultPresetIndex,
                     },
                     this);
             boxLayout->addWidget(button);
-            boxLayout->setContentsMargins(4,4,4,4);
+            boxLayout->setContentsMargins(2, 2, 2, 2);
             grid->addItem(boxLayout, (presetIndex / 4), (presetIndex % 4));
 
             m_buttons[ presetIndex ] = button;
