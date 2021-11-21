@@ -1,0 +1,44 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{10D4D7D8-23E2-4FC5-BE6A-DA9949D2C603}",
+            "Name": "LUT_R32F",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "PixelFormat": "R32F"
+        },
+        "PlatformsPresets": {
+            "es3": {
+                "UUID": "{10D4D7D8-23E2-4FC5-BE6A-DA9949D2C603}",
+                "Name": "LUT_R32F",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "R32F"
+            },
+            "ios": {
+                "UUID": "{10D4D7D8-23E2-4FC5-BE6A-DA9949D2C603}",
+                "Name": "LUT_R32F",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "R32F"
+            },
+            "osx_gl": {
+                "UUID": "{10D4D7D8-23E2-4FC5-BE6A-DA9949D2C603}",
+                "Name": "LUT_R32F",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "R32F"
+            },
+            "provo": {
+                "UUID": "{10D4D7D8-23E2-4FC5-BE6A-DA9949D2C603}",
+                "Name": "LUT_R32F",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "PixelFormat": "R32F"
+            }
+        }
+    }
+}

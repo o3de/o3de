@@ -5,8 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "NonUniformScaleRequestBus",
-                "category": "Entity"
+                "name": "Non Uniform Scale"
             },
             "methods": [
                 {
@@ -26,7 +25,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Vector3"
+                                "name": "Scale"
                             }
                         }
                     ]
@@ -48,7 +47,7 @@
                         {
                             "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
                             "details": {
-                                "name": "Non-uniform Scale"
+                                "name": "Scale"
                             }
                         }
                     ]

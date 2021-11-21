@@ -151,7 +151,6 @@ public:
         }
 
         ActionWrapper& SetMenu(DynamicMenu* menu);
-        ActionWrapper& SetApplyHoverEffect();
 
         operator QAction*() const {
             return m_action;
