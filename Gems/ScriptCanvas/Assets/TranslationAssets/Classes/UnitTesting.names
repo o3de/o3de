@@ -13,15 +13,14 @@
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ExpectLessThanEqual"
+                        "tooltip": "When signaled, this will invoke Expect Less Than Equal"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ExpectLessThanEqual is invoked"
+                        "tooltip": "Signaled after Expect Less Than Equal is invoked"
                     },
                     "details": {
-                        "name": "Expect Less Than Equal",
-                        "category": "Other"
+                        "name": "Expect Less Than Equal"
                     },
                     "params": [
                         {
@@ -34,19 +33,22 @@
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "Candidate"
+                                "name": "Candidate",
+                                "tooltip": "left of <="
                             }
                         },
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "Reference"
+                                "name": "Reference",
+                                "tooltip": "right of <="
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Report"
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
                             }
                         }
                     ]
@@ -56,15 +58,14 @@
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ExpectGreaterThanEqual"
+                        "tooltip": "When signaled, this will invoke Expect Greater Than Equal"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ExpectGreaterThanEqual is invoked"
+                        "tooltip": "Signaled after Expect Greater Than Equal is invoked"
                     },
                     "details": {
-                        "name": "Unit Testing::Expect Greater Than Equal",
-                        "category": "Other"
+                        "name": "Expect Greater Than Equal"
                     },
                     "params": [
                         {
@@ -77,19 +78,22 @@
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "Candidate"
+                                "name": "Candidate",
+                                "tooltip": "left of >="
                             }
                         },
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "Reference"
+                                "name": "Reference",
+                                "tooltip": "right of >="
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Report"
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
                             }
                         }
                     ]
@@ -99,15 +103,14 @@
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke MarkComplete"
+                        "tooltip": "When signaled, this will invoke Mark Complete"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after MarkComplete is invoked"
+                        "tooltip": "Signaled after Mark Complete is invoked"
                     },
                     "details": {
-                        "name": "Mark Complete",
-                        "category": "Other"
+                        "name": "Mark Complete"
                     },
                     "params": [
                         {
@@ -120,7 +123,8 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Report"
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
                             }
                         }
                     ]
@@ -130,15 +134,14 @@
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ExpectTrue"
+                        "tooltip": "When signaled, this will invoke Expect True"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ExpectTrue is invoked"
+                        "tooltip": "Signaled after Expect True is invoked"
                     },
                     "details": {
-                        "name": "Expect True",
-                        "category": "Other"
+                        "name": "Expect True"
                     },
                     "params": [
                         {
@@ -151,13 +154,15 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Candidate"
+                                "name": "Candidate",
+                                "tooltip": "a value that must be true"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Report"
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
                             }
                         }
                     ]
@@ -174,8 +179,7 @@
                         "tooltip": "Signaled after Checkpoint is invoked"
                     },
                     "details": {
-                        "name": "Checkpoint",
-                        "category": "Other"
+                        "name": "Checkpoint"
                     },
                     "params": [
                         {
@@ -188,7 +192,8 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Report"
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
                             }
                         }
                     ]
@@ -198,15 +203,14 @@
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ExpectFalse"
+                        "tooltip": "When signaled, this will invoke Expect False"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ExpectFalse is invoked"
+                        "tooltip": "Signaled after Expect False is invoked"
                     },
                     "details": {
-                        "name": "Expect False",
-                        "category": "Other"
+                        "name": "Expect False"
                     },
                     "params": [
                         {
@@ -219,13 +223,15 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "Candidate"
+                                "name": "Candidate",
+                                "tooltip": "a value that must be false"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Report"
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
                             }
                         }
                     ]
@@ -235,15 +241,14 @@
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ExpectEqual"
+                        "tooltip": "When signaled, this will invoke Expect Equal"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ExpectEqual is invoked"
+                        "tooltip": "Signaled after Expect Equal is invoked"
                     },
                     "details": {
-                        "name": "Expect Equal",
-                        "category": "Other"
+                        "name": "Expect Equal"
                     },
                     "params": [
                         {
@@ -256,19 +261,22 @@
                         {
                             "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
                             "details": {
-                                "name": "Candidate"
+                                "name": "Candidate",
+                                "tooltip": "left of =="
                             }
                         },
                         {
                             "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
                             "details": {
-                                "name": "Reference"
+                                "name": "Reference",
+                                "tooltip": "right of =="
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Report"
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
                             }
                         }
                     ]
@@ -278,15 +286,14 @@
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ExpectLessThan"
+                        "tooltip": "When signaled, this will invoke Expect Less Than"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ExpectLessThan is invoked"
+                        "tooltip": "Signaled after Expect Less Than is invoked"
                     },
                     "details": {
-                        "name": "Expect Less Than",
-                        "category": "Other"
+                        "name": "Expect Less Than"
                     },
                     "params": [
                         {
@@ -299,19 +306,22 @@
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "Candidate"
+                                "name": "Candidate",
+                                "tooltip": "left of <"
                             }
                         },
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "Reference"
+                                "name": "Reference",
+                                "tooltip": "right of <"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Report"
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
                             }
                         }
                     ]
@@ -328,8 +338,7 @@
                         "tooltip": "Signaled after Add Success is invoked"
                     },
                     "details": {
-                        "name": "Add Success",
-                        "category": "Other"
+                        "name": "Add Success"
                     },
                     "params": [
                         {
@@ -342,7 +351,8 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Report"
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
                             }
                         }
                     ]
@@ -352,15 +362,14 @@
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ExpectNotEqual"
+                        "tooltip": "When signaled, this will invoke Expect Not Equal"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ExpectNotEqual is invoked"
+                        "tooltip": "Signaled after Expect Not Equal is invoked"
                     },
                     "details": {
-                        "name": "Expect Not Equal",
-                        "category": "Other"
+                        "name": "Expect Not Equal"
                     },
                     "params": [
                         {
@@ -373,19 +382,22 @@
                         {
                             "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
                             "details": {
-                                "name": "Aabb"
+                                "name": "Candidate",
+                                "tooltip": "left of !="
                             }
                         },
                         {
                             "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
                             "details": {
-                                "name": "Aabb"
+                                "name": "Reference",
+                                "tooltip": "right of !="
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Report"
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
                             }
                         }
                     ]
@@ -395,15 +407,14 @@
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke ExpectGreaterThan"
+                        "tooltip": "When signaled, this will invoke Expect Greater Than"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after ExpectGreaterThan is invoked"
+                        "tooltip": "Signaled after Expect Greater Than is invoked"
                     },
                     "details": {
-                        "name": "Expect Greater Than",
-                        "category": "Other"
+                        "name": "Expect Greater Than"
                     },
                     "params": [
                         {
@@ -416,19 +427,22 @@
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "double"
+                                "name": "Candidate",
+                                "tooltip": "left of >"
                             }
                         },
                         {
                             "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
                             "details": {
-                                "name": "double"
+                                "name": "Reference",
+                                "tooltip": "right of >"
                             }
                         },
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Report"
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
                             }
                         }
                     ]
@@ -438,15 +452,14 @@
                     "context": "Unit Testing",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke AddFailure"
+                        "tooltip": "When signaled, this will invoke Add Failure"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after AddFailure is invoked"
+                        "tooltip": "Signaled after Add Failure is invoked"
                     },
                     "details": {
-                        "name": "Add Failure",
-                        "category": "Other"
+                        "name": "Add Failure"
                     },
                     "params": [
                         {
@@ -459,7 +472,8 @@
                         {
                             "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
                             "details": {
-                                "name": "Report"
+                                "name": "Report",
+                                "tooltip": "additional notes for the test report"
                             }
                         }
                     ]
