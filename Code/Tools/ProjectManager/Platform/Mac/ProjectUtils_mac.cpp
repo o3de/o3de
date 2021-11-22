@@ -29,7 +29,10 @@ namespace O3DE::ProjectManager
             if (!pathEnvList.contains("/usr/local/bin"))
             {
                 pathEnv += ":/usr/local/bin";
-                qputenv("PATH", pathEnv.toStdString().c_str());
+                if (!qputenv("PATH", pathEnv.toStdString().c_str()))
+                {
+                    return AZ::Failure(QObject::tr("Failed to set PATH environment variable"));
+                }
             }
 
             return AZ::Success();
