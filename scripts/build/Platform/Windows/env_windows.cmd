@@ -25,8 +25,13 @@ ENDLOCAL
 
 REM Jenkins does not defined TMP
 IF "%TMP%"=="" (
-    SET TMP=%APPDATA%\Local\Temp
-    SET TEMP=%APPDATA%\Local\Temp
+    IF "%WORKSPACE%"=="" (
+        SET TMP=%APPDATA%\Local\Temp
+        SET TEMP=%APPDATA%\Local\Temp
+    ) ELSE (
+        SET TMP=%WORKSPACE%\Temp
+        SET TEMP=%WORKSPACE%\Temp
+    )
 )
 
 EXIT /b 0
