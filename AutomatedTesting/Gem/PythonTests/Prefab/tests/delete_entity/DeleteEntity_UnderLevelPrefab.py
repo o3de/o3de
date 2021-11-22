@@ -8,13 +8,12 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 def DeleteEntity_UnderLevelPrefab():
     """
     Test description:
-    - Creates an entity
-    - Destroys the created entity
+    - Creates an entity.
+    - Destroys the created entity.
     Checks that the entity is correctly destroyed.
     """
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-    from editor_python_test_tools.prefab_utils import Prefab
 
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 

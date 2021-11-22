@@ -8,8 +8,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 def DeleteEntity_UnderAnotherPrefab():
     """
     Test description:
-    - Creates an entity
-    - Destroys the created entity
+    - Creates an entity.
+    - Creates a prefab out of the above entity.
+    - Focuses on the created prefab and destroys the entity within.
     Checks that the entity is correctly destroyed.
     """
 
@@ -20,14 +21,14 @@ def DeleteEntity_UnderAnotherPrefab():
 
     prefab_test_utils.open_base_tests_level()
 
-    CAR_PREFAB_FILE_NAME = 'car_prefab'
+    PREFAB_FILE_NAME = 'some_prefab'
 
     # Creates a new entity at the root level
-    car_entity = EditorEntity.create_editor_entity()
-    assert car_entity.id.IsValid(), "Couldn't create entity"
+    entity = EditorEntity.create_editor_entity()
+    assert entity.id.IsValid(), "Couldn't create entity."
 
     # Asserts if prefab creation doesn't succeed
-    child_prefab, child_instance = Prefab.create_prefab([car_entity], CAR_PREFAB_FILE_NAME)
+    child_prefab, child_instance = Prefab.create_prefab([entity], PREFAB_FILE_NAME)
     child_entity_ids_inside_prefab = child_instance.get_direct_child_entities()
     assert len(
         child_entity_ids_inside_prefab) == 1, f"{len(child_entity_ids_inside_prefab)} entities found inside prefab" \

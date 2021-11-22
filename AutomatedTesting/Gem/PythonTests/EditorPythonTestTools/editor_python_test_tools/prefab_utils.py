@@ -48,7 +48,7 @@ def wait_for_propagation():
 
 def focus_on_owning_prefab(entity: EditorEntity) :
     """
-    Focuses on the owning prefab instance of the give entity
+    Focuses on the owning prefab instance of the given entity.
     :param entity: The entity used to fetch the owning prefab to focus on.
     """
 
