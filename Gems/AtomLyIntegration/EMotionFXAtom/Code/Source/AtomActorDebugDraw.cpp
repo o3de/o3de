@@ -255,8 +255,8 @@ namespace AZ::Render
         RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
         lineArgs.m_verts = m_auxVertices.data();
         lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
-        lineArgs.m_colors = &skeletonColor;
-        lineArgs.m_colorCount = 1;
+        lineArgs.m_colors = m_auxColors.data();
+        lineArgs.m_colorCount = lineArgs.m_vertCount;
         lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
         auxGeom->DrawLines(lineArgs);
     }
@@ -685,7 +685,6 @@ namespace AZ::Render
         {
             EMotionFX::Node* joint = skeleton->GetNode(actorInstance->GetEnabledNode(i));
             const size_t jointIndex = joint->GetNodeIndex();
-            const size_t parentIndex = joint->GetParentIndex();
 
             static const float axisBoneScale = 50.0f;
             const float size = CalculateBoneScale(actorInstance, joint) * constPreScale * axisBoneScale;
