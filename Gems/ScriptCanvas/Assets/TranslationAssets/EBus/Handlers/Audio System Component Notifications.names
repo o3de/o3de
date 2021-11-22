@@ -5,19 +5,20 @@
             "context": "EBusHandler",
             "variant": "",
             "details": {
-                "name": "Audio System Component Notifications"
+                "name": "Audio  System",
+                "category": "EBus Handlers"
             },
             "methods": [
                 {
                     "key": "OnGamePaused",
                     "details": {
-                        "name": "OnGamePaused"
+                        "name": "On Game Paused"
                     }
                 },
                 {
                     "key": "OnGameUnpaused",
                     "details": {
-                        "name": "OnGameUnpaused"
+                        "name": "On Game Unpaused"
                     }
                 }
             ]

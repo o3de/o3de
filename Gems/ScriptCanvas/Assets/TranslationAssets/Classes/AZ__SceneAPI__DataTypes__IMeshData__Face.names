@@ -1,16 +1,17 @@
 {
     "entries": [
         {
-            "key": "BlendShapeDataFace",
+            "key": "AZ::SceneAPI::DataTypes::IMeshData::Face",
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "Blend Shape Data Face"
+                "name": "Mesh Data Face",
+                "category": "Scene Graph"
             },
             "methods": [
                 {
                     "key": "GetVertexIndex",
-                    "context": "BlendShapeDataFace",
+                    "context": "AZ::SceneAPI::DataTypes::IMeshData::Face",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Get Vertex Index"
@@ -24,9 +25,9 @@
                     },
                     "params": [
                         {
-                            "typeid": "{C972EC9A-3A5C-47CD-9A92-ECB4C0C0451C}",
+                            "typeid": "{F9F49C1A-014F-46F5-A46F-B56D8CB46C2B}",
                             "details": {
-                                "name": "Blend Shape Data Face"
+                                "name": "Mesh Data Face"
                             }
                         },
                         {
@@ -40,7 +41,7 @@
                         {
                             "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
                             "details": {
-                                "name": "Vertex Index"
+                                "name": "Index"
                             }
                         }
                     ]
