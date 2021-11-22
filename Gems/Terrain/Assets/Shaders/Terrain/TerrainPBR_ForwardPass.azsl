@@ -109,9 +109,10 @@ ForwardPassOutput TerrainPBR_MainPassPS(VSOutput IN)
                 {
                     bool flipX = ObjectSrg::m_macroMaterialData[i].m_flipNormalX;
                     bool flipY = ObjectSrg::m_macroMaterialData[i].m_flipNormalY;
-                    bool factor = ObjectSrg::m_macroMaterialData[i].m_normalFactor;
-                    macroNormal = GetNormalInputTS(ObjectSrg::m_macroNormalMap[i], TerrainMaterialSrg::m_sampler, 
-                        macroUv, flipX, flipY, CreateIdentity3x3(), true, factor);
+                    float factor = ObjectSrg::m_macroMaterialData[i].m_normalFactor;
+                    
+                    float2 sampledValue = SampleNormalXY(ObjectSrg::m_macroNormalMap[i], TerrainMaterialSrg::m_sampler, macroUv, flipX, flipY);
+                    macroNormal = normalize(GetTangentSpaceNormal_Unnormalized(sampledValue.xy, factor));
                 }
                 break;
             }
