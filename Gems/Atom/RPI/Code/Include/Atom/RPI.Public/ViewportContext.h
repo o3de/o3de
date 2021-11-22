@@ -119,17 +119,12 @@ namespace AZ
             void ConnectAboutToBeDestroyedHandler(ViewportIdEvent::Handler& handler);
 
             // ViewportRequestBus interface overrides...
-            //! Gets the current camera's view matrix.
             const AZ::Matrix4x4& GetCameraViewMatrix() const override;
-            //! Sets the current camera's view matrix.
+            AZ::Matrix3x4 GetCameraViewMatrixAsMatrix3x4() const override;
             void SetCameraViewMatrix(const AZ::Matrix4x4& matrix) override;
-            //! Gets the current camera's projection matrix.
             const AZ::Matrix4x4& GetCameraProjectionMatrix() const override;
-            //! Sets the current camera's projection matrix.
             void SetCameraProjectionMatrix(const AZ::Matrix4x4& matrix) override;
-            //! Convenience method, gets the AZ::Transform corresponding to this camera's view matrix.
             AZ::Transform GetCameraTransform() const override;
-            //! Convenience method, sets the camera's view matrix from this AZ::Transform.
             void SetCameraTransform(const AZ::Transform& transform) override;
 
         private:

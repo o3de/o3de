@@ -203,6 +203,11 @@ namespace AZ
             return GetDefaultView()->GetWorldToViewMatrix();
         }
 
+        AZ::Matrix3x4 ViewportContext::GetCameraViewMatrixAsMatrix3x4() const
+        {
+            return GetDefaultView()->GetWorldToViewMatrixAsMatrix3x4();
+        }
+
         void ViewportContext::SetCameraViewMatrix(const AZ::Matrix4x4& matrix)
         {
             GetDefaultView()->SetWorldToViewMatrix(matrix);

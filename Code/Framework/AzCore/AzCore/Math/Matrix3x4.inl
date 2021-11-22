@@ -203,7 +203,7 @@ namespace AZ
     }
 
 
-    AZ_MATH_INLINE Matrix3x4 Matrix3x4::CreateFromMatrix4x4(const Matrix4x4& matrix4x4)
+    AZ_MATH_INLINE Matrix3x4 Matrix3x4::UnsafeCreateFromMatrix4x4(const Matrix4x4& matrix4x4)
     {
         Matrix3x4 result;
         result.SetColumn(0, matrix4x4.GetColumn(0).GetAsVector3());

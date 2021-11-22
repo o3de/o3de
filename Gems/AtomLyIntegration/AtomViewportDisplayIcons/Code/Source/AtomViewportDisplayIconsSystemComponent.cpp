@@ -175,7 +175,7 @@ namespace AZ::Render
             // Calculate our screen space position using the viewport size
             // We want this instead of RenderViewportWidget::WorldToScreen which works in QWidget virtual coordinate space
             const AzFramework::ScreenPoint position = AzFramework::WorldToScreen(
-                drawParameters.m_position, AZ::Matrix3x4::CreateFromMatrix4x4(viewportContext->GetCameraViewMatrix()),
+                drawParameters.m_position, viewportContext->GetCameraViewMatrixAsMatrix3x4(),
                 viewportContext->GetCameraProjectionMatrix(), viewportSize);
             screenPosition.SetX(aznumeric_cast<float>(position.m_x));
             screenPosition.SetY(aznumeric_cast<float>(position.m_y));

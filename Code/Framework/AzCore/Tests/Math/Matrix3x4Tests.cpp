@@ -395,10 +395,10 @@ namespace UnitTest
 
     using Matrix3x4CreateFromMatrix4x4Fixture = ::testing::TestWithParam<AZ::Matrix4x4>;
 
-    TEST_P(Matrix3x4CreateFromMatrix4x4Fixture, CreateFromMatrix4x4)
+    TEST_P(Matrix3x4CreateFromMatrix4x4Fixture, UnsafeCreateFromMatrix4x4)
     {
         const AZ::Matrix4x4 matrix4x4 = GetParam();
-        const AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::CreateFromMatrix4x4(matrix4x4);
+        const AZ::Matrix3x4 matrix3x4 = AZ::Matrix3x4::UnsafeCreateFromMatrix4x4(matrix4x4);
         EXPECT_THAT(matrix3x4.GetTranslation(), IsClose(matrix4x4.GetTranslation()));
         const AZ::Vector3 vector(2.3f, -0.6, 1.8f);
         EXPECT_THAT(matrix3x4.TransformVector(vector), IsClose((matrix4x4 * AZ::Vector3ToVector4(vector, 0.0f)).GetAsVector3()));

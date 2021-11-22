@@ -91,7 +91,7 @@ namespace AZ
         static Matrix3x4 CreateFromMatrix3x3AndTranslation(const Matrix3x3& matrix3x3, const Vector3& translation);
 
         //! Constructs from a Matrix4x4.
-        static Matrix3x4 CreateFromMatrix4x4(const Matrix4x4& matrix4x4);
+        static Matrix3x4 UnsafeCreateFromMatrix4x4(const Matrix4x4& matrix4x4);
 
         //! Constructs from a Transform.
         static Matrix3x4 CreateFromTransform(const Transform& transform);
