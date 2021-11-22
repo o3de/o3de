@@ -25,7 +25,8 @@ namespace O3DE::ProjectManager
             // Add that path for the command line process so that it will be able to locate
             // a home-brew installed version of CMake
             QString pathEnv = qEnvironmentVariable("PATH");
-            if (!pathEnv.contains("/usr/local/bin"))
+            QStringList pathEnvList = pathEnv.split(":");
+            if (!pathEnvList.contains("/usr/local/bin"))
             {
                 pathEnv += ":/usr/local/bin";
                 qputenv("PATH", pathEnv.toStdString().c_str());
