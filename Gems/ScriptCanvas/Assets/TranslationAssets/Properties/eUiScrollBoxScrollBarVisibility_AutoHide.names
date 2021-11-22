@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiScrollBoxScrollBarVisibility_AutoHide::Getter",
-                "category": "Constants"
-            }
+                "name": "e Ui Scroll Box Scroll Bar Visibility_ Auto Hide"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiScrollBoxScrollBarVisibility_AutoHide",
+                    "details": {
+                        "name": "Gete Ui Scroll Box Scroll Bar Visibility_ Auto Hide"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

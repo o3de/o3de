@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eSSB_GotoEndTime::Getter",
-                "category": "Constants"
-            }
+                "name": "eSSB_ Goto End Time"
+            },
+            "methods": [
+                {
+                    "key": "GeteSSB_GotoEndTime",
+                    "details": {
+                        "name": "GeteSSB_ Goto End Time"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

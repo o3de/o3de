@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "BRAVO::Getter",
-                "category": "Constants"
-            }
+                "name": "BRAVO"
+            },
+            "methods": [
+                {
+                    "key": "GetBRAVO",
+                    "details": {
+                        "name": "GetBRAVO"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

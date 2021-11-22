@@ -17,6 +17,8 @@ from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, E
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
 
+    enable_prefab_system = False
+    
     class test_DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks(EditorParallelTest):
         from .EditorScripts import DynamicSliceInstanceSpawner_DynamicSliceSpawnerWorks as test_module
 
