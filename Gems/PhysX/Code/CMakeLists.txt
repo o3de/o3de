@@ -182,14 +182,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Gem::LmbrCentral
     )
 
-    if(PAL_TRAIT_JOINTS_TYPED_TEST_CASE)
-        ly_add_source_properties(
-            SOURCES Tests/PhysXJointsTest.cpp
-            PROPERTY COMPILE_DEFINITIONS 
-            VALUES ENABLE_JOINTS_TYPED_TEST_CASE
-        )
-    endif()
-
     ly_add_googletest(
         NAME Gem::PhysX.Tests
     )
