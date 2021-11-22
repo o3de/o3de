@@ -182,6 +182,8 @@ set(FILES
     Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h
     Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.cpp
     Editor/View/Widgets/ScriptCanvasNodePaletteToolbar.ui
+    Editor/View/Widgets/SourceHandlePropertyAssetCtrl.h
+    Editor/View/Widgets/SourceHandlePropertyAssetCtrl.cpp
     Editor/View/Widgets/WidgetBus.h
     Editor/View/Widgets/DataTypePalette/DataTypePaletteModel.cpp
     Editor/View/Widgets/DataTypePalette/DataTypePaletteModel.h
