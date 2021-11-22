@@ -66,8 +66,7 @@ namespace PhysX
         AzToolsFramework::ViewportUi::ClusterId
             m_modeSelectionClusterId; //!< Viewport UI cluster for changing sub mode.
 
-        //! Ids for the Viewport UI buttons for each mode.
-        AZStd::fixed_vector< AzToolsFramework::ViewportUi::ButtonId, static_cast<size_t>(SubMode::NumModes)> m_buttonIds;
+        AZStd::vector<AzToolsFramework::ViewportUi::ButtonId> m_buttonIds; //!< Ids for the Viewport UI buttons for each mode.
 
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler
             m_modeSelectionHandler; //!< Event handler for sub mode changes.
