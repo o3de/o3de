@@ -41,7 +41,10 @@ namespace O3DE::ProjectManager
             if (!pathEnvList.contains(cmakePath.path()))
             {
                 pathEnv += ";" + cmakePath.path();
-                qputenv("Path", pathEnv.toStdString().c_str());
+                if (!qputenv("Path", pathEnv.toStdString().c_str()))
+                {
+                    return AZ::Failure(QObject::tr("Failed to set Path environment variable"));
+                }
             }
 
             return AZ::Success();
