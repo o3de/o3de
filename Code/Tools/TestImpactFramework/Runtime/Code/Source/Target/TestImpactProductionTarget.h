@@ -11,6 +11,8 @@
 #include <Artifact/Static/TestImpactProductionTargetDescriptor.h>
 #include <Target/TestImpactBuildTarget.h>
 
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+
 namespace TestImpact
 {
     //! Build target specialization for production targets (build targets containing production code and no test code).
@@ -19,7 +21,10 @@ namespace TestImpact
     {
     public:
         using Descriptor = ProductionTargetDescriptor;
-        ProductionTarget(Descriptor&& descriptor);
+        ProductionTarget(AZStd::unique_ptr<Descriptor> descriptor);
+
+    private:
+        AZStd::unique_ptr<Descriptor> m_descriptor;
     };
 
     template<typename Target>

@@ -13,13 +13,14 @@
 
 namespace TestImpact
 {
-    AZStd::tuple<AZStd::vector<ProductionTargetDescriptor>, AZStd::vector<TestTargetDescriptor>> CompileTargetDescriptors(
+    AZStd::tuple<AZStd::vector<AZStd::unique_ptr<ProductionTargetDescriptor>>, AZStd::vector<AZStd::unique_ptr<TestTargetDescriptor>>> CompileTargetDescriptors(
         AZStd::vector<BuildTargetDescriptor>&& buildTargets, TestTargetMetaMap&& testTargetMetaMap)
     {
         AZ_TestImpact_Eval(!buildTargets.empty(), ArtifactException, "Build target descriptor list cannot be null");
         AZ_TestImpact_Eval(!testTargetMetaMap.empty(), ArtifactException, "Test target meta map cannot be null");
 
-        AZStd::tuple<AZStd::vector<ProductionTargetDescriptor>, AZStd::vector<TestTargetDescriptor>> outputTargets;
+        AZStd::tuple<AZStd::vector<AZStd::unique_ptr<ProductionTargetDescriptor>>, AZStd::vector<AZStd::unique_ptr<TestTargetDescriptor>>>
+            outputTargets;
         auto& [productionTargets, testTargets] = outputTargets;
 
         for (auto&& buildTarget : buildTargets)
@@ -28,11 +29,11 @@ namespace TestImpact
             if (auto&& testTargetMeta = testTargetMetaMap.find(buildTarget.m_buildMetaData.m_name);
                 testTargetMeta != testTargetMetaMap.end())
             {
-                testTargets.emplace_back(TestTargetDescriptor(AZStd::move(buildTarget), AZStd::move(testTargetMeta->second)));
+                testTargets.emplace_back(AZStd::make_unique<TestTargetDescriptor>(AZStd::move(buildTarget), AZStd::move(testTargetMeta->second)));
             }
             else
             {
-                productionTargets.emplace_back(ProductionTargetDescriptor(AZStd::move(buildTarget)));
+                productionTargets.emplace_back(AZStd::make_unique<ProductionTargetDescriptor>(AZStd::move(buildTarget)));
             }
         }
 

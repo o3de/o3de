@@ -101,7 +101,7 @@ namespace UnitTest
         {
             // When constructing a dynamic dependency map with no production targets
             m_dynamicDependencyMap =
-                AZStd::make_unique<TestImpact::DynamicDependencyMap>(AZStd::vector<TestImpact::ProductionTargetDescriptor>{}, MicroRepo::CreateTestTargetDescriptors());
+                AZStd::make_unique<TestImpact::DynamicDependencyMap>(AZStd::vector<AZStd::unique_ptr<TestImpact::ProductionTargetDescriptor>>{}, MicroRepo::CreateTestTargetDescriptors());
 
             // Do not expect this statement to be reachable
             FAIL();
@@ -124,7 +124,7 @@ namespace UnitTest
         {
             // When constructing a dynamic dependency map with no test targets
             m_dynamicDependencyMap =
-                AZStd::make_unique<TestImpact::DynamicDependencyMap>(MicroRepo::CreateProductionTargetDescriptors(), AZStd::vector<TestImpact::TestTargetDescriptor>{});
+                AZStd::make_unique<TestImpact::DynamicDependencyMap>(MicroRepo::CreateProductionTargetDescriptors(), AZStd::vector<AZStd::unique_ptr<TestImpact::TestTargetDescriptor>>{});
 
             // Do not expect this statement to be reachable
             FAIL();

@@ -10,8 +10,9 @@
 
 namespace TestImpact
 {
-    ProductionTarget::ProductionTarget(Descriptor&& descriptor)
-        : BuildTarget(AZStd::move(descriptor), SpecializedBuildTargetType::Production)
+    ProductionTarget::ProductionTarget(AZStd::unique_ptr<Descriptor> descriptor)
+        : BuildTarget(descriptor.get(), SpecializedBuildTargetType::Production)
+        , m_descriptor(AZStd::move(descriptor))
     {
     }
 } // namespace TestImpact

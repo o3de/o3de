@@ -13,6 +13,7 @@
 #include <Artifact/Static/TestImpactTestTargetMeta.h>
 
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/tuple.h>
 
 namespace TestImpact
@@ -22,6 +23,7 @@ namespace TestImpact
     //! @param buildTargets The list of build target artifacts to be sorted into production and test artifact types.
     //! @param testTargetMetaMap The map of test target meta artifacts containing the additional meta-data about each test target.
     //! @return A tuple containing the production artifacts and test artifacts.
-    AZStd::tuple<AZStd::vector<ProductionTargetDescriptor>, AZStd::vector<TestTargetDescriptor>> CompileTargetDescriptors(
+    AZStd::tuple<AZStd::vector<AZStd::unique_ptr<ProductionTargetDescriptor>>, AZStd::vector<AZStd::unique_ptr<TestTargetDescriptor>>>
+    CompileTargetDescriptors(
         AZStd::vector<BuildTargetDescriptor>&& buildTargets, TestTargetMetaMap&& testTargetMetaMap);
 } // namespace TestImpact

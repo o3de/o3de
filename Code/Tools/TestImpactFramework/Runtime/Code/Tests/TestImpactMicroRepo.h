@@ -147,20 +147,20 @@ namespace UnitTest
 
     namespace MicroRepo
     {
-        AZStd::vector<TestImpact::ProductionTargetDescriptor> CreateProductionTargetDescriptors();
+        AZStd::vector<AZStd::unique_ptr<TestImpact::ProductionTargetDescriptor>> CreateProductionTargetDescriptors();
 
-        AZStd::vector<TestImpact::TestTargetDescriptor> CreateTestTargetDescriptors();
+        AZStd::vector<AZStd::unique_ptr<TestImpact::TestTargetDescriptor>> CreateTestTargetDescriptors();
 
-        AZStd::vector<TestImpact::ProductionTargetDescriptor> CreateProductionTargetDescriptorsWithSharedSources();
+        AZStd::vector<AZStd::unique_ptr<TestImpact::ProductionTargetDescriptor>> CreateProductionTargetDescriptorsWithSharedSources();
 
-        AZStd::vector<TestImpact::TestTargetDescriptor> CreateTestTargetDescriptorsWithSharedSources();
+        AZStd::vector<AZStd::unique_ptr<TestImpact::TestTargetDescriptor>> CreateTestTargetDescriptorsWithSharedSources();
 
         AZStd::vector<TestImpact::SourceCoveringTests> CreateSourceCoveringTestList();
 
         AZStd::vector<TestImpact::SourceCoveringTests> CreateSourceCoveringTestListWithSharedSources();
 
         template<typename TargetDescriptor>
-        AZStd::unordered_set<AZStd::string> GetSources(const AZStd::vector<TargetDescriptor>& targetDescriptors)
+        AZStd::unordered_set<AZStd::string> GetSources(const AZStd::vector<AZStd::unique_ptr<TargetDescriptor>>& targetDescriptors)
         {
             AZStd::unordered_set<AZStd::string> sources;
             for (const auto& targetDescriptor : targetDescriptors)
@@ -184,8 +184,8 @@ namespace UnitTest
         }
 
         template<typename TargetDescriptor>
-        AZStd::vector<TargetDescriptor> CreateTargetDescriptorWithoutSpecifiedSource(
-            AZStd::vector<TargetDescriptor> targetDescriptors, const TestImpact::RepoPath& sourceToRemove)
+        AZStd::vector<AZStd::unique_ptr<TargetDescriptor>> CreateTargetDescriptorWithoutSpecifiedSource(
+            AZStd::vector<AZStd::unique_ptr<TargetDescriptor>> targetDescriptors, const TestImpact::RepoPath& sourceToRemove)
         {
             for (auto& targetDescriptor : targetDescriptors)
             {

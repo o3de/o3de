@@ -35,7 +35,7 @@ namespace TestImpact
     class BuildTarget
     {
     public:
-        BuildTarget(BuildTargetDescriptor&& descriptor, SpecializedBuildTargetType type);
+        BuildTarget(BuildTargetDescriptor* descriptor, SpecializedBuildTargetType type);
         virtual ~BuildTarget() = default;
 
         //! Returns the build target name.
@@ -54,8 +54,7 @@ namespace TestImpact
         SpecializedBuildTargetType GetSpecializedBuildTargetType() const;
 
     private:
-        BuildMetaData m_buildMetaData;
-        TargetSources m_sources;
+        const BuildTargetDescriptor* m_descriptor;
         SpecializedBuildTargetType m_type;
     };
 } // namespace TestImpact

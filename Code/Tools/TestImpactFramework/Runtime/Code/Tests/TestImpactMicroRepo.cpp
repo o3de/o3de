@@ -12,7 +12,7 @@ namespace UnitTest
 {
     namespace MicroRepo
     {
-        TestImpact::BuildTargetDescriptor CreateBuildTargetDescriptor(
+        AZStd::unique_ptr<TestImpact::BuildTargetDescriptor> CreateBuildTargetDescriptor(
             const AZStd::string& name, const AZStd::vector<TestImpact::RepoPath>& staticSources, const TestImpact::AutogenSources& autogenSources = {})
         {
             TestImpact::BuildMetaData buildMetaData;
@@ -28,50 +28,52 @@ namespace UnitTest
                 }
             }
 
-            return TestImpact::BuildTargetDescriptor({ AZStd::move(buildMetaData), AZStd::move(targetSources) });
+            return AZStd::make_unique<TestImpact::BuildTargetDescriptor>(AZStd::move(buildMetaData), AZStd::move(targetSources));
         }
 
-        AZStd::vector<TestImpact::ProductionTargetDescriptor> CreateProductionTargetDescriptors()
+        AZStd::vector<AZStd::unique_ptr<TestImpact::ProductionTargetDescriptor>> CreateProductionTargetDescriptors()
         {
-            AZStd::vector<TestImpact::ProductionTargetDescriptor> productionTargetDescriptors;
-            productionTargetDescriptors.push_back(CreateBuildTargetDescriptor("Lib A", { "LibA_1.cpp", "LibA_2.cpp", "ProdAndTest.cpp" }));
-            productionTargetDescriptors.push_back(CreateBuildTargetDescriptor(
-                "Lib B", { "LibB_1.cpp" }, { {"LibB_AutogenInput.xml", {"LibB_2.cpp", "LibB_3.cpp"}} }));
-            productionTargetDescriptors.push_back(CreateBuildTargetDescriptor(
-                "Lib C", { "LibC_1.cpp", "LibC_2.cpp", "LibC_3.cpp" }));
-            productionTargetDescriptors.push_back(CreateBuildTargetDescriptor("Lib Misc", { "LibMisc_1.cpp", "LibMisc_2.cpp" }));
-            productionTargetDescriptors.push_back(CreateBuildTargetDescriptor("Lib Core", { "LibCore_1.cpp", "LibCore_2.cpp" }));
-            productionTargetDescriptors.push_back(CreateBuildTargetDescriptor(
-                "Lib Aux", { "LibAux_1.cpp", "LibAux_2.cpp", "LibAux_3.cpp" }));
+            AZStd::vector<AZStd::unique_ptr<TestImpact::ProductionTargetDescriptor>> productionTargetDescriptors;
+            productionTargetDescriptors.emplace_back(AZStd::make_unique<TestImpact::ProductionTargetDescriptor>(AZStd::move(*CreateBuildTargetDescriptor("Lib A", { "LibA_1.cpp", "LibA_2.cpp", "ProdAndTest.cpp" }).release())));
+            productionTargetDescriptors.emplace_back(AZStd::make_unique<TestImpact::ProductionTargetDescriptor>(AZStd::move(*CreateBuildTargetDescriptor(
+                "Lib B", { "LibB_1.cpp" }, { {"LibB_AutogenInput.xml", {"LibB_2.cpp", "LibB_3.cpp"}} }).release())));
+            productionTargetDescriptors.emplace_back(AZStd::make_unique<TestImpact::ProductionTargetDescriptor>(AZStd::move(*CreateBuildTargetDescriptor(
+                "Lib C", { "LibC_1.cpp", "LibC_2.cpp", "LibC_3.cpp" }).release())));
+            productionTargetDescriptors.emplace_back(AZStd::make_unique<TestImpact::ProductionTargetDescriptor>(AZStd::move(*CreateBuildTargetDescriptor("Lib Misc", { "LibMisc_1.cpp", "LibMisc_2.cpp" }).release())));
+            productionTargetDescriptors.emplace_back(AZStd::make_unique<TestImpact::ProductionTargetDescriptor>(AZStd::move(*CreateBuildTargetDescriptor("Lib Core", { "LibCore_1.cpp", "LibCore_2.cpp" }).release())));
+            productionTargetDescriptors.emplace_back(AZStd::make_unique<TestImpact::ProductionTargetDescriptor>(AZStd::move(*CreateBuildTargetDescriptor(
+                "Lib Aux", { "LibAux_1.cpp", "LibAux_2.cpp", "LibAux_3.cpp" }).release())));
 
             return productionTargetDescriptors;
         }
 
-        AZStd::vector<TestImpact::TestTargetDescriptor> CreateTestTargetDescriptors()
+        AZStd::vector<AZStd::unique_ptr<TestImpact::TestTargetDescriptor>> CreateTestTargetDescriptors()
         {
-            AZStd::vector<TestImpact::TestTargetDescriptor> testTargetDescriptors;
-            testTargetDescriptors.push_back(TestImpact::TestTargetDescriptor(CreateBuildTargetDescriptor("Test A", { "TestA.cpp" }), {}));
-            testTargetDescriptors.push_back(TestImpact::TestTargetDescriptor(CreateBuildTargetDescriptor("Test B", { "TestB.cpp" }), {}));
-            testTargetDescriptors.push_back(TestImpact::TestTargetDescriptor(CreateBuildTargetDescriptor("Test C", { "TestC.cpp" }), {}));
-            testTargetDescriptors.push_back(TestImpact::TestTargetDescriptor(CreateBuildTargetDescriptor("Test Misc", { "TestMisc.cpp", "ProdAndTest.cpp" }), {}));
-            testTargetDescriptors.push_back(TestImpact::TestTargetDescriptor(CreateBuildTargetDescriptor("Test Core", { "TestCore.cpp" }), {}));
-            testTargetDescriptors.push_back(TestImpact::TestTargetDescriptor(CreateBuildTargetDescriptor("Test Aux", { "TestAux.cpp" }), {}));
+            AZStd::vector<AZStd::unique_ptr<TestImpact::TestTargetDescriptor>> testTargetDescriptors;
+
+            testTargetDescriptors.emplace_back(AZStd::make_unique<TestImpact::TestTargetDescriptor>(AZStd::move(*CreateBuildTargetDescriptor("Test A", { "TestA.cpp" }).release()), TestImpact::TestTargetMeta{}));
+            testTargetDescriptors.emplace_back(AZStd::make_unique<TestImpact::TestTargetDescriptor>(AZStd::move(*CreateBuildTargetDescriptor("Test B", { "TestB.cpp" }).release()), TestImpact::TestTargetMeta{}));
+            testTargetDescriptors.emplace_back(AZStd::make_unique<TestImpact::TestTargetDescriptor>(AZStd::move(*CreateBuildTargetDescriptor("Test C", { "TestC.cpp" }).release()), TestImpact::TestTargetMeta{}));
+            testTargetDescriptors.emplace_back(AZStd::make_unique<TestImpact::TestTargetDescriptor>(AZStd::move(*CreateBuildTargetDescriptor("Test Misc", { "TestMisc.cpp", "ProdAndTest.cpp" }).release()), TestImpact::TestTargetMeta{}));
+            testTargetDescriptors.emplace_back(AZStd::make_unique<TestImpact::TestTargetDescriptor>(AZStd::move(*CreateBuildTargetDescriptor("Test Core", { "TestCore.cpp" }).release()), TestImpact::TestTargetMeta{}));
+            testTargetDescriptors.emplace_back(AZStd::make_unique<TestImpact::TestTargetDescriptor>(AZStd::move(*CreateBuildTargetDescriptor("Test Aux", { "TestAux.cpp" }).release()), TestImpact::TestTargetMeta{}));
 
             return testTargetDescriptors;
         }
 
-        AZStd::vector<TestImpact::ProductionTargetDescriptor> CreateProductionTargetDescriptorsWithSharedSources()
+        AZStd::vector<AZStd::unique_ptr<TestImpact::ProductionTargetDescriptor>> CreateProductionTargetDescriptorsWithSharedSources()
         {
             auto productionTargetDescriptors = CreateProductionTargetDescriptors();
-            productionTargetDescriptors.push_back(CreateBuildTargetDescriptor("Lib Shared", { "LibShared.cpp", "LibAux_2.cpp", "LibB_2.cpp" }));
+            productionTargetDescriptors.emplace_back(AZStd::make_unique<TestImpact::ProductionTargetDescriptor>(AZStd::move(
+                *CreateBuildTargetDescriptor("Lib Shared", { "LibShared.cpp", "LibAux_2.cpp", "LibB_2.cpp" }).release())));
 
             return productionTargetDescriptors;
         }
 
-        AZStd::vector<TestImpact::TestTargetDescriptor> CreateTestTargetDescriptorsWithSharedSources()
+        AZStd::vector<AZStd::unique_ptr<TestImpact::TestTargetDescriptor>> CreateTestTargetDescriptorsWithSharedSources()
         {
             auto testTargetDescriptors = CreateTestTargetDescriptors();
-            testTargetDescriptors.push_back(TestImpact::TestTargetDescriptor(CreateBuildTargetDescriptor("Test Shared", { "TestShared.cpp" }), {}));
+            testTargetDescriptors.emplace_back(AZStd::make_unique<TestImpact::TestTargetDescriptor>(AZStd::move(*CreateBuildTargetDescriptor("Test Shared", { "TestShared.cpp" }).release()), TestImpact::TestTargetMeta{}));
 
             return testTargetDescriptors;
         }

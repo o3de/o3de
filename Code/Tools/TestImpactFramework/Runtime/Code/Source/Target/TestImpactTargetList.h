@@ -13,6 +13,7 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 
 #include <algorithm>
@@ -27,7 +28,7 @@ namespace TestImpact
     public:
         using TargetType = Target;
 
-        TargetList(AZStd::vector<typename Target::Descriptor>&& descriptors);
+        TargetList(AZStd::vector<AZStd::unique_ptr<typename Target::Descriptor>>&& descriptors);
 
         //! Returns the targets in the collection.
         const AZStd::vector<Target>& GetTargets() const;
@@ -49,20 +50,22 @@ namespace TestImpact
     };
 
     template<typename Target>
-    TargetList<Target>::TargetList(AZStd::vector<typename Target::Descriptor>&& descriptors)
+    TargetList<Target>::TargetList(AZStd::vector<AZStd::unique_ptr<typename Target::Descriptor>>&& descriptors)
     {
         AZ_TestImpact_Eval(!descriptors.empty(), TargetException, "Target list is empty");
 
         AZStd::sort(
-            descriptors.begin(), descriptors.end(), [](const typename Target::Descriptor& lhs, const typename Target::Descriptor& rhs)
+            descriptors.begin(), descriptors.end(),
+            [](const AZStd::unique_ptr<typename Target::Descriptor>& lhs, const AZStd::unique_ptr<typename Target::Descriptor>& rhs)
         {
-                return lhs.m_buildMetaData.m_name < rhs.m_buildMetaData.m_name;
+                return lhs->m_buildMetaData.m_name < rhs->m_buildMetaData.m_name;
         });
 
         const auto duplicateElement = AZStd::adjacent_find(
-            descriptors.begin(), descriptors.end(), [](const typename Target::Descriptor& lhs, const typename Target::Descriptor& rhs)
+            descriptors.begin(), descriptors.end(),
+            [](const AZStd::unique_ptr<typename Target::Descriptor>& lhs, const AZStd::unique_ptr<typename Target::Descriptor>& rhs)
         {
-                return lhs.m_buildMetaData.m_name == rhs.m_buildMetaData.m_name;
+                return lhs->m_buildMetaData.m_name == rhs->m_buildMetaData.m_name;
         });
 
         AZ_TestImpact_Eval(duplicateElement == descriptors.end(), TargetException, "Target list contains duplicate targets");

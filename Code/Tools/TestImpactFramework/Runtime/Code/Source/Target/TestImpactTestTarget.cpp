@@ -10,29 +10,29 @@
 
 namespace TestImpact
 {
-    TestTarget::TestTarget(Descriptor&& descriptor)
-        : BuildTarget(AZStd::move(descriptor), SpecializedBuildTargetType::Test)
-        , m_testMetaData(AZStd::move(descriptor.m_testMetaData))
+    TestTarget::TestTarget(AZStd::unique_ptr<Descriptor> descriptor)
+        : BuildTarget(descriptor.get(), SpecializedBuildTargetType::Test)
+        , m_descriptor(AZStd::move(descriptor))
     {
     }
 
     const AZStd::string& TestTarget::GetSuite() const
     {
-        return m_testMetaData.m_suiteMeta.m_name;
+        return m_descriptor->m_testMetaData.m_suiteMeta.m_name;
     }
 
     const AZStd::string& TestTarget::GetCustomArgs() const
     {
-        return m_testMetaData.m_customArgs;
+        return m_descriptor->m_testMetaData.m_customArgs;
     }
 
     AZStd::chrono::milliseconds TestTarget::GetTimeout() const
     {
-        return m_testMetaData.m_suiteMeta.m_timeout;
+        return m_descriptor->m_testMetaData.m_suiteMeta.m_timeout;
     }
 
     LaunchMethod TestTarget::GetLaunchMethod() const
     {
-        return m_testMetaData.m_launchMethod;
+        return m_descriptor->m_testMetaData.m_launchMethod;
     }
 } // namespace TestImpact

@@ -11,6 +11,8 @@
 #include <Artifact/Static/TestImpactTestTargetDescriptor.h>
 #include <Target/TestImpactBuildTarget.h>
 
+#include <AzCore/std/smart_ptr/unique_ptr.h>
+
 namespace TestImpact
 {
     //! Build target specialization for test targets (build targets containing test code and no production code).
@@ -20,7 +22,7 @@ namespace TestImpact
     public:
         using Descriptor = TestTargetDescriptor;
 
-        TestTarget(Descriptor&& descriptor);
+        TestTarget(AZStd::unique_ptr<Descriptor> descriptor);
 
         //! Returns the test target suite.
         const AZStd::string& GetSuite() const;
@@ -35,7 +37,7 @@ namespace TestImpact
         LaunchMethod GetLaunchMethod() const;
 
     private:
-        const TestTargetMeta m_testMetaData;
+        AZStd::unique_ptr<Descriptor> m_descriptor;
     };
 
     template<typename Target>

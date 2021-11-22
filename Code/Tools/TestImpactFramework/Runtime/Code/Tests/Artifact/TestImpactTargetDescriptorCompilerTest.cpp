@@ -135,14 +135,14 @@ namespace UnitTest
 
         // Expect the production targets to match the expected targets
         EXPECT_TRUE(productionTargetDescriptors.size() == 3);
-        EXPECT_TRUE(productionTargetDescriptors[0] == ConstructProductionTargetDescriptor("ProductionTargetA"));
-        EXPECT_TRUE(productionTargetDescriptors[1] == ConstructProductionTargetDescriptor("ProductionTargetB"));
-        EXPECT_TRUE(productionTargetDescriptors[2] == ConstructProductionTargetDescriptor("ProductionTargetC"));
+        EXPECT_TRUE(*productionTargetDescriptors[0] == ConstructProductionTargetDescriptor("ProductionTargetA"));
+        EXPECT_TRUE(*productionTargetDescriptors[1] == ConstructProductionTargetDescriptor("ProductionTargetB"));
+        EXPECT_TRUE(*productionTargetDescriptors[2] == ConstructProductionTargetDescriptor("ProductionTargetC"));
 
         // Expect the test targets to match the expected targets
         EXPECT_TRUE(testTargetDescriptors.size() == 2);
-        EXPECT_TRUE(testTargetDescriptors[0] == ConstructTestTargetDescriptor("TestTargetA", TestImpact::LaunchMethod::TestRunner));
-        EXPECT_TRUE(testTargetDescriptors[1] == ConstructTestTargetDescriptor("TestTargetB", TestImpact::LaunchMethod::StandAlone));
+        EXPECT_TRUE(*testTargetDescriptors[0] == ConstructTestTargetDescriptor("TestTargetA", TestImpact::LaunchMethod::TestRunner));
+        EXPECT_TRUE(*testTargetDescriptors[1] == ConstructTestTargetDescriptor("TestTargetB", TestImpact::LaunchMethod::StandAlone));
     }
 
 } // namespace UnitTest

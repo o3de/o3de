@@ -32,8 +32,8 @@ namespace TestImpact
     public:
         //! Constructs the dependency map with entries for each build target's source files with empty test coverage data.
         DynamicDependencyMap(
-            AZStd::vector<ProductionTargetDescriptor>&& productionTargetDescriptors,
-            AZStd::vector<TestTargetList::TargetType::Descriptor>&& testTargetDescriptors);
+            AZStd::vector<AZStd::unique_ptr<ProductionTargetDescriptor>>&& productionTargetDescriptors,
+            AZStd::vector<AZStd::unique_ptr<TestTargetList::TargetType::Descriptor>>&& testTargetDescriptors);
 
         //! Gets the total number of production and test targets in the repository.
         size_t GetNumBuildTargets() const;

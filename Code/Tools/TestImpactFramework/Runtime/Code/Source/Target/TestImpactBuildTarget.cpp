@@ -10,31 +10,30 @@
 
 namespace TestImpact
 {
-    BuildTarget::BuildTarget(BuildTargetDescriptor&& descriptor, SpecializedBuildTargetType type)
-        : m_buildMetaData(AZStd::move(descriptor.m_buildMetaData))
-        , m_sources(AZStd::move(descriptor.m_sources))
+    BuildTarget::BuildTarget(BuildTargetDescriptor* descriptor, SpecializedBuildTargetType type)
+        : m_descriptor(descriptor)
         , m_type(type)
     {
     }
 
     const AZStd::string& BuildTarget::GetName() const
     {
-        return m_buildMetaData.m_name;
+        return m_descriptor->m_buildMetaData.m_name;
     }
 
     const AZStd::string& BuildTarget::GetOutputName() const
     {
-        return m_buildMetaData.m_outputName;
+        return m_descriptor->m_buildMetaData.m_outputName;
     }
 
     const RepoPath& BuildTarget::GetPath() const
     {
-        return m_buildMetaData.m_path;
+        return m_descriptor->m_buildMetaData.m_path;
     }
 
     const TargetSources& BuildTarget::GetSources() const
     {
-        return m_sources;
+        return m_descriptor->m_sources;
     }
 
     SpecializedBuildTargetType BuildTarget::GetSpecializedBuildTargetType() const
