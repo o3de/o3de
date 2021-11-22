@@ -62,3 +62,11 @@ class TestAutomation(TestAutomationBase):
     def test_CreatePrefab_UnderAnotherPrefab(self, request, workspace, editor, launcher_platform):
         from Prefab.tests.create_prefab import CreatePrefab_UnderAnotherPrefab as test_module
         self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
+
+    def test_DeleteEntity_UnderAnotherPrefab(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.delete_entity import DeleteEntity_UnderAnotherPrefab as test_module
+        self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)
+
+    def test_DeleteEntity_UnderLevelPrefab(self, request, workspace, editor, launcher_platform):
+        from Prefab.tests.delete_entity import DeleteEntity_UnderLevelPrefab as test_module
+        self._run_prefab_test(request, workspace, editor, test_module, autotest_mode=False)

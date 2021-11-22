@@ -58,4 +58,13 @@ namespace AzToolsFramework::Prefab
         virtual const int GetPrefabFocusPathLength(AzFramework::EntityContextId entityContextId) const = 0;
     };
 
+    class PrefabFocusPublicRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+    };
+
+    using PrefabFocusPublicRequestBus = AZ::EBus<PrefabFocusPublicInterface, PrefabFocusPublicRequests>;
+
 } // namespace AzToolsFramework::Prefab
