@@ -18,7 +18,7 @@ namespace AzToolsFramework::EmbeddedPython
         m_embeddedLibPythonHandle = dlopen(libPythonName, RTLD_NOW | RTLD_GLOBAL);
         if (m_embeddedLibPythonHandle == nullptr)
         {
-            [maybe_unused] const char* err = dlerror();
+            [[maybe_unused]] const char* err = dlerror();
             AZ_Error("PythonLoader", false, "Failed to load %s with error: %s\n", libPythonName, err ? err : "Unknown Error");
         }
     }
