@@ -25,6 +25,15 @@ define_property(TARGET PROPERTY LY_SYSTEM_LIBRARY
 # \arg:output_third_party_path name of variable to set the default project directory into
 # It defaults to the ~/.o3de/3rdParty directory
 function(get_default_third_party_folder output_third_party_path)
+    
+    # 1. Highest priority, cache variable, that will override the value of any of the cases below
+    # 2. if defined in an env variable, take it from there
+    if($ENV{LY_3RDPARTY_PATH})
+        set(${output_third_party_path} $ENV{LY_3RDPARTY_PATH} PARENT_SCOPE)
+        return()
+    endif()
+
+    # 3. If defined in the o3de_manifest.json, take it from there
     cmake_path(SET home_directory "$ENV{USERPROFILE}") # Windows
     if(NOT EXISTS ${home_directory})
         cmake_path(SET home_directory "$ENV{HOME}") # Unix
@@ -33,7 +42,20 @@ function(get_default_third_party_folder output_third_party_path)
         endif()
     endif()
 
+    set(manifest_path ${home_directory}/.o3de/o3de_manifest.json)
+    if(EXISTS ${manifest_path})
+        file(READ ${manifest_path} manifest_json)
+        string(JSON default_third_party_folder ERROR_VARIABLE json_error GET ${manifest_json} default_third_party_folder)
+        if(NOT json_error)
+            set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${manifest_path})
+            set(${output_third_party_path} ${default_third_party_folder} PARENT_SCOPE)
+            return()
+        endif()
+    endif()
+
+    # 4. Lowest priority, use the home directory as the location for 3rdparty
     set(${output_third_party_path} ${home_directory}/.o3de/3rdParty PARENT_SCOPE)
+
 endfunction()
 
 get_default_third_party_folder(o3de_default_third_party_path)
