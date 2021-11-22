@@ -37,7 +37,8 @@ namespace O3DE::ProjectManager
             QDir cmakePath(engineInfo.m_path);
             cmakePath.cd("cmake/runtime/bin");
             QString pathEnv = qEnvironmentVariable("Path");
-            if (!pathEnv.contains(cmakePath.path()))
+            QStringList pathEnvList = pathEnv.split(";");
+            if (!pathEnvList.contains(cmakePath.path()))
             {
                 pathEnv += ";" + cmakePath.path();
                 qputenv("Path", pathEnv.toStdString().c_str());
