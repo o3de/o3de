@@ -448,7 +448,11 @@ namespace AzToolsFramework
 
                     ViewportUi::ViewportUiRequestBus::Event(
                         ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder,
-                        componentMode.m_componentMode->GetComponentModeName().c_str());
+                        componentMode.m_componentMode->GetComponentModeName().c_str(),
+                        []
+                        {
+                            ComponentModeSystemRequestBus::Broadcast(&ComponentModeSystemRequests::EndComponentMode);
+                        });
                 }
 
                 RefreshActions();

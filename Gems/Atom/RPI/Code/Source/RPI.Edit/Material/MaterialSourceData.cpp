@@ -116,10 +116,11 @@ namespace AZ
             {
                 m_properties = AZStd::move(newPropertyGroups);
 
-                AZ_Warning("MaterialSourceData", false,
+                AZ_Warning(
+                    "MaterialSourceData", false,
                     "This material is based on version '%u' of '%s', but the material type is now at version '%u'. "
-                    "Automatic updates are available. Consider updating the .material source file.",
-                    m_materialTypeVersion, m_materialType.c_str(), materialTypeSourceData.m_version);
+                    "Automatic updates are available. Consider updating the .material source file: '%s'.",
+                    m_materialTypeVersion, materialTypeFullPath.c_str(), materialTypeSourceData.m_version, materialSourceFilePath.data());
             }
 
             m_materialTypeVersion = materialTypeSourceData.m_version;
@@ -303,7 +304,7 @@ namespace AZ
                     MaterialPropertyId propertyId{ group.first, property.first };
                     if (!property.second.m_value.IsValid())
                     {
-                        AZ_Warning("Material source data", false, "Source data for material property value is invalid.");
+                        materialAssetCreator.ReportWarning("Source data for material property value is invalid.");
                     }
                     else
                     {
@@ -317,22 +318,20 @@ namespace AZ
                             {
                             case MaterialPropertyDataType::Image:
                                 {
-                                    Outcome<Data::Asset<ImageAsset>> imageAssetResult = MaterialUtils::GetImageAssetReference(
-                                        materialSourceFilePath, property.second.m_value.GetValue<AZStd::string>());
+                                    Data::Asset<ImageAsset> imageAsset;
 
-                                    if (imageAssetResult.IsSuccess())
+                                    MaterialUtils::GetImageAssetResult result = MaterialUtils::GetImageAssetReference(
+                                        imageAsset, materialSourceFilePath, property.second.m_value.GetValue<AZStd::string>());
+                                    
+                                    if (result == MaterialUtils::GetImageAssetResult::Missing)
                                     {
-                                        auto& imageAsset = imageAssetResult.GetValue();
-                                        // Load referenced images when load material
-                                        imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
-                                        materialAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
-                                    }
-                                    else
-                                    {
-                                        materialAssetCreator.ReportError(
+                                        materialAssetCreator.ReportWarning(
                                             "Material property '%s': Could not find the image '%s'", propertyId.GetFullName().GetCStr(),
                                             property.second.m_value.GetValue<AZStd::string>().data());
                                     }
+                                    
+                                    imageAsset.SetAutoLoadBehavior(Data::AssetLoadBehavior::PreLoad);
+                                    materialAssetCreator.SetPropertyValue(propertyId.GetFullName(), imageAsset);
                                 }
                                 break;
                             case MaterialPropertyDataType::Enum:

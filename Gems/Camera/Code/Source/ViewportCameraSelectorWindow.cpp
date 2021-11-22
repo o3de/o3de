@@ -7,14 +7,14 @@
  */
 #include "ViewportCameraSelectorWindow.h"
 #include "ViewportCameraSelectorWindow_Internals.h"
-#include <qmetatype.h>
-#include <QScopedValueRollback>
-#include <QListView>
-#include <QSortFilterProxyModel>
-#include <QVBoxLayout>
-#include <QLabel>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/ViewPaneOptions.h>
+#include <QLabel>
+#include <QListView>
+#include <QScopedValueRollback>
+#include <QSortFilterProxyModel>
+#include <QVBoxLayout>
+#include <qmetatype.h>
 
 namespace Qt
 {
@@ -64,12 +64,14 @@ namespace Camera
         CameraListModel::CameraListModel(QWidget* myParent)
             : QAbstractListModel(myParent)
         {
+            m_lastActiveCamera = AZ::EntityId();
             m_cameraItems.push_back(AZ::EntityId());
             CameraNotificationBus::Handler::BusConnect();
         }
 
         CameraListModel::~CameraListModel()
         {
+            m_firstEntry = true;
             // set the view entity id back to Invalid, thus enabling the editor camera
             EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, AZ::EntityId());
 
@@ -98,11 +100,13 @@ namespace Camera
         {
             // If the camera entity is not an editor camera entity, don't add it to the list.
             // This occurs when we're in simulation mode.
+
+            //We reset the m_firstEntry value so we can update m_lastActiveCamera when we remove from the cameras list
+            m_firstEntry = true;
+
             bool isEditorEntity = false;
             AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
-                isEditorEntity,
-                &AzToolsFramework::EditorEntityContextRequests::IsEditorEntity,
-                cameraId);
+                isEditorEntity, &AzToolsFramework::EditorEntityContextRequests::IsEditorEntity, cameraId);
             if (!isEditorEntity)
             {
                 return;
@@ -111,11 +115,25 @@ namespace Camera
             beginInsertRows(QModelIndex(), rowCount(), rowCount());
             m_cameraItems.push_back(cameraId);
             endInsertRows();
+
+            if (m_lastActiveCamera.IsValid() && m_lastActiveCamera == cameraId)
+            {
+                Camera::CameraRequestBus::Event(cameraId, &Camera::CameraRequestBus::Events::MakeActiveView);
+            }
         }
 
         void CameraListModel::OnCameraRemoved(const AZ::EntityId& cameraId)
         {
-            auto cameraIt = AZStd::find_if(m_cameraItems.begin(), m_cameraItems.end(),
+            //Check it is the first time we remove a camera from the list before any other addition
+            //So we don't end up with the wrong camera ID.
+            if (m_firstEntry)
+            {
+                CameraSystemRequestBus::BroadcastResult(m_lastActiveCamera, &CameraSystemRequestBus::Events::GetActiveCamera);
+                m_firstEntry = false;
+            }
+
+            auto cameraIt = AZStd::find_if(
+                m_cameraItems.begin(), m_cameraItems.end(),
                 [&cameraId](const CameraListItem& entry)
                 {
                     return entry.m_cameraId == cameraId;
@@ -162,7 +180,12 @@ namespace Camera
 
             // use the stylesheet for elements in a set where one item must be selected at all times
             setProperty("class", "SingleRequiredSelection");
-            connect(m_cameraList, &CameraListModel::rowsInserted, this, [sortedProxyModel](const QModelIndex&, int, int) { sortedProxyModel->sortColumn(); });
+            connect(
+                m_cameraList, &CameraListModel::rowsInserted, this,
+                [sortedProxyModel](const QModelIndex&, int, int)
+                {
+                    sortedProxyModel->sortColumn();
+                });
 
             // highlight the current selected camera entity
             AZ::EntityId currentSelection;
@@ -188,7 +211,8 @@ namespace Camera
 
                 QScopedValueRollback<bool> rb(m_ignoreViewportViewEntityChanged, true);
                 AZ::EntityId entityId = selectionModel()->currentIndex().data(Qt::CameraIdRole).value<AZ::EntityId>();
-                EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewAndMovementLockFromEntityPerspective, entityId, lockCameraMovement);
+                EditorCameraRequests::Bus::Broadcast(
+                    &EditorCameraRequests::SetViewAndMovementLockFromEntityPerspective, entityId, lockCameraMovement);
             }
         }
 
@@ -220,7 +244,9 @@ namespace Camera
         }
 
         // swallow mouse move events so we can disable sloppy selection
-        void ViewportCameraSelectorWindow::mouseMoveEvent(QMouseEvent*) {}
+        void ViewportCameraSelectorWindow::mouseMoveEvent(QMouseEvent*)
+        {
+        }
 
         // double click selects the entity
         void ViewportCameraSelectorWindow::mouseDoubleClickEvent([[maybe_unused]] QMouseEvent* event)
@@ -228,11 +254,13 @@ namespace Camera
             AZ::EntityId entityId = selectionModel()->currentIndex().data(Qt::CameraIdRole).value<AZ::EntityId>();
             if (entityId.IsValid())
             {
-                AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList { entityId });
+                AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList{ entityId });
             }
             else
             {
-                AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList {});
+                AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList{});
             }
         }
 
@@ -290,7 +318,10 @@ namespace Camera
             : QWidget(parent)
         {
             setLayout(new QVBoxLayout(this));
-            auto label = new QLabel("Select the camera you wish to view and navigate through.  Closing this window will return you to the default editor camera.", this);
+            auto label = new QLabel(
+                "Select the camera you wish to view and navigate through.  Closing this window will return you to the default editor "
+                "camera.",
+                this);
             label->setWordWrap(true);
             layout()->addWidget(label);
             layout()->addWidget(new ViewportCameraSelectorWindow(this));
@@ -309,6 +340,8 @@ namespace Camera
         viewOptions.isPreview = true;
         viewOptions.showInMenu = true;
         viewOptions.preferedDockingArea = Qt::DockWidgetArea::LeftDockWidgetArea;
-        AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequestBus::Events::RegisterViewPane, s_viewportCameraSelectorName, "Viewport", viewOptions, &Internal::CreateNewSelectionWindow);
+        AzToolsFramework::EditorRequestBus::Broadcast(
+            &AzToolsFramework::EditorRequestBus::Events::RegisterViewPane, s_viewportCameraSelectorName, "Viewport", viewOptions,
+            &Internal::CreateNewSelectionWindow);
     }
 } // namespace Camera

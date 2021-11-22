@@ -23,4 +23,4 @@ class TestAutomation(TestAutomationBase):
 
     def test_Opening_Closing_Pane(self, request, workspace, editor, launcher_platform):
         from . import Opening_Closing_Pane as test_module
-        self._run_test(request, workspace, editor, test_module)
+        self._run_test(request, workspace, editor, test_module, enable_prefab_system=False)
