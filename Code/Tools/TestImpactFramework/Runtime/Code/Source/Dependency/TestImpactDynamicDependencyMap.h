@@ -35,7 +35,7 @@ namespace TestImpact
             AZStd::vector<TestTargetList::TargetType::Descriptor>&& testTargetDescriptors);
 
         //! Gets the total number of production and test targets in the repository.
-        size_t GetNumTargets() const;
+        size_t GetNumBuildTargets() const;
 
         //! Gets the total number of unique source files in the repository.
         //! @note This includes autogen output sources.

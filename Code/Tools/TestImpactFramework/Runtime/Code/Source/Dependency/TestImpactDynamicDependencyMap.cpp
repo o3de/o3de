@@ -56,7 +56,7 @@ namespace TestImpact
         }
     }
 
-    size_t DynamicDependencyMap::GetNumTargets() const
+    size_t DynamicDependencyMap::GetNumBuildTargets() const
     {
         return m_productionTargets.GetNumTargets() + m_testTargets.GetNumTargets();
     }
