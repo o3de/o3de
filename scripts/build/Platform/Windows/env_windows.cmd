@@ -21,6 +21,7 @@ IF NOT "%COMMAND_CWD%"=="" (
     CD %COMMAND_CWD%
 )
 
+REM Ending the local environment to be able to propagate the TMP/TEMP variables to the calling script
 ENDLOCAL
 
 REM Jenkins does not defined TMP
