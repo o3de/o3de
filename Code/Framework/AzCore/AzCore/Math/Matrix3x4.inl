@@ -620,6 +620,12 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE Vector3 Matrix3x4::TransformPoint(const Vector3& rhs) const
+    {
+        return Multiply3x3(rhs) + GetTranslation();
+    }
+
+
     AZ_MATH_INLINE Matrix3x4 Matrix3x4::GetTranspose() const
     {
         Matrix3x4 result;

@@ -230,7 +230,7 @@ namespace AZ
         Matrix3x4& operator+=(const Matrix3x4& rhs);
         //! @}
 
-        //! Operator for matrix-matrix substraction.
+        //! Operator for matrix-matrix subtraction.
         //! @{
         [[nodiscard]] Matrix3x4 operator-(const Matrix3x4& rhs) const;
         Matrix3x4& operator-=(const Matrix3x4& rhs);
@@ -268,6 +268,9 @@ namespace AZ
 
         //! Post-multiplies the matrix by a vector, using only the 3x3 part of the matrix.
         [[nodiscard]] Vector3 TransformVector(const Vector3& rhs) const;
+
+        //! Post-multiplies the matrix by a point, using the rotation and translation part of the matrix.
+        [[nodiscard]] Vector3 TransformPoint(const Vector3& rhs) const;
 
         //! Gets the result of transposing the 3x3 part of the matrix, setting the translation part to zero.
         [[nodiscard]] Matrix3x4 GetTranspose() const;
