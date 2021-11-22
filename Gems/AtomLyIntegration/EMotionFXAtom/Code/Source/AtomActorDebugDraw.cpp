@@ -23,6 +23,7 @@
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Source/Mesh.h>
 #include <EMotionFX/Source/Node.h>
+#include <EMotionFX/Source/JointSelectionBus.h>
 
 namespace AZ::Render
 {
@@ -212,6 +213,12 @@ namespace AZ::Render
 
         m_auxVertices.clear();
         m_auxVertices.reserve(numJoints * 2);
+        m_auxColors.clear();
+        m_auxColors.reserve(numJoints * 2);
+        AZ::Color renderColor;
+
+        AZStd::unordered_set<size_t> selectedJoints;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(selectedJoints, &EMotionFX::JointSelectionRequests::GetSelectedJointIndices);
 
         for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
         {
@@ -227,11 +234,22 @@ namespace AZ::Render
                 continue;
             }
 
+            if (selectedJoints.find(jointIndex) != selectedJoints.end())
+            {
+                renderColor = SelectedColor;
+            }
+            else
+            {
+                renderColor = skeletonColor;
+            }
+
             const AZ::Vector3 parentPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
             m_auxVertices.emplace_back(parentPos);
+            m_auxColors.emplace_back(renderColor);
 
             const AZ::Vector3 bonePos = pose->GetWorldSpaceTransform(jointIndex).m_position;
             m_auxVertices.emplace_back(bonePos);
+            m_auxColors.emplace_back(renderColor);
         }
 
         RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
@@ -251,6 +269,11 @@ namespace AZ::Render
         const EMotionFX::Skeleton* skeleton = instance->GetActor()->GetSkeleton();
         const EMotionFX::Pose* pose = transformData->GetCurrentPose();
         const size_t numEnabled = instance->GetNumEnabledNodes();
+
+        AZ::Color renderColor = skeletonColor;
+        AZStd::unordered_set<size_t> selectedJoints;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(selectedJoints, &EMotionFX::JointSelectionRequests::GetSelectedJointIndices);
+
         for (size_t i = 0; i < numEnabled; ++i)
         {
             EMotionFX::Node* joint = skeleton->GetNode(instance->GetEnabledNode(i));
@@ -273,9 +296,13 @@ namespace AZ::Render
             const float parentBoneScale = CalculateBoneScale(instance, skeleton->GetNode(parentIndex));
             const float cylinderSize = boneLength - boneScale - parentBoneScale;
 
+            if (selectedJoints.find(jointIndex) != selectedJoints.end())
+            {
+                renderColor = SelectedColor;
+            }
             // Render the bone cylinder, the cylinder will be directed towards the node's parent and must fit between the spheres
-            auxGeom->DrawCylinder(centerWorldPos, boneDirection, boneScale, cylinderSize, skeletonColor);
-            auxGeom->DrawSphere(nodeWorldPos, boneScale, skeletonColor);
+            auxGeom->DrawCylinder(centerWorldPos, boneDirection, boneScale, cylinderSize, renderColor);
+            auxGeom->DrawSphere(nodeWorldPos, boneScale, renderColor);
         }
     }
 
@@ -597,6 +624,9 @@ namespace AZ::Render
             return;
         }
 
+        AZStd::unordered_set<size_t> selectedJoints;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(selectedJoints, &EMotionFX::JointSelectionRequests::GetSelectedJointIndices);
+
         const EMotionFX::Actor* actor = actorInstance->GetActor();
         const EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
         const EMotionFX::TransformData* transformData = actorInstance->GetTransformData();
@@ -607,7 +637,6 @@ namespace AZ::Render
         AzFramework::WindowSize viewportSize = viewportContext->GetViewportSize();
         m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), 0.0f, 1.0f) +
             TopRightBorderPadding * viewportContext->GetDpiScalingFactor();
-        m_drawParams.m_color = jointNameColor;
         m_drawParams.m_scale = AZ::Vector2(BaseFontSize);
         m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
         m_drawParams.m_monospace = false;
@@ -624,6 +653,14 @@ namespace AZ::Render
             const AZ::Vector3 worldPos = pose->GetWorldSpaceTransform(jointIndex).m_position;
 
             m_drawParams.m_position = worldPos;
+            if (selectedJoints.find(jointIndex) != selectedJoints.end())
+            {
+                m_drawParams.m_color = SelectedColor;
+            }
+            else
+            {
+                m_drawParams.m_color = jointNameColor;
+            }
             m_fontDrawInterface->DrawScreenAlignedText3d(m_drawParams, joint->GetName());
         }
     }
@@ -640,6 +677,9 @@ namespace AZ::Render
         const EMotionFX::Pose* pose = transformData->GetCurrentPose();
         const float constPreScale = scale * unitScale * 3.0f;
 
+        AZStd::unordered_set<size_t> selectedJoints;
+        EMotionFX::JointSelectionRequestBus::BroadcastResult(selectedJoints, &EMotionFX::JointSelectionRequests::GetSelectedJointIndices);
+
         const size_t numEnabled = actorInstance->GetNumEnabledNodes();
         for (size_t i = 0; i < numEnabled; ++i)
         {
@@ -650,7 +690,12 @@ namespace AZ::Render
             static const float axisBoneScale = 50.0f;
             const float size = CalculateBoneScale(actorInstance, joint) * constPreScale * axisBoneScale;
             AZ::Transform worldTM = pose->GetWorldSpaceTransform(jointIndex).ToAZTransform();
-            RenderLineAxis(debugDisplay, worldTM, size, false /*selected*/);
+            bool selected = false;
+            if (selectedJoints.find(jointIndex) != selectedJoints.end())
+            {
+                selected = true;
+            }
+            RenderLineAxis(debugDisplay, worldTM, size, selected);
         }
     }
 
@@ -671,7 +716,7 @@ namespace AZ::Render
             AZ::Color xSelectedColor;
             if (selected)
             {
-                xSelectedColor = AZ::Colors::Orange;
+                xSelectedColor = SelectedColor;
             }
             else
             {
@@ -695,7 +740,7 @@ namespace AZ::Render
             AZ::Color ySelectedColor;
             if (selected)
             {
-                ySelectedColor = AZ::Colors::Orange;
+                ySelectedColor = SelectedColor;
             }
             else
             {
@@ -719,7 +764,7 @@ namespace AZ::Render
             AZ::Color zSelectedColor;
             if (selected)
             {
-                zSelectedColor = AZ::Colors::Orange;
+                zSelectedColor = SelectedColor;
             }
             else
             {
