@@ -897,7 +897,7 @@ namespace AzToolsFramework
         AZ::EntityId& hoveredEntityIdUnderCursor,
         const HandleAccentsContext& handleAccentsContext,
         const ViewportInteraction::MouseButtons mouseButtons,
-        const AZStd::function<void(AZ::EntityId, bool)>& setEntityHighlightedFn)
+        const AZStd::function<void(AZ::EntityId, bool)>& setEntityAccentedFn)
     {
         const bool invalidMouseButtonHeld = mouseButtons.Middle() || mouseButtons.Right();
         const bool hasSelectedEntities = handleAccentsContext.m_hasSelectedEntities;
@@ -906,19 +906,19 @@ namespace AzToolsFramework
         const bool stickySelect = handleAccentsContext.m_usingStickySelect;
         const bool canSelect = stickySelect ? !hasSelectedEntities || ctrlHeld : true;
 
-        const bool removePreviousHighlight =
+        const bool removePreviousAccent =
             (currentEntityIdUnderCursor != hoveredEntityIdUnderCursor && hoveredEntityIdUnderCursor.IsValid()) || invalidMouseButtonHeld;
-        const bool addNextHighlight = currentEntityIdUnderCursor.IsValid() && canSelect && !invalidMouseButtonHeld && !boxSelect;
+        const bool addNextAccent = currentEntityIdUnderCursor.IsValid() && canSelect && !invalidMouseButtonHeld && !boxSelect;
 
-        if (removePreviousHighlight)
+        if (removePreviousAccent)
         {
-            setEntityHighlightedFn(hoveredEntityIdUnderCursor, false);
+            setEntityAccentedFn(hoveredEntityIdUnderCursor, false);
             hoveredEntityIdUnderCursor.SetInvalid();
         }
 
-        if (addNextHighlight)
+        if (addNextAccent)
         {
-            setEntityHighlightedFn(currentEntityIdUnderCursor, true);
+            setEntityAccentedFn(currentEntityIdUnderCursor, true);
             hoveredEntityIdUnderCursor = currentEntityIdUnderCursor;
         }
     }

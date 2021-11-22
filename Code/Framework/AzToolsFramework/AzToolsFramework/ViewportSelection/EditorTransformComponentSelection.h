@@ -372,7 +372,7 @@ namespace AzToolsFramework
         AZ::EntityId& hoveredEntityIdUnderCursor,
         const HandleAccentsContext& handleAccentsContext,
         ViewportInteraction::MouseButtons mouseButtons,
-        const AZStd::function<void(AZ::EntityId, bool)>& setEntityHighlightedFn);
+        const AZStd::function<void(AZ::EntityId, bool)>& setEntityAccentedFn);
 
     //! The ETCS (EntityTransformComponentSelection) namespace contains functions and data used exclusively by
     //! the EditorTransformComponentSelection type. Functions in this namespace are exposed to facilitate testing

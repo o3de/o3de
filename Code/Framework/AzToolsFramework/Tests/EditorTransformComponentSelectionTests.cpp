@@ -2797,9 +2797,9 @@ namespace UnitTest
         bool currentEntityIdAccentAdded = false;
         AzToolsFramework::HandleAccents(
             currentEntityId, hoveredEntityEntityId, handleAccentsContext, azvi::MouseButtonsFromButton(azvi::MouseButton::None),
-            [&currentEntityIdAccentAdded, currentEntityId](const AZ::EntityId entityId, bool highlight)
+            [&currentEntityIdAccentAdded, currentEntityId](const AZ::EntityId entityId, const bool accent)
             {
-                if (entityId == currentEntityId && highlight)
+                if (entityId == currentEntityId && accent)
                 {
                     currentEntityIdAccentAdded = true;
                 }
@@ -2827,9 +2827,9 @@ namespace UnitTest
         bool currentEntityIdAccentAdded = false;
         AzToolsFramework::HandleAccents(
             currentEntityId, hoveredEntityEntityId, handleAccentsContext, azvi::MouseButtonsFromButton(azvi::MouseButton::None),
-            [&currentEntityIdAccentAdded, currentEntityId](const AZ::EntityId entityId, bool highlight)
+            [&currentEntityIdAccentAdded, currentEntityId](const AZ::EntityId entityId, const bool accent)
             {
-                if (entityId == currentEntityId && highlight)
+                if (entityId == currentEntityId && accent)
                 {
                     currentEntityIdAccentAdded = true;
                 }
@@ -2857,9 +2857,9 @@ namespace UnitTest
         bool hoveredEntityIdAccentRemoved = false;
         AzToolsFramework::HandleAccents(
             currentEntityId, hoveredEntityEntityId, handleAccentsContext, azvi::MouseButtonsFromButton(azvi::MouseButton::Middle),
-            [&hoveredEntityIdAccentRemoved, hoveredEntityEntityId](const AZ::EntityId entityId, bool highlight)
+            [&hoveredEntityIdAccentRemoved, hoveredEntityEntityId](const AZ::EntityId entityId, const bool accent)
             {
-                if (entityId == hoveredEntityEntityId && !highlight)
+                if (entityId == hoveredEntityEntityId && !accent)
                 {
                     hoveredEntityIdAccentRemoved = true;
                 }
@@ -2888,9 +2888,9 @@ namespace UnitTest
         bool hoveredEntityIdAccentRemoved = false;
         AzToolsFramework::HandleAccents(
             currentEntityId, hoveredEntityEntityId, handleAccentsContext, azvi::MouseButtonsFromButton(azvi::MouseButton::None),
-            [&hoveredEntityIdAccentRemoved, hoveredEntityEntityId](const AZ::EntityId entityId, bool highlight)
+            [&hoveredEntityIdAccentRemoved, hoveredEntityEntityId](const AZ::EntityId entityId, const bool accent)
             {
-                if (entityId == hoveredEntityEntityId && !highlight)
+                if (entityId == hoveredEntityEntityId && !accent)
                 {
                     hoveredEntityIdAccentRemoved = true;
                 }
@@ -2920,9 +2920,9 @@ namespace UnitTest
         bool hoveredEntityIdAccentRemoved = false;
         AzToolsFramework::HandleAccents(
             currentEntityId, hoveredEntityEntityId, handleAccentsContext, azvi::MouseButtonsFromButton(azvi::MouseButton::None),
-            [&hoveredEntityIdAccentRemoved, hoveredEntityEntityId](const AZ::EntityId entityId, bool highlight)
+            [&hoveredEntityIdAccentRemoved, hoveredEntityEntityId](const AZ::EntityId entityId, const bool accent)
             {
-                if (entityId == hoveredEntityEntityId && !highlight)
+                if (entityId == hoveredEntityEntityId && !accent)
                 {
                     hoveredEntityIdAccentRemoved = true;
                 }
@@ -2953,14 +2953,14 @@ namespace UnitTest
         AzToolsFramework::HandleAccents(
             currentEntityId, hoveredEntityEntityId, handleAccentsContext, azvi::MouseButtonsFromButton(azvi::MouseButton::None),
             [&hoveredEntityIdAccentRemoved, &currentEntityIdAccentAdded, currentEntityId,
-             hoveredEntityEntityId](const AZ::EntityId entityId, bool highlight)
+             hoveredEntityEntityId](const AZ::EntityId entityId, const bool accent)
             {
-                if (entityId == currentEntityId && highlight)
+                if (entityId == currentEntityId && accent)
                 {
                     currentEntityIdAccentAdded = true;
                 }
 
-                if (entityId == hoveredEntityEntityId && !highlight)
+                if (entityId == hoveredEntityEntityId && !accent)
                 {
                     hoveredEntityIdAccentRemoved = true;
                 }
