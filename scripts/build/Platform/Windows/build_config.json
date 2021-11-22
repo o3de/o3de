@@ -133,7 +133,7 @@
       "OUTPUT_DIRECTORY": "build\\windows_vs2019",
       "CMAKE_OPTIONS": "-G \"Visual Studio 16 2019\" -DCMAKE_SYSTEM_VERSION=10.0 -DLY_TEST_IMPACT_INSTRUMENTATION_BIN=%TEST_IMPACT_WIN_BINARY%",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
-      "CMAKE_TARGET": "ALL_BUILD",
+      "CMAKE_TARGET": "AzCore",
       "CMAKE_NATIVE_BUILD_ARGS": "/m /nologo /target:DisplayMessage"
     }
   },
