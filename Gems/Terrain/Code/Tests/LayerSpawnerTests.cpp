@@ -14,7 +14,7 @@
 
 #include <Components/TerrainLayerSpawnerComponent.h>
 
-#include <Terrain/MockTerrain.h>
+#include <Tests/Mocks/Terrain/MockTerrainDataRequestBus.h>
 #include <MockAxisAlignedBoxShapeComponent.h>
 
 using ::testing::NiceMock;
