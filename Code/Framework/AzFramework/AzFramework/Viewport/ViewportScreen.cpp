@@ -98,7 +98,7 @@ namespace AzFramework
     {
         // transform the world space position to clip space
         const auto clipSpacePosition =
-            cameraProjection * AZ::Matrix4x4::CreateFromMatrix3x4(cameraView) * AZ::Vector3ToVector4(worldPosition, 1.0f);
+            cameraProjection * AZ::Vector3ToVector4(cameraView.TransformPoint(worldPosition), 1.0f);
         // transform the clip space position to ndc space (perspective divide)
         const auto ndcPosition = clipSpacePosition / clipSpacePosition.GetW();
         // transform ndc space from <-1,1> to <0, 1> range
