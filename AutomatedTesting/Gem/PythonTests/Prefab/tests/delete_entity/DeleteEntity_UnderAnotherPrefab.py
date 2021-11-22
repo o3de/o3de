@@ -35,9 +35,12 @@ def DeleteEntity_UnderAnotherPrefab():
                                               f" when there should have been just 1 entity"
 
     child_entity_inside_prefab = child_entity_ids_inside_prefab[0]
-    Prefab.focus_on_owning_prefab(child_entity_inside_prefab)
+    child_entity_inside_prefab.focus_on_owning_prefab()
 
     child_entity_inside_prefab.delete()
+
+    # Wait till prefab propagation finishes before validating entity deletion.
+    azlmbr.legacy.general.idle_wait_frames(1)
 
     child_entity_ids_inside_prefab = child_instance.get_direct_child_entities()
     assert len(

@@ -30,8 +30,8 @@ namespace AzToolsFramework::Prefab
 
     //! Handles Prefab Focus mode, determining which prefab file entity changes will target.
     class PrefabFocusHandler final
-        : private PrefabFocusInterface
-        , private PrefabFocusPublicRequestBus::Handler
+        : public PrefabFocusPublicRequestBus::Handler
+        , private PrefabFocusInterface
         , private PrefabPublicNotificationBus::Handler
         , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityInfoNotificationBus::Handler

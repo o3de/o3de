@@ -14,7 +14,6 @@ def DeleteEntity_UnderLevelPrefab():
     """
 
     from editor_python_test_tools.editor_entity_utils import EditorEntity
-
     import Prefab.tests.PrefabTestUtils as prefab_test_utils
 
     prefab_test_utils.open_base_tests_level()
@@ -26,6 +25,9 @@ def DeleteEntity_UnderLevelPrefab():
 
     level_container_entity = EditorEntity(entity.get_parent_id())
     entity.delete()
+
+    # Wait till prefab propagation finishes before validating entity deletion.
+    azlmbr.legacy.general.idle_wait_frames(1)
     level_container_child_entities_count = len(level_container_entity.get_children_ids())
     assert level_container_child_entities_count == 0, f"The level still has {level_container_child_entities_count}" \
                                                       f" children when it should have 0."

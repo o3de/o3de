@@ -46,16 +46,6 @@ def get_all_entity_ids():
 def wait_for_propagation():
     general.idle_wait_frames(1)
 
-def focus_on_owning_prefab(entity: EditorEntity) :
-    """
-    Focuses on the owning prefab instance of the given entity.
-    :param entity: The entity used to fetch the owning prefab to focus on.
-    """
-
-    assert entity.id.isValid(), "A valid entity id is required to focus on its owning prefab."
-    focus_prefab_result = prefab.PrefabFoucsPublicRequestBus(bus.Broadcast, 'FocusOnOwningPrefab', entity.id)
-    assert focus_prefab_result.IsSuccess(), f"Prefab operation 'FocusOnOwningPrefab' failed. Error: {focus_prefab_result.GetError()}"
-
 # This is a helper class which contains some of the useful information about a prefab instance.
 class PrefabInstance:
 
