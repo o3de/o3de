@@ -234,7 +234,7 @@ void Q2DViewport::UpdateContent(int flags)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void Q2DViewport::OnRButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point)
+void Q2DViewport::OnRButtonDown([[maybe_unused]] Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
     if (GetIEditor()->IsInGameMode())
     {
@@ -245,9 +245,6 @@ void Q2DViewport::OnRButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& p
     {
         setFocus();
     }
-
-    // Check Edit Tool.
-    MouseCallback(eMouseRDown, point, modifiers);
 
     SetCurrentCursor(STD_CURSOR_MOVE, QString());
 
@@ -273,17 +270,8 @@ void Q2DViewport::OnRButtonUp([[maybe_unused]] Qt::KeyboardModifiers modifiers, 
 }
 
 //////////////////////////////////////////////////////////////////////////
-void Q2DViewport::OnMButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& point)
+void Q2DViewport::OnMButtonDown([[maybe_unused]] Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
-    ////////////////////////////////////////////////////////////////////////
-    // User pressed the middle mouse button
-    ////////////////////////////////////////////////////////////////////////
-    // Check Edit Tool.
-    if (MouseCallback(eMouseMDown, point, modifiers))
-    {
-        return;
-    }
-
     // Save the mouse down position
     m_RMouseDownPos = point;
 
@@ -300,14 +288,8 @@ void Q2DViewport::OnMButtonDown(Qt::KeyboardModifiers modifiers, const QPoint& p
 }
 
 //////////////////////////////////////////////////////////////////////////
-void Q2DViewport::OnMButtonUp(Qt::KeyboardModifiers modifiers, const QPoint& point)
+void Q2DViewport::OnMButtonUp([[maybe_unused]] Qt::KeyboardModifiers modifiers, [[maybe_unused]] const QPoint& point)
 {
-    // Check Edit Tool.
-    if (MouseCallback(eMouseMUp, point, modifiers))
-    {
-        return;
-    }
-
     SetViewMode(NothingMode);
 
     ReleaseMouse();
@@ -542,13 +524,6 @@ void Q2DViewport::Update()
 
 //////////////////////////////////////////////////////////////////////////
 QPoint Q2DViewport::WorldToView(const Vec3& wp) const
-{
-    Vec3 sp = m_screenTM.TransformPoint(wp);
-    QPoint p = QPoint(static_cast<int>(sp.x), static_cast<int>(sp.y));
-    return p;
-}
-//////////////////////////////////////////////////////////////////////////
-QPoint Q2DViewport::WorldToViewParticleEditor(const Vec3& wp, [[maybe_unused]] int width, [[maybe_unused]] int height) const //Eric@conffx implement for the children class of IDisplayViewport
 {
     Vec3 sp = m_screenTM.TransformPoint(wp);
     QPoint p = QPoint(static_cast<int>(sp.x), static_cast<int>(sp.y));

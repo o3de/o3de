@@ -200,7 +200,7 @@ namespace ScriptCanvasEditor
     
     AZ::TypeId DataTypePaletteModel::FindTypeIdForIndex(const QModelIndex& index) const
     {   
-        AZ::TypeId retVal;
+        AZ::TypeId retVal = AZ::TypeId::CreateNull();
 
         if (index.row() >= 0 && index.row() < m_variableTypes.size())
         {

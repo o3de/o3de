@@ -23,23 +23,31 @@ namespace AtomToolsFramework
     class ModularViewportCameraControllerRequests : public AZ::EBusTraits
     {
     public:
+        static inline constexpr float InterpolateToTransformDuration = 1.0f;
+
         using BusIdType = AzFramework::ViewportId;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
         //! Begin a smooth transition of the camera to the requested transform.
         //! @param worldFromLocal The transform of where the camera should end up.
-        virtual void InterpolateToTransform(const AZ::Transform& worldFromLocal) = 0;
+        //! @return Returns true if the call began an interpolation and false otherwise. Calls to InterpolateToTransform
+        //! will have no effect if an interpolation is currently in progress.
+        virtual bool InterpolateToTransform(const AZ::Transform& worldFromLocal) = 0;
 
-        //! Return the current reference frame.
-        //! @note If a reference frame has not been set or a frame has been cleared, this is just the identity.
-        virtual AZ::Transform GetReferenceFrame() const = 0;
+        //! Returns if the camera is currently interpolating to a new transform.
+        virtual bool IsInterpolating() const = 0;
 
-        //! Set a new reference frame other than the identity for the camera controller.
-        virtual void SetReferenceFrame(const AZ::Transform& worldFromLocal) = 0;
+        //! Start tracking a transform.
+        //! Store the current camera transform and move to the next camera transform.
+        virtual void StartTrackingTransform(const AZ::Transform& worldFromLocal) = 0;
 
-        //! Clear the current reference frame to restore the identity.
-        virtual void ClearReferenceFrame() = 0;
+        //! Stop tracking the set transform.
+        //! The previously stored camera transform is restored.
+        virtual void StopTrackingTransform() = 0;
+
+        //! Return if the tracking transform is set.
+        virtual bool IsTrackingTransform() const = 0;
 
     protected:
         ~ModularViewportCameraControllerRequests() = default;

@@ -1,0 +1,64 @@
+{
+    "entries": [
+        {
+            "key": "{FB91B476-0015-508A-AC0B-18F8A860EB7A}",
+            "context": "ScriptCanvas::Node",
+            "variant": "",
+            "details": {
+                "name": "Ray Cast Multiple Local Space With Group",
+                "category": "PhysX/World",
+                "tooltip": "Returns all entities hit by a ray cast in local space from the source entity in the specified direction."
+            },
+            "slots": [
+                {
+                    "key": "Input_In",
+                    "details": {
+                        "name": "In"
+                    }
+                },
+                {
+                    "key": "Output_Out",
+                    "details": {
+                        "name": "Out"
+                    }
+                },
+                {
+                    "key": "DataInput_Source",
+                    "details": {
+                        "name": "Source"
+                    }
+                },
+                {
+                    "key": "DataInput_Direction",
+                    "details": {
+                        "name": "Direction"
+                    }
+                },
+                {
+                    "key": "DataInput_Distance",
+                    "details": {
+                        "name": "Distance"
+                    }
+                },
+                {
+                    "key": "DataInput_Collision group",
+                    "details": {
+                        "name": "Collision group"
+                    }
+                },
+                {
+                    "key": "DataInput_Ignore",
+                    "details": {
+                        "name": "Ignore"
+                    }
+                },
+                {
+                    "key": "DataOutput_Objects hit",
+                    "details": {
+                        "name": "Objects hit"
+                    }
+                }
+            ]
+        }
+    ]
+}

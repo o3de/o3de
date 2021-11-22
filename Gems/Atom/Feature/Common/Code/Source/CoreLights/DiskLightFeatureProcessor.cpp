@@ -313,6 +313,11 @@ namespace AZ
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowBias, bias);
         }
 
+        void DiskLightFeatureProcessor::SetNormalShadowBias(LightHandle handle, float bias)
+        {
+            SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetNormalShadowBias, bias);
+        }
+
         void DiskLightFeatureProcessor::SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize)
         {
             SetShadowSetting(handle, &ProjectedShadowFeatureProcessor::SetShadowmapMaxResolution, shadowmapSize);

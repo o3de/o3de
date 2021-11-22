@@ -32,7 +32,8 @@ struct FolderRootWatch::PlatformImplementation
     {
         if (m_iNotifyHandle < 0)
         {
-            m_iNotifyHandle = inotify_init();
+            // The CLOEXEC flag prevents the inotify watchers from copying on fork/exec
+            m_iNotifyHandle = inotify_init1(IN_CLOEXEC);
         }
         return (m_iNotifyHandle >= 0);
     }

@@ -41,7 +41,7 @@
                         "tooltip": "Signaled after Get Radius is invoked"
                     },
                     "details": {
-                        "name": "Get adius"
+                        "name": "Get Radius"
                     },
                     "results": [
                         {

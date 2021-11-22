@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetEntityForward",
+                "name": "Get Entity Forward",
                 "category": "Entity/Entity",
-                "tooltip": "returns the forward direction vector from the specified entity' world transform, scaled by a given value (O3DE uses Z up, right handed)",
-                "subtitle": "Entity"
+                "tooltip": "Returns the forward direction vector from the specified entity' world transform, scaled by a given value (O3DE uses Z up, right handed)"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_EntityID: EntityId",
+                    "key": "DataInput_EntityId",
                     "details": {
-                        "name": "EntityID: EntityId"
+                        "name": "EntityId"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Scale",
+                    "key": "DataInput_Scale",
                     "details": {
-                        "name": "Number: Scale"
+                        "name": "Scale"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]
