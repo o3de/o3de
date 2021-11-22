@@ -158,7 +158,7 @@ def bundler_batch_setup_fixture(request, workspace, asset_processor, timeout) ->
                 else:
                     cmd.append(f"--{key}")
             if append_defaults:
-                cmd.append(f"--project-path={os.path.join(workspace.paths.engine_root(), workspace.project)}")
+                cmd.append(f"--project-path={workspace.paths.project()}")
             return cmd
 
         # ******

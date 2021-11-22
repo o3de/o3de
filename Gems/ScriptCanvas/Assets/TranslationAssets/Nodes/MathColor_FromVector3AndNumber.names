@@ -5,7 +5,7 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromVector3AndNumber",
+                "name": "From Vector3 And Number",
                 "category": "Math/Color",
                 "tooltip": "returns a Color with R, G, B set to X, Y, Z values of RGB, respectively. A is set to A",
                 "subtitle": "Color"
@@ -26,19 +26,19 @@
                 {
                     "key": "DataInput_Vector3: RGB",
                     "details": {
-                        "name": "Vector3: RGB"
+                        "name": "Red, Green, Blue"
                     }
                 },
                 {
                     "key": "DataInput_Number: A",
                     "details": {
-                        "name": "Number: A"
+                        "name": "Alpha"
                     }
                 },
                 {
                     "key": "DataOutput_Result: Color",
                     "details": {
-                        "name": "Result: Color"
+                        "name": "Color"
                     }
                 }
             ]

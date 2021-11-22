@@ -5,10 +5,10 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsValid",
-                "category": "Math/AABB",
+                "name": "Is Valid",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns ture if Source is valid, that is if Source.min <= Source.max, else false",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
@@ -32,7 +32,7 @@
                 {
                     "key": "DataOutput_Result: Boolean",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Is Valid"
                     }
                 }
             ]

@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "AudioPreloadComponentLoadType_Manual::Getter",
-                "category": "Constants"
-            }
+                "name": "Audio Preload Component Load Type_ Manual"
+            },
+            "methods": [
+                {
+                    "key": "GetAudioPreloadComponentLoadType_Manual",
+                    "details": {
+                        "name": "Get Audio Preload Component Load Type_ Manual"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

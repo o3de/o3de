@@ -5,8 +5,7 @@
             "context": "BehaviorClass",
             "variant": "",
             "details": {
-                "name": "UI Anchors",
-                "category": "UI"
+                "name": "Ui Anchors"
             },
             "methods": [
                 {
@@ -14,29 +13,26 @@
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetBottom"
+                        "tooltip": "When signaled, this will invoke Set Bottom"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetBottom is invoked"
+                        "tooltip": "Signaled after Set Bottom is invoked"
                     },
                     "details": {
-                        "name": "UiAnchors::SetBottom",
-                        "category": "UI"
+                        "name": "Set Bottom"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors",
-                                "tooltip": "The anchors for which to set the bottom anchor"
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Bottom",
-                                "tooltip": "The bottom anchor [0-1]"
+                                "name": "float"
                             }
                         }
                     ]
@@ -46,29 +42,26 @@
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetRight"
+                        "tooltip": "When signaled, this will invoke Set Right"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetRight is invoked"
+                        "tooltip": "Signaled after Set Right is invoked"
                     },
                     "details": {
-                        "name": "UiAnchors::SetRight",
-                        "category": "UI"
+                        "name": "Set Right"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors",
-                                "tooltip": "The anchors for which to set the right anchor"
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Right",
-                                "tooltip": "The right anchor [0-1]"
+                                "name": "float"
                             }
                         }
                     ]
@@ -78,29 +71,26 @@
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetTop"
+                        "tooltip": "When signaled, this will invoke Set Top"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetTop is invoked"
+                        "tooltip": "Signaled after Set Top is invoked"
                     },
                     "details": {
-                        "name": "UiAnchors::SetTop",
-                        "category": "UI"
+                        "name": "Set Top"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors",
-                                "tooltip": "The anchors for which to set the top anchor"
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Top",
-                                "tooltip": "The top anchor [0-1]"
+                                "name": "float"
                             }
                         }
                     ]
@@ -110,29 +100,26 @@
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetLeft"
+                        "tooltip": "When signaled, this will invoke Set Left"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetLeft is invoked"
+                        "tooltip": "Signaled after Set Left is invoked"
                     },
                     "details": {
-                        "name": "UiAnchors::SetLeft",
-                        "category": "UI"
+                        "name": "Set Left"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors",
-                                "tooltip": "The anchors for which to set the left anchor"
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Left",
-                                "tooltip": "The left anchor [0-1]"
+                                "name": "float"
                             }
                         }
                     ]
@@ -142,50 +129,212 @@
                     "context": "UiAnchors",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke SetAnchors"
+                        "tooltip": "When signaled, this will invoke Set Anchors"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after SetAnchors is invoked"
+                        "tooltip": "Signaled after Set Anchors is invoked"
                     },
                     "details": {
-                        "name": "UiAnchors::SetAnchors",
-                        "category": "UI"
+                        "name": "Set Anchors"
                     },
                     "params": [
                         {
                             "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
                             "details": {
-                                "name": "Anchors",
-                                "tooltip": "The anchors to set"
+                                "name": "Anchors"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Left",
-                                "tooltip": "The left anchor [0-1]"
+                                "name": "float"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Top",
-                                "tooltip": "The top anchor [0-1]"
+                                "name": "float"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Right",
-                                "tooltip": "The right anchor [0-1]"
+                                "name": "float"
                             }
                         },
                         {
                             "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
                             "details": {
-                                "name": "Bottom",
-                                "tooltip": "The bottom anchor [0-1]"
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Getleft",
+                    "details": {
+                        "name": "Getleft"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Setleft",
+                    "details": {
+                        "name": "Setleft"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Gettop",
+                    "details": {
+                        "name": "Gettop"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Settop",
+                    "details": {
+                        "name": "Settop"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Getright",
+                    "details": {
+                        "name": "Getright"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Setright",
+                    "details": {
+                        "name": "Setright"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Getbottom",
+                    "details": {
+                        "name": "Getbottom"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "Setbottom",
+                    "details": {
+                        "name": "Setbottom"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": ""
                             }
                         }
                     ]

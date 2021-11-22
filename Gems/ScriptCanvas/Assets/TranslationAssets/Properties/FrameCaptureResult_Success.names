@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "FrameCaptureResult_Success::Getter",
-                "category": "Constants"
-            }
+                "name": "Frame Capture Result_ Success"
+            },
+            "methods": [
+                {
+                    "key": "GetFrameCaptureResult_Success",
+                    "details": {
+                        "name": "Get Frame Capture Result_ Success"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -26,7 +26,7 @@ namespace AssetProcessor
     {
     protected:
         AZStd::unique_ptr<UnitTestUtils::AssertAbsorber> m_errorAbsorber{};
-        FileStatePassthrough m_fileStateCache;
+        AZStd::unique_ptr<FileStatePassthrough> m_fileStateCache{};
 
         void SetUp() override
         {
@@ -40,9 +40,10 @@ namespace AssetProcessor
                 m_ownsSysAllocator = true;
                 AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
             }
-            m_errorAbsorber = AZStd::make_unique<UnitTestUtils::AssertAbsorber>();
 
+            m_errorAbsorber = AZStd::make_unique<UnitTestUtils::AssertAbsorber>();
             m_application = AZStd::make_unique<AzFramework::Application>();
+            m_fileStateCache = AZStd::make_unique<FileStatePassthrough>();
 
             // Inject the AutomatedTesting project as a project path into test fixture
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
@@ -60,7 +61,8 @@ namespace AssetProcessor
         void TearDown() override
         {
             AssetUtilities::ResetAssetRoot();
-            
+
+            m_fileStateCache.reset();
             m_application.reset();
             m_errorAbsorber.reset();
 

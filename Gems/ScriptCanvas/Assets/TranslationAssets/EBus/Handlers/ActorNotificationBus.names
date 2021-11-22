@@ -18,7 +18,7 @@
                         {
                             "typeid": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
                             "details": {
-                                "name": "MotionEvent"
+                                "name": "Motion Event"
                             }
                         }
                     ]
@@ -32,7 +32,7 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "Motion Name"
                             }
                         }
                     ]
@@ -46,7 +46,7 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "State Name"
                             }
                         }
                     ]
@@ -60,7 +60,7 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "State Name"
                             }
                         }
                     ]
@@ -74,7 +74,7 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "State Name"
                             }
                         }
                     ]
@@ -88,7 +88,7 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "State Name"
                             }
                         }
                     ]
@@ -102,13 +102,13 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "From State"
                             }
                         },
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "To State"
                             }
                         }
                     ]
@@ -122,13 +122,13 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "From State"
                             }
                         },
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "char"
+                                "name": "To State"
                             }
                         }
                     ]

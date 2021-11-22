@@ -1285,6 +1285,13 @@ namespace AssetProcessor
         return m_scanFolders[index];
     }
 
+    const AssetProcessor::ScanFolderInfo& PlatformConfiguration::GetScanFolderAt(int index) const
+    {
+        Q_ASSERT(index >= 0);
+        Q_ASSERT(index < m_scanFolders.size());
+        return m_scanFolders[index];
+    }
+
     void PlatformConfiguration::AddScanFolder(const AssetProcessor::ScanFolderInfo& source, bool isUnitTesting)
     {
         if (isUnitTesting)
@@ -1436,7 +1443,10 @@ namespace AssetProcessor
     }
 
     QStringList PlatformConfiguration::FindWildcardMatches(
-        const QString& sourceFolder, QString relativeName, bool includeFolders, bool recursiveSearch) const
+        const QString& sourceFolder,
+        QString relativeName,
+        bool includeFolders,
+        bool recursiveSearch) const
     {
         if (relativeName.isEmpty())
         {
@@ -1466,6 +1476,67 @@ namespace AssetProcessor
                 returnList.append(QDir::fromNativeSeparators(dirIterator.filePath()));
             }
         }
+        return returnList;
+    }
+
+    QStringList PlatformConfiguration::FindWildcardMatches(
+        const QString& sourceFolder,
+        QString relativeName,
+        const AZStd::unordered_set<AZStd::string>& excludedFolders,
+        bool includeFolders,
+        bool recursiveSearch) const
+    {
+        if (relativeName.isEmpty())
+        {
+            return QStringList();
+        }
+
+        QDir sourceFolderDir(sourceFolder);
+
+        QString posixRelativeName = QDir::fromNativeSeparators(relativeName);
+
+        QStringList returnList;
+        QRegExp nameMatch{ posixRelativeName, Qt::CaseInsensitive, QRegExp::Wildcard };
+        AZStd::stack<QString> dirs;
+        dirs.push(sourceFolderDir.absolutePath());
+        
+        while (!dirs.empty())
+        {
+            QString absolutePath = dirs.top();
+            dirs.pop();
+
+            if (excludedFolders.contains(absolutePath.toUtf8().constData()))
+            {
+                continue;
+            }
+
+            QDirIterator dirIterator(absolutePath, QDir::AllEntries | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+
+            while (dirIterator.hasNext())
+            {
+                dirIterator.next();
+
+                if (!dirIterator.fileInfo().isFile())
+                {
+                    if (recursiveSearch)
+                    {
+                        dirs.push(dirIterator.filePath());
+                    }
+
+                    if (!includeFolders)
+                    {
+                        continue;
+                    }
+                }
+                
+                QString pathMatch{ sourceFolderDir.relativeFilePath(dirIterator.filePath()) };
+                if (nameMatch.exactMatch(pathMatch))
+                {
+                    returnList.append(QDir::fromNativeSeparators(dirIterator.filePath()));
+                }
+            }
+        }
+
         return returnList;
     }
 

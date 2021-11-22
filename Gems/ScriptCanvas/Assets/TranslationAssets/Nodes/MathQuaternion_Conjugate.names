@@ -7,8 +7,7 @@
             "details": {
                 "name": "Conjugate",
                 "category": "Math/Quaternion",
-                "tooltip": "returns the conjugate of the source, (-x, -y, -z, w)",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns the conjugate of the source, (-x, -y, -z, w)"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Quaternion: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Quaternion",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Quaternion"
+                        "name": "Result"
                     }
                 }
             ]

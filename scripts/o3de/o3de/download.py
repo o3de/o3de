@@ -44,30 +44,34 @@ def validate_downloaded_zip_sha256(download_uri_json_data: dict, download_zip_pa
     try:
         sha256A = download_uri_json_data['sha256']
     except KeyError as e:
-        logger.warn('SECURITY WARNING: The advertised o3de object you downloaded has no "sha256"!!! Be VERY careful!!!'
+        logger.warning('SECURITY WARNING: The advertised o3de object you downloaded has no "sha256"!!! Be VERY careful!!!'
                     ' We cannot verify this is the actually the advertised object!!!')
         return 1
     else:
-        sha256B = hashlib.sha256(download_zip_path.open('rb').read()).hexdigest()
-        if sha256A != sha256B:
-            logger.error(f'SECURITY VIOLATION: Downloaded zip sha256 {sha256B} does not match'
-                         f' the advertised "sha256":{sha256A} in the f{manifest_json_name}.')
-            return 0
+        if len(sha256A) == 0:
+            logger.warning('SECURITY WARNING: The advertised o3de object you downloaded has no "sha256"!!! Be VERY careful!!!'
+                        ' We cannot verify this is the actually the advertised object!!!')
+            return 1
+
+        with download_zip_path.open('rb') as f:
+            sha256B = hashlib.sha256(f.read()).hexdigest()
+            if sha256A != sha256B:
+                logger.error(f'SECURITY VIOLATION: Downloaded zip sha256 {sha256B} does not match'
+                            f' the advertised "sha256":{sha256A} in the f{manifest_json_name}.')
+                return 0
 
     unzipped_manifest_json_data = unzip_manifest_json_data(download_zip_path, manifest_json_name)
 
-    # remove the sha256 if present in the advertised downloadable manifest json
-    # then compare it to the json in the zip, they should now be identical
-    try:
-        del download_uri_json_data['sha256']
-    except KeyError as e:
-        pass
+    # do not include the data we know will not match/exist
+    for key in ['sha256','repo_name']:
+        if key in download_uri_json_data:
+            del download_uri_json_data[key]
+        if key in unzipped_manifest_json_data:
+            del unzipped_manifest_json_data[key]
 
-    sha256A = hashlib.sha256(json.dumps(download_uri_json_data, indent=4).encode('utf8')).hexdigest()
-    sha256B = hashlib.sha256(json.dumps(unzipped_manifest_json_data, indent=4).encode('utf8')).hexdigest()
-    if sha256A != sha256B:
-        logger.error('SECURITY VIOLATION: Downloaded manifest json does not match'
-                     ' the advertised manifest json.')
+    if download_uri_json_data != unzipped_manifest_json_data:
+        logger.error(f'SECURITY VIOLATION: Downloaded {manifest_json_name} contents do not match'
+                     ' the advertised manifest json contents.')
         return 0
 
     return 1
@@ -102,10 +106,10 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
         logger.error(f'Downloadable o3de object {object_name} not found.')
         return 1
 
-    origin_uri = downloadable_object_data['originuri']
+    origin_uri = downloadable_object_data['origin_uri']
     parsed_uri = urllib.parse.urlparse(origin_uri)
 
-    download_zip_result = utils.download_zip_file(parsed_uri, download_zip_path, download_progress_callback)
+    download_zip_result = utils.download_zip_file(parsed_uri, download_zip_path, force_overwrite, download_progress_callback)
     if download_zip_result != 0:
         return download_zip_result
 
@@ -237,13 +241,13 @@ def is_o3de_object_update_available(object_name: str, downloadable_kwarg_key, lo
     try:
         repo_copy_updated_string = downloadable_object_data['last_updated']
     except KeyError:
-        logger.warn(f'last_updated field not found for {object_name}.')
+        logger.warning(f'last_updated field not found for {object_name}.')
         return False
 
     try:
         local_last_updated_time = datetime.fromisoformat(local_last_updated)
     except ValueError:
-        logger.warn(f'last_updated field has incorrect format for local copy of {downloadable_kwarg_key} {object_name}.')
+        logger.warning(f'last_updated field has incorrect format for local copy of {downloadable_kwarg_key} {object_name}.')
         # Possible that an earlier version did not have this field so still want to check against cached downloadable version
         local_last_updated_time = datetime.min
 

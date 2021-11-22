@@ -14,21 +14,20 @@
                     "context": "Platform",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke GetName"
+                        "tooltip": "When signaled, this will invoke Get Name"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after GetName is invoked"
+                        "tooltip": "Signaled after Get Name is invoked"
                     },
                     "details": {
-                        "name": "Platform::GetName",
-                        "category": "Utilities"
+                        "name": "Get Name"
                     },
                     "params": [
                         {
                             "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
                             "details": {
-                                "name": "int"
+                                "name": "Id"
                             }
                         }
                     ],
@@ -36,7 +35,91 @@
                         {
                             "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
                             "details": {
-                                "name": "Number"
+                                "name": "Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetMac",
+                    "details": {
+                        "name": "Get Mac"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetLinux",
+                    "details": {
+                        "name": "Get Linux"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetiOS",
+                    "details": {
+                        "name": "Get iOS"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetWindows64",
+                    "details": {
+                        "name": "Get Windows64"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetAndroid64",
+                    "details": {
+                        "name": "Get Android64"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "key": "GetCurrent",
+                    "details": {
+                        "name": "Get Current"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Id"
                             }
                         }
                     ]

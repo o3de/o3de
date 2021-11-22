@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "IsClose",
+                "name": "Is Close",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns true if each element of both Matrix are equal within some tolerance",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns true if each element of both Matrix are equal within some tolerance"
             },
             "slots": [
                 {
@@ -24,27 +23,27 @@
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: A",
+                    "key": "DataInput_A",
                     "details": {
-                        "name": "Matrix3x3: A"
+                        "name": "A"
                     }
                 },
                 {
-                    "key": "DataInput_Matrix3x3: B",
+                    "key": "DataInput_B",
                     "details": {
-                        "name": "Matrix3x3: B"
+                        "name": "B"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Tolerance",
+                    "key": "DataInput_Tolerance",
                     "details": {
-                        "name": "Number: Tolerance"
+                        "name": "Tolerance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Boolean",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Boolean"
+                        "name": "Result"
                     }
                 }
             ]

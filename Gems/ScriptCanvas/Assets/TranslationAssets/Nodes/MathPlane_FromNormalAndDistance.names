@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromNormalAndDistance",
+                "name": "From Normal And Distance",
                 "category": "Math/Plane",
-                "tooltip": "returns the plane with the specified Normal and Distance from the origin",
-                "subtitle": "Plane"
+                "tooltip": "Returns the plane with the specified Normal and Distance from the origin"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Normal",
+                    "key": "DataInput_Normal",
                     "details": {
-                        "name": "Vector3: Normal"
+                        "name": "Normal"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Distance",
+                    "key": "DataInput_Distance",
                     "details": {
-                        "name": "Number: Distance"
+                        "name": "Distance"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Plane",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Plane"
+                        "name": "Result"
                     }
                 }
             ]

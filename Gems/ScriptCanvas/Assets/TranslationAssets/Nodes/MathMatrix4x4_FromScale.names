@@ -5,9 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromScale",
+                "name": "From Scale",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns a scale matrix using the supplied vector",
+                "tooltip": "Returns a scale matrix using the supplied vector",
                 "subtitle": "Matrix4x4"
             },
             "slots": [
@@ -32,7 +32,7 @@
                 {
                     "key": "DataOutput_Result: Matrix4x4",
                     "details": {
-                        "name": "Result: Matrix4x4"
+                        "name": "Matrix4x4"
                     }
                 }
             ]
