@@ -38,7 +38,6 @@ set(FILES
     API/EditorLevelNotificationBus.h
     API/ViewportEditorModeTrackerNotificationBus.h
     API/ViewportEditorModeTrackerNotificationBus.cpp
-    API/EditorVegetationRequestsBus.h
     API/EditorPythonConsoleBus.h
     API/EditorPythonRunnerRequestsBus.h
     API/EditorPythonScriptNotificationsBus.h
