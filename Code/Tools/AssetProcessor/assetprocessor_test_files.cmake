@@ -36,6 +36,7 @@ set(FILES
     native/tests/platformconfiguration/platformconfigurationtests.h
     native/tests/utilities/JobModelTest.cpp
     native/tests/utilities/JobModelTest.h
+    native/tests/utilities/StatsCaptureTest.cpp
     native/tests/AssetCatalog/AssetCatalogUnitTests.cpp
     native/tests/assetscanner/AssetScannerTests.h
     native/tests/assetscanner/AssetScannerTests.cpp
