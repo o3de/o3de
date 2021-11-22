@@ -60,57 +60,6 @@ namespace ScriptCanvasBuilder
             graphData = sourceGraph->GetGraphDataConst();
         }
         
-#if defined(EDITOR_ASSET_SUPPORT_ENABLED) 
-        if (graphData == nullptr)
-        {
-            if (!m_editorAssetHandler)
-            {
-                AZ_Error(s_scriptCanvasBuilder, false, R"(CreateJobs for %s failed because the ScriptCanvas Editor Asset handler is missing.)", fullPath.data());
-            }
-
-            AZStd::shared_ptr<AZ::Data::AssetDataStream> assetDataStream = AZStd::make_shared<AZ::Data::AssetDataStream>();
-
-            AZ::IO::FileIOStream stream(fullPath.c_str(), AZ::IO::OpenMode::ModeRead);
-            if (!AZ::IO::RetryOpenStream(stream))
-            {
-                AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", fullPath.data());
-                return;
-            }
-
-            // Read the asset into a memory buffer, then hand ownership of the buffer to assetDataStream
-            {
-                AZ::IO::FileIOStream ioStream;
-                if (!ioStream.Open(fullPath.data(), AZ::IO::OpenMode::ModeRead))
-                {
-                    AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the source file could not be opened.", fullPath.data());
-                    return;
-                }
-
-                AZStd::vector<AZ::u8> fileBuffer(ioStream.GetLength());
-                size_t bytesRead = ioStream.Read(fileBuffer.size(), fileBuffer.data());
-                if (bytesRead != ioStream.GetLength())
-                {
-                    AZ_Warning(s_scriptCanvasBuilder, false, AZStd::string::format("File failed to read completely: %s", fullPath.data()).c_str());
-                    return;
-                }
-
-                assetDataStream->Open(AZStd::move(fileBuffer));
-            }
-
-            m_processEditorAssetDependencies.clear();
-
-            asset.Create(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
-            if (m_editorAssetHandler->LoadAssetDataFromStream(asset, assetDataStream, {}) != AZ::Data::AssetHandler::LoadResult::LoadComplete)
-            {
-                AZ_Warning(s_scriptCanvasBuilder, false, "CreateJobs for \"%s\" failed because the asset data could not be loaded from the file", fullPath.data());
-                return;
-            }
-
-            sourceGraph = AZ::EntityUtils::FindFirstDerivedComponent<ScriptCanvasEditor::Graph>(asset.Get()->GetScriptCanvasEntity());
-            graphData = sourceGraph->GetGraphDataConst();
-        }
-#endif
-
         AZ_Assert(sourceGraph, "Graph component is missing from entity.");
         AZ_Assert(graphData, "GraphData is missing from entity");
 

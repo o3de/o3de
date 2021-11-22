@@ -541,48 +541,4 @@ namespace ScriptCanvasEditor
         return AZ::EntityId();
     }
 
-    void AssetTracker::OnAssetReady(const ScriptCanvasMemoryAsset* asset)
-    {
-        AZ::Data::AssetId assetId = CheckAssetId(asset->GetId());
-
-        auto assetInUseIter = m_assetsInUse.find(assetId);
-        if (assetInUseIter != m_assetsInUse.end())
-        {
-            AssetTrackerNotificationBus::Broadcast(&AssetTrackerNotifications::OnAssetReady, assetInUseIter->second);
-        }
-    }
-
-    void AssetTracker::OnAssetReloaded(const ScriptCanvasMemoryAsset* asset)
-    {
-        AZ::Data::AssetId assetId = CheckAssetId(asset->GetId());
-
-        auto assetInUseIter = m_assetsInUse.find(assetId);
-        if (assetInUseIter != m_assetsInUse.end())
-        {
-            AssetTrackerNotificationBus::Broadcast(&AssetTrackerNotifications::OnAssetReloaded, assetInUseIter->second);
-        }
-    }
-
-    void AssetTracker::OnAssetSaved(const ScriptCanvasMemoryAsset* asset, bool isSuccessful)
-    {
-        AZ::Data::AssetId assetId = CheckAssetId(asset->GetId());
-
-        auto assetInUseIter = m_assetsInUse.find(assetId);
-        if (assetInUseIter != m_assetsInUse.end())
-        {
-            AssetTrackerNotificationBus::Broadcast(&AssetTrackerNotifications::OnAssetSaved, assetInUseIter->second, isSuccessful);
-        }
-    }
-
-    void AssetTracker::OnAssetError(const ScriptCanvasMemoryAsset* asset)
-    {
-        AZ::Data::AssetId assetId = CheckAssetId(asset->GetId());
-
-        auto assetInUseIter = m_assetsInUse.find(assetId);
-        if (assetInUseIter != m_assetsInUse.end())
-        {
-            AssetTrackerNotificationBus::Broadcast(&AssetTrackerNotifications::OnAssetError, assetInUseIter->second);
-        }
-    }
-
 }

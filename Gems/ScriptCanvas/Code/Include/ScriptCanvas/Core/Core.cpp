@@ -194,14 +194,18 @@ namespace ScriptCanvasEditor
         , m_id(id)
         , m_path(path)
     {
-
+        m_path.MakePreferred();
+        m_id = id;
     }
 
     SourceHandle::SourceHandle(ScriptCanvas::DataPtr graph, const AZ::Uuid& id, const AZ::IO::Path& path)
         : m_data(graph)
         , m_id(id)
         , m_path(path)
-    {}
+    {
+        m_path.MakePreferred();
+        m_id = id;
+    }
 
     bool SourceHandle::AnyEquals(const SourceHandle& other) const
     {

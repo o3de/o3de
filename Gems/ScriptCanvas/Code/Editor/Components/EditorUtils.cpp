@@ -35,36 +35,45 @@ namespace ScriptCanvasEditor
     {
         if (source.IsValidDescription())
         {
-            return source.Describe();
+            return source;
         }
 
-        AZStd::string watchFolder;
-        AZ::Data::AssetInfo assetInfo;
-        bool sourceInfoFound{};
-
-        if (!source.Id().IsNull())
+        AzToolsFramework::AssetSystemRequestBus::Events* assetSystem = AzToolsFramework::AssetSystemRequestBus::FindFirstHandler();
+        if (assetSystem)
         {
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult
-                ( sourceInfoFound
-                , &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, source.Id(), assetInfo, watchFolder);
+            AZStd::string watchFolder;
+            AZ::Data::AssetInfo assetInfo;
 
-            if (sourceInfoFound && !assetInfo.m_relativePath.empty())
+            if (!source.Id().IsNull())
             {
-                return SourceHandle(nullptr, assetInfo.m_assetId.m_guid, assetInfo.m_relativePath);
+                if (assetSystem->GetSourceInfoBySourceUUID(source.Id(), assetInfo, watchFolder))
+                {
+                    AZ::IO::Path watchPath(watchFolder);
+                    AZ::IO::Path assetInfoPath(assetInfo.m_relativePath);
+                    SourceHandle fullPathHandle(nullptr, assetInfo.m_assetId.m_guid, watchPath / assetInfoPath);
+
+                    if (assetSystem->GetSourceInfoBySourcePath(fullPathHandle.Path().c_str(), assetInfo, watchFolder) && assetInfo.m_assetId.IsValid())
+                    {
+                        if (assetInfo.m_assetId.m_guid != source.Id())
+                        {
+                            AZ_TracePrintf("ScriptCanvas", "This is what I don't get");
+                        }
+
+                        auto path = fullPathHandle.Path();
+                        return SourceHandle(source, assetInfo.m_assetId.m_guid, path.MakePreferred());
+                    }
+                }
+            }
+
+            if (!source.Path().empty())
+            {
+                if (assetSystem->GetSourceInfoBySourcePath(source.Path().c_str(), assetInfo, watchFolder) && assetInfo.m_assetId.IsValid())
+                {
+                    return SourceHandle(source, assetInfo.m_assetId.m_guid, source.Path());
+                }
             }
         }
 
-        if (!source.Path().empty())
-        {
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult
-                ( sourceInfoFound
-                , &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, source.Path().c_str(), assetInfo, watchFolder);
-
-            if (sourceInfoFound && assetInfo.m_assetId.IsValid())
-            {
-                return SourceHandle(nullptr, assetInfo.m_assetId.m_guid, assetInfo.m_relativePath);
-            }
-        }
 
         return AZStd::nullopt;
     }

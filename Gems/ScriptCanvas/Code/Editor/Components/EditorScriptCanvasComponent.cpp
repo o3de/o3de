@@ -235,7 +235,7 @@ namespace ScriptCanvasEditor
          
         if (m_sourceHandle.IsValid())
         {
-            GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, m_sourceHandle, -1);
+            GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, m_sourceHandle, Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
          
             if (!openOutcome)
             {

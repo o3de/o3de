@@ -256,7 +256,8 @@ namespace ScriptCanvasEditor
 
                 const AZ::Data::AssetId& assetId = executionItem->GetAssetId();
                 
-                GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAssetId, SourceHandle(nullptr, assetId.m_guid, {}));
+                GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAssetId
+                    , SourceHandle(nullptr, assetId.m_guid, {}), Tracker::ScriptCanvasFileState::UNMODIFIED);
             }
         }
     }
@@ -272,10 +273,12 @@ namespace ScriptCanvasEditor
             bool isAssetOpen = false;
             GeneralRequestBus::BroadcastResult(isAssetOpen, &GeneralRequests::IsScriptCanvasAssetOpen, SourceHandle(nullptr, assetId.m_guid, {}));
 
-            GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAssetId, SourceHandle(nullptr, assetId.m_guid, {}));
+            GeneralRequestBus::Broadcast(&GeneralRequests::OpenScriptCanvasAssetId
+                , SourceHandle(nullptr, assetId.m_guid, {}), Tracker::ScriptCanvasFileState::UNMODIFIED);
 
             AZ::EntityId graphCanvasGraphId;
-            GeneralRequestBus::BroadcastResult(graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId, SourceHandle(nullptr, assetId.m_guid, {}));
+            GeneralRequestBus::BroadcastResult(graphCanvasGraphId, &GeneralRequests::FindGraphCanvasGraphIdByAssetId
+                , SourceHandle(nullptr, assetId.m_guid, {}));
             
             if (isAssetOpen)
             {

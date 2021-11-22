@@ -21,6 +21,9 @@ namespace GraphCanvas
 
 namespace ScriptCanvasEditor
 {
+    // If only the Path or the Id is valid, attempts to fill in the missing piece.
+    // If both Path and Id is valid, including after correction, returns the handle including source Data,
+    // otherwise, returns null
     AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source);
 
     class Graph;

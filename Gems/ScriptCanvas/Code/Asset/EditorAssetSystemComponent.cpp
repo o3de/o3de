@@ -107,11 +107,15 @@ namespace ScriptCanvasEditor
         return ScriptCanvasBuilder::CreateLuaAsset(editAsset, graphPathForRawLuaFile);
     }
 
-    void EditorAssetSystemComponent::AddSourceFileOpeners([[maybe_unused]] const char* fullSourceFileName, [[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)
+    void EditorAssetSystemComponent::AddSourceFileOpeners
+        ( [[maybe_unused]] const char* fullSourceFileName
+        , const AZ::Uuid& sourceUuid
+        , AzToolsFramework::AssetBrowser::SourceFileOpenerList& openers)
     {
         using namespace AzToolsFramework;
         using namespace AzToolsFramework::AssetBrowser;
-        if (const SourceAssetBrowserEntry* source = SourceAssetBrowserEntry::GetSourceByUuid(sourceUuid))  // get the full details of the source file based on its UUID.
+        // get the full details of the source file based on its UUID.
+        if (const SourceAssetBrowserEntry* source = SourceAssetBrowserEntry::GetSourceByUuid(sourceUuid))  
         {
             if (!HandlesSource(source))
             {
@@ -123,23 +127,31 @@ namespace ScriptCanvasEditor
             // has no UUID / Not a source file.
             return;
         }
-        // You can push back any number of "Openers" - choose a unique identifier, and icon, and then a lambda which will be activated if the user chooses to open it with your opener:
-        // #sc_editor_asset
-        // openers.push_back({ "ScriptCanvas_Editor_Asset_Edit", "Script Canvas Editor...", QIcon(),
-//             [](const char*, const AZ::Uuid& scSourceUuid)
-//         {
-//             AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
-//             AZ::Data::AssetId sourceAssetId(scSourceUuid, 0);
-// 
-//             auto& assetManager = AZ::Data::AssetManager::Instance();
-//             AZ::Data::Asset<ScriptCanvasAsset> scriptCanvasAsset = assetManager.GetAsset(sourceAssetId, azrtti_typeid<ScriptCanvasAsset>(), AZ::Data::AssetLoadBehavior::Default);
-//             AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
-//             GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, scriptCanvasAsset.GetId(), -1);
-//             if (!openOutcome)
-//             {
-//                 AZ_Warning("Script Canvas", openOutcome, "%s", openOutcome.GetError().data());
-//             }
-//         } });
 
+        // You can push back any number of "Openers" - choose a unique identifier, and icon,
+        // and then a lambda which will be activated if the user chooses to open it with your opener:
+
+        openers.push_back({ "ScriptCanvas_Editor_Asset_Edit", "Script Canvas Editor..."
+            , QIcon(ScriptCanvasAssetDescription().GetIconPathImpl()),
+            [](const char*, const AZ::Uuid& scSourceUuid)
+            {
+                AzToolsFramework::OpenViewPane(LyViewPane::ScriptCanvas);
+
+                if (auto sourceHandle = CompleteDescription(SourceHandle(nullptr, scSourceUuid, {})))
+                {
+                    AZ::Outcome<int, AZStd::string> openOutcome = AZ::Failure(AZStd::string());
+                    GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset
+                        , *sourceHandle, Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
+                    if (!openOutcome)
+                    {
+                        AZ_Warning("ScriptCanvas", openOutcome, "%s", openOutcome.GetError().data());
+                    }
+                }
+                else
+                {
+                    AZ_Warning("ScriptCanvas", false
+                        , "Unabled to find full path for Source UUid %s", scSourceUuid.ToString<AZStd::string>().c_str());
+                }            
+            }});
     }
 }

@@ -98,7 +98,7 @@ namespace ScriptCanvasEditor
 
         if (!asset.Path().empty())
         {
-            GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, asset, -1);
+            GeneralRequestBus::BroadcastResult(openOutcome, &GeneralRequests::OpenScriptCanvasAsset, asset, Tracker::ScriptCanvasFileState::UNMODIFIED, -1);
         }
 
         if (!openOutcome)

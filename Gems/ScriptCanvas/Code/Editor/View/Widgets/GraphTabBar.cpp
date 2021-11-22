@@ -46,9 +46,9 @@ namespace ScriptCanvasEditor
             connect(this, &QTabBar::customContextMenuRequested, this, &GraphTabBar::OnContextMenu);
         }
 
-        void GraphTabBar::AddGraphTab(ScriptCanvasEditor::SourceHandle assetId)
+        void GraphTabBar::AddGraphTab(ScriptCanvasEditor::SourceHandle assetId, Tracker::ScriptCanvasFileState fileState)
         {
-            InsertGraphTab(count(), assetId);
+            InsertGraphTab(count(), assetId, fileState);
         }
 
         void GraphTabBar::ClearTabView(int tabIndex)
@@ -143,7 +143,7 @@ namespace ScriptCanvasEditor
             }
         }
 
-        int GraphTabBar::InsertGraphTab(int tabIndex, ScriptCanvasEditor::SourceHandle assetId)
+        int GraphTabBar::InsertGraphTab(int tabIndex, ScriptCanvasEditor::SourceHandle assetId, Tracker::ScriptCanvasFileState fileState)
         {
             if (!SelectTab(assetId))
             {
@@ -159,9 +159,6 @@ namespace ScriptCanvasEditor
                 AzFramework::StringFunc::Path::GetFileName(assetId.Path().c_str(), tabName);
                 metaData.m_name = tabName.c_str();
                
-                // #sc_editor_asset filestate
-                Tracker::ScriptCanvasFileState fileState = Tracker::ScriptCanvasFileState::INVALID;
-                // AssetTrackerRequestBus::BroadcastResult(fileState, &AssetTrackerRequests::GetFileState, fileAssetId);
                 SetTabText(tabIndex, tabName.c_str(), fileState);
                 setTabData(tabIndex, QVariant::fromValue(metaData));
                 return tabIndex;

@@ -425,9 +425,9 @@ namespace ScriptCanvasEditor
         QVariant GetTabData(const SourceHandle& assetId);
 
         //! GeneralRequestBus
-        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const SourceHandle& assetId) override;
-        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(SourceHandle scriptCanvasAssetId, int tabIndex = -1) override;
-        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetImplementation(const SourceHandle& sourceHandle, int tabIndex = -1);
+        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState) override;
+        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(SourceHandle scriptCanvasAssetId, Tracker::ScriptCanvasFileState fileState, int tabIndex = -1) override;
+        AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetImplementation(const SourceHandle& sourceHandle, Tracker::ScriptCanvasFileState fileState, int tabIndex = -1);
         int CloseScriptCanvasAsset(const SourceHandle& assetId) override;
         bool CreateScriptCanvasAssetFor(const TypeDefs::EntityComponentId& requestingEntityId) override;
 
@@ -438,8 +438,7 @@ namespace ScriptCanvasEditor
         ////
 
         AZ::Outcome<int, AZStd::string> CreateScriptCanvasAsset(AZStd::string_view assetPath, int tabIndex = -1);
-        void RefreshScriptCanvasAsset(const AZ::Data::Asset<ScriptCanvas::ScriptCanvasAssetBase>& scriptCanvasAsset);
-
+        
         //! Removes the assetId -> ScriptCanvasAsset mapping and disconnects from the asset tracker
         void RemoveScriptCanvasAsset(const ScriptCanvasEditor::SourceHandle& assetId);
         void OnChangeActiveGraphTab(ScriptCanvasEditor::SourceHandle) override;
@@ -525,8 +524,9 @@ namespace ScriptCanvasEditor
         AZ::EntityId FindAssetNodeIdByEditorNodeId(const ScriptCanvasEditor::SourceHandle& assetId, AZ::EntityId editorNodeId) const override;
         
     private:
+        void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
-
+        
         void DeleteNodes(const AZ::EntityId& sceneId, const AZStd::vector<AZ::EntityId>& nodes) override;
         void DeleteConnections(const AZ::EntityId& sceneId, const AZStd::vector<AZ::EntityId>& connections) override;
         void DisconnectEndpoints(const AZ::EntityId& sceneId, const AZStd::vector<GraphCanvas::Endpoint>& endpoints) override;
@@ -548,11 +548,6 @@ namespace ScriptCanvasEditor
         GraphCanvas::ContextMenuAction::SceneReaction HandleContextMenu(GraphCanvas::EditorContextMenu& editorContextMenu, const AZ::EntityId& memberId, const QPoint& screenPoint, const QPointF& scenePoint) const;
 
         void OnAutoSave();
-
-        //! Helper function which serializes a file to disk
-        //! \param filename name of file to serialize the Entity
-        //! \param asset asset to save
-        void GetSuggestedFullFilenameToSaveAs(const ScriptCanvasEditor::SourceHandle& assetId, AZStd::string& filePath, AZStd::string& fileFilter);
 
         void UpdateFileState(const ScriptCanvasEditor::SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState);
 
@@ -599,14 +594,14 @@ namespace ScriptCanvasEditor
 
         void UpdateAssignToSelectionState();
         void UpdateUndoRedoState();
-        void UpdateSaveState();
+        void UpdateSaveState(bool enabled);
 
         void CreateFunctionInput();
         void CreateFunctionOutput();
 
         void CreateFunctionDefinitionNode(int positionOffset);
 
-        int CreateAssetTab(const ScriptCanvasEditor::SourceHandle& assetId, int tabIndex = -1);
+        int CreateAssetTab(const ScriptCanvasEditor::SourceHandle& assetId, Tracker::ScriptCanvasFileState fileState, int tabIndex = -1);
 
         //! \param asset The AssetId of the ScriptCanvas Asset.
         void SetActiveAsset(const ScriptCanvasEditor::SourceHandle& assetId);
@@ -767,5 +762,11 @@ namespace ScriptCanvasEditor
         AZStd::unique_ptr<VersionExplorer::FileSaver> m_fileSaver;
         VersionExplorer::FileSaveResult m_fileSaveResult;
         void OnSaveCallBack(const VersionExplorer::FileSaveResult& result);
+
+        void ClearStaleSaves();
+        bool IsRecentSave(const SourceHandle& handle) const;
+        void MarkRecentSave(const SourceHandle& handle);
+        AZStd::recursive_mutex m_mutex; 
+        AZStd::unordered_map <AZStd::string, AZStd::chrono::system_clock::time_point> m_saves;
     };
 }

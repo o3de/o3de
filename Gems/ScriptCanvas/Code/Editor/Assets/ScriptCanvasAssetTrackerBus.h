@@ -17,6 +17,7 @@
 
 #include <Editor/Assets/ScriptCanvasAssetTrackerDefinitions.h>
 #include <Editor/Assets/ScriptCanvasMemoryAsset.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
 
 class QWidget;
 
