@@ -29,4 +29,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
     </ItemDefinitionGroup>
     <!-- Continue scanning upwards to pick up all Directory.Build.props -->
     <Import Condition="'@scan_above_directory_build_props@' != ''" Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+    <Target Name="DisplayMessages">
+        <Message Text="IntDirFullPath=$(IntDirFullPath), OutDirFullPath=$(OutDirFullPath), Tmp=$(Tmp), Temp=$(Temp)" Importance="high"/>
+    </Target>
 </Project>
