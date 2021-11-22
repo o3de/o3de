@@ -15,10 +15,10 @@ namespace AzToolsFramework::EmbeddedPython
     PythonLoader::PythonLoader()
     {
         constexpr char libPythonName[] = "libpython3.7m.so.1.0";
-        if (m_embeddedLibPythonHandle = dlopen(libPythonName, RTLD_NOW | RTLD_GLOBAL);
-            m_embeddedLibPythonHandle == nullptr)
+        m_embeddedLibPythonHandle = dlopen(libPythonName, RTLD_NOW | RTLD_GLOBAL);
+        if (m_embeddedLibPythonHandle == nullptr)
         {
-            char* err = dlerror();
+            [maybe_unused] const char* err = dlerror();
             AZ_Error("PythonLoader", false, "Failed to load %s with error: %s\n", libPythonName, err ? err : "Unknown Error");
         }
     }
