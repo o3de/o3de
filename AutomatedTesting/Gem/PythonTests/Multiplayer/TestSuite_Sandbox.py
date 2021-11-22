@@ -24,7 +24,6 @@ from base import TestAutomationBase
 class TestAutomation(TestAutomationBase):
     def _run_prefab_test(self, request, workspace, editor, test_module, batch_mode=True, autotest_mode=True):
         self._run_test(request, workspace, editor, test_module, 
-            extra_cmdline_args=["--regset=/Amazon/Preferences/EnablePrefabSystem=true"], 
             batch_mode=batch_mode,
             autotest_mode=autotest_mode)
 
