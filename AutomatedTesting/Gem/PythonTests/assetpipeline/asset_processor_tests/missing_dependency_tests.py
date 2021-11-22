@@ -120,31 +120,29 @@ class TestsMissingDependencies_WindowsAndMac(object):
 
         # Relative path to the txt file with missing dependencies
         expected_product = f"testassets\\validuuidsnotdependency.txt"
-        self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\Objects\\LumberTank")
-        self._asset_processor.add_source_folder_assets(f"{self._workspace.project}\\Objects\\Characters\\Jack")
         # Expected missing dependencies
         expected_dependencies = [
             #            String                                      Asset                     #
-            ('1CB10C43F3245B93A294C602ADEF95F9:[0', '{1CB10C43-F324-5B93-A294-C602ADEF95F9}:0'),
+            # InvalidAssetIdNoReport.txt
+            ('E68A85B0-131D-5A82-B2D5-BC58EE4062AE', '{E68A85B0-131D-5A82-B2D5-BC58EE4062AE}:0'),
+            # InvalidRelativePathsNoReport.txt
+            ('B3EF12DD306C520EB0A8A6B0D031A195', '{B3EF12DD-306C-520E-B0A8-A6B0D031A195}:0'),
+            # SelfReferenceUUID.txt
             ('33bcee02F3225688ABEE534F6058593F', '{33BCEE02-F322-5688-ABEE-534F6058593F}:0'),
-            ('345E5C660D6254FF8D0F7C8EE66A2249', '{345E5C66-0D62-54FF-8D0F-7C8EE66A2249}:3e8'),
-            ('345E5C660D6254FF8D0F7C8EE66A2249', '{345E5C66-0D62-54FF-8D0F-7C8EE66A2249}:3ea'),
-            ('345E5C660D6254FF8D0F7C8EE66A2249', '{345E5C66-0D62-54FF-8D0F-7C8EE66A2249}:3eb'),
-            ('37108522F50459499CD6C8D47A960CF1', '{37108522-F504-5949-9CD6-C8D47A960CF1}:3e8'),
-            ('37108522F50459499CD6C8D47A960CF1', '{37108522-F504-5949-9CD6-C8D47A960CF1}:3ea'),
-            ('37108522F50459499CD6C8D47A960CF1', '{37108522-F504-5949-9CD6-C8D47A960CF1}:3eb'),
-            ('6BDE282B49C957F7B0714B26579BCA9A', '{6BDE282B-49C9-57F7-B071-4B26579BCA9A}:0'),
-            ('747D31D71E62553592226173C49CF97E', '{747D31D7-1E62-5535-9222-6173C49CF97E}:1'),
-            ('747D31D71E62553592226173C49CF97E', '{747D31D7-1E62-5535-9222-6173C49CF97E}:2'),
-            ('A26C73D1837E5AE59E68F916FA7C3699', '{A26C73D1-837E-5AE5-9E68-F916FA7C3699}:3e8'),
-            ('A26C73D1837E5AE59E68F916FA7C3699', '{A26C73D1-837E-5AE5-9E68-F916FA7C3699}:3ea'),
-            ('A26C73D1837E5AE59E68F916FA7C3699', '{A26C73D1-837E-5AE5-9E68-F916FA7C3699}:3eb'),
-            ('B076CDDC-14DF-50F4-A5E9-7518ABB3E851', '{B076CDDC-14DF-50F4-A5E9-7518ABB3E851}:0'),
-            ('C67BEA9F-09FF-59AA-A7F0-A52B8F987508', '{C67BEA9F-09FF-59AA-A7F0-A52B8F987508}:3e8'),
-            ('C67BEA9F-09FF-59AA-A7F0-A52B8F987508', '{C67BEA9F-09FF-59AA-A7F0-A52B8F987508}:3ea'),
-            ('C67BEA9F-09FF-59AA-A7F0-A52B8F987508', '{C67BEA9F-09FF-59AA-A7F0-A52B8F987508}:3eb'),
-            ('C67BEA9F-09FF-59AA-A7F0-A52B8F987508', '{C67BEA9F-09FF-59AA-A7F0-A52B8F987508}:3ec'),
-            ('D92C4661C8985E19BD3597CB2318CFA6:[0', '{D92C4661-C898-5E19-BD35-97CB2318CFA6}:0'),
+            # SelfReferencePath.txt
+            ('DD587FBE-16C8-5B98-AE3C-A9F8750B2692', '{DD587FBE-16C8-5B98-AE3C-A9F8750B2692}:0'),
+            # InvalidUUIDNoReport.txt
+            ('837412DF-D05F-576D-81AA-ACF360463749', '{837412DF-D05F-576D-81AA-ACF360463749}:0'),
+            # MaxIteration31Deep.txt
+            ('3F642A0FDC825696A70A1DA5709744DF', '{3F642A0F-DC82-5696-A70A-1DA5709744DF}:0'),
+            # OnlyMatchesCorrectLengthUUIDs.txt
+            ('2545AD8B-1B9B-5F93-859D-D8DC1DC2B480', '{2545AD8B-1B9B-5F93-859D-D8DC1DC2B480}:0'),
+            # WildcardScanTest1.txt
+            ('1CB10C43F3245B93A294C602ADEF95F9:[0', '{1CB10C43-F324-5B93-A294-C602ADEF95F9}:0'),
+            # RelativeProductPathsNotDependencies.txt
+            ('B772953CA08A5D209491530E87D11504:[0', '{B772953C-A08A-5D20-9491-530E87D11504}:0'),
+            # WildcardScanTest2.txt
+            ('D92C4661C8985E19BD3597CB2318CFA6', '{D92C4661-C898-5E19-BD35-97CB2318CFA6}:0'),
         ]
         self.do_missing_dependency_test(expected_product, expected_dependencies,
                                         "%ValidUUIDsNotDependency.txt")
