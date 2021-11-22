@@ -34,6 +34,12 @@ def get_current_directory_path() -> str:
 
 
 def get_parent_directory_path(file_path: str, level: int = 1) -> str:
+    """
+    Get parent directory path based on requested file path
+    :param file_path: The requested file path
+    :param level: The level of parent directory, default value is 1
+    :return The string value of parent directory path if exist; otherwise empty string
+    """
     if not pathlib.Path(file_path).exists():
         return ""
 

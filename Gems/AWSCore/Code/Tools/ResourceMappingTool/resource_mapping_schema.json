@@ -1,16 +1,16 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema",
     "type": "object",
-    "title": "The AWS Resource Mapping Root schema",
+    "title": "O3DE AWS Resource mapping file schema",
     "required": ["AWSResourceMappings", "AccountId", "Region", "Version"],
     "properties": {
         "AWSResourceMappings": {
             "type": "object",
-            "title": "The AWSResourceMappings schema",
+            "title": "AWS resource mappings schema",
             "patternProperties": {
                 "^.+$": {
                     "type": "object",
-                    "title": "The AWS Resource Entry schema",
+                    "title": "AWS resource entry schema",
                     "required": ["Type", "Name/ID"],
                     "properties": {
                         "Type": {
