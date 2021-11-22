@@ -46,7 +46,6 @@ namespace AZ::IO
 struct IConsole;
 struct IRemoteConsole;
 struct IRenderer;
-struct IProcess;
 struct ICryFont;
 struct IMovieSystem;
 namespace Audio

@@ -104,7 +104,6 @@ struct ITimer;
 struct IFFont;
 struct ICVar;
 struct IConsole;
-struct IProcess;
 namespace AZ::IO
 {
     struct IArchive;

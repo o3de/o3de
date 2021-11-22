@@ -116,7 +116,6 @@ LRESULT WINAPI WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 #include <IMovieSystem.h>
 #include <ILog.h>
 #include <IAudioSystem.h>
-#include <IProcess.h>
 
 #include <LoadScreenBus.h>
 
@@ -462,9 +461,6 @@ bool CSystem::IsQuitting() const
     bool wasExitMainLoopRequested = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(wasExitMainLoopRequested, &AzFramework::ApplicationRequests::WasExitMainLoopRequested);
     return wasExitMainLoopRequested;
-}
-
-//////////////////////////////////////////////////////////////////////////
 ISystem* CSystem::GetCrySystem()
 {
     return this;

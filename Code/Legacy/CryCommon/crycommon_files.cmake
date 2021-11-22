@@ -22,7 +22,6 @@ set(FILES
     IMaterial.h
     IMiniLog.h
     IMovieSystem.h
-    IProcess.h
     IRenderAuxGeom.h
     IRenderer.h
     ISerialize.h
