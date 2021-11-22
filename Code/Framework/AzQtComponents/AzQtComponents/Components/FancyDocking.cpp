@@ -53,14 +53,14 @@ static void OptimizedSetParent(QWidget* widget, QWidget* parent)
 
 namespace AzQtComponents
 {
-    static FancyDockingDropZoneConstants g_FancyDockingConstants;
+    static const FancyDockingDropZoneConstants g_FancyDockingConstants;
 
     // Constant for the threshold in pixels for snapping to edges while dragging for docking
     static const int g_snapThresholdInPixels = 15;
 
-    static QString g_minimizeButtonObjectName =     "minimizeButton";
-    static QString g_maximizeButtonObjectName =     "maximizeButton";
-    static QString g_closeButtonObjectName =        "closeButton";
+    static const QString g_minimizeButtonObjectName =     QStringLiteral("minimizeButton");
+    static const QString g_maximizeButtonObjectName =     QStringLiteral("maximizeButton");
+    static const QString g_closeButtonObjectName =        QStringLiteral("closeButton");
 
     static Qt::Orientation orientation(Qt::DockWidgetArea area)
     {
