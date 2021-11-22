@@ -37,7 +37,7 @@ namespace TestImpact
         return m_sources;
     }
 
-    SpecializedBuildTargetType BuildTarget::GetType() const
+    SpecializedBuildTargetType BuildTarget::GetSpecializedBuildTargetType() const
     {
         return m_type;
     }

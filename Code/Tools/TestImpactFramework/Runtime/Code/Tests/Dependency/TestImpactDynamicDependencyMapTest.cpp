@@ -29,7 +29,7 @@ namespace UnitTest
             EXPECT_EQ(target.GetName(), expectedTarget.GetName());
             EXPECT_EQ(target.GetOutputName(), expectedTarget.GetOutputName());
             EXPECT_EQ(target.GetPath(), expectedTarget.GetPath());
-            EXPECT_EQ(target.GetType(), expectedTarget.GetType());
+            EXPECT_EQ(target.GetSpecializedBuildTargetType(), expectedTarget.GetSpecializedBuildTargetType());
             EXPECT_TRUE(target.GetSources() == expectedTarget.GetSources());
         }
 
@@ -535,7 +535,7 @@ namespace UnitTest
             EXPECT_TRUE(buildTarget);
 
             // Expect the build type to be a production target
-            EXPECT_EQ(buildTarget->GetType(), TestImpact::SpecializedBuildTargetType::Production);
+            EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedBuildTargetType::Production);
 
             // Expect the retrieved build target to match the production target we queried
             ValidateBuildTarget(*buildTarget, expectedProductionTarget);
@@ -550,7 +550,7 @@ namespace UnitTest
             EXPECT_TRUE(buildTarget);
 
             // Expect the build type to be a test target
-            EXPECT_EQ(buildTarget->GetType(), TestImpact::SpecializedBuildTargetType::Test);
+            EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedBuildTargetType::Test);
 
             // Expect the retrieved build target to match the test target we queried
             ValidateBuildTarget(*buildTarget, expectedTestTarget);
@@ -590,7 +590,7 @@ namespace UnitTest
             auto buildTarget = m_dynamicDependencyMap->GetBuildTargetOrThrow(expectedProductionTarget.GetName());
 
             // Expect the build type to be a production target
-            EXPECT_EQ(buildTarget->GetType(), TestImpact::SpecializedBuildTargetType::Production);
+            EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedBuildTargetType::Production);
 
             // Expect the retrieved build target to match the production target we queried
             ValidateBuildTarget(*buildTarget, expectedProductionTarget);
@@ -602,7 +602,7 @@ namespace UnitTest
             auto buildTarget = m_dynamicDependencyMap->GetBuildTargetOrThrow(expectedTestTarget.GetName());
 
             // Expect the build type to be a test target
-            EXPECT_EQ(buildTarget->GetType(), TestImpact::SpecializedBuildTargetType::Test);
+            EXPECT_EQ(buildTarget->GetSpecializedBuildTargetType(), TestImpact::SpecializedBuildTargetType::Test);
 
             // Expect the retrieved build target to match the test target we queried
             ValidateBuildTarget(*buildTarget, expectedTestTarget);
@@ -813,34 +813,4 @@ namespace UnitTest
             }
         }
     }
-
-    //TEST(DynamicDependencyMap, BAR)
-    //{
-    //    std::ifstream testsFile("C:\\Lumberyard\\windows_vs2019\\bin\\TestImpactFramework\\Artifact\\TestType\\All.tests");
-    //    AZStd::string testRaw((std::istreambuf_iterator<char>(testsFile)), std::istreambuf_iterator<char>());
-    //
-    //    auto testTypes = TestImpact::TestTargetMetaMapFactory(testRaw);
-    //
-    //    AZStd::vector<TestImpact::BuildTargetDescriptor> buildTargetDescriptors;
-    //    for (const auto& entry :
-    //    std::filesystem::directory_iterator("C:\\Lumberyard\\windows_vs2019\\bin\\TestImpactFramework\\Artifact\\Mapping"))
-    //    {
-    //        std::ifstream targetFile(entry);
-    //        AZStd::string targetRaw((std::istreambuf_iterator<char>(targetFile)), std::istreambuf_iterator<char>());
-    //
-    //        const AZStd::vector<AZStd::string> staticExclude = { ".cmake" };
-    //        const AZStd::vector<AZStd::string> inputExclude = { ".jinja" };
-    //        const AZStd::string autogenMatcher = { "(.*)\\..*" };
-    //
-    //        TestImpact::BuildTargetDescriptor buildTargetDescriptor = TestImpact::BuildTargetDescriptorFactory(targetRaw, staticExclude,
-    //        inputExclude, autogenMatcher); buildTargetDescriptors.emplace_back(AZStd::move(buildTargetDescriptor));
-    //    }
-    //
-    //    auto buildTargets = TestImpact::CompileTargetDescriptors(AZStd::move(buildTargetDescriptors), AZStd::move(testTypes));
-    //    auto&& [productionTargets, testTargets] = buildTargets;
-    //
-    //    TestImpact::DynamicDependencyMap sourceTree(AZStd::move(productionTargets), AZStd::move(testTargets));
-    //
-    //    return;
-    //}
 } // namespace TestImpact

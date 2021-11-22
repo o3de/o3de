@@ -51,7 +51,7 @@ namespace TestImpact
         const TargetSources& GetSources() const;
 
         //! Returns the build target type.
-        SpecializedBuildTargetType GetType() const;
+        SpecializedBuildTargetType GetSpecializedBuildTargetType() const;
 
     private:
         BuildMetaData m_buildMetaData;
