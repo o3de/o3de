@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ShadowFilterMethod_PCF::Getter",
-                "category": "Constants"
-            }
+                "name": "Shadow Filter Method_PCF"
+            },
+            "methods": [
+                {
+                    "key": "GetShadowFilterMethod_PCF",
+                    "details": {
+                        "name": "Get Shadow Filter Method_PCF"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

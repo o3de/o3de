@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "LANDSCAPE_CANVAS_EDITOR_ID",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "LANDSCAPE_CANVAS_EDITOR_ID"
+            },
+            "methods": [
+                {
+                    "key": "GetLANDSCAPE_CANVAS_EDITOR_ID",
+                    "details": {
+                        "name": "GetLANDSCAPE_CANVAS_EDITOR_ID"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Crc 32"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
