@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "ShadowmapSize_512::Getter",
-                "category": "Constants"
-            }
+                "name": "Shadowmap Size_ 512"
+            },
+            "methods": [
+                {
+                    "key": "GetShadowmapSize_512",
+                    "details": {
+                        "name": "Get Shadowmap Size_ 512"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

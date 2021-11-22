@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "StencilOp_Decrement::Getter",
-                "category": "Constants"
-            }
+                "name": "Stencil Op_ Decrement"
+            },
+            "methods": [
+                {
+                    "key": "GetStencilOp_Decrement",
+                    "details": {
+                        "name": "Get Stencil Op_ Decrement"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DefaultMaterialAssignmentId::Getter",
-                "category": "Constants"
-            }
+                "name": "Default Material Assignment Id"
+            },
+            "methods": [
+                {
+                    "key": "GetDefaultMaterialAssignmentId",
+                    "details": {
+                        "name": "Get Default Material Assignment Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "AZ:: Render:: Material Assignment Id"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
