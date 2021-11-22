@@ -29,6 +29,8 @@
 
 #include <Editor/View/Widgets/CanvasWidget.h>
 #include <Editor/Undo/ScriptCanvasUndoManager.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
+
 
 namespace ScriptCanvasEditor
 {

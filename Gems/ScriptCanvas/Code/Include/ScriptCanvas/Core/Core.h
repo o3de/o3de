@@ -27,8 +27,6 @@
 
 #define OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED
 
-// #define EDITOR_ASSET_SUPPORT_ENABLED
-
 namespace AZ
 {
     class Entity;

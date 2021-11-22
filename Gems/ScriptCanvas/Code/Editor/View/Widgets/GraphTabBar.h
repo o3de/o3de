@@ -18,6 +18,8 @@
 
 #include <ScriptCanvas/Core/Core.h>
 #include <Editor/Assets/ScriptCanvasAssetTracker.h>
+#include <ScriptCanvas/Bus/RequestBus.h>
+
 #endif
 
 class QGraphicsView;
@@ -54,11 +56,11 @@ namespace ScriptCanvasEditor
             void SetTabData(const GraphTabMetadata& data, int index);
             void SetTabData(const GraphTabMetadata& data, ScriptCanvasEditor::SourceHandle assetId);
 
-            void AddGraphTab(ScriptCanvasEditor::SourceHandle assetId);
+            void AddGraphTab(ScriptCanvasEditor::SourceHandle assetId, Tracker::ScriptCanvasFileState fileState);
             void CloseTab(int index);
             void CloseAllTabs();
 
-            int InsertGraphTab(int tabIndex, ScriptCanvasEditor::SourceHandle assetId);
+            int InsertGraphTab(int tabIndex, ScriptCanvasEditor::SourceHandle assetId, Tracker::ScriptCanvasFileState fileState);
             bool SelectTab(ScriptCanvasEditor::SourceHandle assetId);
 
            // void ConfigureTab(int tabIndex, ScriptCanvasEditor::SourceHandle fileAssetId, const AZStd::string& tabName);

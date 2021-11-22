@@ -47,6 +47,18 @@ namespace ScriptCanvasEditor
     struct CategoryInformation;
     struct NodePaletteModelInformation;
 
+    namespace Tracker
+    {
+        enum class ScriptCanvasFileState : AZ::s32
+        {
+            NEW,
+            MODIFIED,
+            UNMODIFIED,
+            // #sc_editor_asset restore this
+            SOURCE_REMOVED,
+            INVALID = -1
+        };
+    }
 
     namespace Widget
     {
@@ -68,8 +80,8 @@ namespace ScriptCanvasEditor
         //! Opens an existing graph and returns the tab index in which it was open in.
         //! \param File AssetId
         //! \return index of open tab if the asset was able to be open successfully or error message of why the open failed
-        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(SourceHandle scriptCanvasAssetId, int tabIndex = -1) = 0;
-        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const SourceHandle& scriptCanvasAsset) = 0;
+        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAsset(SourceHandle scriptCanvasAssetId, Tracker::ScriptCanvasFileState fileState, int tabIndex = -1) = 0;
+        virtual AZ::Outcome<int, AZStd::string> OpenScriptCanvasAssetId(const SourceHandle& scriptCanvasAsset, Tracker::ScriptCanvasFileState fileState) = 0;
         
         virtual int CloseScriptCanvasAsset(const SourceHandle&) = 0;
 

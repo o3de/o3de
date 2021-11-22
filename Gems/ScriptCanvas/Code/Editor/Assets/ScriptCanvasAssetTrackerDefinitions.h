@@ -24,17 +24,5 @@ namespace ScriptCanvasEditor
         using OnAssetCreatedCallback = OnAssetReadyCallback;
     }
 
-    namespace Tracker
-    {
-        enum class ScriptCanvasFileState : AZ::s32
-        {
-            NEW,
-            MODIFIED,
-            UNMODIFIED,
-            // #sc_editor_asset restore this
-            SOURCE_REMOVED,
-            INVALID = -1
-        };
-    }
 
 }

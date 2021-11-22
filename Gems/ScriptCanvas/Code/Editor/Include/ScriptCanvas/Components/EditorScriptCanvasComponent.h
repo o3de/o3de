@@ -85,12 +85,7 @@ namespace ScriptCanvasEditor
         AZ::Data::AssetId GetAssetId() const override;
         //=====================================================================
         
-        //=====================================================================
-        // AssetTrackerNotificationBus
-        void OnAssetReady(const ScriptCanvasMemoryAsset::pointer asset) ;
-        void OnAssetSaved(const ScriptCanvasMemoryAsset::pointer asset, bool isSuccessful) ;
-        void OnAssetReloaded(const ScriptCanvasMemoryAsset::pointer asset) ;
-        //=====================================================================
+       
 
 
         //=====================================================================
@@ -119,7 +114,6 @@ namespace ScriptCanvasEditor
 
         // complete the id, load call OnScriptCanvasAssetChanged
         void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
-
         // update the display icon for failure, save the values in the graph
         void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
         void SourceFileFailed(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid fileAssetId) override;
