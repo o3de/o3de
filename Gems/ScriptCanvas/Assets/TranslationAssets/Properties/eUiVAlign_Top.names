@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiVAlign_Top::Getter",
-                "category": "Constants"
-            }
+                "name": "e UiV Align_ Top"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiVAlign_Top",
+                    "details": {
+                        "name": "Gete UiV Align_ Top"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

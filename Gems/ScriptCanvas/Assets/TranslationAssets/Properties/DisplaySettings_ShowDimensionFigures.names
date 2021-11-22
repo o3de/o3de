@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DisplaySettings_ShowDimensionFigures::Getter",
-                "category": "Constants"
-            }
+                "name": "Display Settings_ Show Dimension Figures"
+            },
+            "methods": [
+                {
+                    "key": "GetDisplaySettings_ShowDimensionFigures",
+                    "details": {
+                        "name": "Get Display Settings_ Show Dimension Figures"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

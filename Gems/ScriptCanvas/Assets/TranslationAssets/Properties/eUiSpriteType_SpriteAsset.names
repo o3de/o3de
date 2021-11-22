@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiSpriteType_SpriteAsset::Getter",
-                "category": "Constants"
-            }
+                "name": "e Ui Sprite Type_ Sprite Asset"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiSpriteType_SpriteAsset",
+                    "details": {
+                        "name": "Gete Ui Sprite Type_ Sprite Asset"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
