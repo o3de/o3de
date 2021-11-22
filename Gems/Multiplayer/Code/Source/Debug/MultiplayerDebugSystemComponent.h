@@ -51,9 +51,9 @@ namespace Multiplayer
         void ShowEntityBandwidthDebugOverlay() override;
         void HideEntityBandwidthDebugOverlay() override;
         void AddAuditEntry(
-            ClientInputId inputId,
-            HostFrameId frameId,
-            AZStd::string name,
+            const ClientInputId inputId,
+            const HostFrameId frameId,
+            const AZStd::string& name,
             AZStd::vector<MultiplayerAuditingElement>&& entryDetails) override;
         void CommitAuditTrail() override;
         //! @}

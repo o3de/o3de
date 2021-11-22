@@ -27,9 +27,9 @@ namespace Multiplayer
 
         //! Adds a string based entry to the Multiplayer audit trail
         virtual void AddAuditEntry(
-            ClientInputId inputId,
-            HostFrameId frameId,
-            AZStd::string name,
+            const ClientInputId inputId,
+            const HostFrameId frameId,
+            const AZStd::string& name,
             AZStd::vector<MultiplayerAuditingElement>&& entryDetails) = 0;
 
 		//! Commits current audit trail data for display 

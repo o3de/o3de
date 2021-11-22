@@ -71,9 +71,9 @@ namespace Multiplayer
     }
 
     void MultiplayerDebugSystemComponent::AddAuditEntry(
-            ClientInputId inputId,
-            HostFrameId frameId,
-            AZStd::string name,
+            const ClientInputId inputId,
+            const HostFrameId frameId,
+            const AZStd::string& name,
             AZStd::vector<MultiplayerAuditingElement>&& entryDetails)
     {
         while (m_auditTrailElems.size() >= net_DebutAuditTrail_HistorySize)

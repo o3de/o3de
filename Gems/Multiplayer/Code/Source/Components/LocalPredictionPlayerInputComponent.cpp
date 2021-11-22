@@ -54,7 +54,7 @@ namespace Multiplayer
             if (detail)
             {
                 AZStd::pair<AZStd::string, AZStd::string> element("The hash mismatched, but no differences were found.", "");
-                detail->elements.push_back(element);
+                detail->elements.push_back(AZStd::move(element));
             }
         }
 
@@ -74,7 +74,7 @@ namespace Multiplayer
                 AZStd::pair<AZStd::string, AZStd::string> element(
                     iter->first.c_str(),
                     AZStd::string::format("Server=%s Client=%s", serverValueIter->second.c_str(), clientValueIter->second.c_str()));
-                detail->elements.push_back(element);
+                detail->elements.push_back(AZStd::move(element));
             }
         }
     }
@@ -212,7 +212,7 @@ namespace Multiplayer
                     if (!inputLogs.empty())
                     {
                         AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
-                            input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName().c_str(), AZStd::move(inputLogs));
+                            input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName(), AZStd::move(inputLogs));
                     }
                     AZLOG(NET_Prediction, "Processed InputId=%u", aznumeric_cast<uint32_t>(input.GetClientInputId()));
                 }
@@ -362,7 +362,7 @@ namespace Multiplayer
                 detail.name = AZStd::string::format("Autonomous Desync - Correcting clientInputId=%d from index=%d",
                     aznumeric_cast<int32_t>(inputId), startReplayIndex);
                 AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
-                    inputId, startReplayInput.GetHostFrameId(), GetEntity()->GetName().c_str(), { detail });
+                    inputId, startReplayInput.GetHostFrameId(), GetEntity()->GetName(), { AZStd::move(detail) });
                 AZ::Interface<IMultiplayerDebug>::Get()->CommitAuditTrail();
             }
             else
@@ -529,7 +529,7 @@ namespace Multiplayer
                 if (!inputLogs.empty())
                 {
                     AZ::Interface<IMultiplayerDebug>::Get()->AddAuditEntry(
-                        input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName().c_str(), AZStd::move(inputLogs));
+                        input.GetClientInputId(), input.GetHostFrameId(), GetEntity()->GetName(), AZStd::move(inputLogs));
                 }
 
             }
