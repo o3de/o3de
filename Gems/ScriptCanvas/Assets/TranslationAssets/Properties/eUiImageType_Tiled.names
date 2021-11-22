@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiImageType_Tiled::Getter",
-                "category": "Constants"
-            }
+                "name": "e Ui Image Type_ Tiled"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiImageType_Tiled",
+                    "details": {
+                        "name": "Gete Ui Image Type_ Tiled"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

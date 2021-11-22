@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "SystemConfigSpec_Low::Getter",
-                "category": "Constants"
-            }
+                "name": "System Config Spec_ Low"
+            },
+            "methods": [
+                {
+                    "key": "GetSystemConfigSpec_Low",
+                    "details": {
+                        "name": "Get System Config Spec_ Low"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
