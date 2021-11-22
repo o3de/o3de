@@ -451,10 +451,12 @@ def ArchiveArtifactsOnS3(String artifactsSource, String s3Prefix="", boolean rec
 }
 
 def UploadAPLogs(String platformName, String jobName, String workspace, Map params) {
-    dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
-        projects = params.CMAKE_LY_PROJECTS.split(",")
-        projects.each{ project ->
-            ArchiveArtifactsOnS3("${project}/user/log", "ap_logs/${platformName}/${jobName}/${project}", true)
+    catchError(message: "Error exporting logs (this won't fail the build)", buildResult: 'UNSTABLE', stageResult: 'FAILURE') {
+        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+            projects = params.CMAKE_LY_PROJECTS.split(",")
+            projects.each{ project ->
+                ArchiveArtifactsOnS3("${project}/user/log", "ap_logs/${platformName}/${jobName}/${project}", true)
+            }
         }
     }
 }
