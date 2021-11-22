@@ -300,6 +300,10 @@ namespace AZ::Render
             {
                 renderColor = SelectedColor;
             }
+            else
+            {
+                renderColor = skeletonColor;
+            }
             // Render the bone cylinder, the cylinder will be directed towards the node's parent and must fit between the spheres
             auxGeom->DrawCylinder(centerWorldPos, boneDirection, boneScale, cylinderSize, renderColor);
             auxGeom->DrawSphere(nodeWorldPos, boneScale, renderColor);
