@@ -792,51 +792,51 @@ bool CMovieSystem::InternalStopSequence(IAnimSequence* sequence, bool bAbort, bo
         return false;
     }
 
-        if (bAnimate && sequence->IsActivated())
+    if (bAnimate && sequence->IsActivated())
+    {
+        if (m_sequenceStopBehavior == eSSB_GotoEndTime)
         {
-            if (m_sequenceStopBehavior == eSSB_GotoEndTime)
-            {
-                SAnimContext ac;
-                ac.singleFrame = true;
-                ac.time = sequence->GetTimeRange().end;
-                sequence->Animate(ac);
-            }
-            else if (m_sequenceStopBehavior == eSSB_GotoStartTime)
-            {
-                SAnimContext ac;
-                ac.singleFrame = true;
-                ac.time = sequence->GetTimeRange().start;
-                sequence->Animate(ac);
-            }
-
-            sequence->Deactivate();
+            SAnimContext ac;
+            ac.singleFrame = true;
+            ac.time = sequence->GetTimeRange().end;
+            sequence->Animate(ac);
+        }
+        else if (m_sequenceStopBehavior == eSSB_GotoStartTime)
+        {
+            SAnimContext ac;
+            ac.singleFrame = true;
+            ac.time = sequence->GetTimeRange().start;
+            sequence->Animate(ac);
         }
 
-        // If this sequence is cut scene end it.
-        if (sequence->GetFlags() & IAnimSequence::eSeqFlags_CutScene)
+        sequence->Deactivate();
+    }
+
+    // If this sequence is cut scene end it.
+    if (sequence->GetFlags() & IAnimSequence::eSeqFlags_CutScene)
+    {
+        if (!gEnv->IsEditing() || !m_bCutscenesPausedInEditor)
         {
-            if (!gEnv->IsEditing() || !m_bCutscenesPausedInEditor)
+            if (m_pUser)
             {
-                if (m_pUser)
-                {
-                    m_pUser->EndCutScene(sequence, sequence->GetCutSceneFlags(true));
-                }
+                m_pUser->EndCutScene(sequence, sequence->GetCutSceneFlags(true));
             }
-
-            sequence->SetParentSequence(NULL);
         }
 
-        // tell all interested listeners
-        NotifyListeners(sequence, bAbort ? IMovieListener::eMovieEvent_Aborted : IMovieListener::eMovieEvent_Stopped);
+        sequence->SetParentSequence(NULL);
+    }
 
-        // erase the sequence after notifying listeners so if they choose to they can get the ending time of this sequence
-        if (FindSequence(sequence, it))
-        {
-            m_playingSequences.erase(it);
-        }
+    // tell all interested listeners
+    NotifyListeners(sequence, bAbort ? IMovieListener::eMovieEvent_Aborted : IMovieListener::eMovieEvent_Stopped);
 
-        sequence->Resume();
-        static_cast<CAnimSequence*>(sequence)->OnStop();
+    // erase the sequence after notifying listeners so if they choose to they can get the ending time of this sequence
+    if (FindSequence(sequence, it))
+    {
+        m_playingSequences.erase(it);
+    }
+
+    sequence->Resume();
+    static_cast<CAnimSequence*>(sequence)->OnStop();
 
     return true;
 }

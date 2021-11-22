@@ -2277,7 +2277,7 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
         {
             if (pTrack->GetValueType() == AnimValueType::RGB)
             {
-CreateColorKey(pTrack, keyTime);
+                CreateColorKey(pTrack, keyTime);
             }
             else
             {

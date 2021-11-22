@@ -375,7 +375,7 @@ extern intptr_t _findfirst64(const char* pFileName, __finddata64_t* pFindData);
 
 extern DWORD GetFileAttributesW(LPCWSTR lpFileName);
 
-extern const bool GetFilenameNoCase(const char* file, char*, const bool cCreateNew = false);
+extern const bool GetFilenameNoCase(const char* file, char*);
 
 extern BOOL GetUserName(LPSTR lpBuffer, LPDWORD nSize);
 

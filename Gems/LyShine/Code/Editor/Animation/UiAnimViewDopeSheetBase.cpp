@@ -1866,14 +1866,14 @@ void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKe
 
     if (pTrack && inRange)
     {
-        if (bTryAddKeysInGroup && pNode->GetParentNode())       // Add keys in group
+        if (bTryAddKeysInGroup && pNode->GetParentNode()) // Add keys in group
         {
             CUiAnimViewTrackBundle tracksInGroup = pNode->GetTracksByParam(pTrack->GetParameterType());
             for (int i = 0; i < (int)tracksInGroup.GetCount(); ++i)
             {
                 CUiAnimViewTrack* pCurrTrack = tracksInGroup.GetTrack(i);
 
-                if (pCurrTrack->GetChildCount() == 0)   // A simple track
+                if (pCurrTrack->GetChildCount() == 0) // A simple track
                 {
                     if (IsOkToAddKeyHere(pCurrTrack, keyTime))
                     {
@@ -1881,7 +1881,7 @@ void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKe
                         pCurrTrack->CreateKey(keyTime);
                     }
                 }
-                else                                                                            // A compound track
+                else // A compound track
                 {
                     for (unsigned int k = 0; k < pCurrTrack->GetChildCount(); ++k)
                     {
@@ -1895,7 +1895,7 @@ void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKe
                 }
             }
         }
-        else if (pTrack->GetChildCount() == 0)          // A simple track
+        else if (pTrack->GetChildCount() == 0) // A simple track
         {
             if (IsOkToAddKeyHere(pTrack, keyTime))
             {
@@ -1903,11 +1903,11 @@ void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKe
                 pTrack->CreateKey(keyTime);
             }
         }
-        else                                                                                // A compound track
+        else // A compound track
         {
             if (pTrack->GetValueType() == eUiAnimValue_RGB)
             {
-CreateColorKey(pTrack, keyTime);
+                CreateColorKey(pTrack, keyTime);
             }
             else
             {

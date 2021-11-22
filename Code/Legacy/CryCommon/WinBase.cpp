@@ -1263,9 +1263,7 @@ ILINE void FS_CLOSEDIR_NOERR(FS_DIR_TYPE pDir)
 const bool GetFilenameNoCase
 (
     const char* file,
-    char* pAdjustedFilename,
-    const bool /*cCreateNew
-*/
+    char* pAdjustedFilename
 )
 {
     assert(file);

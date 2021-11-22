@@ -934,31 +934,31 @@ void CAnimSceneNode::ApplySequenceKey(IAnimTrack* pTrack, [[maybe_unused]] int n
     {
         return;
     }
-        IAnimSequence* pSequence = GetSequenceFromSequenceKey(key);
-        if (!pSequence)
-        {
+    IAnimSequence* pSequence = GetSequenceFromSequenceKey(key);
+    if (!pSequence)
+    {
         return;
     }
 
-            if (key.bOverrideTimes)
-            {
-                key.fDuration = (key.fEndTime - key.fStartTime) > 0.0f ? (key.fEndTime - key.fStartTime) : 0.0f;
-            }
-            else
-            {
-                key.fDuration = pSequence->GetTimeRange().Length();
-            }
+    if (key.bOverrideTimes)
+    {
+        key.fDuration = (key.fEndTime - key.fStartTime) > 0.0f ? (key.fEndTime - key.fStartTime) : 0.0f;
+    }
+    else
+    {
+        key.fDuration = pSequence->GetTimeRange().Length();
+    }
 
-            pTrack->SetKey(nCurrKey, &key);
+    pTrack->SetKey(nCurrKey, &key);
 
-            SAnimContext newAnimContext = ec;
-            newAnimContext.time = std::min(ec.time - key.time + key.fStartTime, key.fDuration + key.fStartTime);
+    SAnimContext newAnimContext = ec;
+    newAnimContext.time = std::min(ec.time - key.time + key.fStartTime, key.fDuration + key.fStartTime);
 
-            if (static_cast<CAnimSequence*>(pSequence)->GetTime() != newAnimContext.time)
-            {
-                pSequence->Animate(newAnimContext);
-            }
-        }
+    if (static_cast<CAnimSequence*>(pSequence)->GetTime() != newAnimContext.time)
+    {
+        pSequence->Animate(newAnimContext);
+    }
+}
 
 //////////////////////////////////////////////////////////////////////////
 void CAnimSceneNode::ApplyConsoleKey(IConsoleKey& key, [[maybe_unused]] SAnimContext& ec)
