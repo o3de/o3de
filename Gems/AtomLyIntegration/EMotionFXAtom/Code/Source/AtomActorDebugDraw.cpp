@@ -645,7 +645,6 @@ namespace AZ::Render
         {
             EMotionFX::Node* joint = skeleton->GetNode(actorInstance->GetEnabledNode(i));
             const size_t jointIndex = joint->GetNodeIndex();
-            const size_t parentIndex = joint->GetParentIndex();
 
             static const float axisBoneScale = 50.0f;
             const float size = CalculateBoneScale(actorInstance, joint) * constPreScale * axisBoneScale;
