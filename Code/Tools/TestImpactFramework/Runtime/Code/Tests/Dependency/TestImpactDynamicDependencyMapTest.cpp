@@ -158,7 +158,7 @@ namespace UnitTest
         EXPECT_EQ(m_dynamicDependencyMap->GetTestTargetList().GetNumTargets(), m_testTargets->GetNumTargets());
 
         // Expect the total number of build targets in the repository to match the total number of descriptors used to construct those targets
-        EXPECT_EQ(m_dynamicDependencyMap->GetNumTargets(), m_productionTargets->GetNumTargets() + m_testTargets->GetNumTargets());
+        EXPECT_EQ(m_dynamicDependencyMap->GetNumBuildTargets(), m_productionTargets->GetNumTargets() + m_testTargets->GetNumTargets());
 
         // Expect no orphaned source files as each file belongs to at least one parent build target
         const auto orphans = m_dynamicDependencyMap->GetOrphanSourceFiles();
@@ -535,7 +535,7 @@ namespace UnitTest
             EXPECT_TRUE(buildTarget);
 
             // Expect the build type to be a production target
-            EXPECT_EQ(buildTarget->GetType(), TestImpact::TargetType::Production);
+            EXPECT_EQ(buildTarget->GetType(), TestImpact::SpecializedBuildTargetType::Production);
 
             // Expect the retrieved build target to match the production target we queried
             ValidateBuildTarget(*buildTarget, expectedProductionTarget);
@@ -550,7 +550,7 @@ namespace UnitTest
             EXPECT_TRUE(buildTarget);
 
             // Expect the build type to be a test target
-            EXPECT_EQ(buildTarget->GetType(), TestImpact::TargetType::Test);
+            EXPECT_EQ(buildTarget->GetType(), TestImpact::SpecializedBuildTargetType::Test);
 
             // Expect the retrieved build target to match the test target we queried
             ValidateBuildTarget(*buildTarget, expectedTestTarget);
@@ -590,7 +590,7 @@ namespace UnitTest
             auto buildTarget = m_dynamicDependencyMap->GetBuildTargetOrThrow(expectedProductionTarget.GetName());
 
             // Expect the build type to be a production target
-            EXPECT_EQ(buildTarget->GetType(), TestImpact::TargetType::Production);
+            EXPECT_EQ(buildTarget->GetType(), TestImpact::SpecializedBuildTargetType::Production);
 
             // Expect the retrieved build target to match the production target we queried
             ValidateBuildTarget(*buildTarget, expectedProductionTarget);
@@ -602,7 +602,7 @@ namespace UnitTest
             auto buildTarget = m_dynamicDependencyMap->GetBuildTargetOrThrow(expectedTestTarget.GetName());
 
             // Expect the build type to be a test target
-            EXPECT_EQ(buildTarget->GetType(), TestImpact::TargetType::Test);
+            EXPECT_EQ(buildTarget->GetType(), TestImpact::SpecializedBuildTargetType::Test);
 
             // Expect the retrieved build target to match the test target we queried
             ValidateBuildTarget(*buildTarget, expectedTestTarget);

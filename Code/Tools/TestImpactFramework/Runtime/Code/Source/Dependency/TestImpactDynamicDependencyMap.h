@@ -18,6 +18,7 @@
 #include <Dependency/TestImpactChangeDependencyList.h>
 #include <Target/TestImpactProductionTargetList.h>
 #include <Target/TestImpactTestTargetList.h>
+#include <Target/TestImpactTestScriptTargetList.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>

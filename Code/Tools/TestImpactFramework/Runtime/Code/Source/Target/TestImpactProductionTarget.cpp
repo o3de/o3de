@@ -11,7 +11,7 @@
 namespace TestImpact
 {
     ProductionTarget::ProductionTarget(Descriptor&& descriptor)
-        : BuildTarget(AZStd::move(descriptor), TargetType::Production)
+        : BuildTarget(AZStd::move(descriptor), SpecializedBuildTargetType::Production)
     {
     }
 } // namespace TestImpact

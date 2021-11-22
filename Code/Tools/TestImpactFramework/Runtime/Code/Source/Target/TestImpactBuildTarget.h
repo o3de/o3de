@@ -25,7 +25,7 @@ namespace TestImpact
     using OptionalSpecializedBuildTarget = AZStd::variant<AZStd::monostate, const TestTarget*, const ProductionTarget*>;
 
     //! Type id for querying specialized derived target types from base pointer/reference.
-    enum class TargetType : bool
+    enum class SpecializedBuildTargetType : bool
     {
         Production, //!< Production build target.
         Test //!< Test build target.
@@ -35,7 +35,7 @@ namespace TestImpact
     class BuildTarget
     {
     public:
-        BuildTarget(BuildTargetDescriptor&& descriptor, TargetType type);
+        BuildTarget(BuildTargetDescriptor&& descriptor, SpecializedBuildTargetType type);
         virtual ~BuildTarget() = default;
 
         //! Returns the build target name.
@@ -51,11 +51,11 @@ namespace TestImpact
         const TargetSources& GetSources() const;
 
         //! Returns the build target type.
-        TargetType GetType() const;
+        SpecializedBuildTargetType GetType() const;
 
     private:
         BuildMetaData m_buildMetaData;
         TargetSources m_sources;
-        TargetType m_type;
+        SpecializedBuildTargetType m_type;
     };
 } // namespace TestImpact

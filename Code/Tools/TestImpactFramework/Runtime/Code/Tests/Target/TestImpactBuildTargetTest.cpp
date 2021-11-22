@@ -162,7 +162,7 @@
 //        EXPECT_EQ(target.GetName(), GenerateBuildTargetName(index));
 //        EXPECT_EQ(target.GetOutputName(), GenerateBuildTargetOutputName(index));
 //        EXPECT_EQ(target.GetPath(), GenerateBuildTargetPath(index));
-//        EXPECT_EQ(target.GetType(), TestImpact::TargetType::Production);
+//        EXPECT_EQ(target.GetType(), TestImpact::SpecializedBuildTargetType::Production);
 //        ValidateSources(target.GetSources(), index);
 //    }
 //
@@ -171,7 +171,7 @@
 //        EXPECT_EQ(target.GetName(), GenerateBuildTargetName(index));
 //        EXPECT_EQ(target.GetOutputName(), GenerateBuildTargetOutputName(index));
 //        EXPECT_EQ(target.GetPath(), GenerateBuildTargetPath(index));
-//        EXPECT_EQ(target.GetType(), TestImpact::TargetType::Test);
+//        EXPECT_EQ(target.GetType(), TestImpact::SpecializedBuildTargetType::Test);
 //        EXPECT_EQ(target.GetSuite(), GenerateTestTargetSuite(index));
 //        EXPECT_EQ(target.GetLaunchMethod(), GenerateLaunchMethod(index));
 //        ValidateSources(target.GetSources(), index);
@@ -183,7 +183,7 @@
 //    {
 //    public:
 //        using TargetListType = TargetList;
-//        using TargetType = typename TargetList::TargetType;
+//        using SpecializedBuildTargetType = typename TargetList::SpecializedBuildTargetType;
 //
 //        static constexpr size_t m_numTargets = 10;
 //    };
@@ -194,7 +194,7 @@
 //    TYPED_TEST(TargetListFixture, CreateTarget_ExpectValidTarget)
 //    {
 //        // Given a target of the specified type
-//        TargetType target(GenerateTargetDescriptor<TargetType>());
+//        SpecializedBuildTargetType target(GenerateTargetDescriptor<SpecializedBuildTargetType>());
 //
 //        // Expect the target to match the procedurally generated target descriptor
 //        ValidateTarget(target);
@@ -227,12 +227,12 @@
 //        try
 //        {
 //            // Given a set of target descriptors containing a single duplicate            
-//            AZStd::vector<TargetType::Descriptor> descriptors;
+//            AZStd::vector<SpecializedBuildTargetType::Descriptor> descriptors;
 //            descriptors.reserve(m_numTargets);
 //            for (size_t i = 0; i < m_numTargets; i++)
 //            {
 //                // Wrap the last index round to repeat the first index
-//                descriptors.push_back(GenerateTargetDescriptor<TargetType>(i % (m_numTargets - 1)));
+//                descriptors.push_back(GenerateTargetDescriptor<SpecializedBuildTargetType>(i % (m_numTargets - 1)));
 //            }
 //
 //            // When constructing the target list containing the duplicate target descriptor
@@ -256,20 +256,20 @@
 //    TYPED_TEST(TargetListFixture, CreateTargetListWithValidDescriptors_ExpectValidTargetList)
 //    {
 //        // Given a valid set of target descriptor
-//        AZStd::vector<TargetType::Descriptor> descriptors;
+//        AZStd::vector<SpecializedBuildTargetType::Descriptor> descriptors;
 //        descriptors.reserve(m_numTargets);
 //        for (size_t i = 0; i < m_numTargets; i++)
 //        {
-//            descriptors.push_back(GenerateTargetDescriptor<TargetType>(i));
+//            descriptors.push_back(GenerateTargetDescriptor<SpecializedBuildTargetType>(i));
 //        }
 //
 //        // When constructing the target list containing the valid target descriptors
 //        TargetListType targetList(AZStd::move(descriptors));
 //
 //        // Expect the number of targets in the list to match the number of target descriptors used to construct the list
-//        EXPECT_EQ(targetList.GetNumTargets(), m_numTargets);
+//        EXPECT_EQ(targetList.GetNumBuildTargets(), m_numTargets);
 //
-//        for (size_t i = 0; i < targetList.GetNumTargets(); i++)
+//        for (size_t i = 0; i < targetList.GetNumBuildTargets(); i++)
 //        {
 //            // Expect the target to match the procedurally generated target descriptor
 //            ValidateTarget(targetList.GetTargets()[i], i);
@@ -284,23 +284,23 @@
 //    TYPED_TEST(TargetListFixture, FindNonExistantTargets_ExpectEmptyResults)
 //    {
 //        // Given a valid set of target descriptor
-//        AZStd::vector<TargetType::Descriptor> descriptors;
+//        AZStd::vector<SpecializedBuildTargetType::Descriptor> descriptors;
 //        descriptors.reserve(m_numTargets);
 //        for (size_t i = 0; i < m_numTargets; i++)
 //        {
-//            descriptors.push_back(GenerateTargetDescriptor<TargetType>(i));
+//            descriptors.push_back(GenerateTargetDescriptor<SpecializedBuildTargetType>(i));
 //        }
 //
 //        // When constructing the target list containing the valid target descriptors
 //        TargetListType targetList(AZStd::move(descriptors));
 //
 //        // Expect the number of targets in the list to match the number of target descriptors used to construct the list
-//        EXPECT_EQ(targetList.GetNumTargets(), m_numTargets);
+//        EXPECT_EQ(targetList.GetNumBuildTargets(), m_numTargets);
 //
-//        for (size_t i = 0; i < targetList.GetNumTargets(); i++)
+//        for (size_t i = 0; i < targetList.GetNumBuildTargets(); i++)
 //        {
 //            // When attempting to find a target that does not exist
-//            auto target = targetList.GetSpecializedBuildTarget(GenerateBuildTargetName(i + targetList.GetNumTargets()));
+//            auto target = targetList.GetSpecializedBuildTarget(GenerateBuildTargetName(i + targetList.GetNumBuildTargets()));
 //
 //            // Expect an empty result
 //            EXPECT_FALSE(target);
@@ -310,25 +310,25 @@
 //    TYPED_TEST(TargetListFixture, FindNonExistantTargetsAndThrow_ExpectTargetExceptionss)
 //    {
 //        // Given a valid set of target descriptor
-//        AZStd::vector<TargetType::Descriptor> descriptors;
+//        AZStd::vector<SpecializedBuildTargetType::Descriptor> descriptors;
 //        descriptors.reserve(m_numTargets);
 //        for (size_t i = 0; i < m_numTargets; i++)
 //        {
-//            descriptors.push_back(GenerateTargetDescriptor<TargetType>(i));
+//            descriptors.push_back(GenerateTargetDescriptor<SpecializedBuildTargetType>(i));
 //        }
 //
 //        // When constructing the target list containing the valid target descriptors
 //        TargetListType targetList(AZStd::move(descriptors));
 //
 //        // Expect the number of targets in the list to match the number of target descriptors used to construct the list
-//        EXPECT_EQ(targetList.GetNumTargets(), m_numTargets);
+//        EXPECT_EQ(targetList.GetNumBuildTargets(), m_numTargets);
 //
-//        for (size_t i = 0; i < targetList.GetNumTargets(); i++)
+//        for (size_t i = 0; i < targetList.GetNumBuildTargets(); i++)
 //        {
 //            try
 //            {
 //                // When attempting to find a target that does not exist
-//                targetList.GetSpecializedBuildTargetOrThrow(GenerateBuildTargetName(i + targetList.GetNumTargets()));
+//                targetList.GetSpecializedBuildTargetOrThrow(GenerateBuildTargetName(i + targetList.GetNumBuildTargets()));
 //
 //                // Do not expect the target list construction to succeed
 //                FAIL();

@@ -11,7 +11,7 @@
 namespace TestImpact
 {
     TestTarget::TestTarget(Descriptor&& descriptor)
-        : BuildTarget(AZStd::move(descriptor), TargetType::Test)
+        : BuildTarget(AZStd::move(descriptor), SpecializedBuildTargetType::Test)
         , m_testMetaData(AZStd::move(descriptor.m_testMetaData))
     {
     }

@@ -10,7 +10,7 @@
 
 namespace TestImpact
 {
-    BuildTarget::BuildTarget(BuildTargetDescriptor&& descriptor, TargetType type)
+    BuildTarget::BuildTarget(BuildTargetDescriptor&& descriptor, SpecializedBuildTargetType type)
         : m_buildMetaData(AZStd::move(descriptor.m_buildMetaData))
         , m_sources(AZStd::move(descriptor.m_sources))
         , m_type(type)
@@ -37,7 +37,7 @@ namespace TestImpact
         return m_sources;
     }
 
-    TargetType BuildTarget::GetType() const
+    SpecializedBuildTargetType BuildTarget::GetType() const
     {
         return m_type;
     }
