@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiFlipbookAnimationFramerateUnits_SecondsPerFrame::Getter",
-                "category": "Constants"
-            }
+                "name": "e Ui Flipbook Animation Framerate Units_ Seconds Per Frame"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiFlipbookAnimationFramerateUnits_SecondsPerFrame",
+                    "details": {
+                        "name": "Gete Ui Flipbook Animation Framerate Units_ Seconds Per Frame"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiImageType_Stretched::Getter",
-                "category": "Constants"
-            }
+                "name": "e Ui Image Type_ Stretched"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiImageType_Stretched",
+                    "details": {
+                        "name": "Gete Ui Image Type_ Stretched"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

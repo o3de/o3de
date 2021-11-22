@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "key": "ProviderNameEnum_AWSCognitoIDP",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Provider Name Enum_AWS CognitoIDP"
+            },
+            "methods": [
+                {
+                    "key": "GetProviderNameEnum_AWSCognitoIDP",
+                    "details": {
+                        "name": "Get Provider Name Enum_AWS CognitoIDP"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

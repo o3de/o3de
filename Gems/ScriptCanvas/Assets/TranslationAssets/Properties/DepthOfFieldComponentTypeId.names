@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "DepthOfFieldComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Depth Of Field Component Type Id"
+            },
+            "methods": [
+                {
+                    "key": "GetDepthOfFieldComponentTypeId",
+                    "details": {
+                        "name": "Get Depth Of Field Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

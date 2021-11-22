@@ -278,21 +278,33 @@ namespace ScriptCanvasEditorTools
                 // Arguments (Input Slots)
                 if (behaviorMethod->GetNumArguments() > 0)
                 {
-                    for (size_t argIndex = 0; argIndex < behaviorMethod->GetNumArguments(); ++argIndex)
+                    size_t startIndex = behaviorMethod->HasResult() ? 1 : 0;
+                    for (size_t argIndex = startIndex; argIndex < behaviorMethod->GetNumArguments(); ++argIndex)
                     {
                         const AZ::BehaviorParameter* parameter = behaviorMethod->GetArgument(argIndex);
 
                         Argument argument;
 
                         AZStd::string argumentKey = parameter->m_typeId.ToString<AZStd::string>();
-                        AZStd::string argumentName = parameter->m_name;
-                        AZStd::string argumentDescription = "";
+                        AZStd::string argumentName;
+                        AZStd::string argumentDescription;
 
                         Helpers::GetTypeNameAndDescription(parameter->m_typeId, argumentName, argumentDescription);
 
+                        const AZStd::string* argName = behaviorMethod->GetArgumentName(argIndex);
+                        if (argName && !(*argName).empty())
+                        {
+                            argumentName = *argName;
+                        }
+
+                        const AZStd::string* argDesc = behaviorMethod->GetArgumentToolTip(argIndex);
+                        if (argDesc && !(*argDesc).empty())
+                        {
+                            argumentDescription = *argDesc;
+                        }
+
                         argument.m_typeId = argumentKey;
-                        argument.m_details.m_name = parameter->m_name;
-                        argument.m_details.m_category = "";
+                        argument.m_details.m_name = argumentName;
                         argument.m_details.m_tooltip = argumentDescription;
 
                         SplitCamelCase(argument.m_details.m_name);
@@ -837,7 +849,7 @@ namespace ScriptCanvasEditorTools
                 Helpers::GetTypeNameAndDescription(parameter->m_typeId, argumentName, argumentDescription);
 
                 argument.m_typeId = argumentKey;
-                argument.m_details.m_name = parameter->m_name;
+                argument.m_details.m_name = behaviorMethod->GetArgumentName(argIndex)  ? *behaviorMethod->GetArgumentName(argIndex) : argumentName;
                 argument.m_details.m_category = "";
                 argument.m_details.m_tooltip = argumentDescription;
 
@@ -860,7 +872,7 @@ namespace ScriptCanvasEditorTools
             Helpers::GetTypeNameAndDescription(resultParameter->m_typeId, resultName, resultDescription);
 
             result.m_typeId = resultKey;
-            result.m_details.m_name = resultParameter->m_name;
+            result.m_details.m_name = behaviorMethod->GetArgumentName(0) ? *behaviorMethod->GetArgumentName(0) : resultName;
             result.m_details.m_tooltip = resultDescription;
 
             SplitCamelCase(result.m_details.m_name);
@@ -885,6 +897,9 @@ namespace ScriptCanvasEditorTools
         {
             entry->m_key = className;
             entry->m_context = context;
+
+            entry->m_details.m_name = className;
+            SplitCamelCase(entry->m_details.m_name);
         }
 
         if (behaviorProperty->m_getter)
@@ -1298,6 +1313,7 @@ namespace ScriptCanvasEditorTools
         AZStd::regex splitRegex(R"(/[a-z]+|[0-9]+|(?:[A-Z][a-z]+)|(?:[A-Z]+(?=(?:[A-Z][a-z])|[^AZa-z]|[$\d\n]))/g)");
         text = AZStd::regex_replace(text, splitRegex, " $&");
         text = AZ::StringFunc::LStrip(text);
+        AZ::StringFunc::Replace(text, "  ", " ");
     }
 
     namespace Helpers
