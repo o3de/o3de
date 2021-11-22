@@ -31,22 +31,22 @@ namespace PhysX
         ColliderComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         ~ColliderComponentMode();
 
-        // EditorBaseComponentMode ...
+        // EditorBaseComponentMode overrides ...
         void Refresh() override;
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
         AZStd::vector<AzToolsFramework::ViewportUi::ClusterId> PopulateViewportUiImpl() override;
 
-        // ColliderComponentModeBus ...
+        // ColliderComponentModeBus overrides ...
         SubMode GetCurrentMode() override;
         void SetCurrentMode(SubMode index) override;
 
-        // ColliderComponentModeUiBus ...
+        // ColliderComponentModeUiBus overrides ...
         AzToolsFramework::ViewportUi::ButtonId GetOffsetButtonId() const override;
         AzToolsFramework::ViewportUi::ButtonId GetRotationButtonId() const override;
         AzToolsFramework::ViewportUi::ClusterId GetClusterId() const override;
         AzToolsFramework::ViewportUi::ButtonId GetDimensionsButtonId() const override;
 
-        // ComponentMode ...
+        // ComponentMode overrides ...
         AZStd::string GetComponentModeName() const override;
     private:
         
@@ -66,7 +66,8 @@ namespace PhysX
         AzToolsFramework::ViewportUi::ClusterId
             m_modeSelectionClusterId; //!< Viewport UI cluster for changing sub mode.
 
-        AZStd::vector<AzToolsFramework::ViewportUi::ButtonId> m_buttonIds; //!< Ids for the Viewport UI buttons for each mode.
+        //! Ids for the Viewport UI buttons for each mode.
+        AZStd::fixed_vector< AzToolsFramework::ViewportUi::ButtonId, static_cast<size_t>(SubMode::NumModes)> m_buttonIds;
 
         AZ::Event<AzToolsFramework::ViewportUi::ButtonId>::Handler
             m_modeSelectionHandler; //!< Event handler for sub mode changes.
