@@ -8,8 +8,7 @@ REM
 REM
 
 REM To get recursive folder creation
-SETLOCAL EnableExtensions
-SETLOCAL EnableDelayedExpansion
+SETLOCAL EnableExtensions EnableDelayedExpansion
 
 where /Q cmake
 IF NOT %ERRORLEVEL%==0 (
@@ -22,6 +21,8 @@ IF NOT "%COMMAND_CWD%"=="" (
     CD %COMMAND_CWD%
 )
 
+ENDLOCAL
+
 REM Jenkins does not defined TMP
 IF "%TMP%"=="" (
     SET TMP=%APPDATA%\Local\Temp
@@ -31,4 +32,5 @@ IF "%TMP%"=="" (
 EXIT /b 0
 
 :error
+ENDLOCAL
 EXIT /b 1
