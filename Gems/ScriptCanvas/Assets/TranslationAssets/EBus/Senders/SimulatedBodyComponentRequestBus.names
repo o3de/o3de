@@ -5,8 +5,7 @@
             "context": "EBusSender",
             "variant": "",
             "details": {
-                "name": "SimulatedBodyComponentRequestBus",
-                "category": "PhysX"
+                "name": "Simulated Body"
             },
             "methods": [
                 {
@@ -26,7 +25,7 @@
                         {
                             "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
                             "details": {
-                                "name": "Aabb"
+                                "name": "AABB"
                             }
                         }
                     ]
@@ -35,11 +34,11 @@
                     "key": "IsPhysicsEnabled",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Is Physics Enabled"
+                        "tooltip": "When signaled, this will invoke IsPhysicsEnabled"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Is Physics Enabled is invoked"
+                        "tooltip": "Signaled after IsPhysicsEnabled is invoked"
                     },
                     "details": {
                         "name": "Is Physics Enabled"
@@ -48,7 +47,7 @@
                         {
                             "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
                             "details": {
-                                "name": "bool"
+                                "name": "Enabled"
                             }
                         }
                     ]
@@ -57,21 +56,20 @@
                     "key": "RayCast",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Raycast (Single Body)"
+                        "tooltip": "When signaled, this will invoke RayCast"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Raycast (Single Body) is invoked"
+                        "tooltip": "Signaled after RayCast is invoked"
                     },
                     "details": {
-                        "name": "Raycast (Single Body)",
-                        "tooltip": "Perform a raycast against a single simulated body (not the whole scene)"
+                        "name": "Ray Cast"
                     },
                     "params": [
                         {
                             "typeid": "{53EAD088-A391-48F1-8370-2A1DBA31512F}",
                             "details": {
-                                "name": "Raycast Request",
+                                "name": "RayCast Request",
                                 "tooltip": "Parameters for raycast"
                             }
                         }
@@ -80,7 +78,7 @@
                         {
                             "typeid": "{7A7201B9-67B5-438B-B4EB-F3EEBB78C617}",
                             "details": {
-                                "name": "SceneQueryHit"
+                                "name": "Scene Query Hit"
                             }
                         }
                     ]
@@ -103,11 +101,11 @@
                     "key": "EnablePhysics",
                     "entry": {
                         "name": "In",
-                        "tooltip": "When signaled, this will invoke Enable Physics"
+                        "tooltip": "When signaled, this will invoke EnablePhysics"
                     },
                     "exit": {
                         "name": "Out",
-                        "tooltip": "Signaled after Enable Physics is invoked"
+                        "tooltip": "Signaled after EnablePhysics is invoked"
                     },
                     "details": {
                         "name": "Enable Physics"

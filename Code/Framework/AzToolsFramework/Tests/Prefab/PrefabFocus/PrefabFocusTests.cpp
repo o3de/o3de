@@ -106,7 +106,9 @@ namespace UnitTest
         inline static const char* Passenger2EntityName = "Passenger2";
     };
 
-    TEST_F(PrefabFocusTests, PrefabFocus_FocusOnOwningPrefab_RootContainer)
+    // Test was disabled because the implementation of GetFocusedPrefabInstance now relies on the Prefab EOS,
+    // which is not used by our test environment. This can be restored once Instance handles are implemented.
+    TEST_F(PrefabFocusTests, DISABLED_PrefabFocus_FocusOnOwningPrefab_RootContainer)
     {
         // Verify FocusOnOwningPrefab works when passing the container entity of the root prefab.
         {
@@ -121,7 +123,9 @@ namespace UnitTest
         }
     }
 
-    TEST_F(PrefabFocusTests, PrefabFocus_FocusOnOwningPrefab_RootEntity)
+    // Test was disabled because the implementation of GetFocusedPrefabInstance now relies on the Prefab EOS,
+    // which is not used by our test environment. This can be restored once Instance handles are implemented.
+    TEST_F(PrefabFocusTests, DISABLED_PrefabFocus_FocusOnOwningPrefab_RootEntity)
     {
         // Verify FocusOnOwningPrefab works when passing a nested entity of the root prefab.
         {

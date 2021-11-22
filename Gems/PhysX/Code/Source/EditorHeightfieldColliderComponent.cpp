@@ -34,8 +34,8 @@ namespace PhysX
                     "PhysX Heightfield Collider", "Creates geometry in the PhysX simulation based on an attached heightfield component")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                        ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXCollider.svg")
+                        ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/PhysXHeightfieldCollider.svg")
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/PhysXHeightfieldCollider.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                         ->Attribute(
                             AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/heightfield-collider/")

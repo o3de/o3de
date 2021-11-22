@@ -14,8 +14,10 @@
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <TagWidget.h>
-#include <QFrame>
 #include <DownloadController.h>
+
+#include <QFrame>
+#include <QScrollArea>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QPushButton)
@@ -28,14 +30,14 @@ QT_FORWARD_DECLARE_CLASS(QMovie)
 
 namespace O3DE::ProjectManager
 {
-    class CartOverlayWidget
-        : public QWidget
+    class GemCartWidget
+        : public QScrollArea
     {
         Q_OBJECT // AUTOMOC
 
     public:
-        CartOverlayWidget(GemModel* gemModel, DownloadController* downloadController, QWidget* parent = nullptr);
-        ~CartOverlayWidget();
+        GemCartWidget(GemModel* gemModel, DownloadController* downloadController, QWidget* parent = nullptr);
+        ~GemCartWidget();
 
     public slots:
         void GemDownloadAdded(const QString& gemName);
@@ -68,7 +70,10 @@ namespace O3DE::ProjectManager
     public:
         CartButton(GemModel* gemModel, DownloadController* downloadController, QWidget* parent = nullptr);
         ~CartButton();
-        void ShowOverlay();
+        void ShowGemCart();
+
+    signals:
+        void UpdateGemCart(QWidget* gemCart);
 
     private:
         void mousePressEvent(QMouseEvent* event) override;
@@ -78,7 +83,7 @@ namespace O3DE::ProjectManager
         QHBoxLayout* m_layout = nullptr;
         QLabel* m_countLabel = nullptr;
         QPushButton* m_dropDownButton = nullptr;
-        CartOverlayWidget* m_cartOverlay = nullptr;
+        GemCartWidget* m_gemCart = nullptr;
         DownloadController* m_downloadController = nullptr;
 
         inline constexpr static int s_iconSize = 24;
@@ -99,11 +104,16 @@ namespace O3DE::ProjectManager
     public slots:
         void GemDownloadAdded(const QString& gemName);
         void GemDownloadRemoved(const QString& gemName);
+        void GemCartShown(bool state = false);
 
     signals:
         void AddGem();
         void OpenGemsRepo();
         void RefreshGems();
+        void UpdateGemCart(QWidget* gemCart);
+
+    protected slots:
+        void paintEvent(QPaintEvent* event) override;
         
     private:
         AzQtComponents::SearchLineEdit* m_filterLineEdit = nullptr;
@@ -113,5 +123,6 @@ namespace O3DE::ProjectManager
         QLabel* m_downloadLabel = nullptr;
         QMovie* m_downloadSpinnerMovie = nullptr;
         CartButton* m_cartButton = nullptr;
+        bool m_showGemCart = false;
     };
 } // namespace O3DE::ProjectManager

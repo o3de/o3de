@@ -21,16 +21,8 @@ namespace ImageProcessingAtom
     class ImageConvertOutput
     {
     public:
-        enum OutputImageType
-        {
-            Base = 0,   // Might contains alpha or not
-            Alpha,      // Separate alpha image
-            Preview,    // Combine base image with alpha if any, format RGBA8
-            Count
-        };
-
-        IImageObjectPtr GetOutputImage(OutputImageType type) const;
-        void SetOutputImage(IImageObjectPtr image, OutputImageType type);
+        IImageObjectPtr GetOutputImage() const;
+        void SetOutputImage(IImageObjectPtr image);
         void SetReady(bool ready);
         bool IsReady() const;
         float GetProgress() const;
@@ -38,7 +30,7 @@ namespace ImageProcessingAtom
         void Reset();
 
     private:
-        IImageObjectPtr m_outputImage[OutputImageType::Count];
+        IImageObjectPtr m_outputImage;
         bool m_outputReady = false;
         float m_progress = 0.0f;
     };
