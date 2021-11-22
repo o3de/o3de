@@ -1,0 +1,27 @@
+{
+    "template_name": "GemRepo",
+    "origin": "The primary repo for GemRepo goes here: i.e. http://www.mydomain.com",
+    "license": "What license GemRepo uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "display_name": "GemRepo",
+    "summary": "A Gem Repository that contains a single Gem.",
+    "canonical_tags": [],
+    "user_tags": [
+        "GemRepo"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": "gem.json",
+            "origin": "gem.json",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "repo.json",
+            "origin": "repo.json",
+            "isTemplated": true,
+            "isOptional": false
+        }
+    ],
+    "createDirectories": []
+}

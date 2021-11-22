@@ -203,10 +203,6 @@ namespace QtForPython
     {
         QtBootstrapParameters params;
        
-#if !defined(Q_OS_WIN)
-#error Unsupported OS platform for this QtForPython gem
-#endif
-
         params.m_mainWindowId = 0;
         using namespace AzToolsFramework;
         QWidget* activeWindow = nullptr;

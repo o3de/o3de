@@ -8,13 +8,15 @@
 
 #include "ViewportManipulatorController.h"
 
+#include <AzCore/Script/ScriptTimePoint.h>
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
+#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
-#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
-#include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
-#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
-#include <AzFramework/Viewport/ScreenGeometry.h>
-#include <AzCore/Script/ScriptTimePoint.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
 #include <QApplication>
 
@@ -87,8 +89,14 @@ namespace SandboxEditor
         }
 
         using InteractionBus = AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
-        using namespace AzToolsFramework::ViewportInteraction;
         using AzFramework::InputChannel;
+        using AzToolsFramework::ViewportInteraction::KeyboardModifier;
+        using AzToolsFramework::ViewportInteraction::MouseButton;
+        using AzToolsFramework::ViewportInteraction::MouseEvent;
+        using AzToolsFramework::ViewportInteraction::MouseInteraction;
+        using AzToolsFramework::ViewportInteraction::MouseInteractionEvent;
+        using AzToolsFramework::ViewportInteraction::ProjectedViewportRay;
+        using AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus;
 
         bool interactionHandled = false;
         float wheelDelta = 0.0f;
@@ -117,16 +125,13 @@ namespace SandboxEditor
                     aznumeric_cast<int>(position->m_normalizedPosition.GetX() * windowSize.m_width),
                     aznumeric_cast<int>(position->m_normalizedPosition.GetY() * windowSize.m_height));
 
-                m_mouseInteraction.m_mousePick.m_screenCoordinates = screenPoint;
-                AZStd::optional<ProjectedViewportRay> ray;
+                ProjectedViewportRay ray{};
                 ViewportInteractionRequestBus::EventResult(
                     ray, GetViewportId(), &ViewportInteractionRequestBus::Events::ViewportScreenToWorldRay, screenPoint);
 
-                if (ray.has_value())
-                {
-                    m_mouseInteraction.m_mousePick.m_rayOrigin = ray.value().origin;
-                    m_mouseInteraction.m_mousePick.m_rayDirection = ray.value().direction;
-                }
+                m_mouseInteraction.m_mousePick.m_rayOrigin = ray.origin;
+                m_mouseInteraction.m_mousePick.m_rayDirection = ray.direction;
+                m_mouseInteraction.m_mousePick.m_screenCoordinates = screenPoint;
             }
 
             eventType = MouseEvent::Move;
@@ -152,7 +157,7 @@ namespace SandboxEditor
                     // Only insert the double click timing once we're done processing events, to avoid a false IsDoubleClick positive
                     if (finishedProcessingEvents)
                     {
-                        m_pendingDoubleClicks[mouseButton] = m_curTime;
+                        m_pendingDoubleClicks[mouseButton] = { m_currentTime, m_mouseInteraction.m_mousePick.m_screenCoordinates };
                     }
                     eventType = MouseEvent::Down;
                 }
@@ -160,8 +165,8 @@ namespace SandboxEditor
             else if (state == InputChannel::State::Ended)
             {
                 // If we've actually logged a mouse down event, forward a mouse up event.
-                // This prevents corner cases like the context menu thinking it should be opened even though no one clicked in this viewport,
-                // due to RenderViewportWidget ensuring all controllers get InputChannel::State::Ended events.
+                // This prevents corner cases like the context menu thinking it should be opened even though no one clicked in this
+                // viewport, due to RenderViewportWidget ensuring all controllers get InputChannel::State::Ended events.
                 if (m_mouseInteraction.m_mouseButtons.m_mouseButtons & mouseButtonValue)
                 {
                     // Erase the button from our state if we're done processing events.
@@ -246,17 +251,22 @@ namespace SandboxEditor
 
     void ViewportManipulatorControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
     {
-        m_curTime = event.m_time;
+        m_currentTime = event.m_time;
     }
 
     bool ViewportManipulatorControllerInstance::IsDoubleClick(AzToolsFramework::ViewportInteraction::MouseButton button) const
     {
-        auto clickIt = m_pendingDoubleClicks.find(button);
-        if (clickIt == m_pendingDoubleClicks.end())
+        if (auto clickIt = m_pendingDoubleClicks.find(button); clickIt != m_pendingDoubleClicks.end())
         {
-            return false;
+            const double doubleClickThresholdMilliseconds = qApp->doubleClickInterval();
+            const bool insideTimeThreshold =
+                (m_currentTime.GetMilliseconds() - clickIt->second.m_time.GetMilliseconds()) < doubleClickThresholdMilliseconds;
+            const bool insideDistanceThreshold =
+                AzFramework::ScreenVectorLength(clickIt->second.m_position - m_mouseInteraction.m_mousePick.m_screenCoordinates) <
+                AzFramework::DefaultMouseMoveDeadZone;
+            return insideTimeThreshold && insideDistanceThreshold;
         }
-        const double doubleClickThresholdMilliseconds = qApp->doubleClickInterval();
-        return (m_curTime.GetMilliseconds() - clickIt->second.GetMilliseconds()) < doubleClickThresholdMilliseconds;
+
+        return false;
     }
-} //namespace SandboxEditor
+} // namespace SandboxEditor

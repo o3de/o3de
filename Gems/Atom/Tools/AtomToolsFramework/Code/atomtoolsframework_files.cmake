@@ -28,6 +28,7 @@ set(FILES
     Include/AtomToolsFramework/Util/MaterialPropertyUtil.h
     Include/AtomToolsFramework/Util/Util.h
     Include/AtomToolsFramework/Viewport/RenderViewportWidget.h
+    Include/AtomToolsFramework/Viewport/ViewportInteractionImpl.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraController.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindow.h
@@ -55,6 +56,7 @@ set(FILES
     Source/Util/Util.cpp
     Source/Viewport/RenderViewportWidget.cpp
     Source/Viewport/ModularViewportCameraController.cpp
+    Source/Viewport/ViewportInteractionImpl.cpp
     Source/Window/AtomToolsMainWindow.cpp
     Source/Window/AtomToolsMainWindowSystemComponent.cpp
     Source/Window/AtomToolsMainWindowSystemComponent.h

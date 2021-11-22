@@ -5,7 +5,7 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "TimeDelay",
+                "name": "Time Delay",
                 "category": "Timing",
                 "tooltip": "Delays all incoming execution for the specified number of ticks"
             },
