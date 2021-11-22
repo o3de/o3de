@@ -21,6 +21,19 @@
     "Amazon": {
         "AssetProcessor": {
             "Settings": {
+                "Stats": {
+                    // Setting MachineReadable to true will output stats in more of a CSV-like format that is ideal for script ingestion
+                    "MachineReadable" : false,
+                    // Setting HumanReadable to true will output stats in a friendly human format that is ideal for human reading
+                    "HumanReadable" : true,
+                    // To turn off stats output entirely, set both HumanReadable and MachineReadable to false.
+                    // the maximum number of stats to show for cumulative stats like the time taken
+                    // across all jobs of a certain type, or all jobs cumulative across a whole platform
+                    "MaxCumulativeStats" : 4,
+                    // the maximum number of stats to show for individual stats like how long a specific
+                    // individual job took.
+                    "MaxIndividualStats" : 4
+                },
                 "Platform pc": {
                     "tags": "tools,renderer,dx12,vulkan,null"
                 },
