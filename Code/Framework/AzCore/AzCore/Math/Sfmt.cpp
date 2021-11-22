@@ -14,28 +14,26 @@
 
 #include <string.h> // for memset
 
-namespace AZ
+namespace AZ::SfmtInternal
 {
-    namespace SfmtInternal
-    {
-        static const int N32    = N * 4;
-        static const int N64    = N * 2;
-        static const int POS1   = 122;
-        static const int SL1    = 18;
-        static const int SR1    = 11;
-        static const int SL2    = 1;
-        static const int SR2    = 1;
-        static const unsigned int MSK1  = 0xdfffffefU;
-        static const unsigned int MSK2  = 0xddfecb7fU;
-        static const unsigned int MSK3  = 0xbffaffffU;
-        static const unsigned int MSK4  = 0xbffffff6U;
-        static const unsigned int PARITY1   = 0x00000001U;
-        static const unsigned int PARITY2   = 0x00000000U;
-        static const unsigned int PARITY3   = 0x00000000U;
-        static const unsigned int PARITY4   = 0x13c9e684U;
+    static const int N32    = N * 4;
+    static const int N64    = N * 2;
+    static const int POS1   = 122;
+    static const int SL1    = 18;
+    static const int SR1    = 11;
+    static const int SL2    = 1;
+    static const int SR2    = 1;
+    static const unsigned int MSK1  = 0xdfffffefU;
+    static const unsigned int MSK2  = 0xddfecb7fU;
+    static const unsigned int MSK3  = 0xbffaffffU;
+    static const unsigned int MSK4  = 0xbffffff6U;
+    static const unsigned int PARITY1   = 0x00000001U;
+    static const unsigned int PARITY2   = 0x00000000U;
+    static const unsigned int PARITY3   = 0x00000000U;
+    static const unsigned int PARITY4   = 0x13c9e684U;
 
-        /** a parity check vector which certificate the period of 2^{MEXP} */
-        static unsigned int parity[4] = {PARITY1, PARITY2, PARITY3, PARITY4};
+    /** a parity check vector which certificate the period of 2^{MEXP} */
+    static unsigned int parity[4] = {PARITY1, PARITY2, PARITY3, PARITY4};
 
 #ifdef ONLY64
 #   define idxof(_i) (_i ^ 1)
@@ -45,259 +43,257 @@ namespace AZ
 
 
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SSE
-        /**
-         * This function represents the recursion formula.
-         * @param a a 128-bit part of the internal state array
-         * @param b a 128-bit part of the internal state array
-         * @param c a 128-bit part of the internal state array
-         * @param d a 128-bit part of the internal state array
-         * @param mask 128-bit mask
-         * @return output
-         */
-        AZ_FORCE_INLINE static Simd::Vec4::Int32Type simd_recursion(Simd::Vec4::Int32Type* a, Simd::Vec4::Int32Type* b, Simd::Vec4::Int32Type c, Simd::Vec4::Int32Type d, Simd::Vec4::Int32Type mask)
+    /**
+     * This function represents the recursion formula.
+     * @param a a 128-bit part of the internal state array
+     * @param b a 128-bit part of the internal state array
+     * @param c a 128-bit part of the internal state array
+     * @param d a 128-bit part of the internal state array
+     * @param mask 128-bit mask
+     * @return output
+     */
+    AZ_FORCE_INLINE static Simd::Vec4::Int32Type simd_recursion(Simd::Vec4::Int32Type* a, Simd::Vec4::Int32Type* b, Simd::Vec4::Int32Type c, Simd::Vec4::Int32Type d, Simd::Vec4::Int32Type mask)
+    {
+        Simd::Vec4::Int32Type v, x, y, z;
+        x = *a;
+        y = _mm_srli_epi32(*b, SR1);
+        z = _mm_srli_si128(c, SR2);
+        v = _mm_slli_epi32(d, SL1);
+        z = Simd::Vec4::Xor(z, x);
+        z = Simd::Vec4::Xor(z, v);
+        x = _mm_slli_si128(x, SL2);
+        y = Simd::Vec4::And(y, mask);
+        z = Simd::Vec4::Xor(z, x);
+        z = Simd::Vec4::Xor(z, y);
+        return z;
+    }
+
+    /**
+     * This function fills the internal state array with pseudorandom
+     * integers.
+     */
+    inline void gen_rand_all(Sfmt& g)
+    {
+        int i;
+        Simd::Vec4::Int32Type r, r1, r2, mask;
+        mask = Simd::Vec4::LoadImmediate((int32_t)MSK4, (int32_t)MSK3, (int32_t)MSK2, (int32_t)MSK1);
+
+        r1 = Simd::Vec4::LoadAligned((const int32_t*)&g.m_sfmt[N - 2].si);
+        r2 = Simd::Vec4::LoadAligned((const int32_t*)&g.m_sfmt[N - 1].si);
+        for (i = 0; i < N - POS1; i++)
         {
-            Simd::Vec4::Int32Type v, x, y, z;
-            x = *a;
-            y = _mm_srli_epi32(*b, SR1);
-            z = _mm_srli_si128(c, SR2);
-            v = _mm_slli_epi32(d, SL1);
-            z = Simd::Vec4::Xor(z, x);
-            z = Simd::Vec4::Xor(z, v);
-            x = _mm_slli_si128(x, SL2);
-            y = Simd::Vec4::And(y, mask);
-            z = Simd::Vec4::Xor(z, x);
-            z = Simd::Vec4::Xor(z, y);
-            return z;
+            r = simd_recursion(&g.m_sfmt[i].si, &g.m_sfmt[i + POS1].si, r1, r2, mask);
+            Simd::Vec4::StoreAligned((int32_t*)&g.m_sfmt[i].si, r);
+            r1 = r2;
+            r2 = r;
         }
-
-        /**
-         * This function fills the internal state array with pseudorandom
-         * integers.
-         */
-        inline void gen_rand_all(Sfmt& g)
+        for (; i < N; i++)
         {
-            int i;
-            Simd::Vec4::Int32Type r, r1, r2, mask;
-            mask = Simd::Vec4::LoadImmediate((int32_t)MSK4, (int32_t)MSK3, (int32_t)MSK2, (int32_t)MSK1);
-
-            r1 = Simd::Vec4::LoadAligned((const int32_t*)&g.m_sfmt[N - 2].si);
-            r2 = Simd::Vec4::LoadAligned((const int32_t*)&g.m_sfmt[N - 1].si);
-            for (i = 0; i < N - POS1; i++)
-            {
-                r = simd_recursion(&g.m_sfmt[i].si, &g.m_sfmt[i + POS1].si, r1, r2, mask);
-                Simd::Vec4::StoreAligned((int32_t*)&g.m_sfmt[i].si, r);
-                r1 = r2;
-                r2 = r;
-            }
-            for (; i < N; i++)
-            {
-                r = simd_recursion(&g.m_sfmt[i].si, &g.m_sfmt[i + POS1 - N].si, r1, r2, mask);
-                Simd::Vec4::StoreAligned((int32_t*)&g.m_sfmt[i].si, r);
-                r1 = r2;
-                r2 = r;
-            }
+            r = simd_recursion(&g.m_sfmt[i].si, &g.m_sfmt[i + POS1 - N].si, r1, r2, mask);
+            Simd::Vec4::StoreAligned((int32_t*)&g.m_sfmt[i].si, r);
+            r1 = r2;
+            r2 = r;
         }
+    }
 
-        /**
-         * This function fills the user-specified array with pseudorandom
-         * integers.
-         *
-         * @param array an 128-bit array to be filled by pseudorandom numbers.
-         * @param size number of 128-bit pesudorandom numbers to be generated.
-         */
-        inline void gen_rand_array(Sfmt& g, w128_t* array, int size)
+    /**
+     * This function fills the user-specified array with pseudorandom
+     * integers.
+     *
+     * @param array an 128-bit array to be filled by pseudorandom numbers.
+     * @param size number of 128-bit pesudorandom numbers to be generated.
+     */
+    inline void gen_rand_array(Sfmt& g, w128_t* array, int size)
+    {
+        int i, j;
+        Simd::Vec4::Int32Type r, r1, r2, mask;
+        mask = Simd::Vec4::LoadImmediate((int32_t)MSK4, (int32_t)MSK3, (int32_t)MSK2, (int32_t)MSK1);
+
+        r1 = Simd::Vec4::LoadAligned((const int32_t*)&g.m_sfmt[N - 2].si);
+        r2 = Simd::Vec4::LoadAligned((const int32_t*)&g.m_sfmt[N - 1].si);
+        for (i = 0; i < N - POS1; i++)
         {
-            int i, j;
-            Simd::Vec4::Int32Type r, r1, r2, mask;
-            mask = Simd::Vec4::LoadImmediate((int32_t)MSK4, (int32_t)MSK3, (int32_t)MSK2, (int32_t)MSK1);
-
-            r1 = Simd::Vec4::LoadAligned((const int32_t*)&g.m_sfmt[N - 2].si);
-            r2 = Simd::Vec4::LoadAligned((const int32_t*)&g.m_sfmt[N - 1].si);
-            for (i = 0; i < N - POS1; i++)
-            {
-                r = simd_recursion(&g.m_sfmt[i].si, &g.m_sfmt[i + POS1].si, r1, r2, mask);
-                Simd::Vec4::StoreAligned((int32_t*)&array[i].si, r);
-                r1 = r2;
-                r2 = r;
-            }
-            for (; i < N; i++)
-            {
-                r = simd_recursion(&g.m_sfmt[i].si, &array[i + POS1 - N].si, r1, r2, mask);
-                Simd::Vec4::StoreAligned((int32_t*)&array[i].si, r);
-                r1 = r2;
-                r2 = r;
-            }
-            /* main loop */
-            for (; i < size - N; i++)
-            {
-                r = simd_recursion(&array[i - N].si, &array[i + POS1 - N].si, r1, r2, mask);
-                Simd::Vec4::StoreAligned((int32_t*)&array[i].si, r);
-                r1 = r2;
-                r2 = r;
-            }
-            for (j = 0; j < 2 * N - size; j++)
-            {
-                r = Simd::Vec4::LoadAligned((const int32_t*)&array[j + size - N].si);
-                Simd::Vec4::StoreAligned((int32_t*)&g.m_sfmt[j].si, r);
-            }
-            for (; i < size; i++)
-            {
-                r = simd_recursion(&array[i - N].si, &array[i + POS1 - N].si, r1, r2, mask);
-                Simd::Vec4::StoreAligned((int32_t*)&array[i].si, r);
-                Simd::Vec4::StoreAligned((int32_t*)&g.m_sfmt[j++].si, r);
-                r1 = r2;
-                r2 = r;
-            }
+            r = simd_recursion(&g.m_sfmt[i].si, &g.m_sfmt[i + POS1].si, r1, r2, mask);
+            Simd::Vec4::StoreAligned((int32_t*)&array[i].si, r);
+            r1 = r2;
+            r2 = r;
         }
+        for (; i < N; i++)
+        {
+            r = simd_recursion(&g.m_sfmt[i].si, &array[i + POS1 - N].si, r1, r2, mask);
+            Simd::Vec4::StoreAligned((int32_t*)&array[i].si, r);
+            r1 = r2;
+            r2 = r;
+        }
+        /* main loop */
+        for (; i < size - N; i++)
+        {
+            r = simd_recursion(&array[i - N].si, &array[i + POS1 - N].si, r1, r2, mask);
+            Simd::Vec4::StoreAligned((int32_t*)&array[i].si, r);
+            r1 = r2;
+            r2 = r;
+        }
+        for (j = 0; j < 2 * N - size; j++)
+        {
+            r = Simd::Vec4::LoadAligned((const int32_t*)&array[j + size - N].si);
+            Simd::Vec4::StoreAligned((int32_t*)&g.m_sfmt[j].si, r);
+        }
+        for (; i < size; i++)
+        {
+            r = simd_recursion(&array[i - N].si, &array[i + POS1 - N].si, r1, r2, mask);
+            Simd::Vec4::StoreAligned((int32_t*)&array[i].si, r);
+            Simd::Vec4::StoreAligned((int32_t*)&g.m_sfmt[j++].si, r);
+            r1 = r2;
+            r2 = r;
+        }
+    }
 #else
-        inline void rshift128(w128_t* out, w128_t const* in, int shift)
+    inline void rshift128(w128_t* out, w128_t const* in, int shift)
+    {
+        AZ::u64 th, tl, oh, ol;
+ #ifdef ONLY64
+        th = ((AZ::u64)in->u[2] << 32) | ((AZ::u64)in->u[3]);
+        tl = ((AZ::u64)in->u[0] << 32) | ((AZ::u64)in->u[1]);
+
+        oh = th >> (shift * 8);
+        ol = tl >> (shift * 8);
+        ol |= th << (64 - shift * 8);
+        out->u[0] = (AZ::u32)(ol >> 32);
+        out->u[1] = (AZ::u32)ol;
+        out->u[2] = (AZ::u32)(oh >> 32);
+        out->u[3] = (AZ::u32)oh;
+#else
+        th = ((AZ::u64)in->u[3] << 32) | ((AZ::u64)in->u[2]);
+        tl = ((AZ::u64)in->u[1] << 32) | ((AZ::u64)in->u[0]);
+
+        oh = th >> (shift * 8);
+        ol = tl >> (shift * 8);
+        ol |= th << (64 - shift * 8);
+        out->u[1] = (AZ::u32)(ol >> 32);
+        out->u[0] = (AZ::u32)ol;
+        out->u[3] = (AZ::u32)(oh >> 32);
+        out->u[2] = (AZ::u32)oh;
+#endif
+    }
+
+    inline void lshift128(w128_t* out, w128_t const* in, int shift)
+    {
+        AZ::u64 th, tl, oh, ol;
+#ifdef ONLY64
+        th = ((AZ::u64)in->u[2] << 32) | ((AZ::u64)in->u[3]);
+        tl = ((AZ::u64)in->u[0] << 32) | ((AZ::u64)in->u[1]);
+
+        oh = th << (shift * 8);
+        ol = tl << (shift * 8);
+        oh |= tl >> (64 - shift * 8);
+        out->u[0] = (AZ::u32)(ol >> 32);
+        out->u[1] = (AZ::u32)ol;
+        out->u[2] = (AZ::u32)(oh >> 32);
+        out->u[3] = (AZ::u32)oh;
+#else
+        th = ((AZ::u64)in->u[3] << 32) | ((AZ::u64)in->u[2]);
+        tl = ((AZ::u64)in->u[1] << 32) | ((AZ::u64)in->u[0]);
+
+        oh = th << (shift * 8);
+        ol = tl << (shift * 8);
+        oh |= tl >> (64 - shift * 8);
+        out->u[1] = (AZ::u32)(ol >> 32);
+        out->u[0] = (AZ::u32)ol;
+        out->u[3] = (AZ::u32)(oh >> 32);
+        out->u[2] = (AZ::u32)oh;
+#endif
+    }
+
+    inline void do_recursion(w128_t* r, w128_t* a, w128_t* b, w128_t* c,    w128_t* d)
+    {
+        w128_t x;
+        w128_t y;
+        lshift128(&x, a, SL2);
+        rshift128(&y, c, SR2);
+#ifdef ONLY64
+        r->u[0] = a->u[0] ^ x.u[0] ^ ((b->u[0] >> SR1) & MSK2) ^ y.u[0] ^ (d->u[0] << SL1);
+        r->u[1] = a->u[1] ^ x.u[1] ^ ((b->u[1] >> SR1) & MSK1) ^ y.u[1] ^ (d->u[1] << SL1);
+        r->u[2] = a->u[2] ^ x.u[2] ^ ((b->u[2] >> SR1) & MSK4) ^ y.u[2] ^ (d->u[2] << SL1);
+        r->u[3] = a->u[3] ^ x.u[3] ^ ((b->u[3] >> SR1) & MSK3) ^ y.u[3] ^ (d->u[3] << SL1);
+#else
+        r->u[0] = a->u[0] ^ x.u[0] ^ ((b->u[0] >> SR1) & MSK1) ^ y.u[0] ^ (d->u[0] << SL1);
+        r->u[1] = a->u[1] ^ x.u[1] ^ ((b->u[1] >> SR1) & MSK2) ^ y.u[1] ^ (d->u[1] << SL1);
+        r->u[2] = a->u[2] ^ x.u[2] ^ ((b->u[2] >> SR1) & MSK3) ^ y.u[2] ^ (d->u[2] << SL1);
+        r->u[3] = a->u[3] ^ x.u[3] ^ ((b->u[3] >> SR1) & MSK4) ^ y.u[3] ^ (d->u[3] << SL1);
+#endif
+    }
+    /**
+     * This function fills the internal state array with pseudorandom
+     * integers.
+     */
+    inline void gen_rand_all(Sfmt& g)
+    {
+        int i;
+        w128_t* r1, * r2;
+
+        r1 = &g.m_sfmt[N - 2];
+        r2 = &g.m_sfmt[N - 1];
+        for (i = 0; i < N - POS1; i++)
         {
-            AZ::u64 th, tl, oh, ol;
-     #ifdef ONLY64
-            th = ((AZ::u64)in->u[2] << 32) | ((AZ::u64)in->u[3]);
-            tl = ((AZ::u64)in->u[0] << 32) | ((AZ::u64)in->u[1]);
-
-            oh = th >> (shift * 8);
-            ol = tl >> (shift * 8);
-            ol |= th << (64 - shift * 8);
-            out->u[0] = (AZ::u32)(ol >> 32);
-            out->u[1] = (AZ::u32)ol;
-            out->u[2] = (AZ::u32)(oh >> 32);
-            out->u[3] = (AZ::u32)oh;
-    #else
-            th = ((AZ::u64)in->u[3] << 32) | ((AZ::u64)in->u[2]);
-            tl = ((AZ::u64)in->u[1] << 32) | ((AZ::u64)in->u[0]);
-
-            oh = th >> (shift * 8);
-            ol = tl >> (shift * 8);
-            ol |= th << (64 - shift * 8);
-            out->u[1] = (AZ::u32)(ol >> 32);
-            out->u[0] = (AZ::u32)ol;
-            out->u[3] = (AZ::u32)(oh >> 32);
-            out->u[2] = (AZ::u32)oh;
-    #endif
+            do_recursion(&g.m_sfmt[i], &g.m_sfmt[i], &g.m_sfmt[i + POS1], r1, r2);
+            r1 = r2;
+            r2 = &g.m_sfmt[i];
         }
-
-        inline void lshift128(w128_t* out, w128_t const* in, int shift)
+        for (; i < N; i++)
         {
-            AZ::u64 th, tl, oh, ol;
-    #ifdef ONLY64
-            th = ((AZ::u64)in->u[2] << 32) | ((AZ::u64)in->u[3]);
-            tl = ((AZ::u64)in->u[0] << 32) | ((AZ::u64)in->u[1]);
-
-            oh = th << (shift * 8);
-            ol = tl << (shift * 8);
-            oh |= tl >> (64 - shift * 8);
-            out->u[0] = (AZ::u32)(ol >> 32);
-            out->u[1] = (AZ::u32)ol;
-            out->u[2] = (AZ::u32)(oh >> 32);
-            out->u[3] = (AZ::u32)oh;
-    #else
-            th = ((AZ::u64)in->u[3] << 32) | ((AZ::u64)in->u[2]);
-            tl = ((AZ::u64)in->u[1] << 32) | ((AZ::u64)in->u[0]);
-
-            oh = th << (shift * 8);
-            ol = tl << (shift * 8);
-            oh |= tl >> (64 - shift * 8);
-            out->u[1] = (AZ::u32)(ol >> 32);
-            out->u[0] = (AZ::u32)ol;
-            out->u[3] = (AZ::u32)(oh >> 32);
-            out->u[2] = (AZ::u32)oh;
-    #endif
+            do_recursion(&g.m_sfmt[i], &g.m_sfmt[i], &g.m_sfmt[i + POS1 - N], r1, r2);
+            r1 = r2;
+            r2 = &g.m_sfmt[i];
         }
+    }
 
-        inline void do_recursion(w128_t* r, w128_t* a, w128_t* b, w128_t* c,    w128_t* d)
+    /**
+     * This function fills the user-specified array with pseudorandom
+     * integers.
+     *
+     * @param array an 128-bit array to be filled by pseudorandom numbers.
+     * @param size number of 128-bit pseudorandom numbers to be generated.
+     */
+    inline void gen_rand_array(Sfmt& g, w128_t* array, int size)
+    {
+        int i, j;
+        w128_t* r1, * r2;
+
+        r1 = &g.m_sfmt[N - 2];
+        r2 = &g.m_sfmt[N - 1];
+        for (i = 0; i < N - POS1; i++)
         {
-            w128_t x;
-            w128_t y;
-            lshift128(&x, a, SL2);
-            rshift128(&y, c, SR2);
-    #ifdef ONLY64
-            r->u[0] = a->u[0] ^ x.u[0] ^ ((b->u[0] >> SR1) & MSK2) ^ y.u[0] ^ (d->u[0] << SL1);
-            r->u[1] = a->u[1] ^ x.u[1] ^ ((b->u[1] >> SR1) & MSK1) ^ y.u[1] ^ (d->u[1] << SL1);
-            r->u[2] = a->u[2] ^ x.u[2] ^ ((b->u[2] >> SR1) & MSK4) ^ y.u[2] ^ (d->u[2] << SL1);
-            r->u[3] = a->u[3] ^ x.u[3] ^ ((b->u[3] >> SR1) & MSK3) ^ y.u[3] ^ (d->u[3] << SL1);
-    #else
-            r->u[0] = a->u[0] ^ x.u[0] ^ ((b->u[0] >> SR1) & MSK1) ^ y.u[0] ^ (d->u[0] << SL1);
-            r->u[1] = a->u[1] ^ x.u[1] ^ ((b->u[1] >> SR1) & MSK2) ^ y.u[1] ^ (d->u[1] << SL1);
-            r->u[2] = a->u[2] ^ x.u[2] ^ ((b->u[2] >> SR1) & MSK3) ^ y.u[2] ^ (d->u[2] << SL1);
-            r->u[3] = a->u[3] ^ x.u[3] ^ ((b->u[3] >> SR1) & MSK4) ^ y.u[3] ^ (d->u[3] << SL1);
-    #endif
+            do_recursion(&array[i], &g.m_sfmt[i], &g.m_sfmt[i + POS1], r1, r2);
+            r1 = r2;
+            r2 = &array[i];
         }
-        /**
-         * This function fills the internal state array with pseudorandom
-         * integers.
-         */
-        inline void gen_rand_all(Sfmt& g)
+        for (; i < N; i++)
         {
-            int i;
-            w128_t* r1, * r2;
-
-            r1 = &g.m_sfmt[N - 2];
-            r2 = &g.m_sfmt[N - 1];
-            for (i = 0; i < N - POS1; i++)
-            {
-                do_recursion(&g.m_sfmt[i], &g.m_sfmt[i], &g.m_sfmt[i + POS1], r1, r2);
-                r1 = r2;
-                r2 = &g.m_sfmt[i];
-            }
-            for (; i < N; i++)
-            {
-                do_recursion(&g.m_sfmt[i], &g.m_sfmt[i], &g.m_sfmt[i + POS1 - N], r1, r2);
-                r1 = r2;
-                r2 = &g.m_sfmt[i];
-            }
+            do_recursion(&array[i], &g.m_sfmt[i], &array[i + POS1 - N], r1, r2);
+            r1 = r2;
+            r2 = &array[i];
         }
-
-        /**
-         * This function fills the user-specified array with pseudorandom
-         * integers.
-         *
-         * @param array an 128-bit array to be filled by pseudorandom numbers.
-         * @param size number of 128-bit pseudorandom numbers to be generated.
-         */
-        inline void gen_rand_array(Sfmt& g, w128_t* array, int size)
+        for (; i < size - N; i++)
         {
-            int i, j;
-            w128_t* r1, * r2;
-
-            r1 = &g.m_sfmt[N - 2];
-            r2 = &g.m_sfmt[N - 1];
-            for (i = 0; i < N - POS1; i++)
-            {
-                do_recursion(&array[i], &g.m_sfmt[i], &g.m_sfmt[i + POS1], r1, r2);
-                r1 = r2;
-                r2 = &array[i];
-            }
-            for (; i < N; i++)
-            {
-                do_recursion(&array[i], &g.m_sfmt[i], &array[i + POS1 - N], r1, r2);
-                r1 = r2;
-                r2 = &array[i];
-            }
-            for (; i < size - N; i++)
-            {
-                do_recursion(&array[i], &array[i - N], &array[i + POS1 - N], r1, r2);
-                r1 = r2;
-                r2 = &array[i];
-            }
-            for (j = 0; j < 2 * N - size; j++)
-            {
-                g.m_sfmt[j] = array[j + size - N];
-            }
-            for (; i < size; i++, j++)
-            {
-                do_recursion(&array[i], &array[i - N], &array[i + POS1 - N], r1, r2);
-                r1 = r2;
-                r2 = &array[i];
-                g.m_sfmt[j] = array[i];
-            }
+            do_recursion(&array[i], &array[i - N], &array[i + POS1 - N], r1, r2);
+            r1 = r2;
+            r2 = &array[i];
         }
+        for (j = 0; j < 2 * N - size; j++)
+        {
+            g.m_sfmt[j] = array[j + size - N];
+        }
+        for (; i < size; i++, j++)
+        {
+            do_recursion(&array[i], &array[i - N], &array[i + POS1 - N], r1, r2);
+            r1 = r2;
+            r2 = &array[i];
+            g.m_sfmt[j] = array[i];
+        }
+    }
 
 #endif
-    } // SmftInternal
-} // AZ
-
+} // namespace AZ::SfmtInternal
 
 using namespace AZ;
 

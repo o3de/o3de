@@ -9,10 +9,6 @@
 #define CRYINCLUDE_EDITOR_MATERIAL_IEDITORMATERIALMANAGER_H
 #pragma once
 
-#define MATERIAL_FILE_EXT ".mtl"
-#define DCC_MATERIAL_FILE_EXT ".dccmtl"
-#define MATERIALS_PATH "materials/"
-
 #include <Include/IBaseLibraryManager.h>
 #include <IMaterial.h>
 

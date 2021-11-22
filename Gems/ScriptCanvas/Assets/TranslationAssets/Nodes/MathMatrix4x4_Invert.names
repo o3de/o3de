@@ -7,8 +7,7 @@
             "details": {
                 "name": "Invert",
                 "category": "Math/Matrix4x4",
-                "tooltip": "returns inverse of Matrix",
-                "subtitle": "Matrix4x4"
+                "tooltip": "Returns inverse of Matrix"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Matrix4x4: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Matrix4x4: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix4x4",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix4x4"
+                        "name": "Result"
                     }
                 }
             ]

@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromScale",
+                "name": "From Scale",
                 "category": "Math/Matrix3x3",
-                "tooltip": "returns a scale matrix using the supplied vector",
-                "subtitle": "Matrix3x3"
+                "tooltip": "Returns a scale matrix using the supplied vector"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Vector3: Scale",
+                    "key": "DataInput_Scale",
                     "details": {
-                        "name": "Vector3: Scale"
+                        "name": "Scale"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Matrix3x3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Matrix3x3"
+                        "name": "Result"
                     }
                 }
             ]

@@ -63,6 +63,10 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_HDRColorGradingAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_HDRColorGradingAdded as test_module
 
+    @pytest.mark.test_case_id("C32078116")
+    class AtomEditorComponents_HDRiSkyboxAdded(EditorSharedTest):
+        from Atom.tests import hydra_AtomEditorComponents_HDRiSkyboxAdded as test_module
+
     @pytest.mark.test_case_id("C32078117")
     class AtomEditorComponents_LightAdded(EditorSharedTest):
         from Atom.tests import hydra_AtomEditorComponents_LightAdded as test_module

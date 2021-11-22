@@ -7,8 +7,7 @@
             "details": {
                 "name": "Negate",
                 "category": "Math/Quaternion",
-                "tooltip": "returns the Source with each element negated",
-                "subtitle": "Quaternion"
+                "tooltip": "Returns the Source with each element negated"
             },
             "slots": [
                 {
@@ -24,15 +23,15 @@
                     }
                 },
                 {
-                    "key": "DataInput_Quaternion: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Quaternion: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Quaternion",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Quaternion"
+                        "name": "Result"
                     }
                 }
             ]

@@ -5,10 +5,10 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "FromOBB",
-                "category": "Math/AABB",
+                "name": "From Oriented Bounding Box",
+                "category": "Math/Axis Aligned Bounding Box",
                 "tooltip": "returns the AABB which contains Source",
-                "subtitle": "AABB"
+                "subtitle": "Axis Aligned Bounding Box"
             },
             "slots": [
                 {
@@ -26,13 +26,13 @@
                 {
                     "key": "DataInput_OBB: Source",
                     "details": {
-                        "name": "OBB: Source"
+                        "name": "Source"
                     }
                 },
                 {
                     "key": "DataOutput_Result: AABB",
                     "details": {
-                        "name": "Result: AABB"
+                        "name": "AABB"
                     }
                 }
             ]

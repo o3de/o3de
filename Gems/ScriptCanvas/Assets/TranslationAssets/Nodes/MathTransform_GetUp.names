@@ -5,10 +5,9 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "GetUp",
+                "name": "Get Up",
                 "category": "Math/Transform",
-                "tooltip": "returns the up direction vector from the specified transform scaled by a given value (O3DE uses Z up, right handed)",
-                "subtitle": "Transform"
+                "tooltip": "Returns the up direction vector from the specified transform scaled by a given value (O3DE uses Z up, right handed)"
             },
             "slots": [
                 {
@@ -24,21 +23,21 @@
                     }
                 },
                 {
-                    "key": "DataInput_Transform: Source",
+                    "key": "DataInput_Source",
                     "details": {
-                        "name": "Transform: Source"
+                        "name": "Source"
                     }
                 },
                 {
-                    "key": "DataInput_Number: Scale",
+                    "key": "DataInput_Scale",
                     "details": {
-                        "name": "Number: Scale"
+                        "name": "Scale"
                     }
                 },
                 {
-                    "key": "DataOutput_Result: Vector3",
+                    "key": "DataOutput_Result",
                     "details": {
-                        "name": "Result: Vector3"
+                        "name": "Result"
                     }
                 }
             ]

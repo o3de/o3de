@@ -6,11 +6,11 @@
  *
  */
 #pragma once
-#include <CameraFramework/ICameraLookAtBehavior.h>
-#include <AzCore/Math/Transform.h>
-#include <AzCore/RTTI/ReflectContext.h>
 #include "StartingPointCamera/StartingPointCameraConstants.h"
+#include <AzCore/Math/Transform.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/ReflectContext.h>
+#include <CameraFramework/ICameraLookAtBehavior.h>
 
 namespace Camera
 {
@@ -37,6 +37,10 @@ namespace Camera
         void AdjustLookAtTarget(float deltaTime, const AZ::Transform& targetTransform, AZ::Transform& outLookAtTargetTransform) override;
         void Activate(AZ::EntityId) override {}
         void Deactivate() override {}
+
+        bool XAndYIgnored() const;
+        bool XAndZIgnored() const;
+        bool YAndZIgnored() const;
 
     private:
         //////////////////////////////////////////////////////////////////////////

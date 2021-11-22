@@ -32,7 +32,12 @@ namespace AZ
 
         if (!s_instance)
         {
-            s_instance = AZ::Environment::CreateVariable<NameDictionary>(NameDictionaryInstanceName);
+            // Because the NameDictionary allocates memory using the AZ::Allocator and it is created
+            // in the executable memory space, it's ownership cannot be transferred to other module memory spaces
+            // Otherwise this could cause the the NameDictionary to be destroyed in static de-init
+            // after the AZ::Allocators have been destroyed
+            // Therefore we supply the isTransferOwnership value of false using CreateVariableEx
+            s_instance = AZ::Environment::CreateVariableEx<NameDictionary>(NameDictionaryInstanceName, true, false);
         }
     }
 
