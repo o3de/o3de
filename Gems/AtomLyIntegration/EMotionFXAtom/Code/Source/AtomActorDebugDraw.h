@@ -47,7 +47,7 @@ namespace AZ::Render
         float CalculateBoneScale(EMotionFX::ActorInstance* actorInstance, EMotionFX::Node* node);
         float CalculateScaleMultiplier(EMotionFX::ActorInstance* instance) const;
         void PrepareForMesh(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM);
-        AzFramework::DebugDisplayRequests* GetDebugDisplay(AZ::s32 viewportId);
+        AzFramework::DebugDisplayRequests* GetDebugDisplay(AzFramework::ViewportId viewportId);
 
         void RenderAABB(EMotionFX::ActorInstance* instance, const AZ::Color& aabbColor);
         void RenderLineSkeleton(EMotionFX::ActorInstance* instance, const AZ::Color& skeletonColor);
@@ -72,16 +72,15 @@ namespace AZ::Render
         void RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, AzFramework::DebugDisplayRequests* debugDisplay, float scale = 1.0f);
         void RenderLineAxis(
             AzFramework::DebugDisplayRequests* debugDisplay,
-            AZ::Transform worldTM,      /**< The world space transformation matrix to visualize. */
-            float size,                /**< The size value in units is used to control the scaling of the axis. */
-            bool selected,              /**< Set to true if you want to render the axis using the selection color. */
-            bool renderAxis = true,
+            AZ::Transform worldTM,      //!< The world space transformation matrix to visualize. */
+            float size,                 //!< The size value in units is used to control the scaling of the axis. */
+            bool selected,              //!< Set to true if you want to render the axis using the selection color. */
             bool renderAxisName = false);
 
-        EMotionFX::Mesh* m_currentMesh = nullptr; /**< A pointer to the mesh whose world space positions are in the pre-calculated positions buffer.
-                                           NULL in case we haven't pre-calculated any positions yet. */
-        AZStd::vector<AZ::Vector3> m_worldSpacePositions; /**< The buffer used to store world space positions for rendering normals
-                                                          tangents and the wireframe. */
+        EMotionFX::Mesh* m_currentMesh = nullptr; //!< A pointer to the mesh whose world space positions are in the pre-calculated positions buffer.
+                                                  //!< NULL in case we haven't pre-calculated any positions yet.
+        AZStd::vector<AZ::Vector3> m_worldSpacePositions; //!< The buffer used to store world space positions for rendering normals
+                                                          //!< tangents and the wireframe.
 
         static constexpr float BaseFontSize = 0.7f;
         const Vector3 TopRightBorderPadding = AZ::Vector3(-40.0f, 22.0f, 0.0f);

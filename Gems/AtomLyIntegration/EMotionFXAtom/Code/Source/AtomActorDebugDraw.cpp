@@ -185,7 +185,7 @@ namespace AZ::Render
         }
     }
 
-    AzFramework::DebugDisplayRequests* AtomActorDebugDraw::GetDebugDisplay(AZ::s32 viewportId)
+    AzFramework::DebugDisplayRequests* AtomActorDebugDraw::GetDebugDisplay(AzFramework::ViewportId viewportId)
     {
         AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
         AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, viewportId);
@@ -658,24 +658,15 @@ namespace AZ::Render
         AZ::Transform worldTM,
         float size,
         bool selected,
-        bool renderAxis,
         bool renderAxisName)
     {
         const float axisHeight = size * 0.7f;
         const float frontSize = size * 5.0f + 0.2f;
         const AZ::Vector3 position = worldTM.GetTranslation();
 
-        if (renderAxis)
+        // Render x axis
         {
-            AZ::Color xSelectedColor;
-            if (selected)
-            {
-                xSelectedColor = AZ::Colors::Orange;
-            }
-            else
-            {
-                xSelectedColor = AZ::Colors::Red;
-            }
+            AZ::Color xSelectedColor = selected ? AZ::Colors::Orange : AZ::Colors::Red;
 
             const AZ::Vector3 xAxisDir = (worldTM.TransformPoint(AZ::Vector3(size, 0.0f, 0.0f)) - position).GetNormalized();
             const AZ::Vector3 xAxisArrowStart = position + xAxisDir * axisHeight;
@@ -689,17 +680,9 @@ namespace AZ::Render
             }
         }
 
-        if (renderAxis)
+        // Render y axis
         {
-            AZ::Color ySelectedColor;
-            if (selected)
-            {
-                ySelectedColor = AZ::Colors::Orange;
-            }
-            else
-            {
-                ySelectedColor = AZ::Colors::Blue;
-            }
+            AZ::Color ySelectedColor = selected ? AZ::Colors::Orange : AZ::Colors::Blue;
 
             const AZ::Vector3 yAxisDir = (worldTM.TransformPoint(AZ::Vector3(0.0f, size, 0.0f)) - position).GetNormalized();
             const AZ::Vector3 yAxisArrowStart = position + yAxisDir * axisHeight;
@@ -713,17 +696,9 @@ namespace AZ::Render
             }
         }
 
-        if (renderAxis)
+        // Render z axis
         {
-            AZ::Color zSelectedColor;
-            if (selected)
-            {
-                zSelectedColor = AZ::Colors::Orange;
-            }
-            else
-            {
-                zSelectedColor = AZ::Colors::Green;
-            }
+            AZ::Color zSelectedColor = selected ? AZ::Colors::Orange : AZ::Colors::Green;
 
             const AZ::Vector3 zAxisDir = (worldTM.TransformPoint(AZ::Vector3(0.0f, 0.0f, size)) - position).GetNormalized();
             const AZ::Vector3 zAxisArrowStart = position + zAxisDir * axisHeight;
