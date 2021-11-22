@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "AudioObstructionType_MultiRay::Getter",
-                "category": "Constants"
-            }
+                "name": "Audio Obstruction Type_ Multi Ray"
+            },
+            "methods": [
+                {
+                    "key": "GetAudioObstructionType_MultiRay",
+                    "details": {
+                        "name": "Get Audio Obstruction Type_ Multi Ray"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

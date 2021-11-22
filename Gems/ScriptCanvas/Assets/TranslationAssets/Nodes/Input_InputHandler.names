@@ -5,8 +5,8 @@
             "context": "ScriptCanvas::Node",
             "variant": "",
             "details": {
-                "name": "InputHandler",
-                "category": "Input",
+                "name": "Input Handler",
+                "category": "Input/Input System",
                 "tooltip": "Handle processed input events found in input binding assets"
             },
             "slots": [

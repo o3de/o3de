@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "PostFxLayerComponentTypeId::Getter",
-                "category": "Constants"
-            }
+                "name": "Post Fx Layer Component Type Id"
+            },
+            "methods": [
+                {
+                    "key": "GetPostFxLayerComponentTypeId",
+                    "details": {
+                        "name": "Get Post Fx Layer Component Type Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+                            "details": {
+                                "name": "AZ:: Uuid"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }

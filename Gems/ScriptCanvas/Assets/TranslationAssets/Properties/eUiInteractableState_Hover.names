@@ -5,9 +5,24 @@
             "context": "Constant",
             "variant": "",
             "details": {
-                "name": "eUiInteractableState_Hover::Getter",
-                "category": "Constants"
-            }
+                "name": "e Ui Interactable State_ Hover"
+            },
+            "methods": [
+                {
+                    "key": "GeteUiInteractableState_Hover",
+                    "details": {
+                        "name": "Gete Ui Interactable State_ Hover"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
         }
     ]
 }
